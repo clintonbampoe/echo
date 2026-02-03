@@ -1,5 +1,7 @@
 # Requirements: Contributions
 
+---
+
 ## Contribution Tracking
 
 - **CO-CT001:** The system must record individual member contributions with member linkage.
@@ -16,6 +18,8 @@
 
 - **CO-CT007:** The system must maintain audit logs of all contribution records, showing what was added, edited, or deleted, by whom, and when.
 
+---
+
 ## Tithe Management
 
 - **CO-TM001:** The system must record tithes separately from other contributions.
@@ -27,6 +31,8 @@
 - **CO-TM004:** The system must enable aggregation of tithe records for reporting at society, circuit, and diocese level.
 
 - **CO-TM005:** The system must provide alerts or flags for missing or incomplete tithe records.
+
+---
 
 ## Organizational Dues
 
