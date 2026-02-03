@@ -1,3 +1,7 @@
+# Core Accounting Requirements
+
+
+
 ## Income Management
 
 - **CA-IM001**: The system must allow entry of income records with fields for source, category, amount, and date.
