@@ -113,3 +113,35 @@
   - Record attendance across services and events.
   - Link attendance data to contribution and participation patterns.
   - Generate statistics for engagement analysis.
+
+---
+
+## Membership Management
+
+- **Member Registry**
+  
+  - Maintain records of individual members.
+  
+  - Capture member details (name, contact information, unique ID).
+  
+  - Support linking members to contributions, tithes, and dues.
+  
+  - Track member participation across services, events, and groups.
+
+- **Group/Organization Registry**
+  
+  - Maintain records of fellowships, ministries, committees, or other organizational units within the church.
+  
+  - Capture group details (name, type, unique ID).
+  
+  - Support linking members to groups for accountability and reporting.
+  
+  - Enable aggregation of contributions and dues at group level.
+
+- **Member–Group Association**
+  
+  - Define relationships between members and their groups.
+  
+  - Support multiple group memberships where applicable.
+  
+  - Ensure contributions, tithes, and dues can be traced to both individual members and their groups.

@@ -1,6 +1,4 @@
-# Core Accounting Requirements
-
-
+# Requirements: Core Accounting
 
 ## Income Management
 
