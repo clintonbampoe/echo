@@ -1,27 +1,49 @@
 # Overview
 
+This file explains what each main section of the product documentation contains.  
+It provides a high-level guide so developers, admins, and stakeholders know where to look.  
+For detailed folder and file navigation, see [documentation-structure](structure.md) 
+
 ---
 
-## Product Functions
+## product-functions/
 
-## Requirements
+Defines the system’s core functions and how they connect.  
+This section captures the backbone of the product and its dependencies.
 
-- **Functional**
+---
 
-- **Non-functional**
+## requirements/
 
-## User Roles & Permissions
+Outlines what the system must do and how it should behave.  
 
-## User Research
+- Functional requirements → the features and modules of the system.  
+- Non-functional requirements → the qualities that ensure performance, security, and reliability.
 
-- Workflows
+---
 
-- User Stories
+## user-roles-and-permissions/
 
-- Pain points
-  
-  // *still vague but I'll add more to it later*
+Describes the different types of users and their access levels.  
+Clarifies who can perform which actions across the system.
 
-## UX/UI Documentation
+---
 
-## Data & Database Modeling
+## user-research/
+
+Provides context from real-world usage.  
+Includes workflows, user stories, and pain points that shape requirements.
+
+---
+
+## ux-ui-documentation/
+
+Covers design and usability.  
+Includes principles, wireframes, and interaction flows to ensure a consistent user experience.
+
+---
+
+## data-and-database-modeling/
+
+Defines how data is structured and stored.  
+Includes schema design, entity relationships, and strategies for maintaining integrity.
