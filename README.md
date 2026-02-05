@@ -22,10 +22,10 @@ This repository is the central hub for both source code and documentation. It co
 - Read [overview.md](docs/product-documentation/overview.md) for a high-level guide to each documentation section.  
 - Use [structure.md](docs/product-documentation/structure.md) to navigate the documentation layout.  
 
-
 ---
 
 ## Project principles
+
 - **Docs first** Decisions, requirements, and designs are recorded in documentation before implementation.  
 - **Modular design** Features are split into independent modules to enable safe iteration and reuse.  
 - **Traceability** Every change should be traceable to a requirement, issue, or design note.  
@@ -34,11 +34,13 @@ This repository is the central hub for both source code and documentation. It co
 ---
 
 ## Governance and contacts
+
 - **Questions** Open an issue labeled `question` or reach out to a maintainer listed in the repo.
 
 ---
 
 ## License
+
 A `LICENSE` file is included in the repository. Check it for usage and contribution terms.
 
 ---

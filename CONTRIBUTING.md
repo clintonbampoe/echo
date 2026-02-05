@@ -47,7 +47,7 @@ We maintain two complementary documentation types. Always update the appropriate
   - Technical details, implementation notes, data models, developer workflows, and runbooks.
   - This is the authoritative source for how things are implemented and maintained.
 
-Guidelines
+### Guidelines
 
 - Update product docs when requirements or user-facing behavior change.
 - Update process docs when implementation, schema, or operational details change.
@@ -55,27 +55,29 @@ Guidelines
 
 ---
 
-## Commit Message Prefixes
+## Version Control
+
+### Commit Message Prefixes
 
 Use a short prefix followed by a colon and a concise message. This makes history scannable.
 
-**Required prefixes**
+- **Required prefixes**
 
-- **added:** New files or features added.
-- **modified:** Changes to existing content that are not new features.
-- **fix:** Bug fixes or corrections.
-- **feat:** New feature or capability (larger than added).
+  - **added:** New files or features added.
+  - **modified:** Changes to existing content that are not new features.
+  - **fix:** Bug fixes or corrections.
+  - **feat:** New feature or capability (larger than added).
 
-**Recommended additional prefixes**
+- **Recommended additional prefixes**
 
-- **docs:** Documentation-only changes.
-- **chore:** Repo maintenance, tooling, or housekeeping.
-- **refactor:** Code or structure changes that do not alter behavior.
-- **test:** Tests added or updated.
-- **perf:** Performance improvements.
-- **revert:** Revert a previous commit or PR.
+  - **docs:** Documentation-only changes.
+  - **chore:** Repo maintenance, tooling, or housekeeping.
+  - **refactor:** Code or structure changes that do not alter behavior.
+  - **test:** Tests added or updated.
+  - **perf:** Performance improvements.
+  - **revert:** Revert a previous commit or PR.
 
-**Example**
+- **Example**
 
 ```markdown
 added: requirements/functional-requirements/attendance.md
@@ -85,7 +87,7 @@ fix: correct typo in structure.md
 
 ---
 
-## Branching and Workflow
+### Branching and Workflow
 
 - **main is protected**. Direct pushes to `main` are not allowed.
 - Create a branch for your work using one of these prefixes:
@@ -97,7 +99,7 @@ fix: correct typo in structure.md
 
 ---
 
-## Pull Requests
+### Pull Requests
 
 - Open a PR from your branch into `main`.
 - During the documentation-first phase PR approvals are not required for docs-only PRs to speed progress.
@@ -110,7 +112,7 @@ fix: correct typo in structure.md
 
 ---
 
-## Issues and Labels
+### Issues and Labels
 
 Use clear labels and brief descriptions so triage is fast.
 
@@ -126,7 +128,7 @@ When opening an issue include context, expected outcome, and suggested next step
 
 ---
 
-## Reviews and Approvals
+### Reviews and Approvals
 
 - Docs-only PRs can be merged without approvals during the planning phase to accelerate documentation.
 - Code, infra, or production-impacting PRs require at least one maintainer approval once implementation begins.
@@ -153,7 +155,5 @@ When opening an issue include context, expected outcome, and suggested next step
 
 - These guidelines are intentionally pragmatic and lightweight to support rapid documentation work now and stricter controls later.
 - If you are unsure where to document something, prefer **process documentation** for technical details and **product documentation** for user-facing decisions.
-  
-  
-  
+
   Thank you for contributing.
