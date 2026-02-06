@@ -6,7 +6,7 @@ Use it to quickly locate where specific requirements, modules or notes are store
 
 ---
 
-## product-functions/
+## 01-product-functions/
 
 ```markdown
 - dependencies.md
@@ -15,19 +15,19 @@ Use it to quickly locate where specific requirements, modules or notes are store
 
 ---
 
-## requirements/
+## 02-requirements/
 
 ```markdown
 - functional-requirements/
-    - Summary/
+    - summary/
         - summary.md
-    - assets.md
-    - attendance.md
-    - contributions.md
-    - core-accounting.md
-    - membership-management.md
-    - projects.md
-    - reporting.md
+    - 01-membership-management.md
+    - 02-core-accounting.md
+    - 03-contributions.md
+    - 04-projects.md
+    - 05-assets.md
+    - 06-attendance.md
+    - 07-reporting.md
 
 - non-functional-requirements/
     - Summary/
@@ -36,16 +36,28 @@ Use it to quickly locate where specific requirements, modules or notes are store
 
 ---
 
-## user-roles-and-permissions/
+## 03-user-roles-and-permissions/
+
+``` markdown
+- roles/
+    - 01-administrator.md
+    - 02-accountant.md
+    - 03-clerk.md
+    - 04-viewer.md
+    
+- guidelines.md
+- permission-mapping.md
+- summary.md
+```
 
 ---
 
-## user-research/
+## 04-ux/
 
 ---
 
-## ux-ui-documentation/
+## 05-architecture/
 
 ---
 
-## data-and-database-modeling/
+## 06-data-and-modeling/
