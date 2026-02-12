@@ -83,6 +83,8 @@
   - Manage funds earmarked for welfare or special purposes.
   - Track disbursements and maintain balances.
 
+// should contain inventory function
+
 ---
 
 ## Reporting
