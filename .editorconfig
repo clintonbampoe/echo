@@ -1,0 +1,39 @@
+# This is the root configuration file for Echo
+root = true
+
+# Global settings for all files
+[*]
+indent_style = space
+indent_size = 4
+end_of_line = lf
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+C# settings for the Web API and Core logic 
+[*.cs]
+# Standard C# indentation
+indent_size = 4
+
+# Use PascalCase for classes and methods
+dotnet_naming_rule.types_and_methods_should_be_pascal_case.severity = suggestion
+dotnet_naming_rule.types_and_methods_should_be_pascal_case.symbols = all_types_and_methods
+dotnet_naming_rule.types_and_methods_should_be_pascal_case.style = pascal_case_style
+dotnet_naming_rule.pascal_case_style.capitalization = pascal_case
+
+# Use _camelCase for private fields
+dotnet_naming_rule.private_fields_prefix.severity = suggestion
+dotnet_naming_rule.private_fields_prefix.symbols = private_fields
+dotnet_naming_rule.private_fields_prefix.style = prefix_underscore_style
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+dotnet_naming_style.prefix_underscore_style.required_prefix = _
+dotnet_naming_style.prefix_underscore_style.capitalization = camel_case
+
+
+# React and Frontend settings
+[*.{js, jsx, ts, tsx, json, css}]
+
+# Use 2 spaces for better readability in nested React code
+indent_size = 2
+
