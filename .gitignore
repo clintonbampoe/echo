@@ -1,12 +1,44 @@
-# jetbrains boilerplate
-.idea
-# Default ignored files
+# IDE and Editor Files
+.idea/
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# JetBrains Specific
+idea/
 /shelf/
 /workspace.xml
-# Editor-based HTTP Client requests
 /httpRequests/
-# Ignored default folder with query files
 /queries/
-# Datasource local storage ignored files
 /dataSources/
 /dataSources.local.xml
+
+# .NET Build Output
+bin/
+obj/
+publish/
+
+# Node.js and React
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+dist/
+build/
+
+# Database and Environment
+*.db
+*.db-shm
+*.db-wal
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Operating System Files
+.DS_Store
+Thumbs.db
