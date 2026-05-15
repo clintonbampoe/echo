@@ -1,6 +1,7 @@
 # Database Schema
 
 This folder holds the schema definitions for the Echo database:
+
 - `echo_schema.dbml`
 - `echo_schema.dbdiagram`
 
@@ -12,9 +13,10 @@ The DBDiagram file stores a diagram-export version of the same schema.
 ## Viewing the schema in VS Code
 
 Install a DBML extension from the Extensions view:
-   - `DBML`
-   - `DBML Preview`
-   - I'd recommend this extension [DbDiagram](https://marketplace.visualstudio.com/items?itemName=dbdiagram.dbdiagram-vscode)
+
+- `DBML`
+- `DBML Preview`
+- I'd recommend this extension [DbDiagram](https://marketplace.visualstudio.com/items?itemName=dbdiagram.dbdiagram-vscode) cause that's the one I'm using
 
 ## How to inspect
 
@@ -29,4 +31,3 @@ Install a DBML extension from the Extensions view:
 - Update `echo_schema.dbml` for schema changes.
 - Save the file and refresh the preview.
 - Keep `echo_schema.dbdiagram` in sync if it is used as the exported diagram.
-
