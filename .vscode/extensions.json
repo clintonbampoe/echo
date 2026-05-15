@@ -1,0 +1,12 @@
+{
+    "recommendations" : [
+        "ms-dotnettools.csdevkit",
+        "ms-dotnettols.csharp",
+        "ms-dotnettools.vscode-dotnet-runtime",
+        "editorconfig.editorconfig",
+        "davidanson.vscode-markdownlint",
+        "dbdiagram.dbdiagram-vscode",
+        "ms-vsliveshare.vsliveshare"
+
+    ]
+}

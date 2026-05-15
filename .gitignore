@@ -39,6 +39,9 @@ build/
 .env.test.local
 .env.production.local
 
+# VS Code Specific
+*.lscache
+
 # Operating System Files
 .DS_Store
 Thumbs.db
