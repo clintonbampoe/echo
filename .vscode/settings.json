@@ -22,8 +22,8 @@
         "**/Thumbs.db": true,
 
         // Uncomment this to include build output folders
-        // "**/bin":true,
-        // "**/obj":true
+        "**/bin":true,
+        "**/obj":true
 
     },
 
