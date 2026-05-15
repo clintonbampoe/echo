@@ -1,0 +1,150 @@
+// Use DBML to define your database structure
+// Docs: https://dbml.dbdiagram.io/docs
+
+// Members
+Table members {
+  member_id integer [primary key, increment]
+  unique_id uuid [unique]
+  first_name varchar(64)
+  last_name varchar(64)
+  phone_number varchar(16)
+  joined_date date
+  is_active bool
+}
+
+
+// Organizations
+Table organizations {
+  organization_id integer [primary key, increment]
+  unique_id uuid [unique]
+  name varchar(64)
+  description varchar(256)
+  created_at date
+}
+
+Table organization_members {
+  member_id integer [ref: - members.member_id, not null]
+  organization_id integer [ref: - organizations.organization_id, not null]
+  role enum
+  joined_date date
+
+  indexes {
+    (member_id, organization_id) [pk]
+  }
+}
+
+
+// Attendance
+Table service_attendance{
+  attendance_id integer [primary key, increment]
+  unique_id uuid [unique]
+  member_id integer [ref: - members.member_id, not null]
+  service_type enum [not null]
+  status enum [not null]
+  check_in_time datetime
+}
+
+
+// Events
+Table events {
+  event_id integer [primary key]
+  unique_id uuid [unique]
+  title varchar(64) [not null]
+  start_date date
+  end_date date
+  start_time timestamp
+}
+
+Table event_participants {
+  member_id integer [ref: - members.member_id, not null]
+  event_id integer [ref: - events.event_id]
+  registration_date date
+  has_attended bool
+
+  indexes {
+    (member_id, event_id) [pk]
+  }
+}
+
+
+// Finances
+Table transactions {
+  transaction_id integer [primary key]
+  unique_id uuid [unique]
+  transaction_type enum [not null]
+  amount decimal
+  category_id integer [ref: - transaction_categories.category_id]
+  description varchar(256)
+}
+
+Table transaction_categories {
+  category_id integer [primary key]
+  name varchar(64)
+  category_type enum
+}
+
+
+// Tithe
+Table tithe {
+  tithe_id integer [primary key]
+  unique_id uuid [unique]
+  member_id integer [ref: - members.member_id, not null]
+  amount decimal [not null]
+  payment_method enum
+  collection_date date
+  forMonth enum [not null]
+  forYear integer [not null]
+  description varchar(256)
+}
+
+
+// Projects
+Table projects {
+  project_id integer [primary key]
+  unique_key uuid [unique]
+  title varchar(64) [not null]
+  target_amount decimal [not null]
+  status enum [not null]
+  start_date date [null]
+  end_date date [null]
+}
+
+Table project_contributions {
+  contribution_id integer [primary key]
+  project_id integer [ref: - projects.project_id, not null]
+  amount decimal [not null]
+  date date
+  payment_method enum
+}
+
+
+Table assets {
+  asset_id integer [primary key]
+  unique_id uuid [unique]
+  name varchar(64)
+  serial_number varchar(64) [null]
+  purchase_date date
+  purchase_cost decimal
+  current_value decimal
+  is_liquidated bool
+
+  // Whenever an asset is liquidated(or is sold),
+  // it's current value becomes true, and the items value is added to a sold assets category in the income stream in Finances
+}
+
+
+/*
+  REPORTING
+  This table is still a work in progress, it's here because I don't want to forget it and do it again later
+*/
+Table report_snapshots {
+  report_id integer [primary key, increment]
+  unique_id uuid [unique]
+  report_type enum [not null]
+  generated_date datetime
+  status enum
+  frequency enum [not null]
+  period_key varchar (64)
+  data_json jsonb
+
+}
