@@ -1,0 +1,34 @@
+{
+    "editor.formatOnSave" : true,
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": "explicit",
+        "source.fixAll.eslint": "explicit"
+    },
+
+    "csharp.format.enable":true,
+    "dotnet.completion.showCompletionItemsFromUnimportedNamespaces": true,
+    "dotnet.unitTestDebuggingOptions": {
+        "stopAtEntry": false
+    },
+
+    "files.insertFinalNewline": true,
+    "files.trimTrailingWhitespace": true,
+
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/.DS_Store": true,
+        "**/Thumbs.db": true,
+
+        // Uncomment this to include build output folders
+        // "**/bin":true,
+        // "**/obj":true
+
+    },
+
+    "search.exclude": {
+        "**/bin":true,
+        "**/obj":true
+    }
+}
