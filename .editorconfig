@@ -10,7 +10,7 @@ charset = utf-8
 trim_trailing_whitespace = true
 insert_final_newline = true
 
-C# settings for the Web API and Core logic 
+# C# settings for the Web API and Core logic
 [*.cs]
 # Standard C# indentation
 indent_size = 4
@@ -37,3 +37,6 @@ dotnet_naming_style.prefix_underscore_style.capitalization = camel_case
 # Use 2 spaces for better readability in nested React code
 indent_size = 2
 
+# Settings for DBML files
+[*.dbml]
+indent_size = 2
