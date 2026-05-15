@@ -1,14 +1,295 @@
 {
   "version": "2.0.0",
   "darkMode": true,
-  "gridEnabling": false,
+  "gridEnabling": true,
   "currentViewName": null,
   "defaultView": {
     "detailLevel": "All",
-    "tablePositions": [],
+    "tablePositions": [
+      {
+        "name": "members",
+        "schemaName": "public",
+        "x": 1424,
+        "y": 608
+      },
+      {
+        "name": "organizations",
+        "schemaName": "public",
+        "x": 824,
+        "y": 424
+      },
+      {
+        "name": "organization_members",
+        "schemaName": "public",
+        "x": 368,
+        "y": 568
+      },
+      {
+        "name": "service_attendance",
+        "schemaName": "public",
+        "x": 128,
+        "y": 872
+      },
+      {
+        "name": "events",
+        "schemaName": "public",
+        "x": 864,
+        "y": 1248
+      },
+      {
+        "name": "transactions",
+        "schemaName": "public",
+        "x": 1696,
+        "y": 120
+      },
+      {
+        "name": "transaction_categories",
+        "schemaName": "public",
+        "x": 1416,
+        "y": 48
+      },
+      {
+        "name": "tithe",
+        "schemaName": "public",
+        "x": 272,
+        "y": 1264
+      },
+      {
+        "name": "projects",
+        "schemaName": "public",
+        "x": 552,
+        "y": 48
+      },
+      {
+        "name": "project_contributions",
+        "schemaName": "public",
+        "x": 48,
+        "y": 152
+      },
+      {
+        "name": "assets",
+        "schemaName": "public",
+        "x": 2176,
+        "y": 48
+      },
+      {
+        "name": "report_snapshots",
+        "schemaName": "public",
+        "x": 1944,
+        "y": 48
+      },
+      {
+        "name": "event_registrations",
+        "schemaName": "public",
+        "x": 648,
+        "y": 736
+      },
+      {
+        "name": "event_attendees",
+        "schemaName": "public",
+        "x": 512,
+        "y": 1056
+      }
+    ],
     "tableGroupCollapseStates": [],
     "stickyNoteLayouts": [],
-    "referencePaths": []
+    "referencePaths": [
+      {
+        "firstFieldNames": [
+          "member_id"
+        ],
+        "firstTableName": "members",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "member_id"
+        ],
+        "secondTableName": "organization_members",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "organization_id"
+        ],
+        "firstTableName": "organizations",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "organization_id"
+        ],
+        "secondTableName": "organization_members",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "member_id"
+        ],
+        "firstTableName": "members",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "member_id"
+        ],
+        "secondTableName": "service_attendance",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "category_id"
+        ],
+        "firstTableName": "transaction_categories",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "category_id"
+        ],
+        "secondTableName": "transactions",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "member_id"
+        ],
+        "firstTableName": "members",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "member_id"
+        ],
+        "secondTableName": "tithe",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "project_id"
+        ],
+        "firstTableName": "projects",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "project_id"
+        ],
+        "secondTableName": "project_contributions",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "member_id"
+        ],
+        "firstTableName": "members",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "project_manager_id"
+        ],
+        "secondTableName": "projects",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "member_id"
+        ],
+        "firstTableName": "members",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "organizer_id"
+        ],
+        "secondTableName": "events",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "organization_id"
+        ],
+        "firstTableName": "organizations",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "organization_id"
+        ],
+        "secondTableName": "events",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "member_id"
+        ],
+        "firstTableName": "members",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "member_id"
+        ],
+        "secondTableName": "event_registrations",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "event_id"
+        ],
+        "firstTableName": "events",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "event_id"
+        ],
+        "secondTableName": "event_registrations",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "member_id"
+        ],
+        "firstTableName": "members",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "member_id"
+        ],
+        "secondTableName": "event_attendees",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      },
+      {
+        "firstFieldNames": [
+          "event_id"
+        ],
+        "firstTableName": "events",
+        "firstSchemaName": "public",
+        "firstRelation": "1",
+        "secondFieldNames": [
+          "event_id"
+        ],
+        "secondTableName": "event_attendees",
+        "secondSchemaName": "public",
+        "secondRelation": "1",
+        "checkPoints": []
+      }
+    ]
   },
   "views": {}
 }
