@@ -54,7 +54,6 @@ Table service_attendance{
   member_id integer [ref: - members.member_id, null]
   for_date date
   service_type enum [not null]
-  status enum [not null]
   role enum
   check_in_time datetime
 }
@@ -79,18 +78,21 @@ Table events {
 Table event_attendees {
   member_id integer [ref: - members.member_id, not null]
   event_id integer [ref: - events.event_id, not null]
-  check_in_time datetime
+  check_in_time timestamp
   indexes {
     (member_id, event_id) [pk]
   }
 }
 
 Table event_registrations {
-  registration_id integer [primary key]
   unique_id uuid [unique]
   member_id integer [ref: - members.member_id, not null]
   event_id integer [ref: - events.event_id, not null]
   registration_date date
+
+  indexes {
+  (member_id, event_id) [pk]
+  }
 }
 
 
@@ -106,6 +108,7 @@ Table transactions {
 
 Table transaction_categories {
   category_id integer [primary key]
+  unique_id uuid [unique]
   name varchar(64)
   category_type enum
 }
@@ -129,14 +132,20 @@ Table tithe {
 Table projects {
   project_id integer [primary key]
   unique_key uuid [unique]
+  category_id integer [ref: - project_categories.category_id, null]
+  project_manager_id integer [ref: - members.member_id, not null]
   project_title varchar(64) [not null]
-  category enum [null]
   target_amount decimal [not null]
   status enum [not null]
   start_date date [null]
   end_date date [null]
-  project_manager_id integer [ref: - members.member_id, not null]
   description varchar(256)
+}
+
+Table project_categories {
+  category_id integer [primary key]
+  unique_id uuid [unique]
+  name varchar(64) [not null]
 }
 
 Table project_contributions {
@@ -155,7 +164,7 @@ Table assets {
   unique_id uuid [unique]
   name varchar(64)
   serial_number varchar(64) [null]
-  category enum
+  category_id integer [ref: - asset_categories.category_id, null]
   purchase_date date
   purchase_cost decimal
   current_value decimal
@@ -166,6 +175,12 @@ Table assets {
   // when an asset is liquidated, we can set the current_value to 0 and status to liquidated
   // we then add a new income to the Assets Sold category in the transactions table with the amount equal
   // to the current_value of the asset
+}
+
+Table asset_categories{
+  category_id integer [primary key]
+  unique_id uuid [unique]
+  category_name varchar(64) [not null]
 }
 
 
