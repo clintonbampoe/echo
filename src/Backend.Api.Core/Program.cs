@@ -7,10 +7,10 @@ var template = GetConnectionStringTemplate();
 var (username, password) = GetLocalDatabaseCredentials();
 var connectionString = BuildConnectionStringFromTemplate(template);
 
-builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(connectionString));
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
-
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -20,12 +20,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();
+
 
 string? GetConnectionStringTemplate() =>
     builder.Configuration.GetConnectionString("DefaultConnection");
