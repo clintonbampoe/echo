@@ -7,8 +7,21 @@ Table members {
   unique_id uuid [unique]
   first_name varchar(64)
   last_name varchar(64)
+  other_names varchar(64)
+  email varchar(64) [unique]
   phone_number varchar(16)
+  date_of_birth date
   joined_date date
+  gender enum
+  residential_address varchar(256)
+  city varchar(64)
+  hometown varchar(64)
+  region enum
+  gps_address varchar(256)
+  marital_status enum
+  next_of_kin_name varchar(128)
+  emergency_contact_name varchar(128)
+  emergency_contact_phone varchar(16)
   is_active bool
 }
 
@@ -38,9 +51,10 @@ Table organization_members {
 Table service_attendance{
   attendance_id integer [primary key, increment]
   unique_id uuid [unique]
-  member_id integer [ref: - members.member_id, not null]
+  member_id integer [ref: - members.member_id, null]
+  for_date date
   service_type enum [not null]
-  status enum [not null]
+  role enum
   check_in_time datetime
 }
 
@@ -52,17 +66,32 @@ Table events {
   title varchar(64) [not null]
   start_date date
   end_date date
-  start_time timestamp
+  start_time timestamp [null]
+  end_time timestamp [null]
+  location varchar(256) [null]
+  organization_id integer [ref: - organizations.organization_id, null]
+  organizer_id integer [ref: - members.member_id, null]
+  capacity integer [null]
+  description varchar(256) [null]
 }
 
-Table event_participants {
+Table event_attendees {
   member_id integer [ref: - members.member_id, not null]
-  event_id integer [ref: - events.event_id]
-  registration_date date
-  has_attended bool
-
+  event_id integer [ref: - events.event_id, not null]
+  check_in_time timestamp
   indexes {
     (member_id, event_id) [pk]
+  }
+}
+
+Table event_registrations {
+  unique_id uuid [unique]
+  member_id integer [ref: - members.member_id, not null]
+  event_id integer [ref: - events.event_id, not null]
+  registration_date date
+
+  indexes {
+  (member_id, event_id) [pk]
   }
 }
 
@@ -79,6 +108,7 @@ Table transactions {
 
 Table transaction_categories {
   category_id integer [primary key]
+  unique_id uuid [unique]
   name varchar(64)
   category_type enum
 }
@@ -91,7 +121,7 @@ Table tithe {
   member_id integer [ref: - members.member_id, not null]
   amount decimal [not null]
   payment_method enum
-  collection_date date
+  collection_date date [not null]
   forMonth enum [not null]
   forYear integer [not null]
   description varchar(256)
@@ -102,19 +132,30 @@ Table tithe {
 Table projects {
   project_id integer [primary key]
   unique_key uuid [unique]
-  title varchar(64) [not null]
+  category_id integer [ref: - project_categories.category_id, null]
+  project_manager_id integer [ref: - members.member_id, not null]
+  project_title varchar(64) [not null]
   target_amount decimal [not null]
   status enum [not null]
   start_date date [null]
   end_date date [null]
+  description varchar(256)
+}
+
+Table project_categories {
+  category_id integer [primary key]
+  unique_id uuid [unique]
+  name varchar(64) [not null]
 }
 
 Table project_contributions {
   contribution_id integer [primary key]
+  unique_id uuid [unique]
   project_id integer [ref: - projects.project_id, not null]
   amount decimal [not null]
-  date date
+  date_contributed date
   payment_method enum
+  description varchar(256)
 }
 
 
@@ -123,13 +164,23 @@ Table assets {
   unique_id uuid [unique]
   name varchar(64)
   serial_number varchar(64) [null]
+  category_id integer [ref: - asset_categories.category_id, null]
   purchase_date date
   purchase_cost decimal
   current_value decimal
-  is_liquidated bool
+  status enum
+  description varchar(256)
 
-  // Whenever an asset is liquidated(or is sold),
-  // it's current value becomes true, and the items value is added to a sold assets category in the income stream in Finances
+  // status can be: in_use, in_storage, under_maintenance, liquidated
+  // when an asset is liquidated, we can set the current_value to 0 and status to liquidated
+  // we then add a new income to the Assets Sold category in the transactions table with the amount equal
+  // to the current_value of the asset
+}
+
+Table asset_categories{
+  category_id integer [primary key]
+  unique_id uuid [unique]
+  category_name varchar(64) [not null]
 }
 
 
