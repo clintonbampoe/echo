@@ -1,5 +1,6 @@
 import React from 'react';
 import { useLayout } from '../context/LayoutContext';
+import '../styles/Topbar.css';
 
 const Topbar: React.FC = () => {
   const { title, ctas } = useLayout();
@@ -22,22 +23,22 @@ const Topbar: React.FC = () => {
   };
 
   return (
-    <header style={styles.topbar}>
-      <h2 style={styles.title}>{title}</h2>
+    <header className="topbar">
+      <h2 className="topbar-title">{title}</h2>
       
-      <div style={styles.rightSection}>
+      <div className="right-section">
         {ctas.map((cta, index) => {
           if (cta.type === 'search') {
             return (
-              <div key={index} style={styles.searchContainer}>
-                <div style={styles.searchIcon}>{renderIcon('search')}</div>
-                <input type="text" placeholder={cta.placeholder || "Search..."} style={styles.searchInput} />
+              <div key={index} className="search-container">
+                <div className="search-icon">{renderIcon('search')}</div>
+                <input type="text" placeholder={cta.placeholder || "Search..."} className="search-input" />
               </div>
             );
           }
           
           if (cta.type === 'avatar') {
-            return <div key={index} style={styles.userCircle}></div>;
+            return <div key={index} className="user-circle"></div>;
           }
 
           if (cta.type === 'button' || cta.type === 'dropdown') {
@@ -48,10 +49,7 @@ const Topbar: React.FC = () => {
               <button 
                 key={index} 
                 onClick={cta.onClick}
-                style={{
-                  ...styles.buttonBase,
-                  ...(isPrimary ? styles.buttonPrimary : styles.buttonSecondary),
-                }}
+                className={`button-base ${isPrimary ? 'button-primary' : 'button-secondary'}`}
               >
                 {renderIcon(cta.icon)}
                 {cta.label}
@@ -69,78 +67,6 @@ const Topbar: React.FC = () => {
       </div>
     </header>
   );
-};
-
-const styles: { [key: string]: React.CSSProperties } = {
-  topbar: {
-    height: 'var(--topbar-height)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: '0 40px',
-    backgroundColor: 'white',
-    borderBottom: '1px solid var(--border)',
-    position: 'sticky',
-    top: 0,
-    zIndex: 90,
-  },
-  title: {
-    fontSize: '24px',
-    fontWeight: '700',
-    color: 'black',
-  },
-  rightSection: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-  },
-  searchContainer: {
-    position: 'relative',
-    display: 'flex',
-    alignItems: 'center',
-  },
-  searchIcon: {
-    position: 'absolute',
-    left: '12px',
-    color: 'var(--text-muted)',
-    display: 'flex',
-  },
-  searchInput: {
-    padding: '10px 12px 10px 36px',
-    borderRadius: '8px',
-    border: '1px solid var(--border)',
-    backgroundColor: '#ffffff',
-    fontSize: '13px',
-    width: '240px',
-    color: 'var(--text-main)',
-  },
-  userCircle: {
-    width: '36px',
-    height: '36px',
-    backgroundColor: '#e5e5ea',
-    borderRadius: '50%',
-    marginLeft: '8px',
-  },
-  buttonBase: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    padding: '10px 18px',
-    borderRadius: '8px',
-    fontSize: '13px',
-    fontWeight: '600',
-    border: 'none',
-    transition: 'all 0.2s ease',
-  },
-  buttonPrimary: {
-    backgroundColor: 'black',
-    color: 'white',
-  },
-  buttonSecondary: {
-    backgroundColor: 'transparent',
-    color: 'black',
-    border: '1px solid var(--border)',
-  },
 };
 
 export default Topbar;

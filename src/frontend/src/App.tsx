@@ -1,73 +1,56 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import Dashboard from './components/Dashboard'
 import Login from './components/Login'
 import Sidebar from './components/Sidebar'
 import Topbar from './components/Topbar'
-import Dashboard from './components/Dashboard'
 import { LayoutProvider, useLayout } from './context/LayoutContext'
+import './styles/App.css'
 
 const PlaceholderTab: React.FC<{ name: string }> = ({ name }) => {
-  const { setTitle, setCtas } = useLayout();
-  
-  useEffect(() => {
-    setTitle(name.charAt(0).toUpperCase() + name.slice(1));
-    setCtas([
-      { type: 'search', placeholder: `Search ${name}...` },
-      { type: 'avatar' }
-    ]);
-  }, [name, setTitle, setCtas]);
+    const { setTitle, setCtas } = useLayout();
 
-  return (
-    <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-muted)' }}>
-      <h3>{name.charAt(0).toUpperCase() + name.slice(1)} content coming soon...</h3>
-    </div>
-  );
+    useEffect(() => {
+        setTitle(name.charAt(0).toUpperCase() + name.slice(1));
+        setCtas([
+            { type: 'search', placeholder: `Search ${name}...` },
+            { type: 'avatar' }
+        ]);
+    }, [name, setTitle, setCtas]);
+
+    return (
+        <div className="placeholder-container">
+            <h3 className="placeholder-title">{name} content coming soon...</h3>
+        </div>
+    );
 };
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [activeTab, setActiveTab] = useState('dashboard')
+    const [isLoggedIn, setIsLoggedIn] = useState(false)
+    const [activeTab, setActiveTab] = useState('dashboard')
 
-  if (!isLoggedIn) {
+    if (!isLoggedIn) {
+        return (
+            <main>
+                <Login onLogin={() => setIsLoggedIn(true)} />
+            </main>
+        )
+    }
+
     return (
-      <main>
-        <Login onLogin={() => setIsLoggedIn(true)} />
-      </main>
+        <LayoutProvider>
+            <div className="app-layout">
+                <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
+                <div className="main-content">
+                    <Topbar />
+                    <div className="page-content">
+                        {activeTab === 'dashboard' && <Dashboard />}
+                        {activeTab !== 'dashboard' && <PlaceholderTab name={activeTab} />}
+                    </div>
+                </div>
+            </div>
+        </LayoutProvider>
     )
-  }
-
-  return (
-    <LayoutProvider>
-      <div style={styles.appLayout}>
-        <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
-        <div style={styles.mainContent}>
-          <Topbar />
-          <div style={styles.pageContent}>
-            {activeTab === 'dashboard' && <Dashboard />}
-            {activeTab !== 'dashboard' && <PlaceholderTab name={activeTab} />}
-          </div>
-        </div>
-      </div>
-    </LayoutProvider>
-  )
 }
-
-const styles: { [key: string]: React.CSSProperties } = {
-  appLayout: {
-    display: 'flex',
-    minHeight: '100vh',
-    width: '100%',
-  },
-  mainContent: {
-    flex: 1,
-    marginLeft: 'var(--sidebar-width)',
-    display: 'flex',
-    flexDirection: 'column',
-    backgroundColor: 'var(--bg-main)',
-  },
-  pageContent: {
-    flex: 1,
-  },
-};
 
 export default App
 

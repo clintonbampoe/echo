@@ -1,0 +1,111 @@
+.sidebar {
+  width: var(--sidebar-width);
+  height: 100vh;
+  background-color: var(--bg-sidebar);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 100;
+}
+
+.sidebar-logo {
+  padding: 32px 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-box {
+  width: 32px;
+  height: 32px;
+  background-color: black;
+  border-radius: 6px;
+}
+
+.logo-text {
+  font-size: 20px;
+  font-weight: 700;
+  color: black;
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 0 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  width: 100%;
+  color: var(--text-muted);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.nav-item:hover {
+  background-color: #f2f2f7;
+}
+
+.nav-item-active {
+  background-color: #575757;
+  color: white;
+}
+
+.icon-box {
+  width: 18px;
+  height: 18px;
+  background-color: #d1d1d6;
+  border-radius: 4px;
+}
+
+.icon-box-active {
+  background-color: white;
+  opacity: 0.9;
+}
+
+.nav-label {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.nav-label-active {
+  color: white;
+}
+
+.sidebar-footer {
+  padding: 24px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.footer-avatar {
+  width: 36px;
+  height: 36px;
+  background-color: #e5e5ea;
+  border-radius: 50%;
+}
+
+.footer-user-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.footer-user-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: black;
+}

@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { useLayout } from '../context/LayoutContext';
+import '../styles/Dashboard.css';
 
 const Dashboard: React.FC = () => {
   const { setTitle, setCtas } = useLayout();
@@ -27,13 +28,13 @@ const Dashboard: React.FC = () => {
   ];
 
   return (
-    <div style={styles.container}>
-      <div style={styles.statsGrid}>
+    <div className="dashboard-container">
+      <div className="stats-grid">
         {stats.map((stat, idx) => (
-          <div key={idx} style={styles.statCard}>
-            <span style={styles.statLabel}>{stat.label}</span>
-            <div style={styles.statValue}>{stat.value}</div>
-            <div style={{ ...styles.statTrend, color: stat.color }}>
+          <div key={idx} className="stat-card">
+            <span className="stat-label">{stat.label}</span>
+            <div className="stat-value">{stat.value}</div>
+            <div className="stat-trend" style={{ color: stat.color }}>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '4px' }}>
                 <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
                 <polyline points="17 6 23 6 23 12"></polyline>
@@ -44,26 +45,26 @@ const Dashboard: React.FC = () => {
         ))}
       </div>
 
-      <div style={styles.dashboardGrid}>
+      <div className="dashboard-grid">
         {/* Financial Overview Mockup */}
-        <div style={styles.mainCard}>
-          <div style={styles.cardHeader}>
-            <h3 style={styles.cardTitle}>Financial Overview</h3>
-            <div style={styles.cardActions}>
-              <button style={styles.ghostButton}>This Year</button>
+        <div className="main-card">
+          <div className="card-header">
+            <h3 className="card-title">Financial Overview</h3>
+            <div className="card-actions">
+              <button className="ghost-button">This Year</button>
             </div>
           </div>
-          <div style={styles.chartContainer}>
-            <div style={styles.chartYAxis}>
+          <div className="chart-container">
+            <div className="chart-y-axis">
               <span>$50k</span>
               <span>$25k</span>
               <span>0</span>
             </div>
-            <div style={styles.chartBars}>
+            <div className="chart-bars">
               {[60, 40, 85, 70, 95, 50, 75, 90, 65, 80, 55, 70].map((height, i) => (
-                <div key={i} style={styles.chartBarWrapper}>
-                  <div style={{ ...styles.chartBar, height: `${height}%` }}></div>
-                  <span style={styles.chartLabel}>{['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'][i]}</span>
+                <div key={i} className="chart-bar-wrapper">
+                  <div className="chart-bar" style={{ height: `${height}%` }}></div>
+                  <span className="chart-label">{['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'][i]}</span>
                 </div>
               ))}
             </div>
@@ -71,186 +72,28 @@ const Dashboard: React.FC = () => {
         </div>
 
         {/* Recent Activity */}
-        <div style={styles.sideCard}>
-          <div style={styles.cardHeader}>
-            <h3 style={styles.cardTitle}>Recent Activity</h3>
+        <div className="side-card">
+          <div className="card-header">
+            <h3 className="card-title">Recent Activity</h3>
           </div>
-          <div style={styles.activityList}>
+          <div className="activity-list">
             {recentActivity.map(activity => (
-              <div key={activity.id} style={styles.activityItem}>
-                <div style={styles.activityAvatar}></div>
-                <div style={styles.activityContent}>
-                  <div style={styles.activityText}>
+              <div key={activity.id} className="activity-item">
+                <div className="activity-avatar"></div>
+                <div className="activity-content">
+                  <div className="activity-text">
                     <strong>{activity.user}</strong> {activity.action}
                   </div>
-                  <div style={styles.activityTime}>{activity.time}</div>
+                  <div className="activity-time">{activity.time}</div>
                 </div>
               </div>
             ))}
           </div>
-          <button style={styles.viewAllButton}>View all activity</button>
+          <button className="view-all-button">View all activity</button>
         </div>
       </div>
     </div>
   );
-};
-
-const styles: { [key: string]: React.CSSProperties } = {
-  container: {
-    padding: '32px 40px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '32px',
-  },
-  statsGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
-    gap: '24px',
-  },
-  statCard: {
-    backgroundColor: 'white',
-    padding: '24px',
-    borderRadius: '16px',
-    border: '1px solid var(--border)',
-    boxShadow: '0 1px 3px rgba(0,0,0,0.02)',
-  },
-  statLabel: {
-    fontSize: '13px',
-    fontWeight: '500',
-    color: 'var(--text-muted)',
-    display: 'block',
-    marginBottom: '12px',
-  },
-  statValue: {
-    fontSize: '28px',
-    fontWeight: '700',
-    color: 'black',
-    marginBottom: '8px',
-  },
-  statTrend: {
-    fontSize: '12px',
-    fontWeight: '600',
-    display: 'flex',
-    alignItems: 'center',
-  },
-  dashboardGrid: {
-    display: 'grid',
-    gridTemplateColumns: '2fr 1fr',
-    gap: '24px',
-  },
-  mainCard: {
-    backgroundColor: 'white',
-    borderRadius: '16px',
-    border: '1px solid var(--border)',
-    padding: '24px',
-  },
-  sideCard: {
-    backgroundColor: 'white',
-    borderRadius: '16px',
-    border: '1px solid var(--border)',
-    padding: '24px',
-    display: 'flex',
-    flexDirection: 'column',
-  },
-  cardHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '24px',
-  },
-  cardTitle: {
-    fontSize: '18px',
-    fontWeight: '700',
-  },
-  cardActions: {},
-  ghostButton: {
-    backgroundColor: 'transparent',
-    border: '1px solid var(--border)',
-    borderRadius: '6px',
-    padding: '6px 12px',
-    fontSize: '12px',
-    fontWeight: '600',
-  },
-  chartContainer: {
-    height: '240px',
-    display: 'flex',
-    gap: '16px',
-    paddingTop: '20px',
-  },
-  chartYAxis: {
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'space-between',
-    color: 'var(--text-muted)',
-    fontSize: '11px',
-    paddingBottom: '20px',
-  },
-  chartBars: {
-    flex: 1,
-    display: 'flex',
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-    gap: '8px',
-  },
-  chartBarWrapper: {
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    height: '100%',
-    justifyContent: 'flex-end',
-  },
-  chartBar: {
-    width: '100%',
-    maxWidth: '32px',
-    backgroundColor: 'black',
-    borderRadius: '4px 4px 0 0',
-    transition: 'height 0.3s ease',
-  },
-  chartLabel: {
-    marginTop: '8px',
-    fontSize: '11px',
-    color: 'var(--text-muted)',
-  },
-  activityList: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '20px',
-    flex: 1,
-  },
-  activityItem: {
-    display: 'flex',
-    gap: '12px',
-  },
-  activityAvatar: {
-    width: '32px',
-    height: '32px',
-    backgroundColor: '#f2f2f7',
-    borderRadius: '50%',
-    flexShrink: 0,
-  },
-  activityContent: {
-    fontSize: '13px',
-  },
-  activityText: {
-    color: 'var(--text-main)',
-    marginBottom: '2px',
-  },
-  activityTime: {
-    color: 'var(--text-muted)',
-    fontSize: '11px',
-  },
-  viewAllButton: {
-    marginTop: '24px',
-    backgroundColor: 'transparent',
-    border: 'none',
-    color: 'var(--text-muted)',
-    fontSize: '13px',
-    fontWeight: '600',
-    textAlign: 'center',
-    width: '100%',
-    padding: '8px',
-  },
 };
 
 export default Dashboard;

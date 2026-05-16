@@ -1,0 +1,27 @@
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.main-content {
+  flex: 1;
+  margin-left: var(--sidebar-width);
+  display: flex;
+  flex-direction: column;
+  backgroundColor: var(--bg-main);
+}
+
+.page-content {
+  flex: 1;
+}
+
+.placeholder-container {
+  padding: 40px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.placeholder-title {
+  text-transform: capitalize;
+}
