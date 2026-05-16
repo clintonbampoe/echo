@@ -1,0 +1,25 @@
+using Backend.Api.Core.Entities;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
+namespace Backend.Api.Core.Data.EntityConfigurations;
+
+public class ProjectConfiguration : IEntityTypeConfiguration<Project>
+{
+    public void Configure(EntityTypeBuilder<Project> builder)
+    {
+        builder.HasKey(pr => pr.ProjectId);
+        builder.HasAlternateKey(pr => pr.UniqueId);
+        builder.HasIndex(pr => pr.Title);
+
+        builder.HasOne<Member>()
+            .WithMany()
+            .HasForeignKey(pr => pr.ProjectManagerId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder.HasOne<ProjectCategory>()
+            .WithMany()
+            .HasForeignKey(pr => pr.CategoryId)
+            .OnDelete(DeleteBehavior.SetNull);
+    }
+}
