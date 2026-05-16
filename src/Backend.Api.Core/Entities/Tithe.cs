@@ -4,13 +4,13 @@ namespace Backend.Api.Core.Entities;
 
 public class Tithe
 {
-    public int TitheId { get; }
-    public Guid UniqueId { get; }
-    public int MemberId { get; }
-    public int Decimal { get; }
-    public PaymentMethod PaymentMethod { get; }
-    public DateOnly CollectionDate { get; }
-    public MonthOfYear ForMonthOfYear { get; }
-    public int ForYear { get; }
-    public string Description { get; }
+    public int TitheId { get; init; }
+    public Guid UniqueId { get; init; }
+    public int MemberId { get; init; }
+    public int Decimal { get; init; }
+    public PaymentMethod PaymentMethod { get; init; }
+    public DateOnly CollectionDate { get; init; }
+    public MonthOfYear ForMonthOfYear { get; init; }
+    public int ForYear { get; init; }
+    public string Description { get; init; } = string.Empty;
 }

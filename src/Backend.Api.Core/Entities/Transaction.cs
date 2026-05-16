@@ -4,10 +4,10 @@ namespace Backend.Api.Core.Entities;
 
 public class Transaction
 {
-    public int TransactionId { get; }
-    public Guid UniqueId { get; }
-    public TransactionType TransactionType { get; }
-    public decimal amount { get; }
-    public int CategoryId { get; }
-    public string Description { get; }
+    public int TransactionId { get; init; }
+    public Guid UniqueId { get; init; }
+    public TransactionType TransactionType { get; init; }
+    public decimal Amount { get; init; }
+    public int CategoryId { get; init; }
+    public string Description { get; init; } = string.Empty;
 }
