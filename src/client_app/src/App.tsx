@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Dashboard from './components/Dashboard'
 import Login from './components/Login'
 import Sidebar from './components/Sidebar'
 import Topbar from './components/Topbar'
 import { LayoutProvider, useLayout } from './context/LayoutContext'
+import { AuthProvider, useAuth } from './context/AuthContext'
 import './styles/App.css'
 
 const PlaceholderTab: React.FC<{ name: string }> = ({ name }) => {
@@ -24,16 +25,24 @@ const PlaceholderTab: React.FC<{ name: string }> = ({ name }) => {
     );
 };
 
-function App() {
-    const [isLoggedIn, setIsLoggedIn] = useState(false)
-    const [activeTab, setActiveTab] = useState('dashboard')
+const AppContent: React.FC = () => {
+    const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
+    const [activeTab, setActiveTab] = useState('dashboard');
 
-    if (!isLoggedIn) {
+    if (isAuthLoading) {
+        return (
+            <div className="loading-screen">
+                <p>Loading...</p>
+            </div>
+        );
+    }
+
+    if (!isAuthenticated) {
         return (
             <main>
-                <Login onLogin={() => setIsLoggedIn(true)} />
+                <Login />
             </main>
-        )
+        );
     }
 
     return (
@@ -49,8 +58,18 @@ function App() {
                 </div>
             </div>
         </LayoutProvider>
-    )
+    );
+};
+
+function App() {
+    return (
+        <AuthProvider>
+            <AppContent />
+        </AuthProvider>
+    );
 }
 
-export default App
+export default App;
+
+
 

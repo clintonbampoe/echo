@@ -2,26 +2,41 @@
 
 Thank you for your interest in contributing to Echo. To maintain a clean and efficient development process, please follow these guidelines.
 
+## Project Tracking
+
+All project management and task tracking is automated so that devs can focus on writing quality code. Please read the following text below carefully and minimize the time spent on administrative tasks. Pushing your branch and managing your draft pull requests will handle all card movement on the board automatically. Hence, please read the text below carefully, as understanding it reduces the amount of work drastically.
+Thank you.
+
+## Getting Started With Linear
+
+We use Linear to manage our backlog and assign work. Before writing any code, locate your assigned issue in Linear to check its point estimation and copy the pre-formatted branch name using `Ctrl + Shift + .`.
+
+Creating your branch locally with this exact name connects your terminal directly to our tracking system.
+
 ## Development Workflow
 
-The project follows a standard branching and pull request model:
+Our development loop relies on GitHub Draft Pull Requests to define the scope of work early and prevent conflicting architectural changes.
 
-- **Branching:** Create a new branch for every feature or bug fix. Give your branch a descriptive name that reflects the task.  
+1. Create your local branch from main using the copied Linear name.
+2. Make an initial setup commit with your basic file structure and push it to GitHub.
+3. Open a Draft Pull Request on GitHub instead of a standard one. This signals that work is underway and automatically moves your Linear card to In Progress.
+4. Use Markdown checkboxes in the pull request description to outline your technical plan and include `Closes {Identifier}-{Number}` at the bottom.
+5. Push your commits regularly as you work. Each push updates the draft automatically.
+6. Check off your description boxes as you complete parts of the task.
+7. Click Ready for Review at the bottom of the GitHub page once all unit tests pass. This alerts your teammate for a final code review and blocks accidental merges until approval.
 
-- **Commits:** Write clear and concise commit messages that explain what changes were made and why.  
-
-- **Pull Requests:** Once your work is ready, submit a pull request to the main branch. Provide a brief description of your changes and reference any related issues.  
+Merging the finalized pull request will automatically close the linked Linear issue.
+NB: For the issue identifiers in Linear, just use a **four letter name that is easily identifiable**, I use CLNT-{number}. It's just a convenient way for us to know who is working on what.
 
 ## Code Standards
 
-To keep the codebase consistent, please adhere to these practices:  
+To keep the codebase consistent, please adhere to these practices:
 
-- **C# and .NET:** Follow standard C# naming conventions and use asynchoronous programming patterns where applicable.  
-
-- **React:** Use functional components and ensure **the frontend logic is separated from the styling.**
-
-- **Database:** Any changes to the database schema must be handled through Entity Framework Core migrations. Also make sure to update the ERD diagram for the database to reflect the schema.  
+* Follow the established architectural conventions, naming styles, and patterns of the repository.
+* Keep logic decoupled to ensure business rules, user interfaces, and data access remain separate.
+* **Update all technical documentation**, schemas, and diagrams immediately when making structural changes to keep team mates up to date *(We can't read your mind)*.
+* Write corresponding unit tests for all new logic to prevent regressions.
 
 ## Reporting Issues
 
-If you find a bug or have a suggestion for a new feature, please open an issue on the repo. **Provide enough detail** so the problem can be reproduced or the suggestion can be evaluated effectively.  
+If you find a bug or have a suggestion for a new feature, open an issue in Linear. Provide enough detailed context so the problem can be reproduced or evaluated effectively.
