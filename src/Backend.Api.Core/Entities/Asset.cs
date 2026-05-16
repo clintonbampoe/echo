@@ -1,17 +1,18 @@
+using System.ComponentModel.DataAnnotations;
 using Backend.Api.Core.Enums;
 
 namespace Backend.Api.Core.Entities;
 
 public class Asset
 {
-    public int AssetId { get; }
-    public Guid UniqueId { get; }
-    public string Name { get; }
-    public string SerialNumber { get; }
-    public int CategoryId { get; }
-    public DateOnly PurchaseDate { get; }
-    public decimal PurchaseCost { get; }
-    public decimal CurrentValue { get; }
-    public AssetStatus Status { get; }
-    public string Description { get; }
+    public int AssetId { get; init; }
+    public Guid UniqueId { get; init; }
+    public string Name { get; init; } = string.Empty;
+    public string SerialNumber { get; init; } = string.Empty;
+    public int CategoryId { get; init; }
+    public DateOnly PurchaseDate { get; init; }
+    public decimal PurchaseCost { get; init; }
+    public decimal CurrentValue { get; init; }
+    public AssetStatus Status { get; init; }
+    public string Description { get; init; } = string.Empty;
 }

@@ -4,8 +4,8 @@ namespace Backend.Api.Core.Entities;
 
 public class TransactionCategory
 {
-    public int CategoryId { get; }
-    public Guid UniqueId { get; }
-    public string Name { get; }
-    public TransactionType CategoryType { get; }
+    public int CategoryId { get; init; }
+    public Guid UniqueId { get; init; }
+    public string Name { get; init; } = string.Empty;
+    public TransactionType CategoryType { get; init; }
 }

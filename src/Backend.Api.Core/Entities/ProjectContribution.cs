@@ -4,11 +4,11 @@ namespace Backend.Api.Core.Entities;
 
 public class ProjectContribution
 {
-    public int ContributionId { get; }
-    public Guid UniqueId { get; }
-    public int ProjectId { get; }
-    public decimal Amount { get; }
-    public DateOnly ContributedDate { get; }
-    public PaymentMethod PaymentMethod { get; }
-    public string Description { get; }
+    public int ContributionId { get; init; }
+    public Guid UniqueId { get; init; }
+    public int ProjectId { get; init; }
+    public decimal Amount { get; init; }
+    public DateOnly ContributedDate { get; init; }
+    public PaymentMethod PaymentMethod { get; init; }
+    public string Description { get; init; } = string.Empty;
 }
