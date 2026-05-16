@@ -10,5 +10,15 @@ public class EventRegistrationConfiguration : IEntityTypeConfiguration<EventRegi
     {
         builder.HasKey(eventReg => new { eventReg.EventId, eventReg.MemberId });
         builder.HasAlternateKey(eventReg => eventReg.UniqueId);
+
+        builder.HasOne<Member>()
+            .WithMany()
+            .HasForeignKey(ea => ea.MemberId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasOne<Event>()
+            .WithMany()
+            .HasForeignKey(ea => ea.EventId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
