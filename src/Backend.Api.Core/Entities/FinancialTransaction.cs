@@ -10,5 +10,5 @@ public class FinancialTransaction
     public TransactionType TransactionType { get; init; }
     public DateOnly TransactionDate { get; init; }
     public decimal Amount { get; init; }
-    public string Description { get; init; } = string.Empty;
+    public string? Description { get; init; } = string.Empty;
 }

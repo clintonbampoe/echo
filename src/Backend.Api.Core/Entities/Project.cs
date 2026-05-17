@@ -12,6 +12,6 @@ public class Project
     public decimal TargetAmount { get; init; }
     public ProjectStatus Status { get; init; }
     public DateOnly StartDate { get; init; }
-    public DateOnly EndDate { get; init; }
-    public string Description { get; init; } = string.Empty;
+    public DateOnly? EndDate { get; init; }
+    public string? Description { get; init; } = string.Empty;
 }

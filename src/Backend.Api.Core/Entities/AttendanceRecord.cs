@@ -11,4 +11,5 @@ public class AttendanceRecord
     public ChurchServiceType ChurchServiceType { get; init; }
     public AttendeeType AttendeeType { get; init; }
     public TimeOnly CheckInTime { get; init; }
+    public string? Description { get; set; } = string.Empty;
 }

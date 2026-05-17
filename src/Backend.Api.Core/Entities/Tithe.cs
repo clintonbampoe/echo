@@ -12,5 +12,5 @@ public class Tithe
     public DateOnly CollectionDate { get; init; }
     public MonthOfYear ForMonthOfYear { get; init; }
     public int ForYear { get; init; }
-    public string Description { get; init; } = string.Empty;
+    public string? Description { get; init; } = string.Empty;
 }

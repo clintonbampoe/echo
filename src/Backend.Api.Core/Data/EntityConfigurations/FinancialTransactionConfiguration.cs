@@ -14,7 +14,7 @@ public class FinancialTransactionConfiguration : IEntityTypeConfiguration<Financ
 
         builder.HasOne<TransactionCategory>()
             .WithMany()
-            .HasForeignKey()
+            .HasForeignKey(tr => tr.CategoryId)
             .OnDelete(DeleteBehavior.SetNull);
     }
 }

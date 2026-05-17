@@ -13,7 +13,7 @@ public class TitheConfiguration : IEntityTypeConfiguration<Tithe>
 
         builder.HasOne<Member>()
             .WithMany()
-            .HasForeignKey()
+            .HasForeignKey(tithe => tithe.MemberId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }

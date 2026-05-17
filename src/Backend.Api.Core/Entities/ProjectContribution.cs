@@ -10,5 +10,5 @@ public class ProjectContribution
     public decimal Amount { get; init; }
     public DateOnly ContributedDate { get; init; }
     public PaymentMethod PaymentMethod { get; init; }
-    public string Description { get; init; } = string.Empty;
+    public string? Description { get; init; } = string.Empty;
 }
