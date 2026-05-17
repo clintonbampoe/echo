@@ -1,33 +1,35 @@
-# Database Schema
+# Setting Up Local Database
 
-This folder holds the schema definitions for the Echo database:
+Quick reference for setting up, generating and running database migrations locally.
+*(basically, everything you'd need to set up the database with the least amount of work possible #GodBlessCsharp)*
 
-- `echo_schema.dbml`
-- `echo_schema.dbdiagram`
+## 1. Local Environment Setup
 
-## Purpose
+- Create a local PostgreSQL database named `echo_db` and note your login credentials.
 
-The DBML file defines the database schema in a text format.
-The DBDiagram file stores a diagram-export version of the same schema.
+- To initialize and store your local database credentials safely outside of source control (Git), Run the follow commands in your terminal from the project folder `src/(Backend.Api.Core)` and replace `your_postres_username` and `your_postgres_password` with your local db username and password.
 
-## Viewing the schema in VS Code
+```bash
+dotnet user-secrets set "Database:Username" "your_postgres_username"
+dotnet user-secrets set "Database:Password" "your_posgtres_password"
+```
 
-Install a DBML extension from the Extensions view:
+- Ensure the global Entity Framework command-line tool is installed and up to date by running this script in your terminal:
 
-- `DBML`
-- `DBML Preview`
-- I'd recommend this extension [DbDiagram](https://marketplace.visualstudio.com/items?itemName=dbdiagram.dbdiagram-vscode) cause that's the one I'm using
+```bash
+dotnet tool install --global dotnet-ef || dotnet tool update --global dotnet-ef
+```
 
-## How to inspect
+## 2. Run Database Migration
 
-- Open `echo_schema.dbml`.
-- Use the Command Palette:
-  - `Ctrl+Shift+P`
-  - Run `DBML: Open Preview` or `DBML Preview`
-- If available, open `echo_schema.dbdiagram` for the diagram file too.
+- Navigate to the project directory (`src/Backend.Api.Core`) in your terminal before running these commands.
 
-## Editing
+- Since the database history is kept as code in the `src/Backend.Api.Core/Migrations` directory, pull the latest changes from Git to get the newest migration files.
 
-- Update `echo_schema.dbml` for schema changes.
-- Save the file and refresh the preview.
-- Keep `echo_schema.dbdiagram` in sync if it is used as the exported diagram.
+- Apply the schema changes directly to your local database by running:
+
+```bash
+dotnet ef database update
+```
+
+- EF Core and C# would automatically track the differences between your local database and the latest migration. It would then apply the latest changes to the schema on top of your local db.
