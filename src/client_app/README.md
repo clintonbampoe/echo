@@ -9,22 +9,26 @@ Follow these instructions to get the project up and running on your local machin
 ### 📋 Prerequisites
 
 Ensure you have the following installed:
+
 - [Node.js](https://nodejs.org/) (v18.0.0 or higher recommended)
 - [npm](https://www.npmjs.com/) (usually comes with Node.js)
 
 ### 🛠️ Installation
 
 1. **Clone the repository** (if you haven't already):
+
    ```bash
    git clone <repository-url>
    ```
 
 2. **Navigate to the client app directory**:
+
    ```bash
    cd echo/src/client_app
    ```
 
 3. **Install dependencies**:
+
    ```bash
    npm install
    ```
@@ -69,4 +73,3 @@ The output will be generated in the `dist` folder.
 - [Vite](https://vitejs.dev/)
 - [TypeScript](https://www.typescriptlang.org/)
 - [ESLint](https://eslint.org/)
-
