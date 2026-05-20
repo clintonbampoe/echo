@@ -17,7 +17,7 @@ Creating your branch locally with this exact name connects your terminal directl
 
 Our development loop relies on GitHub Draft Pull Requests to define the scope of work early and prevent conflicting architectural changes.
 
-1. Create your local branch from main using the copied Linear name (the branch name should follow the format: prefix/{the copied Linear name} e.g feat/clnt-11-implement-clienr-app-login-page).
+1. Create your local branch from main using the copied Linear name (the branch name should follow the format: prefix/scope-branchId e.g feat/frontend-clnt-11-implement-client-app-login-page).
 2. Make an initial setup commit with your basic file structure and push it to GitHub.
 3. Open a Draft Pull Request on GitHub instead of a standard one. This signals that work is underway and automatically moves your Linear card to In Progress.
 4. Use Markdown checkboxes in the pull request description to outline your technical plan and include `Closes {Identifier}-{Number}` at the bottom.

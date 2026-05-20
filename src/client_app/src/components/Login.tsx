@@ -27,43 +27,43 @@ const Login: React.FC = () => {
           <p className="quote-author">Matthew 18:20</p>
         </div>
       </div>
-      
+
       <div className="login-right">
         <div className="login-card">
-          <div className="login-logo-box"></div>
+          <div className="login-logo-box"></div>  {/* Placeholder for logo, would be replaced with an actual image */}
           <h1 className="login-title">Welcome Back</h1>
           <p className="login-subtitle">Sign in to access your Echo account</p>
-          
+
           {error && <div className="login-error-message" style={{ color: 'red', marginBottom: '1rem', fontSize: '0.875rem' }}>{error}</div>}
-          
+
           <form onSubmit={handleSubmit}>
             <div className="form-group">
               <label className="form-label">Email Address:</label>
-              <input 
-                type="email" 
-                placeholder="example@email.com" 
+              <input
+                type="email"
+                placeholder="example@email.com"
                 className="login-input"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={isLoading}
-                required 
+                required
               />
             </div>
-            
+
             <div className="form-group">
               <label className="form-label">Password</label>
               <div className="input-container">
-                <input 
-                  type={showPassword ? 'text' : 'password'} 
-                  placeholder="Enter your password" 
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Enter your password"
                   className="login-input"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={isLoading}
-                  required 
+                  required
                 />
-                <button 
-                  type="button" 
+                <button
+                  type="button"
                   className="eye-button"
                   onClick={() => setShowPassword(!showPassword)}
                   disabled={isLoading}
@@ -82,7 +82,7 @@ const Login: React.FC = () => {
               </label>
               <a href="#" className="forgot-password">Forgot password?</a>
             </div>
-            
+
             <button type="submit" className="login-button" disabled={isLoading}>
               {isLoading ? 'Signing in...' : 'Sign in'}
             </button>
