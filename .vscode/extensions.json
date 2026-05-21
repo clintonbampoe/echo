@@ -6,7 +6,11 @@
         "editorconfig.editorconfig",
         "davidanson.vscode-markdownlint",
         "dbdiagram.dbdiagram-vscode",
-        "ms-vsliveshare.vsliveshare"
-
+        "ms-vsliveshare.vsliveshare",
+        "esbenp.prettier-vscode",
+        "dbaeumer.vscode-eslint",
+        "ms-vscode.vscode-typescript-next",
+        "pmneo.tsimporter",
+        "dsznajder.es7-react-js-snippets"
     ]
 }

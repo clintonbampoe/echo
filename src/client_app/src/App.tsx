@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import Dashboard from './components/Dashboard'
+import Finance from './components/Finance'
 import Login from './components/Login'
 import Sidebar from './components/Sidebar'
 import Topbar from './components/Topbar'
@@ -53,7 +54,8 @@ const AppContent: React.FC = () => {
                     <Topbar />
                     <div className="page-content">
                         {activeTab === 'dashboard' && <Dashboard />}
-                        {activeTab !== 'dashboard' && <PlaceholderTab name={activeTab} />}
+                        {activeTab === 'finance' && <Finance />}
+                        {activeTab !== 'dashboard' && activeTab !== 'finance' && <PlaceholderTab name={activeTab} />}
                     </div>
                 </div>
             </div>
