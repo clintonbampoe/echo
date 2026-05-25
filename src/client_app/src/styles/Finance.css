@@ -91,8 +91,17 @@
 .stream-header-icon {
   width: 20px;
   height: 20px;
-  background-color: #d1d1d6;
-  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stream-header-icon.income {
+  color: #34c759;
+}
+
+.stream-header-icon.expenditure {
+  color: #ff3b30;
 }
 
 .stream-header-title {
@@ -141,9 +150,22 @@
 .stream-card-icon {
   width: 40px;
   height: 40px;
-  background-color: #f2f2f7;
   border-radius: 10px;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.stream-card-icon.income {
+  background-color: #e8f5e9;
+  color: #34c759;
+}
+
+.stream-card-icon.expenditure {
+  background-color: #ffebee;
+  color: #ff3b30;
 }
 
 .stream-card-info {

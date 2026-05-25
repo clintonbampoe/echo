@@ -1,5 +1,26 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useLayout } from '../context/LayoutContext';
+import {
+  CloseIcon,
+  MoreVerticalIcon,
+  EditIcon,
+  TrashIcon,
+  WarningIcon,
+  TrendUpIcon,
+  TrendDownIcon,
+  InfoIcon,
+  DocumentIcon,
+  TableIcon,
+  CsvIcon,
+  RecordIcon,
+  FinanceIcon,
+  TitheIcon,
+  ProjectsIcon,
+  CalendarIcon,
+  BoxIcon,
+  MembersIcon,
+  DashboardIcon
+} from './Icons';
 import '../styles/Finance.css';
 import type {
   TransactionCategory,
@@ -46,7 +67,7 @@ const mockTransactions: FinancialTransaction[] = [
 // ─── Helper: format currency ─────────────────────────────────────────────────
 
 const formatCurrency = (amount: number): string => {
-  return `$ ${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return `₵ ${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
 
 // ─── Helper: format recurrence ───────────────────────────────────────────────
@@ -72,79 +93,46 @@ const paymentMethodLabels: Record<PaymentMethod, string> = {
   MobileMoney: 'Mobile Money',
 };
 
-// ─── SVG Icons (inline, matching existing patterns) ──────────────────────────
+// ─── SVG Icons (centralized renderCategoryIcon helper) ───────────────────────
 
-const IconClose = () => (
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-  </svg>
-);
+const renderCategoryIcon = (categoryName: string, categoryType: string) => {
+  const size = 20;
+  const className = `stream-icon ${categoryType.toLowerCase()}`;
 
-const IconMoreVertical = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="5" r="1" /><circle cx="12" cy="12" r="1" /><circle cx="12" cy="19" r="1" />
-  </svg>
-);
+  const name = categoryName.toLowerCase();
+  if (name.includes('offering') || name.includes('tithe')) {
+    return <TitheIcon className={className} size={size} />;
+  }
+  if (name.includes('rent') || name.includes('venue')) {
+    return <ProjectsIcon className={className} size={size} />;
+  }
+  if (name.includes('donation') || name.includes('gift')) {
+    return <TitheIcon className={className} size={size} />;
+  }
+  if (name.includes('book') || name.includes('sales')) {
+    return <DocumentIcon className={className} size={size} />;
+  }
+  if (name.includes('salaries') || name.includes('staff') || name.includes('payroll')) {
+    return <MembersIcon className={className} size={size} />;
+  }
+  if (name.includes('utilities') || name.includes('electric') || name.includes('water') || name.includes('maintenance')) {
+    return <BoxIcon className={className} size={size} />;
+  }
+  if (name.includes('outreach') || name.includes('mission')) {
+    return <CalendarIcon className={className} size={size} />;
+  }
+  if (name.includes('tech') || name.includes('media') || name.includes('stream')) {
+    return <DashboardIcon className={className} size={size} />;
+  }
+  if (name.includes('hospitality') || name.includes('food')) {
+    return <RecordIcon className={className} size={size} />;
+  }
+  if (name.includes('transport') || name.includes('bus') || name.includes('car')) {
+    return <BoxIcon className={className} size={size} />;
+  }
 
-const IconEdit = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-  </svg>
-);
-
-const IconTrash = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-  </svg>
-);
-
-const IconWarning = () => (
-  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-    <line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
-  </svg>
-);
-
-const IconTrendUp = () => (
-  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
-    <polyline points="17 6 23 6 23 12" />
-  </svg>
-);
-
-const IconInfo = () => (
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" />
-  </svg>
-);
-
-
-const IconDocument = () => (
-  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-    <polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" />
-  </svg>
-);
-
-const IconTable = () => (
-  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="3" width="18" height="18" rx="2" /><line x1="3" y1="9" x2="21" y2="9" /><line x1="3" y1="15" x2="21" y2="15" /><line x1="9" y1="3" x2="9" y2="21" /><line x1="15" y1="3" x2="15" y2="21" />
-  </svg>
-);
-
-const IconCsv = () => (
-  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-    <rect x="3" y="3" width="18" height="18" rx="2" />
-    <text x="12" y="15" textAnchor="middle" fontSize="7" fontWeight="700" fill="currentColor" stroke="none">CSV</text>
-  </svg>
-);
-
-const IconRecord = () => (
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="3" />
-  </svg>
-);
+  return <FinanceIcon className={className} size={size} />;
+};
 
 // ─── Finance Page Component ──────────────────────────────────────────────────
 
@@ -386,7 +374,7 @@ const Finance: React.FC = () => {
           <span className="finance-card-label">Total Monthly Income</span>
           <div className="finance-card-value">{formatCurrency(totalIncome)}</div>
           <div className="finance-card-trend">
-            <IconTrendUp />
+            <TrendUpIcon />
             +{incomeCount} this month
           </div>
         </div>
@@ -395,7 +383,7 @@ const Finance: React.FC = () => {
           <span className="finance-card-label">Total Expenditure</span>
           <div className="finance-card-value">{formatCurrency(totalExpenditure)}</div>
           <div className="finance-card-trend">
-            <IconTrendUp />
+            <TrendUpIcon />
             +{expenditureCount} this month
           </div>
         </div>
@@ -404,7 +392,7 @@ const Finance: React.FC = () => {
           <span className="finance-card-label">Net Balance</span>
           <div className="finance-card-value">{formatCurrency(netBalance)}</div>
           <div className="finance-card-trend">
-            <IconTrendUp />
+            <TrendUpIcon />
             +{incomeCount + expenditureCount} this month
           </div>
         </div>
@@ -416,7 +404,7 @@ const Finance: React.FC = () => {
         <div className="finance-streams-column">
           <div className="stream-header">
             <div className="stream-header-left">
-              <div className="stream-header-icon" />
+              <TrendUpIcon className="stream-header-icon income" size={20} />
               <h3 className="stream-header-title">Income Streams</h3>
             </div>
             <button className="stream-add-btn" onClick={() => handleAddCategory('Income')}>
@@ -430,7 +418,9 @@ const Finance: React.FC = () => {
 
           {incomeStreams.map(stream => (
             <div className="stream-card" key={stream.category.uniqueId}>
-              <div className="stream-card-icon" />
+              <div className="stream-card-icon income">
+                {renderCategoryIcon(stream.category.name, 'Income')}
+              </div>
               <div className="stream-card-info">
                 <div className="stream-card-name">{stream.category.name}</div>
                 <div className="stream-card-meta">{stream.recurrenceLabel}</div>
@@ -450,7 +440,7 @@ const Finance: React.FC = () => {
                   );
                 }}
               >
-                <IconMoreVertical />
+                <MoreVerticalIcon />
               </button>
 
               {activeMenuId === stream.category.uniqueId && (
@@ -459,13 +449,13 @@ const Finance: React.FC = () => {
                     className="stream-card-dropdown-item"
                     onClick={() => handleEditCategory(stream.category)}
                   >
-                    <IconEdit /> Edit
+                    <EditIcon /> Edit
                   </button>
                   <button
                     className="stream-card-dropdown-item danger"
                     onClick={() => handleDeleteCategory(stream.category)}
                   >
-                    <IconTrash /> Delete
+                    <TrashIcon /> Delete
                   </button>
                 </div>
               )}
@@ -477,7 +467,7 @@ const Finance: React.FC = () => {
         <div className="finance-streams-column">
           <div className="stream-header">
             <div className="stream-header-left">
-              <div className="stream-header-icon" />
+              <TrendDownIcon className="stream-header-icon expenditure" size={20} />
               <h3 className="stream-header-title">Expenditure Streams</h3>
             </div>
             <button className="stream-add-btn" onClick={() => handleAddCategory('Expenditure')}>
@@ -491,7 +481,9 @@ const Finance: React.FC = () => {
 
           {expenditureStreams.map(stream => (
             <div className="stream-card" key={stream.category.uniqueId}>
-              <div className="stream-card-icon" />
+              <div className="stream-card-icon expenditure">
+                {renderCategoryIcon(stream.category.name, 'Expenditure')}
+              </div>
               <div className="stream-card-info">
                 <div className="stream-card-name">{stream.category.name}</div>
                 <div className="stream-card-meta">{stream.recurrenceLabel}</div>
@@ -510,7 +502,7 @@ const Finance: React.FC = () => {
                   );
                 }}
               >
-                <IconMoreVertical />
+                <MoreVerticalIcon />
               </button>
 
               {activeMenuId === stream.category.uniqueId && (
@@ -519,13 +511,13 @@ const Finance: React.FC = () => {
                     className="stream-card-dropdown-item"
                     onClick={() => handleEditCategory(stream.category)}
                   >
-                    <IconEdit /> Edit
+                    <EditIcon /> Edit
                   </button>
                   <button
                     className="stream-card-dropdown-item danger"
                     onClick={() => handleDeleteCategory(stream.category)}
                   >
-                    <IconTrash /> Delete
+                    <TrashIcon /> Delete
                   </button>
                 </div>
               )}
@@ -545,7 +537,7 @@ const Finance: React.FC = () => {
             <div className="finance-modal-header">
               <h2 className="finance-modal-title">Record Transaction</h2>
               <button className="finance-modal-close" onClick={() => setShowRecordModal(false)}>
-                <IconClose />
+                <CloseIcon />
               </button>
             </div>
 
@@ -572,8 +564,8 @@ const Finance: React.FC = () => {
                 <input
                   type="text"
                   className="finance-form-input"
-                  placeholder="$ 0.00"
-                  value={recordForm.amount ? `$ ${recordForm.amount}` : ''}
+                  placeholder="₵ 0.00"
+                  value={recordForm.amount ? `₵ ${recordForm.amount}` : ''}
                   onChange={e => {
                     const raw = e.target.value.replace(/[^0-9.]/g, '');
                     setRecordForm(prev => ({ ...prev, amount: raw }));
@@ -641,7 +633,7 @@ const Finance: React.FC = () => {
                 Cancel
               </button>
               <button className="finance-btn finance-btn-primary" onClick={handleRecordTransaction}>
-                <IconRecord /> Record Transaction
+                <RecordIcon /> Record Transaction
               </button>
             </div>
           </div>
@@ -655,14 +647,14 @@ const Finance: React.FC = () => {
             <div className="finance-modal-header">
               <h2 className="finance-modal-title">Export Financial Report</h2>
               <button className="finance-modal-close" onClick={() => setShowExportModal(false)}>
-                <IconClose />
+                <CloseIcon />
               </button>
             </div>
 
             <div className="finance-modal-body">
               {/* Hint */}
               <div className="export-hint">
-                <IconInfo />
+                <InfoIcon />
                 Select date and range format to export report
               </div>
 
@@ -712,21 +704,21 @@ const Finance: React.FC = () => {
                     className={`export-format-card ${exportForm.exportFormat === 'pdf' ? 'selected' : ''}`}
                     onClick={() => setExportForm(prev => ({ ...prev, exportFormat: 'pdf' }))}
                   >
-                    <div className="export-format-icon"><IconDocument /></div>
+                    <div className="export-format-icon"><DocumentIcon /></div>
                     <span className="export-format-label">PDF</span>
                   </button>
                   <button
                     className={`export-format-card ${exportForm.exportFormat === 'excel' ? 'selected' : ''}`}
                     onClick={() => setExportForm(prev => ({ ...prev, exportFormat: 'excel' }))}
                   >
-                    <div className="export-format-icon"><IconTable /></div>
+                    <div className="export-format-icon"><TableIcon /></div>
                     <span className="export-format-label">Excel</span>
                   </button>
                   <button
                     className={`export-format-card ${exportForm.exportFormat === 'csv' ? 'selected' : ''}`}
                     onClick={() => setExportForm(prev => ({ ...prev, exportFormat: 'csv' }))}
                   >
-                    <div className="export-format-icon"><IconCsv /></div>
+                    <div className="export-format-icon"><CsvIcon /></div>
                     <span className="export-format-label">CSV</span>
                   </button>
                 </div>
@@ -754,7 +746,7 @@ const Finance: React.FC = () => {
                 {editingCategory ? 'Edit Stream' : 'Add Stream'}
               </h2>
               <button className="finance-modal-close" onClick={() => setShowCategoryModal(false)}>
-                <IconClose />
+                <CloseIcon />
               </button>
             </div>
 
@@ -825,14 +817,14 @@ const Finance: React.FC = () => {
             <div className="finance-modal-header">
               <h2 className="finance-modal-title">Delete Stream</h2>
               <button className="finance-modal-close" onClick={() => setShowDeleteConfirm(false)}>
-                <IconClose />
+                <CloseIcon />
               </button>
             </div>
 
             <div className="finance-modal-body">
               <div className="delete-confirm-body">
                 <div className="delete-confirm-icon">
-                  <IconWarning />
+                  <WarningIcon />
                 </div>
                 <p className="delete-confirm-text">
                   Are you sure you want to delete{' '}
@@ -849,7 +841,7 @@ const Finance: React.FC = () => {
                 Cancel
               </button>
               <button className="finance-btn finance-btn-danger" onClick={confirmDeleteCategory}>
-                <IconTrash /> Delete Stream
+                <TrashIcon /> Delete Stream
               </button>
             </div>
           </div>

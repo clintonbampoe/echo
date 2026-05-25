@@ -2,6 +2,31 @@ import React, { useEffect } from 'react';
 import { useLayout } from '../context/LayoutContext';
 import '../styles/Dashboard.css';
 
+const getInitials = (name: string) => {
+  return name
+    .split(' ')
+    .map(word => word[0])
+    .join('')
+    .toUpperCase();
+};
+
+const getAvatarColor = (name: string) => {
+  const colors = [
+    { bg: '#e8f5e9', text: '#2e7d32' }, // green
+    { bg: '#e3f2fd', text: '#1565c0' }, // blue
+    { bg: '#f3e5f5', text: '#6a1b9a' }, // purple
+    { bg: '#fff3e0', text: '#e65100' }, // orange
+    { bg: '#ffebee', text: '#c62828' }, // red
+    { bg: '#e0f7fa', text: '#00838f' }, // cyan
+  ];
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash) % colors.length;
+  return colors[index];
+};
+
 const Dashboard: React.FC = () => {
   const { setTitle, setCtas } = useLayout();
 
@@ -17,7 +42,7 @@ const Dashboard: React.FC = () => {
   const stats = [
     { label: 'Total Members', value: '428', trend: '+12 this month', color: '#34c759' },
     { label: 'Avg Weekly Attendance', value: '214', trend: '+10 this month', color: '#34c759' },
-    { label: 'Monthly Offering', value: '$ 45,900', trend: '+54 this month', color: '#34c759' },
+    { label: 'Monthly Offering', value: '₵ 45,900', trend: '+54 this month', color: '#34c759' },
     { label: 'Active Members', value: '178', trend: '+21 this month', color: '#34c759' },
   ];
 
@@ -56,8 +81,8 @@ const Dashboard: React.FC = () => {
           </div>
           <div className="chart-container">
             <div className="chart-y-axis">
-              <span>$50k</span>
-              <span>$25k</span>
+              <span>₵50k</span>
+              <span>₵25k</span>
               <span>0</span>
             </div>
             <div className="chart-bars">
@@ -77,17 +102,25 @@ const Dashboard: React.FC = () => {
             <h3 className="card-title">Recent Activity</h3>
           </div>
           <div className="activity-list">
-            {recentActivity.map(activity => (
-              <div key={activity.id} className="activity-item">
-                <div className="activity-avatar"></div>
-                <div className="activity-content">
-                  <div className="activity-text">
-                    <strong>{activity.user}</strong> {activity.action}
+            {recentActivity.map(activity => {
+              const avatarStyle = getAvatarColor(activity.user);
+              return (
+                <div key={activity.id} className="activity-item">
+                  <div 
+                    className="activity-avatar"
+                    style={{ backgroundColor: avatarStyle.bg, color: avatarStyle.text }}
+                  >
+                    {getInitials(activity.user)}
                   </div>
-                  <div className="activity-time">{activity.time}</div>
+                  <div className="activity-content">
+                    <div className="activity-text">
+                      <strong>{activity.user}</strong> {activity.action}
+                    </div>
+                    <div className="activity-time">{activity.time}</div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
           <button className="view-all-button">View all activity</button>
         </div>

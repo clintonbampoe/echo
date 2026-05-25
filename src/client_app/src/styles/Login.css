@@ -30,12 +30,12 @@
   text-align: center;
 }
 
-.login-logo-box {
+.login-logo {
   width: 40px;
   height: 40px;
-  background-color: #8e8e93;
-  border-radius: 8px;
+  object-fit: contain;
   margin: 0 auto 24px;
+  display: block;
 }
 
 .login-title {
