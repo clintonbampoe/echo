@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import echoLogo from '../assets/echo.svg';
 import '../styles/Login.css';
 
 const Login: React.FC = () => {
@@ -14,7 +15,7 @@ const Login: React.FC = () => {
     setError(null);
     try {
       await login(email, password);
-    } catch (err) {
+    } catch {
       setError('Invalid email or password. Please try again.');
     }
   };
@@ -30,7 +31,7 @@ const Login: React.FC = () => {
 
       <div className="login-right">
         <div className="login-card">
-          <div className="login-logo-box"></div>  {/* Placeholder for logo, would be replaced with an actual image */}
+          <img src={echoLogo} className="login-logo" alt="Echo Logo" />
           <h1 className="login-title">Welcome Back</h1>
           <p className="login-subtitle">Sign in to access your Echo account</p>
 
