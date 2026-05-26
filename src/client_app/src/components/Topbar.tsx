@@ -4,7 +4,7 @@ import { PlusIcon, SearchIcon, ExportIcon, CalendarIcon, FilterIcon } from './Ic
 import '../styles/Topbar.css';
 
 const Topbar: React.FC = () => {
-  const { title, ctas } = useLayout();
+  const { title, ctas, searchQuery, setSearchQuery } = useLayout();
   const renderIcon = (icon?: string) => {
     const size = 16;
     switch (icon) {
@@ -34,7 +34,13 @@ const Topbar: React.FC = () => {
             return (
               <div key={index} className="search-container">
                 <div className="search-icon">{renderIcon('search')}</div>
-                <input type="text" placeholder={cta.placeholder || "Search..."} className="search-input" />
+                <input 
+                  type="text" 
+                  placeholder={cta.placeholder || "Search..."} 
+                  className="search-input" 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
               </div>
             );
           }
