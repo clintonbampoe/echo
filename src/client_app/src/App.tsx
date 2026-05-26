@@ -4,6 +4,7 @@ import Finance from './components/Finance'
 import Login from './components/Login'
 import Sidebar from './components/Sidebar'
 import Topbar from './components/Topbar'
+import Attendance from './components/Attendance'
 import { LayoutProvider, useLayout } from './context/LayoutContext'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import './styles/App.css'
@@ -55,7 +56,8 @@ const AppContent: React.FC = () => {
                     <div className="page-content">
                         {activeTab === 'dashboard' && <Dashboard />}
                         {activeTab === 'finance' && <Finance />}
-                        {activeTab !== 'dashboard' && activeTab !== 'finance' && <PlaceholderTab name={activeTab} />}
+                        {activeTab === 'attendance' && <Attendance />}
+                        {activeTab !== 'dashboard' && activeTab !== 'finance' && activeTab !== 'attendance' && <PlaceholderTab name={activeTab} />}
                     </div>
                 </div>
             </div>
