@@ -45,3 +45,6 @@ build/
 # Operating System Files
 .DS_Store
 Thumbs.db
+
+# db.io data description tools
+.dbdiagram
