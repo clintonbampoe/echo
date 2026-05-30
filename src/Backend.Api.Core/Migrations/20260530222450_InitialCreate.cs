@@ -1,6 +1,5 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 #nullable disable
 
@@ -16,54 +15,34 @@ namespace Backend.Api.Core.Migrations
                 name: "AssetCategories",
                 columns: table => new
                 {
-                    CategoryId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    UniqueId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    CongregationId = table.Column<Guid>(type: "uuid", nullable: false),
                     CategoryName = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_AssetCategories", x => x.CategoryId);
-                    table.UniqueConstraint("AK_AssetCategories_UniqueId", x => x.UniqueId);
+                    table.PrimaryKey("PK_AssetCategories", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
-                name: "EventAttendances",
+                name: "Congregations",
                 columns: table => new
                 {
-                    MemberId = table.Column<int>(type: "integer", nullable: false),
-                    EventId = table.Column<int>(type: "integer", nullable: false),
-                    UniqueId = table.Column<Guid>(type: "uuid", nullable: false),
-                    CheckInTime = table.Column<TimeOnly>(type: "time without time zone", nullable: false)
+                    CongregationId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_EventAttendances", x => new { x.EventId, x.MemberId });
-                    table.UniqueConstraint("AK_EventAttendances_UniqueId", x => x.UniqueId);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "EventRegistrations",
-                columns: table => new
-                {
-                    MemberId = table.Column<int>(type: "integer", nullable: false),
-                    EventId = table.Column<int>(type: "integer", nullable: false),
-                    UniqueId = table.Column<Guid>(type: "uuid", nullable: false),
-                    RegistrationDate = table.Column<DateOnly>(type: "date", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_EventRegistrations", x => new { x.EventId, x.MemberId });
-                    table.UniqueConstraint("AK_EventRegistrations_UniqueId", x => x.UniqueId);
+                    table.PrimaryKey("PK_Congregations", x => x.CongregationId);
                 });
 
             migrationBuilder.CreateTable(
                 name: "Members",
                 columns: table => new
                 {
-                    MemberId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    UniqueId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    CongregationId = table.Column<Guid>(type: "uuid", nullable: false),
                     FirstName = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     LastName = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     OtherNames = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
@@ -85,68 +64,60 @@ namespace Backend.Api.Core.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Members", x => x.MemberId);
-                    table.UniqueConstraint("AK_Members_UniqueId", x => x.UniqueId);
+                    table.PrimaryKey("PK_Members", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "Organizations",
                 columns: table => new
                 {
-                    OrganizationId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    UniqueId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    CongregationId = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     Description = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
                     CreatedAt = table.Column<DateOnly>(type: "date", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Organizations", x => x.OrganizationId);
-                    table.UniqueConstraint("AK_Organizations_UniqueId", x => x.UniqueId);
+                    table.PrimaryKey("PK_Organizations", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "ProjectCategories",
                 columns: table => new
                 {
-                    CategoryId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    UniqueId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    CongregationId = table.Column<Guid>(type: "uuid", nullable: false),
                     Title = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ProjectCategories", x => x.CategoryId);
-                    table.UniqueConstraint("AK_ProjectCategories_UniqueId", x => x.UniqueId);
+                    table.PrimaryKey("PK_ProjectCategories", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "TransactionCategories",
                 columns: table => new
                 {
-                    CategoryId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    UniqueId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    CongregationId = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     CategoryType = table.Column<string>(type: "text", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_TransactionCategories", x => x.CategoryId);
-                    table.UniqueConstraint("AK_TransactionCategories_UniqueId", x => x.UniqueId);
+                    table.PrimaryKey("PK_TransactionCategories", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "Assets",
                 columns: table => new
                 {
-                    AssetId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    UniqueId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    CongregationId = table.Column<Guid>(type: "uuid", nullable: false),
                     Name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     SerialNumber = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
-                    CategoryId = table.Column<int>(type: "integer", nullable: true),
+                    CategoryId = table.Column<Guid>(type: "uuid", nullable: true),
                     PurchaseDate = table.Column<DateOnly>(type: "date", nullable: true),
                     PurchaseCost = table.Column<decimal>(type: "numeric", nullable: false),
                     CurrentValue = table.Column<decimal>(type: "numeric", nullable: false),
@@ -155,24 +126,44 @@ namespace Backend.Api.Core.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Assets", x => x.AssetId);
-                    table.UniqueConstraint("AK_Assets_UniqueId", x => x.UniqueId);
+                    table.PrimaryKey("PK_Assets", x => x.Id);
                     table.ForeignKey(
                         name: "FK_Assets_AssetCategories_CategoryId",
                         column: x => x.CategoryId,
                         principalTable: "AssetCategories",
-                        principalColumn: "CategoryId",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.SetNull);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Users",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    CongregationId = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserName = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    EmailAddress = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    PasswordHash = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Users", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Users_Congregations_CongregationId",
+                        column: x => x.CongregationId,
+                        principalTable: "Congregations",
+                        principalColumn: "CongregationId",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
                 name: "AttendanceRecords",
                 columns: table => new
                 {
-                    AttendanceId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    UniqueId = table.Column<Guid>(type: "uuid", nullable: false),
-                    MemberId = table.Column<int>(type: "integer", nullable: false),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    CongregationId = table.Column<Guid>(type: "uuid", nullable: false),
+                    MemberId = table.Column<Guid>(type: "uuid", nullable: false),
                     ForDate = table.Column<DateOnly>(type: "date", nullable: false),
                     ChurchServiceType = table.Column<string>(type: "text", nullable: false),
                     AttendeeType = table.Column<string>(type: "text", nullable: false),
@@ -181,13 +172,12 @@ namespace Backend.Api.Core.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_AttendanceRecords", x => x.AttendanceId);
-                    table.UniqueConstraint("AK_AttendanceRecords_UniqueId", x => x.UniqueId);
+                    table.PrimaryKey("PK_AttendanceRecords", x => x.Id);
                     table.ForeignKey(
                         name: "FK_AttendanceRecords_Members_MemberId",
                         column: x => x.MemberId,
                         principalTable: "Members",
-                        principalColumn: "MemberId",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -195,26 +185,24 @@ namespace Backend.Api.Core.Migrations
                 name: "Tithes",
                 columns: table => new
                 {
-                    TitheId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    UniqueId = table.Column<Guid>(type: "uuid", nullable: false),
-                    MemberId = table.Column<int>(type: "integer", nullable: false),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    CongregationId = table.Column<Guid>(type: "uuid", nullable: false),
+                    MemberId = table.Column<Guid>(type: "uuid", nullable: false),
                     Decimal = table.Column<int>(type: "integer", nullable: false),
+                    ForYear = table.Column<int>(type: "integer", nullable: false),
+                    ForMonth = table.Column<string>(type: "text", nullable: false),
                     PaymentMethod = table.Column<string>(type: "text", nullable: false),
                     CollectionDate = table.Column<DateOnly>(type: "date", nullable: false),
-                    ForMonthOfYear = table.Column<string>(type: "text", nullable: false),
-                    ForYear = table.Column<int>(type: "integer", nullable: false),
                     Description = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Tithes", x => x.TitheId);
-                    table.UniqueConstraint("AK_Tithes_UniqueId", x => x.UniqueId);
+                    table.PrimaryKey("PK_Tithes", x => x.Id);
                     table.ForeignKey(
                         name: "FK_Tithes_Members_MemberId",
                         column: x => x.MemberId,
                         principalTable: "Members",
-                        principalColumn: "MemberId",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -222,42 +210,42 @@ namespace Backend.Api.Core.Migrations
                 name: "Events",
                 columns: table => new
                 {
-                    EventId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    UniqueId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    CongregationId = table.Column<Guid>(type: "uuid", nullable: false),
+                    OrganizationId = table.Column<Guid>(type: "uuid", nullable: false),
+                    OrganizerId = table.Column<Guid>(type: "uuid", nullable: false),
                     Title = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     StartDate = table.Column<DateOnly>(type: "date", nullable: false),
                     EndDate = table.Column<DateOnly>(type: "date", nullable: false),
                     StartTime = table.Column<TimeOnly>(type: "time without time zone", nullable: true),
                     EndTime = table.Column<TimeOnly>(type: "time without time zone", nullable: true),
                     Location = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
-                    OrganizationId = table.Column<int>(type: "integer", nullable: false),
-                    OrganizerId = table.Column<int>(type: "integer", nullable: false),
                     Capacity = table.Column<int>(type: "integer", nullable: true),
                     Description = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Events", x => x.EventId);
-                    table.UniqueConstraint("AK_Events_UniqueId", x => x.UniqueId);
+                    table.PrimaryKey("PK_Events", x => x.Id);
                     table.ForeignKey(
                         name: "FK_Events_Members_OrganizerId",
                         column: x => x.OrganizerId,
                         principalTable: "Members",
-                        principalColumn: "MemberId");
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Events_Organizations_OrganizationId",
                         column: x => x.OrganizationId,
                         principalTable: "Organizations",
-                        principalColumn: "OrganizationId");
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
                 name: "OrganizationMembers",
                 columns: table => new
                 {
-                    MemberId = table.Column<int>(type: "integer", nullable: false),
-                    OrganizationId = table.Column<int>(type: "integer", nullable: false),
+                    MemberId = table.Column<Guid>(type: "uuid", nullable: false),
+                    OrganizationId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    CongregationId = table.Column<Guid>(type: "uuid", nullable: false),
                     Role = table.Column<string>(type: "text", nullable: false),
                     JoinedDate = table.Column<DateOnly>(type: "date", nullable: false)
                 },
@@ -268,13 +256,13 @@ namespace Backend.Api.Core.Migrations
                         name: "FK_OrganizationMembers_Members_MemberId",
                         column: x => x.MemberId,
                         principalTable: "Members",
-                        principalColumn: "MemberId",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_OrganizationMembers_Organizations_OrganizationId",
                         column: x => x.OrganizationId,
                         principalTable: "Organizations",
-                        principalColumn: "OrganizationId",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -282,12 +270,11 @@ namespace Backend.Api.Core.Migrations
                 name: "Projects",
                 columns: table => new
                 {
-                    ProjectId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    UniqueId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    CongregationId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CategoryId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ProjectManagerId = table.Column<Guid>(type: "uuid", nullable: false),
                     Title = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
-                    CategoryId = table.Column<int>(type: "integer", nullable: false),
-                    ProjectManagerId = table.Column<int>(type: "integer", nullable: false),
                     TargetAmount = table.Column<decimal>(type: "numeric", nullable: false),
                     Status = table.Column<string>(type: "text", nullable: false),
                     StartDate = table.Column<DateOnly>(type: "date", nullable: false),
@@ -296,19 +283,18 @@ namespace Backend.Api.Core.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Projects", x => x.ProjectId);
-                    table.UniqueConstraint("AK_Projects_UniqueId", x => x.UniqueId);
+                    table.PrimaryKey("PK_Projects", x => x.Id);
                     table.ForeignKey(
                         name: "FK_Projects_Members_ProjectManagerId",
                         column: x => x.ProjectManagerId,
                         principalTable: "Members",
-                        principalColumn: "MemberId",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.SetNull);
                     table.ForeignKey(
                         name: "FK_Projects_ProjectCategories_CategoryId",
                         column: x => x.CategoryId,
                         principalTable: "ProjectCategories",
-                        principalColumn: "CategoryId",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.SetNull);
                 });
 
@@ -316,10 +302,9 @@ namespace Backend.Api.Core.Migrations
                 name: "Transactions",
                 columns: table => new
                 {
-                    TransactionId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    UniqueId = table.Column<Guid>(type: "uuid", nullable: false),
-                    CategoryId = table.Column<int>(type: "integer", nullable: false),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    CongregationId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CategoryId = table.Column<Guid>(type: "uuid", nullable: false),
                     TransactionType = table.Column<string>(type: "text", nullable: false),
                     TransactionDate = table.Column<DateOnly>(type: "date", nullable: false),
                     Amount = table.Column<decimal>(type: "numeric", nullable: false),
@@ -327,38 +312,89 @@ namespace Backend.Api.Core.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Transactions", x => x.TransactionId);
-                    table.UniqueConstraint("AK_Transactions_UniqueId", x => x.UniqueId);
+                    table.PrimaryKey("PK_Transactions", x => x.Id);
                     table.ForeignKey(
                         name: "FK_Transactions_TransactionCategories_CategoryId",
                         column: x => x.CategoryId,
                         principalTable: "TransactionCategories",
-                        principalColumn: "CategoryId",
-                        onDelete: ReferentialAction.SetNull);
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "EventAttendances",
+                columns: table => new
+                {
+                    MemberId = table.Column<Guid>(type: "uuid", nullable: false),
+                    EventId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    CongregationId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CheckInTime = table.Column<TimeOnly>(type: "time without time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_EventAttendances", x => new { x.EventId, x.MemberId });
+                    table.ForeignKey(
+                        name: "FK_EventAttendances_Events_EventId",
+                        column: x => x.EventId,
+                        principalTable: "Events",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_EventAttendances_Members_MemberId",
+                        column: x => x.MemberId,
+                        principalTable: "Members",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "EventRegistrations",
+                columns: table => new
+                {
+                    MemberId = table.Column<Guid>(type: "uuid", nullable: false),
+                    EventId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    CongregationId = table.Column<Guid>(type: "uuid", nullable: false),
+                    RegistrationDate = table.Column<DateOnly>(type: "date", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_EventRegistrations", x => new { x.EventId, x.MemberId });
+                    table.ForeignKey(
+                        name: "FK_EventRegistrations_Events_EventId",
+                        column: x => x.EventId,
+                        principalTable: "Events",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_EventRegistrations_Members_MemberId",
+                        column: x => x.MemberId,
+                        principalTable: "Members",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
                 name: "ProjectContributions",
                 columns: table => new
                 {
-                    ContributionId = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
-                    UniqueId = table.Column<Guid>(type: "uuid", nullable: false),
-                    ProjectId = table.Column<int>(type: "integer", nullable: false),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    CongregationId = table.Column<Guid>(type: "uuid", nullable: false),
+                    ProjectId = table.Column<Guid>(type: "uuid", nullable: false),
                     Amount = table.Column<decimal>(type: "numeric", nullable: false),
-                    ContributedDate = table.Column<DateOnly>(type: "date", nullable: false),
+                    DateContributed = table.Column<DateOnly>(type: "date", nullable: false),
                     PaymentMethod = table.Column<string>(type: "text", nullable: false),
                     Description = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ProjectContributions", x => x.ContributionId);
-                    table.UniqueConstraint("AK_ProjectContributions_UniqueId", x => x.UniqueId);
+                    table.PrimaryKey("PK_ProjectContributions", x => x.Id);
                     table.ForeignKey(
                         name: "FK_ProjectContributions_Projects_ProjectId",
                         column: x => x.ProjectId,
                         principalTable: "Projects",
-                        principalColumn: "ProjectId",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -368,13 +404,18 @@ namespace Backend.Api.Core.Migrations
                 column: "CategoryId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_AttendanceRecords_ForDate",
-                table: "AttendanceRecords",
-                column: "ForDate");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_AttendanceRecords_MemberId",
                 table: "AttendanceRecords",
+                column: "MemberId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EventAttendances_MemberId",
+                table: "EventAttendances",
+                column: "MemberId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EventRegistrations_MemberId",
+                table: "EventRegistrations",
                 column: "MemberId");
 
             migrationBuilder.CreateIndex(
@@ -431,11 +472,6 @@ namespace Backend.Api.Core.Migrations
                 column: "ProjectManagerId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Projects_Title",
-                table: "Projects",
-                column: "Title");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Tithes_MemberId",
                 table: "Tithes",
                 column: "MemberId");
@@ -452,9 +488,9 @@ namespace Backend.Api.Core.Migrations
                 column: "CategoryId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Transactions_TransactionDate",
-                table: "Transactions",
-                column: "TransactionDate");
+                name: "IX_Users_CongregationId",
+                table: "Users",
+                column: "CongregationId");
         }
 
         /// <inheritdoc />
@@ -473,9 +509,6 @@ namespace Backend.Api.Core.Migrations
                 name: "EventRegistrations");
 
             migrationBuilder.DropTable(
-                name: "Events");
-
-            migrationBuilder.DropTable(
                 name: "OrganizationMembers");
 
             migrationBuilder.DropTable(
@@ -488,16 +521,25 @@ namespace Backend.Api.Core.Migrations
                 name: "Transactions");
 
             migrationBuilder.DropTable(
+                name: "Users");
+
+            migrationBuilder.DropTable(
                 name: "AssetCategories");
 
             migrationBuilder.DropTable(
-                name: "Organizations");
+                name: "Events");
 
             migrationBuilder.DropTable(
                 name: "Projects");
 
             migrationBuilder.DropTable(
                 name: "TransactionCategories");
+
+            migrationBuilder.DropTable(
+                name: "Congregations");
+
+            migrationBuilder.DropTable(
+                name: "Organizations");
 
             migrationBuilder.DropTable(
                 name: "Members");
