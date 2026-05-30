@@ -10,6 +10,11 @@ public class EventAttendanceConfiguration : IEntityTypeConfiguration<EventAttend
     {
         builder.HasKey(ea => new { ea.EventId, ea.MemberId });
 
+        builder.HasOne<Congregation>()
+            .WithMany()
+            .HasForeignKey(ea => ea.CongregationId)
+            .OnDelete(DeleteBehavior.Cascade);
+            
         builder.HasOne<Member>()
             .WithMany()
             .HasForeignKey(ea => ea.MemberId)

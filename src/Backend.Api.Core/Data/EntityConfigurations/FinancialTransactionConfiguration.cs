@@ -10,6 +10,11 @@ public class FinancialTransactionConfiguration : IEntityTypeConfiguration<Financ
     {
         builder.HasKey(tr => tr.Id);
 
+        builder.HasOne<Congregation>()
+            .WithMany()
+            .HasForeignKey(tr => tr.CongregationId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         builder.HasOne<TransactionCategory>()
             .WithMany()
             .HasForeignKey(tr => tr.CategoryId)

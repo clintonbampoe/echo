@@ -11,6 +11,11 @@ public class EventConfiguration : IEntityTypeConfiguration<Event>
         builder.HasKey(e => e.Id);
         builder.HasIndex(e => e.Title).IsUnique();
 
+        builder.HasOne<Congregation>()
+            .WithMany()
+            .HasForeignKey(e => e.CongregationId)
+            .OnDelete(DeleteBehavior.Cascade);
+            
         builder.HasOne<Organization>()
             .WithMany()
             .HasForeignKey(e => e.OrganizationId)

@@ -10,6 +10,11 @@ public class TitheConfiguration : IEntityTypeConfiguration<Tithe>
     {
         builder.HasKey(tithe => tithe.Id);
 
+        builder.HasOne<Congregation>()
+            .WithMany()
+            .HasForeignKey(tithe => tithe.CongregationId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         builder.HasOne<Member>()
             .WithMany()
             .HasForeignKey(tithe => tithe.MemberId)

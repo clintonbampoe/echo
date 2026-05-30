@@ -12,6 +12,11 @@ public class MemberConfiguration : IEntityTypeConfiguration<Member>
         builder.HasIndex(p => new { p.FirstName, p.LastName })
             .HasDatabaseName("FullName");
 
+        builder.HasOne<Congregation>()
+            .WithMany()
+            .HasForeignKey(m => m.CongregationId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         builder.Property(m => m.FirstName).IsRequired();
         builder.Property(m => m.LastName).IsRequired();
     }

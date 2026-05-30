@@ -10,6 +10,11 @@ public class AttendanceConfiguration : IEntityTypeConfiguration<AttendanceRecord
     {
         builder.HasKey(at => at.Id);
 
+        builder.HasOne<Congregation>()
+            .WithMany()
+            .HasForeignKey(at => at.CongregationId)
+            .OnDelete(DeleteBehavior.Cascade);
+            
         builder.HasOne<Member>()
             .WithMany()
             .HasForeignKey(at => at.MemberId)

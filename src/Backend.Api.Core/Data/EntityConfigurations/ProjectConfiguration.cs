@@ -10,6 +10,11 @@ public class ProjectConfiguration : IEntityTypeConfiguration<Project>
     {
         builder.HasKey(pr => pr.Id);
 
+        builder.HasOne<Congregation>()
+            .WithMany()
+            .HasForeignKey(pr => pr.CongregationId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         builder.HasOne<Member>()
             .WithMany()
             .HasForeignKey(pr => pr.ProjectManagerId)

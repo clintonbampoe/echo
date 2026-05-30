@@ -10,6 +10,11 @@ public class EventRegistrationConfiguration : IEntityTypeConfiguration<EventRegi
     {
         builder.HasKey(eventReg => new { eventReg.EventId, eventReg.MemberId });
 
+        builder.HasOne<Congregation>()
+            .WithMany()
+            .HasForeignKey(eventReg => eventReg.CongregationId)
+            .OnDelete(DeleteBehavior.Cascade);
+            
         builder.HasOne<Member>()
             .WithMany()
             .HasForeignKey(ea => ea.MemberId)

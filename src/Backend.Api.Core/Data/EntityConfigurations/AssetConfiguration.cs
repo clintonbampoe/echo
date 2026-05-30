@@ -10,6 +10,11 @@ public class AssetConfiguration : IEntityTypeConfiguration<Asset>
     {
         builder.HasKey(asset => asset.Id);
 
+        builder.HasOne<Congregation>()
+            .WithMany()
+            .HasForeignKey(asset => asset.CongregationId)
+            .OnDelete(DeleteBehavior.Cascade);
+            
         builder.HasOne<AssetCategory>()
             .WithMany()
             .HasForeignKey(asset => asset.CategoryId)

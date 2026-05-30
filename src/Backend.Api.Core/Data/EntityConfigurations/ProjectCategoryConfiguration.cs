@@ -10,5 +10,10 @@ public class ProjectCategoryConfiguration : IEntityTypeConfiguration<ProjectCate
     {
         builder.HasKey(category => category.Id);
         builder.HasIndex(category => category.Title).IsUnique();
+
+        builder.HasOne<Congregation>()
+            .WithMany()
+            .HasForeignKey(category => category.CongregationId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
