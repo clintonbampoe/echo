@@ -2,11 +2,11 @@ using Backend.Api.Core.Enums;
 
 namespace Backend.Api.Core.Entities;
 
-public class AttendanceRecord
+public class AttendanceRecord : ICongregationEntity
 {
-    public int AttendanceId { get; init; }
-    public Guid UniqueId { get; init; }
-    public int MemberId { get; init; }
+    public Guid Id { get; init; }
+    public Guid CongregationId { get; init; }
+    public Guid MemberId { get; init; }
     public DateOnly ForDate { get; init; }
     public ChurchServiceType ChurchServiceType { get; init; }
     public AttendeeType AttendeeType { get; init; }

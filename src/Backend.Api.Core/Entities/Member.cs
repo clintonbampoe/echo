@@ -3,10 +3,10 @@ using Backend.Api.Core.Enums;
 
 namespace Backend.Api.Core.Entities;
 
-public class Member
+public class Member : ICongregationEntity
 {
-    public int MemberId { get; init; }
-    public Guid UniqueId { get; init; }
+    public Guid Id { get; init; }
+    public Guid CongregationId { get; init; }
     public string FirstName { get; init; } = string.Empty;
     public string LastName { get; init; } = string.Empty;
     public string? OtherNames { get; init; } = string.Empty;

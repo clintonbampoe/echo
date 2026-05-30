@@ -1,6 +1,6 @@
-public class User
+public class User : ICongregationEntity
 {
-    public Guid UserId { get; init; }
+    public Guid Id { get; init; }
     public Guid CongregationId { get; init; }
     public string UserName { get; init; } = string.Empty;
     public string EmailAddress { get; init; } = string.Empty;
