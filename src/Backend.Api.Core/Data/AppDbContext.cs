@@ -25,6 +25,8 @@ public class AppDbContext : DbContext
     public DbSet<Tithe> Tithes { get; set; }
     public DbSet<FinancialTransaction> Transactions { get; set; }
     public DbSet<TransactionCategory> TransactionCategories { get; set; }
+    public DbSet<User> Users { get; set; }
+    public DbSet<Congregation> Congregations { get; set; }
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
