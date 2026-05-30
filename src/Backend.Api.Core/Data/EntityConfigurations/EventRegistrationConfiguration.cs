@@ -9,7 +9,6 @@ public class EventRegistrationConfiguration : IEntityTypeConfiguration<EventRegi
     public void Configure(EntityTypeBuilder<EventRegistration> builder)
     {
         builder.HasKey(eventReg => new { eventReg.EventId, eventReg.MemberId });
-        builder.HasAlternateKey(eventReg => eventReg.UniqueId);
 
         builder.HasOne<Member>()
             .WithMany()

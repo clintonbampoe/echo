@@ -8,8 +8,7 @@ public class OrganizationConfiguration : IEntityTypeConfiguration<Organization>
 {
     public void Configure(EntityTypeBuilder<Organization> builder)
     {
-        builder.HasKey(o => o.OrganizationId);
-        builder.HasAlternateKey(o => o.UniqueId);
+        builder.HasKey(o => o.Id);
 
         builder.HasIndex(o => o.Name).IsUnique();
     }

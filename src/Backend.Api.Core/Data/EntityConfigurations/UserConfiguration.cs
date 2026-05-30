@@ -7,7 +7,7 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 {
     public void Configure(EntityTypeBuilder<User> builder)
     {
-        builder.HasKey(user => user.UserId);
+        builder.HasKey(user => user.Id);
 
         builder.HasOne<Congregation>()
             .WithMany()

@@ -8,7 +8,6 @@ public class AssetCategoryConfiguration : IEntityTypeConfiguration<AssetCategory
 {
     public void Configure(EntityTypeBuilder<AssetCategory> builder)
     {
-        builder.HasKey(cat => cat.CategoryId);
-        builder.HasAlternateKey(cat => cat.UniqueId);
+        builder.HasKey(cat => cat.Id);
     }
 }

@@ -8,8 +8,7 @@ public class ProjectContributionConfiguration : IEntityTypeConfiguration<Project
 {
     public void Configure(EntityTypeBuilder<ProjectContribution> builder)
     {
-        builder.HasKey(contribution => contribution.ContributionId);
-        builder.HasAlternateKey(contribution => contribution.UniqueId);
+        builder.HasKey(contribution => contribution.Id);
 
         builder.HasOne<Project>()
             .WithMany()

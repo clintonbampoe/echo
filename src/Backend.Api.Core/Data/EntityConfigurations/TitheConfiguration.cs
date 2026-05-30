@@ -8,8 +8,7 @@ public class TitheConfiguration : IEntityTypeConfiguration<Tithe>
 {
     public void Configure(EntityTypeBuilder<Tithe> builder)
     {
-        builder.HasKey(tithe => tithe.TitheId);
-        builder.HasAlternateKey(tithe => tithe.UniqueId);
+        builder.HasKey(tithe => tithe.Id);
 
         builder.HasOne<Member>()
             .WithMany()

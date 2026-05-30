@@ -9,7 +9,6 @@ public class EventAttendanceConfiguration : IEntityTypeConfiguration<EventAttend
     public void Configure(EntityTypeBuilder<EventAttendance> builder)
     {
         builder.HasKey(ea => new { ea.EventId, ea.MemberId });
-        builder.HasAlternateKey(ea => ea.UniqueId);
 
         builder.HasOne<Member>()
             .WithMany()

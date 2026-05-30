@@ -8,8 +8,7 @@ public class AssetConfiguration : IEntityTypeConfiguration<Asset>
 {
     public void Configure(EntityTypeBuilder<Asset> builder)
     {
-        builder.HasKey(asset => asset.AssetId);
-        builder.HasAlternateKey(asset => asset.UniqueId);
+        builder.HasKey(asset => asset.Id);
 
         builder.HasOne<AssetCategory>()
             .WithMany()

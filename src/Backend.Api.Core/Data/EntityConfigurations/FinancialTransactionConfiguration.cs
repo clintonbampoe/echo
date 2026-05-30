@@ -8,13 +8,11 @@ public class FinancialTransactionConfiguration : IEntityTypeConfiguration<Financ
 {
     public void Configure(EntityTypeBuilder<FinancialTransaction> builder)
     {
-        builder.HasKey(tr => tr.TransactionId);
-        builder.HasAlternateKey(tr => tr.UniqueId);
-        builder.HasIndex(tr => tr.TransactionDate);
+        builder.HasKey(tr => tr.Id);
 
         builder.HasOne<TransactionCategory>()
             .WithMany()
             .HasForeignKey(tr => tr.CategoryId)
-            .OnDelete(DeleteBehavior.SetNull);
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
