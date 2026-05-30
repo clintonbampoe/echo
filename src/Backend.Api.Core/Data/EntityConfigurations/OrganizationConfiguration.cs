@@ -11,5 +11,10 @@ public class OrganizationConfiguration : IEntityTypeConfiguration<Organization>
         builder.HasKey(o => o.Id);
 
         builder.HasIndex(o => o.Name).IsUnique();
+
+        builder.HasOne<Congregation>()
+            .WithMany()
+            .HasForeignKey(o => o.CongregationId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

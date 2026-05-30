@@ -9,5 +9,7 @@ public class AssetCategoryConfiguration : IEntityTypeConfiguration<AssetCategory
     public void Configure(EntityTypeBuilder<AssetCategory> builder)
     {
         builder.HasKey(cat => cat.Id);
+
+        
     }
 }

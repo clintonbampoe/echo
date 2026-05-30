@@ -10,5 +10,10 @@ public class TransactionCategoryConfiguration : IEntityTypeConfiguration<Transac
     {
         builder.HasKey(cat => cat.Id);
         builder.HasIndex(cat => cat.Name).IsUnique();
+
+        builder.HasOne<Congregation>()
+            .WithMany()
+            .HasForeignKey(cat => cat.CongregationId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

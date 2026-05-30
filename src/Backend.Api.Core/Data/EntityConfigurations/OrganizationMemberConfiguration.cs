@@ -10,6 +10,11 @@ public class OrganizationMemberConfiguration : IEntityTypeConfiguration<Organiza
     {
         builder.HasKey(om => new { om.MemberId, om.OrganizationId });
 
+        builder.HasOne<Congregation>()
+            .WithMany()
+            .HasForeignKey(om => om.CongregationId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         builder.HasOne<Member>()
             .WithMany()
             .HasForeignKey(om => om.MemberId)

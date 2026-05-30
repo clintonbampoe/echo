@@ -10,6 +10,11 @@ public class ProjectContributionConfiguration : IEntityTypeConfiguration<Project
     {
         builder.HasKey(contribution => contribution.Id);
 
+        builder.HasOne<Congregation>()
+            .WithMany()
+            .HasForeignKey(contribution => contribution.CongregationId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         builder.HasOne<Project>()
             .WithMany()
             .HasForeignKey(contribution => contribution.ProjectId)
