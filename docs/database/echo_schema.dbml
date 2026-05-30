@@ -1,10 +1,26 @@
 // Use DBML to define your database structure
 // Docs: https://dbml.dbdiagram.io/docs
 
+// Users
+Table users {
+  user_id uuid [primary key]
+  congregation_id uuid [ref: - congregations.congregation_id, not null]
+  user_name varchar(255)
+  email_address varchar(255)
+  password_hash varchar(255)
+  created_at date
+}
+
+// Congregations
+Table congregations {
+  congregation_id uuid [primary key]
+  name varchar(255)
+  created_at date
+}
+
 // Members
 Table members {
-  member_id integer [primary key, increment]
-  unique_id uuid [unique]
+  member_id uuid [primary key]
   first_name varchar(255)
   last_name varchar(255)
   other_names varchar(255)
