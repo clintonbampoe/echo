@@ -1,9 +1,9 @@
 namespace Backend.Api.Core.Entities;
 
-public class Organization
+public class Organization : ICongregationEntity
 {
-    public int OrganizationId { get; init; }
-    public Guid UniqueId { get; init; }
+    public Guid Id { get; init; }
+    public Guid CongregationId { get; init; }
     public string Name { get; init; } = string.Empty;
     public string? Description { get; init; } = string.Empty;
     public DateOnly CreatedAt { get; init; }

@@ -8,9 +8,7 @@ public class ProjectConfiguration : IEntityTypeConfiguration<Project>
 {
     public void Configure(EntityTypeBuilder<Project> builder)
     {
-        builder.HasKey(pr => pr.ProjectId);
-        builder.HasAlternateKey(pr => pr.UniqueId);
-        builder.HasIndex(pr => pr.Title);
+        builder.HasKey(pr => pr.Id);
 
         builder.HasOne<Member>()
             .WithMany()

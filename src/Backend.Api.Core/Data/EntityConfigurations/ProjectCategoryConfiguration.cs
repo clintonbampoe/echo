@@ -8,8 +8,7 @@ public class ProjectCategoryConfiguration : IEntityTypeConfiguration<ProjectCate
 {
     public void Configure(EntityTypeBuilder<ProjectCategory> builder)
     {
-        builder.HasKey(category => category.CategoryId);
-        builder.HasAlternateKey(category => category.UniqueId);
+        builder.HasKey(category => category.Id);
         builder.HasIndex(category => category.Title).IsUnique();
     }
 }

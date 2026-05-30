@@ -8,9 +8,7 @@ public class AttendanceConfiguration : IEntityTypeConfiguration<AttendanceRecord
 {
     public void Configure(EntityTypeBuilder<AttendanceRecord> builder)
     {
-        builder.HasKey(at => at.AttendanceId);
-        builder.HasAlternateKey(at => at.UniqueId);
-        builder.HasIndex(at => at.ForDate);
+        builder.HasKey(at => at.Id);
 
         builder.HasOne<Member>()
             .WithMany()

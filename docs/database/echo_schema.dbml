@@ -1,16 +1,6 @@
 // Use DBML to define your database structure
 // Docs: https://dbml.dbdiagram.io/docs
 
-// Users
-Table users {
-  user_id uuid [primary key]
-  congregation_id uuid [ref: - congregations.congregation_id, not null]
-  user_name varchar(255)
-  email_address varchar(255)
-  password_hash varchar(255)
-  created_at date
-}
-
 // Congregations
 Table congregations {
   congregation_id uuid [primary key]
@@ -18,9 +8,22 @@ Table congregations {
   created_at date
 }
 
+// Users
+Table users {
+  user_id uuid [primary key]
+  congregation_id uuid [ref: - congregations.congregation_id, not null]
+
+  user_name varchar(255)
+  email_address varchar(255)
+  password_hash varchar(255)
+  created_at date
+}
+
 // Members
 Table members {
   member_id uuid [primary key]
+  congregation_id uuid [ref: - congregations.congregation_id, not null]
+
   first_name varchar(255)
   last_name varchar(255)
   other_names varchar(255)
@@ -38,22 +41,27 @@ Table members {
   next_of_kin_name varchar(128)
   emergency_contact_name varchar(128)
   emergency_contact_phone varchar(16)
-  is_active bool
+  member_activity_status enum
 }
 
 
 // Organizations
 Table organizations {
-  organization_id integer [primary key, increment]
-  unique_id uuid [unique]
+  organization_id uuid [primary key]
+  congregation_id uuid [ref : - congregations.congregation_id, not null]
+
   name varchar(255)
   description varchar(255)
   created_at date
 }
 
+// Organization Members
 Table organization_members {
-  member_id integer [ref: - members.member_id, not null]
-  organization_id integer [ref: - organizations.organization_id, not null]
+  organization_members_id uuid [unique]
+  congregation_id uuid [ref: - congregations.congregation_id, not null]
+
+  member_id uuid [ref: - members.member_id, not null]
+  organization_id uuid [ref: - organizations.organization_id, not null]
   role enum
   joined_date date
 
@@ -64,23 +72,26 @@ Table organization_members {
 
 
 // Attendance
-Table service_attendance{
-  attendance_id integer [primary key, increment]
-  unique_id uuid [unique]
-  member_id integer [ref: - members.member_id, null]
+Table attendance_records {
+  attendance_id uuid [primary key]
+  congregation_id uuid [ref: - congregations.congregation_id, not null]
+
+  member_id uuid [ref: - members.member_id, null]
   for_date date
-  service_type enum [not null]
-  role enum
-  check_in_time datetime
+  church_service_type enum [not null]
+  attendance_type enum
+  check_in_time time
+  description varchar(255) [null]
 }
 
 
 // Events
 Table events {
-  event_id integer [primary key]
-  unique_id uuid [unique]
-  organization_id integer [ref: - organizations.organization_id, null]
-  organizer_id integer [ref: - members.member_id, null]
+  event_id uuid [primary key]
+  congregation_id uuid [ref: - congregations.congregation_id, not null]
+
+  organization_id uuid [ref: - organizations.organization_id, null]
+  organizer_id uuid [ref: - members.member_id, null]
   title varchar(255) [not null]
   start_date date
   end_date date
@@ -92,8 +103,11 @@ Table events {
 }
 
 Table event_attendance {
-  member_id integer [ref: - members.member_id, not null]
-  event_id integer [ref: - events.event_id, not null]
+  event_attendance_id uuid [unique]
+  congregation_id uuid [ref: - congregations.congregation_id, not null]
+
+  member_id uuid [ref: - members.member_id, not null]
+  event_id uuid [ref: - events.event_id, not null]
   check_in_time timestamp
 
   indexes {
@@ -102,9 +116,11 @@ Table event_attendance {
 }
 
 Table event_registrations {
-  member_id integer [ref: - members.member_id, not null]
-  event_id integer [ref: - events.event_id, not null]
-  unique_id uuid [unique]
+  event_registration_id uuid [unique]
+  congregation_id uuid [ref: - congregations.congregation_id, not null]
+
+  member_id uuid [ref: - members.member_id, not null]
+  event_id uuid [ref: - events.event_id, not null]
   registration_date date
 
   indexes {
@@ -114,10 +130,11 @@ Table event_registrations {
 
 
 // Finances
-Table transactions {
-  transaction_id integer [primary key]
-  unique_id uuid [unique]
-  category_id integer [ref: - transaction_categories.category_id]
+Table financial_transactions {
+  transaction_id uuid [primary key]
+  congregation_id uuid [ref: - congregations.congregation_id, not null]
+
+  category_id uuid [ref: - transaction_categories.category_id]
   transaction_type enum [not null]
   transaction_date date
   amount decimal
@@ -125,8 +142,9 @@ Table transactions {
 }
 
 Table transaction_categories {
-  category_id integer [primary key]
-  unique_id uuid [unique]
+  category_id uuid [primary key]
+  congregation_id uuid [ref: - congregations.congregation_id, not null]
+
   name varchar(255)
   category_type enum
 }
@@ -134,9 +152,10 @@ Table transaction_categories {
 
 // Tithe
 Table tithe {
-  tithe_id integer [primary key]
-  unique_id uuid [unique]
-  member_id integer [ref: - members.member_id, not null]
+  tithe_id uuid [primary key]
+  congregation_id uuid [ref: - congregations.congregation_id, not null]
+
+  member_id uuid [ref: - members.member_id, not null]
   amount decimal [not null]
   payment_method enum
   collection_date date [not null]
@@ -148,10 +167,11 @@ Table tithe {
 
 // Projects
 Table projects {
-  project_id integer [primary key]
-  unique_key uuid [unique]
-  category_id integer [ref: - project_categories.category_id, null]
-  project_manager_id integer [ref: - members.member_id, not null]
+  project_id uuid [primary key]
+  congregation_id uuid [ref: - congregations.congregation_id, not null]
+
+  category_id uuid [ref: - project_categories.category_id, null]
+  project_manager_id uuid [ref: - members.member_id, not null]
   project_title varchar(255) [not null]
   target_amount decimal [not null]
   status enum [not null]
@@ -161,15 +181,17 @@ Table projects {
 }
 
 Table project_categories {
-  category_id integer [primary key]
-  unique_id uuid [unique]
+  category_id uuid [primary key]
+  congregation_id uuid [ref: - congregations.congregation_id, not null]
+
   name varchar(255) [not null]
 }
 
 Table project_contributions {
-  contribution_id integer [primary key]
-  unique_id uuid [unique]
-  project_id integer [ref: - projects.project_id, not null]
+  contribution_id uuid [primary key]
+  congregation_id uuid [ref: - congregations.congregation_id, not null]
+
+  project_id uuid [ref: - projects.project_id, not null]
   amount decimal [not null]
   date_contributed date
   payment_method enum
@@ -178,11 +200,12 @@ Table project_contributions {
 
 
 Table assets {
-  asset_id integer [primary key]
-  unique_id uuid [unique]
+  asset_id uuid [primary key]
+  congregation_id uuid [ref: - congregations.congregation_id, not null]
+
   name varchar(255)
   serial_number varchar(255) [null]
-  category_id integer [ref: - asset_categories.category_id, null]
+  category_id uuid [ref: - asset_categories.category_id, null]
   purchase_date date
   purchase_cost decimal
   current_value decimal
@@ -196,8 +219,9 @@ Table assets {
 }
 
 Table asset_categories{
-  category_id integer [primary key]
-  unique_id uuid [unique]
+  category_id uuid [primary key]
+  congregation_id uuid [ref: - congregations.congregation_id, not null]
+
   category_name varchar(255) [not null]
 }
 
@@ -207,7 +231,7 @@ Table asset_categories{
   This table is still a work in progress, it's here because I don't want to forget it and do it again later
 */
 Table report_snapshots {
-  report_id integer [primary key, increment]
+  report_id uuid [primary key]
   unique_id uuid [unique]
   report_type enum [not null]
   generated_date datetime

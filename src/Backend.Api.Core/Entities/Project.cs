@@ -2,13 +2,13 @@ using Backend.Api.Core.Enums;
 
 namespace Backend.Api.Core.Entities;
 
-public class Project
+public class Project : ICongregationEntity
 {
-    public int ProjectId { get; init; }
-    public Guid UniqueId { get; init; }
+    public Guid Id { get; init; }
+    public Guid CongregationId { get; init; }
+    public Guid CategoryId { get; init; }
+    public Guid ProjectManagerId { get; init; }
     public string Title { get; init; } = string.Empty;
-    public int CategoryId { get; init; }
-    public int ProjectManagerId { get; init; }
     public decimal TargetAmount { get; init; }
     public ProjectStatus Status { get; init; }
     public DateOnly StartDate { get; init; }

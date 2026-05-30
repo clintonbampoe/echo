@@ -8,8 +8,7 @@ public class EventConfiguration : IEntityTypeConfiguration<Event>
 {
     public void Configure(EntityTypeBuilder<Event> builder)
     {
-        builder.HasKey(e => e.EventId);
-        builder.HasAlternateKey(e => e.UniqueId);
+        builder.HasKey(e => e.Id);
         builder.HasIndex(e => e.Title).IsUnique();
 
         builder.HasOne<Organization>()

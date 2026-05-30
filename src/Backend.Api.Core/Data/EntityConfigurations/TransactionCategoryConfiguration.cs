@@ -8,8 +8,7 @@ public class TransactionCategoryConfiguration : IEntityTypeConfiguration<Transac
 {
     public void Configure(EntityTypeBuilder<TransactionCategory> builder)
     {
-        builder.HasKey(cat => cat.CategoryId);
-        builder.HasAlternateKey(cat => cat.UniqueId);
+        builder.HasKey(cat => cat.Id);
         builder.HasIndex(cat => cat.Name).IsUnique();
     }
 }

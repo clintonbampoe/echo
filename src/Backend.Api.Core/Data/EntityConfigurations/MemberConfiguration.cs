@@ -8,8 +8,7 @@ public class MemberConfiguration : IEntityTypeConfiguration<Member>
 {
     public void Configure(EntityTypeBuilder<Member> builder)
     {
-        builder.HasKey(m => m.MemberId);
-        builder.HasAlternateKey(m => m.UniqueId);
+        builder.HasKey(m => m.Id);
         builder.HasIndex(p => new { p.FirstName, p.LastName })
             .HasDatabaseName("FullName");
 

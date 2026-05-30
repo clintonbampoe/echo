@@ -1,8 +1,8 @@
 namespace Backend.Api.Core.Entities;
 
-public class ProjectCategory
+public class ProjectCategory : ICongregationEntity
 {
-    public int CategoryId { get; init; }
-    public Guid UniqueId { get; init; }
+    public Guid Id { get; init; }
+    public Guid CongregationId { get; init; }
     public string Title { get; init; } = string.Empty;
 }
