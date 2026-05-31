@@ -16,7 +16,7 @@ public class MemberConfiguration : CongregationEntityConfigurationBase<Member>
 
         builder.Property(m => m.Name)
             .HasComputedColumnSql(
-                $"TRIM(CONCAT({nameof(Member.LastName)}, ' ', {nameof(Member.FirstName)}, ' ', {nameof(Member.OtherNames)}))",
+                $"TRIM(CONCAT('{nameof(Member.LastName)}', ' ', '{nameof(Member.FirstName)}', ' ', '{nameof(Member.OtherNames)}'))",
 
             stored: true
             );
