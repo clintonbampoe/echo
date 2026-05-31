@@ -12,7 +12,7 @@ public class Project : ICongregationEntity, ISoftDeletableEntity, ISearchableEnt
     public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
     public string Name { get; set; } = string.Empty;
     public decimal TargetAmount { get; set; }
-    public ProjectStatus Status { get; set  ; }
+    public ProjectStatus Status { get; set; }
     public DateOnly StartDate { get; set; }
     public DateOnly? EndDate { get; set; }
     public string? Description { get; set; } = string.Empty;
