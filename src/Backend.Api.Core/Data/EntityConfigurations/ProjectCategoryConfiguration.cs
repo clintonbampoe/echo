@@ -10,6 +10,6 @@ public class ProjectCategoryConfiguration : CongregationEntityConfigurationBase<
     public override void ConfigureEntity(EntityTypeBuilder<ProjectCategory> builder)
     {
         builder.HasKey(category => category.Id);
-        builder.HasIndex(category => category.Title).IsUnique();
+        builder.HasIndex(category => category.Name).IsUnique();
     }
 }

@@ -25,7 +25,7 @@ public class AppDbContext : DbContext
     public DbSet<ProjectCategory> ProjectCategories { get; set; }
     public DbSet<ProjectContribution> ProjectContributions { get; set; }
     public DbSet<Tithe> Tithes { get; set; }
-    public DbSet<FinancialTransaction> Transactions { get; set; }
+    public DbSet<Transaction> Transactions { get; set; }
     public DbSet<TransactionCategory> TransactionCategories { get; set; }
     public DbSet<User> Users { get; set; }
     public DbSet<Congregation> Congregations { get; set; }

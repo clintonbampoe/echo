@@ -3,7 +3,7 @@ using Backend.Api.Core.Enums;
 
 namespace Backend.Api.Core.Entities;
 
-public class FinancialTransaction : ICongregationEntity, ISoftDeletableEntity, IDateTrackedEntity
+public class Transaction : ICongregationEntity, ISoftDeletableEntity, IDateTrackedEntity
 {
     public Guid Id { get; init; }
     public Guid CongregationId { get; init; }

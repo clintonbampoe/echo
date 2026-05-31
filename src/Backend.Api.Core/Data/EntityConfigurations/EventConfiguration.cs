@@ -10,7 +10,7 @@ public class EventConfiguration : CongregationEntityConfigurationBase<Event>
     public override void ConfigureEntity(EntityTypeBuilder<Event> builder)
     {
         builder.HasKey(e => e.Id);
-        builder.HasIndex(e => e.Title).IsUnique();
+        builder.HasIndex(e => e.Name).IsUnique();
 
         builder.HasOne<Organization>()
             .WithMany()

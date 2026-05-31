@@ -5,9 +5,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Backend.Api.Core.Data.EntityConfigurations;
 
-public class FinancialTransactionConfiguration : CongregationEntityConfigurationBase<FinancialTransaction>
+public class TransactionConfiguration : CongregationEntityConfigurationBase<Transaction>
 {
-    public override void ConfigureEntity(EntityTypeBuilder<FinancialTransaction> builder)
+    public override void ConfigureEntity(EntityTypeBuilder<Transaction> builder)
     {
         builder.HasKey(tr => tr.Id);
 
