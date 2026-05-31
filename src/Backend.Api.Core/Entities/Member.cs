@@ -1,9 +1,9 @@
-using System.ComponentModel.DataAnnotations;
+using Backend.Api.Core.Entities.Interfaces;
 using Backend.Api.Core.Enums;
 
 namespace Backend.Api.Core.Entities;
 
-public class Member : ICongregationEntity
+public class Member : ICongregationEntity, ISoftDeletableEntity
 {
     public Guid Id { get; init; }
     public Guid CongregationId { get; init; }
@@ -25,4 +25,5 @@ public class Member : ICongregationEntity
     public string EmergencyContactName { get; init; } = string.Empty;
     public string EmergencyContactPhoneNumber { get; init; } = string.Empty;
     public MemberActivityStatus MemberActivityStatus { get; init; }
+    public DateTime? DeletedAt { get; set; }
 }

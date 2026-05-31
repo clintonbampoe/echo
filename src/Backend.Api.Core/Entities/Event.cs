@@ -1,7 +1,9 @@
 
+using Backend.Api.Core.Entities.Interfaces;
+
 namespace Backend.Api.Core.Entities;
 
-public class Event : ICongregationEntity
+public class Event : ICongregationEntity, ISoftDeletableEntity
 {
     public Guid Id { get; init; }
     public Guid CongregationId { get; init; }
@@ -15,4 +17,5 @@ public class Event : ICongregationEntity
     public string? Location { get; init; } = string.Empty;
     public int? Capacity { get; init; }
     public string? Description { get; init; } = string.Empty;
+    public DateTime? DeletedAt { get; set; }
 }

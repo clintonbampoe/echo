@@ -1,6 +1,8 @@
 using System.Reflection;
 using Backend.Api.Core.Entities;
+using Backend.Api.Core.Entities.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace Backend.Api.Core.Data;
 
@@ -38,5 +40,23 @@ public class AppDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            if (typeof(ISoftDeletableEntity).IsAssignableFrom(entityType.ClrType))
+            {
+                typeof(AppDbContext)
+                    .GetMethod(nameof(ConfigureSoftDeleteFilter), BindingFlags.NonPublic | BindingFlags.Static)
+                    ?.MakeGenericMethod(entityType.ClrType)
+                    .Invoke(null, new object[] { modelBuilder });
+            }
+        }
+    }
+
+    private static void ConfigureSoftDeleteFilter<TEntity>(ModelBuilder modelBuilder)
+        where TEntity : class, ISoftDeletableEntity
+    {
+        modelBuilder.Entity<TEntity>()
+            .HasQueryFilter(entity => entity.DeletedAt == null);
     }
 }
