@@ -6,7 +6,7 @@ public class Organization : ICongregationEntity, ISoftDeletableEntity, ISearchab
 {
     public Guid Id { get; init; }
     public Guid CongregationId { get; init; }
-    public DateTime CreatedAt { get; init; }
+    public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; } = string.Empty;
     public DateTime? DeletedAt { get; set; }

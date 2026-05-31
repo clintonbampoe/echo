@@ -8,7 +8,7 @@ public class Tithe : ICongregationEntity, ISoftDeletableEntity, IDateTrackedEnti
     public Guid Id { get; init; }
     public Guid CongregationId { get; init; }
     public Guid MemberId { get; init; }
-    public DateTime CreatedAt { get; init; }
+    public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
     public int Decimal { get; set; }
     public int ForYear { get; set; }
     public MonthOfYear ForMonth { get; set; }

@@ -9,7 +9,7 @@ public class Project : ICongregationEntity, ISoftDeletableEntity, ISearchableEnt
     public Guid CongregationId { get; init; }
     public Guid CategoryId { get; init; }
     public Guid ProjectManagerId { get; init; }
-    public DateTime CreatedAt { get; init; }
+    public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
     public string Name { get; set; } = string.Empty;
     public decimal TargetAmount { get; set; }
     public ProjectStatus Status { get; set  ; }
