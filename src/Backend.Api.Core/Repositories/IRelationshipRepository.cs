@@ -7,7 +7,7 @@ public interface IRelationshipRepository<T> : IEntityRepository<T> where T : cla
         PaginationParams paginationParameters,
         QueryParameters queryParameters
         );
-        
+
     public Task<IEnumerable<T>> GetByRightEntityIdAsync(
         Guid rightId,
         PaginationParams paginationParameters,

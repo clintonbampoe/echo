@@ -5,7 +5,7 @@ public class PagedResponse<T> where T : class
     public int PageSize { get; set; }
     public int TotalRecords { get; set; }
 
-    public PagedResponse(){}
+    public PagedResponse() { }
     public PagedResponse(IEnumerable<T> data, int pageNumber, int pageSize, int totalRecords)
     {
         Data = data;
