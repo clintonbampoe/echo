@@ -7,7 +7,7 @@ public class TransactionCategory : ICongregationEntity, ISoftDeletableEntity, IS
 {
     public Guid Id { get; init; }
     public Guid CongregationId { get; init; }
-    public DateTime CreatedAt { get; init; }
+    public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
     public string Name { get; set; } = string.Empty;
     public TransactionType CategoryType { get; set; }
     public DateTime? DeletedAt { get; set; }

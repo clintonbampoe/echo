@@ -7,7 +7,7 @@ public class AttendanceRecord : ICongregationEntity, ISoftDeletableEntity, IDate
 {
     public Guid Id { get; init; }
     public Guid CongregationId { get; init; }
-    public DateTime CreatedAt { get; init; }
+    public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
     public Guid MemberId { get; init; }
     public DateOnly ForDate { get; set; }
     public ChurchServiceType ChurchServiceType { get; set; }

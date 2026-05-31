@@ -3,6 +3,7 @@ using System;
 using Backend.Api.Core.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Backend.Api.Core.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260531190045_ImplementComputedFieldsLogic")]
+    partial class ImplementComputedFieldsLogic
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -350,7 +353,7 @@ namespace Backend.Api.Core.Migrations
                         .ValueGeneratedOnAddOrUpdate()
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)")
-                        .HasComputedColumnSql("TRIM(CONCAT(\"LastName\", ' ', \"FirstName\", ' ', \"OtherNames\"))", true);
+                        .HasComputedColumnSql("TRIM(CONCAT(LastName, ' ', FirstName, ' ', OtherNames))", true);
 
                     b.Property<string>("NextOfKin")
                         .IsRequired()

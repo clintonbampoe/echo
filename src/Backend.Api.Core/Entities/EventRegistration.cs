@@ -8,7 +8,7 @@ public class EventRegistration : ICongregationEntity, ISoftDeletableEntity, IDat
     public Guid CongregationId { get; init; }
     public Guid MemberId { get; init; }
     public Guid EventId { get; init; }
-    public DateTime CreatedAt { get; init; }
+    public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
     public DateOnly RegistrationDate { get; set; }
     public DateTime? DeletedAt { get; set; }
 }
