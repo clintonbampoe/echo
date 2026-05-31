@@ -8,8 +8,6 @@ public abstract class CongregationEntityConfigurationBase<TEntity> : IEntityType
 {
     public void Configure(EntityTypeBuilder<TEntity> builder)
     {
-        builder.HasKey(entity => entity.Id);
-
         builder.HasOne<Congregation>()
             .WithMany()
             .HasForeignKey(entity => entity.CongregationId)
