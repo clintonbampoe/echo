@@ -1,20 +1,16 @@
+using Backend.Api.Core.Data.EntityConfigurations.Interfaces;
 using Backend.Api.Core.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Backend.Api.Core.Data.EntityConfigurations;
 
-public class EventRegistrationConfiguration : IEntityTypeConfiguration<EventRegistration>
+public class EventRegistrationConfiguration : CongregationEntityConfigurationBase<EventRegistration>
 {
-    public void Configure(EntityTypeBuilder<EventRegistration> builder)
+    public override void ConfigureEntity(EntityTypeBuilder<EventRegistration> builder)
     {
         builder.HasKey(eventReg => new { eventReg.EventId, eventReg.MemberId });
 
-        builder.HasOne<Congregation>()
-            .WithMany()
-            .HasForeignKey(eventReg => eventReg.CongregationId)
-            .OnDelete(DeleteBehavior.Cascade);
-            
         builder.HasOne<Member>()
             .WithMany()
             .HasForeignKey(ea => ea.MemberId)

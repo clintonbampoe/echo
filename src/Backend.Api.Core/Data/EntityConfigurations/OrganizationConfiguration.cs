@@ -1,20 +1,16 @@
+using Backend.Api.Core.Data.EntityConfigurations.Interfaces;
 using Backend.Api.Core.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Backend.Api.Core.Data.EntityConfigurations;
 
-public class OrganizationConfiguration : IEntityTypeConfiguration<Organization>
+public class OrganizationConfiguration : CongregationEntityConfigurationBase<Organization>
 {
-    public void Configure(EntityTypeBuilder<Organization> builder)
+    public override void ConfigureEntity(EntityTypeBuilder<Organization> builder)
     {
         builder.HasKey(o => o.Id);
 
         builder.HasIndex(o => o.Name).IsUnique();
-
-        builder.HasOne<Congregation>()
-            .WithMany()
-            .HasForeignKey(o => o.CongregationId)
-            .OnDelete(DeleteBehavior.Cascade);
     }
 }

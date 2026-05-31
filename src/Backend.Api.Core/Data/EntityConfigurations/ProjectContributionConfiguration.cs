@@ -1,19 +1,15 @@
+using Backend.Api.Core.Data.EntityConfigurations.Interfaces;
 using Backend.Api.Core.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Backend.Api.Core.Data.EntityConfigurations;
 
-public class ProjectContributionConfiguration : IEntityTypeConfiguration<ProjectContribution>
+public class ProjectContributionConfiguration : CongregationEntityConfigurationBase<ProjectContribution>
 {
-    public void Configure(EntityTypeBuilder<ProjectContribution> builder)
+    public override void ConfigureEntity(EntityTypeBuilder<ProjectContribution> builder)
     {
         builder.HasKey(contribution => contribution.Id);
-
-        builder.HasOne<Congregation>()
-            .WithMany()
-            .HasForeignKey(contribution => contribution.CongregationId)
-            .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne<Project>()
             .WithMany()

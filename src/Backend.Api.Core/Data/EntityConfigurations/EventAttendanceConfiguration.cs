@@ -1,20 +1,16 @@
+using Backend.Api.Core.Data.EntityConfigurations.Interfaces;
 using Backend.Api.Core.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Backend.Api.Core.Data.EntityConfigurations;
 
-public class EventAttendanceConfiguration : IEntityTypeConfiguration<EventAttendance>
+public class EventAttendanceConfiguration : CongregationEntityConfigurationBase<EventAttendance>
 {
-    public void Configure(EntityTypeBuilder<EventAttendance> builder)
+    public override void ConfigureEntity(EntityTypeBuilder<EventAttendance> builder)
     {
         builder.HasKey(ea => new { ea.EventId, ea.MemberId });
 
-        builder.HasOne<Congregation>()
-            .WithMany()
-            .HasForeignKey(ea => ea.CongregationId)
-            .OnDelete(DeleteBehavior.Cascade);
-            
         builder.HasOne<Member>()
             .WithMany()
             .HasForeignKey(ea => ea.MemberId)
