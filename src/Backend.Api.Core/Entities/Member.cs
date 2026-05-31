@@ -1,29 +1,33 @@
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations.Schema;
 using Backend.Api.Core.Entities.Interfaces;
 using Backend.Api.Core.Enums;
 
 namespace Backend.Api.Core.Entities;
 
-public class Member : ICongregationEntity, ISoftDeletableEntity
+public class Member : ICongregationEntity, ISoftDeletableEntity, IDateTrackedEntity, ISearchableEntity
 {
     public Guid Id { get; init; }
     public Guid CongregationId { get; init; }
-    public string FirstName { get; init; } = string.Empty;
-    public string LastName { get; init; } = string.Empty;
+    public DateTime CreatedAt { get; init; }
+    public string Name { get; set { } } = string.Empty;
+    public string FirstName { get; set; } = string.Empty;
+    public string LastName { get; set; } = string.Empty;
     public string? OtherNames { get; init; } = string.Empty;
     public string? EmailAddress { get; init; } = string.Empty;
-    public string PhoneNumber { get; init; } = string.Empty;
-    public DateOnly DateOfBirth { get; init; }
-    public DateOnly? JoinedDate { get; init; }
-    public Gender Gender { get; init; }
-    public string ResidentialAddress { get; init; } = string.Empty;
-    public string City { get; init; } = string.Empty;
-    public string Hometown { get; init; } = string.Empty;
-    public Region Region { get; init; }
-    public string? GpsAddress { get; init; } = string.Empty;
-    public MaritalStatus MaritalStatus { get; init; }
-    public string NextOfKin { get; init; } = string.Empty;
-    public string EmergencyContactName { get; init; } = string.Empty;
-    public string EmergencyContactPhoneNumber { get; init; } = string.Empty;
-    public MemberActivityStatus MemberActivityStatus { get; init; }
+    public string PhoneNumber { get; set; } = string.Empty;
+    public DateOnly DateOfBirth { get; set; }
+    public DateOnly? JoinedDate { get; set; }
+    public Gender Gender { get; set; }
+    public string ResidentialAddress { get; set; } = string.Empty;
+    public string City { get; set; } = string.Empty;
+    public string Hometown { get; set; } = string.Empty;
+    public Region Region { get; set; }
+    public string? GpsAddress { get; set; } = string.Empty;
+    public MaritalStatus MaritalStatus { get; set; }
+    public string NextOfKin { get; set; } = string.Empty;
+    public string EmergencyContactName { get; set; } = string.Empty;
+    public string EmergencyContactPhoneNumber { get; set; } = string.Empty;
+    public MemberActivityStatus MemberActivityStatus { get; set; }
     public DateTime? DeletedAt { get; set; }
 }

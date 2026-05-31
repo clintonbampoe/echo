@@ -10,10 +10,15 @@ public class MemberConfiguration : CongregationEntityConfigurationBase<Member>
     public override void ConfigureEntity(EntityTypeBuilder<Member> builder)
     {
         builder.HasKey(m => m.Id);
-        builder.HasIndex(p => new { p.FirstName, p.LastName })
-            .HasDatabaseName("FullName");
 
         builder.Property(m => m.FirstName).IsRequired();
         builder.Property(m => m.LastName).IsRequired();
+
+        builder.Property(m => m.Name)
+            .HasComputedColumnSql(
+                $"TRIM(CONCAT({nameof(Member.LastName)}, ' ', {nameof(Member.FirstName)}, ' ', {nameof(Member.OtherNames)}))",
+
+            stored: true
+            );
     }
 }

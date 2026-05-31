@@ -3,16 +3,17 @@ using Backend.Api.Core.Enums;
 
 namespace Backend.Api.Core.Entities;
 
-public class Tithe : ICongregationEntity, ISoftDeletableEntity
+public class Tithe : ICongregationEntity, ISoftDeletableEntity, IDateTrackedEntity
 {
     public Guid Id { get; init; }
     public Guid CongregationId { get; init; }
     public Guid MemberId { get; init; }
-    public int Decimal { get; init; }
-    public int ForYear { get; init; }
-    public MonthOfYear ForMonth { get; init; }
-    public PaymentMethod PaymentMethod { get; init; }
-    public DateOnly CollectionDate { get; init; }
-    public string? Description { get; init; } = string.Empty;
+    public DateTime CreatedAt { get; init; }
+    public int Decimal { get; set; }
+    public int ForYear { get; set; }
+    public MonthOfYear ForMonth { get; set; }
+    public PaymentMethod PaymentMethod { get; set; }
+    public DateOnly CollectionDate { get; set; }
+    public string? Description { get; set; } = string.Empty;
     public DateTime? DeletedAt { get; set; }
 }
