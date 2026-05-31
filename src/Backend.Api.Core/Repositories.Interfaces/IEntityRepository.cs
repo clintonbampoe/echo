@@ -1,6 +1,6 @@
 public interface IEntityRepository<T> where T : class
 {
-    Task<T> GetPageAsync(
+    Task<IEnumerable<T>> GetPageAsync(
         PaginationParams paginationParameters,
         QueryParameters queryParameters,
         CancellationToken cancellationToken = default
