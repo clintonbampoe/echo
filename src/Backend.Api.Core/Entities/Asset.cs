@@ -1,8 +1,9 @@
+using Backend.Api.Core.Entities.Interfaces;
 using Backend.Api.Core.Enums;
 
 namespace Backend.Api.Core.Entities;
 
-public class Asset : ICongregationEntity
+public class Asset : ICongregationEntity, ISoftDeletableEntity
 {
     public Guid Id { get; init; }
     public Guid CongregationId { get; init; }
@@ -14,4 +15,5 @@ public class Asset : ICongregationEntity
     public decimal CurrentValue { get; init; }
     public AssetStatus Status { get; init; }
     public string? Description { get; init; } = string.Empty;
+    public DateTime? DeletedAt { get; set; }
 }
