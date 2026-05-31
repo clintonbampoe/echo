@@ -3,15 +3,16 @@ using Backend.Api.Core.Enums;
 
 namespace Backend.Api.Core.Entities;
 
-public class AttendanceRecord : ICongregationEntity, ISoftDeletableEntity
+public class AttendanceRecord : ICongregationEntity, ISoftDeletableEntity, IDateTrackedEntity
 {
     public Guid Id { get; init; }
     public Guid CongregationId { get; init; }
+    public DateTime CreatedAt { get; init; }
     public Guid MemberId { get; init; }
-    public DateOnly ForDate { get; init; }
-    public ChurchServiceType ChurchServiceType { get; init; }
-    public AttendeeType AttendeeType { get; init; }
-    public TimeOnly CheckInTime { get; init; }
+    public DateOnly ForDate { get; set; }
+    public ChurchServiceType ChurchServiceType { get; set; }
+    public AttendeeType AttendeeType { get; set; }
+    public TimeOnly CheckInTime { get; set; }
     public string? Description { get; set; } = string.Empty;
     public DateTime? DeletedAt { get; set; }
 }

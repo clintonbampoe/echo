@@ -3,17 +3,18 @@ using Backend.Api.Core.Enums;
 
 namespace Backend.Api.Core.Entities;
 
-public class Asset : ICongregationEntity, ISoftDeletableEntity
+public class Asset : ICongregationEntity, ISoftDeletableEntity, IDateTrackedEntity, ISearchableEntity
 {
     public Guid Id { get; init; }
     public Guid CongregationId { get; init; }
-    public string Name { get; init; } = string.Empty;
-    public string? SerialNumber { get; init; } = string.Empty;
     public Guid? CategoryId { get; init; }
-    public DateOnly? PurchaseDate { get; init; }
-    public decimal PurchaseCost { get; init; }
-    public decimal CurrentValue { get; init; }
-    public AssetStatus Status { get; init; }
-    public string? Description { get; init; } = string.Empty;
+    public DateTime CreatedAt { get; init; }
+    public string Name { get; set; } = string.Empty;
+    public string? SerialNumber { get; set; } = string.Empty;
+    public DateOnly? PurchaseDate { get; set; }
+    public decimal PurchaseCost { get; set; }
+    public decimal CurrentValue { get; set; }
+    public AssetStatus Status { get; set; }
+    public string? Description { get; set; } = string.Empty;
     public DateTime? DeletedAt { get; set; }
 }

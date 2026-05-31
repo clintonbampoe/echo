@@ -3,14 +3,15 @@ using Backend.Api.Core.Enums;
 
 namespace Backend.Api.Core.Entities;
 
-public class ProjectContribution : ICongregationEntity, ISoftDeletableEntity
+public class ProjectContribution : ICongregationEntity, ISoftDeletableEntity, IDateTrackedEntity
 {
     public Guid Id { get; init; }
     public Guid CongregationId { get; init; }
     public Guid ProjectId { get; init; }
-    public decimal Amount { get; init; }
-    public DateOnly DateContributed { get; init; }
-    public PaymentMethod PaymentMethod { get; init; }
-    public string? Description { get; init; } = string.Empty;
+    public DateTime CreatedAt { get; init; }
+    public decimal Amount { get; set; }
+    public DateOnly DateContributed { get; set; }
+    public PaymentMethod PaymentMethod { get; set; }
+    public string? Description { get; set; } = string.Empty;
     public DateTime? DeletedAt { get; set; }
 }

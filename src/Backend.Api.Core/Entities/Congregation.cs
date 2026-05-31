@@ -1,9 +1,9 @@
 using Backend.Api.Core.Entities.Interfaces;
 
-public class Congregation : ISoftDeletableEntity
+public class Congregation : ISoftDeletableEntity, ISearchableEntity, IDateTrackedEntity
 {
     public Guid CongregationId { get; init; }
-    public string Name { get; init; } = string.Empty;
     public DateTime CreatedAt { get; init; }
+    public string Name { get; set; } = string.Empty;
     public DateTime? DeletedAt { get; set; }
 }
