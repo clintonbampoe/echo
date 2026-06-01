@@ -1,4 +1,5 @@
 using AutoMapper;
+using Backend.Api.Core.Entities;
 using Backend.Api.Core.Entities.Dtos;
 
 namespace Backend.Api.Core.Common.Mapping;
@@ -7,11 +8,12 @@ public class MemberProfile : Profile
 {
     public MemberProfile()
     {
-        CreateMap<Entities.Member, MemberResponseDto>().ReverseMap();
-        CreateMap<Entities.Member, MemberCreateDto>().ReverseMap();
-        CreateMap<Entities.Member, MemberUpdateDto>().ReverseMap();
+        CreateMap<Member, MemberResponseDto>().ReverseMap();
+        CreateMap<Member, MemberCreateDto>().ReverseMap();
+        CreateMap<Member, MemberUpdateDto>().ReverseMap();
+        CreateMap<Member, MemberDeleteDto>().ReverseMap();
 
-        CreateMap<Entities.Member, MemberListResponseDto>()
+        CreateMap<Member, MemberListResponseDto>()
             .ForMember(dest => dest.FullName, opt => opt.MapFrom(src =>
                 $"{src.FirstName} {src.LastName} {src.OtherNames}"))
             .ReverseMap()
