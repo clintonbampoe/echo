@@ -28,11 +28,6 @@ public class DomainRecordService<T> : IDomainRecordService<T> where T : class, I
         return _getRecordService.GetRecordByIdAsync(Id, cancellationToken);
     }
 
-    public int GetTotalRecordsCount(QueryParameters queryParameters)
-    {
-        return _getRecordService.GetTotalRecordsCount(queryParameters);
-    }
-
     public PagedResponse<T> CreateNewPagedResponseObject(List<T> records, PaginationParams paginationParameters, int totalRecords)
     {
         return _getRecordService.CreateNewPagedResponseObject(records, paginationParameters, totalRecords);
