@@ -102,3 +102,36 @@ export const deleteTitheRecord = async (titheId: number): Promise<boolean> => {
     }, 300);
   });
 };
+
+export const saveTitheRecord = async (
+  record: Omit<TitheRecord, 'titheId' | 'uniqueId' | 'memberName'> & { titheId?: number; memberName?: string }
+): Promise<TitheRecord> => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      if (record.titheId) {
+        const index = mockTithes.findIndex(t => t.titheId === record.titheId);
+        if (index > -1) {
+          const updated = { ...mockTithes[index], ...record } as TitheRecord;
+          mockTithes[index] = updated;
+          resolve(updated);
+          return;
+        }
+      }
+      const nextId = mockTithes.length > 0 ? Math.max(...mockTithes.map(t => t.titheId)) + 1 : 1;
+      const newRecord: TitheRecord = {
+        titheId: nextId,
+        uniqueId: `tithe-${String(nextId).padStart(3, '0')}`,
+        memberId: record.memberId,
+        amount: record.amount,
+        paymentMethod: record.paymentMethod,
+        collectionDate: record.collectionDate,
+        forMonth: record.forMonth,
+        forYear: record.forYear,
+        description: record.description || null,
+        memberName: record.memberName,
+      };
+      mockTithes.push(newRecord);
+      resolve(newRecord);
+    }, 300);
+  });
+};

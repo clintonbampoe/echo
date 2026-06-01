@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useLayout } from '../context/LayoutContext';
-import { deleteTitheRecord, getTitheRecords } from '../services/titheService';
+import { deleteTitheRecord, getTitheRecords, saveTitheRecord } from '../services/titheService';
+import { getMembers } from '../services/attendanceService';
 import type { TitheRecord } from '../types/tithe';
+import type { Member } from '../types/attendance';
+import { CloseIcon, RecordIcon } from './Icons';
 import '../styles/Tithe.css';
 
 const ITEMS_PER_PAGE = 5;
@@ -19,13 +22,29 @@ const Tithe: React.FC = () => {
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const [currentPage, setCurrentPage] = useState<number>(1);
   
+  const [members, setMembers] = useState<Member[]>([]);
+  const [showModal, setShowModal] = useState(false);
+  const [editingRecord, setEditingRecord] = useState<TitheRecord | null>(null);
+
+  const [formData, setFormData] = useState({
+    memberId: '',
+    amount: '',
+    paymentMethod: 'Cash',
+    forMonth: MONTHS[new Date().getMonth()],
+    forYear: new Date().getFullYear(),
+    collectionDate: new Date().toISOString().split('T')[0],
+    description: '',
+  });
+
   useEffect(() => {
     let mounted = true;
     const loadData = async () => {
       try {
         const data = await getTitheRecords(selectedMonth || undefined, selectedYear || undefined);
+        const membersData = await getMembers();
         if (mounted) {
           setRecords(data);
+          setMembers(membersData);
           setCurrentPage(1); // reset pagination when filters change
         }
       } catch (err) {
@@ -45,8 +64,61 @@ const Tithe: React.FC = () => {
   };
 
   const handleEdit = (record: TitheRecord) => {
-    // Future: open modal in edit mode
-    alert(`Editing tithe for ${record.memberName || 'Member #' + record.memberId}`);
+    setEditingRecord(record);
+    setFormData({
+      memberId: String(record.memberId),
+      amount: String(record.amount),
+      paymentMethod: record.paymentMethod,
+      forMonth: record.forMonth,
+      forYear: record.forYear,
+      collectionDate: record.collectionDate,
+      description: record.description || '',
+    });
+    setShowModal(true);
+  };
+
+  const handleOpenAddModal = () => {
+    setEditingRecord(null);
+    setFormData({
+      memberId: '',
+      amount: '',
+      paymentMethod: 'Cash',
+      forMonth: MONTHS[new Date().getMonth()],
+      forYear: new Date().getFullYear(),
+      collectionDate: new Date().toISOString().split('T')[0],
+      description: '',
+    });
+    setShowModal(true);
+  };
+
+  const handleSaveTithe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.memberId || !formData.amount) {
+      alert('Please select a member and enter an amount.');
+      return;
+    }
+
+    const member = members.find(m => m.memberId === parseInt(formData.memberId));
+
+    try {
+      await saveTitheRecord({
+        titheId: editingRecord?.titheId,
+        memberId: parseInt(formData.memberId),
+        amount: parseFloat(formData.amount),
+        paymentMethod: formData.paymentMethod as any,
+        forMonth: formData.forMonth as any,
+        forYear: parseInt(String(formData.forYear)),
+        collectionDate: formData.collectionDate,
+        description: formData.description,
+        memberName: member ? `${member.firstName} ${member.lastName}` : undefined,
+      });
+
+      setShowModal(false);
+      const data = await getTitheRecords(selectedMonth || undefined, selectedYear || undefined);
+      setRecords(data);
+    } catch (err) {
+      console.error('Failed to save tithe record:', err);
+    }
   };
 
   // Pagination logic
@@ -104,10 +176,7 @@ const Tithe: React.FC = () => {
         label: 'Record Tithe',
         icon: 'plus',
         variant: 'primary',
-        onClick: () => {
-          // Future: open modal to record tithe
-          alert('Record tithe modal coming soon!');
-        },
+        onClick: handleOpenAddModal,
       },
     ]);
   }, [setTitle, setCtas]);
@@ -236,6 +305,132 @@ const Tithe: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* ─── Add / Edit Modal ─────────────────────────────────────────────── */}
+      {showModal && (
+        <div className="tithe-modal-overlay" onClick={() => setShowModal(false)}>
+          <form className="tithe-modal" onClick={e => e.stopPropagation()} onSubmit={handleSaveTithe}>
+            <div className="tithe-modal-header">
+              <h2 className="tithe-modal-title">
+                {editingRecord ? 'Edit Tithe Record' : 'Record Tithe'}
+              </h2>
+              <button type="button" className="tithe-modal-close" onClick={() => setShowModal(false)}>
+                <CloseIcon />
+              </button>
+            </div>
+
+            <div className="tithe-modal-body">
+              {/* Member Selection */}
+              <div className="tithe-form-group">
+                <label className="tithe-form-label">Member</label>
+                <select
+                  className="tithe-form-select"
+                  value={formData.memberId}
+                  onChange={e => setFormData(prev => ({ ...prev, memberId: e.target.value }))}
+                  required
+                >
+                  <option value="">Select Member...</option>
+                  {members.map(m => (
+                    <option key={m.memberId} value={m.memberId}>
+                      {m.firstName} {m.lastName}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Amount & Payment Method */}
+              <div className="tithe-form-row">
+                <div className="tithe-form-group">
+                  <label className="tithe-form-label">Amount</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    className="tithe-form-input"
+                    placeholder="₵ 0.00"
+                    value={formData.amount}
+                    onChange={e => setFormData(prev => ({ ...prev, amount: e.target.value }))}
+                    required
+                  />
+                </div>
+                <div className="tithe-form-group">
+                  <label className="tithe-form-label">Payment Method</label>
+                  <select
+                    className="tithe-form-select"
+                    value={formData.paymentMethod}
+                    onChange={e => setFormData(prev => ({ ...prev, paymentMethod: e.target.value }))}
+                    required
+                  >
+                    <option value="Cash">Cash</option>
+                    <option value="Cheque">Cheque</option>
+                    <option value="CreditCard">Credit Card</option>
+                    <option value="MobileMoney">Mobile Money</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* For Month & Year */}
+              <div className="tithe-form-row">
+                <div className="tithe-form-group">
+                  <label className="tithe-form-label">For Month</label>
+                  <select
+                    className="tithe-form-select"
+                    value={formData.forMonth}
+                    onChange={e => setFormData(prev => ({ ...prev, forMonth: e.target.value }))}
+                    required
+                  >
+                    {MONTHS.map(m => (
+                      <option key={m} value={m}>{m}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="tithe-form-group">
+                  <label className="tithe-form-label">For Year</label>
+                  <input
+                    type="number"
+                    className="tithe-form-input"
+                    value={formData.forYear}
+                    onChange={e => setFormData(prev => ({ ...prev, forYear: parseInt(e.target.value) || new Date().getFullYear() }))}
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Collection Date */}
+              <div className="tithe-form-group">
+                <label className="tithe-form-label">Date Paid</label>
+                <input
+                  type="date"
+                  className="tithe-form-input"
+                  value={formData.collectionDate}
+                  onChange={e => setFormData(prev => ({ ...prev, collectionDate: e.target.value }))}
+                  required
+                />
+              </div>
+
+              {/* Notes */}
+              <div className="tithe-form-group">
+                <label className="tithe-form-label">Notes <span>(Optional)</span></label>
+                <textarea
+                  className="tithe-form-textarea"
+                  placeholder="Additional details..."
+                  value={formData.description}
+                  onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                />
+              </div>
+            </div>
+
+            <div className="tithe-modal-footer">
+              <button type="button" className="tithe-btn tithe-btn-secondary" onClick={() => setShowModal(false)}>
+                Cancel
+              </button>
+              <button type="submit" className="tithe-btn tithe-btn-primary">
+                <RecordIcon /> {editingRecord ? 'Save Changes' : 'Record Tithe'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
     </div>
   );
 };
