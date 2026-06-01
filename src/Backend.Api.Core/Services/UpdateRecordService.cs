@@ -22,7 +22,7 @@ public class UpdateRecordService<T> : IUpdateRecordService<T> where T : class, I
         if (existingRecord is null)
             return false;
 
-        existingRecord = updatedRecordData;
+        _dbSet.Entry(existingRecord).CurrentValues.SetValues(updatedRecordData);
         return true;
     }
 
