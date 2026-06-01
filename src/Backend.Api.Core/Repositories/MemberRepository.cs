@@ -1,8 +1,7 @@
+using AutoMapper;
 using Backend.Api.Core.Common.ExtensionMethods;
 using Backend.Api.Core.Data;
 using Backend.Api.Core.Entities;
-using Backend.Api.Core.Entities.Dtos;
-using Backend.Api.Core.Entities.Dtos.Interfaces;
 using Backend.Api.Core.Repositories.Interfaces;
 using Backend.Api.Core.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -13,88 +12,80 @@ public class MemberRepository : IEntityRepository<Member>
 {
     private readonly DbContext _context;
     private readonly DbSet<Member> _dbSet;
+    private readonly IMapper _mapper;
     private readonly ISoftDeleteService<Member> _softDeleteService;
-    public MemberRepository(AppDbContext context, ISoftDeleteService<Member> softDeleteService)
+    private readonly IUpdateRecordService<Member> _updateRecordService;
+    private readonly IGetRecordService<Member> _getRecordService;
+    private readonly ICreateNewRecordService<Member> _createNewRecordService;
+    public MemberRepository(
+        AppDbContext context,
+        IMapper mapper,
+        ISoftDeleteService<Member> softDeleteService,
+        IUpdateRecordService<Member> updateRecordService,
+        IGetRecordService<Member> getRecordService,
+        ICreateNewRecordService<Member> createNewRecordService)
     {
         _context = context;
         _dbSet = context.Set<Member>();
         _softDeleteService = softDeleteService;
+        _mapper = mapper;
+        _updateRecordService = updateRecordService;
+        _getRecordService = getRecordService;
+        _createNewRecordService = createNewRecordService;
     }
 
-    public async Task<PagedResponse<IResponseDto<Member>>> GetPageAsync(
+    public async Task<PagedResponse<Member>> GetPageAsync(
         PaginationParams paginationParameters, QueryParameters queryParameters, CancellationToken cancellationToken = default)
     {
-        var totalRecords = await _dbSet
-            .AsNoTracking()
-            .ApplyFilters(queryParameters)
-            .CountAsync(cancellationToken);
+        var totalRecords = _getRecordService.GetTotalRecordsCount(queryParameters);
 
         var records = await _dbSet
             .AsNoTracking()
             .ApplyFilters(queryParameters)
             .ApplyPagination(paginationParameters)
-            .Select(m => new MemberListResponseDto
-            {
-                Id = m.Id,
-                CongregationId = m.CongregationId,
-                FullName = $"{m.FirstName} {m.LastName} {m.OtherNames}"
-            })
             .ToListAsync(cancellationToken);
 
-        var responseAsDtos = records.Cast<IResponseDto<Member>>().ToList();
-
-        return new PagedResponse<IResponseDto<Member>>(
-            responseAsDtos, paginationParameters.PageNumber, paginationParameters.PageSize, totalRecords);
+        return _getRecordService.CreateNewPagedResponseObject(records, paginationParameters, totalRecords);
     }
 
-    public async Task<IResponseDto<Member>?> GetByIdAsync(Guid Id, CancellationToken cancellationToken = default)
+    public async Task<Member?> GetByIdAsync(Guid Id, CancellationToken cancellationToken = default)
     {
-        return await _dbSet
-            .AsNoTracking()
-            .Where(m => m.Id == Id)
-            .Select(m => (IResponseDto<Member>)new MemberResponseDto
-            {
-                Id = m.Id,
-                CongregationId = m.CongregationId,
-                FirstName = m.FirstName,
-                LastName = m.LastName,
-                OtherNames = m.OtherNames,
-                DateOfBirth = m.DateOfBirth,
-                Email = m.EmailAddress,
-                PhoneNumber = m.PhoneNumber
-            })
-            .FirstOrDefaultAsync(cancellationToken);
+        return await _getRecordService.GetRecordByIdAsync(Id, cancellationToken);
     }
 
-    public async Task<bool> CreateRecord(ICreateDto<Member> recordData, CancellationToken cancellationToken = default)
+    public async Task<bool> CreateRecord(Member newRecordData, CancellationToken cancellationToken = default)
     {
-        await _dbSet.AddAsync(new Member
-        {
-            Id = recordData.Id,
-            CongregationId = recordData.CongregationId
-        }, cancellationToken);
+        var recordCreatedSuccessfully =
+            await _createNewRecordService.CreateNewRecord(newRecordData, cancellationToken);
+
+        if (!recordCreatedSuccessfully)
+            return false;
+
         await _context.SaveChangesAsync(cancellationToken);
         return true;
     }
 
     public async Task<bool> UpdateRecord(
-        Guid Id, IUpdateDto<Member> recordData, CancellationToken cancellationToken = default)
+        Guid Id, Member updatedRecordData, CancellationToken cancellationToken = default)
     {
-        if (recordData is null)
+        var recordUpdatedSuccessfully =
+            await _updateRecordService.UpdateRecord(Id, updatedRecordData, cancellationToken);
+
+        if (!recordUpdatedSuccessfully)
             return false;
 
-        var projectAsConcreteObject = (MemberUpdateDto)recordData;
-
-        await _dbSet.Where(m => m.Id == Id).ExecuteUpdateAsync(
-            s => s.SetProperty(m => m.FirstName, projectAsConcreteObject.FirstName)
-                .SetProperty(m => m.LastName, projectAsConcreteObject.LastName),
-            cancellationToken);
-
+        await _context.SaveChangesAsync(cancellationToken);
         return true;
     }
 
-    public async Task DeleteRecord(Guid Id, CancellationToken cancellationToken = default)
+    public async Task<bool> DeleteRecord(Guid Id, CancellationToken cancellationToken = default)
     {
-        await _softDeleteService.SoftDeleteByIdAsync(Id, cancellationToken);
+        var recordDeletedSuccessfully = await _softDeleteService.SoftDeleteByIdAsync(Id, cancellationToken);
+
+        if (!recordDeletedSuccessfully)
+            return false;
+
+        await _context.SaveChangesAsync(cancellationToken);
+        return true;
     }
 }
