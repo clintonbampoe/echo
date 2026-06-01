@@ -16,6 +16,10 @@ builder.Services.AddOpenApi();
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
 builder.Services.AddScoped(typeof(IDomainRecordService<>), typeof(DomainRecordService<>));
+builder.Services.AddScoped(typeof(ICreateNewRecordService<>), sp => sp.GetRequiredService(typeof(IDomainRecordService<>)));
+builder.Services.AddScoped(typeof(IGetRecordService<>), sp => sp.GetRequiredService(typeof(IDomainRecordService<>)));
+builder.Services.AddScoped(typeof(IUpdateRecordService<>), sp => sp.GetRequiredService(typeof(IDomainRecordService<>)));
+builder.Services.AddScoped(typeof(ISoftDeleteService<>), sp => sp.GetRequiredService(typeof(IDomainRecordService<>)));
 
 var app = builder.Build();
 
