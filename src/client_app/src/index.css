@@ -13,7 +13,7 @@
   --topbar-height: 64px;
 
   
-  --sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --sans: 'Inter', 'Arial', system-ui, -apple-system, sans-serif;
   
   font-family: var(--sans);
   line-height: 1.5;
