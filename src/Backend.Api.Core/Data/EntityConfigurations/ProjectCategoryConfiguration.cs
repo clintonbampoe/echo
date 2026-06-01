@@ -1,15 +1,15 @@
+using Backend.Api.Core.Data.EntityConfigurations.Interfaces;
 using Backend.Api.Core.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Backend.Api.Core.Data.EntityConfigurations;
 
-public class ProjectCategoryConfiguration : IEntityTypeConfiguration<ProjectCategory>
+public class ProjectCategoryConfiguration : CongregationEntityConfigurationBase<ProjectCategory>
 {
-    public void Configure(EntityTypeBuilder<ProjectCategory> builder)
+    public override void ConfigureEntity(EntityTypeBuilder<ProjectCategory> builder)
     {
-        builder.HasKey(category => category.CategoryId);
-        builder.HasAlternateKey(category => category.UniqueId);
-        builder.HasIndex(category => category.Title).IsUnique();
+        builder.HasKey(category => category.Id);
+        builder.HasIndex(category => category.Name).IsUnique();
     }
 }

@@ -1,16 +1,19 @@
+using Backend.Api.Core.Entities.Interfaces;
 using Backend.Api.Core.Enums;
 
 namespace Backend.Api.Core.Entities;
 
-public class Tithe
+public class Tithe : ICongregationEntity, ISoftDeletableEntity, IDateTrackedEntity
 {
-    public int TitheId { get; init; }
-    public Guid UniqueId { get; init; }
-    public int MemberId { get; init; }
-    public int Decimal { get; init; }
-    public PaymentMethod PaymentMethod { get; init; }
-    public DateOnly CollectionDate { get; init; }
-    public MonthOfYear ForMonthOfYear { get; init; }
-    public int ForYear { get; init; }
-    public string? Description { get; init; } = string.Empty;
+    public Guid Id { get; init; }
+    public Guid CongregationId { get; init; }
+    public Guid MemberId { get; init; }
+    public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
+    public int Decimal { get; set; }
+    public int ForYear { get; set; }
+    public MonthOfYear ForMonth { get; set; }
+    public PaymentMethod PaymentMethod { get; set; }
+    public DateOnly CollectionDate { get; set; }
+    public string? Description { get; set; } = string.Empty;
+    public DateTime? DeletedAt { get; set; }
 }

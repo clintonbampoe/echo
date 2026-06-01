@@ -1,14 +1,17 @@
+using Backend.Api.Core.Entities.Interfaces;
 using Backend.Api.Core.Enums;
 
 namespace Backend.Api.Core.Entities;
 
-public class ProjectContribution
+public class ProjectContribution : ICongregationEntity, ISoftDeletableEntity, IDateTrackedEntity
 {
-    public int ContributionId { get; init; }
-    public Guid UniqueId { get; init; }
-    public int ProjectId { get; init; }
-    public decimal Amount { get; init; }
-    public DateOnly ContributedDate { get; init; }
-    public PaymentMethod PaymentMethod { get; init; }
-    public string? Description { get; init; } = string.Empty;
+    public Guid Id { get; init; }
+    public Guid CongregationId { get; init; }
+    public Guid ProjectId { get; init; }
+    public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
+    public decimal Amount { get; set; }
+    public DateOnly DateContributed { get; set; }
+    public PaymentMethod PaymentMethod { get; set; }
+    public string? Description { get; set; } = string.Empty;
+    public DateTime? DeletedAt { get; set; }
 }

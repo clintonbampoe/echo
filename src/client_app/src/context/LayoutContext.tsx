@@ -15,6 +15,8 @@ interface LayoutContextType {
     setTitle: (title: string) => void;
     ctas: TopBarCTA[];
     setCtas: (ctas: TopBarCTA[]) => void;
+    searchQuery: string;
+    setSearchQuery: (query: string) => void;
 }
 
 const LayoutContext = createContext<LayoutContextType | undefined>(undefined);
@@ -22,9 +24,10 @@ const LayoutContext = createContext<LayoutContextType | undefined>(undefined);
 export const LayoutProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [title, setTitle] = useState('');
     const [ctas, setCtas] = useState<TopBarCTA[]>([]);
+    const [searchQuery, setSearchQuery] = useState('');
 
     return (
-        <LayoutContext.Provider value={{ title, setTitle, ctas, setCtas }}>
+        <LayoutContext.Provider value={{ title, setTitle, ctas, setCtas, searchQuery, setSearchQuery }}>
             {children}
         </LayoutContext.Provider>
     );

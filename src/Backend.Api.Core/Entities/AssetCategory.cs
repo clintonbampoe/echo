@@ -1,8 +1,12 @@
+using Backend.Api.Core.Entities.Interfaces;
+
 namespace Backend.Api.Core.Entities;
 
-public class AssetCategory
+public class AssetCategory : ICongregationEntity, ISoftDeletableEntity, IDateTrackedEntity, ISearchableEntity
 {
-    public int CategoryId { get; init; }
-    public Guid UniqueId { get; init; }
-    public string CategoryName { get; init; } = string.Empty;
+    public Guid Id { get; init; }
+    public Guid CongregationId { get; init; }
+    public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
+    public string Name { get; set; } = string.Empty;
+    public DateTime? DeletedAt { get; set; }
 }

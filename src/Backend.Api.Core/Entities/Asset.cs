@@ -1,17 +1,20 @@
+using Backend.Api.Core.Entities.Interfaces;
 using Backend.Api.Core.Enums;
 
 namespace Backend.Api.Core.Entities;
 
-public class Asset
+public class Asset : ICongregationEntity, ISoftDeletableEntity, IDateTrackedEntity, ISearchableEntity
 {
-    public int AssetId { get; init; }
-    public Guid UniqueId { get; init; }
-    public string Name { get; init; } = string.Empty;
-    public string? SerialNumber { get; init; } = string.Empty;
-    public int? CategoryId { get; init; }
-    public DateOnly? PurchaseDate { get; init; }
-    public decimal PurchaseCost { get; init; }
-    public decimal CurrentValue { get; init; }
-    public AssetStatus Status { get; init; }
-    public string? Description { get; init; } = string.Empty;
+    public Guid Id { get; init; }
+    public Guid CongregationId { get; init; }
+    public Guid? CategoryId { get; init; }
+    public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
+    public string Name { get; set; } = string.Empty;
+    public string? SerialNumber { get; set; } = string.Empty;
+    public DateOnly? PurchaseDate { get; set; }
+    public decimal PurchaseCost { get; set; }
+    public decimal CurrentValue { get; set; }
+    public AssetStatus Status { get; set; }
+    public string? Description { get; set; } = string.Empty;
+    public DateTime? DeletedAt { get; set; }
 }

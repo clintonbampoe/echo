@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
-import { apiFetch } from '../services/api';
+// Prepared for actual API integration
+// import { apiFetch } from '../services/api';
 
 interface User {
   id: string;
@@ -36,7 +37,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setIsLoading(false);
   }, []);
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, _password: string) => {
     setIsLoading(true);
     try {
       // Prepared for actual API call

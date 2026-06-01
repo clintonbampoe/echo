@@ -1,14 +1,13 @@
+using Backend.Api.Core.Data.EntityConfigurations.Interfaces;
 using Backend.Api.Core.Entities;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Backend.Api.Core.Data.EntityConfigurations;
 
-public class AssetCategoryConfiguration : IEntityTypeConfiguration<AssetCategory>
+public class AssetCategoryConfiguration : CongregationEntityConfigurationBase<AssetCategory>
 {
-    public void Configure(EntityTypeBuilder<AssetCategory> builder)
+    public override void ConfigureEntity(EntityTypeBuilder<AssetCategory> builder)
     {
-        builder.HasKey(cat => cat.CategoryId);
-        builder.HasAlternateKey(cat => cat.UniqueId);
+        builder.HasKey(assetCategory => assetCategory.Id);
     }
 }
