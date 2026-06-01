@@ -1,4 +1,6 @@
 using Backend.Api.Core.Data;
+using Backend.Api.Core.Services;
+using Backend.Api.Core.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -6,12 +8,15 @@ var builder = WebApplication.CreateBuilder(args);
 var template = GetConnectionStringTemplate();
 var (username, password) = GetLocalDatabaseCredentials();
 var connectionString = BuildConnectionStringFromTemplate(template);
-
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString));
+
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
+
+builder.Services.AddScoped(typeof(IDomainRecordService<>), typeof(DomainRecordService<>));
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
