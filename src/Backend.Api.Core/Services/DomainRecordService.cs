@@ -3,7 +3,8 @@ using Backend.Api.Core.Services.Interfaces;
 
 namespace Backend.Api.Core.Services;
 
-public class DomainRecordService<T> : IDomainRecordService<T> where T : class, ICongregationEntity, ISoftDeletableEntity
+public class DomainRecordService<T> : IDomainRecordService<T>
+    where T : class, ICongregationEntity, ISoftDeletableEntity
 {
     private readonly IGetRecordService<T> _getRecordService;
     private readonly ICreateNewRecordService<T> _createNewRecordService;
