@@ -7,13 +7,13 @@ namespace Backend.Api.Core.Common.ExtensionMethods;
 
 public static class QueryFilterMethods
 {
-    public static IQueryable<T> ApplySearchFilter<T>(this IQueryable<T> query, string? searchTerm)
+    public static IQueryable<T> ApplySearchFilter<T>(this IQueryable<T> query, QueryParameters queryParameters)
         where T : class, ISearchableEntity
     {
-        if (string.IsNullOrWhiteSpace(searchTerm))
+        if (string.IsNullOrWhiteSpace(queryParameters.SearchTerm))
             return query;
 
-        return query.Where(x => x.Name.Contains(searchTerm));
+        return query.Where(x => x.Name.Contains(queryParameters.SearchTerm));
     }
 
     public static IQueryable<T> ApplyDateFilters<T>(this IQueryable<T> query, QueryParameters queryParameters)
