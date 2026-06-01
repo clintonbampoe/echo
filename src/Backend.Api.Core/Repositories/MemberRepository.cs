@@ -1,6 +1,4 @@
 using AutoMapper;
-using Backend.Api.Core.Common.ExtensionMethods;
-using Backend.Api.Core.Data;
 using Backend.Api.Core.Entities;
 using Backend.Api.Core.Repositories.Interfaces;
 using Backend.Api.Core.Services.Interfaces;

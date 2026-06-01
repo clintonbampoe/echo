@@ -1,0 +1,36 @@
+using System.Linq.Expressions;
+using AutoMapper;
+using Backend.Api.Core.Common.ExtensionMethods;
+using Backend.Api.Core.Entities;
+using Backend.Api.Core.Repositories.Interfaces;
+using Backend.Api.Core.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
+
+namespace Backend.Api.Core.Repositories;
+
+public class ProjectRepository : EntityRepositoryBase<Project>
+{
+    public ProjectRepository(DbContext context, IMapper mapper, IDomainRecordService<Project> domainRecordService)
+        : base(context, mapper, domainRecordService)
+    {
+    }
+
+    public override async Task<PagedResponse<Project>> GetPageAsync(
+        PaginationParams paginationParameters, QueryParameters queryParameters, CancellationToken cancellationToken = default)
+    {
+        var totalRecordCount = await _dbSet
+            .AsNoTracking()
+            .ApplySearchFilter(queryParameters)
+            .ApplyDateFilters(queryParameters)
+            .CountAsync(cancellationToken);
+
+        var records = await _dbSet
+            .AsNoTracking()
+            .ApplySearchFilter(queryParameters)
+            .ApplyDateFilters(queryParameters)
+            .ApplyPagination(paginationParameters)
+            .ToListAsync(cancellationToken);
+
+        return _domainRecordService.CreateNewPagedResponseObject(records, paginationParameters, totalRecordCount);
+    }
+}
