@@ -32,6 +32,8 @@ import type {
   ExportReportForm,
   CategoryForm,
 } from '../types/finance';
+import { getTitheSummary } from '../services/titheService';
+import type { TitheSummary } from '../types/tithe';
 
 // ─── Mock Data ───────────────────────────────────────────────────────────────
 
@@ -143,6 +145,12 @@ const Finance: React.FC = () => {
 
   const [categories, setCategories] = useState<TransactionCategory[]>(mockCategories);
   const [transactions, setTransactions] = useState<FinancialTransaction[]>(mockTransactions);
+  const [titheSummary, setTitheSummary] = useState<TitheSummary | null>(null);
+
+  // Fetch tithe summary on mount
+  useEffect(() => {
+    getTitheSummary().then(setTitheSummary).catch(console.error);
+  }, []);
 
   // Modals
   const [showRecordModal, setShowRecordModal] = useState(false);
@@ -262,10 +270,34 @@ const Finance: React.FC = () => {
     .filter(t => t.transactionType === 'Expenditure')
     .reduce((sum, t) => sum + t.amount, 0);
 
-  const netBalance = totalIncome - totalExpenditure;
-
   const incomeCount = transactions.filter(t => t.transactionType === 'Income').length;
   const expenditureCount = transactions.filter(t => t.transactionType === 'Expenditure').length;
+
+  // Prepend virtual tithe stream
+  if (titheSummary) {
+    const titheVirtualStream: CategoryStream = {
+      category: {
+        categoryId: -1, // Virtual ID
+        uniqueId: 'virtual-tithe',
+        name: 'Tithes',
+        categoryType: 'Income',
+      },
+      totalAmount: titheSummary.totalAmount,
+      percentOfTotal: totalIncome + titheSummary.totalAmount > 0 
+        ? Math.round((titheSummary.totalAmount / (totalIncome + titheSummary.totalAmount)) * 100) 
+        : 0,
+      isRecurring: false,
+      recurrenceLabel: 'Recurring · Monthly', // Custom label for tithes
+      transactionCount: titheSummary.transactionCount,
+    };
+    
+    // Adjust other percentages if necessary, but visually prepending is usually enough
+    incomeStreams.unshift(titheVirtualStream);
+  }
+
+  // Adjust total income if tithes are included
+  const displayTotalIncome = totalIncome + (titheSummary?.totalAmount || 0);
+  const displayNetBalance = displayTotalIncome - totalExpenditure;
 
   // ── Handlers ───────────────────────────────────────────────────────────────
 
@@ -372,10 +404,10 @@ const Finance: React.FC = () => {
       <div className="finance-summary-cards">
         <div className="finance-summary-card">
           <span className="finance-card-label">Total Monthly Income</span>
-          <div className="finance-card-value">{formatCurrency(totalIncome)}</div>
+          <div className="finance-card-value">{formatCurrency(displayTotalIncome)}</div>
           <div className="finance-card-trend">
             <TrendUpIcon />
-            +{incomeCount} this month
+            +{incomeCount + (titheSummary?.transactionCount || 0)} this month
           </div>
         </div>
 
@@ -390,7 +422,7 @@ const Finance: React.FC = () => {
 
         <div className="finance-summary-card">
           <span className="finance-card-label">Net Balance</span>
-          <div className="finance-card-value">{formatCurrency(netBalance)}</div>
+          <div className="finance-card-value">{formatCurrency(displayNetBalance)}</div>
           <div className="finance-card-trend">
             <TrendUpIcon />
             +{incomeCount + expenditureCount} this month
@@ -430,20 +462,22 @@ const Finance: React.FC = () => {
                 <div className="stream-card-percent">{stream.percentOfTotal}% of total</div>
               </div>
 
-              {/* Three-dot menu */}
-              <button
-                className="stream-card-menu-trigger"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setActiveMenuId(
-                    activeMenuId === stream.category.uniqueId ? null : stream.category.uniqueId
-                  );
-                }}
-              >
-                <MoreVerticalIcon />
-              </button>
+              {/* Three-dot menu - hidden for virtual streams */}
+              {stream.category.categoryId !== -1 && (
+                <button
+                  className="stream-card-menu-trigger"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setActiveMenuId(
+                      activeMenuId === stream.category.uniqueId ? null : stream.category.uniqueId
+                    );
+                  }}
+                >
+                  <MoreVerticalIcon />
+                </button>
+              )}
 
-              {activeMenuId === stream.category.uniqueId && (
+              {activeMenuId === stream.category.uniqueId && stream.category.categoryId !== -1 && (
                 <div className="stream-card-dropdown" ref={menuRef}>
                   <button
                     className="stream-card-dropdown-item"
