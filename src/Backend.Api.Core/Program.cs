@@ -15,11 +15,11 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
+builder.Services.AddScoped(typeof(ICreateNewRecordService<>), typeof(CreateNewRecordService<>));
+builder.Services.AddScoped(typeof(IGetRecordService<>), typeof(GetRecordService<>));
+builder.Services.AddScoped(typeof(IUpdateRecordService<>), typeof(UpdateRecordService<>));
+builder.Services.AddScoped(typeof(ISoftDeleteService<>), typeof(SoftDeleteService<>));
 builder.Services.AddScoped(typeof(IDomainRecordService<>), typeof(DomainRecordService<>));
-builder.Services.AddScoped(typeof(ICreateNewRecordService<>), sp => sp.GetRequiredService(typeof(IDomainRecordService<>)));
-builder.Services.AddScoped(typeof(IGetRecordService<>), sp => sp.GetRequiredService(typeof(IDomainRecordService<>)));
-builder.Services.AddScoped(typeof(IUpdateRecordService<>), sp => sp.GetRequiredService(typeof(IDomainRecordService<>)));
-builder.Services.AddScoped(typeof(ISoftDeleteService<>), sp => sp.GetRequiredService(typeof(IDomainRecordService<>)));
 
 var app = builder.Build();
 
