@@ -13,9 +13,6 @@ public record MemberCreateDto
 public record MemberResponseDto
     (Guid Id,
     Guid CongregationId,
-    string FirstName,
-    string LastName,
-    string OtherNames,
     string Name,
     DateOnly? DateOfBirth,
     string? Email,
@@ -25,7 +22,7 @@ public record MemberResponseDto
 public record MemberListResponseDto
     (Guid Id,
     Guid CongregationId,
-    string FullName
+    string Name
     ) : IListResponseDto<Member>;
 
 public record MemberUpdateDto
