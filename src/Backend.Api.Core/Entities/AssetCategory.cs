@@ -6,6 +6,7 @@ public class AssetCategory : ICongregationEntity, ISoftDeletableEntity, IDateTra
 {
     public Guid Id { get; init; }
     public Guid CongregationId { get; init; }
+    public Congregation Congregation { get; init; } = null!;
     public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
     public string Name { get; set; } = string.Empty;
     public DateTime? DeletedAt { get; set; }

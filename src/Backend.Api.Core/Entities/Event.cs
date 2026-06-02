@@ -7,8 +7,11 @@ public class Event : ICongregationEntity, ISoftDeletableEntity, IDateTrackedEnti
 {
     public Guid Id { get; init; }
     public Guid CongregationId { get; init; }
+    public Congregation Congregation { get; init; } = null!;
     public Guid OrganizationId { get; init; }
+    public Organization Organization { get; init; } = null!;
     public Guid OrganizerId { get; init; }
+    public Member Organizer { get; init; } = null!;
     public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
     public string Name { get; set; } = string.Empty;
     public DateOnly StartDate { get; set; }

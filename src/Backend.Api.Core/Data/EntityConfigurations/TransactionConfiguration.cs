@@ -11,7 +11,7 @@ public class TransactionConfiguration : CongregationEntityConfigurationBase<Tran
     {
         builder.HasKey(tr => tr.Id);
 
-        builder.HasOne<TransactionCategory>()
+        builder.HasOne(tr => tr.Category)
             .WithMany()
             .HasForeignKey(tr => tr.CategoryId)
             .OnDelete(DeleteBehavior.Cascade);

@@ -10,6 +10,5 @@ public class TransactionCategoryConfiguration : CongregationEntityConfigurationB
     public override void ConfigureEntity(EntityTypeBuilder<TransactionCategory> builder)
     {
         builder.HasKey(cat => cat.Id);
-        builder.HasIndex(cat => cat.Name).IsUnique();
     }
 }

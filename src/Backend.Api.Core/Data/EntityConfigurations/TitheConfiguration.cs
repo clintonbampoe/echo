@@ -11,7 +11,7 @@ public class TitheConfiguration : CongregationEntityConfigurationBase<Tithe>
     {
         builder.HasKey(tithe => tithe.Id);
 
-        builder.HasOne<Member>()
+        builder.HasOne(tt => tt.Member)
             .WithMany()
             .HasForeignKey(tithe => tithe.MemberId)
             .OnDelete(DeleteBehavior.Cascade);

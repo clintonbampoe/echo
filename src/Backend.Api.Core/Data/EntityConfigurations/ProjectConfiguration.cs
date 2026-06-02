@@ -11,12 +11,12 @@ public class ProjectConfiguration : CongregationEntityConfigurationBase<Project>
     {
         builder.HasKey(pr => pr.Id);
 
-        builder.HasOne<Member>()
+        builder.HasOne(pr => pr.Manager)
             .WithMany()
-            .HasForeignKey(pr => pr.ProjectManagerId)
+            .HasForeignKey(pr => pr.ManagerId)
             .OnDelete(DeleteBehavior.SetNull);
 
-        builder.HasOne<ProjectCategory>()
+        builder.HasOne(pr => pr.Category)
             .WithMany()
             .HasForeignKey(pr => pr.CategoryId)
             .OnDelete(DeleteBehavior.SetNull);

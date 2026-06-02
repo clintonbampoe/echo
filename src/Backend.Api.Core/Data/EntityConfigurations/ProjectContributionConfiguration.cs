@@ -9,9 +9,9 @@ public class ProjectContributionConfiguration : CongregationEntityConfigurationB
 {
     public override void ConfigureEntity(EntityTypeBuilder<ProjectContribution> builder)
     {
-        builder.HasKey(contribution => contribution.Id);
+        builder.HasKey(pc => pc.Id);
 
-        builder.HasOne<Project>()
+        builder.HasOne(pc => pc.Project)
             .WithMany()
             .HasForeignKey(contribution => contribution.ProjectId)
             .OnDelete(DeleteBehavior.Cascade);

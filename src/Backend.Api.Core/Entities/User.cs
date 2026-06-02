@@ -4,6 +4,7 @@ public class User : ICongregationEntity, ISoftDeletableEntity, ISearchableEntity
 {
     public Guid Id { get; init; }
     public Guid CongregationId { get; init; }
+    public Congregation Congregation { get; init; } = null!;
     public string Name { get; set; } = string.Empty;
     public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
     public string EmailAddress { get; set; } = string.Empty;
