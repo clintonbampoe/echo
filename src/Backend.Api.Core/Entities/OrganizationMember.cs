@@ -11,6 +11,6 @@ public class OrganizationMember : ICongregationEntity, ISoftDeletableEntity, IDa
     public Guid OrganizationId { get; init; }
     public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
     public MemberOrganizationalRole Role { get; set; }
-    public DateOnly JoinedDate { get; set; }
+    public DateOnly JoinedAt { get; set; }
     public DateTime? DeletedAt { get; set; }
 }
