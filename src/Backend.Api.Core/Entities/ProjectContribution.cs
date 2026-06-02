@@ -7,7 +7,9 @@ public class ProjectContribution : ICongregationEntity, ISoftDeletableEntity, ID
 {
     public Guid Id { get; init; }
     public Guid CongregationId { get; init; }
+    public Congregation Congregation { get; init; } = null!;
     public Guid ProjectId { get; init; }
+    public Project Project { get; init; } = null!;
     public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
     public decimal Amount { get; set; }
     public DateOnly DateContributed { get; set; }

@@ -9,6 +9,7 @@ public class Member : ICongregationEntity, ISoftDeletableEntity, IDateTrackedEnt
 {
     public Guid Id { get; init; }
     public Guid CongregationId { get; init; }
+    public Congregation Congregation { get; init; } = null!;
     public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
     public string Name { get; set; } = string.Empty;
     public string FirstName { get; set; } = string.Empty;

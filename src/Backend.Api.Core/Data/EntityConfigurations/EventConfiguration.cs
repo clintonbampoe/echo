@@ -10,14 +10,13 @@ public class EventConfiguration : CongregationEntityConfigurationBase<Event>
     public override void ConfigureEntity(EntityTypeBuilder<Event> builder)
     {
         builder.HasKey(e => e.Id);
-        builder.HasIndex(e => e.Name).IsUnique();
 
-        builder.HasOne<Organization>()
+        builder.HasOne(evnt => evnt.Organization)
             .WithMany()
             .HasForeignKey(e => e.OrganizationId)
             .OnDelete(DeleteBehavior.ClientSetNull);
 
-        builder.HasOne<Member>()
+        builder.HasOne(evnt => evnt.Organizer)
             .WithMany()
             .HasForeignKey(e => e.OrganizerId)
             .OnDelete(DeleteBehavior.ClientSetNull);

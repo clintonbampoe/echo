@@ -11,12 +11,12 @@ public class EventRegistrationConfiguration : CongregationEntityConfigurationBas
     {
         builder.HasKey(eventReg => new { eventReg.EventId, eventReg.MemberId });
 
-        builder.HasOne<Member>()
+        builder.HasOne(eventReg => eventReg.Member)
             .WithMany()
             .HasForeignKey(ea => ea.MemberId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasOne<Event>()
+        builder.HasOne(eventReg => eventReg.Event)
             .WithMany()
             .HasForeignKey(ea => ea.EventId)
             .OnDelete(DeleteBehavior.Cascade);

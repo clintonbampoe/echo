@@ -10,7 +10,5 @@ public class OrganizationConfiguration : CongregationEntityConfigurationBase<Org
     public override void ConfigureEntity(EntityTypeBuilder<Organization> builder)
     {
         builder.HasKey(o => o.Id);
-
-        builder.HasIndex(o => o.Name).IsUnique();
     }
 }

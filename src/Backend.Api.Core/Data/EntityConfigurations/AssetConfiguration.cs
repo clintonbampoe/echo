@@ -11,7 +11,7 @@ public class AssetConfiguration : CongregationEntityConfigurationBase<Asset>
     {
         builder.HasKey(asset => asset.Id);
 
-        builder.HasOne<AssetCategory>()
+        builder.HasOne(ass => ass.Category)
             .WithMany()
             .HasForeignKey(asset => asset.CategoryId)
             .OnDelete(DeleteBehavior.SetNull);

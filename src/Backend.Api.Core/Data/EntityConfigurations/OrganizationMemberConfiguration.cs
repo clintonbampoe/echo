@@ -11,12 +11,12 @@ public class OrganizationMemberConfiguration : CongregationEntityConfigurationBa
     {
         builder.HasKey(om => new { om.MemberId, om.OrganizationId });
 
-        builder.HasOne<Member>()
+        builder.HasOne(om => om.Member)
             .WithMany()
             .HasForeignKey(om => om.MemberId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasOne<Organization>()
+        builder.HasOne(om => om.Organization)
             .WithMany()
             .HasForeignKey(om => om.OrganizationId)
             .OnDelete(DeleteBehavior.Cascade);

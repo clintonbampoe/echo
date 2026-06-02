@@ -8,7 +8,7 @@ public abstract class CongregationEntityConfigurationBase<TEntity> : IEntityType
 {
     public void Configure(EntityTypeBuilder<TEntity> builder)
     {
-        builder.HasOne<Congregation>()
+        builder.HasOne(ent => ent.Congregation)
             .WithMany()
             .HasForeignKey(entity => entity.CongregationId)
             .OnDelete(DeleteBehavior.Cascade);

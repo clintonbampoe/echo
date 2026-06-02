@@ -11,7 +11,7 @@ public class AttendanceConfiguration : CongregationEntityConfigurationBase<Atten
     {
         builder.HasKey(attendance => attendance.Id);
 
-        builder.HasOne<Member>()
+        builder.HasOne(mem => mem.Member)
             .WithMany()
             .HasForeignKey(at => at.MemberId)
             .OnDelete(DeleteBehavior.Cascade);

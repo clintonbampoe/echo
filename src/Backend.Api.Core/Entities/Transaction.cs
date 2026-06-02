@@ -7,7 +7,9 @@ public class Transaction : ICongregationEntity, ISoftDeletableEntity, IDateTrack
 {
     public Guid Id { get; init; }
     public Guid CongregationId { get; init; }
+    public Congregation Congregation { get; init; } = null!;
     public Guid CategoryId { get; init; }
+    public TransactionCategory Category { get; init; } = null!;
     public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
     public TransactionType TransactionType { get; set; }
     public DateOnly TransactionDate { get; set; }
