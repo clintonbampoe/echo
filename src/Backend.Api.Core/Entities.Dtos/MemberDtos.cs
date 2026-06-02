@@ -26,7 +26,7 @@ public record MemberListResponseDto
     (Guid Id,
     Guid CongregationId,
     string FullName
-    ) : IResponseDto<Member>;
+    ) : IListResponseDto<Member>;
 
 public record MemberUpdateDto
     (Guid Id,
