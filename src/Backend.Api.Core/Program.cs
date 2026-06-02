@@ -1,4 +1,6 @@
+using AutoMapper;
 using Backend.Api.Core.Data;
+using Backend.Api.Core.Entities;
 using Backend.Api.Core.Services;
 using Backend.Api.Core.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -29,12 +31,6 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi();
 }
 
-app.UseHttpsRedirection();
-app.UseAuthorization();
-app.MapControllers();
-app.Run();
-
-
 string? GetConnectionStringTemplate() =>
     builder.Configuration.GetConnectionString("DefaultConnection");
 
@@ -49,3 +45,8 @@ string BuildConnectionStringFromTemplate(string? stringTemplate)
 {
     return string.Format(stringTemplate!, username, password);
 }
+
+app.UseHttpsRedirection();
+app.UseAuthorization();
+app.MapControllers();
+app.Run();
