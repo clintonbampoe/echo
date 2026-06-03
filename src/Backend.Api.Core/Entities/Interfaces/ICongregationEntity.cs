@@ -1,3 +1,4 @@
+namespace Backend.Api.Core.Entities.Interfaces;
 public interface ICongregationEntity
 {
     public Guid Id { get; init; }
