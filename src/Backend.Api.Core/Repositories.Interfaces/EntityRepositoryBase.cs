@@ -1,4 +1,5 @@
 using AutoMapper;
+using AutoMapper.QueryableExtensions;
 using Backend.Api.Core.Common.ExtensionMethods;
 using Backend.Api.Core.Entities.Interfaces;
 using Backend.Api.Core.Services.Interfaces;

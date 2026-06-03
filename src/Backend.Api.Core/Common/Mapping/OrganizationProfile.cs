@@ -10,7 +10,11 @@ public class OrganizationProfile : Profile
     {
         CreateMap<Organization, OrganizationResponseDto>().ReverseMap();
         CreateMap<Organization, OrganizationListResponseDto>().ReverseMap();
-        CreateMap<OrganizationCreateDto, Organization>().ReverseMap();
+        CreateMap<Organization, OrganizationCreateDto>()
+            .ReverseMap()
+            .ForMember(dest => dest.DeletedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.UtcNow));
+            
         CreateMap<OrganizationUpdateDto, Organization>().ReverseMap();
         CreateMap<OrganizationDeleteDto, Organization>().ReverseMap();
     }

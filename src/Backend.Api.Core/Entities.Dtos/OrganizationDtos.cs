@@ -21,7 +21,7 @@ public record OrganizationListResponseDto
     (Guid Id,
     Guid CongregationId,
     string Name
-    ) : IResponseDto<Organization>;
+    ) : IListResponseDto<Organization>;
 
 public record OrganizationUpdateDto
     (Guid Id,
