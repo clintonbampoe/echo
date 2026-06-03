@@ -1,4 +1,4 @@
-public class PaginationParams
+public class PaginationParameters
 {
     private const int MaxPageSize = 50;
     private int _pageSize = 25;
