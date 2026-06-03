@@ -1,6 +1,7 @@
-using Backend.Api.Core.Entities.Dtos.Interfaces;
+using Backend.Api.Core.Dtos.Interfaces;
+using Backend.Api.Core.Entities;
 
-namespace Backend.Api.Core.Entities.Dtos;
+namespace Backend.Api.Core.Dtos;
 
 public record OrganizationCreateDto
     (Guid Id,

@@ -1,7 +1,8 @@
-using Backend.Api.Core.Entities.Dtos.Interfaces;
+using Backend.Api.Core.Dtos.Interfaces;
+using Backend.Api.Core.Entities;
 using Backend.Api.Core.Enums;
 
-namespace Backend.Api.Core.Entities.Dtos;
+namespace Backend.Api.Core.Dtos;
 
 
 public record OrganizationMemberResponseDto
