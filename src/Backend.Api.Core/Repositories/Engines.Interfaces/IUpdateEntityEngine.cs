@@ -1,3 +1,5 @@
+using Backend.Api.Core.Entities.Interfaces;
+
 namespace Backend.Api.Core.Repositories.Engines.Interfaces;
 
 public interface IUpdateEntityEngine<T> where T : class, ICongregationEntity

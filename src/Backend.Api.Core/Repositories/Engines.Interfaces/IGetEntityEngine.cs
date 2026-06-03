@@ -1,3 +1,5 @@
+using Backend.Api.Core.Entities.Interfaces;
+
 namespace Backend.Api.Core.Repositories.Engines.Interfaces;
 
 public interface IGetEntityEngine<T> where T : class, ICongregationEntity
