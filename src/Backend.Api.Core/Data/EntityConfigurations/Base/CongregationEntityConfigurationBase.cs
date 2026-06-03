@@ -1,7 +1,8 @@
+using Backend.Api.Core.Entities.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Backend.Api.Core.Data.EntityConfigurations.Interfaces;
+namespace Backend.Api.Core.Data.EntityConfigurations.Base;
 
 public abstract class CongregationEntityConfigurationBase<TEntity> : IEntityTypeConfiguration<TEntity>
      where TEntity : class, ICongregationEntity
