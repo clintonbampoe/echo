@@ -5,7 +5,7 @@ namespace Backend.Api.Core.Common.ExtensionMethods;
 
 public static class PaginationFilterMethods
 {
-    public static IQueryable<T> ApplyPagination<T>(this IQueryable<T> query, PaginationParams paginationParams)
+    public static IQueryable<T> ApplyPagination<T>(this IQueryable<T> query, PaginationParameters paginationParams)
         where T : class, ICongregationEntity
     {
         if (paginationParams is null)
