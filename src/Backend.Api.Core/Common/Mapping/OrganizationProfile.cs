@@ -1,6 +1,6 @@
 using AutoMapper;
+using Backend.Api.Core.Dtos;
 using Backend.Api.Core.Entities;
-using Backend.Api.Core.Entities.Dtos;
 
 namespace Backend.Api.Core.Common.Mapping;
 
@@ -14,7 +14,7 @@ public class OrganizationProfile : Profile
             .ReverseMap()
             .ForMember(dest => dest.DeletedAt, opt => opt.Ignore())
             .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.UtcNow));
-            
+
         CreateMap<OrganizationUpdateDto, Organization>().ReverseMap();
         CreateMap<OrganizationDeleteDto, Organization>().ReverseMap();
     }

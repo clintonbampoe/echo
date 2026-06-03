@@ -1,6 +1,6 @@
 using AutoMapper;
+using Backend.Api.Core.Dtos;
 using Backend.Api.Core.Entities;
-using Backend.Api.Core.Entities.Dtos;
 
 namespace Backend.Api.Core.Common.Mapping;
 
@@ -10,7 +10,7 @@ public class MemberProfile : Profile
     {
 
         CreateMap<Member, MemberResponseDto>().ReverseMap();
-        
+
         CreateMap<Member, MemberListResponseDto>()
             .ForMember(dest => dest.Name, opt => opt.MapFrom(src =>
                 $"{src.FirstName} {src.LastName} {src.OtherNames}"))
