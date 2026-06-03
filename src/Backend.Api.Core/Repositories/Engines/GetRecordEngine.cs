@@ -1,16 +1,15 @@
 using Backend.Api.Core.Data;
-using Backend.Api.Core.Entities.Interfaces;
 using Backend.Api.Core.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Api.Core.Services;
 
-public class GetRecordService<T> : IGetRecordService<T> where T : class, ICongregationEntity
+public class GetRecordEngine<T> : IGetEntityEngine<T> where T : class, ICongregationEntity
 {
     private readonly AppDbContext _appDbContext;
     private readonly DbSet<T> _dbSet;
 
-    public GetRecordService(AppDbContext appDbContext)
+    public GetRecordEngine(AppDbContext appDbContext)
     {
         _appDbContext = appDbContext;
         _dbSet = appDbContext.Set<T>();
@@ -22,7 +21,7 @@ public class GetRecordService<T> : IGetRecordService<T> where T : class, ICongre
         );
     }
 
-    public async Task<T?> GetRecordByIdAsync(Guid Id, CancellationToken cancellationToken = default)
+    public async Task<T?> GetEntityByIdAsync(Guid Id, CancellationToken cancellationToken = default)
     {
         return await _dbSet
             .AsNoTracking()

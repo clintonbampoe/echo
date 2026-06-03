@@ -9,7 +9,7 @@ namespace Backend.Api.Core.Repositories.Interfaces;
 public abstract class RelationshipRepositoryBase<T> : EntityRepositoryBase<T>
     where T : class, ICongregationEntity, ISoftDeletableEntity
 {
-    protected RelationshipRepositoryBase(DbContext context, IMapper mapper, IDomainRecordService<T> domainRecordService)
+    protected RelationshipRepositoryBase(DbContext context, IMapper mapper, IDatabaseEngine<T> domainRecordService)
         : base(context, mapper, domainRecordService)
     {
     }

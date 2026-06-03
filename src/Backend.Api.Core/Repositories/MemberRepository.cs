@@ -8,7 +8,7 @@ namespace Backend.Api.Core.Repositories;
 
 public class MemberRepository : EntityRepositoryBase<Member>
 {
-    public MemberRepository(DbContext context, IMapper mapper, IDomainRecordService<Member> domainRecordService
+    public MemberRepository(DbContext context, IMapper mapper, IDatabaseEngine<Member> domainRecordService
     ) : base(context, mapper, domainRecordService)
     {
 

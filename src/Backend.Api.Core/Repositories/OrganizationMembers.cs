@@ -8,7 +8,7 @@ namespace Backend.Api.Core.Repositories;
 
 public class OrganizationMemberRepository : RelationshipRepositoryBase<OrganizationMember>
 {
-    public OrganizationMemberRepository(DbContext context, IMapper mapper, IDomainRecordService<OrganizationMember> domainRecordService)
+    public OrganizationMemberRepository(DbContext context, IMapper mapper, IDatabaseEngine<OrganizationMember> domainRecordService)
         : base(context, mapper, domainRecordService)
     {
     }

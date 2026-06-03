@@ -7,17 +7,17 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Api.Core.Repositories.Interfaces;
 
-public abstract class  EntityRepositoryBase<T> where T : class, ICongregationEntity, ISoftDeletableEntity
+public abstract class EntityRepositoryBase<T> where T : class, ICongregationEntity, ISoftDeletableEntity
 {
     protected readonly DbContext _context;
     protected readonly DbSet<T> _dbSet;
     protected readonly IMapper _mapper;
-    protected readonly IDomainRecordService<T> _domainRecordService;
+    protected readonly IDatabaseEngine<T> _domainRecordService;
 
     public EntityRepositoryBase(
         DbContext context,
         IMapper mapper,
-        IDomainRecordService<T> domainRecordService
+        IDatabaseEngine<T> domainRecordService
         )
     {
         _context = context;
@@ -46,13 +46,13 @@ public abstract class  EntityRepositoryBase<T> where T : class, ICongregationEnt
 
     public virtual async Task<T?> GetByIdAsync(Guid Id, CancellationToken cancellationToken = default)
     {
-        return await _domainRecordService.GetRecordByIdAsync(Id, cancellationToken);
+        return await _domainRecordService.GetEntityByIdAsync(Id, cancellationToken);
     }
 
     public virtual async Task<bool> CreateRecord(T newRecordData, CancellationToken cancellationToken = default)
     {
         var recordCreatedSuccessfully =
-            await _domainRecordService.CreateNewRecord(newRecordData, cancellationToken);
+            await _domainRecordService.CreateNewEntity(newRecordData, cancellationToken);
 
         if (!recordCreatedSuccessfully)
             return false;
@@ -64,9 +64,9 @@ public abstract class  EntityRepositoryBase<T> where T : class, ICongregationEnt
     public virtual async Task<bool> UpdateRecord(Guid Id, T updatedRecordData, CancellationToken cancellationToken = default)
     {
         var recordUpdatedSuccessfully =
-            await _domainRecordService.UpdateRecordById(Id, updatedRecordData, cancellationToken);
+            await _domainRecordService.UpdateEntityById(Id, updatedRecordData, cancellationToken);
 
-        if(!recordUpdatedSuccessfully)
+        if (!recordUpdatedSuccessfully)
             return false;
 
         await _context.SaveChangesAsync(cancellationToken);
@@ -78,7 +78,7 @@ public abstract class  EntityRepositoryBase<T> where T : class, ICongregationEnt
         var recordDeletedSuccessfully =
             await _domainRecordService.SoftDeleteByIdAsync(Id, cancellationToken);
 
-        if(!recordDeletedSuccessfully)
+        if (!recordDeletedSuccessfully)
             return false;
 
         await _context.SaveChangesAsync(cancellationToken);

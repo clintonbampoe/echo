@@ -10,7 +10,7 @@ namespace Backend.Api.Core.Repositories;
 
 public class ProjectRepository : EntityRepositoryBase<Project>
 {
-    public ProjectRepository(DbContext context, IMapper mapper, IDomainRecordService<Project> domainRecordService)
+    public ProjectRepository(DbContext context, IMapper mapper, IDatabaseEngine<Project> domainRecordService)
         : base(context, mapper, domainRecordService)
     {
     }

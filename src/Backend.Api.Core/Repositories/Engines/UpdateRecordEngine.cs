@@ -4,17 +4,17 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Api.Core.Services;
 
-public class UpdateRecordService<T> : IUpdateRecordService<T> where T : class, ICongregationEntity
+public class UpdateRecordEngine<T> : IUpdateEntityEngine<T> where T : class, ICongregationEntity
 {
     private readonly AppDbContext _appDbContext;
     private readonly DbSet<T> _dbSet;
 
-    public UpdateRecordService(AppDbContext appDbContext)
+    public UpdateRecordEngine(AppDbContext appDbContext)
     {
         _appDbContext = appDbContext;
         _dbSet = appDbContext.Set<T>();
     }
-    public async Task<bool> UpdateRecordById(Guid Id, T updatedRecordData, CancellationToken cancellationToken = default)
+    public async Task<bool> UpdateEntityById(Guid Id, T updatedRecordData, CancellationToken cancellationToken = default)
     {
         var existingRecord =
             await _dbSet.FirstOrDefaultAsync(rec => rec.Id == Id);
