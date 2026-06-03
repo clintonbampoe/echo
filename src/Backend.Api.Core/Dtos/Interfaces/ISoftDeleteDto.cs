@@ -1,6 +1,6 @@
 using Backend.Api.Core.Entities.Interfaces;
 
-namespace Backend.Api.Core.Entities.Dtos;
+namespace Backend.Api.Core.Dtos.Interfaces;
 
 public interface ISoftDeleteDto<T> where T : class, ICongregationEntity, ISoftDeletableEntity
 {
