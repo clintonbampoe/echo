@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using Backend.Api.Core.Entities.Interfaces;
 
 namespace Backend.Api.Core.Common.ExtensionMethods;
 
