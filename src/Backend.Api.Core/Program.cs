@@ -19,7 +19,7 @@ builder.Services.AddScoped(typeof(ICreateEntityEngine<>), typeof(CreateNewRecord
 builder.Services.AddScoped(typeof(IGetEntityEngine<>), typeof(GetRecordEngine<>));
 builder.Services.AddScoped(typeof(IUpdateEntityEngine<>), typeof(UpdateRecordEngine<>));
 builder.Services.AddScoped(typeof(ISoftDeleteEntityEngine<>), typeof(SoftDeleteRecordEngine<>));
-builder.Services.AddScoped(typeof(IDatabaseEngine<>), typeof(RecordEngine<>));
+builder.Services.AddScoped(typeof(IDatabaseEngine<>), typeof(DatabaseEngine<>));
 
 var app = builder.Build();
 

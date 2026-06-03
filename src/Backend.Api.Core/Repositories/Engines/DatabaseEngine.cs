@@ -3,7 +3,7 @@ using Backend.Api.Core.Repositories.Engines.Interfaces;
 
 namespace Backend.Api.Core.Repositories.Engines;
 
-public class RecordEngine<T> : IDatabaseEngine<T>
+public class DatabaseEngine<T> : IDatabaseEngine<T>
     where T : class, ICongregationEntity, ISoftDeletableEntity
 {
     private readonly IGetEntityEngine<T> _getRecordService;
@@ -11,7 +11,7 @@ public class RecordEngine<T> : IDatabaseEngine<T>
     private readonly IUpdateEntityEngine<T> _updateRecordService;
     private readonly ISoftDeleteEntityEngine<T> _softDeleteService;
 
-    public RecordEngine(
+    public DatabaseEngine(
         IGetEntityEngine<T> getRecordService,
         ICreateEntityEngine<T> createNewRecordService,
         IUpdateEntityEngine<T> updateRecordService,
