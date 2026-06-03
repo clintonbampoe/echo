@@ -1,9 +1,8 @@
-using System.Linq.Expressions;
 using AutoMapper;
 using Backend.Api.Core.Common.ExtensionMethods;
 using Backend.Api.Core.Entities;
-using Backend.Api.Core.Repositories.Interfaces;
-using Backend.Api.Core.Services.Interfaces;
+using Backend.Api.Core.Repositories.Base;
+using Backend.Api.Core.Repositories.Engines.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Api.Core.Repositories;

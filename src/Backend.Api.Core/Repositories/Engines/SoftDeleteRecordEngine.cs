@@ -1,9 +1,9 @@
 using Backend.Api.Core.Data;
 using Backend.Api.Core.Entities.Interfaces;
-using Backend.Api.Core.Services.Interfaces;
+using Backend.Api.Core.Repositories.Engines.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace Backend.Api.Core.Services;
+namespace Backend.Api.Core.Repositories.Engines;
 
 public class SoftDeleteRecordEngine<T> : ISoftDeleteEntityEngine<T> where T : class, ICongregationEntity, ISoftDeletableEntity
 {

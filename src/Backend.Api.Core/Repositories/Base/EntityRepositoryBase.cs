@@ -1,11 +1,10 @@
 using AutoMapper;
-using AutoMapper.QueryableExtensions;
 using Backend.Api.Core.Common.ExtensionMethods;
 using Backend.Api.Core.Entities.Interfaces;
-using Backend.Api.Core.Services.Interfaces;
+using Backend.Api.Core.Repositories.Engines.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace Backend.Api.Core.Repositories.Interfaces;
+namespace Backend.Api.Core.Repositories.Base;
 
 public abstract class EntityRepositoryBase<T> where T : class, ICongregationEntity, ISoftDeletableEntity
 {

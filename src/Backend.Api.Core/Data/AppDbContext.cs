@@ -2,7 +2,6 @@ using System.Reflection;
 using Backend.Api.Core.Entities;
 using Backend.Api.Core.Entities.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace Backend.Api.Core.Data;
 
