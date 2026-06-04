@@ -15,7 +15,7 @@ public class ProjectRepository : EntityRepositoryBase<Project>
     }
 
     public override async Task<PagedResponse<Project>> GetPageAsync(
-        PaginationParams paginationParameters, QueryParameters queryParameters, CancellationToken cancellationToken = default)
+        PaginationParameters paginationParameters, QueryParameters queryParameters, CancellationToken cancellationToken = default)
     {
         var totalRecordCount = await _dbSet
             .AsNoTracking()

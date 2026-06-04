@@ -15,7 +15,7 @@ public class GetRecordEngine<T> : IGetEntityEngine<T> where T : class, ICongrega
         _appDbContext = appDbContext;
         _dbSet = appDbContext.Set<T>();
     }
-    public PagedResponse<T> CreateNewPagedResponseObject(List<T> records, PaginationParams paginationParameters, int totalRecords)
+    public PagedResponse<T> CreateNewPagedResponseObject(List<T> records, PaginationParameters paginationParameters, int totalRecords)
     {
         return new PagedResponse<T>(
             records, paginationParameters, totalRecords

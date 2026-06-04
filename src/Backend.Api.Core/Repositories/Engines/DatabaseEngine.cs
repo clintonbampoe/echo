@@ -29,7 +29,7 @@ public class DatabaseEngine<T> : IDatabaseEngine<T>
         return _getRecordService.GetEntityByIdAsync(Id, cancellationToken);
     }
 
-    public PagedResponse<T> CreateNewPagedResponseObject(List<T> records, PaginationParams paginationParameters, int totalRecords)
+    public PagedResponse<T> CreateNewPagedResponseObject(List<T> records, PaginationParameters paginationParameters, int totalRecords)
     {
         return _getRecordService.CreateNewPagedResponseObject(records, paginationParameters, totalRecords);
     }
