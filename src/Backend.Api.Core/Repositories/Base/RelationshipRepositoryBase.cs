@@ -16,7 +16,7 @@ public abstract class RelationshipRepositoryBase<T> : EntityRepositoryBase<T>
 
     public virtual async Task<PagedResponse<T>> GetPageByLeftEntityIdAsync(
         Guid leftId,
-        PaginationParams paginationParameters,
+        PaginationParameters paginationParameters,
         QueryParameters queryParameters
         )
     {
@@ -35,7 +35,7 @@ public abstract class RelationshipRepositoryBase<T> : EntityRepositoryBase<T>
 
     public virtual async Task<PagedResponse<T>> GetPageByRightEntityIdAsync(
         Guid rightId,
-        PaginationParams paginationParameters,
+        PaginationParameters paginationParameters,
         QueryParameters queryParameters
         )
     {

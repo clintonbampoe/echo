@@ -26,7 +26,7 @@ public abstract class EntityRepositoryBase<T> where T : class, ICongregationEnti
     }
 
     public virtual async Task<PagedResponse<T>> GetPageAsync(
-        PaginationParams paginationParameters,
+        PaginationParameters paginationParameters,
         QueryParameters queryParameters,
         CancellationToken cancellationToken = default
         )
