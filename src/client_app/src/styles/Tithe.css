@@ -1,0 +1,462 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Tithe Page Styles
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.tithe-container {
+  padding: 32px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  background-color: var(--bg-right);
+  min-height: 100%;
+}
+
+/* ─── Filters Row ─────────────────────────────────────────────────────────── */
+
+.tithe-filters-row {
+  display: flex;
+  gap: 24px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.tithe-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tithe-filter-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+}
+
+.tithe-select {
+  height: 48px;
+  padding: 0 40px 0 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background-color: #f2f2f7;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-main);
+  min-width: 180px;
+  outline: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23000000' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+  transition: all 0.2s ease;
+}
+
+.tithe-select:hover {
+  border-color: #a1a1a6;
+}
+
+.tithe-select:focus {
+  border-color: var(--text-main);
+  background-color: white;
+}
+
+/* ─── Chart Section ───────────────────────────────────────────────────────── */
+
+.tithe-chart-card {
+  background-color: white;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+}
+
+.tithe-chart-header {
+  margin-bottom: 24px;
+}
+
+.tithe-chart-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.tithe-chart-subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.tithe-chart-container {
+  height: 250px;
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+
+.tithe-chart-bar-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  height: 100%;
+  position: relative;
+}
+
+.tithe-chart-bar {
+  width: 40px;
+  background-color: var(--text-main);
+  border-radius: 6px 6px 0 0;
+  transition: height 0.3s ease, background-color 0.2s ease;
+}
+
+.tithe-chart-bar:hover {
+  background-color: #444;
+}
+
+.tithe-chart-label {
+  margin-top: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.tithe-chart-tooltip {
+  position: absolute;
+  top: -36px;
+  background-color: #000;
+  color: #fff;
+  padding: 6px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.tithe-chart-bar-wrapper:hover .tithe-chart-tooltip {
+  opacity: 1;
+}
+
+/* ─── Table Section ───────────────────────────────────────────────────────── */
+
+.tithe-table-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+}
+
+.tithe-table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+  background-color: white;
+}
+
+.tithe-table-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.tithe-table-container {
+  overflow-x: auto;
+}
+
+.tithe-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.tithe-table th {
+  background-color: #f2f2f7;
+  padding: 12px 24px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border);
+}
+
+.tithe-table td {
+  padding: 16px 24px;
+  font-size: 14px;
+  color: var(--text-main);
+  border-bottom: 1px solid #f2f2f7;
+}
+
+.tithe-table tr:last-child td {
+  border-bottom: none;
+}
+
+.tithe-member-name {
+  font-weight: 600;
+}
+
+.tithe-amount-cell {
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.tithe-table-empty {
+  padding: 48px;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+/* Actions */
+.tithe-table-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.action-btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  background: white;
+  border: 1px solid var(--border);
+  color: var(--text-main);
+  transition: all 0.15s ease;
+  cursor: pointer;
+}
+
+.action-btn:hover {
+  background-color: #f2f2f7;
+  border-color: #a1a1a6;
+}
+
+.action-btn.delete:hover {
+  background-color: #ffebee;
+  border-color: #ffcdd2;
+  color: #ff3b30;
+}
+
+/* Pagination */
+.tithe-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.pagination-btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  background: #f2f2f7;
+  border: 1px solid transparent;
+  color: var(--text-main);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.pagination-btn:hover:not(:disabled) {
+  background: #e5e5ea;
+}
+
+.pagination-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pagination-info {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+/* ─── Modal Overlay ───────────────────────────────────────────────────────── */
+
+.tithe-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  animation: overlayFadeIn 0.2s ease;
+}
+
+@keyframes overlayFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.tithe-modal {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.16);
+  animation: modalSlideIn 0.25s ease;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.tithe-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 28px 0;
+}
+
+.tithe-modal-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.tithe-modal-close {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.tithe-modal-close:hover {
+  background-color: #f2f2f7;
+  color: var(--text-main);
+}
+
+.tithe-modal-body {
+  padding: 24px 28px;
+}
+
+.tithe-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 28px 24px;
+  border-top: 1px solid var(--border);
+}
+
+/* Form Elements */
+.tithe-form-group {
+  margin-bottom: 20px;
+}
+
+.tithe-form-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-bottom: 8px;
+}
+
+.tithe-form-label span {
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.tithe-form-input,
+.tithe-form-select,
+.tithe-form-textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--text-main);
+  background: white;
+  transition: border-color 0.2s ease;
+  outline: none;
+}
+
+.tithe-form-input:focus,
+.tithe-form-select:focus,
+.tithe-form-textarea:focus {
+  border-color: var(--text-main);
+}
+
+.tithe-form-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238e8e93' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 36px;
+}
+
+.tithe-form-textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.tithe-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.tithe-btn {
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.tithe-btn-primary {
+  background-color: var(--text-main);
+  color: white;
+}
+
+.tithe-btn-primary:hover {
+  background-color: var(--primary-hover);
+}
+
+.tithe-btn-secondary {
+  background: transparent;
+  color: var(--text-main);
+  border: 1px solid var(--border);
+}
+
+.tithe-btn-secondary:hover {
+  background-color: #f2f2f7;
+}
