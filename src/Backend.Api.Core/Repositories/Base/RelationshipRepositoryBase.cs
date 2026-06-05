@@ -20,7 +20,7 @@ public abstract class RelationshipRepositoryBase<T> : EntityRepositoryBase<T>
             CancellationToken ct
         )
     {
-        var entities =  _databaseEngine.
+        throw new NotImplementedException();
     }
 
 }
