@@ -1,8 +1,6 @@
-using AutoMapper;
 using Backend.Api.Core.Data;
-using Backend.Api.Core.Entities;
-using Backend.Api.Core.Services;
-using Backend.Api.Core.Services.Interfaces;
+using Backend.Api.Core.Repositories.Engines;
+using Backend.Api.Core.Repositories.Engines.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,11 +15,11 @@ builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
-builder.Services.AddScoped(typeof(ICreateNewRecordService<>), typeof(CreateNewRecordService<>));
-builder.Services.AddScoped(typeof(IGetRecordService<>), typeof(GetRecordService<>));
-builder.Services.AddScoped(typeof(IUpdateRecordService<>), typeof(UpdateRecordService<>));
-builder.Services.AddScoped(typeof(ISoftDeleteService<>), typeof(SoftDeleteService<>));
-builder.Services.AddScoped(typeof(IDomainRecordService<>), typeof(DomainRecordService<>));
+builder.Services.AddScoped(typeof(ICreateEntityEngine<>), typeof(CreateNewRecordEngine<>));
+builder.Services.AddScoped(typeof(IGetEntityEngine<>), typeof(GetRecordEngine<>));
+builder.Services.AddScoped(typeof(IUpdateEntityEngine<>), typeof(UpdateRecordEngine<>));
+builder.Services.AddScoped(typeof(ISoftDeleteEntityEngine<>), typeof(SoftDeleteRecordEngine<>));
+builder.Services.AddScoped(typeof(IDatabaseEngine<>), typeof(DatabaseEngine<>));
 
 var app = builder.Build();
 

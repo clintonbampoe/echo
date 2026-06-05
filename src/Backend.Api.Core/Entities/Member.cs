@@ -1,5 +1,3 @@
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations.Schema;
 using Backend.Api.Core.Entities.Interfaces;
 using Backend.Api.Core.Enums;
 

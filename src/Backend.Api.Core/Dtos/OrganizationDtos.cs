@@ -1,0 +1,37 @@
+using Backend.Api.Core.Dtos.Interfaces;
+using Backend.Api.Core.Entities;
+
+namespace Backend.Api.Core.Dtos;
+
+public record OrganizationCreateDto
+    (Guid Id,
+    Guid CongregationId,
+    string Name,
+    DateTime CreatedAt,
+    string? Description
+        ) : ICreateDto<Organization>;
+
+public record OrganizationResponseDto
+    (Guid Id,
+    Guid CongregationId,
+    string Name,
+    string? Description
+    ) : IResponseDto<Organization>;
+
+public record OrganizationListResponseDto
+    (Guid Id,
+    Guid CongregationId,
+    string Name
+    ) : IListResponseDto<Organization>;
+
+public record OrganizationUpdateDto
+    (Guid Id,
+    Guid CongregationId,
+    string Name,
+    string? Description
+        ) : IUpdateDto<Organization>;
+
+public record OrganizationDeleteDto
+    (Guid Id,
+    Guid CongregationId
+        ) : ISoftDeleteDto<Organization>;

@@ -1,5 +1,4 @@
-using Backend.Api.Core.Data.EntityConfigurations.Interfaces;
-using Microsoft.EntityFrameworkCore;
+using Backend.Api.Core.Data.EntityConfigurations.Base;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Backend.Api.Core.Data.EntityConfigurations;

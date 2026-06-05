@@ -1,7 +1,4 @@
-using System.Linq.Expressions;
-using Backend.Api.Core.Entities.Dtos;
 using Backend.Api.Core.Entities.Interfaces;
-using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Api.Core.Common.ExtensionMethods;
 
