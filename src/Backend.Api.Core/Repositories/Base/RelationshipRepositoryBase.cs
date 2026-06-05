@@ -9,46 +9,18 @@ namespace Backend.Api.Core.Repositories.Base;
 public abstract class RelationshipRepositoryBase<T> : EntityRepositoryBase<T>
     where T : class, ICongregationEntity, ISoftDeletableEntity
 {
-    protected RelationshipRepositoryBase(DbContext context, IMapper mapper, IDatabaseEngine<T> domainRecordService)
-        : base(context, mapper, domainRecordService)
+    protected RelationshipRepositoryBase(DbContext context, IMapper mapper, IDatabaseEngine<T> databaseEngine)
+        : base(context, mapper, databaseEngine)
     {
     }
 
-    public virtual async Task<PagedResponse<T>> GetPageByLeftEntityIdAsync(
-        Guid leftId,
-        PaginationParameters paginationParameters,
-        QueryParameters queryParameters
+    protected PagedResponse<T> GetPageByForeignKeyPropertyId<TForeignKeyProperty>(
+            Guid foreignKeyId,
+            PaginationParameters paginationParameters,
+            CancellationToken ct
         )
     {
-        var totalRecordCount = await _dbSet
-            .AsNoTracking()
-            .CountAsync();
-
-        var records = await _dbSet
-            .AsNoTracking()
-            .Where(r => r.CongregationId == leftId)
-            .ApplyPagination(paginationParameters)
-            .ToListAsync();
-
-        return _domainRecordService.CreateNewPagedResponseObject(records, paginationParameters, totalRecordCount);
+        var entities =  _databaseEngine.
     }
 
-    public virtual async Task<PagedResponse<T>> GetPageByRightEntityIdAsync(
-        Guid rightId,
-        PaginationParameters paginationParameters,
-        QueryParameters queryParameters
-        )
-    {
-        var totalRecordCount = await _dbSet
-            .AsNoTracking()
-            .CountAsync();
-
-        var records = await _dbSet
-            .AsNoTracking()
-            .Where(r => r.CongregationId == rightId)
-            .ApplyPagination(paginationParameters)
-            .ToListAsync();
-
-        return _domainRecordService.CreateNewPagedResponseObject(records, paginationParameters, totalRecordCount);
-    }
 }
