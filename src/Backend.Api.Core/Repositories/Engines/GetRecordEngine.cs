@@ -29,4 +29,9 @@ public class GetRecordEngine<T> : IGetEntityEngine<T> where T : class, ICongrega
             .Where(e => e.Id == Id)
             .FirstOrDefaultAsync(cancellationToken);
     }
+
+    public Task<PagedResponse<T>> GetPagedEntityListByIdAsync(Guid id, CancellationToken ct = default)
+    {
+        throw new NotImplementedException();
+    }
 }

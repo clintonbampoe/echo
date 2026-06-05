@@ -48,4 +48,9 @@ public class DatabaseEngine<T> : IDatabaseEngine<T>
     {
         return _softDeleteService.SoftDeleteByIdAsync(Id, cancellationToken);
     }
+
+    public Task<PagedResponse<T>> GetPagedEntityListByIdAsync(Guid id, CancellationToken ct = default)
+    {
+        throw new NotImplementedException();
+    }
 }
