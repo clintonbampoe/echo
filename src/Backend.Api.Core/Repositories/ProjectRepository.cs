@@ -30,6 +30,6 @@ public class ProjectRepository : EntityRepositoryBase<Project>
             .ApplyPagination(paginationParameters)
             .ToListAsync(cancellationToken);
 
-        return _domainRecordService.CreateNewPagedResponseObject(records, paginationParameters, totalRecordCount);
+        return _databaseEngine.CreateNewPagedResponseObject(records, paginationParameters, totalRecordCount);
     }
 }
