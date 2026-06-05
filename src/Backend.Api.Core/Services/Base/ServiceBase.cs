@@ -9,11 +9,11 @@ namespace Backend.Api.Core.Services.Base;
 
 public abstract class ServiceBase<T> where T : class, ICongregationEntity, ISoftDeletableEntity
 {
-    protected readonly EntityRepositoryBase<T> _repository;
+    protected virtual EntityRepositoryBase<T> Repository { get; }
     protected readonly IMapper _mapper;
     public ServiceBase(EntityRepositoryBase<T> entityRepositoryBase, IMapper mapper)
     {
-        _repository = entityRepositoryBase;
+        Repository = entityRepositoryBase;
         _mapper = mapper;
     }
 
@@ -23,7 +23,7 @@ public abstract class ServiceBase<T> where T : class, ICongregationEntity, ISoft
             CancellationToken ct
         )
     {
-        var pagedEntities = await _repository.GetPageAsync(paginationParameters, queryParameters, ct);
+        var pagedEntities = await Repository.GetPageAsync(paginationParameters, queryParameters, ct);
         var mappedRecords = _mapper.Map<List<IListResponseDto<T>>>(pagedEntities.Data);
 
         var pagedResponse = new PagedResponse<IListResponseDto<T>>(
@@ -40,7 +40,7 @@ public abstract class ServiceBase<T> where T : class, ICongregationEntity, ISoft
             CancellationToken ct
         )
     {
-        var entity = await _repository.GetByIdAsync(id, ct);
+        var entity = await Repository.GetByIdAsync(id, ct);
 
         if (entity == null)
             return new NotFoundResult($"Record not found.");
@@ -56,7 +56,7 @@ public abstract class ServiceBase<T> where T : class, ICongregationEntity, ISoft
     {
         var entity = _mapper.Map<T>(createRecordDto);
 
-        var recordCreatedSuccessfully = await _repository.CreateRecord(entity, ct);
+        var recordCreatedSuccessfully = await Repository.CreateRecord(entity, ct);
 
         if (!recordCreatedSuccessfully)
             return new BadRequestResult("Operation failed.");
@@ -71,14 +71,14 @@ public abstract class ServiceBase<T> where T : class, ICongregationEntity, ISoft
             CancellationToken ct
        )
     {
-        var existingEntity = await _repository.GetByIdAsync(id);
+        var existingEntity = await Repository.GetByIdAsync(id);
 
         if (existingEntity is null)
             return new NotFoundResult("Record not found.");
 
         var entity = _mapper.Map<T>(updateRecordDto);
 
-        var recordUpdateSuccessfully = await _repository.UpdateRecord(id, entity, ct);
+        var recordUpdateSuccessfully = await Repository.UpdateRecord(id, entity, ct);
 
         if (!recordUpdateSuccessfully)
             return new BadRequestResult("Operation failed.");
@@ -91,7 +91,7 @@ public abstract class ServiceBase<T> where T : class, ICongregationEntity, ISoft
             CancellationToken ct
         )
     {
-        var success = await _repository.DeleteRecord(id, ct);
+        var success = await Repository.DeleteRecord(id, ct);
 
         if (!success)
             return new NotFoundResult("Record not found.");

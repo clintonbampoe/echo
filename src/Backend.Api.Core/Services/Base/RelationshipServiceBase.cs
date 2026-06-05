@@ -8,7 +8,12 @@ namespace Backend.Api.Core.Services.Base;
 public abstract class RelationshipServiceBase<T> : ServiceBase<T>
     where T : class, ICongregationEntity, ISoftDeletableEntity
 {
-    protected RelationshipServiceBase(EntityRepositoryBase<T> entityRepositoryBase, IMapper mapper) : base(entityRepositoryBase, mapper)
+    protected override RelationshipRepositoryBase<T> Repository { get; }
+    protected RelationshipServiceBase(RelationshipRepositoryBase<T> repository, IMapper mapper)
+        : base(repository, mapper)
     {
+        Repository = repository;
     }
+
+    
 }
