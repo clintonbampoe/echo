@@ -11,9 +11,9 @@ public abstract class ServiceBase<T> where T : class, ICongregationEntity, ISoft
 {
     protected virtual EntityRepositoryBase<T> Repository { get; }
     protected readonly IMapper _mapper;
-    public ServiceBase(EntityRepositoryBase<T> entityRepositoryBase, IMapper mapper)
+    public ServiceBase(EntityRepositoryBase<T> repository, IMapper mapper)
     {
-        Repository = entityRepositoryBase;
+        Repository = repository;
         _mapper = mapper;
     }
 
