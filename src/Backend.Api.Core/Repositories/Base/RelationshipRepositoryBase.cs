@@ -1,3 +1,4 @@
+using System.Linq.Expressions;
 using AutoMapper;
 using Backend.Api.Core.Common.ExtensionMethods;
 using Backend.Api.Core.Entities.Interfaces;
@@ -14,13 +15,26 @@ public abstract class RelationshipRepositoryBase<T> : EntityRepositoryBase<T>
     {
     }
 
-    protected PagedResponse<T> GetPageByForeignKeyPropertyId<TForeignKeyProperty>(
-            Guid foreignKeyId,
+    public virtual async Task<PagedResponse<T>> GetPageByForeignKeyPropertyId(
+            Expression<Func<T, bool>> predicate,
             PaginationParameters paginationParameters,
             CancellationToken ct
         )
     {
-        throw new NotImplementedException();
+        var query = _dbSet.Where(predicate);
+
+        int totalRecordCount = await query.CountAsync(ct);
+
+        var entities = await query
+            .ApplyPagination(paginationParameters)
+            .ToListAsync();
+
+        return _databaseEngine.CreateNewPagedResponseObject(
+            entities,
+            paginationParameters,
+            totalRecordCount
+        );
+
     }
 
 }
