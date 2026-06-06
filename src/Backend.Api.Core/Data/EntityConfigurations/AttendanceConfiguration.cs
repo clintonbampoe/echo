@@ -11,6 +11,8 @@ public class AttendanceConfiguration : CongregationEntityConfigurationBase<Atten
     {
         builder.HasKey(attendance => attendance.Id);
 
+        builder.HasIndex(att => att.MemberId).IsUnique();
+
         builder.HasOne(mem => mem.Member)
             .WithMany()
             .HasForeignKey(at => at.MemberId)

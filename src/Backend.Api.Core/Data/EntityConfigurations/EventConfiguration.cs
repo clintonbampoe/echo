@@ -11,6 +11,8 @@ public class EventConfiguration : CongregationEntityConfigurationBase<Event>
     {
         builder.HasKey(e => e.Id);
 
+        builder.HasIndex(e => e.Name).IsUnique();
+
         builder.HasOne(evnt => evnt.Organization)
             .WithMany()
             .HasForeignKey(e => e.OrganizationId)
