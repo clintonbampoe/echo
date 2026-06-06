@@ -4,6 +4,7 @@ using Backend.Api.Core.Entities;
 using Backend.Api.Core.Repositories;
 using Backend.Api.Core.Repositories.Engines;
 using Backend.Api.Core.Repositories.Engines.Interfaces;
+using Backend.Api.Core.Repository;
 using Backend.Api.Core.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -28,6 +29,21 @@ builder.Services.AddScoped(typeof(ISoftDeleteEntityEngine<>), typeof(SoftDeleteR
 builder.Services.AddScoped(typeof(IDatabaseEngine<>), typeof(DatabaseEngine<>));
 
 builder.Services.AddScoped<MemberRepository>();
+builder.Services.AddScoped<AssetRepository>();
+builder.Services.AddScoped<AssetCategoryRepository>();
+builder.Services.AddScoped<AttendanceRepository>();
+builder.Services.AddScoped<EventAttendanceRepository>();
+builder.Services.AddScoped<EventRegistrationRepository>();
+builder.Services.AddScoped<EventRepository>();
+builder.Services.AddScoped<OrganizationMemberRepository>();
+builder.Services.AddScoped<OrganizationRepository>();
+builder.Services.AddScoped<ProjectCategoryRepository>();
+builder.Services.AddScoped<ProjectContributionRepository>();
+builder.Services.AddScoped<ProjectRepository>();
+builder.Services.AddScoped<TitheRepository>();
+builder.Services.AddScoped<TransactionCategoryRepository>();
+builder.Services.AddScoped<TransactionRepository>();
+
 builder.Services.AddScoped<MemberService>();
 builder.Services.AddScoped<MembersController>();
 
