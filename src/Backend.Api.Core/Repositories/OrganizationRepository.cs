@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Api.Core.Repositories;
 
-public class OrganizationRepository : EntityRepositoryBase<Organization>
+public class OrganizationRepository : RepositoryBase<Organization>
 {
     public OrganizationRepository(AppDbContext context, IMapper mapper, IDatabaseEngine<Organization> domainRecordService)
         : base(context, mapper, domainRecordService)

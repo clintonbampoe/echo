@@ -7,14 +7,14 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Api.Core.Repositories.Base;
 
-public abstract class EntityRepositoryBase<T> where T : class, ICongregationEntity, ISoftDeletableEntity
+public abstract class RepositoryBase<T> where T : class, ICongregationEntity, ISoftDeletableEntity
 {
     protected readonly AppDbContext _context;
     protected readonly DbSet<T> _dbSet;
     protected readonly IMapper _mapper;
     protected readonly IDatabaseEngine<T> _databaseEngine;
 
-    public EntityRepositoryBase(
+    public RepositoryBase(
         AppDbContext context,
         IMapper mapper,
         IDatabaseEngine<T> domainRecordService

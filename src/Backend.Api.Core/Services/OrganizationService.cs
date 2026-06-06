@@ -7,7 +7,7 @@ namespace Backend.Api.Core.Services;
 
 public class OrganizationService : ServiceBase<Organization>
 {
-    public OrganizationService(EntityRepositoryBase<Organization> repository, IMapper mapper) : base(repository, mapper)
+    public OrganizationService(RepositoryBase<Organization> repository, IMapper mapper) : base(repository, mapper)
     {
     }
 }

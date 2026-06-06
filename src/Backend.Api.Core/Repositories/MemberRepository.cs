@@ -6,7 +6,7 @@ using Backend.Api.Core.Repositories.Engines.Interfaces;
 
 namespace Backend.Api.Core.Repositories;
 
-public class MemberRepository : EntityRepositoryBase<Member>
+public class MemberRepository : RepositoryBase<Member>
 {
     public MemberRepository(AppDbContext context, IMapper mapper, IDatabaseEngine<Member> databaseEngine
     ) : base(context, mapper, databaseEngine)

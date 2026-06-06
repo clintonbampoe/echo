@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Api.Core.Repositories;
 
-public class ProjectRepository : EntityRepositoryBase<Project>
+public class ProjectRepository : RepositoryBase<Project>
 {
     public ProjectRepository(AppDbContext context, IMapper mapper, IDatabaseEngine<Project> domainRecordService)
         : base(context, mapper, domainRecordService)

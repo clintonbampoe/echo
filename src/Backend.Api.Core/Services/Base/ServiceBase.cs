@@ -9,9 +9,9 @@ namespace Backend.Api.Core.Services.Base;
 
 public abstract class ServiceBase<T> where T : class, ICongregationEntity, ISoftDeletableEntity
 {
-    protected virtual EntityRepositoryBase<T> Repository { get; }
+    protected virtual RepositoryBase<T> Repository { get; }
     protected readonly IMapper _mapper;
-    public ServiceBase(EntityRepositoryBase<T> repository, IMapper mapper)
+    public ServiceBase(RepositoryBase<T> repository, IMapper mapper)
     {
         Repository = repository;
         _mapper = mapper;

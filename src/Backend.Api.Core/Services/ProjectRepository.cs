@@ -7,7 +7,7 @@ namespace Backend.Api.Core.Services;
 
 public class ProjectService : ServiceBase<Project>
 {
-    public ProjectService(EntityRepositoryBase<Project> repository, IMapper mapper) : base(repository, mapper)
+    public ProjectService(RepositoryBase<Project> repository, IMapper mapper) : base(repository, mapper)
     {
     }
 }
