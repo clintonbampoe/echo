@@ -26,7 +26,6 @@ builder.Services.AddScoped(typeof(IGetEntityEngine<>), typeof(GetRecordEngine<>)
 builder.Services.AddScoped(typeof(IUpdateEntityEngine<>), typeof(UpdateRecordEngine<>));
 builder.Services.AddScoped(typeof(ISoftDeleteEntityEngine<>), typeof(SoftDeleteRecordEngine<>));
 builder.Services.AddScoped(typeof(IDatabaseEngine<>), typeof(DatabaseEngine<>));
-builder.Services.AddScoped<DatabaseEngine<Member>>();
 
 builder.Services.AddScoped<MemberRepository>();
 builder.Services.AddScoped<MemberService>();
