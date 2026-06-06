@@ -1,5 +1,6 @@
 using AutoMapper;
 using Backend.Api.Core.Common.ExtensionMethods;
+using Backend.Api.Core.Data;
 using Backend.Api.Core.Entities;
 using Backend.Api.Core.Repositories.Base;
 using Backend.Api.Core.Repositories.Engines.Interfaces;
@@ -9,7 +10,7 @@ namespace Backend.Api.Core.Repositories;
 
 public class ProjectRepository : EntityRepositoryBase<Project>
 {
-    public ProjectRepository(DbContext context, IMapper mapper, IDatabaseEngine<Project> domainRecordService)
+    public ProjectRepository(AppDbContext context, IMapper mapper, IDatabaseEngine<Project> domainRecordService)
         : base(context, mapper, domainRecordService)
     {
     }
