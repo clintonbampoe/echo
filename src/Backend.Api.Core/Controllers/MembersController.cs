@@ -26,9 +26,18 @@ public class MembersController : ControllerBase
         return response.ToActionResult();
     }
 
+    [HttpGet("{id}")]
+    public async Task<ActionResult> GetByIdAsync(
+        Guid id,
+        CancellationToken ct
+    )
+    {
+        var response = await _service.GetByIdAsync<MemberResponseDto>(id, ct);
+        return response.ToActionResult();
+    }
 
     [HttpPost]
-    public async Task<ActionResult> Update(
+    public async Task<ActionResult> Create(
         MemberCreateDto member,
         CancellationToken ct
     )
@@ -36,4 +45,26 @@ public class MembersController : ControllerBase
         var response = await _service.CreateNewRecord(member, ct);
         return response.ToActionResult();
     }
+
+    [HttpPut("{id}")]
+    public async Task<ActionResult> Update(
+        Guid id,
+        MemberUpdateDto memberData,
+        CancellationToken ct
+    )
+    {
+        var response = await _service.UpdateRecord(id, memberData, ct);
+        return response.ToActionResult();
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<ActionResult> Delete(
+        Guid id,
+        CancellationToken ct
+    )
+    {
+        var response = await _service.DeleteRecord(id, ct);
+        return response.ToActionResult();
+    }
+
 }
