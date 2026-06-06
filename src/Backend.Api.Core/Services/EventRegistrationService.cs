@@ -6,10 +6,9 @@ using Backend.Api.Core.Services.Base;
 
 namespace Backend.Api.Core.Services;
 
-public class OrganizationMemberService : RelationshipServiceBase<OrganizationMember>
+public class EventRegistrationService : RelationshipServiceBase<EventRegistration>
 {
-    public OrganizationMemberService(OrganizationMemberRepository repository, IMapper mapper)
-        : base(repository, mapper)
+    public EventRegistrationService(EventRegistrationRepository repository, IMapper mapper) : base(repository, mapper)
     {
     }
 }
