@@ -6,7 +6,7 @@ using Backend.Api.Core.Repositories.Engines.Interfaces;
 
 namespace Backend.Api.Core.Repositories;
 
-public class ProjectContributionRepository : RepositoryBase<ProjectContribution>
+public class ProjectContributionRepository : RelationshipRepositoryBase<ProjectContribution>
 {
     public ProjectContributionRepository(AppDbContext context, IMapper mapper, IDatabaseEngine<ProjectContribution> domainRecordService) : base(context, mapper, domainRecordService)
     {
