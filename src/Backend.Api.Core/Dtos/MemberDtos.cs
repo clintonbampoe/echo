@@ -20,12 +20,12 @@ public record MemberResponseDto
     string? PhoneNumber
     ) : IResponseDto<Member>;
 
-public record MemberListResponseDto
-    (Guid Id,
-    Guid CongregationId,
-    string Name
-    ) : IListResponseDto<Member>;
-
+public record MemberListResponseDto : IListResponseDto<Member>
+{
+    public Guid Id { get; init; }
+    public Guid CongregationId { get; set; }
+    public string Name { get; set; } = string.Empty;
+}
 public record MemberUpdateDto
     (Guid Id,
     Guid CongregationId,
