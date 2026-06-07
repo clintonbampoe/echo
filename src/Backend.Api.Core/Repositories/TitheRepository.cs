@@ -6,11 +6,9 @@ using Backend.Api.Core.Repositories.Engines.Interfaces;
 
 namespace Backend.Api.Core.Repositories;
 
-public class MemberRepository : RepositoryBase<Member>
+public class TitheRepository : RepositoryBase<Tithe>
 {
-    public MemberRepository(AppDbContext context, IMapper mapper, IDatabaseEngine<Member> databaseEngine
-    ) : base(context, mapper, databaseEngine)
+    public TitheRepository(AppDbContext context, IMapper mapper, IDatabaseEngine<Tithe> domainRecordService) : base(context, mapper, domainRecordService)
     {
-
     }
 }

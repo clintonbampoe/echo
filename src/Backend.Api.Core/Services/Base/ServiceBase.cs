@@ -9,50 +9,54 @@ namespace Backend.Api.Core.Services.Base;
 
 public abstract class ServiceBase<T> where T : class, ICongregationEntity, ISoftDeletableEntity
 {
-    protected virtual EntityRepositoryBase<T> Repository { get; }
+    protected virtual RepositoryBase<T> Repository { get; }
     protected readonly IMapper _mapper;
-    public ServiceBase(EntityRepositoryBase<T> repository, IMapper mapper)
+    public ServiceBase(RepositoryBase<T> repository, IMapper mapper)
     {
         Repository = repository;
         _mapper = mapper;
     }
 
-    public virtual async Task<IOperationResult> GetPagedAsync(
-            PaginationParameters paginationParameters,
-            QueryParameters queryParameters,
-            CancellationToken ct
+    public virtual async Task<IOperationResult> GetPagedAsync<TListResponseDto>
+    (
+        PaginationParameters paginationParameters,
+        QueryParameters? queryParameters,
+        CancellationToken ct
         )
+        where TListResponseDto : class, IListResponseDto<T>
     {
         var pagedEntities = await Repository.GetPageAsync(paginationParameters, queryParameters, ct);
-        var mappedRecords = _mapper.Map<List<IListResponseDto<T>>>(pagedEntities.Data);
+        var mappedRecords = _mapper.Map<List<TListResponseDto>>(pagedEntities.Data);
 
-        var pagedResponse = new PagedResponse<IListResponseDto<T>>(
+        var pagedResponse = new PagedResponse<TListResponseDto>(
             mappedRecords,
             paginationParameters,
             pagedEntities.TotalRecordCount
         );
 
-        return new SuccessResult<PagedResponse<IListResponseDto<T>>>(pagedResponse);
+        return new SuccessResult<PagedResponse<TListResponseDto>>(pagedResponse);
     }
 
-    public virtual async Task<IOperationResult> GetByIdAsync(
+    public virtual async Task<IOperationResult> GetByIdAsync<TResponseDto>(
             Guid id,
             CancellationToken ct
         )
+        where TResponseDto : IResponseDto<T>
     {
         var entity = await Repository.GetByIdAsync(id, ct);
 
         if (entity == null)
             return new NotFoundResult($"Record not found.");
 
-        var mappedDto = _mapper.Map<IResponseDto<T>>(entity);
-        return new SuccessResult<IResponseDto<T>>(mappedDto);
+        var mappedDto = _mapper.Map<TResponseDto>(entity);
+        return new SuccessResult<TResponseDto>(mappedDto);
     }
 
-    public virtual async Task<IOperationResult> CreateNewRecord(
-            ICreateDto<T> createRecordDto,
+    public virtual async Task<IOperationResult> CreateNewRecord<TCreateDto>(
+            TCreateDto createRecordDto,
             CancellationToken ct
         )
+        where TCreateDto : ICreateDto<T>
     {
         var entity = _mapper.Map<T>(createRecordDto);
 
@@ -65,11 +69,12 @@ public abstract class ServiceBase<T> where T : class, ICongregationEntity, ISoft
 
     }
 
-    public virtual async Task<IOperationResult> UpdateRecord(
+    public virtual async Task<IOperationResult> UpdateRecord<TUpdateDto>(
             Guid id,
-            IUpdateDto<T> updateRecordDto,
+            TUpdateDto updateRecordDto,
             CancellationToken ct
        )
+       where TUpdateDto : IUpdateDto<T>
     {
         var existingEntity = await Repository.GetByIdAsync(id);
 

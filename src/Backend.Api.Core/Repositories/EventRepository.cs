@@ -6,11 +6,9 @@ using Backend.Api.Core.Repositories.Engines.Interfaces;
 
 namespace Backend.Api.Core.Repositories;
 
-public class MemberRepository : RepositoryBase<Member>
+public class EventRepository : RepositoryBase<Event>
 {
-    public MemberRepository(AppDbContext context, IMapper mapper, IDatabaseEngine<Member> databaseEngine
-    ) : base(context, mapper, databaseEngine)
+    public EventRepository(AppDbContext context, IMapper mapper, IDatabaseEngine<Event> domainRecordService) : base(context, mapper, domainRecordService)
     {
-
     }
 }

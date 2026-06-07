@@ -6,10 +6,9 @@ using Backend.Api.Core.Services.Base;
 
 namespace Backend.Api.Core.Services;
 
-public class OrganizationMemberService : RelationshipServiceBase<OrganizationMember>
+public class AssetCategoryService : ServiceBase<AssetCategory>
 {
-    public OrganizationMemberService(OrganizationMemberRepository repository, IMapper mapper)
-        : base(repository, mapper)
+    public AssetCategoryService(AssetCategoryRepository repository, IMapper mapper) : base(repository, mapper)
     {
     }
 }

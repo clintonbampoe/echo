@@ -1,20 +1,21 @@
 using AutoMapper;
 using Backend.Api.Core.Common.ExtensionMethods;
+using Backend.Api.Core.Data;
 using Backend.Api.Core.Entities.Interfaces;
 using Backend.Api.Core.Repositories.Engines.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Api.Core.Repositories.Base;
 
-public abstract class EntityRepositoryBase<T> where T : class, ICongregationEntity, ISoftDeletableEntity
+public abstract class RepositoryBase<T> where T : class, ICongregationEntity, ISoftDeletableEntity
 {
-    protected readonly DbContext _context;
+    protected readonly AppDbContext _context;
     protected readonly DbSet<T> _dbSet;
     protected readonly IMapper _mapper;
     protected readonly IDatabaseEngine<T> _databaseEngine;
 
-    public EntityRepositoryBase(
-        DbContext context,
+    public RepositoryBase(
+        AppDbContext context,
         IMapper mapper,
         IDatabaseEngine<T> domainRecordService
         )
@@ -27,7 +28,7 @@ public abstract class EntityRepositoryBase<T> where T : class, ICongregationEnti
 
     public virtual async Task<PagedResponse<T>> GetPageAsync(
         PaginationParameters paginationParameters,
-        QueryParameters queryParameters,
+        QueryParameters? queryParameters,
         CancellationToken cancellationToken = default
         )
     {
