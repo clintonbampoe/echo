@@ -4,24 +4,24 @@ using Backend.Api.Core.Entities;
 
 namespace Backend.Api.Core.Common.Mapping;
 
-public class OrganizationProfile : Profile
+public class AssetCategoryProfile : Profile
 {
-    public OrganizationProfile()
+    public AssetCategoryProfile()
     {
         // Outbound only
-        CreateMap<Organization, OrganizationResponseDto>();
-        CreateMap<Organization, OrganizationListResponseDto>();
+        CreateMap<AssetCategory, AssetCategoryResponseDto>();
+        CreateMap<AssetCategory, AssetCategoryListResponseDto>();
 
         // Inbound
-        CreateMap<OrganizationCreateDto, Organization>()
+        CreateMap<AssetCategoryCreateDto, AssetCategory>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.DeletedAt, opt => opt.Ignore());
 
-        CreateMap<OrganizationUpdateDto, Organization>()
+        CreateMap<AssetCategoryUpdateDto, AssetCategory>()
             .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.DeletedAt, opt => opt.Ignore());
 
-        CreateMap<OrganizationDeleteDto, Organization>().ForAllMembers(opt => opt.Ignore());
+        CreateMap<AssetCategoryDeleteDto, AssetCategory>().ForAllMembers(opt => opt.Ignore());
     }
 }

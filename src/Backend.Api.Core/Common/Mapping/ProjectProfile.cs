@@ -8,20 +8,29 @@ public class ProjectProfile : Profile
 {
     public ProjectProfile()
     {
-        CreateMap<Project, ProjectResponseDto>().ReverseMap();
+        // Outbound only
+        CreateMap<Project, ProjectResponseDto>()
+            .ForMember(dest => dest.Category, opt => opt.MapFrom(src => src.Category.Name))
+            .ForMember(dest => dest.Manager, opt => opt.MapFrom(src => src.Manager.Name));
+
         CreateMap<Project, ProjectListResponseDto>()
-            .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.Name))
-            .ForMember(dest => dest.ManagerName, opt => opt.MapFrom(src => src.Manager.Name))
-            .ReverseMap()
+            .ForMember(dest => dest.Category, opt => opt.MapFrom(src => src.Category.Name))
+            .ForMember(dest => dest.Manager, opt => opt.MapFrom(src => src.Manager.Name));
+
+        // Inbound
+        CreateMap<ProjectCreateDto, Project>()
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.DeletedAt, opt => opt.Ignore())
             .ForMember(dest => dest.Category, opt => opt.Ignore())
             .ForMember(dest => dest.Manager, opt => opt.Ignore());
 
-        CreateMap<Project, ProjectCreateDto>()
-            .ReverseMap()
+        CreateMap<ProjectUpdateDto, Project>()
+            .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.DeletedAt, opt => opt.Ignore())
-            .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.UtcNow));
+            .ForMember(dest => dest.Category, opt => opt.Ignore())
+            .ForMember(dest => dest.Manager, opt => opt.Ignore());
 
-        CreateMap<Project, ProjectUpdateDto>().ReverseMap();
-        CreateMap<Project, ProjectDeleteDto>().ReverseMap();
+        CreateMap<ProjectDeleteDto, Project>().ForAllMembers(opt => opt.Ignore());
     }
 }

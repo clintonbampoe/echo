@@ -4,34 +4,34 @@ using Backend.Api.Core.Entities;
 
 namespace Backend.Api.Core.Common.Mapping;
 
-public class OrganizationMemberProfile : Profile
+public class EventRegistrationProfile : Profile
 {
-    public OrganizationMemberProfile()
+    public EventRegistrationProfile()
     {
         // Outbound only
-        CreateMap<OrganizationMember, OrganizationMemberResponseDto>()
+        CreateMap<EventRegistration, EventRegistrationResponseDto>()
             .ForMember(dest => dest.Member, opt => opt.MapFrom(src => src.Member.Name))
-            .ForMember(dest => dest.Organization, opt => opt.MapFrom(src => src.Organization.Name));
+            .ForMember(dest => dest.Event, opt => opt.MapFrom(src => src.Event.Name));
 
-        CreateMap<OrganizationMember, OrganizationMemberListResponseDto>()
+        CreateMap<EventRegistration, EventRegistrationListResponseDto>()
             .ForMember(dest => dest.Member, opt => opt.MapFrom(src => src.Member.Name))
-            .ForMember(dest => dest.Organization, opt => opt.MapFrom(src => src.Organization.Name));
+            .ForMember(dest => dest.Event, opt => opt.MapFrom(src => src.Event.Name));
 
         // Inbound
-        CreateMap<OrganizationMemberCreateDto, OrganizationMember>()
+        CreateMap<EventRegistrationCreateDto, EventRegistration>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.DeletedAt, opt => opt.Ignore())
             .ForMember(dest => dest.Member, opt => opt.Ignore())
-            .ForMember(dest => dest.Organization, opt => opt.Ignore());
+            .ForMember(dest => dest.Event, opt => opt.Ignore());
 
-        CreateMap<OrganizationMemberUpdateDto, OrganizationMember>()
+        CreateMap<EventRegistrationUpdateDto, EventRegistration>()
             .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.DeletedAt, opt => opt.Ignore())
             .ForMember(dest => dest.Member, opt => opt.Ignore())
-            .ForMember(dest => dest.Organization, opt => opt.Ignore());
+            .ForMember(dest => dest.Event, opt => opt.Ignore());
 
-        CreateMap<OrganizationMemberDeleteDto, OrganizationMember>()
+        CreateMap<EventRegistrationDeleteDto, EventRegistration>()
             .ForAllMembers(opt => opt.Ignore());
     }
 }
