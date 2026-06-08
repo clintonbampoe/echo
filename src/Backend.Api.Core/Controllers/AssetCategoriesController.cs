@@ -8,42 +8,45 @@ namespace Backend.Api.Core.Controllers;
 
 [Route("api/[controller]")]
 [ApiController]
-public class AssetsController(AssetService service) : ControllerBase
+public class AssetCategoriesController(AssetCategoryService service) : ControllerBase
 {
-    private readonly AssetService _service = service;
+    private readonly AssetCategoryService _service = service;
 
     [HttpGet]
-    public async Task<ActionResult> GetPageAsync(
+    public async Task<ActionResult> GetPagedAsync(
         [FromQuery] PaginationParameters paginationParameters,
         [FromQuery] QueryParameters? queryParameters,
         CancellationToken ct
     )
     {
-        var response = await _service.GetPagedAsync<AssetListResponseDto>(
+        var response = await _service.GetPagedAsync<AssetCategoryListResponseDto>(
             paginationParameters,
             queryParameters,
             ct
         );
-
         return response.ToActionResult();
     }
 
     [HttpGet("{id}")]
     public async Task<ActionResult> GetByIdAsync(Guid id, CancellationToken ct)
     {
-        var response = await _service.GetByIdAsync<AssetResponseDto>(id, ct);
+        var response = await _service.GetByIdAsync<AssetCategoryResponseDto>(id, ct);
         return response.ToActionResult();
     }
 
     [HttpPost]
-    public async Task<ActionResult> CreateAsync(AssetCreateDto dto, CancellationToken ct)
+    public async Task<ActionResult> CreateAsync(AssetCategoryCreateDto dto, CancellationToken ct)
     {
         var response = await _service.CreateNewRecord(dto, ct);
         return response.ToActionResult();
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult> UpdateAsync(Guid id, AssetUpdateDto dto, CancellationToken ct)
+    public async Task<ActionResult> UpdateAsync(
+        Guid id,
+        AssetCategoryUpdateDto dto,
+        CancellationToken ct
+    )
     {
         var response = await _service.UpdateRecord(id, dto, ct);
         return response.ToActionResult();
