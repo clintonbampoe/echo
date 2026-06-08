@@ -3,7 +3,11 @@ using Backend.Api.Core.Enums;
 
 namespace Backend.Api.Core.Entities;
 
-public class Member : ICongregationEntity, ISoftDeletableEntity, IDateTrackedEntity, ISearchableEntity
+public class Member
+    : ICongregationEntity,
+        ISoftDeletableEntity,
+        IDateTrackedEntity,
+        ISearchableEntity
 {
     public Guid Id { get; init; }
     public Guid CongregationId { get; init; }
