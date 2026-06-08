@@ -3,7 +3,6 @@ using Backend.Api.Core.Data;
 using Backend.Api.Core.Repositories;
 using Backend.Api.Core.Repositories.Engines;
 using Backend.Api.Core.Repositories.Engines.Interfaces;
-using Backend.Api.Core.Repository;
 using Backend.Api.Core.Services;
 using Microsoft.EntityFrameworkCore;
 

@@ -3,14 +3,10 @@ using Backend.Api.Core.Enums;
 
 namespace Backend.Api.Core.Entities;
 
-public class Tithe : ICongregationEntity, ISoftDeletableEntity, IDateTrackedEntity
+public class Tithe : ICongregationEntity, ISoftDeletableEntity
 {
-    public Guid Id { get; init; }
-    public Guid CongregationId { get; init; }
-    public Congregation Congregation { get; init; } = null!;
     public Guid MemberId { get; init; }
     public Member Member { get; init; } = null!;
-    public DateTime CreatedAt { get; init; } = DateTime.UtcNow;
     public int Decimal { get; set; }
     public int ForYear { get; set; }
     public MonthOfYear ForMonth { get; set; }

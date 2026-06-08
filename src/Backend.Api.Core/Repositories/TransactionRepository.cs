@@ -8,7 +8,10 @@ namespace Backend.Api.Core.Repositories;
 
 public class TransactionRepository : RepositoryBase<Transaction>
 {
-    public TransactionRepository(AppDbContext context, IMapper mapper, IDatabaseEngine<Transaction> domainRecordService) : base(context, mapper, domainRecordService)
-    {
-    }
+    public TransactionRepository(
+        AppDbContext context,
+        IMapper mapper,
+        IDatabaseEngine<Transaction> domainRecordService
+    )
+        : base(context, mapper, domainRecordService) { }
 }

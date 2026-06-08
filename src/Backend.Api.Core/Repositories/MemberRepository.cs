@@ -8,9 +8,10 @@ namespace Backend.Api.Core.Repositories;
 
 public class MemberRepository : RepositoryBase<Member>
 {
-    public MemberRepository(AppDbContext context, IMapper mapper, IDatabaseEngine<Member> databaseEngine
-    ) : base(context, mapper, databaseEngine)
-    {
-
-    }
+    public MemberRepository(
+        AppDbContext context,
+        IMapper mapper,
+        IDatabaseEngine<Member> databaseEngine
+    )
+        : base(context, mapper, databaseEngine) { }
 }

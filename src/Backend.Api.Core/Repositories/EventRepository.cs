@@ -8,7 +8,10 @@ namespace Backend.Api.Core.Repositories;
 
 public class EventRepository : RepositoryBase<Event>
 {
-    public EventRepository(AppDbContext context, IMapper mapper, IDatabaseEngine<Event> domainRecordService) : base(context, mapper, domainRecordService)
-    {
-    }
+    public EventRepository(
+        AppDbContext context,
+        IMapper mapper,
+        IDatabaseEngine<Event> domainRecordService
+    )
+        : base(context, mapper, domainRecordService) { }
 }

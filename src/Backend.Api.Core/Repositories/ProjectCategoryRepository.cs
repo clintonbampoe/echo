@@ -4,11 +4,14 @@ using Backend.Api.Core.Entities;
 using Backend.Api.Core.Repositories.Base;
 using Backend.Api.Core.Repositories.Engines.Interfaces;
 
-namespace Backend.Api.Core.Repository;
+namespace Backend.Api.Core.Repositories;
 
 public class ProjectCategoryRepository : RepositoryBase<ProjectCategory>
 {
-    public ProjectCategoryRepository(AppDbContext context, IMapper mapper, IDatabaseEngine<ProjectCategory> domainRecordService) : base(context, mapper, domainRecordService)
-    {
-    }
+    public ProjectCategoryRepository(
+        AppDbContext context,
+        IMapper mapper,
+        IDatabaseEngine<ProjectCategory> domainRecordService
+    )
+        : base(context, mapper, domainRecordService) { }
 }
