@@ -4,7 +4,7 @@ using Backend.Api.Core.Entities.Interfaces;
 namespace Backend.Api.Core.Repositories.Engines.Interfaces;
 
 public interface IGetEntityEngine<T>
-    where T : class, ICongregationEntity
+    where T : ICongregationEntity
 {
     Task<T?> GetEntityByIdAsync(Guid id, CancellationToken cancellationToken = default);
 

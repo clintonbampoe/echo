@@ -9,17 +9,11 @@ using Backend.Api.Core.Repositories.Base;
 
 namespace Backend.Api.Core.Services.Base;
 
-public abstract class ServiceBase<T>
-    where T : class, ICongregationEntity, ISoftDeletableEntity
+public abstract class ServiceBase<T>(RepositoryBase<T> repository, IMapper mapper)
+    where T : ICongregationEntity, ISoftDeletableEntity
 {
-    protected virtual RepositoryBase<T> Repository { get; }
-    protected readonly IMapper _mapper;
-
-    public ServiceBase(RepositoryBase<T> repository, IMapper mapper)
-    {
-        Repository = repository;
-        _mapper = mapper;
-    }
+    protected virtual RepositoryBase<T> Repository { get; } = repository;
+    protected readonly IMapper _mapper = mapper;
 
     public virtual async Task<IOperationResult> GetPagedAsync<TListResponseDto>(
         PaginationParameters paginationParameters,
@@ -55,8 +49,8 @@ public abstract class ServiceBase<T>
         if (entity == null)
             return new NotFoundResult($"Record not found.");
 
-        var mappedDto = _mapper.Map<IResponseDto<T>>(entity);
-        return new SuccessResult<IResponseDto<T>>(mappedDto);
+        var mappedDto = _mapper.Map<TResponseDto>(entity);
+        return new SuccessResult<TResponseDto>(mappedDto);
     }
 
     public virtual async Task<IOperationResult> CreateNewRecord(
@@ -65,6 +59,10 @@ public abstract class ServiceBase<T>
     )
     {
         var entity = _mapper.Map<T>(createRecordDto);
+
+        var time = DateTime.UtcNow;
+        entity.CreatedAt = time;
+        entity.Id = Guid.CreateVersion7(time);
 
         var recordCreatedSuccessfully = await Repository.CreateRecord(entity, ct);
 
@@ -80,7 +78,7 @@ public abstract class ServiceBase<T>
         CancellationToken ct
     )
     {
-        var existingEntity = await Repository.GetByIdAsync(id);
+        var existingEntity = await Repository.GetByIdAsync(id, ct);
 
         if (existingEntity is null)
             return new NotFoundResult("Record not found.");

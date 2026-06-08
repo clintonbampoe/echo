@@ -5,7 +5,7 @@ using Backend.Api.Core.Repositories.Engines.Interfaces;
 namespace Backend.Api.Core.Repositories.Engines;
 
 public class DatabaseEngine<T> : IDatabaseEngine<T>
-    where T : class, ICongregationEntity, ISoftDeletableEntity
+    where T : ICongregationEntity, ISoftDeletableEntity
 {
     private readonly IGetEntityEngine<T> _getRecordService;
     private readonly ICreateEntityEngine<T> _createNewRecordService;

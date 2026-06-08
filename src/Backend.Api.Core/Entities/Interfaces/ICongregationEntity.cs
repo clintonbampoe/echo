@@ -1,7 +1,9 @@
 namespace Backend.Api.Core.Entities.Interfaces;
-public interface ICongregationEntity
+
+public abstract class ICongregationEntity
 {
-    public Guid Id { get; init; }
-    public Guid CongregationId { get; init; }
-    public Congregation Congregation { get; init; }
+    public virtual Guid Id { get; set; }
+    public virtual Guid CongregationId { get; set; }
+    public virtual Congregation Congregation { get; set; } = null!;
+    public virtual DateTime CreatedAt { get; set; }
 }

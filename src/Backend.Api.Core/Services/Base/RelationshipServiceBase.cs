@@ -10,7 +10,7 @@ using Backend.Api.Core.Repositories.Base;
 namespace Backend.Api.Core.Services.Base;
 
 public abstract class RelationshipServiceBase<T> : ServiceBase<T>
-    where T : class, ICongregationEntity, ISoftDeletableEntity
+    where T : ICongregationEntity, ISoftDeletableEntity
 {
     protected override RelationshipRepositoryBase<T> Repository { get; }
 

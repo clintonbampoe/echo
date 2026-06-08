@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Backend.Api.Core.Repositories.Engines;
 
 public class GetRecordEngine<T> : IGetEntityEngine<T>
-    where T : class, ICongregationEntity
+    where T : ICongregationEntity
 {
     private readonly AppDbContext _appDbContext;
     private readonly DbSet<T> _dbSet;

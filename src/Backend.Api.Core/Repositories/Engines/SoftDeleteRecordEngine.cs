@@ -5,7 +5,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Api.Core.Repositories.Engines;
 
-public class SoftDeleteRecordEngine<T> : ISoftDeleteEntityEngine<T> where T : class, ICongregationEntity, ISoftDeletableEntity
+public class SoftDeleteRecordEngine<T> : ISoftDeleteEntityEngine<T>
+    where T : ICongregationEntity, ISoftDeletableEntity
 {
     private readonly AppDbContext _appDbContext;
     private readonly DbSet<T> _dbSet;
@@ -16,7 +17,10 @@ public class SoftDeleteRecordEngine<T> : ISoftDeleteEntityEngine<T> where T : cl
         _dbSet = appDbContext.Set<T>();
     }
 
-    public async Task<bool> SoftDeleteByIdAsync(Guid Id, CancellationToken cancellationToken = default)
+    public async Task<bool> SoftDeleteByIdAsync(
+        Guid Id,
+        CancellationToken cancellationToken = default
+    )
     {
         var existingRecord = await _dbSet.FirstOrDefaultAsync(rec => rec.Id == Id);
 

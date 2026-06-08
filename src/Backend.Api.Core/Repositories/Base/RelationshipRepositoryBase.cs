@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Backend.Api.Core.Repositories.Base;
 
 public abstract class RelationshipRepositoryBase<T> : RepositoryBase<T>
-    where T : class, ICongregationEntity, ISoftDeletableEntity
+    where T : ICongregationEntity, ISoftDeletableEntity
 {
     protected RelationshipRepositoryBase(
         AppDbContext context,
