@@ -58,6 +58,20 @@ builder.Services.AddScoped<TransactionCategoryService>();
 builder.Services.AddScoped<TransactionRepository>();
 
 builder.Services.AddScoped<MembersController>();
+builder.Services.AddScoped<AssetsController>();
+builder.Services.AddScoped<AttendanceController>();
+builder.Services.AddScoped<AssetCategoriesController>();
+builder.Services.AddScoped<EventAttendanceController>();
+builder.Services.AddScoped<EventsController>();
+builder.Services.AddScoped<EventRegistrationsController>();
+builder.Services.AddScoped<OrganizationsController>();
+builder.Services.AddScoped<OrganizationMembersController>();
+builder.Services.AddScoped<ProjectsController>();
+builder.Services.AddScoped<ProjectCategoriesController>();
+builder.Services.AddScoped<ProjectContributionsController>();
+builder.Services.AddScoped<TitheController>();
+builder.Services.AddScoped<TransactionCategoriesController>();
+builder.Services.AddScoped<TransactionsController>();
 
 var app = builder.Build();
 
