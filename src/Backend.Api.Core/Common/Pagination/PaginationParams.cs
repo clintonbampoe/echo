@@ -1,3 +1,5 @@
+namespace Backend.Api.Core.Common.Pagination;
+
 public class PaginationParameters
 {
     private const int MaxPageSize = 50;
@@ -15,7 +17,6 @@ public class PaginationParameters
                 _pageSize = MaxPageSize;
             else
                 _pageSize = value;
-
         }
     }
 }
