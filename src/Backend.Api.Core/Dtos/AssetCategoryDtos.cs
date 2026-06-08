@@ -3,36 +3,33 @@ using Backend.Api.Core.Entities;
 
 namespace Backend.Api.Core.Dtos;
 
-public record OrganizationCreateDto : ICreateDto<Organization>
+public record AssetCategoryCreateDto : ICreateDto<AssetCategory>
 {
     public Guid CongregationId { get; init; }
     public string Name { get; init; } = string.Empty;
-    public string? Description { get; init; }
 }
 
-public record OrganizationResponseDto : IResponseDto<Organization>
-{
-    public Guid Id { get; init; }
-    public Guid CongregationId { get; init; }
-    public string Name { get; init; } = string.Empty;
-    public string? Description { get; init; }
-}
-
-public record OrganizationListResponseDto : IListResponseDto<Organization>
+public record AssetCategoryResponseDto : IResponseDto<AssetCategory>
 {
     public Guid Id { get; init; }
     public Guid CongregationId { get; init; }
     public string Name { get; init; } = string.Empty;
 }
 
-public record OrganizationUpdateDto : IUpdateDto<Organization>
+public record AssetCategoryListResponseDto : IListResponseDto<AssetCategory>
+{
+    public Guid Id { get; init; }
+    public Guid CongregationId { get; init; }
+    public string Name { get; init; } = string.Empty;
+}
+
+public record AssetCategoryUpdateDto : IUpdateDto<AssetCategory>
 {
     public Guid CongregationId { get; init; }
     public string Name { get; init; } = string.Empty;
-    public string? Description { get; init; }
 }
 
-public record OrganizationDeleteDto : ISoftDeleteDto<Organization>
+public record AssetCategoryDeleteDto : ISoftDeleteDto<AssetCategory>
 {
     public Guid Id { get; init; }
     public Guid CongregationId { get; init; }

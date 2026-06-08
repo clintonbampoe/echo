@@ -3,36 +3,33 @@ using Backend.Api.Core.Entities;
 
 namespace Backend.Api.Core.Dtos;
 
-public record OrganizationCreateDto : ICreateDto<Organization>
+public record ProjectCategoryCreateDto : ICreateDto<ProjectCategory>
 {
     public Guid CongregationId { get; init; }
     public string Name { get; init; } = string.Empty;
-    public string? Description { get; init; }
 }
 
-public record OrganizationResponseDto : IResponseDto<Organization>
-{
-    public Guid Id { get; init; }
-    public Guid CongregationId { get; init; }
-    public string Name { get; init; } = string.Empty;
-    public string? Description { get; init; }
-}
-
-public record OrganizationListResponseDto : IListResponseDto<Organization>
+public record ProjectCategoryResponseDto : IResponseDto<ProjectCategory>
 {
     public Guid Id { get; init; }
     public Guid CongregationId { get; init; }
     public string Name { get; init; } = string.Empty;
 }
 
-public record OrganizationUpdateDto : IUpdateDto<Organization>
+public record ProjectCategoryListResponseDto : IListResponseDto<ProjectCategory>
+{
+    public Guid Id { get; init; }
+    public Guid CongregationId { get; init; }
+    public string Name { get; init; } = string.Empty;
+}
+
+public record ProjectCategoryUpdateDto : IUpdateDto<ProjectCategory>
 {
     public Guid CongregationId { get; init; }
     public string Name { get; init; } = string.Empty;
-    public string? Description { get; init; }
 }
 
-public record OrganizationDeleteDto : ISoftDeleteDto<Organization>
+public record ProjectCategoryDeleteDto : ISoftDeleteDto<ProjectCategory>
 {
     public Guid Id { get; init; }
     public Guid CongregationId { get; init; }

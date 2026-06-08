@@ -4,59 +4,60 @@ using Backend.Api.Core.Enums;
 
 namespace Backend.Api.Core.Dtos;
 
-public record ProjectCreateDto
-    (
-        Guid Id,
-        Guid CongregationId,
-        Guid CategoryId,
-        Guid ManagerId,
-        string Name,
-        decimal TargetAmount,
-        ProjectStatus Status,
-        DateOnly StartDate,
-        DateOnly? EndDate,
-        string? Description
-    ) : ICreateDto<Project>;
+public record ProjectCreateDto : ICreateDto<Project>
+{
+    public Guid CongregationId { get; init; }
+    public Guid CategoryId { get; init; }
+    public Guid ManagerId { get; init; }
+    public string Name { get; init; } = string.Empty;
+    public decimal TargetAmount { get; init; }
+    public DateOnly StartDate { get; init; }
+    public DateOnly? EndDate { get; init; }
+    public string? Description { get; init; }
+}
 
-public record ProjectResponseDto
-    (
-        Guid Id,
-        Guid CongregationId,
-        string CategoryName,
-        string ManagerName,
-        string Name,
-        decimal TargetAmount,
-        ProjectStatus Status,
-        DateOnly StartDate,
-        DateOnly? EndDate,
-        string? Description
-    ) : IResponseDto<Project>;
+public record ProjectResponseDto : IResponseDto<Project>
+{
+    public Guid Id { get; init; }
+    public Guid CongregationId { get; init; }
+    public Guid CategoryId { get; init; }
+    public string Category { get; init; } = string.Empty;
+    public Guid ManagerId { get; init; }
+    public string Manager { get; init; } = string.Empty;
+    public string Name { get; init; } = string.Empty;
+    public decimal TargetAmount { get; init; }
+    public ProjectStatus Status { get; init; }
+    public DateOnly StartDate { get; init; }
+    public DateOnly? EndDate { get; init; }
+    public string? Description { get; init; }
+}
 
-public record ProjectListResponseDto
-    (
-        Guid Id,
-        Guid CongregationId,
-        string CategoryName,
-        string ManagerName,
-        string Name,
-        decimal TargetAmount,
-        ProjectStatus Status
-    ) : IListResponseDto<Project>;
+public record ProjectListResponseDto : IListResponseDto<Project>
+{
+    public Guid Id { get; init; }
+    public Guid CongregationId { get; init; }
+    public string Category { get; init; } = string.Empty;
+    public string Manager { get; init; } = string.Empty;
+    public string Name { get; init; } = string.Empty;
+    public decimal TargetAmount { get; init; }
+    public ProjectStatus Status { get; init; }
+}
 
-public record ProjectUpdateDto
-    (
-        Guid Id,
-        Guid CongregationId,
-        string Name,
-        decimal TargetAmount,
-        ProjectStatus Status,
-        DateOnly StartDate,
-        DateOnly? EndDate,
-        string? Description
-    ) : IUpdateDto<Project>;
+public record ProjectUpdateDto : IUpdateDto<Project>
+{
+    public Guid CongregationId { get; init; }
+    public Guid CategoryId { get; init; }
+    public Guid ManagerId { get; init; }
+    public string Name { get; init; } = string.Empty;
+    public decimal TargetAmount { get; init; }
+    public ProjectStatus Status { get; init; }
+    public DateOnly StartDate { get; init; }
+    public DateOnly? EndDate { get; init; }
+    public string? Description { get; init; }
+}
 
-public record ProjectDeleteDto
-    (
-        Guid Id,
-        Guid CongregationId
-    ) : ISoftDeleteDto<Project>;
+public record ProjectDeleteDto : ISoftDeleteDto<Project>
+{
+    public Guid Id { get; init; }
+    public Guid CongregationId { get; init; }
+}
