@@ -1,6 +1,5 @@
 using Backend.Api.Core.Controllers;
 using Backend.Api.Core.Data;
-using Backend.Api.Core.Entities;
 using Backend.Api.Core.Repositories;
 using Backend.Api.Core.Repositories.Engines;
 using Backend.Api.Core.Repositories.Engines.Interfaces;
@@ -14,8 +13,7 @@ var template = GetConnectionStringTemplate();
 var (username, password) = GetLocalDatabaseCredentials();
 var connectionString = BuildConnectionStringFromTemplate(template);
 
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(connectionString));
+builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
