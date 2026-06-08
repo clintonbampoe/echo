@@ -24,7 +24,7 @@ public static class QueryFilterMethods
         this IQueryable<T> query,
         QueryParameters? queryParameters
     )
-        where T : class, IDateTrackedEntity
+        where T : ICongregationEntity
     {
         if (queryParameters is null)
             return query;
