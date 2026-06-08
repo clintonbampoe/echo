@@ -1,5 +1,7 @@
 using Backend.Api.Core.Entities.Interfaces;
 
+namespace Backend.Api.Core.Entities;
+
 public class Congregation : ISoftDeletableEntity, ISearchableEntity, IDateTrackedEntity
 {
     public Guid CongregationId { get; init; }
