@@ -1,6 +1,5 @@
 # This is the root configuration file for Echo
 root = true
-
 # Global settings for all files
 [*]
 indent_style = space
