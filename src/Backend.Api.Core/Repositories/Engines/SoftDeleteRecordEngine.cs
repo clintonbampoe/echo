@@ -19,7 +19,7 @@ public class SoftDeleteRecordEngine<T> : ISoftDeleteEntityEngine<T>
 
     public async Task<bool> SoftDeleteByIdAsync(
         Guid Id,
-        CancellationToken cancellationToken = default
+        CancellationToken ct = default
     )
     {
         var existingRecord = await _dbSet.FirstOrDefaultAsync(rec => rec.Id == Id);
