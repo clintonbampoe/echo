@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Backend.Api.Core.Controllers;
 using Backend.Api.Core.Data;
 using Backend.Api.Core.Repositories;
@@ -14,7 +15,12 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString, opt => opt.SetPostgresVersion(18, 0))
 );
 
-builder.Services.AddControllers();
+builder
+    .Services.AddControllers()
+    .AddJsonOptions(opt =>
+    {
+        opt.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 builder.Services.AddOpenApi();
 builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
