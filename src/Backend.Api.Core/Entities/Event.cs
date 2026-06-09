@@ -4,10 +4,10 @@ namespace Backend.Api.Core.Entities;
 
 public class Event : ICongregationEntity, ISoftDeletableEntity, ISearchableEntity
 {
-    public Guid OrganizationId { get; init; }
-    public Organization Organization { get; init; } = null!;
-    public Guid OrganizerId { get; init; }
-    public Member Organizer { get; init; } = null!;
+    public Guid OrganizationId { get; set; }
+    public Organization Organization { get; set; } = null!;
+    public Guid OrganizerId { get; set; }
+    public Member Organizer { get; set; } = null!;
     public string Name { get; set; } = string.Empty;
     public DateOnly StartDate { get; set; }
     public DateOnly EndDate { get; set; }

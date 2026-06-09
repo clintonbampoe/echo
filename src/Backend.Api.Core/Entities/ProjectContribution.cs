@@ -5,8 +5,8 @@ namespace Backend.Api.Core.Entities;
 
 public class ProjectContribution : ICongregationEntity, ISoftDeletableEntity
 {
-    public Guid ProjectId { get; init; }
-    public Project Project { get; init; } = null!;
+    public Guid ProjectId { get; set; }
+    public Project Project { get; set; } = null!;
     public decimal Amount { get; set; }
     public DateOnly DateContributed { get; set; }
     public PaymentMethod PaymentMethod { get; set; }

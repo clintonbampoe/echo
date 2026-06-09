@@ -5,8 +5,8 @@ namespace Backend.Api.Core.Entities;
 
 public class Tithe : ICongregationEntity, ISoftDeletableEntity
 {
-    public Guid MemberId { get; init; }
-    public Member Member { get; init; } = null!;
+    public Guid MemberId { get; set; }
+    public Member Member { get; set; } = null!;
     public int Decimal { get; set; }
     public int ForYear { get; set; }
     public MonthOfYear ForMonth { get; set; }

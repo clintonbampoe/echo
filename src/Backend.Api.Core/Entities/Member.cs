@@ -8,8 +8,8 @@ public class Member : ICongregationEntity, ISoftDeletableEntity, ISearchableEnti
     public string Name { get; set; } = string.Empty;
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
-    public string? OtherNames { get; init; } = string.Empty;
-    public string? EmailAddress { get; init; } = string.Empty;
+    public string? OtherNames { get; set; } = string.Empty;
+    public string? EmailAddress { get; set; } = string.Empty;
     public string PhoneNumber { get; set; } = string.Empty;
     public DateOnly DateOfBirth { get; set; }
     public DateOnly? JoinedDate { get; set; }
