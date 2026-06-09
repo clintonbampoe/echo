@@ -48,14 +48,14 @@ builder.Services.AddScoped<AttendanceService>();
 builder.Services.AddScoped<EventAttendanceService>();
 builder.Services.AddScoped<EventRegistrationService>();
 builder.Services.AddScoped<EventService>();
-builder.Services.AddScoped<OrganizationMemberRepository>();
+builder.Services.AddScoped<OrganizationMemberService>();
 builder.Services.AddScoped<OrganizationService>();
 builder.Services.AddScoped<ProjectCategoryService>();
 builder.Services.AddScoped<ProjectContributionService>();
 builder.Services.AddScoped<ProjectService>();
 builder.Services.AddScoped<TitheService>();
 builder.Services.AddScoped<TransactionCategoryService>();
-builder.Services.AddScoped<TransactionRepository>();
+builder.Services.AddScoped<TransactionService>();
 
 builder.Services.AddScoped<MembersController>();
 builder.Services.AddScoped<AssetsController>();
