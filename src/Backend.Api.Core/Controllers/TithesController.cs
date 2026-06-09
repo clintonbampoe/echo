@@ -12,6 +12,17 @@ public class TitheController(TitheService service) : ControllerBase
 {
     private readonly TitheService _service = service;
 
+    [HttpGet("summary")]
+    public async Task<ActionResult> GetSummary(
+        Guid congregationId,
+        [FromQuery] int year,
+        CancellationToken ct
+    )
+    {
+        var response = await _service.GetSummaryAsync(congregationId, year, ct);
+        return response.ToActionResult();
+    }
+
     [HttpGet]
     public async Task<ActionResult> GetPageAsync(
         [FromQuery] PaginationParameters paginationParameters,
