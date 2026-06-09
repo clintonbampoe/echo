@@ -1,5 +1,7 @@
 using AutoMapper;
 using Backend.Api.Core.Common.ExtensionMethods;
+using Backend.Api.Core.Common.Pagination;
+using Backend.Api.Core.Common.Query;
 using Backend.Api.Core.Data;
 using Backend.Api.Core.Entities;
 using Backend.Api.Core.Repositories.Base;
@@ -10,13 +12,18 @@ namespace Backend.Api.Core.Repositories;
 
 public class ProjectRepository : RepositoryBase<Project>
 {
-    public ProjectRepository(AppDbContext context, IMapper mapper, IDatabaseEngine<Project> domainRecordService)
-        : base(context, mapper, domainRecordService)
-    {
-    }
+    public ProjectRepository(
+        AppDbContext context,
+        IMapper mapper,
+        IDatabaseEngine<Project> domainRecordService
+    )
+        : base(context, mapper, domainRecordService) { }
 
     public override async Task<PagedResponse<Project>> GetPageAsync(
-        PaginationParameters paginationParameters, QueryParameters? queryParameters, CancellationToken cancellationToken = default)
+        PaginationParameters paginationParameters,
+        QueryParameters? queryParameters,
+        CancellationToken cancellationToken = default
+    )
     {
         var totalRecordCount = await _dbSet
             .AsNoTracking()
@@ -31,6 +38,10 @@ public class ProjectRepository : RepositoryBase<Project>
             .ApplyPagination(paginationParameters)
             .ToListAsync(cancellationToken);
 
-        return _databaseEngine.CreateNewPagedResponseObject(records, paginationParameters, totalRecordCount);
+        return _databaseEngine.CreateNewPagedResponseObject(
+            records,
+            paginationParameters,
+            totalRecordCount
+        );
     }
 }

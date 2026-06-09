@@ -5,11 +5,5 @@ using Backend.Api.Core.Services.Base;
 
 namespace Backend.Api.Core.Services;
 
-public class MemberService : ServiceBase<Member>
-{
-    public MemberService(MemberRepository repository, IMapper mapper) : base(repository, mapper)
-    {
-    }
-
-
-}
+public class MemberService(MemberRepository repository, IMapper mapper)
+    : ServiceBase<Member>(repository, mapper) { }

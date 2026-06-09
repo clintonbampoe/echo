@@ -1,10 +1,8 @@
 using Backend.Api.Core.Controllers;
 using Backend.Api.Core.Data;
-using Backend.Api.Core.Entities;
 using Backend.Api.Core.Repositories;
 using Backend.Api.Core.Repositories.Engines;
 using Backend.Api.Core.Repositories.Engines.Interfaces;
-using Backend.Api.Core.Repository;
 using Backend.Api.Core.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,8 +12,7 @@ var template = GetConnectionStringTemplate();
 var (username, password) = GetLocalDatabaseCredentials();
 var connectionString = BuildConnectionStringFromTemplate(template);
 
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(connectionString));
+builder.Services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
@@ -51,16 +48,30 @@ builder.Services.AddScoped<AttendanceService>();
 builder.Services.AddScoped<EventAttendanceService>();
 builder.Services.AddScoped<EventRegistrationService>();
 builder.Services.AddScoped<EventService>();
-builder.Services.AddScoped<OrganizationMemberRepository>();
+builder.Services.AddScoped<OrganizationMemberService>();
 builder.Services.AddScoped<OrganizationService>();
 builder.Services.AddScoped<ProjectCategoryService>();
 builder.Services.AddScoped<ProjectContributionService>();
 builder.Services.AddScoped<ProjectService>();
 builder.Services.AddScoped<TitheService>();
 builder.Services.AddScoped<TransactionCategoryService>();
-builder.Services.AddScoped<TransactionRepository>();
+builder.Services.AddScoped<TransactionService>();
 
 builder.Services.AddScoped<MembersController>();
+builder.Services.AddScoped<AssetsController>();
+builder.Services.AddScoped<AttendanceController>();
+builder.Services.AddScoped<AssetCategoriesController>();
+builder.Services.AddScoped<EventAttendanceController>();
+builder.Services.AddScoped<EventsController>();
+builder.Services.AddScoped<EventRegistrationsController>();
+builder.Services.AddScoped<OrganizationsController>();
+builder.Services.AddScoped<OrganizationMembersController>();
+builder.Services.AddScoped<ProjectsController>();
+builder.Services.AddScoped<ProjectCategoriesController>();
+builder.Services.AddScoped<ProjectContributionsController>();
+builder.Services.AddScoped<TitheController>();
+builder.Services.AddScoped<TransactionCategoriesController>();
+builder.Services.AddScoped<TransactionsController>();
 
 var app = builder.Build();
 

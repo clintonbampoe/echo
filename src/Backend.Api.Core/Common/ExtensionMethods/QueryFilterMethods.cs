@@ -1,23 +1,30 @@
+using Backend.Api.Core.Common.Query;
 using Backend.Api.Core.Entities.Interfaces;
 
 namespace Backend.Api.Core.Common.ExtensionMethods;
 
 public static class QueryFilterMethods
 {
-    public static IQueryable<T> ApplySearchFilter<T>(this IQueryable<T> query, QueryParameters? queryParameters)
+    public static IQueryable<T> ApplySearchFilter<T>(
+        this IQueryable<T> query,
+        QueryParameters? queryParameters
+    )
         where T : class, ISearchableEntity
     {
         if (queryParameters is null)
             return query;
-            
+
         if (string.IsNullOrWhiteSpace(queryParameters.SearchTerm))
             return query;
 
         return query.Where(x => x.Name.Contains(queryParameters.SearchTerm));
     }
 
-    public static IQueryable<T> ApplyDateFilters<T>(this IQueryable<T> query, QueryParameters? queryParameters)
-        where T : class, IDateTrackedEntity
+    public static IQueryable<T> ApplyDateFilters<T>(
+        this IQueryable<T> query,
+        QueryParameters? queryParameters
+    )
+        where T : ICongregationEntity
     {
         if (queryParameters is null)
             return query;

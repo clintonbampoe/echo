@@ -6,9 +6,8 @@ using Backend.Api.Core.Repositories.Engines.Interfaces;
 
 namespace Backend.Api.Core.Repositories;
 
-public class EventAttendanceRepository : RelationshipRepositoryBase<EventAttendance>
-{
-    public EventAttendanceRepository(AppDbContext context, IMapper mapper, IDatabaseEngine<EventAttendance> databaseEngine) : base(context, mapper, databaseEngine)
-    {
-    }
-}
+public class EventAttendanceRepository(
+    AppDbContext context,
+    IMapper mapper,
+    IDatabaseEngine<EventAttendance> databaseEngine
+) : RelationshipRepositoryBase<EventAttendance>(context, mapper, databaseEngine) { }

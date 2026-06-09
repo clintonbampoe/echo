@@ -5,7 +5,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Api.Core.Repositories.Engines;
 
-public class CreateNewRecordEngine<T> : ICreateEntityEngine<T> where T : class, ICongregationEntity
+public class CreateNewRecordEngine<T> : ICreateEntityEngine<T>
+    where T : ICongregationEntity
 {
     private readonly AppDbContext _appDbContext;
     private readonly DbSet<T> _dbSet;
@@ -16,7 +17,10 @@ public class CreateNewRecordEngine<T> : ICreateEntityEngine<T> where T : class, 
         _dbSet = appDbContext.Set<T>();
     }
 
-    public async Task<bool> CreateNewEntity(T newRecordData, CancellationToken cancellationToken = default)
+    public async Task<bool> CreateNewEntity(
+        T newRecordData,
+        CancellationToken cancellationToken = default
+    )
     {
         await _dbSet.AddAsync(newRecordData, cancellationToken);
         return true;

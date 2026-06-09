@@ -4,12 +4,14 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Backend.Api.Core.Data.EntityConfigurations.Base;
 
-public abstract class CongregationEntityConfigurationBase<TEntity> : IEntityTypeConfiguration<TEntity>
-     where TEntity : class, ICongregationEntity
+public abstract class CongregationEntityConfigurationBase<TEntity>
+    : IEntityTypeConfiguration<TEntity>
+    where TEntity : ICongregationEntity
 {
     public void Configure(EntityTypeBuilder<TEntity> builder)
     {
-        builder.HasOne(ent => ent.Congregation)
+        builder
+            .HasOne(ent => ent.Congregation)
             .WithMany()
             .HasForeignKey(entity => entity.CongregationId)
             .OnDelete(DeleteBehavior.Cascade);
@@ -17,8 +19,5 @@ public abstract class CongregationEntityConfigurationBase<TEntity> : IEntityType
         ConfigureEntity(builder);
     }
 
-    public virtual void ConfigureEntity(EntityTypeBuilder<TEntity> builder)
-    {
-
-    }
+    public virtual void ConfigureEntity(EntityTypeBuilder<TEntity> builder) { }
 }

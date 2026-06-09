@@ -3,35 +3,37 @@ using Backend.Api.Core.Entities;
 
 namespace Backend.Api.Core.Dtos;
 
-public record OrganizationCreateDto
-    (Guid Id,
-    Guid CongregationId,
-    string Name,
-    DateTime CreatedAt,
-    string? Description
-        ) : ICreateDto<Organization>;
+public record OrganizationCreateDto : ICreateDto<Organization>
+{
+    public Guid CongregationId { get; init; }
+    public string Name { get; init; } = string.Empty;
+    public string? Description { get; init; }
+}
 
-public record OrganizationResponseDto
-    (Guid Id,
-    Guid CongregationId,
-    string Name,
-    string? Description
-    ) : IResponseDto<Organization>;
+public record OrganizationResponseDto : IResponseDto<Organization>
+{
+    public Guid Id { get; init; }
+    public Guid CongregationId { get; init; }
+    public string Name { get; init; } = string.Empty;
+    public string? Description { get; init; }
+}
 
-public record OrganizationListResponseDto
-    (Guid Id,
-    Guid CongregationId,
-    string Name
-    ) : IListResponseDto<Organization>;
+public record OrganizationListResponseDto : IListResponseDto<Organization>
+{
+    public Guid Id { get; init; }
+    public Guid CongregationId { get; init; }
+    public string Name { get; init; } = string.Empty;
+}
 
-public record OrganizationUpdateDto
-    (Guid Id,
-    Guid CongregationId,
-    string Name,
-    string? Description
-        ) : IUpdateDto<Organization>;
+public record OrganizationUpdateDto : IUpdateDto<Organization>
+{
+    public Guid CongregationId { get; init; }
+    public string Name { get; init; } = string.Empty;
+    public string? Description { get; init; }
+}
 
-public record OrganizationDeleteDto
-    (Guid Id,
-    Guid CongregationId
-        ) : ISoftDeleteDto<Organization>;
+public record OrganizationDeleteDto : ISoftDeleteDto<Organization>
+{
+    public Guid Id { get; init; }
+    public Guid CongregationId { get; init; }
+}

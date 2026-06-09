@@ -8,20 +8,30 @@ public class OrganizationMemberProfile : Profile
 {
     public OrganizationMemberProfile()
     {
-        CreateMap<OrganizationMember, OrganizationMemberResponseDto>().ReverseMap();
+        // Outbound only
+        CreateMap<OrganizationMember, OrganizationMemberResponseDto>()
+            .ForMember(dest => dest.Member, opt => opt.MapFrom(src => src.Member.Name))
+            .ForMember(dest => dest.Organization, opt => opt.MapFrom(src => src.Organization.Name));
+
         CreateMap<OrganizationMember, OrganizationMemberListResponseDto>()
-            .ForMember(dest => dest.MemberName, opt => opt.MapFrom(src => src.Member.Name))
-            .ForMember(dest => dest.OrganizationName, opt => opt.MapFrom(src => src.Organization.Name))
-            .ReverseMap()
+            .ForMember(dest => dest.Member, opt => opt.MapFrom(src => src.Member.Name))
+            .ForMember(dest => dest.Organization, opt => opt.MapFrom(src => src.Organization.Name));
+
+        // Inbound
+        CreateMap<OrganizationMemberCreateDto, OrganizationMember>()
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.DeletedAt, opt => opt.Ignore())
             .ForMember(dest => dest.Member, opt => opt.Ignore())
             .ForMember(dest => dest.Organization, opt => opt.Ignore());
 
-        CreateMap<OrganizationMember, OrganizationMemberCreateDto>()
-            .ReverseMap()
+        CreateMap<OrganizationMemberUpdateDto, OrganizationMember>()
+            .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.DeletedAt, opt => opt.Ignore())
-            .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.UtcNow));
+            .ForMember(dest => dest.Member, opt => opt.Ignore())
+            .ForMember(dest => dest.Organization, opt => opt.Ignore());
 
-        CreateMap<OrganizationMember, OrganizationMemberUpdateDto>().ReverseMap();
-        CreateMap<OrganizationMember, OrganizationMemberDeleteDto>().ReverseMap();
+        CreateMap<OrganizationMemberDeleteDto, OrganizationMember>()
+            .ForAllMembers(opt => opt.Ignore());
     }
 }

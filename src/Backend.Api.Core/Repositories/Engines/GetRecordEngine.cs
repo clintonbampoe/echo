@@ -1,3 +1,4 @@
+using Backend.Api.Core.Common.Pagination;
 using Backend.Api.Core.Data;
 using Backend.Api.Core.Entities.Interfaces;
 using Backend.Api.Core.Repositories.Engines.Interfaces;
@@ -5,7 +6,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Api.Core.Repositories.Engines;
 
-public class GetRecordEngine<T> : IGetEntityEngine<T> where T : class, ICongregationEntity
+public class GetRecordEngine<T> : IGetEntityEngine<T>
+    where T : ICongregationEntity
 {
     private readonly AppDbContext _appDbContext;
     private readonly DbSet<T> _dbSet;
@@ -15,11 +17,14 @@ public class GetRecordEngine<T> : IGetEntityEngine<T> where T : class, ICongrega
         _appDbContext = appDbContext;
         _dbSet = appDbContext.Set<T>();
     }
-    public PagedResponse<T> CreateNewPagedResponseObject(List<T> records, PaginationParameters paginationParameters, int totalRecords)
+
+    public PagedResponse<T> CreateNewPagedResponseObject(
+        List<T> records,
+        PaginationParameters paginationParameters,
+        int totalRecords
+    )
     {
-        return new PagedResponse<T>(
-            records, paginationParameters, totalRecords
-        );
+        return new PagedResponse<T>(records, paginationParameters, totalRecords);
     }
 
     public async Task<T?> GetEntityByIdAsync(Guid Id, CancellationToken cancellationToken = default)
@@ -30,7 +35,10 @@ public class GetRecordEngine<T> : IGetEntityEngine<T> where T : class, ICongrega
             .FirstOrDefaultAsync(cancellationToken);
     }
 
-    public Task<PagedResponse<T>> GetPagedEntityListByIdAsync(Guid id, CancellationToken ct = default)
+    public Task<PagedResponse<T>> GetPagedEntityListByIdAsync(
+        Guid id,
+        CancellationToken ct = default
+    )
     {
         throw new NotImplementedException();
     }

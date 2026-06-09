@@ -5,9 +5,5 @@ using Backend.Api.Core.Services.Base;
 
 namespace Backend.Api.Core.Services;
 
-public class TransactionCategoryService : ServiceBase<TransactionCategory>
-{
-    public TransactionCategoryService(TransactionCategoryRepository repository, IMapper mapper) : base(repository, mapper)
-    {
-    }
-}
+public class TransactionCategoryService(TransactionCategoryRepository repository, IMapper mapper)
+    : ServiceBase<TransactionCategory>(repository, mapper) { }

@@ -8,14 +8,20 @@ public class OrganizationProfile : Profile
 {
     public OrganizationProfile()
     {
-        CreateMap<Organization, OrganizationResponseDto>().ReverseMap();
-        CreateMap<Organization, OrganizationListResponseDto>().ReverseMap();
-        CreateMap<Organization, OrganizationCreateDto>()
-            .ReverseMap()
-            .ForMember(dest => dest.DeletedAt, opt => opt.Ignore())
-            .ForMember(dest => dest.CreatedAt, opt => opt.MapFrom(src => DateTime.UtcNow));
+        // Outbound only
+        CreateMap<Organization, OrganizationResponseDto>();
+        CreateMap<Organization, OrganizationListResponseDto>();
 
-        CreateMap<OrganizationUpdateDto, Organization>().ReverseMap();
-        CreateMap<OrganizationDeleteDto, Organization>().ReverseMap();
+        // Inbound
+        CreateMap<OrganizationCreateDto, Organization>()
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.DeletedAt, opt => opt.Ignore());
+
+        CreateMap<OrganizationUpdateDto, Organization>()
+            .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.DeletedAt, opt => opt.Ignore());
+
+        CreateMap<OrganizationDeleteDto, Organization>().ForAllMembers(opt => opt.Ignore());
     }
 }

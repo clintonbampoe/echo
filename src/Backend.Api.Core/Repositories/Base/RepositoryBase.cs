@@ -1,5 +1,7 @@
 using AutoMapper;
 using Backend.Api.Core.Common.ExtensionMethods;
+using Backend.Api.Core.Common.Pagination;
+using Backend.Api.Core.Common.Query;
 using Backend.Api.Core.Data;
 using Backend.Api.Core.Entities.Interfaces;
 using Backend.Api.Core.Repositories.Engines.Interfaces;
@@ -7,7 +9,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Api.Core.Repositories.Base;
 
-public abstract class RepositoryBase<T> where T : class, ICongregationEntity, ISoftDeletableEntity
+public abstract class RepositoryBase<T>
+    where T : ICongregationEntity, ISoftDeletableEntity
 {
     protected readonly AppDbContext _context;
     protected readonly DbSet<T> _dbSet;
@@ -18,7 +21,7 @@ public abstract class RepositoryBase<T> where T : class, ICongregationEntity, IS
         AppDbContext context,
         IMapper mapper,
         IDatabaseEngine<T> domainRecordService
-        )
+    )
     {
         _context = context;
         _dbSet = context.Set<T>();
@@ -30,29 +33,39 @@ public abstract class RepositoryBase<T> where T : class, ICongregationEntity, IS
         PaginationParameters paginationParameters,
         QueryParameters? queryParameters,
         CancellationToken cancellationToken = default
-        )
+    )
     {
-        var totalRecords = await _dbSet
-            .AsNoTracking()
-            .CountAsync(cancellationToken);
+        var totalRecords = await _dbSet.AsNoTracking().CountAsync(cancellationToken);
 
         var records = await _dbSet
             .AsNoTracking()
             .ApplyPagination(paginationParameters)
             .ToListAsync(cancellationToken);
 
-        return _databaseEngine.CreateNewPagedResponseObject(records, paginationParameters, totalRecords);
+        return _databaseEngine.CreateNewPagedResponseObject(
+            records,
+            paginationParameters,
+            totalRecords
+        );
     }
 
-    public virtual async Task<T?> GetByIdAsync(Guid Id, CancellationToken cancellationToken = default)
+    public virtual async Task<T?> GetByIdAsync(
+        Guid Id,
+        CancellationToken cancellationToken = default
+    )
     {
         return await _databaseEngine.GetEntityByIdAsync(Id, cancellationToken);
     }
 
-    public virtual async Task<bool> CreateRecord(T newRecordData, CancellationToken cancellationToken = default)
+    public virtual async Task<bool> CreateRecord(
+        T newRecordData,
+        CancellationToken cancellationToken = default
+    )
     {
-        var recordCreatedSuccessfully =
-            await _databaseEngine.CreateNewEntity(newRecordData, cancellationToken);
+        var recordCreatedSuccessfully = await _databaseEngine.CreateNewEntity(
+            newRecordData,
+            cancellationToken
+        );
 
         if (!recordCreatedSuccessfully)
             return false;
@@ -61,10 +74,17 @@ public abstract class RepositoryBase<T> where T : class, ICongregationEntity, IS
         return true;
     }
 
-    public virtual async Task<bool> UpdateRecord(Guid Id, T updatedRecordData, CancellationToken cancellationToken = default)
+    public virtual async Task<bool> UpdateRecord(
+        Guid Id,
+        T updatedRecordData,
+        CancellationToken cancellationToken = default
+    )
     {
-        var recordUpdatedSuccessfully =
-            await _databaseEngine.UpdateEntityById(Id, updatedRecordData, cancellationToken);
+        var recordUpdatedSuccessfully = await _databaseEngine.UpdateEntityById(
+            Id,
+            updatedRecordData,
+            cancellationToken
+        );
 
         if (!recordUpdatedSuccessfully)
             return false;
@@ -73,10 +93,15 @@ public abstract class RepositoryBase<T> where T : class, ICongregationEntity, IS
         return true;
     }
 
-    public virtual async Task<bool> DeleteRecord(Guid Id, CancellationToken cancellationToken = default)
+    public virtual async Task<bool> DeleteRecord(
+        Guid Id,
+        CancellationToken cancellationToken = default
+    )
     {
-        var recordDeletedSuccessfully =
-            await _databaseEngine.SoftDeleteByIdAsync(Id, cancellationToken);
+        var recordDeletedSuccessfully = await _databaseEngine.SoftDeleteByIdAsync(
+            Id,
+            cancellationToken
+        );
 
         if (!recordDeletedSuccessfully)
             return false;
