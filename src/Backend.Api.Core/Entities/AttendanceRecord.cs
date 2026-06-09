@@ -10,7 +10,7 @@ public class AttendanceRecord : ICongregationEntity, ISoftDeletableEntity
     public DateOnly ForDate { get; set; }
     public ChurchServiceType ChurchServiceType { get; set; }
     public AttendeeType AttendeeType { get; set; }
-    public TimeOnly CheckInTime { get; set; }
+    public TimeOnly CheckInTime { get; set; } = TimeOnly.FromDateTime(DateTime.UtcNow);
     public string? Description { get; set; } = string.Empty;
     public DateTime? DeletedAt { get; set; }
 }
