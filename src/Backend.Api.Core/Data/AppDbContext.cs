@@ -5,12 +5,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Api.Core.Data;
 
-public class AppDbContext : DbContext
+public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
-    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
-    {
-    }
-
     public DbSet<Asset> Assets { get; set; }
     public DbSet<AssetCategory> AssetCategories { get; set; }
     public DbSet<AttendanceRecord> AttendanceRecords { get; set; }
@@ -32,6 +28,7 @@ public class AppDbContext : DbContext
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
         configurationBuilder.Properties<Enum>().HaveConversion<string>();
+        configurationBuilder.Properties<Enum?>().HaveConversion<string>();
         configurationBuilder.Properties<string>().HaveMaxLength(255);
     }
 
@@ -45,9 +42,12 @@ public class AppDbContext : DbContext
             if (typeof(ISoftDeletableEntity).IsAssignableFrom(entityType.ClrType))
             {
                 typeof(AppDbContext)
-                    .GetMethod(nameof(ConfigureSoftDeleteFilter), BindingFlags.NonPublic | BindingFlags.Static)
+                    .GetMethod(
+                        nameof(ConfigureSoftDeleteFilter),
+                        BindingFlags.NonPublic | BindingFlags.Static
+                    )
                     ?.MakeGenericMethod(entityType.ClrType)
-                    .Invoke(null, new object[] { modelBuilder });
+                    .Invoke(null, [modelBuilder]);
             }
         }
     }
@@ -55,7 +55,6 @@ public class AppDbContext : DbContext
     private static void ConfigureSoftDeleteFilter<TEntity>(ModelBuilder modelBuilder)
         where TEntity : class, ISoftDeletableEntity
     {
-        modelBuilder.Entity<TEntity>()
-            .HasQueryFilter(entity => entity.DeletedAt == null);
+        modelBuilder.Entity<TEntity>().HasQueryFilter(entity => entity.DeletedAt == null);
     }
 }

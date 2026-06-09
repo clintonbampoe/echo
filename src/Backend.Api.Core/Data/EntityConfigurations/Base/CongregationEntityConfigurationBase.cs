@@ -16,6 +16,10 @@ public abstract class CongregationEntityConfigurationBase<TEntity>
             .HasForeignKey(entity => entity.CongregationId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        builder.Property(ent => ent.Id).HasDefaultValueSql("uuidv7()").ValueGeneratedOnAdd();
+
+        builder.Property(ent => ent.CreatedAt).HasDefaultValueSql("now()").ValueGeneratedOnAdd();
+
         ConfigureEntity(builder);
     }
 
