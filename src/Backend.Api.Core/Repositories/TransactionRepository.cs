@@ -28,4 +28,13 @@ public class TransactionRepository(AppDbContext context, IMapper mapper)
 
         return new PagedResponse<Transaction>(records, paginationParameters, totalRecords);
     }
+
+    public override async Task<Transaction?> GetByIdAsync(Guid Id, CancellationToken ct = default)
+    {
+        return await _dbSet
+            .AsNoTracking()
+            .Where(e => e.Id == Id)
+            .Include(e => e.Category)
+            .FirstOrDefaultAsync(ct);
+    }
 }

@@ -28,9 +28,21 @@ public class ProjectRepository(AppDbContext context, IMapper mapper)
             .AsNoTracking()
             .ApplySearchFilter(queryParameters)
             .ApplyDateFilters(queryParameters)
+            .Include(p => p.Category)
+            .Include(p => p.Manager)
             .ApplyPagination(paginationParameters)
             .ToListAsync(cancellationToken);
 
         return new PagedResponse<Project>(records, paginationParameters, totalRecordCount);
+    }
+
+    public override async Task<Project?> GetByIdAsync(Guid id, CancellationToken ct)
+    {
+        return await _dbSet
+            .AsNoTracking()
+            .Where(p => p.Id == id)
+            .Include(p => p.Category)
+            .Include(p => p.Manager)
+            .FirstOrDefaultAsync(ct);
     }
 }

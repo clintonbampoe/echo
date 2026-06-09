@@ -5,7 +5,5 @@ using Backend.Api.Core.Repositories.Base;
 
 namespace Backend.Api.Core.Repositories;
 
-public class AssetCategoryRepository(
-    AppDbContext context,
-    IMapper mapper
-) : RepositoryBase<AssetCategory>(context, mapper) { }
+public class AssetCategoryRepository(AppDbContext context, IMapper mapper)
+    : RepositoryBase<AssetCategory>(context, mapper) { }
