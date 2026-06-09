@@ -2,16 +2,8 @@ using AutoMapper;
 using Backend.Api.Core.Data;
 using Backend.Api.Core.Entities;
 using Backend.Api.Core.Repositories.Base;
-using Backend.Api.Core.Repositories.Engines.Interfaces;
 
 namespace Backend.Api.Core.Repositories;
 
-public class MemberRepository : RepositoryBase<Member>
-{
-    public MemberRepository(
-        AppDbContext context,
-        IMapper mapper,
-        IDatabaseEngine<Member> databaseEngine
-    )
-        : base(context, mapper, databaseEngine) { }
-}
+public class MemberRepository(AppDbContext context, IMapper mapper)
+    : RepositoryBase<Member>(context, mapper) { }

@@ -4,109 +4,67 @@ using Backend.Api.Core.Common.Pagination;
 using Backend.Api.Core.Common.Query;
 using Backend.Api.Core.Data;
 using Backend.Api.Core.Entities.Interfaces;
-using Backend.Api.Core.Repositories.Engines.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Api.Core.Repositories.Base;
 
-public abstract class RepositoryBase<T>
+public abstract class RepositoryBase<T>(AppDbContext context, IMapper mapper)
     where T : ICongregationEntity, ISoftDeletableEntity
 {
-    protected readonly AppDbContext _context;
-    protected readonly DbSet<T> _dbSet;
-    protected readonly IMapper _mapper;
-    protected readonly IDatabaseEngine<T> _databaseEngine;
-
-    public RepositoryBase(
-        AppDbContext context,
-        IMapper mapper,
-        IDatabaseEngine<T> domainRecordService
-    )
-    {
-        _context = context;
-        _dbSet = context.Set<T>();
-        _mapper = mapper;
-        _databaseEngine = domainRecordService;
-    }
+    protected readonly AppDbContext _context = context;
+    protected readonly DbSet<T> _dbSet = context.Set<T>();
+    protected readonly IMapper _mapper = mapper;
 
     public virtual async Task<PagedResponse<T>> GetPageAsync(
         PaginationParameters paginationParameters,
         QueryParameters? queryParameters,
-        CancellationToken cancellationToken = default
+        CancellationToken ct = default
     )
     {
-        var totalRecords = await _dbSet.AsNoTracking().CountAsync(cancellationToken);
+        var totalRecords = await _dbSet.AsNoTracking().CountAsync(ct);
 
         var records = await _dbSet
             .AsNoTracking()
             .ApplyPagination(paginationParameters)
-            .ToListAsync(cancellationToken);
+            .ToListAsync(ct);
 
-        return _databaseEngine.CreateNewPagedResponseObject(
-            records,
-            paginationParameters,
-            totalRecords
-        );
+        return new PagedResponse<T>(records, paginationParameters, totalRecords);
     }
 
-    public virtual async Task<T?> GetByIdAsync(
-        Guid Id,
-        CancellationToken cancellationToken = default
-    )
+    public virtual async Task<T?> GetByIdAsync(Guid Id, CancellationToken ct = default)
     {
-        return await _databaseEngine.GetEntityByIdAsync(Id, cancellationToken);
+        return await _dbSet.AsNoTracking().Where(e => e.Id == Id).FirstOrDefaultAsync(ct);
     }
 
-    public virtual async Task<bool> CreateRecord(
-        T newRecordData,
-        CancellationToken cancellationToken = default
-    )
+    public virtual async Task<bool> CreateRecord(T newRecordData, CancellationToken ct = default)
     {
-        var recordCreatedSuccessfully = await _databaseEngine.CreateNewEntity(
-            newRecordData,
-            cancellationToken
-        );
-
-        if (!recordCreatedSuccessfully)
-            return false;
-
-        await _context.SaveChangesAsync(cancellationToken);
+        await _dbSet.AddAsync(newRecordData, ct);
         return true;
     }
 
     public virtual async Task<bool> UpdateRecord(
         Guid Id,
         T updatedRecordData,
-        CancellationToken cancellationToken = default
+        CancellationToken ct = default
     )
     {
-        var recordUpdatedSuccessfully = await _databaseEngine.UpdateEntityById(
-            Id,
-            updatedRecordData,
-            cancellationToken
-        );
+        var existingRecord = await _dbSet.FirstOrDefaultAsync(rec => rec.Id == Id, ct);
 
-        if (!recordUpdatedSuccessfully)
+        if (existingRecord is null)
             return false;
 
-        await _context.SaveChangesAsync(cancellationToken);
+        _dbSet.Entry(existingRecord).CurrentValues.SetValues(updatedRecordData);
         return true;
     }
 
-    public virtual async Task<bool> DeleteRecord(
-        Guid Id,
-        CancellationToken cancellationToken = default
-    )
+    public virtual async Task<bool> DeleteRecord(Guid Id, CancellationToken ct = default)
     {
-        var recordDeletedSuccessfully = await _databaseEngine.SoftDeleteByIdAsync(
-            Id,
-            cancellationToken
-        );
+        var existingRecord = await _dbSet.FirstOrDefaultAsync(rec => rec.Id == Id, ct);
 
-        if (!recordDeletedSuccessfully)
+        if (existingRecord is null)
             return false;
 
-        await _context.SaveChangesAsync(cancellationToken);
+        existingRecord.DeletedAt = DateTime.UtcNow;
         return true;
     }
 }

@@ -1,17 +1,31 @@
 using AutoMapper;
+using Backend.Api.Core.Common.ExtensionMethods;
+using Backend.Api.Core.Common.Pagination;
+using Backend.Api.Core.Common.Query;
 using Backend.Api.Core.Data;
 using Backend.Api.Core.Entities;
 using Backend.Api.Core.Repositories.Base;
-using Backend.Api.Core.Repositories.Engines.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Api.Core.Repositories;
 
-public class TransactionRepository : RepositoryBase<Transaction>
+public class TransactionRepository(AppDbContext context, IMapper mapper)
+    : RepositoryBase<Transaction>(context, mapper)
 {
-    public TransactionRepository(
-        AppDbContext context,
-        IMapper mapper,
-        IDatabaseEngine<Transaction> domainRecordService
+    public override async Task<PagedResponse<Transaction>> GetPageAsync(
+        PaginationParameters paginationParameters,
+        QueryParameters? queryParameters,
+        CancellationToken cancellationToken = default
     )
-        : base(context, mapper, domainRecordService) { }
+    {
+        var totalRecords = await _dbSet.AsNoTracking().CountAsync(cancellationToken);
+
+        var records = await _dbSet
+            .AsNoTracking()
+            .Include(t => t.Category)
+            .ApplyPagination(paginationParameters)
+            .ToListAsync(cancellationToken);
+
+        return new PagedResponse<Transaction>(records, paginationParameters, totalRecords);
+    }
 }

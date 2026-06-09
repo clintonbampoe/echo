@@ -5,20 +5,13 @@ using Backend.Api.Core.Common.Query;
 using Backend.Api.Core.Data;
 using Backend.Api.Core.Entities;
 using Backend.Api.Core.Repositories.Base;
-using Backend.Api.Core.Repositories.Engines.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Api.Core.Repositories;
 
-public class ProjectRepository : RepositoryBase<Project>
+public class ProjectRepository(AppDbContext context, IMapper mapper)
+    : RepositoryBase<Project>(context, mapper)
 {
-    public ProjectRepository(
-        AppDbContext context,
-        IMapper mapper,
-        IDatabaseEngine<Project> domainRecordService
-    )
-        : base(context, mapper, domainRecordService) { }
-
     public override async Task<PagedResponse<Project>> GetPageAsync(
         PaginationParameters paginationParameters,
         QueryParameters? queryParameters,
@@ -38,10 +31,6 @@ public class ProjectRepository : RepositoryBase<Project>
             .ApplyPagination(paginationParameters)
             .ToListAsync(cancellationToken);
 
-        return _databaseEngine.CreateNewPagedResponseObject(
-            records,
-            paginationParameters,
-            totalRecordCount
-        );
+        return new PagedResponse<Project>(records, paginationParameters, totalRecordCount);
     }
 }
