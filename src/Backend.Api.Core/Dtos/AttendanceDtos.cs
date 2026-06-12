@@ -55,3 +55,11 @@ public record AttendanceDeleteDto : ISoftDeleteDto<AttendanceRecord>
     public Guid Id { get; init; }
     public Guid CongregationId { get; init; }
 }
+
+public record AttendanceSummaryDto : ISummaryDto<AttendanceRecord>
+{
+    public int TotalPresent { get; init; }
+    public int FirstTimeVisitors { get; init; }
+    public int MembersPresent { get; init; }
+    public int Guests { get; init; }
+}

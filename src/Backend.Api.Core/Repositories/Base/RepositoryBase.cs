@@ -26,6 +26,7 @@ public abstract class RepositoryBase<T>(AppDbContext context, IMapper mapper)
         var records = await _dbSet
             .AsNoTracking()
             .ApplyPagination(paginationParameters)
+            .ApplySoftDeleteFilter()
             .ToListAsync(ct);
 
         return new PagedResponse<T>(records, paginationParameters, totalRecords);
@@ -33,7 +34,11 @@ public abstract class RepositoryBase<T>(AppDbContext context, IMapper mapper)
 
     public virtual async Task<T?> GetByIdAsync(Guid Id, CancellationToken ct = default)
     {
-        return await _dbSet.AsNoTracking().Where(e => e.Id == Id).FirstOrDefaultAsync(ct);
+        return await _dbSet
+            .AsNoTracking()
+            .ApplySoftDeleteFilter()
+            .Where(e => e.Id == Id)
+            .FirstOrDefaultAsync(ct);
     }
 
     public virtual async Task<bool> CreateRecord(T newRecordData, CancellationToken ct = default)
@@ -48,7 +53,9 @@ public abstract class RepositoryBase<T>(AppDbContext context, IMapper mapper)
         CancellationToken ct = default
     )
     {
-        var existingRecord = await _dbSet.FirstOrDefaultAsync(rec => rec.Id == Id, ct);
+        var existingRecord = await _dbSet
+            .ApplySoftDeleteFilter()
+            .FirstOrDefaultAsync(rec => rec.Id == Id, ct);
 
         if (existingRecord is null)
             return false;
@@ -59,7 +66,9 @@ public abstract class RepositoryBase<T>(AppDbContext context, IMapper mapper)
 
     public virtual async Task<bool> DeleteRecord(Guid Id, CancellationToken ct = default)
     {
-        var existingRecord = await _dbSet.FirstOrDefaultAsync(rec => rec.Id == Id, ct);
+        var existingRecord = await _dbSet
+            .ApplySoftDeleteFilter()
+            .FirstOrDefaultAsync(rec => rec.Id == Id, ct);
 
         if (existingRecord is null)
             return false;

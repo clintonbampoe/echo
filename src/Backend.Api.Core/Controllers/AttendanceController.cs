@@ -1,6 +1,7 @@
 using Backend.Api.Core.Common.Pagination;
 using Backend.Api.Core.Common.Query;
 using Backend.Api.Core.Dtos;
+using Backend.Api.Core.Enums;
 using Backend.Api.Core.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,6 +12,23 @@ namespace Backend.Api.Core.Controllers;
 public class AttendanceController(AttendanceService service) : ControllerBase
 {
     private readonly AttendanceService _service = service;
+
+    [HttpGet("summary")]
+    public async Task<ActionResult> GetSummaryAsync(
+        [FromQuery] Guid congregationId,
+        [FromQuery] DateOnly forDate,
+        [FromQuery] ChurchServiceType churchServiceType,
+        CancellationToken ct
+    )
+    {
+        var response = await _service.GetSummaryAsync(
+            congregationId,
+            forDate,
+            churchServiceType,
+            ct
+        );
+        return response.ToActionResult();
+    }
 
     [HttpGet]
     public async Task<ActionResult> GetPageAsync(

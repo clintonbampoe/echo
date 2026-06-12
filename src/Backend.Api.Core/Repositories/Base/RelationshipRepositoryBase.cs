@@ -1,5 +1,6 @@
 using System.Linq.Expressions;
 using AutoMapper;
+using AutoMapper.Internal;
 using Backend.Api.Core.Common.ExtensionMethods;
 using Backend.Api.Core.Common.Pagination;
 using Backend.Api.Core.Data;
@@ -18,7 +19,7 @@ public abstract class RelationshipRepositoryBase<T>(AppDbContext context, IMappe
         CancellationToken ct
     )
     {
-        var query = _dbSet.Where(predicate);
+        var query = _dbSet.ApplySoftDeleteFilter().Where(predicate);
 
         int totalRecordCount = await query.CountAsync(ct);
 
