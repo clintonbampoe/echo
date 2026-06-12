@@ -5,6 +5,12 @@ namespace Backend.Api.Core.Common.ExtensionMethods;
 
 public static class QueryFilterMethods
 {
+    public static IQueryable<T> ApplySoftDeleteFilter<T>(this IQueryable<T> query)
+        where T : class, ISoftDeletableEntity
+    {
+        return query.Where(e => e.DeletedAt == null);
+    }
+
     public static IQueryable<T> ApplySearchFilter<T>(
         this IQueryable<T> query,
         QueryParameters? queryParameters
