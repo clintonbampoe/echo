@@ -9,16 +9,13 @@ using Backend.Api.Core.Repositories.Base;
 
 namespace Backend.Api.Core.Services.Base;
 
-public abstract class RelationshipServiceBase<T> : ServiceBase<T>
+public abstract class RelationshipServiceBase<T>(
+    RelationshipRepositoryBase<T> repository,
+    IMapper mapper
+) : ServiceBase<T>(repository, mapper)
     where T : ICongregationEntity, ISoftDeletableEntity
 {
-    protected override RelationshipRepositoryBase<T> Repository { get; }
-
-    protected RelationshipServiceBase(RelationshipRepositoryBase<T> repository, IMapper mapper)
-        : base(repository, mapper)
-    {
-        Repository = repository;
-    }
+    protected override RelationshipRepositoryBase<T> Repository { get; } = repository;
 
     public virtual async Task<IOperationResult> GetPageByForeignKeyPropertyId(
         Expression<Func<T, bool>> predicate,

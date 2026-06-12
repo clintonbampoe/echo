@@ -5,8 +5,8 @@ namespace Backend.Api.Core.Entities;
 
 public class Transaction : ICongregationEntity, ISoftDeletableEntity
 {
-    public Guid CategoryId { get; init; }
-    public TransactionCategory Category { get; init; } = null!;
+    public Guid CategoryId { get; set; }
+    public TransactionCategory Category { get; set; } = null!;
     public TransactionType TransactionType { get; set; }
     public DateOnly TransactionDate { get; set; }
     public decimal Amount { get; set; }

@@ -1,5 +1,7 @@
 using Backend.Api.Core.Entities.Interfaces;
 
+namespace Backend.Api.Core.Entities;
+
 public class User : ICongregationEntity, ISoftDeletableEntity, ISearchableEntity
 {
     public string Name { get; set; } = string.Empty;

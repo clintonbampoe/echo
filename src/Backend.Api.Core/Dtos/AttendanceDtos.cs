@@ -11,7 +11,7 @@ public record AttendanceCreateDto : ICreateDto<AttendanceRecord>
     public DateOnly ForDate { get; init; }
     public ChurchServiceType ChurchServiceType { get; init; }
     public AttendeeType AttendeeType { get; init; }
-    public TimeOnly CheckInTime { get; init; }
+    public TimeOnly? CheckInTime { get; init; }
     public string? Description { get; init; }
 }
 
@@ -46,7 +46,7 @@ public record AttendanceUpdateDto : IUpdateDto<AttendanceRecord>
     public DateOnly ForDate { get; init; }
     public ChurchServiceType ChurchServiceType { get; init; }
     public AttendeeType AttendeeType { get; init; }
-    public TimeOnly CheckInTime { get; init; }
+    public TimeOnly? CheckInTime { get; init; }
     public string? Description { get; init; }
 }
 
@@ -54,4 +54,12 @@ public record AttendanceDeleteDto : ISoftDeleteDto<AttendanceRecord>
 {
     public Guid Id { get; init; }
     public Guid CongregationId { get; init; }
+}
+
+public record AttendanceSummaryDto : ISummaryDto<AttendanceRecord>
+{
+    public int TotalPresent { get; init; }
+    public int FirstTimeVisitors { get; init; }
+    public int MembersPresent { get; init; }
+    public int Guests { get; init; }
 }

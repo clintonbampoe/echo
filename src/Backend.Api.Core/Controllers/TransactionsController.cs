@@ -12,6 +12,13 @@ public class TransactionsController(TransactionService service) : ControllerBase
 {
     private readonly TransactionService _service = service;
 
+    [HttpGet("summary")]
+    public async Task<ActionResult> GetSummaryAsync()
+    {
+        var response = await _service.GetSummaryAsync();
+        return response.ToActionResult();
+    }
+
     [HttpGet]
     public async Task<ActionResult> GetPageAsync(
         [FromQuery] PaginationParameters paginationParameters,

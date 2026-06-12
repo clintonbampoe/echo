@@ -3,6 +3,7 @@ using System;
 using Backend.Api.Core.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Backend.Api.Core.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260609124959_OffloadCreatedAtValueGenerationToDatabase")]
+    partial class OffloadCreatedAtValueGenerationToDatabase
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -26,8 +29,7 @@ namespace Backend.Api.Core.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValueSql("uuidv7()");
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("CategoryId")
                         .HasColumnType("uuid");
@@ -82,8 +84,7 @@ namespace Backend.Api.Core.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValueSql("uuidv7()");
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("CongregationId")
                         .HasColumnType("uuid");
@@ -112,8 +113,7 @@ namespace Backend.Api.Core.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValueSql("uuidv7()");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("AttendeeType")
                         .IsRequired()
@@ -161,8 +161,7 @@ namespace Backend.Api.Core.Migrations
                 {
                     b.Property<Guid>("CongregationId")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValueSql("uuidv7()");
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -186,8 +185,7 @@ namespace Backend.Api.Core.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValueSql("uuidv7()");
+                        .HasColumnType("uuid");
 
                     b.Property<int?>("Capacity")
                         .HasColumnType("integer");
@@ -271,9 +269,7 @@ namespace Backend.Api.Core.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValueSql("uuidv7()");
+                        .HasColumnType("uuid");
 
                     b.HasKey("EventId", "MemberId");
 
@@ -304,9 +300,7 @@ namespace Backend.Api.Core.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValueSql("uuidv7()");
+                        .HasColumnType("uuid");
 
                     b.Property<DateOnly>("RegistrationDate")
                         .HasColumnType("date");
@@ -324,8 +318,7 @@ namespace Backend.Api.Core.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValueSql("uuidv7()");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("City")
                         .IsRequired()
@@ -435,8 +428,7 @@ namespace Backend.Api.Core.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValueSql("uuidv7()");
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("CongregationId")
                         .HasColumnType("uuid");
@@ -485,9 +477,7 @@ namespace Backend.Api.Core.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValueSql("uuidv7()");
+                        .HasColumnType("uuid");
 
                     b.Property<DateOnly>("JoinedAt")
                         .HasColumnType("date");
@@ -509,8 +499,7 @@ namespace Backend.Api.Core.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValueSql("uuidv7()");
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("CategoryId")
                         .HasColumnType("uuid");
@@ -566,8 +555,7 @@ namespace Backend.Api.Core.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValueSql("uuidv7()");
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("CongregationId")
                         .HasColumnType("uuid");
@@ -596,8 +584,7 @@ namespace Backend.Api.Core.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValueSql("uuidv7()");
+                        .HasColumnType("uuid");
 
                     b.Property<decimal>("Amount")
                         .HasColumnType("numeric");
@@ -640,11 +627,7 @@ namespace Backend.Api.Core.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValueSql("uuidv7()");
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("numeric");
+                        .HasColumnType("uuid");
 
                     b.Property<DateOnly>("CollectionDate")
                         .HasColumnType("date");
@@ -656,6 +639,9 @@ namespace Backend.Api.Core.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("now()");
+
+                    b.Property<int>("Decimal")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
@@ -691,8 +677,7 @@ namespace Backend.Api.Core.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValueSql("uuidv7()");
+                        .HasColumnType("uuid");
 
                     b.Property<decimal>("Amount")
                         .HasColumnType("numeric");
@@ -735,8 +720,7 @@ namespace Backend.Api.Core.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValueSql("uuidv7()");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("CategoryType")
                         .IsRequired()
@@ -769,8 +753,7 @@ namespace Backend.Api.Core.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValueSql("uuidv7()");
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("CongregationId")
                         .HasColumnType("uuid");

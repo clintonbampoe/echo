@@ -60,10 +60,6 @@ public abstract class ServiceBase<T>(RepositoryBase<T> repository, IMapper mappe
     {
         var entity = _mapper.Map<T>(createRecordDto);
 
-        var time = DateTime.UtcNow;
-        entity.CreatedAt = time;
-        entity.Id = Guid.CreateVersion7(time);
-
         var recordCreatedSuccessfully = await Repository.CreateRecord(entity, ct);
 
         if (!recordCreatedSuccessfully)
