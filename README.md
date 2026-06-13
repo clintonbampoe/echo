@@ -1,6 +1,9 @@
 # Echo
 
-Echo is a church management web application designed to help religious organizations centralize their administration and financial records. The platform acts as a unified hub for tracking church operations, ensuring financial transparency and data organization for both small and large congregations.
+Echo is a church management web application designed to help religious organizations centralize their administration and financial records.
+The platform acts as a unified hub for tracking church operations, ensuring financial transparency and data organization for both small and large congregations.
+
+![Dashboard Screenshot](./docs/images/dashboard-screenshot.png)
 
 ## Summary
 
@@ -28,7 +31,7 @@ To develop or run this project locally, the following software must be installed
 - .NET 10 SDK
 - Node.js
 - PostgreSQL
-- Visual Studio / Rider / VS Code  (or any text editor of choice)
+- Visual Studio / Rider / VS Code (or any text editor of choice)
 
 ## Setting Up In VS Code
 
