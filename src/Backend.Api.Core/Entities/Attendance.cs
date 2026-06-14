@@ -15,7 +15,6 @@ public class Attendance : IPrimaryEntity
     public Member? Member { get; set; } 
     public string? GuestName {get; set; }
     public DateOnly ForDate { get; set; }
-    public ChurchServiceType ChurchServiceType { get; set; }
     public AttendeeType AttendeeType { get; set; }
     public TimeOnly CheckInTime { get; set; } = TimeOnly.FromDateTime(DateTime.UtcNow);
     public string? Description { get; set; } = string.Empty;
