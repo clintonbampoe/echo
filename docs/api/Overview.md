@@ -1,11 +1,10 @@
 # Overview
 
 Echo is a church management system.
-This backend API handles members, attendance, tithes, transactions, events, projects, assets, and organizations.
+This back-end API handles members, attendance, tithes, transactions, events, projects, assets, and organizations.
 These are all scoped to a specific congregation.
 
-Built with **ASP.NET Core (.NET 10)**, **Entity Framework Core**, and **PostgreSQL**.
-
+Built with **ASP.NET Core (.NET 10)**, **Entity Framework Core**, and **PostgreSQL**
 ## Tech Stack
 
 | Concern        | Tool                                     |
@@ -38,7 +37,7 @@ Every request follows the same path:
 
 ```
 HTTP Request → Controller → Service → Repository → Database
-                                                      ↓
+												      ↓
 HTTP Response ← Controller ← Service ← Repository ←──┘
 ```
 
