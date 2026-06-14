@@ -3,8 +3,12 @@ using Backend.Api.Core.Enums;
 
 namespace Backend.Api.Core.Entities;
 
-public class Member : ICongregationEntity, ISoftDeletableEntity, ISearchableEntity
+public class Member : IPrimaryEntity, ISearchableEntity
 {
+    public Guid Id { get; set; }
+    public Guid CongregationId { get; set; }
+    public Congregation Congregation { get; set; } = null!;
+
     public string Name { get; set; } = string.Empty;
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
@@ -24,5 +28,7 @@ public class Member : ICongregationEntity, ISoftDeletableEntity, ISearchableEnti
     public string EmergencyContactName { get; set; } = string.Empty;
     public string EmergencyContactPhoneNumber { get; set; } = string.Empty;
     public MemberActivityStatus MemberActivityStatus { get; set; }
+
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? DeletedAt { get; set; }
 }
