@@ -4,38 +4,11 @@ using Backend.Api.Core.Enums;
 
 namespace Backend.Api.Core.Dtos;
 
-public record TransactionCategoryCreateDto : ICreateDto<TransactionCategory>
-{
-    public Guid CongregationId { get; init; }
-    public string Name { get; init; } = string.Empty;
-    public TransactionType CategoryType { get; init; }
-}
+public record TransactionCategoryCreateDto(string Name, TransactionType CategoryType)
+    : IReferenceCreateDto<TransactionCategory>;
 
-public record TransactionCategoryResponseDto : IResponseDto<TransactionCategory>
-{
-    public Guid Id { get; init; }
-    public Guid CongregationId { get; init; }
-    public string Name { get; init; } = string.Empty;
-    public TransactionType CategoryType { get; init; }
-}
+public record TransactionCategoryUpdateDto(string Name, TransactionType CategoryType)
+    : IReferenceUpdateDto<TransactionCategory>;
 
-public record TransactionCategoryListResponseDto : IListResponseDto<TransactionCategory>
-{
-    public Guid Id { get; init; }
-    public Guid CongregationId { get; init; }
-    public string Name { get; init; } = string.Empty;
-    public TransactionType CategoryType { get; init; }
-}
-
-public record TransactionCategoryUpdateDto : IUpdateDto<TransactionCategory>
-{
-    public Guid CongregationId { get; init; }
-    public string Name { get; init; } = string.Empty;
-    public TransactionType CategoryType { get; init; }
-}
-
-public record TransactionCategoryDeleteDto : ISoftDeleteDto<TransactionCategory>
-{
-    public Guid Id { get; init; }
-    public Guid CongregationId { get; init; }
-}
+public record TransactionCategoryResponseDto(int Id, string Name, TransactionType CategoryType)
+    : IReferenceResponseDto<TransactionCategory>;

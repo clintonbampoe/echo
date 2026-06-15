@@ -4,50 +4,36 @@ using Backend.Api.Core.Enums;
 
 namespace Backend.Api.Core.Dtos;
 
-public record ProjectContributionCreateDto : ICreateDto<ProjectContribution>
-{
-    public Guid CongregationId { get; init; }
-    public Guid ProjectId { get; init; }
-    public decimal Amount { get; init; }
-    public DateOnly DateContributed { get; init; }
-    public PaymentMethod PaymentMethod { get; init; }
-    public string? Description { get; init; }
-}
+public record ProjectContributionCreateDto(
+    Guid ProjectId,
+    decimal Amount,
+    DateOnly DateContributed,
+    PaymentMethod PaymentMethod,
+    string? Description
+) : IPrimaryCreateDto<ProjectContribution>;
 
-public record ProjectContributionResponseDto : IResponseDto<ProjectContribution>
-{
-    public Guid Id { get; init; }
-    public Guid CongregationId { get; init; }
-    public Guid ProjectId { get; init; }
-    public string Project { get; init; } = string.Empty;
-    public decimal Amount { get; init; }
-    public DateOnly DateContributed { get; init; }
-    public PaymentMethod PaymentMethod { get; init; }
-    public string? Description { get; init; }
-}
+public record ProjectContributionUpdateDto(
+    decimal Amount,
+    DateOnly DateContributed,
+    PaymentMethod PaymentMethod,
+    string? Description
+) : IPrimaryUpdateDto<ProjectContribution>;
 
-public record ProjectContributionListResponseDto : IListResponseDto<ProjectContribution>
-{
-    public Guid Id { get; init; }
-    public Guid CongregationId { get; init; }
-    public string Project { get; init; } = string.Empty;
-    public decimal Amount { get; init; }
-    public DateOnly DateContributed { get; init; }
-    public PaymentMethod PaymentMethod { get; init; }
-}
+public record ProjectContributionListResponseDto(
+    Guid Id,
+    string ProjectName,
+    decimal Amount,
+    DateOnly DateContributed,
+    PaymentMethod PaymentMethod
+) : IPrimaryListResponseDto<ProjectContribution>;
 
-public record ProjectContributionUpdateDto : IUpdateDto<ProjectContribution>
-{
-    public Guid CongregationId { get; init; }
-    public Guid ProjectId { get; init; }
-    public decimal Amount { get; init; }
-    public DateOnly DateContributed { get; init; }
-    public PaymentMethod PaymentMethod { get; init; }
-    public string? Description { get; init; }
-}
-
-public record ProjectContributionDeleteDto : ISoftDeleteDto<ProjectContribution>
-{
-    public Guid Id { get; init; }
-    public Guid CongregationId { get; init; }
-}
+public record ProjectContributionResponseDto(
+    Guid Id,
+    Guid ProjectId,
+    string ProjectName,
+    decimal Amount,
+    DateOnly DateContributed,
+    PaymentMethod PaymentMethod,
+    string? Description,
+    DateTime CreatedAt
+) : IPrimaryResponseDto<ProjectContribution>;

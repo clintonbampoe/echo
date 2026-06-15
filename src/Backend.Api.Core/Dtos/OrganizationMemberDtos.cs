@@ -4,48 +4,31 @@ using Backend.Api.Core.Enums;
 
 namespace Backend.Api.Core.Dtos;
 
-public record OrganizationMemberCreateDto : ICreateDto<OrganizationMember>
-{
-    public Guid CongregationId { get; init; }
-    public Guid MemberId { get; init; }
-    public Guid OrganizationId { get; init; }
-    public MemberOrganizationalRole Role { get; init; }
-    public DateOnly JoinedAt { get; init; }
-}
+public record OrganizationMemberCreateDto(
+    Guid MemberId,
+    Guid OrganizationId,
+    MemberOrganizationalRole Role,
+    DateOnly JoinedAt
+) : IPrimaryCreateDto<OrganizationMember>;
 
-public record OrganizationMemberResponseDto : IResponseDto<OrganizationMember>
-{
-    public Guid Id { get; init; }
-    public Guid CongregationId { get; init; }
-    public Guid MemberId { get; init; }
-    public string Member { get; init; } = string.Empty;
-    public Guid OrganizationId { get; init; }
-    public string Organization { get; init; } = string.Empty;
-    public MemberOrganizationalRole Role { get; init; }
-    public DateOnly JoinedAt { get; init; }
-}
+public record OrganizationMemberUpdateDto(MemberOrganizationalRole Role, DateOnly JoinedAt)
+    : IPrimaryUpdateDto<OrganizationMember>;
 
-public record OrganizationMemberListResponseDto : IListResponseDto<OrganizationMember>
-{
-    public Guid Id { get; init; }
-    public Guid CongregationId { get; init; }
-    public string Member { get; init; } = string.Empty;
-    public string Organization { get; init; } = string.Empty;
-    public MemberOrganizationalRole Role { get; init; }
-    public DateOnly JoinedAt { get; init; }
-}
+public record OrganizationMemberListResponseDto(
+    Guid Id,
+    string MemberName,
+    string OrganizationName,
+    MemberOrganizationalRole Role,
+    DateOnly JoinedAt
+) : IPrimaryListResponseDto<OrganizationMember>;
 
-public record OrganizationMemberUpdateDto : IUpdateDto<OrganizationMember>
-{
-    public Guid CongregationId { get; init; }
-    public Guid MemberId { get; init; }
-    public Guid OrganizationId { get; init; }
-    public MemberOrganizationalRole Role { get; init; }
-    public DateOnly JoinedAt { get; init; }
-}
-
-public record OrganizationMemberDeleteDto : ISoftDeleteDto<OrganizationMember>
-{
-    public Guid Id { get; init; }
-    public Guid CongregationId { get; init; }
-}
+public record OrganizationMemberResponseDto(
+    Guid Id,
+    Guid MemberId,
+    string MemberName,
+    Guid OrganizationId,
+    string OrganizationName,
+    MemberOrganizationalRole Role,
+    DateOnly JoinedAt,
+    DateTime CreatedAt
+) : IPrimaryResponseDto<OrganizationMember>;
