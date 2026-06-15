@@ -1,42 +1,66 @@
-using AutoMapper;
 using Backend.Api.Core.Common.ExtensionMethods;
 using Backend.Api.Core.Common.Pagination;
 using Backend.Api.Core.Common.Query;
 using Backend.Api.Core.Data;
+using Backend.Api.Core.Dtos;
 using Backend.Api.Core.Entities;
 using Backend.Api.Core.Repositories.Base;
 using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Api.Core.Repositories;
 
-public class EventAttendanceRepository(AppDbContext context, IMapper mapper)
-    : RelationshipRepositoryBase<EventAttendance>(context, mapper)
+public class EventAttendanceRepository(AppDbContext context)
+    : PrimaryRepositoryBase<EventAttendance>(context)
 {
-    public override async Task<PagedResponse<EventAttendance>> GetPageAsync(
+    public async Task<PagedResponse<EventAttendanceListResponseDto>> GetPageAsync(
+        Guid congregationId,
         PaginationParameters paginationParameters,
         QueryParameters? queryParameters,
         CancellationToken ct = default
     )
     {
-        var totalRecords = await _dbSet.AsNoTracking().CountAsync(ct);
-
-        var records = await _dbSet
+        var query = _dbSet
             .AsNoTracking()
-            .Include(a => a.Member)
-            .Include(a => a.Event)
+            .ApplySoftDeleteFilter()
+            .Where(e => e.CongregationId == congregationId);
+
+        int totalRecords = await query.CountAsync(ct);
+
+        var records = await query
             .ApplyPagination(paginationParameters)
+            .Select(e => new EventAttendanceListResponseDto(
+                e.Id,
+                e.Member.Name,
+                e.Event.Name,
+                e.CheckInTime
+            ))
             .ToListAsync(ct);
 
-        return new PagedResponse<EventAttendance>(records, paginationParameters, totalRecords);
+        return new PagedResponse<EventAttendanceListResponseDto>(
+            records,
+            paginationParameters,
+            totalRecords
+        );
     }
 
-    public override async Task<EventAttendance?> GetByIdAsync(Guid id, CancellationToken ct)
+    public async Task<EventAttendanceResponseDto?> GetByIdAsync(
+        Guid id,
+        CancellationToken ct = default
+    )
     {
         return await _dbSet
             .AsNoTracking()
-            .Where(a => a.Id == id)
-            .Include(a => a.Member)
-            .Include(a => a.Event)
+            .ApplySoftDeleteFilter()
+            .Where(e => e.Id == id)
+            .Select(e => new EventAttendanceResponseDto(
+                e.Id,
+                e.MemberId,
+                e.Member.Name,
+                e.EventId,
+                e.Event.Name,
+                e.CheckInTime,
+                e.CreatedAt
+            ))
             .FirstOrDefaultAsync(ct);
     }
 }

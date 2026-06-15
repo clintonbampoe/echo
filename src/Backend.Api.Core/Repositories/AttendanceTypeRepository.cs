@@ -7,10 +7,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Api.Core.Repositories;
 
-public class ProjectCategoryRepository(AppDbContext context)
-    : ReferenceRepositoryBase<ProjectCategory>(context)
+public class AttendanceTypeRepository(AppDbContext context)
+    : ReferenceRepositoryBase<AttendanceType>(context)
 {
-    public async Task<List<ProjectCategoryResponseDto>> GetAllAsync(
+    public async Task<List<AttendanceTypeResponseDto>> GetAllAsync(
         Guid congregationId,
         CancellationToken ct = default
     )
@@ -18,12 +18,12 @@ public class ProjectCategoryRepository(AppDbContext context)
         return await _dbSet
             .AsNoTracking()
             .ApplySoftDeleteFilter()
-            .Where(c => c.CongregationId == congregationId)
-            .Select(c => new ProjectCategoryResponseDto(c.Id, c.Name))
+            .Where(t => t.CongregationId == congregationId)
+            .Select(t => new AttendanceTypeResponseDto(t.Id, t.Name))
             .ToListAsync(ct);
     }
 
-    public async Task<ProjectCategoryResponseDto?> GetByIdAsync(
+    public async Task<AttendanceTypeResponseDto?> GetByIdAsync(
         int id,
         CancellationToken ct = default
     )
@@ -31,8 +31,8 @@ public class ProjectCategoryRepository(AppDbContext context)
         return await _dbSet
             .AsNoTracking()
             .ApplySoftDeleteFilter()
-            .Where(c => c.Id == id)
-            .Select(c => new ProjectCategoryResponseDto(c.Id, c.Name))
+            .Where(t => t.Id == id)
+            .Select(t => new AttendanceTypeResponseDto(t.Id, t.Name))
             .FirstOrDefaultAsync(ct);
     }
 }
