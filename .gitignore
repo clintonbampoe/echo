@@ -48,3 +48,6 @@ Thumbs.db
 
 # db.io data description tools
 *.dbdiagram
+
+# Obsidian boilerplate
+.obsidian/
