@@ -37,4 +37,10 @@ public static class QueryFilterMethods
 
         return query;
     }
+
+    public static IQueryable<T> ApplySoftDeleteFilter<T>(this IQueryable<T> query)
+        where T : ICongregationEntity
+    {
+        return query.Where(x => x.DeletedAt == null);
+    }
 }

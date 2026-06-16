@@ -10,7 +10,7 @@ public static class PaginationFilterMethods
         this IQueryable<T> query,
         PaginationParameters paginationParams
     )
-        where T : ICongregationEntity
+        where T : IPrimaryEntity
     {
         if (paginationParams is null)
             return query;
@@ -22,7 +22,7 @@ public static class PaginationFilterMethods
     }
 
     private static IQueryable<T> OrderByGuidIfUnordered<T>(this IQueryable<T> query)
-        where T : ICongregationEntity
+        where T : IPrimaryEntity
     {
         if (IsOrderedQuery(query))
             return query;
