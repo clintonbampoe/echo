@@ -4,25 +4,24 @@ using Backend.Api.Core.Entities;
 
 namespace Backend.Api.Core.Common.Mapping;
 
-public class EventAttendanceProfile : Profile
+public class AttendanceContextProfile : Profile
 {
-    public EventAttendanceProfile()
+    public AttendanceContextProfile()
     {
-        CreateMap<EventAttendanceCreateDto, EventAttendance>()
+        CreateMap<AttendanceContextCreateDto, AttendanceContext>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(dest => dest.CongregationId, opt => opt.Ignore())
             .ForMember(dest => dest.Congregation, opt => opt.Ignore())
-            .ForMember(dest => dest.Member, opt => opt.Ignore())
-            .ForMember(dest => dest.Event, opt => opt.Ignore())
+            .ForMember(dest => dest.AttendanceType, opt => opt.Ignore())
             .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.DeletedAt, opt => opt.Ignore());
 
-        CreateMap<EventAttendanceUpdateDto, EventAttendance>()
+        CreateMap<AttendanceContextUpdateDto, AttendanceContext>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(dest => dest.CongregationId, opt => opt.Ignore())
             .ForMember(dest => dest.Congregation, opt => opt.Ignore())
-            .ForMember(dest => dest.Member, opt => opt.Ignore())
-            .ForMember(dest => dest.Event, opt => opt.Ignore())
+            .ForMember(dest => dest.AttendanceType, opt => opt.Ignore())
+            .ForMember(dest => dest.AttendanceTypeId, opt => opt.Ignore())
             .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.DeletedAt, opt => opt.Ignore());
     }

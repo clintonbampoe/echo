@@ -8,20 +8,18 @@ public class AssetCategoryProfile : Profile
 {
     public AssetCategoryProfile()
     {
-        // Outbound only
-        CreateMap<AssetCategory, AssetCategoryResponseDto>();
-        CreateMap<AssetCategory, AssetCategoryListResponseDto>();
-
-        // Inbound
         CreateMap<AssetCategoryCreateDto, AssetCategory>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.CongregationId, opt => opt.Ignore())
+            .ForMember(dest => dest.Congregation, opt => opt.Ignore())
             .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.DeletedAt, opt => opt.Ignore());
 
         CreateMap<AssetCategoryUpdateDto, AssetCategory>()
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.CongregationId, opt => opt.Ignore())
+            .ForMember(dest => dest.Congregation, opt => opt.Ignore())
             .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.DeletedAt, opt => opt.Ignore());
-
-        CreateMap<AssetCategoryDeleteDto, AssetCategory>().ForAllMembers(opt => opt.Ignore());
     }
 }
