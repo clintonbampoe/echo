@@ -11,10 +11,13 @@ using Backend.Api.Core.Services.Base;
 
 namespace Backend.Api.Core.Services;
 
-public class AssetService(AssetRepository repository, AppDbContext context, IMapper mapper)
-    : PrimaryServiceBase<Asset>(repository, context, mapper)
+public class EventAttendanceService(
+    EventAttendanceRepository repository,
+    AppDbContext context,
+    IMapper mapper
+) : PrimaryServiceBase<EventAttendance>(repository, context, mapper)
 {
-    private readonly AssetRepository _assetRepository = repository;
+    private readonly EventAttendanceRepository _eventAttendanceRepository = repository;
 
     public override async Task<IOperationResult> GetPageAsync(
         Guid congregationId,
@@ -23,13 +26,13 @@ public class AssetService(AssetRepository repository, AppDbContext context, IMap
         CancellationToken ct = default
     )
     {
-        var result = await _assetRepository.GetPageAsync(
+        var result = await _eventAttendanceRepository.GetPageAsync(
             congregationId,
             paginationParameters,
             queryParameters,
             ct
         );
-        return new SuccessResult<PagedResponse<AssetListResponseDto>>(result);
+        return new SuccessResult<PagedResponse<EventAttendanceListResponseDto>>(result);
     }
 
     public override async Task<IOperationResult> GetByIdAsync(
@@ -37,11 +40,11 @@ public class AssetService(AssetRepository repository, AppDbContext context, IMap
         CancellationToken ct = default
     )
     {
-        var result = await _assetRepository.GetByIdAsync(id, ct);
+        var result = await _eventAttendanceRepository.GetByIdAsync(id, ct);
 
         if (result is null)
-            return new NotFoundResult("Asset not found.");
+            return new NotFoundResult("Event attendance record not found.");
 
-        return new SuccessResult<AssetResponseDto>(result);
+        return new SuccessResult<EventAttendanceResponseDto>(result);
     }
 }

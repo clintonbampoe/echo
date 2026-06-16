@@ -1,6 +1,9 @@
 using AutoMapper;
 using Backend.Api.Core.Common.HttpResults;
 using Backend.Api.Core.Common.HttpResults.Interfaces;
+using Backend.Api.Core.Common.Pagination;
+using Backend.Api.Core.Common.Query;
+using Backend.Api.Core.Data;
 using Backend.Api.Core.Dtos;
 using Backend.Api.Core.Entities;
 using Backend.Api.Core.Repositories;
@@ -8,49 +11,40 @@ using Backend.Api.Core.Services.Base;
 
 namespace Backend.Api.Core.Services;
 
-public class TransactionService(TransactionRepository repository, IMapper mapper)
-    : ServiceBase<Transaction>(repository, mapper)
+public class TransactionService(
+    TransactionRepository repository,
+    AppDbContext context,
+    IMapper mapper
+) : PrimaryServiceBase<Transaction>(repository, context, mapper)
 {
-    private readonly TransactionRepository _repository = repository;
+    private readonly TransactionRepository _transactionRepository = repository;
 
-    public async Task<IOperationResult> GetSummaryAsync()
+    public override async Task<IOperationResult> GetPageAsync(
+        Guid congregationId,
+        PaginationParameters paginationParameters,
+        QueryParameters? queryParameters,
+        CancellationToken ct = default
+    )
     {
-        var streams = await _repository.GetStreamsAsync();
+        var result = await _transactionRepository.GetPageAsync(
+            congregationId,
+            paginationParameters,
+            queryParameters,
+            ct
+        );
+        return new SuccessResult<PagedResponse<TransactionListResponseDto>>(result);
+    }
 
-        var incomeData = streams.Where(s => s.Type == Enums.TransactionType.Income).ToList();
-        var expenditureData = streams
-            .Where(s => s.Type == Enums.TransactionType.Expenditure)
-            .ToList();
+    public override async Task<IOperationResult> GetByIdAsync(
+        Guid id,
+        CancellationToken ct = default
+    )
+    {
+        var result = await _transactionRepository.GetByIdAsync(id, ct);
 
-        var totalIncome = incomeData.Sum(x => x.Amount);
-        var totalExpenditure = expenditureData.Sum(x => x.Amount);
+        if (result is null)
+            return new NotFoundResult("Transaction not found.");
 
-        var summary = new TransactionSummaryDto
-        {
-            TotalIncome = totalIncome,
-            TotalExpenditure = totalExpenditure,
-            NetBalance = totalIncome - totalExpenditure,
-
-            IncomeStreams = incomeData
-                .Select(x => new TransactionIncomeStreamDto
-                {
-                    Category = x.Category,
-                    Amount = x.Amount,
-                    PercentageOfTotal = totalIncome == 0 ? 0 : x.Amount / totalIncome * 100,
-                })
-                .ToList(),
-
-            ExpenditureStreams = expenditureData
-                .Select(x => new TransactionExpenditureStreamDto
-                {
-                    Category = x.Category,
-                    Amount = x.Amount,
-                    PercentageOfTotal =
-                        totalExpenditure == 0 ? 0 : x.Amount / totalExpenditure * 100,
-                })
-                .ToList(),
-        };
-
-        return new SuccessResult<TransactionSummaryDto>(summary);
+        return new SuccessResult<TransactionResponseDto>(result);
     }
 }

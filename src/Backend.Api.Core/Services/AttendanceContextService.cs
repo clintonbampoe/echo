@@ -9,21 +9,21 @@ using Backend.Api.Core.Services.Base;
 
 namespace Backend.Api.Core.Services;
 
-public class AssetCategoryService(
-    AssetCategoryRepository repository,
+public class AttendanceContextService(
+    AttendanceContextRepository repository,
     AppDbContext context,
     IMapper mapper
-) : ReferenceServiceBase<AssetCategory>(repository, context, mapper)
+) : ReferenceServiceBase<AttendanceContext>(repository, context, mapper)
 {
-    private readonly AssetCategoryRepository _assetCategoryRepository = repository;
+    private readonly AttendanceContextRepository _attendanceContextRepository = repository;
 
     public override async Task<IOperationResult> GetAllAsync(
         Guid congregationId,
         CancellationToken ct = default
     )
     {
-        var result = await _assetCategoryRepository.GetAllAsync(congregationId, ct);
-        return new SuccessResult<IEnumerable<AssetCategoryResponseDto>>(result);
+        var result = await _attendanceContextRepository.GetAllAsync(congregationId, ct);
+        return new SuccessResult<IEnumerable<AttendanceContextResponseDto>>(result);
     }
 
     public override async Task<IOperationResult> GetByIdAsync(
@@ -31,11 +31,11 @@ public class AssetCategoryService(
         CancellationToken ct = default
     )
     {
-        var result = await _assetCategoryRepository.GetByIdAsync(id, ct);
+        var result = await _attendanceContextRepository.GetByIdAsync(id, ct);
 
         if (result is null)
-            return new NotFoundResult("Asset category not found.");
+            return new NotFoundResult("Attendance context not found.");
 
-        return new SuccessResult<AssetCategoryResponseDto>(result);
+        return new SuccessResult<AttendanceContextResponseDto>(result);
     }
 }
