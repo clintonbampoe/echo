@@ -1,5 +1,6 @@
 using Backend.Api.Core.Common.Pagination;
 using Backend.Api.Core.Common.Query;
+using Backend.Api.Core.Controllers.Base;
 using Backend.Api.Core.Dtos;
 using Backend.Api.Core.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -7,21 +8,9 @@ using Microsoft.AspNetCore.Mvc;
 namespace Backend.Api.Core.Controllers;
 
 [Route("api/[controller]")]
-[ApiController]
-public class TitheController(TitheService service) : ControllerBase
+public class TithesController(TitheService service) : BaseController
 {
     private readonly TitheService _service = service;
-
-    [HttpGet("summary")]
-    public async Task<ActionResult> GetSummary(
-        Guid congregationId,
-        [FromQuery] int year,
-        CancellationToken ct
-    )
-    {
-        var response = await _service.GetSummaryAsync(congregationId, year, ct);
-        return response.ToActionResult();
-    }
 
     [HttpGet]
     public async Task<ActionResult> GetPageAsync(
@@ -30,7 +19,8 @@ public class TitheController(TitheService service) : ControllerBase
         CancellationToken ct
     )
     {
-        var response = await _service.GetPagedAsync<TitheListResponseDto>(
+        var response = await _service.GetPageAsync(
+            GetCongregationId(),
             paginationParameters,
             queryParameters,
             ct
@@ -41,28 +31,28 @@ public class TitheController(TitheService service) : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult> GetByIdAsync(Guid id, CancellationToken ct)
     {
-        var response = await _service.GetByIdAsync<TitheResponseDto>(id, ct);
+        var response = await _service.GetByIdAsync(id, ct);
         return response.ToActionResult();
     }
 
     [HttpPost]
     public async Task<ActionResult> CreateAsync(TitheCreateDto dto, CancellationToken ct)
     {
-        var response = await _service.CreateNewRecord(dto, ct);
+        var response = await _service.CreateAsync(dto, ct);
         return response.ToActionResult();
     }
 
     [HttpPut("{id}")]
     public async Task<ActionResult> UpdateAsync(Guid id, TitheUpdateDto dto, CancellationToken ct)
     {
-        var response = await _service.UpdateRecord(id, dto, ct);
+        var response = await _service.UpdateAsync(id, dto, ct);
         return response.ToActionResult();
     }
 
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteAsync(Guid id, CancellationToken ct)
     {
-        var response = await _service.DeleteRecord(id, ct);
+        var response = await _service.DeleteAsync(id, ct);
         return response.ToActionResult();
     }
 }

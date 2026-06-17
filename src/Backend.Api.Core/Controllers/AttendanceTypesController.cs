@@ -6,9 +6,9 @@ using Microsoft.AspNetCore.Mvc;
 namespace Backend.Api.Core.Controllers;
 
 [Route("api/[controller]")]
-public class ProjectCategoriesController(ProjectCategoryService service) : BaseController
+public class AttendanceTypesController(AttendanceTypeService service) : BaseController
 {
-    private readonly ProjectCategoryService _service = service;
+    private readonly AttendanceTypeService _service = service;
 
     [HttpGet]
     public async Task<ActionResult> GetAllAsync(CancellationToken ct)
@@ -25,7 +25,7 @@ public class ProjectCategoriesController(ProjectCategoryService service) : BaseC
     }
 
     [HttpPost]
-    public async Task<ActionResult> CreateAsync(ProjectCategoryCreateDto dto, CancellationToken ct)
+    public async Task<ActionResult> CreateAsync(AttendanceTypeCreateDto dto, CancellationToken ct)
     {
         var response = await _service.CreateAsync(dto, ct);
         return response.ToActionResult();
@@ -34,7 +34,7 @@ public class ProjectCategoriesController(ProjectCategoryService service) : BaseC
     [HttpPut("{id}")]
     public async Task<ActionResult> UpdateAsync(
         int id,
-        ProjectCategoryUpdateDto dto,
+        AttendanceTypeUpdateDto dto,
         CancellationToken ct
     )
     {

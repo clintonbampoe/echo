@@ -1,5 +1,3 @@
-using Backend.Api.Core.Common.Pagination;
-using Backend.Api.Core.Common.Query;
 using Backend.Api.Core.Controllers.Base;
 using Backend.Api.Core.Dtos;
 using Backend.Api.Core.Services;
@@ -8,28 +6,19 @@ using Microsoft.AspNetCore.Mvc;
 namespace Backend.Api.Core.Controllers;
 
 [Route("api/[controller]")]
-public class ProjectContributionsController(ProjectContributionService service) : BaseController
+public class AttendanceContextsController(AttendanceContextService service) : BaseController
 {
-    private readonly ProjectContributionService _service = service;
+    private readonly AttendanceContextService _service = service;
 
     [HttpGet]
-    public async Task<ActionResult> GetPageAsync(
-        [FromQuery] PaginationParameters paginationParameters,
-        [FromQuery] QueryParameters? queryParameters,
-        CancellationToken ct
-    )
+    public async Task<ActionResult> GetAllAsync(CancellationToken ct)
     {
-        var response = await _service.GetPageAsync(
-            GetCongregationId(),
-            paginationParameters,
-            queryParameters,
-            ct
-        );
+        var response = await _service.GetAllAsync(GetCongregationId(), ct);
         return response.ToActionResult();
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult> GetByIdAsync(Guid id, CancellationToken ct)
+    public async Task<ActionResult> GetByIdAsync(int id, CancellationToken ct)
     {
         var response = await _service.GetByIdAsync(id, ct);
         return response.ToActionResult();
@@ -37,7 +26,7 @@ public class ProjectContributionsController(ProjectContributionService service) 
 
     [HttpPost]
     public async Task<ActionResult> CreateAsync(
-        ProjectContributionCreateDto dto,
+        AttendanceContextCreateDto dto,
         CancellationToken ct
     )
     {
@@ -47,8 +36,8 @@ public class ProjectContributionsController(ProjectContributionService service) 
 
     [HttpPut("{id}")]
     public async Task<ActionResult> UpdateAsync(
-        Guid id,
-        ProjectContributionUpdateDto dto,
+        int id,
+        AttendanceContextUpdateDto dto,
         CancellationToken ct
     )
     {
@@ -57,7 +46,7 @@ public class ProjectContributionsController(ProjectContributionService service) 
     }
 
     [HttpDelete("{id}")]
-    public async Task<ActionResult> DeleteAsync(Guid id, CancellationToken ct)
+    public async Task<ActionResult> DeleteAsync(int id, CancellationToken ct)
     {
         var response = await _service.DeleteAsync(id, ct);
         return response.ToActionResult();
