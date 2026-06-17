@@ -5,20 +5,23 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Backend.Api.Core.Data.EntityConfigurations;
 
-public class ProjectConfiguration : CongregationEntityConfigurationBase<Project>
+public class ProjectConfiguration : PrimaryEntityConfigurationBase<Project>
 {
     public override void ConfigureEntity(EntityTypeBuilder<Project> builder)
     {
-        builder.HasKey(pr => pr.Id);
-
-        builder.HasOne(pr => pr.Manager)
+        builder
+            .HasOne(p => p.Manager)
             .WithMany()
-            .HasForeignKey(pr => pr.ManagerId)
-            .OnDelete(DeleteBehavior.SetNull);
+            .HasForeignKey(p => p.ManagerId)
+            .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne(pr => pr.Category)
+        builder
+            .HasOne(p => p.Category)
             .WithMany()
-            .HasForeignKey(pr => pr.CategoryId)
-            .OnDelete(DeleteBehavior.SetNull);
+            .HasForeignKey(p => p.CategoryId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasIndex(p => p.CategoryId);
+        builder.HasIndex(p => p.ManagerId);
     }
 }

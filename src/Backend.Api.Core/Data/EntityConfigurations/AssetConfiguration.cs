@@ -5,15 +5,16 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Backend.Api.Core.Data.EntityConfigurations;
 
-public class AssetConfiguration : CongregationEntityConfigurationBase<Asset>
+public class AssetConfiguration : PrimaryEntityConfigurationBase<Asset>
 {
     public override void ConfigureEntity(EntityTypeBuilder<Asset> builder)
     {
-        builder.HasKey(asset => asset.Id);
-
-        builder.HasOne(ass => ass.Category)
+        builder
+            .HasOne(a => a.Category)
             .WithMany()
-            .HasForeignKey(asset => asset.CategoryId)
-            .OnDelete(DeleteBehavior.SetNull);
+            .HasForeignKey(a => a.CategoryId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasIndex(a => a.CategoryId);
     }
 }

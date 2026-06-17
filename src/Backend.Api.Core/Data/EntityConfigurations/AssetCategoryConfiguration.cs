@@ -4,10 +4,10 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Backend.Api.Core.Data.EntityConfigurations;
 
-public class AssetCategoryConfiguration : CongregationEntityConfigurationBase<AssetCategory>
+public class AssetCategoryConfiguration : ReferenceEntityConfigurationBase<AssetCategory>
 {
     public override void ConfigureEntity(EntityTypeBuilder<AssetCategory> builder)
     {
-        builder.HasKey(assetCategory => assetCategory.Id);
+        builder.HasIndex(c => new { c.CongregationId, c.Name }).IsUnique();
     }
 }

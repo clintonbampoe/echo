@@ -5,15 +5,16 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Backend.Api.Core.Data.EntityConfigurations;
 
-public class ProjectContributionConfiguration : CongregationEntityConfigurationBase<ProjectContribution>
+public class ProjectContributionConfiguration : PrimaryEntityConfigurationBase<ProjectContribution>
 {
     public override void ConfigureEntity(EntityTypeBuilder<ProjectContribution> builder)
     {
-        builder.HasKey(pc => pc.Id);
-
-        builder.HasOne(pc => pc.Project)
+        builder
+            .HasOne(pc => pc.Project)
             .WithMany()
-            .HasForeignKey(contribution => contribution.ProjectId)
+            .HasForeignKey(pc => pc.ProjectId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasIndex(pc => pc.ProjectId);
     }
 }

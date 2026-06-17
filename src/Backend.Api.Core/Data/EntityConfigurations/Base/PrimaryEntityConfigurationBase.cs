@@ -4,21 +4,26 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Backend.Api.Core.Data.EntityConfigurations.Base;
 
-public abstract class CongregationEntityConfigurationBase<TEntity>
+public abstract class PrimaryEntityConfigurationBase<TEntity>
     : IEntityTypeConfiguration<TEntity>
-    where TEntity : ICongregationEntity
+    where TEntity : class, IPrimaryEntity
 {
     public void Configure(EntityTypeBuilder<TEntity> builder)
     {
+        builder.HasKey(e => e.Id);
+
+        builder.Property(e => e.Id).HasDefaultValueSql("uuidv7()").ValueGeneratedOnAdd();
+
+        builder.Property(e => e.CreatedAt).HasDefaultValueSql("now()").ValueGeneratedOnAdd();
+
         builder
-            .HasOne(ent => ent.Congregation)
+            .HasOne(e => e.Congregation)
             .WithMany()
-            .HasForeignKey(entity => entity.CongregationId)
+            .HasForeignKey(e => e.CongregationId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.Property(ent => ent.Id).HasDefaultValueSql("uuidv7()").ValueGeneratedOnAdd();
-
-        builder.Property(ent => ent.CreatedAt).HasDefaultValueSql("now()").ValueGeneratedOnAdd();
+        builder.HasIndex(e => e.CongregationId);
+        builder.HasIndex(e => e.DeletedAt);
 
         ConfigureEntity(builder);
     }
