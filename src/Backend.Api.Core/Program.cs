@@ -69,7 +69,7 @@ builder.Services.AddScoped<OrganizationMembersController>();
 builder.Services.AddScoped<ProjectsController>();
 builder.Services.AddScoped<ProjectCategoriesController>();
 builder.Services.AddScoped<ProjectContributionsController>();
-builder.Services.AddScoped<TitheController>();
+builder.Services.AddScoped<TithesController>();
 builder.Services.AddScoped<TransactionCategoriesController>();
 builder.Services.AddScoped<TransactionsController>();
 
