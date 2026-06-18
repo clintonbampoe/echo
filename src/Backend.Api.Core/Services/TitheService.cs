@@ -1,6 +1,9 @@
 using AutoMapper;
 using Backend.Api.Core.Common.HttpResults;
 using Backend.Api.Core.Common.HttpResults.Interfaces;
+using Backend.Api.Core.Common.Pagination;
+using Backend.Api.Core.Common.Query;
+using Backend.Api.Core.Data;
 using Backend.Api.Core.Dtos;
 using Backend.Api.Core.Entities;
 using Backend.Api.Core.Repositories;
@@ -8,24 +11,37 @@ using Backend.Api.Core.Services.Base;
 
 namespace Backend.Api.Core.Services;
 
-public class TitheService(TitheRepository repository, IMapper mapper)
-    : ServiceBase<Tithe>(repository, mapper)
+public class TitheService(TitheRepository repository, AppDbContext context, IMapper mapper)
+    : PrimaryServiceBase<Tithe>(repository, context, mapper)
 {
-    private readonly TitheRepository _repository = repository;
+    private readonly TitheRepository _titheRepository = repository;
 
-    public async Task<IOperationResult> GetSummaryAsync(
+    public override async Task<IOperationResult> GetPageAsync(
         Guid congregationId,
-        int year,
-        CancellationToken ct
+        PaginationParameters paginationParameters,
+        QueryParameters? queryParameters,
+        CancellationToken ct = default
     )
     {
-        var aggregatedMonthlySummary = await _repository.GetAggregatedSummaryByMonth(
+        var result = await _titheRepository.GetPageAsync(
             congregationId,
-            year,
+            paginationParameters,
+            queryParameters,
             ct
         );
+        return new SuccessResult<PagedResponse<TitheListResponseDto>>(result);
+    }
 
-        var summary = new TitheMonthlySummaryDto { Months = aggregatedMonthlySummary, Year = year };
-        return new SuccessResult<TitheMonthlySummaryDto>(summary);
+    public override async Task<IOperationResult> GetByIdAsync(
+        Guid id,
+        CancellationToken ct = default
+    )
+    {
+        var result = await _titheRepository.GetByIdAsync(id, ct);
+
+        if (result is null)
+            return new NotFoundResult("Tithe not found.");
+
+        return new SuccessResult<TitheResponseDto>(result);
     }
 }

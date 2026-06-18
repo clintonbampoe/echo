@@ -5,20 +5,22 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Backend.Api.Core.Data.EntityConfigurations;
 
-public class EventRegistrationConfiguration : CongregationEntityConfigurationBase<EventRegistration>
+public class EventRegistrationConfiguration : PrimaryEntityConfigurationBase<EventRegistration>
 {
     public override void ConfigureEntity(EntityTypeBuilder<EventRegistration> builder)
     {
-        builder.HasKey(eventReg => new { eventReg.EventId, eventReg.MemberId });
-
-        builder.HasOne(eventReg => eventReg.Member)
+        builder
+            .HasOne(er => er.Member)
             .WithMany()
-            .HasForeignKey(ea => ea.MemberId)
+            .HasForeignKey(er => er.MemberId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasOne(eventReg => eventReg.Event)
+        builder
+            .HasOne(er => er.Event)
             .WithMany()
-            .HasForeignKey(ea => ea.EventId)
+            .HasForeignKey(er => er.EventId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasIndex(er => new { er.EventId, er.MemberId }).IsUnique();
     }
 }

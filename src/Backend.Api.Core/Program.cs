@@ -1,5 +1,4 @@
 using System.Text.Json.Serialization;
-using Backend.Api.Core.Controllers;
 using Backend.Api.Core.Data;
 using Backend.Api.Core.Repositories;
 using Backend.Api.Core.Services;
@@ -40,6 +39,8 @@ builder.Services.AddScoped<ProjectRepository>();
 builder.Services.AddScoped<TitheRepository>();
 builder.Services.AddScoped<TransactionCategoryRepository>();
 builder.Services.AddScoped<TransactionRepository>();
+builder.Services.AddScoped<AttendanceTypeRepository>();
+builder.Services.AddScoped<AttendanceContextRepository>();
 
 builder.Services.AddScoped<MemberService>();
 builder.Services.AddScoped<AssetService>();
@@ -56,22 +57,8 @@ builder.Services.AddScoped<ProjectService>();
 builder.Services.AddScoped<TitheService>();
 builder.Services.AddScoped<TransactionCategoryService>();
 builder.Services.AddScoped<TransactionService>();
-
-builder.Services.AddScoped<MembersController>();
-builder.Services.AddScoped<AssetsController>();
-builder.Services.AddScoped<AttendanceController>();
-builder.Services.AddScoped<AssetCategoriesController>();
-builder.Services.AddScoped<EventAttendanceController>();
-builder.Services.AddScoped<EventsController>();
-builder.Services.AddScoped<EventRegistrationsController>();
-builder.Services.AddScoped<OrganizationsController>();
-builder.Services.AddScoped<OrganizationMembersController>();
-builder.Services.AddScoped<ProjectsController>();
-builder.Services.AddScoped<ProjectCategoriesController>();
-builder.Services.AddScoped<ProjectContributionsController>();
-builder.Services.AddScoped<TitheController>();
-builder.Services.AddScoped<TransactionCategoriesController>();
-builder.Services.AddScoped<TransactionsController>();
+builder.Services.AddScoped<AttendanceTypeService>();
+builder.Services.AddScoped<AttendanceContextService>();
 
 var app = builder.Build();
 

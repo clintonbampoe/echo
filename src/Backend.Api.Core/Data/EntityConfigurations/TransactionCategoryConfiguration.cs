@@ -4,10 +4,11 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Backend.Api.Core.Data.EntityConfigurations;
 
-public class TransactionCategoryConfiguration : CongregationEntityConfigurationBase<TransactionCategory>
+public class TransactionCategoryConfiguration
+    : ReferenceEntityConfigurationBase<TransactionCategory>
 {
     public override void ConfigureEntity(EntityTypeBuilder<TransactionCategory> builder)
     {
-        builder.HasKey(cat => cat.Id);
+        builder.HasIndex(c => new { c.CongregationId, c.Name }).IsUnique();
     }
 }

@@ -1,42 +1,68 @@
-using AutoMapper;
 using Backend.Api.Core.Common.ExtensionMethods;
 using Backend.Api.Core.Common.Pagination;
 using Backend.Api.Core.Common.Query;
 using Backend.Api.Core.Data;
+using Backend.Api.Core.Dtos;
 using Backend.Api.Core.Entities;
 using Backend.Api.Core.Repositories.Base;
 using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Api.Core.Repositories;
 
-public class EventRegistrationRepository(AppDbContext context, IMapper mapper)
-    : RelationshipRepositoryBase<EventRegistration>(context, mapper)
+public class EventRegistrationRepository(AppDbContext context)
+    : PrimaryRepositoryBase<EventRegistration>(context)
 {
-    public override async Task<PagedResponse<EventRegistration>> GetPageAsync(
+    public async Task<PagedResponse<EventRegistrationListResponseDto>> GetPageAsync(
+        Guid congregationId,
         PaginationParameters paginationParameters,
         QueryParameters? queryParameters,
         CancellationToken ct = default
     )
     {
-        var totalRecords = await _dbSet.AsNoTracking().CountAsync(ct);
-
-        var records = await _dbSet
+        var query = _dbSet
             .AsNoTracking()
-            .Include(a => a.Member)
-            .Include(a => a.Event)
+            .ApplySoftDeleteFilter()
+            .ApplyDateFilters(queryParameters)
+            .Where(e => e.CongregationId == congregationId);
+
+        int totalRecords = await query.CountAsync(ct);
+
+        var records = await query
+            .OrderBy(e => e.Id)
+            .Select(e => new EventRegistrationListResponseDto(
+                e.Id,
+                e.Member.Name,
+                e.Event.Name,
+                e.RegistrationDate
+            ))
             .ApplyPagination(paginationParameters)
             .ToListAsync(ct);
 
-        return new PagedResponse<EventRegistration>(records, paginationParameters, totalRecords);
+        return new PagedResponse<EventRegistrationListResponseDto>(
+            records,
+            paginationParameters,
+            totalRecords
+        );
     }
 
-    public override async Task<EventRegistration?> GetByIdAsync(Guid id, CancellationToken ct)
+    public async Task<EventRegistrationResponseDto?> GetByIdAsync(
+        Guid id,
+        CancellationToken ct = default
+    )
     {
         return await _dbSet
             .AsNoTracking()
-            .Where(a => a.Id == id)
-            .Include(a => a.Member)
-            .Include(a => a.Event)
+            .ApplySoftDeleteFilter()
+            .Where(e => e.Id == id)
+            .Select(e => new EventRegistrationResponseDto(
+                e.Id,
+                e.MemberId,
+                e.Member.Name,
+                e.EventId,
+                e.Event.Name,
+                e.RegistrationDate,
+                e.CreatedAt
+            ))
             .FirstOrDefaultAsync(ct);
     }
 }

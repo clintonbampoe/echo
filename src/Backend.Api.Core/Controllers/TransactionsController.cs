@@ -1,5 +1,6 @@
 using Backend.Api.Core.Common.Pagination;
 using Backend.Api.Core.Common.Query;
+using Backend.Api.Core.Controllers.Base;
 using Backend.Api.Core.Dtos;
 using Backend.Api.Core.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -7,17 +8,9 @@ using Microsoft.AspNetCore.Mvc;
 namespace Backend.Api.Core.Controllers;
 
 [Route("api/[controller]")]
-[ApiController]
-public class TransactionsController(TransactionService service) : ControllerBase
+public class TransactionsController(TransactionService service) : BaseController
 {
     private readonly TransactionService _service = service;
-
-    [HttpGet("summary")]
-    public async Task<ActionResult> GetSummaryAsync()
-    {
-        var response = await _service.GetSummaryAsync();
-        return response.ToActionResult();
-    }
 
     [HttpGet]
     public async Task<ActionResult> GetPageAsync(
@@ -26,7 +19,8 @@ public class TransactionsController(TransactionService service) : ControllerBase
         CancellationToken ct
     )
     {
-        var response = await _service.GetPagedAsync<TransactionListResponseDto>(
+        var response = await _service.GetPageAsync(
+            GetCongregationId(),
             paginationParameters,
             queryParameters,
             ct
@@ -37,14 +31,14 @@ public class TransactionsController(TransactionService service) : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult> GetByIdAsync(Guid id, CancellationToken ct)
     {
-        var response = await _service.GetByIdAsync<TransactionResponseDto>(id, ct);
+        var response = await _service.GetByIdAsync(id, ct);
         return response.ToActionResult();
     }
 
     [HttpPost]
     public async Task<ActionResult> CreateAsync(TransactionCreateDto dto, CancellationToken ct)
     {
-        var response = await _service.CreateNewRecord(dto, ct);
+        var response = await _service.CreateAsync(dto, ct);
         return response.ToActionResult();
     }
 
@@ -55,14 +49,14 @@ public class TransactionsController(TransactionService service) : ControllerBase
         CancellationToken ct
     )
     {
-        var response = await _service.UpdateRecord(id, dto, ct);
+        var response = await _service.UpdateAsync(id, dto, ct);
         return response.ToActionResult();
     }
 
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteAsync(Guid id, CancellationToken ct)
     {
-        var response = await _service.DeleteRecord(id, ct);
+        var response = await _service.DeleteAsync(id, ct);
         return response.ToActionResult();
     }
 }

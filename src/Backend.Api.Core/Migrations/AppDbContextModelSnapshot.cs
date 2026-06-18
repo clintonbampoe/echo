@@ -29,8 +29,8 @@ namespace Backend.Api.Core.Migrations
                         .HasColumnType("uuid")
                         .HasDefaultValueSql("uuidv7()");
 
-                    b.Property<Guid>("CategoryId")
-                        .HasColumnType("uuid");
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("integer");
 
                     b.Property<Guid>("CongregationId")
                         .HasColumnType("uuid");
@@ -75,15 +75,18 @@ namespace Backend.Api.Core.Migrations
 
                     b.HasIndex("CongregationId");
 
+                    b.HasIndex("DeletedAt");
+
                     b.ToTable("Assets");
                 });
 
             modelBuilder.Entity("Backend.Api.Core.Entities.AssetCategory", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValueSql("uuidv7()");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<Guid>("CongregationId")
                         .HasColumnType("uuid");
@@ -105,15 +108,23 @@ namespace Backend.Api.Core.Migrations
 
                     b.HasIndex("CongregationId");
 
+                    b.HasIndex("DeletedAt");
+
+                    b.HasIndex("CongregationId", "Name")
+                        .IsUnique();
+
                     b.ToTable("AssetCategories");
                 });
 
-            modelBuilder.Entity("Backend.Api.Core.Entities.AttendanceRecord", b =>
+            modelBuilder.Entity("Backend.Api.Core.Entities.Attendance", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasDefaultValueSql("uuidv7()");
+
+                    b.Property<int>("AttendanceContextId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("AttendeeType")
                         .IsRequired()
@@ -121,10 +132,6 @@ namespace Backend.Api.Core.Migrations
 
                     b.Property<TimeOnly>("CheckInTime")
                         .HasColumnType("time without time zone");
-
-                    b.Property<string>("ChurchServiceType")
-                        .IsRequired()
-                        .HasColumnType("text");
 
                     b.Property<Guid>("CongregationId")
                         .HasColumnType("uuid");
@@ -144,17 +151,101 @@ namespace Backend.Api.Core.Migrations
                     b.Property<DateOnly>("ForDate")
                         .HasColumnType("date");
 
-                    b.Property<Guid>("MemberId")
+                    b.Property<string>("GuestName")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<Guid?>("MemberId")
                         .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AttendanceContextId");
+
+                    b.HasIndex("CongregationId");
+
+                    b.HasIndex("DeletedAt");
+
+                    b.HasIndex("ForDate");
+
+                    b.HasIndex("MemberId");
+
+                    b.ToTable("AttendanceRecords");
+                });
+
+            modelBuilder.Entity("Backend.Api.Core.Entities.AttendanceContext", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AttendanceTypeId")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("CongregationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("CongregationId");
 
-                    b.HasIndex("MemberId")
+                    b.HasIndex("DeletedAt");
+
+                    b.HasIndex("AttendanceTypeId", "Name")
                         .IsUnique();
 
-                    b.ToTable("AttendanceRecords");
+                    b.ToTable("AttendanceContexts");
+                });
+
+            modelBuilder.Entity("Backend.Api.Core.Entities.AttendanceType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<Guid>("CongregationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CongregationId");
+
+                    b.HasIndex("DeletedAt");
+
+                    b.HasIndex("CongregationId", "Name")
+                        .IsUnique();
+
+                    b.ToTable("AttendanceTypes");
                 });
 
             modelBuilder.Entity("Backend.Api.Core.Entities.Congregation", b =>
@@ -238,23 +329,24 @@ namespace Backend.Api.Core.Migrations
 
                     b.HasIndex("CongregationId");
 
-                    b.HasIndex("Name")
-                        .IsUnique();
+                    b.HasIndex("DeletedAt");
 
                     b.HasIndex("OrganizationId");
 
                     b.HasIndex("OrganizerId");
+
+                    b.HasIndex("CongregationId", "Name")
+                        .IsUnique();
 
                     b.ToTable("Events");
                 });
 
             modelBuilder.Entity("Backend.Api.Core.Entities.EventAttendance", b =>
                 {
-                    b.Property<Guid>("EventId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("MemberId")
-                        .HasColumnType("uuid");
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasDefaultValueSql("uuidv7()");
 
                     b.Property<TimeOnly>("CheckInTime")
                         .HasColumnType("time without time zone");
@@ -270,27 +362,32 @@ namespace Backend.Api.Core.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValueSql("uuidv7()");
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("uuid");
 
-                    b.HasKey("EventId", "MemberId");
+                    b.Property<Guid>("MemberId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
 
                     b.HasIndex("CongregationId");
 
+                    b.HasIndex("DeletedAt");
+
                     b.HasIndex("MemberId");
+
+                    b.HasIndex("EventId", "MemberId")
+                        .IsUnique();
 
                     b.ToTable("EventAttendances");
                 });
 
             modelBuilder.Entity("Backend.Api.Core.Entities.EventRegistration", b =>
                 {
-                    b.Property<Guid>("EventId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("MemberId")
-                        .HasColumnType("uuid");
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasDefaultValueSql("uuidv7()");
 
                     b.Property<Guid>("CongregationId")
                         .HasColumnType("uuid");
@@ -303,19 +400,25 @@ namespace Backend.Api.Core.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValueSql("uuidv7()");
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("MemberId")
+                        .HasColumnType("uuid");
 
                     b.Property<DateOnly>("RegistrationDate")
                         .HasColumnType("date");
 
-                    b.HasKey("EventId", "MemberId");
+                    b.HasKey("Id");
 
                     b.HasIndex("CongregationId");
 
+                    b.HasIndex("DeletedAt");
+
                     b.HasIndex("MemberId");
+
+                    b.HasIndex("EventId", "MemberId")
+                        .IsUnique();
 
                     b.ToTable("EventRegistrations");
                 });
@@ -399,7 +502,7 @@ namespace Backend.Api.Core.Migrations
                         .ValueGeneratedOnAddOrUpdate()
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)")
-                        .HasComputedColumnSql("TRIM(CONCAT(\"LastName\", ' ', \"FirstName\", ' ', \"OtherNames\"))", true);
+                        .HasComputedColumnSql("TRIM(COALESCE(\"LastName\", '') || ' ' || COALESCE(\"FirstName\", '') || ' ' || COALESCE(\"OtherNames\", ''))", true);
 
                     b.Property<string>("NextOfKin")
                         .IsRequired()
@@ -427,6 +530,8 @@ namespace Backend.Api.Core.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CongregationId");
+
+                    b.HasIndex("DeletedAt");
 
                     b.ToTable("Members");
                 });
@@ -462,16 +567,20 @@ namespace Backend.Api.Core.Migrations
 
                     b.HasIndex("CongregationId");
 
+                    b.HasIndex("DeletedAt");
+
+                    b.HasIndex("CongregationId", "Name")
+                        .IsUnique();
+
                     b.ToTable("Organizations");
                 });
 
             modelBuilder.Entity("Backend.Api.Core.Entities.OrganizationMember", b =>
                 {
-                    b.Property<Guid>("MemberId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("OrganizationId")
-                        .HasColumnType("uuid");
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasDefaultValueSql("uuidv7()");
 
                     b.Property<Guid>("CongregationId")
                         .HasColumnType("uuid");
@@ -484,23 +593,29 @@ namespace Backend.Api.Core.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValueSql("uuidv7()");
-
                     b.Property<DateOnly>("JoinedAt")
                         .HasColumnType("date");
+
+                    b.Property<Guid>("MemberId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("OrganizationId")
+                        .HasColumnType("uuid");
 
                     b.Property<string>("Role")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.HasKey("MemberId", "OrganizationId");
+                    b.HasKey("Id");
 
                     b.HasIndex("CongregationId");
 
+                    b.HasIndex("DeletedAt");
+
                     b.HasIndex("OrganizationId");
+
+                    b.HasIndex("MemberId", "OrganizationId")
+                        .IsUnique();
 
                     b.ToTable("OrganizationMembers");
                 });
@@ -512,8 +627,8 @@ namespace Backend.Api.Core.Migrations
                         .HasColumnType("uuid")
                         .HasDefaultValueSql("uuidv7()");
 
-                    b.Property<Guid>("CategoryId")
-                        .HasColumnType("uuid");
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("integer");
 
                     b.Property<Guid>("CongregationId")
                         .HasColumnType("uuid");
@@ -557,6 +672,8 @@ namespace Backend.Api.Core.Migrations
 
                     b.HasIndex("CongregationId");
 
+                    b.HasIndex("DeletedAt");
+
                     b.HasIndex("ManagerId");
 
                     b.ToTable("Projects");
@@ -564,10 +681,11 @@ namespace Backend.Api.Core.Migrations
 
             modelBuilder.Entity("Backend.Api.Core.Entities.ProjectCategory", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValueSql("uuidv7()");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<Guid>("CongregationId")
                         .HasColumnType("uuid");
@@ -588,6 +706,11 @@ namespace Backend.Api.Core.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CongregationId");
+
+                    b.HasIndex("DeletedAt");
+
+                    b.HasIndex("CongregationId", "Name")
+                        .IsUnique();
 
                     b.ToTable("ProjectCategories");
                 });
@@ -630,6 +753,8 @@ namespace Backend.Api.Core.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CongregationId");
+
+                    b.HasIndex("DeletedAt");
 
                     b.HasIndex("ProjectId");
 
@@ -682,6 +807,8 @@ namespace Backend.Api.Core.Migrations
 
                     b.HasIndex("CongregationId");
 
+                    b.HasIndex("DeletedAt");
+
                     b.HasIndex("MemberId");
 
                     b.ToTable("Tithes");
@@ -697,8 +824,8 @@ namespace Backend.Api.Core.Migrations
                     b.Property<decimal>("Amount")
                         .HasColumnType("numeric");
 
-                    b.Property<Guid>("CategoryId")
-                        .HasColumnType("uuid");
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("integer");
 
                     b.Property<Guid>("CongregationId")
                         .HasColumnType("uuid");
@@ -728,15 +855,18 @@ namespace Backend.Api.Core.Migrations
 
                     b.HasIndex("CongregationId");
 
+                    b.HasIndex("DeletedAt");
+
                     b.ToTable("Transactions");
                 });
 
             modelBuilder.Entity("Backend.Api.Core.Entities.TransactionCategory", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValueSql("uuidv7()");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("CategoryType")
                         .IsRequired()
@@ -761,6 +891,11 @@ namespace Backend.Api.Core.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CongregationId");
+
+                    b.HasIndex("DeletedAt");
+
+                    b.HasIndex("CongregationId", "Name")
+                        .IsUnique();
 
                     b.ToTable("TransactionCategories");
                 });
@@ -802,6 +937,11 @@ namespace Backend.Api.Core.Migrations
 
                     b.HasIndex("CongregationId");
 
+                    b.HasIndex("DeletedAt");
+
+                    b.HasIndex("EmailAddress")
+                        .IsUnique();
+
                     b.ToTable("Users");
                 });
 
@@ -810,7 +950,7 @@ namespace Backend.Api.Core.Migrations
                     b.HasOne("Backend.Api.Core.Entities.AssetCategory", "Category")
                         .WithMany()
                         .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.SetNull)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Backend.Api.Core.Entities.Congregation", "Congregation")
@@ -835,8 +975,14 @@ namespace Backend.Api.Core.Migrations
                     b.Navigation("Congregation");
                 });
 
-            modelBuilder.Entity("Backend.Api.Core.Entities.AttendanceRecord", b =>
+            modelBuilder.Entity("Backend.Api.Core.Entities.Attendance", b =>
                 {
+                    b.HasOne("Backend.Api.Core.Entities.AttendanceContext", "AttendanceContext")
+                        .WithMany()
+                        .HasForeignKey("AttendanceContextId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("Backend.Api.Core.Entities.Congregation", "Congregation")
                         .WithMany()
                         .HasForeignKey("CongregationId")
@@ -846,12 +992,43 @@ namespace Backend.Api.Core.Migrations
                     b.HasOne("Backend.Api.Core.Entities.Member", "Member")
                         .WithMany()
                         .HasForeignKey("MemberId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("AttendanceContext");
 
                     b.Navigation("Congregation");
 
                     b.Navigation("Member");
+                });
+
+            modelBuilder.Entity("Backend.Api.Core.Entities.AttendanceContext", b =>
+                {
+                    b.HasOne("Backend.Api.Core.Entities.AttendanceType", "AttendanceType")
+                        .WithMany()
+                        .HasForeignKey("AttendanceTypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Backend.Api.Core.Entities.Congregation", "Congregation")
+                        .WithMany()
+                        .HasForeignKey("CongregationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("AttendanceType");
+
+                    b.Navigation("Congregation");
+                });
+
+            modelBuilder.Entity("Backend.Api.Core.Entities.AttendanceType", b =>
+                {
+                    b.HasOne("Backend.Api.Core.Entities.Congregation", "Congregation")
+                        .WithMany()
+                        .HasForeignKey("CongregationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Congregation");
                 });
 
             modelBuilder.Entity("Backend.Api.Core.Entities.Event", b =>
@@ -865,11 +1042,13 @@ namespace Backend.Api.Core.Migrations
                     b.HasOne("Backend.Api.Core.Entities.Organization", "Organization")
                         .WithMany()
                         .HasForeignKey("OrganizationId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Backend.Api.Core.Entities.Member", "Organizer")
                         .WithMany()
                         .HasForeignKey("OrganizerId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Congregation");
@@ -987,7 +1166,7 @@ namespace Backend.Api.Core.Migrations
                     b.HasOne("Backend.Api.Core.Entities.ProjectCategory", "Category")
                         .WithMany()
                         .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.SetNull)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Backend.Api.Core.Entities.Congregation", "Congregation")
@@ -999,7 +1178,7 @@ namespace Backend.Api.Core.Migrations
                     b.HasOne("Backend.Api.Core.Entities.Member", "Manager")
                         .WithMany()
                         .HasForeignKey("ManagerId")
-                        .OnDelete(DeleteBehavior.SetNull)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Category");
@@ -1050,7 +1229,7 @@ namespace Backend.Api.Core.Migrations
                     b.HasOne("Backend.Api.Core.Entities.Member", "Member")
                         .WithMany()
                         .HasForeignKey("MemberId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Congregation");
@@ -1063,7 +1242,7 @@ namespace Backend.Api.Core.Migrations
                     b.HasOne("Backend.Api.Core.Entities.TransactionCategory", "Category")
                         .WithMany()
                         .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Backend.Api.Core.Entities.Congregation", "Congregation")

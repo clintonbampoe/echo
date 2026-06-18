@@ -4,10 +4,10 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Backend.Api.Core.Data.EntityConfigurations;
 
-public class OrganizationConfiguration : CongregationEntityConfigurationBase<Organization>
+public class OrganizationConfiguration : PrimaryEntityConfigurationBase<Organization>
 {
     public override void ConfigureEntity(EntityTypeBuilder<Organization> builder)
     {
-        builder.HasKey(o => o.Id);
+        builder.HasIndex(o => new { o.CongregationId, o.Name }).IsUnique();
     }
 }

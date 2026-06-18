@@ -4,10 +4,10 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Backend.Api.Core.Data.EntityConfigurations;
 
-public class UserConfiguration : CongregationEntityConfigurationBase<User>
+public class UserConfiguration : PrimaryEntityConfigurationBase<User>
 {
     public override void ConfigureEntity(EntityTypeBuilder<User> builder)
     {
-        builder.HasKey(user => user.Id);
+        builder.HasIndex(u => u.EmailAddress).IsUnique();
     }
 }

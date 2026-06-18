@@ -1,42 +1,70 @@
-using AutoMapper;
 using Backend.Api.Core.Common.ExtensionMethods;
 using Backend.Api.Core.Common.Pagination;
 using Backend.Api.Core.Common.Query;
 using Backend.Api.Core.Data;
+using Backend.Api.Core.Dtos;
 using Backend.Api.Core.Entities;
 using Backend.Api.Core.Repositories.Base;
 using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Api.Core.Repositories;
 
-public class OrganizationMemberRepository(AppDbContext context, IMapper mapper)
-    : RelationshipRepositoryBase<OrganizationMember>(context, mapper)
+public class OrganizationMemberRepository(AppDbContext context)
+    : PrimaryRepositoryBase<OrganizationMember>(context)
 {
-    public override async Task<PagedResponse<OrganizationMember>> GetPageAsync(
+    public async Task<PagedResponse<OrganizationMemberListResponseDto>> GetPageAsync(
+        Guid congregationId,
         PaginationParameters paginationParameters,
         QueryParameters? queryParameters,
         CancellationToken ct = default
     )
     {
-        var totalRecords = await _dbSet.AsNoTracking().CountAsync(ct);
-
-        var records = await _dbSet
+        var query = _dbSet
             .AsNoTracking()
-            .Include(a => a.Member)
-            .Include(a => a.Organization)
+            .ApplySoftDeleteFilter()
+            .ApplyDateFilters(queryParameters)
+            .Where(o => o.CongregationId == congregationId);
+
+        int totalRecords = await query.CountAsync(ct);
+
+        var records = await query
+            .OrderBy(o => o.Id)
+            .Select(o => new OrganizationMemberListResponseDto(
+                o.Id,
+                o.Member.Name,
+                o.Organization.Name,
+                o.Role,
+                o.JoinedAt
+            ))
             .ApplyPagination(paginationParameters)
             .ToListAsync(ct);
 
-        return new PagedResponse<OrganizationMember>(records, paginationParameters, totalRecords);
+        return new PagedResponse<OrganizationMemberListResponseDto>(
+            records,
+            paginationParameters,
+            totalRecords
+        );
     }
 
-    public override async Task<OrganizationMember?> GetByIdAsync(Guid id, CancellationToken ct)
+    public async Task<OrganizationMemberResponseDto?> GetByIdAsync(
+        Guid id,
+        CancellationToken ct = default
+    )
     {
         return await _dbSet
             .AsNoTracking()
-            .Where(a => a.Id == id)
-            .Include(a => a.Member)
-            .Include(a => a.Organization)
+            .ApplySoftDeleteFilter()
+            .Where(o => o.Id == id)
+            .Select(o => new OrganizationMemberResponseDto(
+                o.Id,
+                o.MemberId,
+                o.Member.Name,
+                o.OrganizationId,
+                o.Organization.Name,
+                o.Role,
+                o.JoinedAt,
+                o.CreatedAt
+            ))
             .FirstOrDefaultAsync(ct);
     }
 }

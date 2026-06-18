@@ -5,20 +5,22 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Backend.Api.Core.Data.EntityConfigurations;
 
-public class EventAttendanceConfiguration : CongregationEntityConfigurationBase<EventAttendance>
+public class EventAttendanceConfiguration : PrimaryEntityConfigurationBase<EventAttendance>
 {
     public override void ConfigureEntity(EntityTypeBuilder<EventAttendance> builder)
     {
-        builder.HasKey(ea => new { ea.EventId, ea.MemberId });
-
-        builder.HasOne(eventAtd => eventAtd.Member)
+        builder
+            .HasOne(ea => ea.Member)
             .WithMany()
             .HasForeignKey(ea => ea.MemberId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasOne(eventAtd => eventAtd.Event)
+        builder
+            .HasOne(ea => ea.Event)
             .WithMany()
             .HasForeignKey(ea => ea.EventId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasIndex(ea => new { ea.EventId, ea.MemberId }).IsUnique();
     }
 }

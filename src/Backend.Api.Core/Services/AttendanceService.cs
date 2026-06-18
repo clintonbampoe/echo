@@ -1,33 +1,50 @@
 using AutoMapper;
 using Backend.Api.Core.Common.HttpResults;
 using Backend.Api.Core.Common.HttpResults.Interfaces;
+using Backend.Api.Core.Common.Pagination;
+using Backend.Api.Core.Common.Query;
+using Backend.Api.Core.Data;
 using Backend.Api.Core.Dtos;
 using Backend.Api.Core.Entities;
-using Backend.Api.Core.Enums;
 using Backend.Api.Core.Repositories;
 using Backend.Api.Core.Services.Base;
 
 namespace Backend.Api.Core.Services;
 
-public class AttendanceService(AttendanceRepository repository, IMapper mapper)
-    : ServiceBase<AttendanceRecord>(repository, mapper)
+public class AttendanceService(
+    AttendanceRepository repository,
+    AppDbContext context,
+    IMapper mapper
+) : PrimaryServiceBase<Attendance>(repository, context, mapper)
 {
-    private readonly AttendanceRepository _repository = repository;
+    private readonly AttendanceRepository _attendanceRepository = repository;
 
-    public async Task<IOperationResult> GetSummaryAsync(
+    public override async Task<IOperationResult> GetPageAsync(
         Guid congregationId,
-        DateOnly forDate,
-        ChurchServiceType churchServiceType,
-        CancellationToken ct
+        PaginationParameters paginationParameters,
+        QueryParameters? queryParameters,
+        CancellationToken ct = default
     )
     {
-        var summary = await _repository.GetSummaryAsync(
+        var result = await _attendanceRepository.GetPageAsync(
             congregationId,
-            forDate,
-            churchServiceType,
+            paginationParameters,
+            queryParameters,
             ct
         );
+        return new SuccessResult<PagedResponse<AttendanceListResponseDto>>(result);
+    }
 
-        return new SuccessResult<AttendanceSummaryDto>(summary);
+    public override async Task<IOperationResult> GetByIdAsync(
+        Guid id,
+        CancellationToken ct = default
+    )
+    {
+        var result = await _attendanceRepository.GetByIdAsync(id, ct);
+
+        if (result is null)
+            return new NotFoundResult("Attendance record not found.");
+
+        return new SuccessResult<AttendanceResponseDto>(result);
     }
 }

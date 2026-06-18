@@ -5,17 +5,25 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Backend.Api.Core.Data.EntityConfigurations;
 
-public class AttendanceConfiguration : CongregationEntityConfigurationBase<AttendanceRecord>
+public class AttendanceConfiguration : PrimaryEntityConfigurationBase<Attendance>
 {
-    public override void ConfigureEntity(EntityTypeBuilder<AttendanceRecord> builder)
+    public override void ConfigureEntity(EntityTypeBuilder<Attendance> builder)
     {
-        builder.HasKey(attendance => attendance.Id);
-
-        builder.HasIndex(att => att.MemberId).IsUnique();
-
-        builder.HasOne(mem => mem.Member)
+        builder
+            .HasOne(a => a.Member)
             .WithMany()
-            .HasForeignKey(at => at.MemberId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .HasForeignKey(a => a.MemberId)
+            .IsRequired(false)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        builder
+            .HasOne(a => a.AttendanceContext)
+            .WithMany()
+            .HasForeignKey(a => a.AttendanceContextId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasIndex(a => a.MemberId);
+        builder.HasIndex(a => a.AttendanceContextId);
+        builder.HasIndex(a => a.ForDate);
     }
 }

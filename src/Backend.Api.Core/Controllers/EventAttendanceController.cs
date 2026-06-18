@@ -1,5 +1,6 @@
 using Backend.Api.Core.Common.Pagination;
 using Backend.Api.Core.Common.Query;
+using Backend.Api.Core.Controllers.Base;
 using Backend.Api.Core.Dtos;
 using Backend.Api.Core.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -7,8 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Backend.Api.Core.Controllers;
 
 [Route("api/[controller]")]
-[ApiController]
-class EventAttendanceController(EventAttendanceService service) : ControllerBase
+public class EventAttendanceController(EventAttendanceService service) : BaseController
 {
     private readonly EventAttendanceService _service = service;
 
@@ -19,7 +19,8 @@ class EventAttendanceController(EventAttendanceService service) : ControllerBase
         CancellationToken ct
     )
     {
-        var response = await _service.GetPagedAsync<EventAttendanceListResponseDto>(
+        var response = await _service.GetPageAsync(
+            GetCongregationId(),
             paginationParameters,
             queryParameters,
             ct
@@ -30,17 +31,14 @@ class EventAttendanceController(EventAttendanceService service) : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult> GetByIdAsync(Guid id, CancellationToken ct)
     {
-        var response = await _service.GetByIdAsync<EventAttendanceResponseDto>(id, ct);
+        var response = await _service.GetByIdAsync(id, ct);
         return response.ToActionResult();
     }
 
     [HttpPost]
-    public async Task<ActionResult> CreateAsync(
-        EventAttendanceCreateDto dto,
-        CancellationToken ct = default
-    )
+    public async Task<ActionResult> CreateAsync(EventAttendanceCreateDto dto, CancellationToken ct)
     {
-        var response = await _service.CreateNewRecord(dto, ct);
+        var response = await _service.CreateAsync(dto, ct);
         return response.ToActionResult();
     }
 
@@ -48,17 +46,17 @@ class EventAttendanceController(EventAttendanceService service) : ControllerBase
     public async Task<ActionResult> UpdateAsync(
         Guid id,
         EventAttendanceUpdateDto dto,
-        CancellationToken ct = default
+        CancellationToken ct
     )
     {
-        var response = await _service.UpdateRecord(id, dto, ct);
+        var response = await _service.UpdateAsync(id, dto, ct);
         return response.ToActionResult();
     }
 
     [HttpDelete("{id}")]
-    public async Task<ActionResult> DeleteAsync(Guid id, CancellationToken ct = default)
+    public async Task<ActionResult> DeleteAsync(Guid id, CancellationToken ct)
     {
-        var response = await _service.DeleteRecord(id, ct);
+        var response = await _service.DeleteAsync(id, ct);
         return response.ToActionResult();
     }
 }

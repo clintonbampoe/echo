@@ -1,65 +1,50 @@
 using Backend.Api.Core.Dtos.Interfaces;
-using Backend.Api.Core.Entities;
 using Backend.Api.Core.Enums;
 
 namespace Backend.Api.Core.Dtos;
 
-public record AttendanceCreateDto : ICreateDto<AttendanceRecord>
-{
-    public Guid CongregationId { get; init; }
-    public Guid MemberId { get; init; }
-    public DateOnly ForDate { get; init; }
-    public ChurchServiceType ChurchServiceType { get; init; }
-    public AttendeeType AttendeeType { get; init; }
-    public TimeOnly? CheckInTime { get; init; }
-    public string? Description { get; init; }
-}
+public record AttendanceCreateDto(
+    int AttendanceContextId,
+    Guid? MemberId,
+    string? GuestName,
+    AttendeeType AttendeeType,
+    DateOnly ForDate,
+    TimeOnly CheckInTime,
+    string? Description
+) : IPrimaryCreateDto;
 
-public record AttendanceResponseDto : IResponseDto<AttendanceRecord>
-{
-    public Guid Id { get; init; }
-    public Guid CongregationId { get; init; }
-    public Guid MemberId { get; init; }
-    public string Member { get; init; } = string.Empty;
-    public DateOnly ForDate { get; init; }
-    public ChurchServiceType ChurchServiceType { get; init; }
-    public AttendeeType AttendeeType { get; init; }
-    public TimeOnly CheckInTime { get; init; }
-    public string? Description { get; init; }
-}
+public record AttendanceUpdateDto(
+    int AttendanceContextId,
+    Guid? MemberId,
+    string? GuestName,
+    AttendeeType AttendeeType,
+    DateOnly ForDate,
+    TimeOnly CheckInTime,
+    string? Description
+) : IPrimaryUpdateDto;
 
-public record AttendanceListResponseDto : IListResponseDto<AttendanceRecord>
-{
-    public Guid Id { get; init; }
-    public Guid CongregationId { get; init; }
-    public string Member { get; init; } = string.Empty;
-    public DateOnly ForDate { get; init; }
-    public ChurchServiceType ChurchServiceType { get; init; }
-    public AttendeeType AttendeeType { get; init; }
-    public TimeOnly CheckInTime { get; init; }
-}
+public record AttendanceListResponseDto(
+    Guid Id,
+    string AttendanceContextName,
+    string AttendanceTypeName,
+    string? MemberName,
+    string? GuestName,
+    AttendeeType AttendeeType,
+    DateOnly ForDate,
+    TimeOnly CheckInTime
+) : IPrimaryListResponseDto;
 
-public record AttendanceUpdateDto : IUpdateDto<AttendanceRecord>
-{
-    public Guid CongregationId { get; init; }
-    public Guid MemberId { get; init; }
-    public DateOnly ForDate { get; init; }
-    public ChurchServiceType ChurchServiceType { get; init; }
-    public AttendeeType AttendeeType { get; init; }
-    public TimeOnly? CheckInTime { get; init; }
-    public string? Description { get; init; }
-}
-
-public record AttendanceDeleteDto : ISoftDeleteDto<AttendanceRecord>
-{
-    public Guid Id { get; init; }
-    public Guid CongregationId { get; init; }
-}
-
-public record AttendanceSummaryDto : ISummaryDto<AttendanceRecord>
-{
-    public int TotalPresent { get; init; }
-    public int FirstTimeVisitors { get; init; }
-    public int MembersPresent { get; init; }
-    public int Guests { get; init; }
-}
+public record AttendanceResponseDto(
+    Guid Id,
+    int AttendanceContextId,
+    string AttendanceContextName,
+    string AttendanceTypeName,
+    Guid? MemberId,
+    string? MemberName,
+    string? GuestName,
+    AttendeeType AttendeeType,
+    DateOnly ForDate,
+    TimeOnly CheckInTime,
+    string? Description,
+    DateTime CreatedAt
+) : IPrimaryResponseDto;

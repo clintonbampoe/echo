@@ -5,15 +5,16 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Backend.Api.Core.Data.EntityConfigurations;
 
-public class TitheConfiguration : CongregationEntityConfigurationBase<Tithe>
+public class TitheConfiguration : PrimaryEntityConfigurationBase<Tithe>
 {
     public override void ConfigureEntity(EntityTypeBuilder<Tithe> builder)
     {
-        builder.HasKey(tithe => tithe.Id);
-
-        builder.HasOne(tt => tt.Member)
+        builder
+            .HasOne(t => t.Member)
             .WithMany()
-            .HasForeignKey(tithe => tithe.MemberId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .HasForeignKey(t => t.MemberId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasIndex(t => t.MemberId);
     }
 }

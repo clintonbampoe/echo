@@ -1,48 +1,74 @@
-using AutoMapper;
 using Backend.Api.Core.Common.ExtensionMethods;
 using Backend.Api.Core.Common.Pagination;
 using Backend.Api.Core.Common.Query;
 using Backend.Api.Core.Data;
+using Backend.Api.Core.Dtos;
 using Backend.Api.Core.Entities;
 using Backend.Api.Core.Repositories.Base;
 using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Api.Core.Repositories;
 
-public class ProjectRepository(AppDbContext context, IMapper mapper)
-    : RepositoryBase<Project>(context, mapper)
+public class ProjectRepository(AppDbContext context) : PrimaryRepositoryBase<Project>(context)
 {
-    public override async Task<PagedResponse<Project>> GetPageAsync(
+    public async Task<PagedResponse<ProjectListResponseDto>> GetPageAsync(
+        Guid congregationId,
         PaginationParameters paginationParameters,
         QueryParameters? queryParameters,
-        CancellationToken cancellationToken = default
+        CancellationToken ct = default
     )
     {
-        var totalRecordCount = await _dbSet
+        var query = _dbSet
             .AsNoTracking()
+            .ApplySoftDeleteFilter()
             .ApplySearchFilter(queryParameters)
             .ApplyDateFilters(queryParameters)
-            .CountAsync(cancellationToken);
+            .Where(p => p.CongregationId == congregationId);
 
-        var records = await _dbSet
-            .AsNoTracking()
-            .ApplySearchFilter(queryParameters)
-            .ApplyDateFilters(queryParameters)
-            .Include(p => p.Category)
-            .Include(p => p.Manager)
+        int totalRecords = await query.CountAsync(ct);
+
+        var records = await query
+            .OrderBy(p => p.Id)
+            .Select(p => new ProjectListResponseDto(
+                p.Id,
+                p.Category.Name,
+                p.Manager.Name,
+                p.Name,
+                p.TargetAmount,
+                p.Status,
+                p.StartDate,
+                p.EndDate
+            ))
             .ApplyPagination(paginationParameters)
-            .ToListAsync(cancellationToken);
+            .ToListAsync(ct);
 
-        return new PagedResponse<Project>(records, paginationParameters, totalRecordCount);
+        return new PagedResponse<ProjectListResponseDto>(
+            records,
+            paginationParameters,
+            totalRecords
+        );
     }
 
-    public override async Task<Project?> GetByIdAsync(Guid id, CancellationToken ct)
+    public async Task<ProjectResponseDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
         return await _dbSet
             .AsNoTracking()
+            .ApplySoftDeleteFilter()
             .Where(p => p.Id == id)
-            .Include(p => p.Category)
-            .Include(p => p.Manager)
+            .Select(p => new ProjectResponseDto(
+                p.Id,
+                p.CategoryId,
+                p.Category.Name,
+                p.ManagerId,
+                p.Manager.Name,
+                p.Name,
+                p.TargetAmount,
+                p.Status,
+                p.StartDate,
+                p.EndDate,
+                p.Description,
+                p.CreatedAt
+            ))
             .FirstOrDefaultAsync(ct);
     }
 }

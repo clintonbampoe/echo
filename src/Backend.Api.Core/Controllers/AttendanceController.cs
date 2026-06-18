@@ -1,34 +1,16 @@
 using Backend.Api.Core.Common.Pagination;
 using Backend.Api.Core.Common.Query;
+using Backend.Api.Core.Controllers.Base;
 using Backend.Api.Core.Dtos;
-using Backend.Api.Core.Enums;
 using Backend.Api.Core.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Backend.Api.Core.Controllers;
 
 [Route("api/[controller]")]
-[ApiController]
-public class AttendanceController(AttendanceService service) : ControllerBase
+public class AttendanceController(AttendanceService service) : BaseController
 {
     private readonly AttendanceService _service = service;
-
-    [HttpGet("summary")]
-    public async Task<ActionResult> GetSummaryAsync(
-        [FromQuery] Guid congregationId,
-        [FromQuery] DateOnly forDate,
-        [FromQuery] ChurchServiceType churchServiceType,
-        CancellationToken ct
-    )
-    {
-        var response = await _service.GetSummaryAsync(
-            congregationId,
-            forDate,
-            churchServiceType,
-            ct
-        );
-        return response.ToActionResult();
-    }
 
     [HttpGet]
     public async Task<ActionResult> GetPageAsync(
@@ -37,26 +19,26 @@ public class AttendanceController(AttendanceService service) : ControllerBase
         CancellationToken ct
     )
     {
-        var response = await _service.GetPagedAsync<AttendanceListResponseDto>(
+        var response = await _service.GetPageAsync(
+            GetCongregationId(),
             paginationParameters,
             queryParameters,
             ct
         );
-
         return response.ToActionResult();
     }
 
     [HttpGet("{id}")]
     public async Task<ActionResult> GetByIdAsync(Guid id, CancellationToken ct)
     {
-        var response = await _service.GetByIdAsync<AttendanceResponseDto>(id, ct);
+        var response = await _service.GetByIdAsync(id, ct);
         return response.ToActionResult();
     }
 
     [HttpPost]
     public async Task<ActionResult> CreateAsync(AttendanceCreateDto dto, CancellationToken ct)
     {
-        var response = await _service.CreateNewRecord(dto, ct);
+        var response = await _service.CreateAsync(dto, ct);
         return response.ToActionResult();
     }
 
@@ -67,14 +49,14 @@ public class AttendanceController(AttendanceService service) : ControllerBase
         CancellationToken ct
     )
     {
-        var response = await _service.UpdateRecord(id, dto, ct);
+        var response = await _service.UpdateAsync(id, dto, ct);
         return response.ToActionResult();
     }
 
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteAsync(Guid id, CancellationToken ct)
     {
-        var response = await _service.DeleteRecord(id, ct);
+        var response = await _service.DeleteAsync(id, ct);
         return response.ToActionResult();
     }
 }

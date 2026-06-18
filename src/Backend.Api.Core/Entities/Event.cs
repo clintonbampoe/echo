@@ -2,8 +2,11 @@ using Backend.Api.Core.Entities.Interfaces;
 
 namespace Backend.Api.Core.Entities;
 
-public class Event : ICongregationEntity, ISoftDeletableEntity, ISearchableEntity
+public class Event : IPrimaryEntity, ISearchableEntity
 {
+    public Guid Id { get; set; }
+    public Guid CongregationId { get; set; }
+    public Congregation Congregation { get; set; } = null!;
     public Guid OrganizationId { get; set; }
     public Organization Organization { get; set; } = null!;
     public Guid OrganizerId { get; set; }
@@ -16,5 +19,6 @@ public class Event : ICongregationEntity, ISoftDeletableEntity, ISearchableEntit
     public string? Location { get; set; } = string.Empty;
     public int? Capacity { get; set; }
     public string? Description { get; set; } = string.Empty;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? DeletedAt { get; set; }
 }

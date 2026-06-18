@@ -1,4 +1,3 @@
-using AutoMapper;
 using Backend.Api.Core.Common.ExtensionMethods;
 using Backend.Api.Core.Common.Pagination;
 using Backend.Api.Core.Common.Query;
@@ -10,50 +9,59 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Api.Core.Repositories;
 
-public class TransactionRepository(AppDbContext context, IMapper mapper)
-    : RepositoryBase<Transaction>(context, mapper)
+public class TransactionRepository(AppDbContext context)
+    : PrimaryRepositoryBase<Transaction>(context)
 {
-    public async Task<List<TransactionStreamDto>> GetStreamsAsync()
-    {
-        var totalAmount = await _dbSet.AsNoTracking().SumAsync(t => t.Amount);
-
-        var streams = await _dbSet
-            .AsNoTracking()
-            .GroupBy(t => new { t.Category.CategoryType, t.Category.Name })
-            .Select(s => new TransactionStreamDto
-            {
-                Type = s.Key.CategoryType,
-                Category = s.Key.Name,
-                Amount = s.Sum(s => s.Amount),
-            })
-            .ToListAsync();
-
-        return streams;
-    }
-
-    public override async Task<PagedResponse<Transaction>> GetPageAsync(
+    public async Task<PagedResponse<TransactionListResponseDto>> GetPageAsync(
+        Guid congregationId,
         PaginationParameters paginationParameters,
         QueryParameters? queryParameters,
-        CancellationToken cancellationToken = default
+        CancellationToken ct = default
     )
     {
-        var totalRecords = await _dbSet.AsNoTracking().CountAsync(cancellationToken);
-
-        var records = await _dbSet
+        var query = _dbSet
             .AsNoTracking()
-            .Include(t => t.Category)
-            .ApplyPagination(paginationParameters)
-            .ToListAsync(cancellationToken);
+            .ApplySoftDeleteFilter()
+            .ApplyDateFilters(queryParameters)
+            .Where(t => t.CongregationId == congregationId);
 
-        return new PagedResponse<Transaction>(records, paginationParameters, totalRecords);
+        int totalRecords = await query.CountAsync(ct);
+
+        var records = await query
+            .OrderBy(t => t.Id)
+            .Select(t => new TransactionListResponseDto(
+                t.Id,
+                t.Category.Name,
+                t.TransactionType,
+                t.TransactionDate,
+                t.Amount
+            ))
+            .ApplyPagination(paginationParameters)
+            .ToListAsync(ct);
+
+        return new PagedResponse<TransactionListResponseDto>(
+            records,
+            paginationParameters,
+            totalRecords
+        );
     }
 
-    public override async Task<Transaction?> GetByIdAsync(Guid Id, CancellationToken ct = default)
+    public async Task<TransactionResponseDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
         return await _dbSet
             .AsNoTracking()
-            .Where(e => e.Id == Id)
-            .Include(e => e.Category)
+            .ApplySoftDeleteFilter()
+            .Where(t => t.Id == id)
+            .Select(t => new TransactionResponseDto(
+                t.Id,
+                t.CategoryId,
+                t.Category.Name,
+                t.TransactionType,
+                t.TransactionDate,
+                t.Amount,
+                t.Description,
+                t.CreatedAt
+            ))
             .FirstOrDefaultAsync(ct);
     }
 }
