@@ -27,7 +27,7 @@ public abstract class ReferenceServiceBase<T>(
     public abstract Task<IOperationResult> GetByIdAsync(int id, CancellationToken ct = default);
 
     public virtual async Task<IOperationResult> CreateAsync(
-        IReferenceCreateDto<T> dto,
+        IReferenceCreateDto dto,
         CancellationToken ct = default
     )
     {
@@ -39,7 +39,7 @@ public abstract class ReferenceServiceBase<T>(
 
     public virtual async Task<IOperationResult> UpdateAsync(
         int id,
-        IReferenceUpdateDto<T> dto,
+        IReferenceUpdateDto dto,
         CancellationToken ct = default
     )
     {

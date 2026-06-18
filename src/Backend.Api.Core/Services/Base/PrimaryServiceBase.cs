@@ -31,7 +31,7 @@ public abstract class PrimaryServiceBase<T>(
     public abstract Task<IOperationResult> GetByIdAsync(Guid id, CancellationToken ct = default);
 
     public virtual async Task<IOperationResult> CreateAsync(
-        IPrimaryCreateDto<T> dto,
+        IPrimaryCreateDto dto,
         CancellationToken ct = default
     )
     {
@@ -43,7 +43,7 @@ public abstract class PrimaryServiceBase<T>(
 
     public virtual async Task<IOperationResult> UpdateAsync(
         Guid id,
-        IPrimaryUpdateDto<T> dto,
+        IPrimaryUpdateDto dto,
         CancellationToken ct = default
     )
     {
