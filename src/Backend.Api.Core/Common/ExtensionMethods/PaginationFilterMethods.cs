@@ -1,6 +1,6 @@
 using System.Linq.Expressions;
 using Backend.Api.Core.Common.Pagination;
-using Backend.Api.Core.Entities.Interfaces;
+using Backend.Api.Core.Dtos.Interfaces;
 
 namespace Backend.Api.Core.Common.ExtensionMethods;
 
@@ -10,7 +10,7 @@ public static class PaginationFilterMethods
         this IQueryable<T> query,
         PaginationParameters paginationParams
     )
-        where T : IPrimaryEntity
+        where T : IPrimaryListResponseDto
     {
         if (paginationParams is null)
             return query;
@@ -22,7 +22,7 @@ public static class PaginationFilterMethods
     }
 
     private static IQueryable<T> OrderByGuidIfUnordered<T>(this IQueryable<T> query)
-        where T : IPrimaryEntity
+        where T : IPrimaryListResponseDto
     {
         if (IsOrderedQuery(query))
             return query;
