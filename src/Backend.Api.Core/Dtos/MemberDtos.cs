@@ -1,5 +1,4 @@
 using Backend.Api.Core.Dtos.Interfaces;
-using Backend.Api.Core.Entities;
 using Backend.Api.Core.Enums;
 
 namespace Backend.Api.Core.Dtos;
@@ -23,7 +22,7 @@ public record MemberCreateDto(
     string EmergencyContactName,
     string EmergencyContactPhoneNumber,
     MemberActivityStatus MemberActivityStatus
-) : IPrimaryCreateDto<Member>;
+) : IPrimaryCreateDto;
 
 public record MemberUpdateDto(
     string FirstName,
@@ -44,7 +43,7 @@ public record MemberUpdateDto(
     string EmergencyContactName,
     string EmergencyContactPhoneNumber,
     MemberActivityStatus MemberActivityStatus
-) : IPrimaryUpdateDto<Member>;
+) : IPrimaryUpdateDto;
 
 public record MemberListResponseDto(
     Guid Id,
@@ -53,7 +52,7 @@ public record MemberListResponseDto(
     string? EmailAddress,
     Gender Gender,
     MemberActivityStatus MemberActivityStatus
-) : IPrimaryListResponseDto<Member>;
+) : IPrimaryListResponseDto;
 
 public record MemberResponseDto(
     Guid Id,
@@ -77,4 +76,4 @@ public record MemberResponseDto(
     string EmergencyContactPhoneNumber,
     MemberActivityStatus MemberActivityStatus,
     DateTime CreatedAt
-) : IPrimaryResponseDto<Member>;
+) : IPrimaryResponseDto;

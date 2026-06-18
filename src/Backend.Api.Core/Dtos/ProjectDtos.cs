@@ -1,5 +1,4 @@
 using Backend.Api.Core.Dtos.Interfaces;
-using Backend.Api.Core.Entities;
 using Backend.Api.Core.Enums;
 
 namespace Backend.Api.Core.Dtos;
@@ -13,7 +12,7 @@ public record ProjectCreateDto(
     DateOnly StartDate,
     DateOnly? EndDate,
     string? Description
-) : IPrimaryCreateDto<Project>;
+) : IPrimaryCreateDto;
 
 public record ProjectUpdateDto(
     int CategoryId,
@@ -24,7 +23,7 @@ public record ProjectUpdateDto(
     DateOnly StartDate,
     DateOnly? EndDate,
     string? Description
-) : IPrimaryUpdateDto<Project>;
+) : IPrimaryUpdateDto;
 
 public record ProjectListResponseDto(
     Guid Id,
@@ -35,7 +34,7 @@ public record ProjectListResponseDto(
     ProjectStatus Status,
     DateOnly StartDate,
     DateOnly? EndDate
-) : IPrimaryListResponseDto<Project>;
+) : IPrimaryListResponseDto;
 
 public record ProjectResponseDto(
     Guid Id,
@@ -50,4 +49,4 @@ public record ProjectResponseDto(
     DateOnly? EndDate,
     string? Description,
     DateTime CreatedAt
-) : IPrimaryResponseDto<Project>;
+) : IPrimaryResponseDto;

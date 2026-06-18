@@ -1,5 +1,4 @@
 using Backend.Api.Core.Dtos.Interfaces;
-using Backend.Api.Core.Entities;
 using Backend.Api.Core.Enums;
 
 namespace Backend.Api.Core.Dtos;
@@ -9,10 +8,10 @@ public record OrganizationMemberCreateDto(
     Guid OrganizationId,
     MemberOrganizationalRole Role,
     DateOnly JoinedAt
-) : IPrimaryCreateDto<OrganizationMember>;
+) : IPrimaryCreateDto;
 
 public record OrganizationMemberUpdateDto(MemberOrganizationalRole Role, DateOnly JoinedAt)
-    : IPrimaryUpdateDto<OrganizationMember>;
+    : IPrimaryUpdateDto;
 
 public record OrganizationMemberListResponseDto(
     Guid Id,
@@ -20,7 +19,7 @@ public record OrganizationMemberListResponseDto(
     string OrganizationName,
     MemberOrganizationalRole Role,
     DateOnly JoinedAt
-) : IPrimaryListResponseDto<OrganizationMember>;
+) : IPrimaryListResponseDto;
 
 public record OrganizationMemberResponseDto(
     Guid Id,
@@ -31,4 +30,4 @@ public record OrganizationMemberResponseDto(
     MemberOrganizationalRole Role,
     DateOnly JoinedAt,
     DateTime CreatedAt
-) : IPrimaryResponseDto<OrganizationMember>;
+) : IPrimaryResponseDto;

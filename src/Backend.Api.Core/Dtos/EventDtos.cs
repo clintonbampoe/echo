@@ -1,5 +1,4 @@
 using Backend.Api.Core.Dtos.Interfaces;
-using Backend.Api.Core.Entities;
 
 namespace Backend.Api.Core.Dtos;
 
@@ -14,7 +13,7 @@ public record EventCreateDto(
     string? Location,
     int? Capacity,
     string? Description
-) : IPrimaryCreateDto<Event>;
+) : IPrimaryCreateDto;
 
 public record EventUpdateDto(
     Guid OrganizationId,
@@ -27,7 +26,7 @@ public record EventUpdateDto(
     string? Location,
     int? Capacity,
     string? Description
-) : IPrimaryUpdateDto<Event>;
+) : IPrimaryUpdateDto;
 
 public record EventListResponseDto(
     Guid Id,
@@ -37,7 +36,7 @@ public record EventListResponseDto(
     DateOnly StartDate,
     DateOnly EndDate,
     string? Location
-) : IPrimaryListResponseDto<Event>;
+) : IPrimaryListResponseDto;
 
 public record EventResponseDto(
     Guid Id,
@@ -54,4 +53,4 @@ public record EventResponseDto(
     int? Capacity,
     string? Description,
     DateTime CreatedAt
-) : IPrimaryResponseDto<Event>;
+) : IPrimaryResponseDto;

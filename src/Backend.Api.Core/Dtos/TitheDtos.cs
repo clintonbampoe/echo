@@ -1,5 +1,4 @@
 using Backend.Api.Core.Dtos.Interfaces;
-using Backend.Api.Core.Entities;
 using Backend.Api.Core.Enums;
 
 namespace Backend.Api.Core.Dtos;
@@ -12,7 +11,7 @@ public record TitheCreateDto(
     PaymentMethod PaymentMethod,
     DateOnly CollectionDate,
     string? Description
-) : IPrimaryCreateDto<Tithe>;
+) : IPrimaryCreateDto;
 
 public record TitheUpdateDto(
     Guid MemberId,
@@ -22,7 +21,7 @@ public record TitheUpdateDto(
     PaymentMethod PaymentMethod,
     DateOnly CollectionDate,
     string? Description
-) : IPrimaryUpdateDto<Tithe>;
+) : IPrimaryUpdateDto;
 
 public record TitheListResponseDto(
     Guid Id,
@@ -32,7 +31,7 @@ public record TitheListResponseDto(
     MonthOfYear ForMonth,
     PaymentMethod PaymentMethod,
     DateOnly CollectionDate
-) : IPrimaryListResponseDto<Tithe>;
+) : IPrimaryListResponseDto;
 
 public record TitheResponseDto(
     Guid Id,
@@ -45,4 +44,4 @@ public record TitheResponseDto(
     DateOnly CollectionDate,
     string? Description,
     DateTime CreatedAt
-) : IPrimaryResponseDto<Tithe>;
+) : IPrimaryResponseDto;

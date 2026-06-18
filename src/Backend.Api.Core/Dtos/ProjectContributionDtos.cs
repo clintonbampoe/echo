@@ -1,5 +1,4 @@
 using Backend.Api.Core.Dtos.Interfaces;
-using Backend.Api.Core.Entities;
 using Backend.Api.Core.Enums;
 
 namespace Backend.Api.Core.Dtos;
@@ -10,14 +9,14 @@ public record ProjectContributionCreateDto(
     DateOnly DateContributed,
     PaymentMethod PaymentMethod,
     string? Description
-) : IPrimaryCreateDto<ProjectContribution>;
+) : IPrimaryCreateDto;
 
 public record ProjectContributionUpdateDto(
     decimal Amount,
     DateOnly DateContributed,
     PaymentMethod PaymentMethod,
     string? Description
-) : IPrimaryUpdateDto<ProjectContribution>;
+) : IPrimaryUpdateDto;
 
 public record ProjectContributionListResponseDto(
     Guid Id,
@@ -25,7 +24,7 @@ public record ProjectContributionListResponseDto(
     decimal Amount,
     DateOnly DateContributed,
     PaymentMethod PaymentMethod
-) : IPrimaryListResponseDto<ProjectContribution>;
+) : IPrimaryListResponseDto;
 
 public record ProjectContributionResponseDto(
     Guid Id,
@@ -36,4 +35,4 @@ public record ProjectContributionResponseDto(
     PaymentMethod PaymentMethod,
     string? Description,
     DateTime CreatedAt
-) : IPrimaryResponseDto<ProjectContribution>;
+) : IPrimaryResponseDto;

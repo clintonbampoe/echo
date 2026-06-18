@@ -1,5 +1,4 @@
 using Backend.Api.Core.Dtos.Interfaces;
-using Backend.Api.Core.Entities;
 using Backend.Api.Core.Enums;
 
 namespace Backend.Api.Core.Dtos;
@@ -13,7 +12,7 @@ public record AssetCreateDto(
     decimal CurrentValue,
     AssetStatus Status,
     string? Description
-) : IPrimaryCreateDto<Asset>;
+) : IPrimaryCreateDto;
 
 public record AssetUpdateDto(
     int CategoryId,
@@ -24,7 +23,7 @@ public record AssetUpdateDto(
     decimal CurrentValue,
     AssetStatus Status,
     string? Description
-) : IPrimaryUpdateDto<Asset>;
+) : IPrimaryUpdateDto;
 
 public record AssetListResponseDto(
     Guid Id,
@@ -32,7 +31,7 @@ public record AssetListResponseDto(
     string Name,
     AssetStatus Status,
     decimal CurrentValue
-) : IPrimaryListResponseDto<Asset>;
+) : IPrimaryListResponseDto;
 
 public record AssetResponseDto(
     Guid Id,
@@ -46,4 +45,4 @@ public record AssetResponseDto(
     AssetStatus Status,
     string? Description,
     DateTime CreatedAt
-) : IPrimaryResponseDto<Asset>;
+) : IPrimaryResponseDto;

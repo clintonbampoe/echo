@@ -1,5 +1,4 @@
 using Backend.Api.Core.Dtos.Interfaces;
-using Backend.Api.Core.Entities;
 using Backend.Api.Core.Enums;
 
 namespace Backend.Api.Core.Dtos;
@@ -10,7 +9,7 @@ public record TransactionCreateDto(
     DateOnly TransactionDate,
     decimal Amount,
     string? Description
-) : IPrimaryCreateDto<Transaction>;
+) : IPrimaryCreateDto;
 
 public record TransactionUpdateDto(
     int CategoryId,
@@ -18,7 +17,7 @@ public record TransactionUpdateDto(
     DateOnly TransactionDate,
     decimal Amount,
     string? Description
-) : IPrimaryUpdateDto<Transaction>;
+) : IPrimaryUpdateDto;
 
 public record TransactionListResponseDto(
     Guid Id,
@@ -26,7 +25,7 @@ public record TransactionListResponseDto(
     TransactionType TransactionType,
     DateOnly TransactionDate,
     decimal Amount
-) : IPrimaryListResponseDto<Transaction>;
+) : IPrimaryListResponseDto;
 
 public record TransactionResponseDto(
     Guid Id,
@@ -37,4 +36,4 @@ public record TransactionResponseDto(
     decimal Amount,
     string? Description,
     DateTime CreatedAt
-) : IPrimaryResponseDto<Transaction>;
+) : IPrimaryResponseDto;

@@ -1,5 +1,4 @@
 using Backend.Api.Core.Dtos.Interfaces;
-using Backend.Api.Core.Entities;
 using Backend.Api.Core.Enums;
 
 namespace Backend.Api.Core.Dtos;
@@ -12,7 +11,7 @@ public record AttendanceCreateDto(
     DateOnly ForDate,
     TimeOnly CheckInTime,
     string? Description
-) : IPrimaryCreateDto<Attendance>;
+) : IPrimaryCreateDto;
 
 public record AttendanceUpdateDto(
     int AttendanceContextId,
@@ -22,7 +21,7 @@ public record AttendanceUpdateDto(
     DateOnly ForDate,
     TimeOnly CheckInTime,
     string? Description
-) : IPrimaryUpdateDto<Attendance>;
+) : IPrimaryUpdateDto;
 
 public record AttendanceListResponseDto(
     Guid Id,
@@ -33,7 +32,7 @@ public record AttendanceListResponseDto(
     AttendeeType AttendeeType,
     DateOnly ForDate,
     TimeOnly CheckInTime
-) : IPrimaryListResponseDto<Attendance>;
+) : IPrimaryListResponseDto;
 
 public record AttendanceResponseDto(
     Guid Id,
@@ -48,4 +47,4 @@ public record AttendanceResponseDto(
     TimeOnly CheckInTime,
     string? Description,
     DateTime CreatedAt
-) : IPrimaryResponseDto<Attendance>;
+) : IPrimaryResponseDto;

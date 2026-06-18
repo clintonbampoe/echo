@@ -1,19 +1,18 @@
 using Backend.Api.Core.Dtos.Interfaces;
-using Backend.Api.Core.Entities;
 
 namespace Backend.Api.Core.Dtos;
 
 public record EventAttendanceCreateDto(Guid MemberId, Guid EventId, TimeOnly CheckInTime)
-    : IPrimaryCreateDto<EventAttendance>;
+    : IPrimaryCreateDto;
 
-public record EventAttendanceUpdateDto(TimeOnly CheckInTime) : IPrimaryUpdateDto<EventAttendance>;
+public record EventAttendanceUpdateDto(TimeOnly CheckInTime) : IPrimaryUpdateDto;
 
 public record EventAttendanceListResponseDto(
     Guid Id,
     string MemberName,
     string EventName,
     TimeOnly CheckInTime
-) : IPrimaryListResponseDto<EventAttendance>;
+) : IPrimaryListResponseDto;
 
 public record EventAttendanceResponseDto(
     Guid Id,
@@ -23,4 +22,4 @@ public record EventAttendanceResponseDto(
     string EventName,
     TimeOnly CheckInTime,
     DateTime CreatedAt
-) : IPrimaryResponseDto<EventAttendance>;
+) : IPrimaryResponseDto;
