@@ -27,7 +27,7 @@ public class AttendanceTypesController(AttendanceTypeService service) : BaseCont
     [HttpPost]
     public async Task<ActionResult> CreateAsync(AttendanceTypeCreateDto dto, CancellationToken ct)
     {
-        var response = await _service.CreateAsync(dto, ct);
+        var response = await _service.CreateAsync(GetCongregationId(), dto, ct);
         return response.ToActionResult();
     }
 
@@ -38,7 +38,7 @@ public class AttendanceTypesController(AttendanceTypeService service) : BaseCont
         CancellationToken ct
     )
     {
-        var response = await _service.UpdateAsync(id, dto, ct);
+        var response = await _service.UpdateAsync(GetCongregationId(), id, dto, ct);
         return response.ToActionResult();
     }
 

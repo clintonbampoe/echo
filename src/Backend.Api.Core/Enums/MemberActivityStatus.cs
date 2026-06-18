@@ -4,5 +4,6 @@ public enum MemberActivityStatus
 {
     Active,
     Inactive,
-    Archived
+    Archived,
+    Transferred,
 }

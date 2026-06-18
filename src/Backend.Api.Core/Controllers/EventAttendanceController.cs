@@ -38,7 +38,7 @@ public class EventAttendanceController(EventAttendanceService service) : BaseCon
     [HttpPost]
     public async Task<ActionResult> CreateAsync(EventAttendanceCreateDto dto, CancellationToken ct)
     {
-        var response = await _service.CreateAsync(dto, ct);
+        var response = await _service.CreateAsync(GetCongregationId(), dto, ct);
         return response.ToActionResult();
     }
 
@@ -49,7 +49,7 @@ public class EventAttendanceController(EventAttendanceService service) : BaseCon
         CancellationToken ct
     )
     {
-        var response = await _service.UpdateAsync(id, dto, ct);
+        var response = await _service.UpdateAsync(GetCongregationId(), id, dto, ct);
         return response.ToActionResult();
     }
 

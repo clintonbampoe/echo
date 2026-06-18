@@ -30,7 +30,7 @@ public class AttendanceContextsController(AttendanceContextService service) : Ba
         CancellationToken ct
     )
     {
-        var response = await _service.CreateAsync(dto, ct);
+        var response = await _service.CreateAsync(GetCongregationId(), dto, ct);
         return response.ToActionResult();
     }
 
@@ -41,7 +41,7 @@ public class AttendanceContextsController(AttendanceContextService service) : Ba
         CancellationToken ct
     )
     {
-        var response = await _service.UpdateAsync(id, dto, ct);
+        var response = await _service.UpdateAsync(GetCongregationId(), id, dto, ct);
         return response.ToActionResult();
     }
 

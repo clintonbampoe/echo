@@ -41,7 +41,7 @@ public class EventRegistrationsController(EventRegistrationService service) : Ba
         CancellationToken ct
     )
     {
-        var response = await _service.CreateAsync(dto, ct);
+        var response = await _service.CreateAsync(GetCongregationId(), dto, ct);
         return response.ToActionResult();
     }
 
@@ -52,7 +52,7 @@ public class EventRegistrationsController(EventRegistrationService service) : Ba
         CancellationToken ct
     )
     {
-        var response = await _service.UpdateAsync(id, dto, ct);
+        var response = await _service.UpdateAsync(GetCongregationId(), id, dto, ct);
         return response.ToActionResult();
     }
 
