@@ -1,16 +1,16 @@
 namespace Backend.Api.Core.Dtos.Interfaces;
 
-public interface IReferenceCreateDto<T>
+public interface IReferenceCreateDto
 {
-    string Name { get; init; }
+    string Name { get; }
 }
 
-public interface IReferenceUpdateDto<T>
+public interface IReferenceUpdateDto
 {
-    string Name { get; init; }
+    string Name { get; }
 }
 
-public interface IReferenceResponseDto<T>
+public interface IReferenceResponseDto
 {
     int Id { get; }
     string Name { get; }

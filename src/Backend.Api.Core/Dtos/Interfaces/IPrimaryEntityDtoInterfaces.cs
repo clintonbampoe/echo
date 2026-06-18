@@ -1,15 +1,15 @@
 namespace Backend.Api.Core.Dtos.Interfaces;
 
-public interface IPrimaryCreateDto<T> { }
+public interface IPrimaryCreateDto { }
 
-public interface IPrimaryUpdateDto<T> { }
+public interface IPrimaryUpdateDto { }
 
-public interface IPrimaryListResponseDto<T>
+public interface IPrimaryListResponseDto
 {
     Guid Id { get; }
 }
 
-public interface IPrimaryResponseDto<T>
+public interface IPrimaryResponseDto
 {
     Guid Id { get; }
     DateTime CreatedAt { get; }
