@@ -22,12 +22,13 @@ public class ProjectContributionRepository(AppDbContext context)
         var query = _dbSet
             .AsNoTracking()
             .ApplySoftDeleteFilter()
+            .ApplyDateFilters(queryParameters)
             .Where(p => p.CongregationId == congregationId);
 
         int totalRecords = await query.CountAsync(ct);
 
         var records = await query
-            .ApplyPagination(paginationParameters)
+            .OrderBy(p => p.Id)
             .Select(p => new ProjectContributionListResponseDto(
                 p.Id,
                 p.Project.Name,
@@ -35,6 +36,7 @@ public class ProjectContributionRepository(AppDbContext context)
                 p.DateContributed,
                 p.PaymentMethod
             ))
+            .ApplyPagination(paginationParameters)
             .ToListAsync(ct);
 
         return new PagedResponse<ProjectContributionListResponseDto>(

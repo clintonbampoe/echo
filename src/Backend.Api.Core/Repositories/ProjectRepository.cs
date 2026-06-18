@@ -21,12 +21,14 @@ public class ProjectRepository(AppDbContext context) : PrimaryRepositoryBase<Pro
         var query = _dbSet
             .AsNoTracking()
             .ApplySoftDeleteFilter()
+            .ApplySearchFilter(queryParameters)
+            .ApplyDateFilters(queryParameters)
             .Where(p => p.CongregationId == congregationId);
 
         int totalRecords = await query.CountAsync(ct);
 
         var records = await query
-            .ApplyPagination(paginationParameters)
+            .OrderBy(p => p.Id)
             .Select(p => new ProjectListResponseDto(
                 p.Id,
                 p.Category.Name,
@@ -37,6 +39,7 @@ public class ProjectRepository(AppDbContext context) : PrimaryRepositoryBase<Pro
                 p.StartDate,
                 p.EndDate
             ))
+            .ApplyPagination(paginationParameters)
             .ToListAsync(ct);
 
         return new PagedResponse<ProjectListResponseDto>(

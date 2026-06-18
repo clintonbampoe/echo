@@ -9,8 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Api.Core.Repositories;
 
-public class MemberRepository(AppDbContext context)
-    : PrimaryRepositoryBase<Member>(context)
+public class MemberRepository(AppDbContext context) : PrimaryRepositoryBase<Member>(context)
 {
     public async Task<PagedResponse<MemberListResponseDto>> GetPageAsync(
         Guid congregationId,
@@ -22,12 +21,14 @@ public class MemberRepository(AppDbContext context)
         var query = _dbSet
             .AsNoTracking()
             .ApplySoftDeleteFilter()
+            .ApplySearchFilter(queryParameters)
+            .ApplyDateFilters(queryParameters)
             .Where(m => m.CongregationId == congregationId);
 
         int totalRecords = await query.CountAsync(ct);
 
         var records = await query
-            .ApplyPagination(paginationParameters)
+            .OrderBy(m => m.Id)
             .Select(m => new MemberListResponseDto(
                 m.Id,
                 m.Name,
@@ -36,6 +37,7 @@ public class MemberRepository(AppDbContext context)
                 m.Gender,
                 m.MemberActivityStatus
             ))
+            .ApplyPagination(paginationParameters)
             .ToListAsync(ct);
 
         return new PagedResponse<MemberListResponseDto>(
@@ -45,10 +47,7 @@ public class MemberRepository(AppDbContext context)
         );
     }
 
-    public async Task<MemberResponseDto?> GetByIdAsync(
-        Guid id,
-        CancellationToken ct = default
-    )
+    public async Task<MemberResponseDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
         return await _dbSet
             .AsNoTracking()

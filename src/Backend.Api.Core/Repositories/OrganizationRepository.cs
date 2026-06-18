@@ -22,13 +22,16 @@ public class OrganizationRepository(AppDbContext context)
         var query = _dbSet
             .AsNoTracking()
             .ApplySoftDeleteFilter()
+            .ApplyDateFilters(queryParameters)
+            .ApplySearchFilter(queryParameters)
             .Where(o => o.CongregationId == congregationId);
 
         int totalRecords = await query.CountAsync(ct);
 
         var records = await query
-            .ApplyPagination(paginationParameters)
+            .OrderBy(o => o.Id)
             .Select(o => new OrganizationListResponseDto(o.Id, o.Name, o.Description))
+            .ApplyPagination(paginationParameters)
             .ToListAsync(ct);
 
         return new PagedResponse<OrganizationListResponseDto>(

@@ -21,12 +21,14 @@ public class EventRepository(AppDbContext context) : PrimaryRepositoryBase<Event
         var query = _dbSet
             .AsNoTracking()
             .ApplySoftDeleteFilter()
+            .ApplySearchFilter(queryParameters)
+            .ApplyDateFilters(queryParameters)
             .Where(e => e.CongregationId == congregationId);
 
         int totalRecords = await query.CountAsync(ct);
 
         var records = await query
-            .ApplyPagination(paginationParameters)
+            .OrderBy(e => e.Id)
             .Select(e => new EventListResponseDto(
                 e.Id,
                 e.Organization.Name,
@@ -36,6 +38,7 @@ public class EventRepository(AppDbContext context) : PrimaryRepositoryBase<Event
                 e.EndDate,
                 e.Location
             ))
+            .ApplyPagination(paginationParameters)
             .ToListAsync(ct);
 
         return new PagedResponse<EventListResponseDto>(records, paginationParameters, totalRecords);

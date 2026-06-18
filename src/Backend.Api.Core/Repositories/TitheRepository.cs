@@ -21,12 +21,13 @@ public class TitheRepository(AppDbContext context) : PrimaryRepositoryBase<Tithe
         var query = _dbSet
             .AsNoTracking()
             .ApplySoftDeleteFilter()
+            .ApplyDateFilters(queryParameters)
             .Where(t => t.CongregationId == congregationId);
 
         int totalRecords = await query.CountAsync(ct);
 
         var records = await query
-            .ApplyPagination(paginationParameters)
+            .OrderBy(t => t.Id)
             .Select(t => new TitheListResponseDto(
                 t.Id,
                 t.Member.Name,
@@ -36,6 +37,7 @@ public class TitheRepository(AppDbContext context) : PrimaryRepositoryBase<Tithe
                 t.PaymentMethod,
                 t.CollectionDate
             ))
+            .ApplyPagination(paginationParameters)
             .ToListAsync(ct);
 
         return new PagedResponse<TitheListResponseDto>(records, paginationParameters, totalRecords);

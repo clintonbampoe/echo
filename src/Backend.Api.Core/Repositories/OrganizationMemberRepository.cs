@@ -22,12 +22,13 @@ public class OrganizationMemberRepository(AppDbContext context)
         var query = _dbSet
             .AsNoTracking()
             .ApplySoftDeleteFilter()
+            .ApplyDateFilters(queryParameters)
             .Where(o => o.CongregationId == congregationId);
 
         int totalRecords = await query.CountAsync(ct);
 
         var records = await query
-            .ApplyPagination(paginationParameters)
+            .OrderBy(o => o.Id)
             .Select(o => new OrganizationMemberListResponseDto(
                 o.Id,
                 o.Member.Name,
@@ -35,6 +36,7 @@ public class OrganizationMemberRepository(AppDbContext context)
                 o.Role,
                 o.JoinedAt
             ))
+            .ApplyPagination(paginationParameters)
             .ToListAsync(ct);
 
         return new PagedResponse<OrganizationMemberListResponseDto>(

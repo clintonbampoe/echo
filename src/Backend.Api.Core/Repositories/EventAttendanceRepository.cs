@@ -22,18 +22,20 @@ public class EventAttendanceRepository(AppDbContext context)
         var query = _dbSet
             .AsNoTracking()
             .ApplySoftDeleteFilter()
+            .ApplyDateFilters(queryParameters)
             .Where(e => e.CongregationId == congregationId);
 
         int totalRecords = await query.CountAsync(ct);
 
         var records = await query
-            .ApplyPagination(paginationParameters)
+            .OrderBy(e => e.Id)
             .Select(e => new EventAttendanceListResponseDto(
                 e.Id,
                 e.Member.Name,
                 e.Event.Name,
                 e.CheckInTime
             ))
+            .ApplyPagination(paginationParameters)
             .ToListAsync(ct);
 
         return new PagedResponse<EventAttendanceListResponseDto>(

@@ -21,12 +21,14 @@ public class AssetRepository(AppDbContext context) : PrimaryRepositoryBase<Asset
         var query = _dbSet
             .AsNoTracking()
             .ApplySoftDeleteFilter()
+            .ApplyDateFilters(queryParameters)
+            .ApplySearchFilter(queryParameters)
             .Where(a => a.CongregationId == congregationId);
 
         int totalRecords = await query.CountAsync(ct);
 
         var records = await query
-            .ApplyPagination(paginationParameters)
+            .OrderBy(e => e.Id)
             .Select(a => new AssetListResponseDto(
                 a.Id,
                 a.Category.Name,
@@ -34,6 +36,7 @@ public class AssetRepository(AppDbContext context) : PrimaryRepositoryBase<Asset
                 a.Status,
                 a.CurrentValue
             ))
+            .ApplyPagination(paginationParameters)
             .ToListAsync(ct);
 
         return new PagedResponse<AssetListResponseDto>(records, paginationParameters, totalRecords);

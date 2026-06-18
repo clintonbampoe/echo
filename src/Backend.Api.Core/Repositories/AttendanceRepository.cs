@@ -9,8 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Backend.Api.Core.Repositories;
 
-public class AttendanceRepository(AppDbContext context)
-    : PrimaryRepositoryBase<Attendance>(context)
+public class AttendanceRepository(AppDbContext context) : PrimaryRepositoryBase<Attendance>(context)
 {
     public async Task<PagedResponse<AttendanceListResponseDto>> GetPageAsync(
         Guid congregationId,
@@ -22,12 +21,13 @@ public class AttendanceRepository(AppDbContext context)
         var query = _dbSet
             .AsNoTracking()
             .ApplySoftDeleteFilter()
+            .ApplyDateFilters(queryParameters)
             .Where(a => a.CongregationId == congregationId);
 
         int totalRecords = await query.CountAsync(ct);
 
         var records = await query
-            .ApplyPagination(paginationParameters)
+            .OrderBy(a => a.Id)
             .Select(a => new AttendanceListResponseDto(
                 a.Id,
                 a.AttendanceContext.Name,
@@ -38,6 +38,7 @@ public class AttendanceRepository(AppDbContext context)
                 a.ForDate,
                 a.CheckInTime
             ))
+            .ApplyPagination(paginationParameters)
             .ToListAsync(ct);
 
         return new PagedResponse<AttendanceListResponseDto>(
@@ -47,10 +48,7 @@ public class AttendanceRepository(AppDbContext context)
         );
     }
 
-    public async Task<AttendanceResponseDto?> GetByIdAsync(
-        Guid id,
-        CancellationToken ct = default
-    )
+    public async Task<AttendanceResponseDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
         return await _dbSet
             .AsNoTracking()

@@ -22,12 +22,13 @@ public class TransactionRepository(AppDbContext context)
         var query = _dbSet
             .AsNoTracking()
             .ApplySoftDeleteFilter()
+            .ApplyDateFilters(queryParameters)
             .Where(t => t.CongregationId == congregationId);
 
         int totalRecords = await query.CountAsync(ct);
 
         var records = await query
-            .ApplyPagination(paginationParameters)
+            .OrderBy(t => t.Id)
             .Select(t => new TransactionListResponseDto(
                 t.Id,
                 t.Category.Name,
@@ -35,6 +36,7 @@ public class TransactionRepository(AppDbContext context)
                 t.TransactionDate,
                 t.Amount
             ))
+            .ApplyPagination(paginationParameters)
             .ToListAsync(ct);
 
         return new PagedResponse<TransactionListResponseDto>(
