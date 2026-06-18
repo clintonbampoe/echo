@@ -12,10 +12,11 @@ public class MemberConfiguration : PrimaryEntityConfigurationBase<Member>
         builder.Property(m => m.FirstName).IsRequired();
         builder.Property(m => m.LastName).IsRequired();
 
+        // Using immutable string concatenation (||) and COALESCE to handle nulls safely
         builder
             .Property(m => m.Name)
             .HasComputedColumnSql(
-                $"TRIM(CONCAT(\"{nameof(Member.LastName)}\", ' ', \"{nameof(Member.FirstName)}\", ' ', \"{nameof(Member.OtherNames)}\"))",
+                $"TRIM(COALESCE(\"{nameof(Member.LastName)}\", '') || ' ' || COALESCE(\"{nameof(Member.FirstName)}\", '') || ' ' || COALESCE(\"{nameof(Member.OtherNames)}\", ''))",
                 stored: true
             );
     }
