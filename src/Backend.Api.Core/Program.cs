@@ -41,6 +41,7 @@ builder.Services.AddScoped<TransactionCategoryRepository>();
 builder.Services.AddScoped<TransactionRepository>();
 builder.Services.AddScoped<AttendanceTypeRepository>();
 builder.Services.AddScoped<AttendanceContextRepository>();
+builder.Services.AddScoped<UserRepository>();
 
 builder.Services.AddScoped<MemberService>();
 builder.Services.AddScoped<AssetService>();
@@ -59,6 +60,7 @@ builder.Services.AddScoped<TransactionCategoryService>();
 builder.Services.AddScoped<TransactionService>();
 builder.Services.AddScoped<AttendanceTypeService>();
 builder.Services.AddScoped<AttendanceContextService>();
+builder.Services.AddScoped<UserService>();
 
 var app = builder.Build();
 
