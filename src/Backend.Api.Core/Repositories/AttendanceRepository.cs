@@ -4,7 +4,6 @@ using Backend.Api.Core.Common.Query;
 using Backend.Api.Core.Data;
 using Backend.Api.Core.Dtos;
 using Backend.Api.Core.Entities;
-using Backend.Api.Core.Enums;
 using Backend.Api.Core.Repositories.Base;
 using Microsoft.EntityFrameworkCore;
 
