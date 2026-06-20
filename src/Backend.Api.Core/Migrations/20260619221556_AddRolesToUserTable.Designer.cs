@@ -3,6 +3,7 @@ using System;
 using Backend.Api.Core.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Backend.Api.Core.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260619221556_AddRolesToUserTable")]
+    partial class AddRolesToUserTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -421,59 +424,6 @@ namespace Backend.Api.Core.Migrations
                         .IsUnique();
 
                     b.ToTable("EventRegistrations");
-                });
-
-            modelBuilder.Entity("Backend.Api.Core.Entities.InvitationToken", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValueSql("uuidv7()");
-
-                    b.Property<string>("AllowedRole")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("CongregationId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("timestamp with time zone")
-                        .HasDefaultValueSql("now()");
-
-                    b.Property<Guid>("CreatedById")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("CreatedByUserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("ExpiryDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsRevoked")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Token")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CongregationId");
-
-                    b.HasIndex("CreatedById");
-
-                    b.HasIndex("DeletedAt");
-
-                    b.HasIndex("Token")
-                        .IsUnique();
-
-                    b.ToTable("InvitationTokens");
                 });
 
             modelBuilder.Entity("Backend.Api.Core.Entities.Member", b =>
@@ -1172,25 +1122,6 @@ namespace Backend.Api.Core.Migrations
                     b.Navigation("Event");
 
                     b.Navigation("Member");
-                });
-
-            modelBuilder.Entity("Backend.Api.Core.Entities.InvitationToken", b =>
-                {
-                    b.HasOne("Backend.Api.Core.Entities.Congregation", "Congregation")
-                        .WithMany()
-                        .HasForeignKey("CongregationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Backend.Api.Core.Entities.User", "CreatedBy")
-                        .WithMany()
-                        .HasForeignKey("CreatedById")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Congregation");
-
-                    b.Navigation("CreatedBy");
                 });
 
             modelBuilder.Entity("Backend.Api.Core.Entities.Member", b =>
