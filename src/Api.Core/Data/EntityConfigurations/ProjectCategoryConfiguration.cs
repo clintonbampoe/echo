@@ -1,0 +1,13 @@
+using Api.Core.Data.EntityConfigurations.Base;
+using Api.Core.Entities;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
+namespace Api.Core.Data.EntityConfigurations;
+
+public class ProjectCategoryConfiguration : ReferenceEntityConfigurationBase<ProjectCategory>
+{
+    public override void ConfigureEntity(EntityTypeBuilder<ProjectCategory> builder)
+    {
+        builder.HasIndex(c => new { c.CongregationId, c.Name }).IsUnique();
+    }
+}
