@@ -3,8 +3,8 @@ using Api.Core.Common.HttpResults.Interfaces;
 using Api.Core.Common.Pagination;
 using Api.Core.Common.Query;
 using Api.Core.Data;
-using Api.Core.Dtos.Interfaces;
-using Api.Core.Entities.Interfaces;
+using Api.Core.Dtos.Core.Interfaces;
+using Api.Core.Entities.Core.Interfaces;
 using Api.Core.Repositories.Base;
 using AutoMapper;
 

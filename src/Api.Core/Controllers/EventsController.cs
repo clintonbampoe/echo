@@ -2,6 +2,7 @@ using Api.Core.Common.Pagination;
 using Api.Core.Common.Query;
 using Api.Core.Controllers.Base;
 using Api.Core.Dtos;
+using Api.Core.Dtos.Core;
 using Api.Core.Services;
 using Microsoft.AspNetCore.Mvc;
 

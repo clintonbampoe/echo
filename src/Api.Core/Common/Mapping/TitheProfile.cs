@@ -1,5 +1,7 @@
 using Api.Core.Dtos;
+using Api.Core.Dtos.Core;
 using Api.Core.Entities;
+using Api.Core.Entities.Core;
 using AutoMapper;
 
 namespace Api.Core.Common.Mapping;

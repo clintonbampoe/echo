@@ -1,6 +1,6 @@
 using System.Linq.Expressions;
 using Api.Core.Common.Pagination;
-using Api.Core.Dtos.Interfaces;
+using Api.Core.Dtos.Core.Interfaces;
 
 namespace Api.Core.Common.ExtensionMethods;
 

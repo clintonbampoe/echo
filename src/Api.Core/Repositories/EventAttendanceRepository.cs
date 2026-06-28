@@ -5,6 +5,8 @@ using Api.Core.Dtos;
 using Api.Core.Entities;
 using Api.Core.Repositories.Base;
 using Api.Core.Common.ExtensionMethods;
+using Api.Core.Dtos.Core;
+using Api.Core.Entities.Core;
 using Microsoft.EntityFrameworkCore;
 
 namespace Api.Core.Repositories;

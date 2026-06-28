@@ -1,5 +1,6 @@
 using Api.Core.Controllers.Base;
 using Api.Core.Dtos;
+using Api.Core.Dtos.Core;
 using Api.Core.Services;
 using Microsoft.AspNetCore.Mvc;
 

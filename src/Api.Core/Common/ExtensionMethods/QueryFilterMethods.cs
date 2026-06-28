@@ -1,5 +1,5 @@
 using Api.Core.Common.Query;
-using Api.Core.Entities.Interfaces;
+using Api.Core.Entities.Core.Interfaces;
 
 namespace Api.Core.Common.ExtensionMethods;
 

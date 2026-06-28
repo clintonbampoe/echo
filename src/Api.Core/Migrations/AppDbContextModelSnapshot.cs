@@ -22,7 +22,87 @@ namespace Api.Core.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Api.Core.Entities.Asset", b =>
+            modelBuilder.Entity("Api.Core.Entities.Auth.EmailVerificationToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasDefaultValueSql("uuidv7()");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsUsed")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("Token");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("EmailVerificationTokens");
+                });
+
+            modelBuilder.Entity("Api.Core.Entities.Auth.PasswordVerificationToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid")
+                        .HasDefaultValueSql("uuidv7()");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsUsed")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("Token");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("PasswordVerificationTokens");
+                });
+
+            modelBuilder.Entity("Api.Core.Entities.Core.Asset", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -80,7 +160,7 @@ namespace Api.Core.Migrations
                     b.ToTable("Assets");
                 });
 
-            modelBuilder.Entity("Api.Core.Entities.AssetCategory", b =>
+            modelBuilder.Entity("Api.Core.Entities.Core.AssetCategory", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -116,7 +196,7 @@ namespace Api.Core.Migrations
                     b.ToTable("AssetCategories");
                 });
 
-            modelBuilder.Entity("Api.Core.Entities.Attendance", b =>
+            modelBuilder.Entity("Api.Core.Entities.Core.Attendance", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -173,7 +253,7 @@ namespace Api.Core.Migrations
                     b.ToTable("AttendanceRecords");
                 });
 
-            modelBuilder.Entity("Api.Core.Entities.AttendanceContext", b =>
+            modelBuilder.Entity("Api.Core.Entities.Core.AttendanceContext", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -212,7 +292,7 @@ namespace Api.Core.Migrations
                     b.ToTable("AttendanceContexts");
                 });
 
-            modelBuilder.Entity("Api.Core.Entities.AttendanceType", b =>
+            modelBuilder.Entity("Api.Core.Entities.Core.AttendanceType", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -248,7 +328,7 @@ namespace Api.Core.Migrations
                     b.ToTable("AttendanceTypes");
                 });
 
-            modelBuilder.Entity("Api.Core.Entities.Congregation", b =>
+            modelBuilder.Entity("Api.Core.Entities.Core.Congregation", b =>
                 {
                     b.Property<Guid>("CongregationId")
                         .ValueGeneratedOnAdd()
@@ -273,7 +353,7 @@ namespace Api.Core.Migrations
                     b.ToTable("Congregations");
                 });
 
-            modelBuilder.Entity("Api.Core.Entities.Event", b =>
+            modelBuilder.Entity("Api.Core.Entities.Core.Event", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -341,7 +421,7 @@ namespace Api.Core.Migrations
                     b.ToTable("Events");
                 });
 
-            modelBuilder.Entity("Api.Core.Entities.EventAttendance", b =>
+            modelBuilder.Entity("Api.Core.Entities.Core.EventAttendance", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -382,7 +462,7 @@ namespace Api.Core.Migrations
                     b.ToTable("EventAttendances");
                 });
 
-            modelBuilder.Entity("Api.Core.Entities.EventRegistration", b =>
+            modelBuilder.Entity("Api.Core.Entities.Core.EventRegistration", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -423,7 +503,7 @@ namespace Api.Core.Migrations
                     b.ToTable("EventRegistrations");
                 });
 
-            modelBuilder.Entity("Api.Core.Entities.InvitationToken", b =>
+            modelBuilder.Entity("Api.Core.Entities.Core.InvitationToken", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -476,7 +556,7 @@ namespace Api.Core.Migrations
                     b.ToTable("InvitationTokens");
                 });
 
-            modelBuilder.Entity("Api.Core.Entities.Member", b =>
+            modelBuilder.Entity("Api.Core.Entities.Core.Member", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -589,7 +669,7 @@ namespace Api.Core.Migrations
                     b.ToTable("Members");
                 });
 
-            modelBuilder.Entity("Api.Core.Entities.Organization", b =>
+            modelBuilder.Entity("Api.Core.Entities.Core.Organization", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -628,7 +708,7 @@ namespace Api.Core.Migrations
                     b.ToTable("Organizations");
                 });
 
-            modelBuilder.Entity("Api.Core.Entities.OrganizationMember", b =>
+            modelBuilder.Entity("Api.Core.Entities.Core.OrganizationMember", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -673,7 +753,7 @@ namespace Api.Core.Migrations
                     b.ToTable("OrganizationMembers");
                 });
 
-            modelBuilder.Entity("Api.Core.Entities.Project", b =>
+            modelBuilder.Entity("Api.Core.Entities.Core.Project", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -732,7 +812,7 @@ namespace Api.Core.Migrations
                     b.ToTable("Projects");
                 });
 
-            modelBuilder.Entity("Api.Core.Entities.ProjectCategory", b =>
+            modelBuilder.Entity("Api.Core.Entities.Core.ProjectCategory", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -768,7 +848,7 @@ namespace Api.Core.Migrations
                     b.ToTable("ProjectCategories");
                 });
 
-            modelBuilder.Entity("Api.Core.Entities.ProjectContribution", b =>
+            modelBuilder.Entity("Api.Core.Entities.Core.ProjectContribution", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -814,7 +894,7 @@ namespace Api.Core.Migrations
                     b.ToTable("ProjectContributions");
                 });
 
-            modelBuilder.Entity("Api.Core.Entities.Tithe", b =>
+            modelBuilder.Entity("Api.Core.Entities.Core.Tithe", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -867,7 +947,7 @@ namespace Api.Core.Migrations
                     b.ToTable("Tithes");
                 });
 
-            modelBuilder.Entity("Api.Core.Entities.Transaction", b =>
+            modelBuilder.Entity("Api.Core.Entities.Core.Transaction", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -913,7 +993,7 @@ namespace Api.Core.Migrations
                     b.ToTable("Transactions");
                 });
 
-            modelBuilder.Entity("Api.Core.Entities.TransactionCategory", b =>
+            modelBuilder.Entity("Api.Core.Entities.Core.TransactionCategory", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -953,7 +1033,7 @@ namespace Api.Core.Migrations
                     b.ToTable("TransactionCategories");
                 });
 
-            modelBuilder.Entity("Api.Core.Entities.User", b =>
+            modelBuilder.Entity("Api.Core.Entities.Core.User", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
@@ -1007,15 +1087,37 @@ namespace Api.Core.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("Api.Core.Entities.Asset", b =>
+            modelBuilder.Entity("Api.Core.Entities.Auth.EmailVerificationToken", b =>
                 {
-                    b.HasOne("Api.Core.Entities.AssetCategory", "Category")
+                    b.HasOne("Api.Core.Entities.Core.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Api.Core.Entities.Auth.PasswordVerificationToken", b =>
+                {
+                    b.HasOne("Api.Core.Entities.Core.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Api.Core.Entities.Core.Asset", b =>
+                {
+                    b.HasOne("Api.Core.Entities.Core.AssetCategory", "Category")
                         .WithMany()
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Api.Core.Entities.Congregation", "Congregation")
+                    b.HasOne("Api.Core.Entities.Core.Congregation", "Congregation")
                         .WithMany()
                         .HasForeignKey("CongregationId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1026,9 +1128,9 @@ namespace Api.Core.Migrations
                     b.Navigation("Congregation");
                 });
 
-            modelBuilder.Entity("Api.Core.Entities.AssetCategory", b =>
+            modelBuilder.Entity("Api.Core.Entities.Core.AssetCategory", b =>
                 {
-                    b.HasOne("Api.Core.Entities.Congregation", "Congregation")
+                    b.HasOne("Api.Core.Entities.Core.Congregation", "Congregation")
                         .WithMany()
                         .HasForeignKey("CongregationId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1037,21 +1139,21 @@ namespace Api.Core.Migrations
                     b.Navigation("Congregation");
                 });
 
-            modelBuilder.Entity("Api.Core.Entities.Attendance", b =>
+            modelBuilder.Entity("Api.Core.Entities.Core.Attendance", b =>
                 {
-                    b.HasOne("Api.Core.Entities.AttendanceContext", "AttendanceContext")
+                    b.HasOne("Api.Core.Entities.Core.AttendanceContext", "AttendanceContext")
                         .WithMany()
                         .HasForeignKey("AttendanceContextId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Api.Core.Entities.Congregation", "Congregation")
+                    b.HasOne("Api.Core.Entities.Core.Congregation", "Congregation")
                         .WithMany()
                         .HasForeignKey("CongregationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Api.Core.Entities.Member", "Member")
+                    b.HasOne("Api.Core.Entities.Core.Member", "Member")
                         .WithMany()
                         .HasForeignKey("MemberId")
                         .OnDelete(DeleteBehavior.SetNull);
@@ -1063,15 +1165,15 @@ namespace Api.Core.Migrations
                     b.Navigation("Member");
                 });
 
-            modelBuilder.Entity("Api.Core.Entities.AttendanceContext", b =>
+            modelBuilder.Entity("Api.Core.Entities.Core.AttendanceContext", b =>
                 {
-                    b.HasOne("Api.Core.Entities.AttendanceType", "AttendanceType")
+                    b.HasOne("Api.Core.Entities.Core.AttendanceType", "AttendanceType")
                         .WithMany()
                         .HasForeignKey("AttendanceTypeId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Api.Core.Entities.Congregation", "Congregation")
+                    b.HasOne("Api.Core.Entities.Core.Congregation", "Congregation")
                         .WithMany()
                         .HasForeignKey("CongregationId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1082,9 +1184,9 @@ namespace Api.Core.Migrations
                     b.Navigation("Congregation");
                 });
 
-            modelBuilder.Entity("Api.Core.Entities.AttendanceType", b =>
+            modelBuilder.Entity("Api.Core.Entities.Core.AttendanceType", b =>
                 {
-                    b.HasOne("Api.Core.Entities.Congregation", "Congregation")
+                    b.HasOne("Api.Core.Entities.Core.Congregation", "Congregation")
                         .WithMany()
                         .HasForeignKey("CongregationId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1093,21 +1195,21 @@ namespace Api.Core.Migrations
                     b.Navigation("Congregation");
                 });
 
-            modelBuilder.Entity("Api.Core.Entities.Event", b =>
+            modelBuilder.Entity("Api.Core.Entities.Core.Event", b =>
                 {
-                    b.HasOne("Api.Core.Entities.Congregation", "Congregation")
+                    b.HasOne("Api.Core.Entities.Core.Congregation", "Congregation")
                         .WithMany()
                         .HasForeignKey("CongregationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Api.Core.Entities.Organization", "Organization")
+                    b.HasOne("Api.Core.Entities.Core.Organization", "Organization")
                         .WithMany()
                         .HasForeignKey("OrganizationId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Api.Core.Entities.Member", "Organizer")
+                    b.HasOne("Api.Core.Entities.Core.Member", "Organizer")
                         .WithMany()
                         .HasForeignKey("OrganizerId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1120,21 +1222,21 @@ namespace Api.Core.Migrations
                     b.Navigation("Organizer");
                 });
 
-            modelBuilder.Entity("Api.Core.Entities.EventAttendance", b =>
+            modelBuilder.Entity("Api.Core.Entities.Core.EventAttendance", b =>
                 {
-                    b.HasOne("Api.Core.Entities.Congregation", "Congregation")
+                    b.HasOne("Api.Core.Entities.Core.Congregation", "Congregation")
                         .WithMany()
                         .HasForeignKey("CongregationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Api.Core.Entities.Event", "Event")
+                    b.HasOne("Api.Core.Entities.Core.Event", "Event")
                         .WithMany()
                         .HasForeignKey("EventId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Api.Core.Entities.Member", "Member")
+                    b.HasOne("Api.Core.Entities.Core.Member", "Member")
                         .WithMany()
                         .HasForeignKey("MemberId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1147,21 +1249,21 @@ namespace Api.Core.Migrations
                     b.Navigation("Member");
                 });
 
-            modelBuilder.Entity("Api.Core.Entities.EventRegistration", b =>
+            modelBuilder.Entity("Api.Core.Entities.Core.EventRegistration", b =>
                 {
-                    b.HasOne("Api.Core.Entities.Congregation", "Congregation")
+                    b.HasOne("Api.Core.Entities.Core.Congregation", "Congregation")
                         .WithMany()
                         .HasForeignKey("CongregationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Api.Core.Entities.Event", "Event")
+                    b.HasOne("Api.Core.Entities.Core.Event", "Event")
                         .WithMany()
                         .HasForeignKey("EventId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Api.Core.Entities.Member", "Member")
+                    b.HasOne("Api.Core.Entities.Core.Member", "Member")
                         .WithMany()
                         .HasForeignKey("MemberId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1174,15 +1276,15 @@ namespace Api.Core.Migrations
                     b.Navigation("Member");
                 });
 
-            modelBuilder.Entity("Api.Core.Entities.InvitationToken", b =>
+            modelBuilder.Entity("Api.Core.Entities.Core.InvitationToken", b =>
                 {
-                    b.HasOne("Api.Core.Entities.Congregation", "Congregation")
+                    b.HasOne("Api.Core.Entities.Core.Congregation", "Congregation")
                         .WithMany()
                         .HasForeignKey("CongregationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Api.Core.Entities.User", "CreatedBy")
+                    b.HasOne("Api.Core.Entities.Core.User", "CreatedBy")
                         .WithMany()
                         .HasForeignKey("CreatedById")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1193,9 +1295,9 @@ namespace Api.Core.Migrations
                     b.Navigation("CreatedBy");
                 });
 
-            modelBuilder.Entity("Api.Core.Entities.Member", b =>
+            modelBuilder.Entity("Api.Core.Entities.Core.Member", b =>
                 {
-                    b.HasOne("Api.Core.Entities.Congregation", "Congregation")
+                    b.HasOne("Api.Core.Entities.Core.Congregation", "Congregation")
                         .WithMany()
                         .HasForeignKey("CongregationId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1204,9 +1306,9 @@ namespace Api.Core.Migrations
                     b.Navigation("Congregation");
                 });
 
-            modelBuilder.Entity("Api.Core.Entities.Organization", b =>
+            modelBuilder.Entity("Api.Core.Entities.Core.Organization", b =>
                 {
-                    b.HasOne("Api.Core.Entities.Congregation", "Congregation")
+                    b.HasOne("Api.Core.Entities.Core.Congregation", "Congregation")
                         .WithMany()
                         .HasForeignKey("CongregationId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1215,21 +1317,21 @@ namespace Api.Core.Migrations
                     b.Navigation("Congregation");
                 });
 
-            modelBuilder.Entity("Api.Core.Entities.OrganizationMember", b =>
+            modelBuilder.Entity("Api.Core.Entities.Core.OrganizationMember", b =>
                 {
-                    b.HasOne("Api.Core.Entities.Congregation", "Congregation")
+                    b.HasOne("Api.Core.Entities.Core.Congregation", "Congregation")
                         .WithMany()
                         .HasForeignKey("CongregationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Api.Core.Entities.Member", "Member")
+                    b.HasOne("Api.Core.Entities.Core.Member", "Member")
                         .WithMany()
                         .HasForeignKey("MemberId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Api.Core.Entities.Organization", "Organization")
+                    b.HasOne("Api.Core.Entities.Core.Organization", "Organization")
                         .WithMany()
                         .HasForeignKey("OrganizationId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1242,21 +1344,21 @@ namespace Api.Core.Migrations
                     b.Navigation("Organization");
                 });
 
-            modelBuilder.Entity("Api.Core.Entities.Project", b =>
+            modelBuilder.Entity("Api.Core.Entities.Core.Project", b =>
                 {
-                    b.HasOne("Api.Core.Entities.ProjectCategory", "Category")
+                    b.HasOne("Api.Core.Entities.Core.ProjectCategory", "Category")
                         .WithMany()
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Api.Core.Entities.Congregation", "Congregation")
+                    b.HasOne("Api.Core.Entities.Core.Congregation", "Congregation")
                         .WithMany()
                         .HasForeignKey("CongregationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Api.Core.Entities.Member", "Manager")
+                    b.HasOne("Api.Core.Entities.Core.Member", "Manager")
                         .WithMany()
                         .HasForeignKey("ManagerId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1269,9 +1371,9 @@ namespace Api.Core.Migrations
                     b.Navigation("Manager");
                 });
 
-            modelBuilder.Entity("Api.Core.Entities.ProjectCategory", b =>
+            modelBuilder.Entity("Api.Core.Entities.Core.ProjectCategory", b =>
                 {
-                    b.HasOne("Api.Core.Entities.Congregation", "Congregation")
+                    b.HasOne("Api.Core.Entities.Core.Congregation", "Congregation")
                         .WithMany()
                         .HasForeignKey("CongregationId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1280,15 +1382,15 @@ namespace Api.Core.Migrations
                     b.Navigation("Congregation");
                 });
 
-            modelBuilder.Entity("Api.Core.Entities.ProjectContribution", b =>
+            modelBuilder.Entity("Api.Core.Entities.Core.ProjectContribution", b =>
                 {
-                    b.HasOne("Api.Core.Entities.Congregation", "Congregation")
+                    b.HasOne("Api.Core.Entities.Core.Congregation", "Congregation")
                         .WithMany()
                         .HasForeignKey("CongregationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Api.Core.Entities.Project", "Project")
+                    b.HasOne("Api.Core.Entities.Core.Project", "Project")
                         .WithMany()
                         .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1299,15 +1401,15 @@ namespace Api.Core.Migrations
                     b.Navigation("Project");
                 });
 
-            modelBuilder.Entity("Api.Core.Entities.Tithe", b =>
+            modelBuilder.Entity("Api.Core.Entities.Core.Tithe", b =>
                 {
-                    b.HasOne("Api.Core.Entities.Congregation", "Congregation")
+                    b.HasOne("Api.Core.Entities.Core.Congregation", "Congregation")
                         .WithMany()
                         .HasForeignKey("CongregationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Api.Core.Entities.Member", "Member")
+                    b.HasOne("Api.Core.Entities.Core.Member", "Member")
                         .WithMany()
                         .HasForeignKey("MemberId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1318,15 +1420,15 @@ namespace Api.Core.Migrations
                     b.Navigation("Member");
                 });
 
-            modelBuilder.Entity("Api.Core.Entities.Transaction", b =>
+            modelBuilder.Entity("Api.Core.Entities.Core.Transaction", b =>
                 {
-                    b.HasOne("Api.Core.Entities.TransactionCategory", "Category")
+                    b.HasOne("Api.Core.Entities.Core.TransactionCategory", "Category")
                         .WithMany()
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Api.Core.Entities.Congregation", "Congregation")
+                    b.HasOne("Api.Core.Entities.Core.Congregation", "Congregation")
                         .WithMany()
                         .HasForeignKey("CongregationId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1337,9 +1439,9 @@ namespace Api.Core.Migrations
                     b.Navigation("Congregation");
                 });
 
-            modelBuilder.Entity("Api.Core.Entities.TransactionCategory", b =>
+            modelBuilder.Entity("Api.Core.Entities.Core.TransactionCategory", b =>
                 {
-                    b.HasOne("Api.Core.Entities.Congregation", "Congregation")
+                    b.HasOne("Api.Core.Entities.Core.Congregation", "Congregation")
                         .WithMany()
                         .HasForeignKey("CongregationId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -1348,9 +1450,9 @@ namespace Api.Core.Migrations
                     b.Navigation("Congregation");
                 });
 
-            modelBuilder.Entity("Api.Core.Entities.User", b =>
+            modelBuilder.Entity("Api.Core.Entities.Core.User", b =>
                 {
-                    b.HasOne("Api.Core.Entities.Congregation", "Congregation")
+                    b.HasOne("Api.Core.Entities.Core.Congregation", "Congregation")
                         .WithMany()
                         .HasForeignKey("CongregationId")
                         .OnDelete(DeleteBehavior.Cascade)

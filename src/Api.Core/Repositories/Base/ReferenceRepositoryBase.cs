@@ -1,8 +1,8 @@
 // ReferenceRepositoryBase.cs
 
 using Api.Core.Data;
-using Api.Core.Entities.Interfaces;
 using Api.Core.Common.ExtensionMethods;
+using Api.Core.Entities.Core.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 namespace Api.Core.Repositories.Base;

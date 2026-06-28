@@ -1,11 +1,13 @@
 using System.Reflection;
-using Api.Core.Entities;
+using Api.Core.Entities.Auth;
+using Api.Core.Entities.Core;
 using Microsoft.EntityFrameworkCore;
 
 namespace Api.Core.Data;
 
 public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
+    // MODELS
     public DbSet<Asset> Assets { get; set; }
     public DbSet<AssetCategory> AssetCategories { get; set; }
     public DbSet<Attendance> AttendanceRecords { get; set; }
@@ -25,7 +27,11 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<TransactionCategory> TransactionCategories { get; set; }
     public DbSet<User> Users { get; set; }
     public DbSet<Congregation> Congregations { get; set; }
-    public DbSet<InvitationToken> InvitationTokens {get; set; }
+    public DbSet<InvitationToken> InvitationTokens { get; set; }
+
+    // AUTH
+    public DbSet<EmailVerificationToken> EmailVerificationTokens { get; set; }
+    public DbSet<PasswordVerificationToken> PasswordVerificationTokens {get; set; }
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
