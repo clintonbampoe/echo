@@ -195,13 +195,13 @@ END $$;
 -- ============================================================
 -- USERS (3) — password: Echo@2024
 -- ============================================================
-INSERT INTO "Users" ("Id", "CongregationId", "Name", "EmailAddress", "PasswordHash") VALUES
-('c0000000-0000-4000-8000-000000000001', 'a0000000-0000-4000-8000-000000000001',
- 'Admin User',            'admin@gracecommunity.org',     '$2b$12$mFT/RvG8PlAN.exi4J.gM.6OaUyIKjCPhcpAVL6RQ.YNOk8b8So.y'),
-('c0000000-0000-4000-8000-000000000002', 'a0000000-0000-4000-8000-000000000001',
- 'Pastor Kwame Mensah',   'pastor@gracecommunity.org',    '$2b$12$mFT/RvG8PlAN.exi4J.gM.6OaUyIKjCPhcpAVL6RQ.YNOk8b8So.y'),
-('c0000000-0000-4000-8000-000000000003', 'a0000000-0000-4000-8000-000000000001',
- 'Secretary Ama Asante',  'secretary@gracecommunity.org', '$2b$12$mFT/RvG8PlAN.exi4J.gM.6OaUyIKjCPhcpAVL6RQ.YNOk8b8So.y');
+INSERT INTO "Users" ("Id", "CongregationId", "UserName", "Name", "EmailAddress", "PasswordHash", "Role") VALUES
+('c0000000-0000-4000-8000-000000000001', 'a0000000-0000-4000-8000-000000000001', 'admin_user',
+ 'Admin User',           'admin@gracecommunity.org',     '$2b$12$...', 'Admin'),
+('c0000000-0000-4000-8000-000000000002', 'a0000000-0000-4000-8000-000000000001', 'pastork',
+ 'Pastor Kwame Mensah',  'pastor@gracecommunity.org',    '$2b$12$...', 'Member'),
+('c0000000-0000-4000-8000-000000000003', 'a0000000-0000-4000-8000-000000000001', 'aasante',
+ 'Secretary Ama Asante', 'secretary@gracecommunity.org', '$2b$12$...', 'Member');
 
 
 -- ============================================================
