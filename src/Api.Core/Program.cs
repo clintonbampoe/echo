@@ -1,14 +1,21 @@
 using System.Text.Json.Serialization;
+using Api.Auth.Common.ExtensionMethods;
 using Api.Core.Data;
 using Api.Core.Repositories;
 using Api.Core.Services;
+using DotNetEnv;
 using Microsoft.EntityFrameworkCore;
+
+Env.Load();
 
 var builder = WebApplication.CreateBuilder(args);
 
 var template = GetConnectionStringTemplate();
 var (username, password) = GetLocalDatabaseCredentials();
 var connectionString = BuildConnectionStringFromTemplate(template);
+
+// AUTH
+builder.Services.AddAuthServices(builder.Configuration);
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(connectionString, opt => opt.SetPostgresVersion(18, 0))
@@ -20,6 +27,7 @@ builder
     {
         opt.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
+
 builder.Services.AddOpenApi();
 builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
