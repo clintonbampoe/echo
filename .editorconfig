@@ -31,7 +31,7 @@ dotnet_naming_style.prefix_underscore_style.capitalization = camel_case
 
 
 # React and Frontend settings
-[*.{js, jsx, ts, tsx, json, css}]
+[*.{js,jsx,ts,tsx,json,css}]
 
 # Use 2 spaces for better readability in nested React code
 indent_size = 2
