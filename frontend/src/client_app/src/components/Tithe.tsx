@@ -308,18 +308,18 @@ const Tithe: React.FC = () => {
 
       {/* ─── Add / Edit Modal ─────────────────────────────────────────────── */}
       {showModal && (
-        <div className="tithe-modal-overlay" onClick={() => setShowModal(false)}>
-          <form className="tithe-modal" onClick={e => e.stopPropagation()} onSubmit={handleSaveTithe}>
-            <div className="tithe-modal-header">
-              <h2 className="tithe-modal-title">
+        <div className="tithe-panel-overlay" onClick={() => setShowModal(false)}>
+          <form className="tithe-side-panel" onClick={e => e.stopPropagation()} onSubmit={handleSaveTithe}>
+            <div className="tithe-panel-header">
+              <h2 className="tithe-panel-title">
                 {editingRecord ? 'Edit Tithe Record' : 'Record Tithe'}
               </h2>
-              <button type="button" className="tithe-modal-close" onClick={() => setShowModal(false)}>
+              <button type="button" className="tithe-panel-close" onClick={() => setShowModal(false)}>
                 <CloseIcon />
               </button>
             </div>
 
-            <div className="tithe-modal-body">
+            <div className="tithe-panel-body">
               {/* Member Selection */}
               <div className="tithe-form-group">
                 <label className="tithe-form-label">Member</label>
@@ -420,7 +420,7 @@ const Tithe: React.FC = () => {
               </div>
             </div>
 
-            <div className="tithe-modal-footer">
+            <div className="tithe-panel-footer">
               <button type="button" className="tithe-btn tithe-btn-secondary" onClick={() => setShowModal(false)}>
                 Cancel
               </button>
