@@ -1,8 +1,0 @@
-<Solution>
-  <Project Path="Echo.Api/Echo.Api.csproj" />
-  <Project Path="Echo.Auth/Echo.Auth.csproj" />
-  <Project Path="Echo.Core/Echo.Core.csproj" />
-  <Project Path="Echo.Domain/Echo.Domain.csproj" />
-  <Project Path="Echo.Infrastructure/Echo.Infrastructure.csproj" />
-  <Project Path="Echo.Shared/Echo.Shared.csproj" />
-</Solution>

@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Echo.Api/Echo.Api.csproj" />
+    <Project Path="src/Echo.Auth/Echo.Auth.csproj" />
+    <Project Path="src/Echo.Core/Echo.Core.csproj" />
+    <Project Path="src/Echo.Domain/Echo.Domain.csproj" />
+    <Project Path="src/Echo.Infrastructure/Echo.Infrastructure.csproj" />
+    <Project Path="src/Echo.Shared/Echo.Shared.csproj" />
+  </Folder>
+</Solution>
