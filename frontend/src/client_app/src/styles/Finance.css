@@ -284,7 +284,7 @@
   background-color: #fff0f0;
 }
 
-/* ─── Modal Overlay ───────────────────────────────────────────────────────── */
+/* ─── Modal Overlay (used by Category + Delete confirmation) ─────────────── */
 
 .finance-modal-overlay {
   position: fixed;
@@ -368,6 +368,92 @@
   gap: 12px;
   padding: 16px 28px 24px;
   border-top: 1px solid var(--border);
+}
+
+/* ─── Side Panel Overlay (used by Record Transaction + Export Report) ──── */
+
+.finance-panel-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-end;
+  z-index: 200;
+  animation: overlayFadeIn 0.2s ease;
+}
+
+.finance-side-panel {
+  background: white;
+  width: 100%;
+  max-width: 480px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid var(--border);
+  box-shadow: -8px 0 24px rgba(0, 0, 0, 0.1);
+  animation: financePanelSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes financePanelSlideIn {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.finance-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 28px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.finance-panel-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.finance-panel-close {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.finance-panel-close:hover {
+  background-color: #f2f2f7;
+  color: var(--text-main);
+}
+
+.finance-panel-body {
+  padding: 24px 28px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.finance-panel-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 28px 24px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
 }
 
 /* ─── Transaction Type Toggle ─────────────────────────────────────────────── */
