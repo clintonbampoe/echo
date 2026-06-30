@@ -564,18 +564,18 @@ const Finance: React.FC = () => {
           MODALS
           ═══════════════════════════════════════════════════════════════════════ */}
 
-      {/* ─── Record Transaction Modal ───────────────────────────────────────── */}
+      {/* ─── Record Transaction Side Panel ──────────────────────────────────── */}
       {showRecordModal && (
-        <div className="finance-modal-overlay" onClick={() => setShowRecordModal(false)}>
-          <div className="finance-modal" onClick={e => e.stopPropagation()}>
-            <div className="finance-modal-header">
-              <h2 className="finance-modal-title">Record Transaction</h2>
-              <button className="finance-modal-close" onClick={() => setShowRecordModal(false)}>
+        <div className="finance-panel-overlay" onClick={() => setShowRecordModal(false)}>
+          <div className="finance-side-panel" onClick={e => e.stopPropagation()}>
+            <div className="finance-panel-header">
+              <h2 className="finance-panel-title">Record Transaction</h2>
+              <button className="finance-panel-close" onClick={() => setShowRecordModal(false)}>
                 <CloseIcon />
               </button>
             </div>
 
-            <div className="finance-modal-body">
+            <div className="finance-panel-body">
               {/* Type toggle */}
               <div className="transaction-type-toggle">
                 <button
@@ -662,7 +662,7 @@ const Finance: React.FC = () => {
               </div>
             </div>
 
-            <div className="finance-modal-footer">
+            <div className="finance-panel-footer">
               <button className="finance-btn finance-btn-secondary" onClick={() => setShowRecordModal(false)}>
                 Cancel
               </button>
@@ -674,18 +674,18 @@ const Finance: React.FC = () => {
         </div>
       )}
 
-      {/* ─── Export Report Modal ─────────────────────────────────────────────── */}
+      {/* ─── Export Report Side Panel ──────────────────────────────────────── */}
       {showExportModal && (
-        <div className="finance-modal-overlay" onClick={() => setShowExportModal(false)}>
-          <div className="finance-modal" onClick={e => e.stopPropagation()}>
-            <div className="finance-modal-header">
-              <h2 className="finance-modal-title">Export Financial Report</h2>
-              <button className="finance-modal-close" onClick={() => setShowExportModal(false)}>
+        <div className="finance-panel-overlay" onClick={() => setShowExportModal(false)}>
+          <div className="finance-side-panel" onClick={e => e.stopPropagation()}>
+            <div className="finance-panel-header">
+              <h2 className="finance-panel-title">Export Financial Report</h2>
+              <button className="finance-panel-close" onClick={() => setShowExportModal(false)}>
                 <CloseIcon />
               </button>
             </div>
 
-            <div className="finance-modal-body">
+            <div className="finance-panel-body">
               {/* Hint */}
               <div className="export-hint">
                 <InfoIcon />
@@ -759,7 +759,7 @@ const Finance: React.FC = () => {
               </div>
             </div>
 
-            <div className="finance-modal-footer">
+            <div className="finance-panel-footer">
               <button className="finance-btn finance-btn-secondary" onClick={() => setShowExportModal(false)}>
                 Cancel
               </button>
