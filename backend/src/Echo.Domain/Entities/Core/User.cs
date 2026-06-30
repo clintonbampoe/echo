@@ -1,0 +1,20 @@
+using Echo.Domain.Entities.Core.Interfaces;
+using Echo.Domain.Enums;
+
+namespace Echo.Domain.Entities.Core;
+
+public class User : IPrimaryEntity, ISearchableEntity
+{
+    public Guid Id { get; set; }
+    public Guid CongregationId { get; set; }
+    public Congregation Congregation { get; set; } = null!;
+
+    public string Name { get; set; } = string.Empty;
+    public string UserName { get; set; } = string.Empty;
+    public string EmailAddress { get; set; } = string.Empty;
+    public string PasswordHash { get; set; } = string.Empty;
+    public UserRole Role { get; set; }
+
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime? DeletedAt { get; set; }
+}

@@ -1,4 +1,0 @@
-<Solution>
-  <Project Path="src/Api.Auth/Api.Auth.csproj" />
-  <Project Path="src\Api.Core\Api.Core.csproj" />
-</Solution>

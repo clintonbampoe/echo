@@ -1,0 +1,26 @@
+using Echo.Domain.Entities.Core;
+using Echo.Domain.EntityConfigurations.Core.Base;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
+namespace Echo.Domain.EntityConfigurations.Core;
+
+public class EventAttendanceConfiguration : PrimaryEntityConfigurationBase<EventAttendance>
+{
+    public override void ConfigureEntity(EntityTypeBuilder<EventAttendance> builder)
+    {
+        builder
+            .HasOne(ea => ea.Member)
+            .WithMany()
+            .HasForeignKey(ea => ea.MemberId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder
+            .HasOne(ea => ea.Event)
+            .WithMany()
+            .HasForeignKey(ea => ea.EventId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasIndex(ea => new { ea.EventId, ea.MemberId }).IsUnique();
+    }
+}
