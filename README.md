@@ -1,64 +1,42 @@
 # Echo
 
-Echo is a church management web application designed to help religious organizations centralize their administration and financial records.
-The platform acts as a unified hub for tracking church operations, ensuring financial transparency and data organization for both small and large congregations.
+Echo is a multi-tenant church management platform — a single place for a congregation to run its administration: who its members are, what it owns, what it's raising money for, and how it's doing financially. Each congregation is its own isolated tenant, with admins bringing members in and managing access from there.
 
 ![Dashboard Screenshot](./docs/images/dashboard-screenshot.png)
 
-## Summary
+## Scope
 
-**Financial Management**: Specialized modules to record tithes and contributions with visual dashboards for analytical insights.
-
-**Member and Attendance Tracking**: Tools for maintaining a member database and tracking attendance for various church services.
-
-**Asset and Project Management**: A system to catalog church assets and monitor the progress of specific church projects.
-
-**Event Coordination**: Features for planning church events, managing teams, and organizing service schedules.
+- **Membership** — who belongs to the congregation and its sub-groups
+- **Events & attendance** — what's happening and who showed up
+- **Tithes** — member giving over time
+- **Finance** — income and expenses
+- **Inventory & assets** — what the congregation owns
+- **Projects** — what it's building toward
+- **Reporting & analytics** — insight across all of the above
 
 ## Tech Stack
 
-The project uses a client-server architecture with the following technologies
+React (TypeScript) frontend, ASP.NET Core (.NET 10) backend, PostgreSQL, Entity Framework Core.
 
-- **React** frontend for building the user interface
-- **C# Web API** for the server-side logic and database communication
-- **PostgreSQL** for relational data storage.
-- **Entity Framework Core** for managing database operations within the API.
+## Structure
 
-## Requirements
+Echo is a monorepo with three parts:
 
-To develop or run this project locally, the following software must be installed:
+```markdown
+echo/
+├── backend/    # .NET modular monolith — see backend/README.md
+├── frontend/   # React + TypeScript client — see frontend/README.md
+└── docs/       # API, database, and architecture reference
+```
 
-- .NET 10 SDK
-- Node.js
-- PostgreSQL
-- Visual Studio / Rider / VS Code (or any text editor of choice)
+- [`backend/README.md`](./backend/README.md) — module breakdown, local setup, migrations
+- [`frontend/README.md`](./frontend/README.md) — local setup, project layout
+- [`docs/`](./docs/) — API architecture, database schema, ERDs
 
-## Setting Up In VS Code
+## Contributing
 
-Follow these steps to initialize your development environment in VS Code.
+See [`CONTRIBUTING.md`](./CONTRIBUTING.md) for branch naming, PR workflow, and code standards.
 
-### 1. Required Extensions
+## License
 
-Upon opening this folder, VS Code will prompt you to install recommended extensions (based on `extensions.json`).
-
-- Click **Install All**.
-- This ensures the **C# Dev Kit** and **Debugger** are active.
-
-### 2. Building & Running the API
-
-The repository includes pre-defined tasks and launch profiles to handle the build and execution process.
-
-- Press `Ctrl + Shift + B`. This triggers the `build: Backend.Api.Core` task defined in `tasks.json`.
-
-- Press `F5`. This will run the following tasks:
-    1. Run the build task.
-    2. Launch the `Backend.Api.Core` project using the **.NET 10** profile from `launch.json`.
-    3. Open your default browser once the API is listening.
-
-### 3. Automation Features
-
-The `settings.json` file applies the following behaviors automatically:
-
-- Code is automatically formatted to project standards whenever you save.
-- Unused namespaces are stripped on save.
-- The `bin` and `obj` directories are hidden from the file explorer to reduce clutter.
+All rights reserved. See [`LICENSE.md`](./LICENSE.md).
