@@ -1,42 +1,34 @@
 using System.Text.Json.Serialization;
+using Echo.Api.Extensions;
 using Echo.Auth.Extensions;
 using Echo.Core.Extensions;
-using Echo.Domain.Data;
 using Echo.Shared.Extensions;
-using Microsoft.EntityFrameworkCore;
 
 EnvLoader.LoadFromRepoRoot();
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddEnvironmentVariables();
 
-// 1. GET THE TEMPLATE AND INJECT THE SECRETS
-var template = builder.Configuration.GetConnectionString("DefaultConnection")
-               ?? throw new InvalidOperationException("DefaultConnection template not found.");
-
-var connectionString = template
-    .Replace("__DB_USER__", builder.Configuration["DB_USER"])
-    .Replace("__DB_PASSWORD__", builder.Configuration["DB_PASSWORD"]);
-
-// REGISTER SERVICES
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(connectionString, x => x.MigrationsAssembly("Echo.Infrastructure"))
-);
+builder.Services.AddDbContextServices(builder.Configuration);
+builder.Services.AddSwaggerDocumentation();
+builder.Services.AddOpenApi();
+builder.Services.AddApiVersioningSetup();
 
 builder.Services.AddCoreServices();
 builder.Services.AddAuthServices(builder.Configuration);
-
-builder.Services.AddControllers().AddJsonOptions(opt => {
-    opt.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-});
-builder.Services.AddOpenApi();
-builder.Services.AddSwaggerGen();
+builder
+    .Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
 
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
+    app.UseSwaggerDocumentation();
+    app.UseScalarDocumentation();
     app.MapOpenApi();
 }
 

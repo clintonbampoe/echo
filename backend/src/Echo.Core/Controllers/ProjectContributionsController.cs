@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Echo.Core.Controllers;
 
-[Route("api/[controller]")]
 public class ProjectContributionsController(ProjectContributionService service) : BaseController
 {
     private readonly ProjectContributionService _service = service;

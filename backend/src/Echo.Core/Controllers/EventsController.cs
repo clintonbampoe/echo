@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Echo.Core.Controllers;
 
-[Route("api/[controller]")]
 public class EventsController(EventService service) : BaseController
 {
     private readonly EventService _service = service;

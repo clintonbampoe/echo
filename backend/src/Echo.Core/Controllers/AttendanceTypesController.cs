@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Echo.Core.Controllers;
 
-[Route("api/[controller]")]
 public class AttendanceTypesController(AttendanceTypeService service) : BaseController
 {
     private readonly AttendanceTypeService _service = service;
