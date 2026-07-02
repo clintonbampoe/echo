@@ -15,6 +15,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="Asp.Versioning.Mvc" />
       <PackageReference Include="DotNetEnv" />
     </ItemGroup>
 

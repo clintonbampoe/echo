@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Echo.Core.Controllers;
 
-[Route("api/[controller]")]
 public class OrganizationMembersController(OrganizationMemberService service) : BaseController
 {
     private readonly OrganizationMemberService _service = service;

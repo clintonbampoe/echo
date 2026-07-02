@@ -1,9 +1,11 @@
-
+using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Echo.Shared.Controllers;
 
 [ApiController]
+[ApiVersion(1.0)]
+[Route("/api/v{version:apiVersion}/[controller]")]
 public abstract class BaseController : ControllerBase
 {
     // Temporary until JWT auth is implemented.

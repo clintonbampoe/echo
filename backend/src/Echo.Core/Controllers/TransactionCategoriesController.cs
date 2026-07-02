@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Echo.Core.Controllers;
 
-[Route("api/[controller]")]
 public class TransactionCategoriesController(TransactionCategoryService service) : BaseController
 {
     private readonly TransactionCategoryService _service = service;
