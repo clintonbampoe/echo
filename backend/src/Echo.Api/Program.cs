@@ -10,11 +10,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddEnvironmentVariables();
 
 builder.Services.AddDbContextServices(builder.Configuration);
-builder.Services.AddCoreServices();
-builder.Services.AddApiVersioningSetup();
-builder.Services.AddAuthServices(builder.Configuration);
+builder.Services.AddSwaggerDocumentation();
 builder.Services.AddOpenApi();
-builder.Services.AddSwaggerGen();
+builder.Services.AddApiVersioningSetup();
+
+builder.Services.AddCoreServices();
+builder.Services.AddAuthServices(builder.Configuration);
 builder
     .Services.AddControllers()
     .AddJsonOptions(options =>
@@ -26,7 +27,8 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
+    app.UseSwaggerDocumentation();
+    app.UseScalarDocumentation();
     app.MapOpenApi();
 }
 
