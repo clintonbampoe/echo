@@ -2,14 +2,11 @@ using System.Text.Json.Serialization;
 using Echo.Api.Extensions;
 using Echo.Auth.Extensions;
 using Echo.Core.Extensions;
-using Echo.Shared.Extensions;
-
-EnvLoader.LoadFromRepoRoot();
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddEnvironmentVariables();
 
-builder.Services.AddDbContextServices(builder.Configuration);
+builder.Services.AddDbContext(builder.Configuration);
 builder.Services.AddSwaggerDocumentation();
 builder.Services.AddOpenApi();
 builder.Services.AddApiVersioningSetup();

@@ -18,6 +18,7 @@
         "**/.git": true,
         "**/.svn": true,
         "**/.hg": true,
+        "**/.idea": true,
         "**/.DS_Store": true,
         "**/Thumbs.db": true,
 
