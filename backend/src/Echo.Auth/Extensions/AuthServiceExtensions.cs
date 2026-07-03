@@ -15,12 +15,12 @@ public static class AuthServiceExtensions
     {
         services.AddResend(options =>
         {
-            options.ApiToken = configuration["RESEND_API_TOKEN"]!;
+            options.ApiToken = configuration["Resend:ApiKey"]!;
         });
         services.AddScoped<IEmailService, ResendEmailService>();
 
         // first parameter is ignored because we have no configurations outside our AutoMapper profiles
-        services.AddAutoMapper(_ => { } , typeof(AuthServiceExtensions));
+        services.AddAutoMapper(_ => { }, typeof(AuthServiceExtensions));
         return services;
     }
 }
