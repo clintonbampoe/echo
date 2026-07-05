@@ -10,6 +10,6 @@ public class ProjectCategory : IReferenceEntity, ISearchableEntity
 
     public string Name { get; set; } = string.Empty;
 
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; }
     public DateTime? DeletedAt { get; set; }
 }

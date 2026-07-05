@@ -4,8 +4,7 @@ using Echo.Core.Repositories;
 using Echo.Core.Services.Base;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core;
-using Echo.Shared.HttpResults;
-using Echo.Shared.HttpResults.Interfaces;
+using Echo.Application.HttpResults;
 
 namespace Echo.Core.Services;
 

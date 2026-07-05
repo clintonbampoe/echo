@@ -1,13 +1,13 @@
+using Echo.Core.Controllers.Base;
 using Echo.Core.Dtos;
 using Echo.Core.Services;
-using Echo.Shared.Controllers;
-using Echo.Shared.Pagination;
-using Echo.Shared.Query;
+using Echo.Application.Pagination;
+using Echo.Application.Query;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Echo.Core.Controllers;
 
-public class AttendanceController(AttendanceService service) : BaseController
+public class AttendanceController(AttendanceService service) : CoreBaseController
 {
     private readonly AttendanceService _service = service;
 

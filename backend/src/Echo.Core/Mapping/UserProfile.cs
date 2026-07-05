@@ -13,13 +13,15 @@ public class UserProfile : Profile
             .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.DeletedAt, opt => opt.Ignore())
             .ForMember(dest => dest.Congregation, opt => opt.Ignore())
-            .ForMember(dest => dest.CongregationId, opt => opt.Ignore());
+            .ForMember(dest => dest.CongregationId, opt => opt.Ignore())
+            .ForMember(dest => dest.PasswordHash, opt => opt.Ignore());
 
         CreateMap<UserUpdateDto, User>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())
             .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
             .ForMember(dest => dest.DeletedAt, opt => opt.Ignore())
             .ForMember(dest => dest.Congregation, opt => opt.Ignore())
-            .ForMember(dest => dest.CongregationId, opt => opt.Ignore());
+            .ForMember(dest => dest.CongregationId, opt => opt.Ignore())
+            .ForMember(dest => dest.PasswordHash, opt => opt.Ignore());
     }
 }

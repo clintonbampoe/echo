@@ -14,7 +14,7 @@ public record OrganizationUpdateDto : IPrimaryUpdateDto
     public string? Description { get; init; }
 }
 
-public record OrganizationListResponseDto : IPrimaryListResponseDto, Shared.Dtos.Interfaces.IPrimaryListResponseDto
+public record OrganizationListResponseDto : IPrimaryListResponseDto, Application.Dtos.Interfaces.IPrimaryListResponseDto
 {
     public Guid Id { get; init; }
     public required string Name { get; init; }

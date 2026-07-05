@@ -8,7 +8,7 @@ public class ProjectContribution : IPrimaryEntity
     public Guid Id { get; set; } = Guid.CreateVersion7();
     public Guid CongregationId { get; set; }
     public Congregation Congregation { get; set; } = null!;
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; }
     public DateTime? DeletedAt { get; set; }
     public Guid ProjectId { get; set; }
     public Project Project { get; set; } = null!;

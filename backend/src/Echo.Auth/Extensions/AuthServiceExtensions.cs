@@ -1,5 +1,7 @@
+using Echo.Application.Services;
+using Echo.Auth.Controllers;
 using Echo.Auth.Services;
-using Echo.Auth.Services.Interfaces;
+using Echo.Auth.Services.Email;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Resend;
@@ -21,6 +23,11 @@ public static class AuthServiceExtensions
 
         // first parameter is ignored because we have no configurations outside our AutoMapper profiles
         services.AddAutoMapper(_ => { }, typeof(AuthServiceExtensions));
+
+        services.AddScoped<RegisterController>();
+        services.AddScoped<RegistrationService>();
+        services.AddScoped<IHashService, HashServiceBcrypt>();
+
         return services;
     }
 }

@@ -7,8 +7,15 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="AutoMapper"  />
+      <PackageReference Include="AutoMapper" />
+      <PackageReference Include="Microsoft.AspNetCore.Mvc" />
       <PackageReference Include="Resend" />
+      <PackageReference Include="System.Security.Cryptography.Xml" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Echo.Application\Echo.Application.csproj" />
+      <ProjectReference Include="..\Echo.Core\Echo.Core.csproj" />
     </ItemGroup>
 
 </Project>

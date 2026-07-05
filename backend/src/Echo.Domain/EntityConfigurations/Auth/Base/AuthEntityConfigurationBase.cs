@@ -12,8 +12,6 @@ public abstract class AuthEntityConfigurationBase<TEntity> : IEntityTypeConfigur
         builder.HasKey(e => e.Id);
         builder.HasIndex(e => e.CreatedAt);
 
-        builder.Property(e => e.Id).HasDefaultValueSql("uuidv7()").ValueGeneratedOnAdd();
-        builder.Property(e => e.CreatedAt).HasDefaultValueSql("now()").ValueGeneratedOnAdd();
         builder.Property(e => e.CreatedAt).HasDefaultValueSql("now()").ValueGeneratedOnAdd();
 
         ConfigureEntity(builder);

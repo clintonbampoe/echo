@@ -1,6 +1,6 @@
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core.Interfaces;
-using Echo.Shared.Extensions.QueryMethods;
+using Echo.Application.Extensions.QueryMethods;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Core.Repositories.Base;

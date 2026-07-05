@@ -25,7 +25,7 @@ public record AttendanceUpdateDto : IPrimaryUpdateDto
     public string? Description { get; init; }
 }
 
-public record AttendanceListResponseDto : IPrimaryListResponseDto, Shared.Dtos.Interfaces.IPrimaryListResponseDto
+public record AttendanceListResponseDto : IPrimaryListResponseDto, Application.Dtos.Interfaces.IPrimaryListResponseDto
 {
     public Guid Id { get; init; }
     public required string AttendanceContextName { get; init; }

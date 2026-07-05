@@ -47,7 +47,7 @@ public record MemberUpdateDto : IPrimaryUpdateDto
     public MemberActivityStatus MemberActivityStatus { get; init; }
 }
 
-public record MemberListResponseDto : IPrimaryListResponseDto, Shared.Dtos.Interfaces.IPrimaryListResponseDto
+public record MemberListResponseDto : IPrimaryListResponseDto, Application.Dtos.Interfaces.IPrimaryListResponseDto
 {
     public Guid Id { get; init; }
     public required string Name { get; init; }

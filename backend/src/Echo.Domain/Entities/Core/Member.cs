@@ -5,7 +5,7 @@ namespace Echo.Domain.Entities.Core;
 
 public class Member : IPrimaryEntity, ISearchableEntity
 {
-    public Guid Id { get; set; }
+    public Guid Id { get; set; } = Guid.CreateVersion7(DateTime.UtcNow);
     public Guid CongregationId { get; set; }
     public Congregation Congregation { get; set; } = null!;
 
@@ -29,6 +29,6 @@ public class Member : IPrimaryEntity, ISearchableEntity
     public string EmergencyContactPhoneNumber { get; set; } = string.Empty;
     public MemberActivityStatus MemberActivityStatus { get; set; }
 
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; }
     public DateTime? DeletedAt { get; set; }
 }

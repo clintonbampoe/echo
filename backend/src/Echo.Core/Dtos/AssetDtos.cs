@@ -27,7 +27,7 @@ public record AssetUpdateDto : IPrimaryUpdateDto
     public string? Description { get; init; }
 }
 
-public record AssetListResponseDto : IPrimaryListResponseDto, Shared.Dtos.Interfaces.IPrimaryListResponseDto
+public record AssetListResponseDto : IPrimaryListResponseDto, Application.Dtos.Interfaces.IPrimaryListResponseDto
 {
     public Guid Id { get; init; }
     public required string CategoryName { get; init; }

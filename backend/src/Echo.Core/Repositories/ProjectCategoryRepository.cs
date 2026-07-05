@@ -2,7 +2,7 @@ using Echo.Core.Dtos;
 using Echo.Core.Repositories.Base;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core;
-using Echo.Shared.Extensions.QueryMethods;
+using Echo.Application.Extensions.QueryMethods;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Core.Repositories;

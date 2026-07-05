@@ -5,16 +5,17 @@ namespace Echo.Domain.Entities.Core;
 
 public class User : IPrimaryEntity, ISearchableEntity
 {
-    public Guid Id { get; set; }
+    public Guid Id { get; set; } = Guid.CreateVersion7(DateTime.UtcNow);
     public Guid CongregationId { get; set; }
     public Congregation Congregation { get; set; } = null!;
 
-    public string Name { get; set; } = string.Empty;
-    public string UserName { get; set; } = string.Empty;
     public string EmailAddress { get; set; } = string.Empty;
     public string PasswordHash { get; set; } = string.Empty;
     public UserRole Role { get; set; }
+    public DateTime? EmailVerifiedAt { get; set; }
 
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public string Name { get; set; } = string.Empty;
+
+    public DateTime CreatedAt { get; set; }
     public DateTime? DeletedAt { get; set; }
 }

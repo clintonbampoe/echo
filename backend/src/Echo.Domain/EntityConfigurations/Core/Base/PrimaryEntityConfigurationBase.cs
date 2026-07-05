@@ -11,15 +11,13 @@ public abstract class PrimaryEntityConfigurationBase<TEntity> : IEntityTypeConfi
     {
         builder.HasKey(e => e.Id);
 
-        builder.Property(e => e.Id).HasDefaultValueSql("uuidv7()").ValueGeneratedOnAdd();
-
         builder.Property(e => e.CreatedAt).HasDefaultValueSql("now()").ValueGeneratedOnAdd();
 
         builder
             .HasOne(e => e.Congregation)
             .WithMany()
             .HasForeignKey(e => e.CongregationId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasIndex(e => e.CongregationId);
         builder.HasIndex(e => e.DeletedAt);

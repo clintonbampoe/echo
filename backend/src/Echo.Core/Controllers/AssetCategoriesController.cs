@@ -1,11 +1,11 @@
+using Echo.Core.Controllers.Base;
 using Echo.Core.Dtos;
 using Echo.Core.Services;
-using Echo.Shared.Controllers;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Echo.Core.Controllers;
 
-public class AssetCategoriesController(AssetCategoryService service) : BaseController
+public class AssetCategoriesController(AssetCategoryService service) : CoreBaseController
 {
     private readonly AssetCategoryService _service = service;
 

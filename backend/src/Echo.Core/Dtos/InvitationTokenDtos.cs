@@ -12,7 +12,7 @@ public record InvitationTokenCreateDto : IPrimaryCreateDto
     public bool IsRevoked { get; init; }
 }
 
-public record InvitationTokenListResponseDto : IPrimaryListResponseDto, Shared.Dtos.Interfaces.IPrimaryListResponseDto
+public record InvitationTokenListResponseDto : IPrimaryListResponseDto, Application.Dtos.Interfaces.IPrimaryListResponseDto
 {
     public Guid Id { get; init; }
     public required string CreatedByUserEmail { get; init; }
