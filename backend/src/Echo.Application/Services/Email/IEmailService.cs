@@ -1,6 +1,6 @@
 using Echo.Application.Models;
 
-namespace Echo.Application.Services;
+namespace Echo.Application.Services.Email;
 
 public interface IEmailService
 {

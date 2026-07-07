@@ -1,12 +1,13 @@
 using AutoMapper;
 using Echo.Application.HttpResults;
-using Echo.Application.Services;
+using Echo.Application.Services.Hashing;
 using Echo.Core.Dtos;
 using Echo.Core.Repositories;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core;
 using Echo.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Echo.Auth.Services;
 
@@ -15,23 +16,17 @@ public class RegistrationService(
     CongregationRepository congregationRepository,
     UserRepository userRepository,
     IMapper mapper,
-    IHashService hashService
+    [FromKeyedServices("Bcrypt")] IHashService hashService
 )
 {
-    private readonly AppDbContext _context = context;
-    private readonly CongregationRepository _congregationRepository = congregationRepository;
-    private readonly UserRepository _userRepository = userRepository;
-    private readonly IMapper _mapper = mapper;
-    private readonly IHashService _hashService = hashService;
-
     public async Task<IOperationResult> RegisterCongregation(
         CongregationCreateDto congregationDto,
         UserCreateDto userDto,
         CancellationToken ct
     )
     {
-        var congregation = _mapper.Map<Congregation>(congregationDto);
-        var user = _mapper.Map<User>(userDto);
+        var congregation = mapper.Map<Congregation>(congregationDto);
+        var user = mapper.Map<User>(userDto);
         user.Role = UserRole.Admin;
         user.CongregationId = congregation.Id;
 
@@ -40,12 +35,12 @@ public class RegistrationService(
 
         await HashPassword(user, userDto);
 
-        await using var transaction = await _context.Database.BeginTransactionAsync(ct);
+        await using var transaction = await context.Database.BeginTransactionAsync(ct);
         try
         {
-            await _congregationRepository.CreateRecord(congregation, ct);
-            await _userRepository.CreateRecord(user, ct);
-            await _context.SaveChangesAsync(ct);
+            await congregationRepository.CreateRecord(congregation, ct);
+            await userRepository.CreateRecord(user, ct);
+            await context.SaveChangesAsync(ct);
             await transaction.CommitAsync(ct);
         }
         catch (DbUpdateException ex)
@@ -64,11 +59,11 @@ public class RegistrationService(
 
     private async Task<bool> IsEmailTaken(string emailAddress, CancellationToken ct)
     {
-        return await _userRepository.IsEmailAddressTaken(emailAddress, ct);
+        return await userRepository.IsEmailAddressTaken(emailAddress, ct);
     }
 
     private async Task HashPassword(User user, UserCreateDto userDto)
     {
-        user.PasswordHash = await _hashService.HashPasswordAsync(userDto.Password);
+        user.PasswordHash = await hashService.HashPasswordAsync(userDto.Password);
     }
 }

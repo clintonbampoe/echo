@@ -1,7 +1,7 @@
 using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Echo.Auth.Controllers.Base;
+namespace Echo.Auth.Controllers;
 
 [ApiController]
 [ApiVersion(1.0)]

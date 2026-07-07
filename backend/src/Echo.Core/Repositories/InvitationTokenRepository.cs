@@ -19,7 +19,7 @@ public class InvitationTokenRepository(AppDbContext context)
         CancellationToken ct = default
     )
     {
-        var query = _dbSet
+        var query = DbSet
             .AsNoTracking()
             .ApplySoftDeleteFilter()
             .ApplyDateFilters(queryParameters)
@@ -52,7 +52,7 @@ public class InvitationTokenRepository(AppDbContext context)
         CancellationToken ct = default
     )
     {
-        return await _dbSet
+        return await DbSet
             .AsNoTracking()
             .ApplySoftDeleteFilter()
             .Where(i => i.Id == id)

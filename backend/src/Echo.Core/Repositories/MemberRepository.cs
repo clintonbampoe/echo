@@ -18,7 +18,7 @@ public class MemberRepository(AppDbContext context) : PrimaryRepositoryBase<Memb
         CancellationToken ct = default
     )
     {
-        var query = _dbSet
+        var query = DbSet
             .AsNoTracking()
             .ApplySoftDeleteFilter()
             .ApplySearchFilter(queryParameters)
@@ -50,7 +50,7 @@ public class MemberRepository(AppDbContext context) : PrimaryRepositoryBase<Memb
 
     public async Task<MemberResponseDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
-        return await _dbSet
+        return await DbSet
             .AsNoTracking()
             .ApplySoftDeleteFilter()
             .Where(m => m.Id == id)

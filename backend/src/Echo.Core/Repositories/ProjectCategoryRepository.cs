@@ -15,7 +15,7 @@ public class ProjectCategoryRepository(AppDbContext context)
         CancellationToken ct = default
     )
     {
-        return await _dbSet
+        return await DbSet
             .AsNoTracking()
             .ApplySoftDeleteFilter()
             .Where(c => c.CongregationId == congregationId)
@@ -32,7 +32,7 @@ public class ProjectCategoryRepository(AppDbContext context)
         CancellationToken ct = default
     )
     {
-        return await _dbSet
+        return await DbSet
             .AsNoTracking()
             .ApplySoftDeleteFilter()
             .Where(c => c.Id == id)

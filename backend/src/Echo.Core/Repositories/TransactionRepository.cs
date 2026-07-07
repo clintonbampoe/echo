@@ -19,7 +19,7 @@ public class TransactionRepository(AppDbContext context)
         CancellationToken ct = default
     )
     {
-        var query = _dbSet
+        var query = DbSet
             .AsNoTracking()
             .ApplySoftDeleteFilter()
             .ApplyDateFilters(queryParameters)
@@ -49,7 +49,7 @@ public class TransactionRepository(AppDbContext context)
 
     public async Task<TransactionResponseDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
-        return await _dbSet
+        return await DbSet
             .AsNoTracking()
             .ApplySoftDeleteFilter()
             .Where(t => t.Id == id)

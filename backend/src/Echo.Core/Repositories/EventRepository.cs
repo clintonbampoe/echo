@@ -18,7 +18,7 @@ public class EventRepository(AppDbContext context) : PrimaryRepositoryBase<Event
         CancellationToken ct = default
     )
     {
-        var query = _dbSet
+        var query = DbSet
             .AsNoTracking()
             .ApplySoftDeleteFilter()
             .ApplySearchFilter(queryParameters)
@@ -47,7 +47,7 @@ public class EventRepository(AppDbContext context) : PrimaryRepositoryBase<Event
 
     public async Task<EventResponseDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
-        return await _dbSet
+        return await DbSet
             .AsNoTracking()
             .ApplySoftDeleteFilter()
             .Where(e => e.Id == id)

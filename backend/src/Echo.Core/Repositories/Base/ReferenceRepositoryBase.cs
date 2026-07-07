@@ -10,31 +10,34 @@ namespace Echo.Core.Repositories.Base;
 public abstract class ReferenceRepositoryBase<T>(AppDbContext context)
     where T : class, IReferenceEntity
 {
-    protected readonly AppDbContext _context = context;
-    protected readonly DbSet<T> _dbSet = context.Set<T>();
+    protected readonly AppDbContext Context = context;
+    protected readonly DbSet<T> DbSet = context.Set<T>();
 
     public virtual async Task<bool> CreateRecord(T entity, CancellationToken ct = default)
     {
-        await _dbSet.AddAsync(entity, ct);
+        await DbSet.AddAsync(entity, ct);
         return true;
     }
 
     public virtual async Task<bool> UpdateRecord(int id, T entity, CancellationToken ct = default)
     {
-        var existing = await _dbSet
+        var existing = await DbSet
             .ApplySoftDeleteFilter()
             .FirstOrDefaultAsync(e => e.Id == id, ct);
-
         if (existing is null)
             return false;
 
-        _dbSet.Entry(existing).CurrentValues.SetValues(entity);
+        DbSet.Entry(existing).CurrentValues.SetValues(entity);
+        DbSet.Entry(existing).Property(e => e.Id).IsModified = false;
+        DbSet.Entry(existing).Property(e => e.CreatedAt).IsModified = false;
+        DbSet.Entry(existing).Property(e => e.DeletedAt).IsModified = false;
+
         return true;
     }
 
     public virtual async Task<bool> DeleteRecord(int id, CancellationToken ct = default)
     {
-        var existing = await _dbSet
+        var existing = await DbSet
             .ApplySoftDeleteFilter()
             .FirstOrDefaultAsync(e => e.Id == id, ct);
 

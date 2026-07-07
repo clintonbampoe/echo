@@ -18,7 +18,7 @@ public class AttendanceRepository(AppDbContext context) : PrimaryRepositoryBase<
         CancellationToken ct = default
     )
     {
-        var query = _dbSet
+        var query = DbSet
             .AsNoTracking()
             .ApplySoftDeleteFilter()
             .ApplyDateFilters(queryParameters)
@@ -51,7 +51,7 @@ public class AttendanceRepository(AppDbContext context) : PrimaryRepositoryBase<
 
     public async Task<AttendanceResponseDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
-        return await _dbSet
+        return await DbSet
             .AsNoTracking()
             .ApplySoftDeleteFilter()
             .Where(a => a.Id == id)

@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using Echo.Api.Extensions;
+using Echo.Application.Extensions;
 using Echo.Auth.Extensions;
 using Echo.Core.Extensions;
 
@@ -13,6 +14,7 @@ builder.Services.AddApiVersioningSetup();
 
 builder.Services.AddCoreServices();
 builder.Services.AddAuthServices(builder.Configuration);
+builder.Services.AddApplicationServices();
 builder
     .Services.AddControllers()
     .AddJsonOptions(options =>

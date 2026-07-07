@@ -1,10 +1,10 @@
-using Echo.Auth.Controllers.Base;
 using Echo.Auth.Dtos;
 using Echo.Auth.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Echo.Auth.Controllers;
 
+[Route("/api/auth/v{version:apiVersion}/register")]
 public class RegisterController(RegistrationService service) : AuthBaseController
 {
     private readonly RegistrationService _service = service;

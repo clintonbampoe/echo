@@ -18,7 +18,7 @@ public class ProjectRepository(AppDbContext context) : PrimaryRepositoryBase<Pro
         CancellationToken ct = default
     )
     {
-        var query = _dbSet
+        var query = DbSet
             .AsNoTracking()
             .ApplySoftDeleteFilter()
             .ApplySearchFilter(queryParameters)
@@ -52,7 +52,7 @@ public class ProjectRepository(AppDbContext context) : PrimaryRepositoryBase<Pro
 
     public async Task<ProjectResponseDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
-        return await _dbSet
+        return await DbSet
             .AsNoTracking()
             .ApplySoftDeleteFilter()
             .Where(p => p.Id == id)

@@ -18,7 +18,7 @@ public class TitheRepository(AppDbContext context) : PrimaryRepositoryBase<Tithe
         CancellationToken ct = default
     )
     {
-        var query = _dbSet
+        var query = DbSet
             .AsNoTracking()
             .ApplySoftDeleteFilter()
             .ApplyDateFilters(queryParameters)
@@ -46,7 +46,7 @@ public class TitheRepository(AppDbContext context) : PrimaryRepositoryBase<Tithe
 
     public async Task<TitheResponseDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
-        return await _dbSet
+        return await DbSet
             .AsNoTracking()
             .ApplySoftDeleteFilter()
             .Where(t => t.Id == id)

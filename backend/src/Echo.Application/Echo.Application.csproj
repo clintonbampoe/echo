@@ -19,4 +19,10 @@
       <PackageReference Include="BCrypt.Net-Next" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Reference Include="Resend">
+        <HintPath>..\..\..\..\..\.nuget\packages\resend\0.5.1\lib\net8.0\Resend.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
 </Project>

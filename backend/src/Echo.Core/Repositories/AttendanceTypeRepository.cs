@@ -15,7 +15,7 @@ public class AttendanceTypeRepository(AppDbContext context)
         CancellationToken ct = default
     )
     {
-        return await _dbSet
+        return await DbSet
             .AsNoTracking()
             .ApplySoftDeleteFilter()
             .Where(t => t.CongregationId == congregationId)
@@ -32,7 +32,7 @@ public class AttendanceTypeRepository(AppDbContext context)
         CancellationToken ct = default
     )
     {
-        return await _dbSet
+        return await DbSet
             .AsNoTracking()
             .ApplySoftDeleteFilter()
             .Where(t => t.Id == id)

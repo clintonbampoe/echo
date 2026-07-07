@@ -18,7 +18,7 @@ public class UserRepository(AppDbContext context) : PrimaryRepositoryBase<User>(
         CancellationToken ct
     )
     {
-        var query = _dbSet
+        var query = DbSet
             .AsNoTracking()
             .ApplySoftDeleteFilter()
             .ApplySearchFilter(queryParameters)
@@ -43,7 +43,7 @@ public class UserRepository(AppDbContext context) : PrimaryRepositoryBase<User>(
 
     public async Task<UserResponseDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
-        return await _dbSet
+        return await DbSet
             .AsNoTracking()
             .ApplySoftDeleteFilter()
             .Where(u => u.Id == id)
@@ -61,7 +61,7 @@ public class UserRepository(AppDbContext context) : PrimaryRepositoryBase<User>(
 
     public async Task<bool> IsEmailAddressTaken(string emailAddress, CancellationToken ct)
     {
-        var exists = await _dbSet
+        var exists = await DbSet
             .ApplySoftDeleteFilter()
             .AnyAsync(u => u.EmailAddress == emailAddress, ct);
 

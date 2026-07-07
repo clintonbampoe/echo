@@ -18,7 +18,7 @@ public class AssetRepository(AppDbContext context) : PrimaryRepositoryBase<Asset
         CancellationToken ct = default
     )
     {
-        var query = _dbSet
+        var query = DbSet
             .AsNoTracking()
             .ApplySoftDeleteFilter()
             .ApplyDateFilters(queryParameters)
@@ -45,7 +45,7 @@ public class AssetRepository(AppDbContext context) : PrimaryRepositoryBase<Asset
 
     public async Task<AssetResponseDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
-        return await _dbSet
+        return await DbSet
             .AsNoTracking()
             .ApplySoftDeleteFilter()
             .Where(a => a.Id == id)
