@@ -21,7 +21,7 @@ public record TransactionUpdateDto : IPrimaryUpdateDto
     public string? Description { get; init; }
 }
 
-public record TransactionListResponseDto : IPrimaryListResponseDto, Shared.Dtos.Interfaces.IPrimaryListResponseDto
+public record TransactionListResponseDto : IPrimaryListResponseDto, Application.Dtos.Interfaces.IPrimaryListResponseDto
 {
     public Guid Id { get; init; }
     public required string CategoryName { get; init; }

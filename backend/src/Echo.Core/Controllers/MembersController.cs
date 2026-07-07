@@ -1,13 +1,13 @@
+using Echo.Core.Controllers.Base;
 using Echo.Core.Dtos;
 using Echo.Core.Services;
-using Echo.Shared.Controllers;
-using Echo.Shared.Pagination;
-using Echo.Shared.Query;
+using Echo.Application.Pagination;
+using Echo.Application.Query;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Echo.Core.Controllers;
 
-public class MembersController(MemberService service) : BaseController
+public class MembersController(MemberService service) : CoreBaseController
 {
     private readonly MemberService _service = service;
 

@@ -3,8 +3,7 @@ using Echo.Core.Dtos.Interfaces;
 using Echo.Core.Repositories.Base;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core.Interfaces;
-using Echo.Shared.HttpResults;
-using Echo.Shared.HttpResults.Interfaces;
+using Echo.Application.HttpResults;
 
 namespace Echo.Core.Services.Base;
 

@@ -20,7 +20,7 @@ public record ProjectContributionUpdateDto : IPrimaryUpdateDto
     public required string ? Description { get; init; }
 }
 
-public record ProjectContributionListResponseDto : IPrimaryListResponseDto, Shared.Dtos.Interfaces.IPrimaryListResponseDto
+public record ProjectContributionListResponseDto : IPrimaryListResponseDto, Application.Dtos.Interfaces.IPrimaryListResponseDto
 {
     public Guid Id { get; init; }
     public required string  ProjectName { get; init; }

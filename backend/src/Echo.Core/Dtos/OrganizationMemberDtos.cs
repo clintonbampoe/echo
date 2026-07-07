@@ -17,7 +17,7 @@ public record OrganizationMemberUpdateDto : IPrimaryUpdateDto
     public DateOnly JoinedAt { get; init; }
 }
 
-public record OrganizationMemberListResponseDto : IPrimaryListResponseDto, Shared.Dtos.Interfaces.IPrimaryListResponseDto
+public record OrganizationMemberListResponseDto : IPrimaryListResponseDto, Application.Dtos.Interfaces.IPrimaryListResponseDto
 {
     public Guid Id { get; init; }
     public required string MemberName { get; init; }

@@ -1,13 +1,13 @@
+using Echo.Core.Controllers.Base;
 using Echo.Core.Dtos;
 using Echo.Core.Services;
-using Echo.Shared.Controllers;
-using Echo.Shared.Pagination;
-using Echo.Shared.Query;
+using Echo.Application.Pagination;
+using Echo.Application.Query;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Echo.Core.Controllers;
 
-public class OrganizationsController(OrganizationService service) : BaseController
+public class OrganizationsController(OrganizationService service) : CoreBaseController
 {
     private readonly OrganizationService _service = service;
 

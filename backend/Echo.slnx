@@ -5,6 +5,6 @@
     <Project Path="src/Echo.Core/Echo.Core.csproj" />
     <Project Path="src/Echo.Domain/Echo.Domain.csproj" />
     <Project Path="src/Echo.Infrastructure/Echo.Infrastructure.csproj" />
-    <Project Path="src/Echo.Shared/Echo.Shared.csproj" />
+    <Project Path="src\Echo.Application\Echo.Application.csproj" />
   </Folder>
 </Solution>

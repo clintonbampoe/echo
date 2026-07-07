@@ -30,7 +30,7 @@ public record EventUpdateDto : IPrimaryUpdateDto
     public string? Description { get; init; }
 }
 
-public record EventListResponseDto : IPrimaryListResponseDto, Shared.Dtos.Interfaces.IPrimaryListResponseDto
+public record EventListResponseDto : IPrimaryListResponseDto, Application.Dtos.Interfaces.IPrimaryListResponseDto
 {
     public Guid Id { get; init; }
     public required string OrganizationName { get; init; }

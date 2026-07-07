@@ -4,10 +4,9 @@ using Echo.Core.Repositories;
 using Echo.Core.Services.Base;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core;
-using Echo.Shared.HttpResults;
-using Echo.Shared.HttpResults.Interfaces;
-using Echo.Shared.Pagination;
-using Echo.Shared.Query;
+using Echo.Application.HttpResults;
+using Echo.Application.Pagination;
+using Echo.Application.Query;
 
 namespace Echo.Core.Services;
 

@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\Echo.Domain\Echo.Domain.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Asp.Versioning.Mvc" />
+      <PackageReference Include="BCrypt.Net-Next" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="Resend">
+        <HintPath>..\..\..\..\..\.nuget\packages\resend\0.5.1\lib\net8.0\Resend.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
+</Project>

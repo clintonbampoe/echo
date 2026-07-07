@@ -1,11 +1,11 @@
+using Echo.Core.Controllers.Base;
 using Echo.Core.Dtos;
 using Echo.Core.Services;
-using Echo.Shared.Controllers;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Echo.Core.Controllers;
 
-public class AttendanceTypesController(AttendanceTypeService service) : BaseController
+public class AttendanceTypesController(AttendanceTypeService service) : CoreBaseController
 {
     private readonly AttendanceTypeService _service = service;
 

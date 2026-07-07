@@ -17,7 +17,7 @@ namespace Echo.Infrastructure.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.9")
+                .HasAnnotation("ProductVersion", "10.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -26,8 +26,7 @@ namespace Echo.Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValueSql("uuidv7()");
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -43,7 +42,7 @@ namespace Echo.Infrastructure.Migrations
                     b.Property<bool>("IsUsed")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("Token")
+                    b.Property<string>("TokenHash")
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
@@ -55,7 +54,7 @@ namespace Echo.Infrastructure.Migrations
 
                     b.HasIndex("CreatedAt");
 
-                    b.HasIndex("Token");
+                    b.HasIndex("TokenHash");
 
                     b.HasIndex("UserId");
 
@@ -66,8 +65,7 @@ namespace Echo.Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValueSql("uuidv7()");
+                        .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -106,8 +104,7 @@ namespace Echo.Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValueSql("uuidv7()");
+                        .HasColumnType("uuid");
 
                     b.Property<int>("CategoryId")
                         .HasColumnType("integer");
@@ -200,8 +197,7 @@ namespace Echo.Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValueSql("uuidv7()");
+                        .HasColumnType("uuid");
 
                     b.Property<int>("AttendanceContextId")
                         .HasColumnType("integer");
@@ -330,10 +326,15 @@ namespace Echo.Infrastructure.Migrations
 
             modelBuilder.Entity("Echo.Domain.Entities.Core.Congregation", b =>
                 {
-                    b.Property<Guid>("CongregationId")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasDefaultValueSql("uuidv7()");
+
+                    b.Property<string>("City")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
 
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
@@ -343,12 +344,48 @@ namespace Echo.Infrastructure.Migrations
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("EmailAddress")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("GpsAddress")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 
-                    b.HasKey("CongregationId");
+                    b.Property<string>("OrgType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("PostalAddress")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("Region")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Town")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("WebsiteUrl")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.HasKey("Id");
 
                     b.ToTable("Congregations");
                 });
@@ -357,8 +394,7 @@ namespace Echo.Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValueSql("uuidv7()");
+                        .HasColumnType("uuid");
 
                     b.Property<int?>("Capacity")
                         .HasColumnType("integer");
@@ -425,8 +461,7 @@ namespace Echo.Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValueSql("uuidv7()");
+                        .HasColumnType("uuid");
 
                     b.Property<TimeOnly>("CheckInTime")
                         .HasColumnType("time without time zone");
@@ -466,8 +501,10 @@ namespace Echo.Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValueSql("uuidv7()");
+                        .HasColumnType("uuid");
+
+                    b.Property<TimeOnly>("CheckInTime")
+                        .HasColumnType("time without time zone");
 
                     b.Property<Guid>("CongregationId")
                         .HasColumnType("uuid");
@@ -507,8 +544,7 @@ namespace Echo.Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValueSql("uuidv7()");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("AllowedRole")
                         .IsRequired()
@@ -560,8 +596,7 @@ namespace Echo.Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValueSql("uuidv7()");
+                        .HasColumnType("uuid");
 
                     b.Property<string>("City")
                         .IsRequired()
@@ -673,8 +708,7 @@ namespace Echo.Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValueSql("uuidv7()");
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("CongregationId")
                         .HasColumnType("uuid");
@@ -712,8 +746,7 @@ namespace Echo.Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValueSql("uuidv7()");
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("CongregationId")
                         .HasColumnType("uuid");
@@ -757,8 +790,7 @@ namespace Echo.Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValueSql("uuidv7()");
+                        .HasColumnType("uuid");
 
                     b.Property<int>("CategoryId")
                         .HasColumnType("integer");
@@ -852,8 +884,7 @@ namespace Echo.Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValueSql("uuidv7()");
+                        .HasColumnType("uuid");
 
                     b.Property<decimal>("Amount")
                         .HasColumnType("numeric");
@@ -898,8 +929,7 @@ namespace Echo.Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValueSql("uuidv7()");
+                        .HasColumnType("uuid");
 
                     b.Property<decimal>("Amount")
                         .HasColumnType("numeric");
@@ -951,8 +981,7 @@ namespace Echo.Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValueSql("uuidv7()");
+                        .HasColumnType("uuid");
 
                     b.Property<decimal>("Amount")
                         .HasColumnType("numeric");
@@ -1037,8 +1066,7 @@ namespace Echo.Infrastructure.Migrations
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid")
-                        .HasDefaultValueSql("uuidv7()");
+                        .HasColumnType("uuid");
 
                     b.Property<Guid>("CongregationId")
                         .HasColumnType("uuid");
@@ -1056,6 +1084,9 @@ namespace Echo.Infrastructure.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 
+                    b.Property<DateTime?>("EmailVerifiedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -1069,11 +1100,6 @@ namespace Echo.Infrastructure.Migrations
                     b.Property<string>("Role")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<string>("UserName")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
 
                     b.HasKey("Id");
 
@@ -1092,7 +1118,7 @@ namespace Echo.Infrastructure.Migrations
                     b.HasOne("Echo.Domain.Entities.Core.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("User");
@@ -1120,7 +1146,7 @@ namespace Echo.Infrastructure.Migrations
                     b.HasOne("Echo.Domain.Entities.Core.Congregation", "Congregation")
                         .WithMany()
                         .HasForeignKey("CongregationId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Category");
@@ -1133,7 +1159,7 @@ namespace Echo.Infrastructure.Migrations
                     b.HasOne("Echo.Domain.Entities.Core.Congregation", "Congregation")
                         .WithMany()
                         .HasForeignKey("CongregationId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Congregation");
@@ -1150,7 +1176,7 @@ namespace Echo.Infrastructure.Migrations
                     b.HasOne("Echo.Domain.Entities.Core.Congregation", "Congregation")
                         .WithMany()
                         .HasForeignKey("CongregationId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Echo.Domain.Entities.Core.Member", "Member")
@@ -1176,7 +1202,7 @@ namespace Echo.Infrastructure.Migrations
                     b.HasOne("Echo.Domain.Entities.Core.Congregation", "Congregation")
                         .WithMany()
                         .HasForeignKey("CongregationId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("AttendanceType");
@@ -1189,7 +1215,7 @@ namespace Echo.Infrastructure.Migrations
                     b.HasOne("Echo.Domain.Entities.Core.Congregation", "Congregation")
                         .WithMany()
                         .HasForeignKey("CongregationId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Congregation");
@@ -1200,7 +1226,7 @@ namespace Echo.Infrastructure.Migrations
                     b.HasOne("Echo.Domain.Entities.Core.Congregation", "Congregation")
                         .WithMany()
                         .HasForeignKey("CongregationId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Echo.Domain.Entities.Core.Organization", "Organization")
@@ -1227,7 +1253,7 @@ namespace Echo.Infrastructure.Migrations
                     b.HasOne("Echo.Domain.Entities.Core.Congregation", "Congregation")
                         .WithMany()
                         .HasForeignKey("CongregationId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Echo.Domain.Entities.Core.Event", "Event")
@@ -1254,7 +1280,7 @@ namespace Echo.Infrastructure.Migrations
                     b.HasOne("Echo.Domain.Entities.Core.Congregation", "Congregation")
                         .WithMany()
                         .HasForeignKey("CongregationId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Echo.Domain.Entities.Core.Event", "Event")
@@ -1281,7 +1307,7 @@ namespace Echo.Infrastructure.Migrations
                     b.HasOne("Echo.Domain.Entities.Core.Congregation", "Congregation")
                         .WithMany()
                         .HasForeignKey("CongregationId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Echo.Domain.Entities.Core.User", "CreatedBy")
@@ -1300,7 +1326,7 @@ namespace Echo.Infrastructure.Migrations
                     b.HasOne("Echo.Domain.Entities.Core.Congregation", "Congregation")
                         .WithMany()
                         .HasForeignKey("CongregationId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Congregation");
@@ -1311,7 +1337,7 @@ namespace Echo.Infrastructure.Migrations
                     b.HasOne("Echo.Domain.Entities.Core.Congregation", "Congregation")
                         .WithMany()
                         .HasForeignKey("CongregationId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Congregation");
@@ -1322,7 +1348,7 @@ namespace Echo.Infrastructure.Migrations
                     b.HasOne("Echo.Domain.Entities.Core.Congregation", "Congregation")
                         .WithMany()
                         .HasForeignKey("CongregationId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Echo.Domain.Entities.Core.Member", "Member")
@@ -1355,7 +1381,7 @@ namespace Echo.Infrastructure.Migrations
                     b.HasOne("Echo.Domain.Entities.Core.Congregation", "Congregation")
                         .WithMany()
                         .HasForeignKey("CongregationId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Echo.Domain.Entities.Core.Member", "Manager")
@@ -1376,7 +1402,7 @@ namespace Echo.Infrastructure.Migrations
                     b.HasOne("Echo.Domain.Entities.Core.Congregation", "Congregation")
                         .WithMany()
                         .HasForeignKey("CongregationId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Congregation");
@@ -1387,7 +1413,7 @@ namespace Echo.Infrastructure.Migrations
                     b.HasOne("Echo.Domain.Entities.Core.Congregation", "Congregation")
                         .WithMany()
                         .HasForeignKey("CongregationId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Echo.Domain.Entities.Core.Project", "Project")
@@ -1406,7 +1432,7 @@ namespace Echo.Infrastructure.Migrations
                     b.HasOne("Echo.Domain.Entities.Core.Congregation", "Congregation")
                         .WithMany()
                         .HasForeignKey("CongregationId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Echo.Domain.Entities.Core.Member", "Member")
@@ -1431,7 +1457,7 @@ namespace Echo.Infrastructure.Migrations
                     b.HasOne("Echo.Domain.Entities.Core.Congregation", "Congregation")
                         .WithMany()
                         .HasForeignKey("CongregationId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Category");
@@ -1444,7 +1470,7 @@ namespace Echo.Infrastructure.Migrations
                     b.HasOne("Echo.Domain.Entities.Core.Congregation", "Congregation")
                         .WithMany()
                         .HasForeignKey("CongregationId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Congregation");
@@ -1455,7 +1481,7 @@ namespace Echo.Infrastructure.Migrations
                     b.HasOne("Echo.Domain.Entities.Core.Congregation", "Congregation")
                         .WithMany()
                         .HasForeignKey("CongregationId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Congregation");

@@ -10,12 +10,12 @@ public class EmailVerificationTokenEntityConfig
 {
     public override void ConfigureEntity(EntityTypeBuilder<EmailVerificationToken> builder)
     {
-        builder.HasIndex(e => e.Token);
+        builder.HasIndex(e => e.TokenHash);
 
         builder
             .HasOne(e => e.User)
             .WithMany()
             .HasForeignKey(e => e.UserId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

@@ -25,7 +25,7 @@ public record TitheUpdateDto : IPrimaryUpdateDto
     public string? Description { get; init; }
 }
 
-public record TitheListResponseDto : IPrimaryListResponseDto, Shared.Dtos.Interfaces.IPrimaryListResponseDto
+public record TitheListResponseDto : IPrimaryListResponseDto, Application.Dtos.Interfaces.IPrimaryListResponseDto
 {
     public Guid Id { get; init; }
     public required string MemberName { get; init; }

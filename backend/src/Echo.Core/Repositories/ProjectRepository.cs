@@ -2,9 +2,9 @@ using Echo.Core.Dtos;
 using Echo.Core.Repositories.Base;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core;
-using Echo.Shared.Extensions.QueryMethods;
-using Echo.Shared.Pagination;
-using Echo.Shared.Query;
+using Echo.Application.Extensions.QueryMethods;
+using Echo.Application.Pagination;
+using Echo.Application.Query;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Core.Repositories;
@@ -18,7 +18,7 @@ public class ProjectRepository(AppDbContext context) : PrimaryRepositoryBase<Pro
         CancellationToken ct = default
     )
     {
-        var query = _dbSet
+        var query = DbSet
             .AsNoTracking()
             .ApplySoftDeleteFilter()
             .ApplySearchFilter(queryParameters)
@@ -52,7 +52,7 @@ public class ProjectRepository(AppDbContext context) : PrimaryRepositoryBase<Pro
 
     public async Task<ProjectResponseDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
-        return await _dbSet
+        return await DbSet
             .AsNoTracking()
             .ApplySoftDeleteFilter()
             .Where(p => p.Id == id)

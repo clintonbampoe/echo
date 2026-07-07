@@ -27,7 +27,7 @@ public record ProjectUpdateDto : IPrimaryUpdateDto
     public string? Description { get; init; }
 }
 
-public record ProjectListResponseDto : IPrimaryListResponseDto, Shared.Dtos.Interfaces.IPrimaryListResponseDto
+public record ProjectListResponseDto : IPrimaryListResponseDto, Application.Dtos.Interfaces.IPrimaryListResponseDto
 {
     public Guid Id { get; init; }
     public required string CategoryName { get; init; }

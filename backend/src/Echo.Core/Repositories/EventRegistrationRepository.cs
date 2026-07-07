@@ -2,9 +2,9 @@ using Echo.Core.Dtos;
 using Echo.Core.Repositories.Base;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core;
-using Echo.Shared.Extensions.QueryMethods;
-using Echo.Shared.Pagination;
-using Echo.Shared.Query;
+using Echo.Application.Extensions.QueryMethods;
+using Echo.Application.Pagination;
+using Echo.Application.Query;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Core.Repositories;
@@ -19,7 +19,7 @@ public class EventRegistrationRepository(AppDbContext context)
         CancellationToken ct = default
     )
     {
-        var query = _dbSet
+        var query = DbSet
             .AsNoTracking()
             .ApplySoftDeleteFilter()
             .ApplyDateFilters(queryParameters)
@@ -34,7 +34,7 @@ public class EventRegistrationRepository(AppDbContext context)
                 Id = e.Id,
                 MemberName = e.Member.Name,
                 EventName = e.Event.Name,
-                RegistrationDate = e.RegistrationDate
+                RegistrationDate = e.RegistrationDate,
             })
             .ApplyPagination(paginationParameters)
             .ToListAsync(ct);
@@ -51,19 +51,19 @@ public class EventRegistrationRepository(AppDbContext context)
         CancellationToken ct = default
     )
     {
-        return await _dbSet
+        return await DbSet
             .AsNoTracking()
             .ApplySoftDeleteFilter()
             .Where(e => e.Id == id)
             .Select(e => new EventRegistrationResponseDto
             {
                 Id = e.Id,
-                MemberId =  e.MemberId,
+                MemberId = e.MemberId,
                 MemberName = e.Member.Name,
                 EventId = e.EventId,
                 EventName = e.Event.Name,
                 RegistrationDate = e.RegistrationDate,
-                CreatedAt =  e.CreatedAt
+                CreatedAt = e.CreatedAt,
             })
             .FirstOrDefaultAsync(ct);
     }

@@ -2,9 +2,9 @@ using Echo.Core.Dtos;
 using Echo.Core.Repositories.Base;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core;
-using Echo.Shared.Extensions.QueryMethods;
-using Echo.Shared.Pagination;
-using Echo.Shared.Query;
+using Echo.Application.Extensions.QueryMethods;
+using Echo.Application.Pagination;
+using Echo.Application.Query;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Core.Repositories;
@@ -18,7 +18,7 @@ public class UserRepository(AppDbContext context) : PrimaryRepositoryBase<User>(
         CancellationToken ct
     )
     {
-        var query = _dbSet
+        var query = DbSet
             .AsNoTracking()
             .ApplySoftDeleteFilter()
             .ApplySearchFilter(queryParameters)
@@ -32,9 +32,8 @@ public class UserRepository(AppDbContext context) : PrimaryRepositoryBase<User>(
             .Select(u => new UserListResponseDto
             {
                 Id = u.Id,
-                UserName = u.UserName,
                 EmailAddress = u.EmailAddress,
-                Role = u.Role
+                Role = u.Role,
             })
             .ApplyPagination(paginationParameters)
             .ToListAsync(ct);
@@ -44,7 +43,7 @@ public class UserRepository(AppDbContext context) : PrimaryRepositoryBase<User>(
 
     public async Task<UserResponseDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
-        return await _dbSet
+        return await DbSet
             .AsNoTracking()
             .ApplySoftDeleteFilter()
             .Where(u => u.Id == id)
@@ -52,12 +51,20 @@ public class UserRepository(AppDbContext context) : PrimaryRepositoryBase<User>(
             {
                 Id = u.Id,
                 Name = u.Name,
-                UserName =  u.UserName,
                 EmailAddress = u.EmailAddress,
-                PasswordHash =  u.PasswordHash,
+                PasswordHash = u.PasswordHash,
                 Role = u.Role,
-                CreatedAt = u.CreatedAt
+                CreatedAt = u.CreatedAt,
             })
             .FirstOrDefaultAsync(ct);
+    }
+
+    public async Task<bool> IsEmailAddressTaken(string emailAddress, CancellationToken ct)
+    {
+        var exists = await DbSet
+            .ApplySoftDeleteFilter()
+            .AnyAsync(u => u.EmailAddress == emailAddress, ct);
+
+        return exists;
     }
 }

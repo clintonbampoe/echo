@@ -1,11 +1,12 @@
+using Echo.Core.Controllers.Base;
 using Echo.Core.Dtos;
 using Echo.Core.Services;
-using Echo.Shared.Controllers;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Echo.Core.Controllers;
 
-public class TransactionCategoriesController(TransactionCategoryService service) : BaseController
+public class TransactionCategoriesController(TransactionCategoryService service)
+    : CoreBaseController
 {
     private readonly TransactionCategoryService _service = service;
 

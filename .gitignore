@@ -51,3 +51,6 @@ Thumbs.db
 
 # Obsidian boilerplate
 .obsidian/
+
+# Neovim artifacts
+*.vim

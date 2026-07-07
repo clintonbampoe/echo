@@ -14,7 +14,7 @@ public record EventRegistrationUpdateDto : IPrimaryUpdateDto
     public DateOnly RegistrationDate { get; init; }
 }
 
-public record EventRegistrationListResponseDto : IPrimaryListResponseDto, Shared.Dtos.Interfaces.IPrimaryListResponseDto
+public record EventRegistrationListResponseDto : IPrimaryListResponseDto, Application.Dtos.Interfaces.IPrimaryListResponseDto
 {
     public Guid Id { get; init; }
     public required string MemberName { get; init; }

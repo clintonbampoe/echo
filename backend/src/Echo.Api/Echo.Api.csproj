@@ -25,7 +25,7 @@
       <ProjectReference Include="..\Echo.Core\Echo.Core.csproj" />
       <ProjectReference Include="..\Echo.Domain\Echo.Domain.csproj" />
       <ProjectReference Include="..\Echo.Infrastructure\Echo.Infrastructure.csproj" />
-      <ProjectReference Include="..\Echo.Shared\Echo.Shared.csproj" />
+      <ProjectReference Include="..\Echo.Application\Echo.Application.csproj" />
     </ItemGroup>
 
     <ItemGroup>

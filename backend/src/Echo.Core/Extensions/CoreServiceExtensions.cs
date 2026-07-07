@@ -26,6 +26,7 @@ public static class CoreServiceExtensions
         services.AddScoped<AttendanceTypeRepository>();
         services.AddScoped<AttendanceContextRepository>();
         services.AddScoped<UserRepository>();
+        services.AddScoped<CongregationRepository>();
 
         services.AddScoped<MemberService>();
         services.AddScoped<AssetService>();

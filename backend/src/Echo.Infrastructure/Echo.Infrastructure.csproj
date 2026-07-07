@@ -16,7 +16,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Echo.Domain\Echo.Domain.csproj" />
-      <ProjectReference Include="..\Echo.Shared\Echo.Shared.csproj" />
+      <ProjectReference Include="..\Echo.Application\Echo.Application.csproj" />
     </ItemGroup>
 
 </Project>
