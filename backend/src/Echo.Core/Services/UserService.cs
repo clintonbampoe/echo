@@ -7,6 +7,7 @@ using Echo.Domain.Entities.Core;
 using Echo.Application.HttpResults;
 using Echo.Application.Pagination;
 using Echo.Application.Query;
+using Echo.Core.Dtos.Interfaces;
 
 namespace Echo.Core.Services;
 
@@ -14,6 +15,27 @@ public class UserService(UserRepository repository, AppDbContext context, IMappe
     : PrimaryServiceBase<User>(repository, context, mapper)
 {
     private readonly UserRepository _userRepository = repository;
+
+    public override async Task<IOperationResult> CreateAsync(Guid congregationId, IPrimaryCreateDto dto,
+        CancellationToken ct = default)
+    {
+        var userDto = (UserCreateDto)dto;
+
+        if (await IsEmailTaken(userDto.EmailAddress, ct))
+            return new BadRequestResult("Email already exists.");
+
+        var user = _mapper.Map<User>(userDto);
+        user.CongregationId = congregationId;
+
+        var createdSuccessfully = await _userRepository.CreateRecord(user, ct);
+        await context.SaveChangesAsync(ct);
+
+        if (!createdSuccessfully)
+            return new InternalServerError();
+
+        return new OkResult("Operation completed successfully.");
+
+    }
 
     public override async Task<IOperationResult> GetByIdAsync(
         Guid id,
@@ -43,5 +65,10 @@ public class UserService(UserRepository repository, AppDbContext context, IMappe
         );
 
         return new SuccessResult<PagedResponse<UserListResponseDto>>(result);
+    }
+
+    private async Task<bool> IsEmailTaken(string emailAddress, CancellationToken ct)
+    {
+        return await _userRepository.IsEmailAddressTaken(emailAddress, ct);
     }
 }

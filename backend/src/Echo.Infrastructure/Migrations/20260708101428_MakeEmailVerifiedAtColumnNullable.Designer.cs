@@ -3,6 +3,7 @@ using System;
 using Echo.Domain.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Echo.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260708101428_MakeEmailVerifiedAtColumnNullable")]
+    partial class MakeEmailVerifiedAtColumnNullable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -39,9 +42,6 @@ namespace Echo.Infrastructure.Migrations
                     b.Property<DateTime>("ExpiresAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<DateTime?>("InvalidatedAt")
-                        .HasColumnType("timestamp with time zone");
-
                     b.Property<string>("TokenHash")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -59,8 +59,7 @@ namespace Echo.Infrastructure.Migrations
 
                     b.HasIndex("TokenHash");
 
-                    b.HasIndex("UserId", "CreatedAt")
-                        .HasFilter("\"UsedAt\" IS NULL AND \"InvalidatedAt\" IS NULL AND \"DeletedAt\" IS NULL");
+                    b.HasIndex("UserId");
 
                     b.ToTable("EmailVerificationTokens");
                 });
@@ -1112,8 +1111,7 @@ namespace Echo.Infrastructure.Migrations
                     b.HasIndex("DeletedAt");
 
                     b.HasIndex("EmailAddress")
-                        .IsUnique()
-                        .HasFilter("\"DeletedAt\" IS NULL");
+                        .IsUnique();
 
                     b.ToTable("Users");
                 });

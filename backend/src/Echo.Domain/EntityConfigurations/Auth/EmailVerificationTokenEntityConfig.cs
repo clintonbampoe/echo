@@ -12,6 +12,9 @@ public class EmailVerificationTokenEntityConfig
     {
         builder.HasIndex(e => e.TokenHash);
 
+        builder.HasIndex(t => new { t.UserId, t.CreatedAt })
+            .HasFilter("\"UsedAt\" IS NULL AND \"InvalidatedAt\" IS NULL AND \"DeletedAt\" IS NULL");
+
         builder
             .HasOne(e => e.User)
             .WithMany()

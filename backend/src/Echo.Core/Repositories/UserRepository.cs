@@ -33,6 +33,7 @@ public class UserRepository(AppDbContext context) : PrimaryRepositoryBase<User>(
             {
                 Id = u.Id,
                 EmailAddress = u.EmailAddress,
+                VerifiedAt = u.EmailVerifiedAt,
                 Role = u.Role,
             })
             .ApplyPagination(paginationParameters)
@@ -46,17 +47,30 @@ public class UserRepository(AppDbContext context) : PrimaryRepositoryBase<User>(
         return await DbSet
             .AsNoTracking()
             .ApplySoftDeleteFilter()
-            .Where(u => u.Id == id)
             .Select(u => new UserResponseDto
             {
                 Id = u.Id,
                 Name = u.Name,
                 EmailAddress = u.EmailAddress,
-                PasswordHash = u.PasswordHash,
+                VerifiedAt = u.EmailVerifiedAt,
                 Role = u.Role,
                 CreatedAt = u.CreatedAt,
             })
-            .FirstOrDefaultAsync(ct);
+            .FirstOrDefaultAsync(u => u.Id == id, ct);
+    }
+
+    public async Task<bool> ExecuteUpdateAsync(User user, CancellationToken ct = default)
+    {
+        var affectedRows = await DbSet
+            .Where(u => u.Id == user.Id)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(u => u.Name, user.Name)
+                .SetProperty(u => u.EmailAddress, user.EmailAddress)
+                .SetProperty(u => u.PasswordHash, user.PasswordHash)
+                .SetProperty(u => u.EmailVerifiedAt, user.EmailVerifiedAt)
+                .SetProperty(u => u.Role, user.Role), cancellationToken: ct);
+
+        return (affectedRows > 0);
     }
 
     public async Task<bool> IsEmailAddressTaken(string emailAddress, CancellationToken ct)

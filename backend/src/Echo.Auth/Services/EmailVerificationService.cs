@@ -7,9 +7,7 @@ using Echo.Auth.Repositories;
 using Echo.Core.Repositories;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Auth;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
-using OkResult = Echo.Application.HttpResults.OkResult;
 
 namespace Echo.Auth.Services;
 
@@ -25,6 +23,14 @@ public class EmailVerificationService(
 
     public async Task<IOperationResult> SendVerificationLinkToEmail(Guid userId, CancellationToken ct = default)
     {
+        var existingToken = await emailVerificationTokenRepository.GetActiveTokenForUser(userId, ct);
+
+        if (RateLimitActive(existingToken))
+            return new OkResult("A verification email was already sent. Please check your inbox.");
+
+        if(existingToken is not null)
+            existingToken.InvalidatedAt = DateTime.UtcNow;
+
         var token = tokenGenerator.GenerateToken(16);
 
         var tokenObject = new EmailVerificationToken(userId)
@@ -34,7 +40,6 @@ public class EmailVerificationService(
         };
 
         var recordCreatedSuccessfully = await emailVerificationTokenRepository.CreateRecord(tokenObject, ct);
-        await dbContext.SaveChangesAsync(ct);
 
         if (!recordCreatedSuccessfully)
             return new InternalServerError();
@@ -47,13 +52,64 @@ public class EmailVerificationService(
 
         var emailContent = new VerifyEmailContent(userInfo.Name, verificationLink);
 
+        await dbContext.SaveChangesAsync(ct);
+
         await emailService.SendAsync(userInfo.EmailAddress, emailContent);
 
-        return new OkResult("Operation Completed Successfully.");
+        // TODO: Remove token in production
+        return new OkResult($"Operation Completed Successfully. Token: {token}");
     }
 
-    public Task<ActionResult> VerifyEmail(Guid userId, string token)
+    public async Task<IOperationResult> VerifyEmail(string token, CancellationToken ct = default)
     {
-        throw new NotImplementedException();
+        var hashedInput = await hashService.HashPasswordAsync(token);
+
+        var tokenRecord = await emailVerificationTokenRepository
+            .GetTokenRecordByHashWithUser(hashedInput, ct);
+
+        if (tokenRecord is null)
+            return new NotFoundResult("Not found.");
+
+        if (!IsTokenValid(tokenRecord))
+            return new BadRequestResult("Token is invalid or already used");
+
+        var user = tokenRecord.User;
+        user.EmailVerifiedAt = DateTime.UtcNow;
+        tokenRecord.UsedAt = DateTime.UtcNow;
+
+        await dbContext.SaveChangesAsync(ct);
+
+        return new OkResult("Operation Completed successfully.");
+    }
+
+    private bool IsTokenValid(EmailVerificationToken? token)
+    {
+        if (token is null)
+            return false;
+
+        if(token.ExpiresAt <= DateTime.UtcNow)
+            return false;
+
+        if(token.UsedAt is not null)
+            return false;
+
+        if(token.InvalidatedAt is not null)
+            return false;
+
+        return true;
+    }
+
+    private bool RateLimitActive(EmailVerificationToken? token)
+    {
+        if (IsTokenValid(token))
+        {
+            if (token is null)
+                return false;
+
+            var isActive = token.CreatedAt > DateTime.UtcNow.AddSeconds(-60);
+            return isActive;
+        }
+
+        return false;
     }
 }
