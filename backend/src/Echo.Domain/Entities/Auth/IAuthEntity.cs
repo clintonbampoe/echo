@@ -1,6 +1,6 @@
 using Echo.Domain.Entities.Core.Interfaces;
 
-namespace Echo.Domain.Entities.Auth.Interfaces;
+namespace Echo.Domain.Entities.Auth;
 
 public interface IAuthEntity : ISoftDeletable
 {

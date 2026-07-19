@@ -1,5 +1,4 @@
 using Echo.Domain.Entities.Auth;
-using Echo.Domain.EntityConfigurations.Auth.Base;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -12,6 +11,10 @@ public class EmailVerificationTokenEntityConfig
     {
         builder.HasIndex(e => e.TokenHash);
 
+        // this index is to filter the token objects down to only the few ones that match these conditions
+        // 1. Is not used
+        // 2. Is not invalidated
+        // 3. is not deleted
         builder.HasIndex(t => new { t.UserId, t.CreatedAt })
             .HasFilter("\"UsedAt\" IS NULL AND \"InvalidatedAt\" IS NULL AND \"DeletedAt\" IS NULL");
 
@@ -19,6 +22,6 @@ public class EmailVerificationTokenEntityConfig
             .HasOne(e => e.User)
             .WithMany()
             .HasForeignKey(e => e.UserId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }
