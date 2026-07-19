@@ -28,8 +28,4 @@
       <ProjectReference Include="..\Echo.Application\Echo.Application.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Extensions\" />
-    </ItemGroup>
-
 </Project>
