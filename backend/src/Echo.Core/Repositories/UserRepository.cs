@@ -81,4 +81,36 @@ public class UserRepository(AppDbContext context) : PrimaryRepositoryBase<User>(
 
         return exists;
     }
+
+    public async Task<UserAuthDto?> GetActiveUserByEmail(string emailAddress, CancellationToken ct = default)
+    {
+        return await DbSet
+            .ApplySoftDeleteFilter()
+            .Where(u => u.EmailAddress == emailAddress)
+            .Select(u => new UserAuthDto()
+            {
+                Id = u.Id,
+                CongregationId = u.CongregationId,
+                EmailVerifiedAt = u.EmailVerifiedAt,
+                PasswordHash = u.PasswordHash,
+                Role = u.Role
+            })
+            .FirstOrDefaultAsync(ct);
+    }
+
+    public async Task<UserAuthDto?> GetActiveUserById(Guid id, CancellationToken ct = default)
+    {
+        return await DbSet
+            .ApplySoftDeleteFilter()
+            .Where(u => u.Id == id)
+            .Select(u => new UserAuthDto()
+            {
+                Id = u.Id,
+                CongregationId = u.CongregationId,
+                EmailVerifiedAt = u.EmailVerifiedAt,
+                PasswordHash = u.PasswordHash,
+                Role = u.Role
+            })
+            .FirstOrDefaultAsync(ct);
+    }
 }

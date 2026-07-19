@@ -38,3 +38,12 @@ public record UserResponseDto : IPrimaryResponseDto
     public UserRole Role { get; init; }
     public DateTime CreatedAt { get; init; }
 }
+
+public record UserAuthDto
+{
+    public Guid Id { get; init; }
+    public string PasswordHash { get; init; } = string.Empty;
+    public DateTime? EmailVerifiedAt { get; init; }
+    public UserRole Role { get; init; }
+    public Guid CongregationId { get; init; }
+}
