@@ -1,4 +1,5 @@
 using Echo.Application.Configuration;
+using Echo.Application.Options;
 using Echo.Application.Services.Email;
 using Echo.Auth.Controllers;
 using Echo.Auth.Repositories;
@@ -32,6 +33,15 @@ public static class RegisterAuthServices
 
         services.Configure<FrontendClientOptions>(configuration.GetSection("FrontendClient"));
         services.AddScoped<AuthLinkBuilder>();
+
+        services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
+
+        // AccessTokenGenerator is a singleton because it is stateless
+        services.AddSingleton<AccessTokenGenerator>();
+
+        services.AddScoped<AuthenticationService>();
+        services.AddScoped<RefreshTokenService>();
+        services.AddScoped<RefreshTokenRepository>();
 
         return services;
     }
