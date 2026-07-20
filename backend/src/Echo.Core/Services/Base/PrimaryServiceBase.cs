@@ -53,7 +53,7 @@ public abstract class PrimaryServiceBase<T>(
         var entity = _mapper.Map<T>(dto);
         entity.CongregationId = congregationId;
 
-        var success = await _repository.UpdateRecord(id, entity, ct);
+        var success = await _repository.UpdateRecord(id,congregationId, entity, ct);
 
         if (!success)
             return new NotFoundResult("Record not found.");
@@ -62,9 +62,9 @@ public abstract class PrimaryServiceBase<T>(
         return new OkResult("Record updated successfully.");
     }
 
-    public virtual async Task<IOperationResult> DeleteAsync(Guid id, CancellationToken ct = default)
+    public virtual async Task<IOperationResult> DeleteAsync(Guid id, Guid congregationId, CancellationToken ct = default)
     {
-        var success = await _repository.DeleteRecord(id, ct);
+        var success = await _repository.DeleteRecord(id, congregationId, ct);
 
         if (!success)
             return new NotFoundResult("Record not found.");

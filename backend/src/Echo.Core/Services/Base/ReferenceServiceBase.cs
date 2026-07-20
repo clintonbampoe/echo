@@ -47,9 +47,10 @@ public abstract class ReferenceServiceBase<T>(
     )
     {
         var entity = Mapper.Map<T>(dto);
+        entity.Id = id;
         entity.CongregationId = congregationId;
 
-        var success = await Repository.UpdateRecord(id, entity, ct);
+        var success = await Repository.UpdateRecord(id, congregationId, entity, ct);
 
         if (!success)
             return new NotFoundResult("Record not found.");
@@ -58,9 +59,9 @@ public abstract class ReferenceServiceBase<T>(
         return new OkResult("Record updated successfully.");
     }
 
-    public virtual async Task<IOperationResult> DeleteAsync(int id, CancellationToken ct = default)
+    public virtual async Task<IOperationResult> DeleteAsync(int id, Guid congregationId, CancellationToken ct = default)
     {
-        var success = await Repository.DeleteRecord(id, ct);
+        var success = await Repository.DeleteRecord(id, congregationId, ct);
 
         if (!success)
             return new NotFoundResult("Record not found.");

@@ -44,7 +44,7 @@ public class AttendanceTypesController(AttendanceTypeService service) : CoreBase
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteAsync(int id, CancellationToken ct)
     {
-        var response = await _service.DeleteAsync(id, ct);
+        var response = await _service.DeleteAsync(id, GetCongregationId(), ct);
         return response.ToActionResult();
     }
 }

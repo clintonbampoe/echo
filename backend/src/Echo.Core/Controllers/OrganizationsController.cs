@@ -55,7 +55,7 @@ public class OrganizationsController(OrganizationService service) : CoreBaseCont
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeleteAsync(Guid id, CancellationToken ct)
     {
-        var response = await _service.DeleteAsync(id, ct);
+        var response = await _service.DeleteAsync(id, GetCongregationId(), ct);
         return response.ToActionResult();
     }
 }
