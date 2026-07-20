@@ -1,4 +1,6 @@
 using Asp.Versioning;
+using Echo.Application.Extensions;
+using Echo.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Echo.Core.Controllers.Base;
@@ -8,15 +10,7 @@ namespace Echo.Core.Controllers.Base;
 [Route("/api/v{version:apiVersion}/[controller]")]
 public abstract class CoreBaseController : ControllerBase
 {
-    // Temporary until JWT auth is implemented.
-    // CongregationId will come from the token claim instead of a header.
-    protected Guid GetCongregationId()
-    {
-        var header = HttpContext.Request.Headers["X-Congregation-Id"].ToString();
-
-        if (!Guid.TryParse(header, out var congregationId))
-            throw new InvalidOperationException("X-Congregation-Id header is missing or invalid.");
-
-        return congregationId;
-    }
+    protected Guid GetCongregationId() => User.GetCongregationId();
+    protected Guid GetUserId() => User.GetUserId();
+    protected UserRole GetRole => User.GetUserRole();
 }

@@ -19,11 +19,11 @@ public abstract class ReferenceRepositoryBase<T>(AppDbContext context)
         return true;
     }
 
-    public virtual async Task<bool> UpdateRecord(int id, T entity, CancellationToken ct = default)
+    public virtual async Task<bool> UpdateRecord(int id,Guid congregationId, T entity, CancellationToken ct = default)
     {
         var existing = await DbSet
             .ApplySoftDeleteFilter()
-            .FirstOrDefaultAsync(e => e.Id == id, ct);
+            .FirstOrDefaultAsync(e => e.Id == id && e.CongregationId == congregationId, ct);
         if (existing is null)
             return false;
 
@@ -35,11 +35,11 @@ public abstract class ReferenceRepositoryBase<T>(AppDbContext context)
         return true;
     }
 
-    public virtual async Task<bool> DeleteRecord(int id, CancellationToken ct = default)
+    public virtual async Task<bool> DeleteRecord(int id, Guid congregationId, CancellationToken ct = default)
     {
         var existing = await DbSet
             .ApplySoftDeleteFilter()
-            .FirstOrDefaultAsync(e => e.Id == id, ct);
+            .FirstOrDefaultAsync(e => e.Id == id && e.CongregationId == congregationId, ct);
 
         if (existing is null)
             return false;

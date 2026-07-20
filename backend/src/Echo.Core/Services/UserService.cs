@@ -28,7 +28,7 @@ public class UserService(UserRepository repository, AppDbContext context, IMappe
         user.CongregationId = congregationId;
 
         var createdSuccessfully = await _userRepository.CreateRecord(user, ct);
-        await context.SaveChangesAsync(ct);
+        await _context.SaveChangesAsync(ct);
 
         if (!createdSuccessfully)
             return new InternalServerError();

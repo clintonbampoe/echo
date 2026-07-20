@@ -11,6 +11,7 @@ builder.Services.AddDbContext(builder.Configuration);
 builder.Services.AddSwaggerDocumentation();
 builder.Services.AddOpenApi();
 builder.Services.AddApiVersioningSetup();
+builder.Services.AddJwtAuthentication(builder.Configuration);
 
 builder.Services.AddCoreServices();
 builder.Services.AddAuthServices(builder.Configuration);
@@ -28,10 +29,11 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwaggerDocumentation();
     app.UseScalarDocumentation();
-    app.MapOpenApi();
+    app.MapOpenApi().AllowAnonymous();
 }
 
 app.UseHttpsRedirection();
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 app.Run();

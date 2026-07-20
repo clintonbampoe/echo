@@ -1,4 +1,3 @@
-using Echo.Domain.Entities.Auth.Interfaces;
 using Echo.Domain.Entities.Core;
 
 namespace Echo.Domain.Entities.Auth;

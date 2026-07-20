@@ -1,8 +1,8 @@
-using Echo.Domain.Entities.Auth.Interfaces;
+using Echo.Domain.Entities.Auth;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Echo.Domain.EntityConfigurations.Auth.Base;
+namespace Echo.Domain.EntityConfigurations.Auth;
 
 public abstract class AuthEntityConfigurationBase<TEntity> : IEntityTypeConfiguration<TEntity>
     where TEntity : class, IAuthEntity

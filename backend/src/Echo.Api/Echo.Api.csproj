@@ -10,6 +10,7 @@
     <ItemGroup>
         <PackageReference Include="Asp.Versioning.Mvc" />
         <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
         <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -26,10 +27,6 @@
       <ProjectReference Include="..\Echo.Domain\Echo.Domain.csproj" />
       <ProjectReference Include="..\Echo.Infrastructure\Echo.Infrastructure.csproj" />
       <ProjectReference Include="..\Echo.Application\Echo.Application.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="Extensions\" />
     </ItemGroup>
 
 </Project>

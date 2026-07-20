@@ -1,5 +1,4 @@
 using Echo.Domain.Entities.Auth;
-using Echo.Domain.EntityConfigurations.Auth.Base;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
