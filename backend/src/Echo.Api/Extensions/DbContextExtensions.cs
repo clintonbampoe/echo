@@ -1,6 +1,5 @@
 using Echo.Domain.Data;
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
 
 namespace Echo.Api.Extensions;
 
@@ -11,18 +10,11 @@ public static class DbContextExtensions
         IConfiguration configuration
     )
     {
-        var connectionStringBuilder = new NpgsqlConnectionStringBuilder
-        {
-            Host = configuration["Database:Host"],
-            Port = configuration.GetValue<int>("Database:Port"),
-            Database = configuration["Database:Name"],
-            Username = configuration["Database:Username"],
-            Password = configuration["Database:Password"],
-        };
+        var connectionString = DbConnectionStringBuilder.Build(configuration);
 
         services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(
-                connectionStringBuilder.ConnectionString,
+                connectionString,
                 npgsqlOptions =>
                 {
                     npgsqlOptions.SetPostgresVersion(18, 0);

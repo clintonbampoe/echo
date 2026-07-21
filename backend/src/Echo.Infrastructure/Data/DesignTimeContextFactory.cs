@@ -10,7 +10,7 @@ namespace Echo.Infrastructure.Data
         public AppDbContext CreateDbContext(string[] args)
         {
             var configuration = LoadConfiguration();
-            var connectionString = GetConfiguredConnectionString(configuration);
+            var connectionString = DbConnectionStringBuilder.Build(configuration);
 
             var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
             optionsBuilder.UseNpgsql(connectionString, x => x.MigrationsAssembly("Echo.Infrastructure"));
@@ -23,27 +23,15 @@ namespace Echo.Infrastructure.Data
             // Call your central .env loading logic here
             // e.g., YourExistingLoader.LoadEnvFiles();
 
-            return new ConfigurationBuilder()
+            var configuration = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json", optional: false)
                 .AddJsonFile("appsettings.Development.json", optional: true)
-                .AddEnvironmentVariables() // Natively pulls flat environment variables
+                .AddUserSecrets("<paste Echo.Api's UserSecretsId GUID here>")
+                .AddEnvironmentVariables()
                 .Build();
-        }
 
-        private string GetConfiguredConnectionString(IConfiguration configuration)
-        {
-            var template = configuration.GetConnectionString("DefaultConnection");
-
-            if (string.IsNullOrEmpty(template))
-            {
-                throw new InvalidOperationException("The 'DefaultConnection' template was not found in appsettings.");
-            }
-
-            // Pull flat secrets from your env loader and substitute them into the template
-            return template
-                .Replace("__DB_USER__", configuration["DB_USER"])
-                .Replace("__DB_PASSWORD__", configuration["DB_PASSWORD"]);
+            return configuration;
         }
     }
 }
