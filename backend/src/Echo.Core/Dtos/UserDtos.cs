@@ -42,6 +42,8 @@ public record UserResponseDto : IPrimaryResponseDto
 public record UserAuthDto
 {
     public Guid Id { get; init; }
+    public string EmailAddress { get; init; } = string.Empty;
+    public string Name { get; init; } = string.Empty;
     public string PasswordHash { get; init; } = string.Empty;
     public DateTime? EmailVerifiedAt { get; init; }
     public UserRole Role { get; init; }

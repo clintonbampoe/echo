@@ -80,6 +80,11 @@ public class RefreshTokenService(
             await refreshTokenRepository.Revoke(existing.Id, null, ct);
     }
 
+    public async Task RevokeAllActiveSessionsForUser(Guid userId, CancellationToken ct = default)
+    {
+        await refreshTokenRepository.RevokeAllActiveSessionsForUser(userId, ct);
+    }
+
     private static RefreshTokenValidationResult Failure(RefreshTokenFailureReason reason)
     {
         return new RefreshTokenValidationResult()
