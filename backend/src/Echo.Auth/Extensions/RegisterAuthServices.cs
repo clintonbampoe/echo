@@ -31,6 +31,9 @@ public static class RegisterAuthServices
         services.AddScoped<EmailVerificationTokenRepository>();
         services.AddScoped<EmailVerificationService>();
         services.AddScoped<SessionsController>();
+        services.AddScoped<PasswordVerificationTokenRepository>();
+        services.AddScoped<PasswordResetService>();
+        services.AddScoped<PasswordController>();
 
         services.Configure<FrontendClientOptions>(configuration.GetSection("FrontendClient"));
         services.AddScoped<AuthLinkBuilder>();

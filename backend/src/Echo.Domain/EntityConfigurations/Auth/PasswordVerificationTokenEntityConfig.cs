@@ -9,7 +9,7 @@ public class PasswordVerificationTokenEntityConfig
 {
     public override void ConfigureEntity(EntityTypeBuilder<PasswordVerificationToken> builder)
     {
-        builder.HasIndex(e => e.Token);
+        builder.HasIndex(e => e.TokenHash);
 
         builder
             .HasOne(e => e.User)

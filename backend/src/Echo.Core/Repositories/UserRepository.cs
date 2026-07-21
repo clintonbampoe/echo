@@ -91,6 +91,8 @@ public class UserRepository(AppDbContext context) : PrimaryRepositoryBase<User>(
             {
                 Id = u.Id,
                 CongregationId = u.CongregationId,
+                EmailAddress = u.EmailAddress,
+                Name = u.Name,
                 EmailVerifiedAt = u.EmailVerifiedAt,
                 PasswordHash = u.PasswordHash,
                 Role = u.Role
@@ -107,6 +109,8 @@ public class UserRepository(AppDbContext context) : PrimaryRepositoryBase<User>(
             {
                 Id = u.Id,
                 CongregationId = u.CongregationId,
+                EmailAddress = u.EmailAddress,
+                Name = u.Name,
                 EmailVerifiedAt = u.EmailVerifiedAt,
                 PasswordHash = u.PasswordHash,
                 Role = u.Role
