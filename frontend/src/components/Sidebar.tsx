@@ -9,7 +9,8 @@ import {
     ProjectsIcon,
     CalendarIcon,
     BoxIcon,
-    MembersIcon
+    MembersIcon,
+    ContributionsIcon
 } from './Icons';
 import '../styles/Sidebar.css';
 
@@ -26,6 +27,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
         { id: 'tithe', label: 'Tithe', icon: 'tithe' },
         { id: 'reporting', label: 'Reporting', icon: 'reporting' },
         { id: 'projects', label: 'Projects', icon: 'projects' },
+        { id: 'contributions', label: 'Contributions', icon: 'contributions' },
         { id: 'events', label: 'Events', icon: 'calendar' },
         { id: 'assets', label: 'Assets', icon: 'box' },
         { id: 'members', label: 'Members', icon: 'members' },
@@ -40,6 +42,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
             case 'tithe': return <TitheIcon className={className} />;
             case 'reporting': return <ReportingIcon className={className} />;
             case 'projects': return <ProjectsIcon className={className} />;
+            case 'contributions': return <ContributionsIcon className={className} />;
             case 'calendar': return <CalendarIcon className={className} />;
             case 'box': return <BoxIcon className={className} />;
             case 'members': return <MembersIcon className={className} />;
