@@ -22,8 +22,7 @@ public class RegistrationService(
     public async Task<IOperationResult> RegisterCongregation(
         CongregationCreateDto congregationDto,
         UserCreateDto userDto,
-        CancellationToken ct
-    )
+        CancellationToken ct)
     {
         var congregation = mapper.Map<Congregation>(congregationDto);
         var user = mapper.Map<User>(userDto);
@@ -31,26 +30,19 @@ public class RegistrationService(
         user.CongregationId = congregation.Id;
 
         if (await IsEmailTaken(user.EmailAddress, ct))
-            return new OkResult("Email already in use");
+            return new BadRequestResult("Email already in use");
 
         await HashPassword(user, userDto);
 
-        await using var transaction = await context.Database.BeginTransactionAsync(ct);
+        await congregationRepository.CreateRecord(congregation, ct);
+        await userRepository.CreateRecord(user, ct);
+
         try
         {
-            await congregationRepository.CreateRecord(congregation, ct);
-            await userRepository.CreateRecord(user, ct);
             await context.SaveChangesAsync(ct);
-            await transaction.CommitAsync(ct);
         }
-        catch (DbUpdateException ex)
+        catch (DbUpdateException)
         {
-            await transaction.RollbackAsync(ct);
-            return new InternalServerError();
-        }
-        catch (Exception ex)
-        {
-            await transaction.RollbackAsync(ct);
             return new InternalServerError();
         }
 

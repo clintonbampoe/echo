@@ -17,27 +17,30 @@ public abstract class PrimaryRepositoryBase<T>(AppDbContext context)
         return true;
     }
 
-    public virtual async Task<bool> UpdateRecord(Guid id, T entity, CancellationToken ct = default)
+    public virtual async Task<bool> UpdateRecord(Guid id, Guid congregationId, T entity, CancellationToken ct = default)
     {
         var existing = await DbSet
             .ApplySoftDeleteFilter()
-            .FirstOrDefaultAsync(e => e.Id == id, ct);
+            .FirstOrDefaultAsync(e => e.Id == id && e.CongregationId == congregationId, ct);
         if (existing is null)
             return false;
 
         DbSet.Entry(existing).CurrentValues.SetValues(entity);
-        DbSet.Entry(existing).Property(e => e.Id).IsModified = false;
+
+        DbSet.Entry(existing).Property(x => x.Id).IsModified = false;
+        DbSet.Entry(existing).Property(e => e.CongregationId).IsModified = false;
+        DbSet.Entry(existing).Property(x => x.Congregation).IsModified = false;
         DbSet.Entry(existing).Property(e => e.CreatedAt).IsModified = false;
         DbSet.Entry(existing).Property(e => e.DeletedAt).IsModified = false;
 
         return true;
     }
 
-    public virtual async Task<bool> DeleteRecord(Guid id, CancellationToken ct = default)
+    public virtual async Task<bool> DeleteRecord(Guid id, Guid congregationId, CancellationToken ct = default)
     {
         var existing = await DbSet
             .ApplySoftDeleteFilter()
-            .FirstOrDefaultAsync(e => e.Id == id, ct);
+            .FirstOrDefaultAsync(e => e.Id == id && e.CongregationId == congregationId, ct);
 
         if (existing is null)
             return false;

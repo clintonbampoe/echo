@@ -9,7 +9,7 @@ public static class ScalarExtensions
         app.MapScalarApiReference(options =>
         {
             options.WithOpenApiRoutePattern("/swagger/{documentName}/swagger.json");
-        });
+        }).AllowAnonymous();
 
         return app;
     }

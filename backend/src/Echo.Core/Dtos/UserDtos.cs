@@ -25,6 +25,7 @@ public record UserListResponseDto
 {
     public Guid Id { get; init; }
     public required string EmailAddress { get; init; }
+    public DateTime? VerifiedAt { get; init; }
     public UserRole Role { get; init; }
 }
 
@@ -33,7 +34,18 @@ public record UserResponseDto : IPrimaryResponseDto
     public Guid Id { get; init; }
     public required string Name { get; init; }
     public required string EmailAddress { get; init; }
-    public required string PasswordHash { get; init; }
+    public DateTime? VerifiedAt { get; init; }
     public UserRole Role { get; init; }
     public DateTime CreatedAt { get; init; }
+}
+
+public record UserAuthDto
+{
+    public Guid Id { get; init; }
+    public string EmailAddress { get; init; } = string.Empty;
+    public string Name { get; init; } = string.Empty;
+    public string PasswordHash { get; init; } = string.Empty;
+    public DateTime? EmailVerifiedAt { get; init; }
+    public UserRole Role { get; init; }
+    public Guid CongregationId { get; init; }
 }

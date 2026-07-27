@@ -7,15 +7,29 @@ namespace Echo.Auth.Repositories;
 
 public class EmailVerificationTokenRepository(AppDbContext context)
 {
-    private readonly DbSet<EmailVerificationToken>  _tokens =  context.Set<EmailVerificationToken>();
+    private readonly DbSet<EmailVerificationToken> _tokens = context.Set<EmailVerificationToken>();
 
-    public async Task<EmailVerificationToken?> GetToken(string token, CancellationToken ct = default)
+    public async Task<EmailVerificationToken?> GetTokenRecordByHashWithUser(string hashedInput,
+        CancellationToken ct = default)
     {
         var entity = await _tokens
             .ApplySoftDeleteFilter()
-            .FirstOrDefaultAsync(e => e.TokenHash == token, cancellationToken: ct);
+            .Include(e => e.User)
+            .FirstOrDefaultAsync(e => e.TokenHash == hashedInput, cancellationToken: ct);
 
         return entity;
+    }
+
+    public async Task<EmailVerificationToken?> GetActiveTokenForUser(Guid userId, CancellationToken ct = default)
+    {
+        var existing = await _tokens
+            .ApplySoftDeleteFilter()
+            .Where(e => e.UserId == userId && e.ExpiresAt > DateTime.UtcNow && e.InvalidatedAt == null &&
+                        e.UsedAt == null)
+            .OrderByDescending(e => e.CreatedAt)
+            .FirstOrDefaultAsync(ct);
+
+        return existing;
     }
 
     public async Task<bool> CreateRecord(EmailVerificationToken emailVerificationToken, CancellationToken ct = default)

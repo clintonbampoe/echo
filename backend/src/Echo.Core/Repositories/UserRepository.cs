@@ -33,6 +33,7 @@ public class UserRepository(AppDbContext context) : PrimaryRepositoryBase<User>(
             {
                 Id = u.Id,
                 EmailAddress = u.EmailAddress,
+                VerifiedAt = u.EmailVerifiedAt,
                 Role = u.Role,
             })
             .ApplyPagination(paginationParameters)
@@ -46,17 +47,30 @@ public class UserRepository(AppDbContext context) : PrimaryRepositoryBase<User>(
         return await DbSet
             .AsNoTracking()
             .ApplySoftDeleteFilter()
-            .Where(u => u.Id == id)
             .Select(u => new UserResponseDto
             {
                 Id = u.Id,
                 Name = u.Name,
                 EmailAddress = u.EmailAddress,
-                PasswordHash = u.PasswordHash,
+                VerifiedAt = u.EmailVerifiedAt,
                 Role = u.Role,
                 CreatedAt = u.CreatedAt,
             })
-            .FirstOrDefaultAsync(ct);
+            .FirstOrDefaultAsync(u => u.Id == id, ct);
+    }
+
+    public async Task<bool> ExecuteUpdateAsync(User user, CancellationToken ct = default)
+    {
+        var affectedRows = await DbSet
+            .Where(u => u.Id == user.Id)
+            .ExecuteUpdateAsync(setters => setters
+                .SetProperty(u => u.Name, user.Name)
+                .SetProperty(u => u.EmailAddress, user.EmailAddress)
+                .SetProperty(u => u.PasswordHash, user.PasswordHash)
+                .SetProperty(u => u.EmailVerifiedAt, user.EmailVerifiedAt)
+                .SetProperty(u => u.Role, user.Role), cancellationToken: ct);
+
+        return (affectedRows > 0);
     }
 
     public async Task<bool> IsEmailAddressTaken(string emailAddress, CancellationToken ct)
@@ -66,5 +80,41 @@ public class UserRepository(AppDbContext context) : PrimaryRepositoryBase<User>(
             .AnyAsync(u => u.EmailAddress == emailAddress, ct);
 
         return exists;
+    }
+
+    public async Task<UserAuthDto?> GetActiveUserByEmail(string emailAddress, CancellationToken ct = default)
+    {
+        return await DbSet
+            .ApplySoftDeleteFilter()
+            .Where(u => u.EmailAddress == emailAddress)
+            .Select(u => new UserAuthDto()
+            {
+                Id = u.Id,
+                CongregationId = u.CongregationId,
+                EmailAddress = u.EmailAddress,
+                Name = u.Name,
+                EmailVerifiedAt = u.EmailVerifiedAt,
+                PasswordHash = u.PasswordHash,
+                Role = u.Role
+            })
+            .FirstOrDefaultAsync(ct);
+    }
+
+    public async Task<UserAuthDto?> GetActiveUserById(Guid id, CancellationToken ct = default)
+    {
+        return await DbSet
+            .ApplySoftDeleteFilter()
+            .Where(u => u.Id == id)
+            .Select(u => new UserAuthDto()
+            {
+                Id = u.Id,
+                CongregationId = u.CongregationId,
+                EmailAddress = u.EmailAddress,
+                Name = u.Name,
+                EmailVerifiedAt = u.EmailVerifiedAt,
+                PasswordHash = u.PasswordHash,
+                Role = u.Role
+            })
+            .FirstOrDefaultAsync(ct);
     }
 }

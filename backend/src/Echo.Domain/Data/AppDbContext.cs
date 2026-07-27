@@ -31,7 +31,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
     // AUTH
     public DbSet<EmailVerificationToken> EmailVerificationTokens { get; set; }
-    public DbSet<PasswordVerificationToken> PasswordVerificationTokens {get; set; }
+    public DbSet<PasswordVerificationToken> PasswordVerificationTokens { get; set; }
+    public DbSet<RefreshToken> RefreshTokens { get; set; }
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {

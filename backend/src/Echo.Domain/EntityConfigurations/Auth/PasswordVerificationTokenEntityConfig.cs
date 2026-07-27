@@ -1,5 +1,4 @@
 using Echo.Domain.Entities.Auth;
-using Echo.Domain.EntityConfigurations.Auth.Base;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -10,7 +9,7 @@ public class PasswordVerificationTokenEntityConfig
 {
     public override void ConfigureEntity(EntityTypeBuilder<PasswordVerificationToken> builder)
     {
-        builder.HasIndex(e => e.Token);
+        builder.HasIndex(e => e.TokenHash);
 
         builder
             .HasOne(e => e.User)

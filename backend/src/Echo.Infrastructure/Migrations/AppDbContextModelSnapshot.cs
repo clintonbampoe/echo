@@ -39,13 +39,16 @@ namespace Echo.Infrastructure.Migrations
                     b.Property<DateTime>("ExpiresAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<bool>("IsUsed")
-                        .HasColumnType("boolean");
+                    b.Property<DateTime?>("InvalidatedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("TokenHash")
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
+
+                    b.Property<DateTime?>("UsedAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
@@ -56,7 +59,8 @@ namespace Echo.Infrastructure.Migrations
 
                     b.HasIndex("TokenHash");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId", "CreatedAt")
+                        .HasFilter("\"UsedAt\" IS NULL AND \"InvalidatedAt\" IS NULL AND \"DeletedAt\" IS NULL");
 
                     b.ToTable("EmailVerificationTokens");
                 });
@@ -78,10 +82,52 @@ namespace Echo.Infrastructure.Migrations
                     b.Property<DateTime>("ExpiresAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<bool>("IsUsed")
-                        .HasColumnType("boolean");
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
 
-                    b.Property<string>("Token")
+                    b.Property<DateTime?>("UsedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("TokenHash");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("PasswordVerificationTokens");
+                });
+
+            modelBuilder.Entity("Echo.Domain.Entities.Auth.RefreshToken", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("ReplacedByTokenId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("RevokedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("TokenHash")
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
@@ -93,11 +139,13 @@ namespace Echo.Infrastructure.Migrations
 
                     b.HasIndex("CreatedAt");
 
-                    b.HasIndex("Token");
+                    b.HasIndex("TokenHash")
+                        .IsUnique();
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId", "RevokedAt")
+                        .HasFilter("\"RevokedAt\" IS NULL AND \"DeletedAt\" IS NULL");
 
-                    b.ToTable("PasswordVerificationTokens");
+                    b.ToTable("RefreshTokens");
                 });
 
             modelBuilder.Entity("Echo.Domain.Entities.Core.Asset", b =>
@@ -1108,7 +1156,8 @@ namespace Echo.Infrastructure.Migrations
                     b.HasIndex("DeletedAt");
 
                     b.HasIndex("EmailAddress")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("\"DeletedAt\" IS NULL");
 
                     b.ToTable("Users");
                 });
@@ -1118,13 +1167,24 @@ namespace Echo.Infrastructure.Migrations
                     b.HasOne("Echo.Domain.Entities.Core.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("User");
                 });
 
             modelBuilder.Entity("Echo.Domain.Entities.Auth.PasswordVerificationToken", b =>
+                {
+                    b.HasOne("Echo.Domain.Entities.Core.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("Echo.Domain.Entities.Auth.RefreshToken", b =>
                 {
                     b.HasOne("Echo.Domain.Entities.Core.User", "User")
                         .WithMany()

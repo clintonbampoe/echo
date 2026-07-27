@@ -17,6 +17,7 @@
     <ItemGroup>
       <PackageReference Include="Asp.Versioning.Mvc" />
       <PackageReference Include="BCrypt.Net-Next" />
+      <PackageReference Include="System.IdentityModel.Tokens.Jwt" />
     </ItemGroup>
 
     <ItemGroup>
