@@ -8,17 +8,12 @@
   </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Asp.Versioning.Mvc" />
-        <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" />
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
-        <PackageReference Include="Microsoft.AspNetCore.OpenApi" />
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.9" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.9">
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
           <PrivateAssets>all</PrivateAssets>
         </PackageReference>
-        <PackageReference Include="Scalar.AspNetCore" />
-        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" />
-        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" />
+        <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="10.2.3" />
     </ItemGroup>
 
     <ItemGroup>
@@ -26,7 +21,6 @@
       <ProjectReference Include="..\Echo.Core\Echo.Core.csproj" />
       <ProjectReference Include="..\Echo.Domain\Echo.Domain.csproj" />
       <ProjectReference Include="..\Echo.Infrastructure\Echo.Infrastructure.csproj" />
-      <ProjectReference Include="..\Echo.Application\Echo.Application.csproj" />
     </ItemGroup>
 
 </Project>
