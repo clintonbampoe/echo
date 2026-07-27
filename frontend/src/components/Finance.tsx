@@ -29,11 +29,11 @@ import type {
   TransactionType,
   PaymentMethod,
   RecordTransactionForm,
-  ExportReportForm,
   CategoryForm,
 } from '../types/finance';
 import { getTitheSummary } from '../services/titheService';
 import type { TitheSummary } from '../types/tithe';
+import ExportPanel from './ExportPanel';
 
 // ─── Mock Data ───────────────────────────────────────────────────────────────
 
@@ -175,13 +175,6 @@ const Finance: React.FC = () => {
     transactionDate: new Date().toISOString().split('T')[0],
     paymentMethod: 'Cash',
     description: '',
-  });
-
-  // Export Report form
-  const [exportForm, setExportForm] = useState<ExportReportForm>({
-    dateRange: 'last_30',
-    reportType: 'full',
-    exportFormat: 'pdf',
   });
 
   // Category form
@@ -382,12 +375,6 @@ const Finance: React.FC = () => {
     };
     setTransactions(prev => [...prev, newTxn]);
     setShowRecordModal(false);
-  };
-
-  const handleExportReport = () => {
-    // UI-only — no backend yet
-    console.log('Export report:', exportForm);
-    setShowExportModal(false);
   };
 
   // ── Filter categories for the record modal based on selected type ──────────
@@ -676,99 +663,26 @@ const Finance: React.FC = () => {
 
       {/* ─── Export Report Side Panel ──────────────────────────────────────── */}
       {showExportModal && (
-        <div className="finance-panel-overlay" onClick={() => setShowExportModal(false)}>
-          <div className="finance-side-panel" onClick={e => e.stopPropagation()}>
-            <div className="finance-panel-header">
-              <h2 className="finance-panel-title">Export Financial Report</h2>
-              <button className="finance-panel-close" onClick={() => setShowExportModal(false)}>
-                <CloseIcon />
-              </button>
-            </div>
-
-            <div className="finance-panel-body">
-              {/* Hint */}
-              <div className="export-hint">
-                <InfoIcon />
-                Select date and range format to export report
-              </div>
-
-              {/* Date Range */}
-              <div className="finance-form-group">
-                <label className="finance-form-label">Date Range</label>
-                <select
-                  className="finance-form-select"
-                  value={exportForm.dateRange}
-                  onChange={e => setExportForm(prev => ({ ...prev, dateRange: e.target.value as ExportReportForm['dateRange'] }))}
-                >
-                  <option value="last_30">Last 30 Days</option>
-                  <option value="last_90">Last 90 Days</option>
-                  <option value="this_year">This Year</option>
-                  <option value="custom">Custom Range</option>
-                </select>
-              </div>
-
-              {/* Report Type */}
-              <div className="finance-form-group">
-                <label className="finance-form-label">Report Type</label>
-                <div className="report-type-group">
-                  {([
-                    { value: 'full', label: 'Full Financial Summary' },
-                    { value: 'income_only', label: 'Income Only' },
-                    { value: 'expenditure_only', label: 'Expenditure Only' },
-                  ] as const).map(opt => (
-                    <button
-                      key={opt.value}
-                      className={`report-type-option ${exportForm.reportType === opt.value ? 'selected' : ''}`}
-                      onClick={() => setExportForm(prev => ({ ...prev, reportType: opt.value }))}
-                    >
-                      <div className="report-type-radio">
-                        <div className="report-type-radio-dot" />
-                      </div>
-                      {opt.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Export Format */}
-              <div className="finance-form-group">
-                <label className="finance-form-label">Export Format</label>
-                <div className="export-format-group">
-                  <button
-                    className={`export-format-card ${exportForm.exportFormat === 'pdf' ? 'selected' : ''}`}
-                    onClick={() => setExportForm(prev => ({ ...prev, exportFormat: 'pdf' }))}
-                  >
-                    <div className="export-format-icon"><DocumentIcon /></div>
-                    <span className="export-format-label">PDF</span>
-                  </button>
-                  <button
-                    className={`export-format-card ${exportForm.exportFormat === 'excel' ? 'selected' : ''}`}
-                    onClick={() => setExportForm(prev => ({ ...prev, exportFormat: 'excel' }))}
-                  >
-                    <div className="export-format-icon"><TableIcon /></div>
-                    <span className="export-format-label">Excel</span>
-                  </button>
-                  <button
-                    className={`export-format-card ${exportForm.exportFormat === 'csv' ? 'selected' : ''}`}
-                    onClick={() => setExportForm(prev => ({ ...prev, exportFormat: 'csv' }))}
-                  >
-                    <div className="export-format-icon"><CsvIcon /></div>
-                    <span className="export-format-label">CSV</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div className="finance-panel-footer">
-              <button className="finance-btn finance-btn-secondary" onClick={() => setShowExportModal(false)}>
-                Cancel
-              </button>
-              <button className="finance-btn finance-btn-primary" onClick={handleExportReport}>
-                Export Report
-              </button>
-            </div>
-          </div>
-        </div>
+        <ExportPanel
+          title="Export Financial Report"
+          exportConfig={{
+            title: 'Financial Report',
+            filename: 'echo-financial-report',
+            columns: [
+              { key: 'transactionDate', label: 'Date' },
+              { key: 'transactionType', label: 'Type' },
+              { key: 'categoryName', label: 'Category' },
+              { key: 'amount', label: 'Amount' },
+              { key: 'paymentMethod', label: 'Payment Method' },
+              { key: 'description', label: 'Description' },
+            ],
+            rows: transactions.map(t => ({
+              ...t,
+              categoryName: categories.find(c => c.categoryId === t.categoryId)?.name || 'Unknown',
+            })),
+          }}
+          onClose={() => setShowExportModal(false)}
+        />
       )}
 
       {/* ─── Add / Edit Category Modal ──────────────────────────────────────── */}
