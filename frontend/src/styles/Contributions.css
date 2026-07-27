@@ -1,0 +1,575 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Contributions Page Styles
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Container ───────────────────────────────────────────────────────────── */
+
+.contributions-container {
+  padding: 32px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+/* ─── Summary Cards ───────────────────────────────────────────────────────── */
+
+.contributions-summary-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+.contributions-summary-card {
+  background: white;
+  padding: 24px 28px;
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  transition: box-shadow 0.2s ease;
+}
+
+.contributions-summary-card:hover {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+}
+
+.contributions-card-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.contributions-card-value {
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--text-main);
+  line-height: 1;
+}
+
+/* ─── Tabs and Search (Top Level) ─────────────────────────────────────────── */
+
+.contributions-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.contributions-tabs {
+  display: flex;
+  gap: 8px;
+}
+
+.contributions-tab {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  background: white;
+  color: var(--text-main);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.contributions-tab:hover {
+  background-color: #f2f2f7;
+}
+
+.contributions-tab.active {
+  background-color: var(--text-main);
+  color: white;
+  border-color: var(--text-main);
+}
+
+/* ─── Card Grid ────────────────────────────────────────────────────────────── */
+
+.contributions-card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+/* ─── Individual Fund Card ─────────────────────────────────────────────── */
+
+.fund-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+.fund-card:hover {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+.fund-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.fund-card-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0;
+  line-height: 1.3;
+}
+
+.fund-status-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.fund-status-active {
+  background-color: #1a1a1a;
+  color: white;
+}
+
+.fund-status-paused {
+  background-color: #f2f2f7;
+  color: var(--text-muted);
+}
+
+.fund-status-completed {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+
+/* Progress section */
+
+.fund-card-progress-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fund-card-amounts {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.fund-card-raised {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.fund-card-target {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.fund-card-bar-track {
+  height: 6px;
+  border-radius: 99px;
+  background-color: #f0f0f5;
+  overflow: hidden;
+}
+
+.fund-card-bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  background-color: var(--text-main);
+  transition: width 0.4s ease;
+}
+
+/* Meta stats */
+
+.fund-card-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.fund-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* Action buttons */
+
+.fund-card-actions {
+  display: flex;
+  gap: 12px;
+  padding-top: 16px;
+}
+
+.fund-action-btn {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  border: 1px solid var(--border);
+  background: white;
+  color: var(--text-main);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+
+.fund-action-btn:hover {
+  background-color: #f2f2f7;
+}
+
+.fund-action-btn.primary {
+  background-color: var(--text-main);
+  color: white;
+  border-color: var(--text-main);
+}
+
+.fund-action-btn.primary:hover {
+  background-color: #1a1a1a;
+}
+
+/* ─── Detail View (Table) ─────────────────────────────────────────────────── */
+
+.fund-detail-header-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+
+.back-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-main);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  margin-left: -8px;
+  border-radius: 6px;
+  transition: background-color 0.15s ease;
+}
+
+.back-btn:hover {
+  background-color: #f2f2f7;
+}
+
+.detail-table-card {
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+}
+
+.detail-table-header {
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border);
+  background-color: white;
+}
+
+.detail-table-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0;
+}
+
+.contributions-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.contributions-table th,
+.contributions-table td {
+  padding: 14px 24px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.contributions-table th {
+  background-color: #f9f9fb;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.contributions-table td {
+  font-size: 13px;
+  color: var(--text-main);
+  vertical-align: middle;
+}
+
+.contributions-table tr:last-child td {
+  border-bottom: none;
+}
+
+.member-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.member-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: #e5e5ea;
+  color: var(--text-main);
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.status-cell-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+  background-color: #1a1a1a;
+  color: white;
+}
+
+.status-cell-badge.pledged {
+  background-color: #8e8e93;
+}
+
+.amount-cell {
+  font-weight: 600;
+}
+
+.actions-cell {
+  display: flex;
+  gap: 8px;
+}
+
+.action-sm-btn {
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  font-size: 11px;
+  font-weight: 600;
+  background: transparent;
+  color: var(--text-main);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.action-sm-btn:hover {
+  background-color: #f2f2f7;
+}
+
+/* ─── Side Panel Overlays ───────────────────────────────────────────────────── */
+
+.contrib-panel-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.40);
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-end;
+  z-index: 200;
+  animation: panelOverlayIn 0.2s ease;
+}
+
+.contrib-side-panel {
+  background: white;
+  width: 100%;
+  max-width: 420px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid var(--border);
+  box-shadow: -12px 0 32px rgba(0, 0, 0, 0.10);
+  animation: contribPanelSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes contribPanelSlideIn {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+
+.contrib-panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 24px 24px 20px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.contrib-panel-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0;
+}
+
+.contrib-panel-close {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.contrib-panel-close:hover {
+  background-color: #f2f2f7;
+  color: var(--text-main);
+}
+
+.contrib-panel-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+}
+
+.contrib-panel-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+/* ─── Form Fields ─────────────────────────────────────────────────────────── */
+
+.contrib-form-group {
+  margin-bottom: 20px;
+}
+
+.contrib-form-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.contrib-form-input,
+.contrib-form-select,
+.contrib-form-textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--text-main);
+  background: white;
+  outline: none;
+  transition: border-color 0.2s ease;
+  box-sizing: border-box;
+}
+
+.contrib-form-input:focus,
+.contrib-form-select:focus,
+.contrib-form-textarea:focus {
+  border-color: var(--text-main);
+}
+
+.contrib-form-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238e8e93' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 36px;
+}
+
+.contrib-form-textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.contrib-form-input-icon-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.contrib-form-input-icon-wrap .contrib-form-input {
+  padding-right: 40px;
+}
+
+.contrib-form-input-icon {
+  position: absolute;
+  right: 14px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+/* Edit Member Card Header (inside Edit Panel) */
+
+.contrib-edit-member-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-bottom: 24px;
+}
+
+.contrib-edit-member-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #e5e5ea;
+  color: var(--text-main);
+  font-size: 14px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.contrib-edit-member-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.contrib-edit-member-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.contrib-edit-member-id {
+  font-size: 12px;
+  color: var(--text-muted);
+}

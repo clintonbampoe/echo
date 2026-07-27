@@ -7,6 +7,7 @@ import Topbar from './components/Topbar'
 import Attendance from './components/Attendance'
 import Tithe from './components/Tithe'
 import Projects from './components/Projects'
+import Contributions from './components/Contributions'
 import Members from './components/Members'
 import { LayoutProvider, useLayout } from './context/LayoutContext'
 import { AuthProvider, useAuth } from './context/AuthContext'
@@ -62,8 +63,9 @@ const AppContent: React.FC = () => {
                         {activeTab === 'attendance' && <Attendance />}
                         {activeTab === 'tithe' && <Tithe />}
                         {activeTab === 'projects' && <Projects />}
+                        {activeTab === 'contributions' && <Contributions />}
                         {activeTab === 'members' && <Members />}
-                        {activeTab !== 'dashboard' && activeTab !== 'finance' && activeTab !== 'attendance' && activeTab !== 'tithe' && activeTab !== 'projects' && activeTab !== 'members' && <PlaceholderTab name={activeTab} />}
+                        {activeTab !== 'dashboard' && activeTab !== 'finance' && activeTab !== 'attendance' && activeTab !== 'tithe' && activeTab !== 'projects' && activeTab !== 'contributions' && activeTab !== 'members' && <PlaceholderTab name={activeTab} />}
                     </div>
                 </div>
             </div>
