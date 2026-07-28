@@ -2,7 +2,7 @@ namespace Echo.Application.Pagination;
 
 public class PaginationParameters
 {
-    private const int MaxPageSize = 50;
+    private const int _maxPageSize = 50;
     private int _pageSize = 25;
     public int PageNumber { get; set; } = 1;
 
@@ -13,8 +13,8 @@ public class PaginationParameters
         {
             if (value < 1)
                 _pageSize = 1;
-            else if (value > MaxPageSize)
-                _pageSize = MaxPageSize;
+            else if (value > _maxPageSize)
+                _pageSize = _maxPageSize;
             else
                 _pageSize = value;
         }

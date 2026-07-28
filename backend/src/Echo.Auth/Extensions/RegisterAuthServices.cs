@@ -46,6 +46,9 @@ public static class RegisterAuthServices
         services.AddScoped<AuthenticationService>();
         services.AddScoped<RefreshTokenService>();
         services.AddScoped<RefreshTokenRepository>();
+        services.AddScoped<InvitationTokenRepository>();
+        services.AddScoped<InvitationService>();
+        services.AddScoped<InvitationsController>();
 
         return services;
     }

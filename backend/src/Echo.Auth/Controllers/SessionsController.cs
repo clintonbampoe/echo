@@ -1,9 +1,11 @@
 using Echo.Auth.Dtos;
 using Echo.Auth.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Echo.Auth.Controllers;
 
+[AllowAnonymous]
 public class SessionsController(AuthenticationService authenticationService) : AuthBaseController
 {
     [HttpPost("login")]
