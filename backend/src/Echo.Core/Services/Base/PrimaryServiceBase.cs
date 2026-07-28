@@ -16,9 +16,9 @@ public abstract class PrimaryServiceBase<T>(
 )
     where T : class, IPrimaryEntity
 {
-    protected readonly PrimaryRepositoryBase<T> _repository = repository;
-    protected readonly AppDbContext _context = context;
-    protected readonly IMapper _mapper = mapper;
+    protected readonly PrimaryRepositoryBase<T> Repository = repository;
+    protected readonly AppDbContext Context = context;
+    protected readonly IMapper Mapper = mapper;
 
     public abstract Task<IOperationResult> GetPageAsync(
         Guid congregationId,
@@ -27,7 +27,7 @@ public abstract class PrimaryServiceBase<T>(
         CancellationToken ct = default
     );
 
-    public abstract Task<IOperationResult> GetByIdAsync(Guid Id, CancellationToken ct = default);
+    public abstract Task<IOperationResult> GetByIdAsync(Guid id, CancellationToken ct = default);
 
     public virtual async Task<IOperationResult> CreateAsync(
         Guid congregationId,
@@ -35,11 +35,11 @@ public abstract class PrimaryServiceBase<T>(
         CancellationToken ct = default
     )
     {
-        var entity = _mapper.Map<T>(dto);
+        var entity = Mapper.Map<T>(dto);
         entity.CongregationId = congregationId;
 
-        await _repository.CreateRecord(entity, ct);
-        await _context.SaveChangesAsync(ct);
+        await Repository.CreateRecord(entity, ct);
+        await Context.SaveChangesAsync(ct);
         return new OkResult("Record created successfully.");
     }
 
@@ -50,26 +50,26 @@ public abstract class PrimaryServiceBase<T>(
         CancellationToken ct = default
     )
     {
-        var entity = _mapper.Map<T>(dto);
+        var entity = Mapper.Map<T>(dto);
         entity.CongregationId = congregationId;
 
-        var success = await _repository.UpdateRecord(id,congregationId, entity, ct);
+        var success = await Repository.UpdateRecord(id,congregationId, entity, ct);
 
         if (!success)
             return new NotFoundResult("Record not found.");
 
-        await _context.SaveChangesAsync(ct);
+        await Context.SaveChangesAsync(ct);
         return new OkResult("Record updated successfully.");
     }
 
     public virtual async Task<IOperationResult> DeleteAsync(Guid id, Guid congregationId, CancellationToken ct = default)
     {
-        var success = await _repository.DeleteRecord(id, congregationId, ct);
+        var success = await Repository.DeleteRecord(id, congregationId, ct);
 
         if (!success)
             return new NotFoundResult("Record not found.");
 
-        await _context.SaveChangesAsync(ct);
+        await Context.SaveChangesAsync(ct);
         return new OkResult("Record deleted successfully.");
     }
 }

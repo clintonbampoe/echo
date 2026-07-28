@@ -24,11 +24,11 @@ public class UserService(UserRepository repository, AppDbContext context, IMappe
         if (await IsEmailTaken(userDto.EmailAddress, ct))
             return new BadRequestResult("Email already exists.");
 
-        var user = _mapper.Map<User>(userDto);
+        var user = Mapper.Map<User>(userDto);
         user.CongregationId = congregationId;
 
         var createdSuccessfully = await _userRepository.CreateRecord(user, ct);
-        await _context.SaveChangesAsync(ct);
+        await Context.SaveChangesAsync(ct);
 
         if (!createdSuccessfully)
             return new InternalServerError();

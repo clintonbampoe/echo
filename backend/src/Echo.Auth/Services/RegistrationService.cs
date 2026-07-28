@@ -1,6 +1,7 @@
 using AutoMapper;
 using Echo.Application.HttpResults;
 using Echo.Application.Services.Hashing;
+using Echo.Auth.Dtos;
 using Echo.Core.Dtos;
 using Echo.Core.Repositories;
 using Echo.Domain.Data;
@@ -15,6 +16,8 @@ public class RegistrationService(
     AppDbContext context,
     CongregationRepository congregationRepository,
     UserRepository userRepository,
+    EmailVerificationService emailVerificationService,
+    InvitationService invitationService,
     IMapper mapper,
     [FromKeyedServices("Bcrypt")] IHashService hashService
 )
@@ -47,6 +50,40 @@ public class RegistrationService(
         }
 
         return new OkResult("Operation completed successfully.");
+    }
+
+    public async Task<IOperationResult> RegisterMemberAsync(RegisterMemberRequest request, CancellationToken ct)
+    {
+        var invitation = await invitationService.ValidateAsync(request.Token, ct);
+        if (invitation is null)
+            return new BadRequestResult("Invitation is invalid, expired, or revoked.");
+
+        if (await IsEmailTaken(request.Email, ct))
+            return new BadRequestResult("Email already in use");
+
+        var user = new User
+        {
+            Name = request.Name,
+            EmailAddress = request.Email,
+            Role = invitation.AllowedRole,
+            CongregationId = invitation.CongregationId,
+            PasswordHash = await hashService.HashPasswordAsync(request.Password),
+        };
+
+        await userRepository.CreateRecord(user, ct);
+
+        try
+        {
+            await context.SaveChangesAsync(ct);
+        }
+        catch (DbUpdateException)
+        {
+            return new InternalServerError();
+        }
+
+        await emailVerificationService.SendVerificationLinkToEmail(user.Id, ct);
+
+        return new OkResult("Check your email to verify your account and complete registration.");
     }
 
     private async Task<bool> IsEmailTaken(string emailAddress, CancellationToken ct)

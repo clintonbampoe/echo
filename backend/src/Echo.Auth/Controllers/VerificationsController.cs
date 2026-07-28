@@ -1,9 +1,11 @@
 using Echo.Auth.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Echo.Auth.Controllers;
 
 [Route("/api/auth/v{version:apiVersion}/[controller]")]
+[AllowAnonymous]
 public class VerificationsController(EmailVerificationService emailVerificationService) : AuthBaseController
 {
     [HttpPost("send-email{userId:guid}")]

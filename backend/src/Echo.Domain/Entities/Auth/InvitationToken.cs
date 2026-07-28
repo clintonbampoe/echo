@@ -1,9 +1,9 @@
-using Echo.Domain.Entities.Core.Interfaces;
+using Echo.Domain.Entities.Core;
 using Echo.Domain.Enums;
 
-namespace Echo.Domain.Entities.Core;
+namespace Echo.Domain.Entities.Auth;
 
-public class InvitationToken : IPrimaryEntity
+public class InvitationToken : IAuthEntity
 {
     public Guid Id { get; set; } = Guid.CreateVersion7(DateTime.UtcNow);
     public Guid CongregationId { get; set; }
@@ -11,9 +11,10 @@ public class InvitationToken : IPrimaryEntity
 
     public Guid CreatedByUserId { get; set; }
     public User CreatedBy { get; set; } = null!;
+
     public UserRole AllowedRole { get; set; }
-    public string Token { get; set; } = string.Empty;
-    public DateTime ExpiryDate { get; set; }
+    public string TokenHash { get; set; } = string.Empty;
+    public DateTime ExpiresAt { get; set; }
     public bool IsRevoked { get; set; }
 
     public DateTime CreatedAt { get; set; }
