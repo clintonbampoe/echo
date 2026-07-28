@@ -19,7 +19,7 @@ public class AttendanceContextsController(AttendanceContextService service) : Co
     [HttpGet("{id}")]
     public async Task<ActionResult> GetByIdAsync(int id, CancellationToken ct)
     {
-        var response = await _service.GetByIdAsync(id, ct);
+        var response = await _service.GetByIdAsync(id, GetCongregationId(), ct);
         return response.ToActionResult();
     }
 

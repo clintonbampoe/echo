@@ -1,10 +1,10 @@
+using Echo.Application.Extensions.QueryMethods;
+using Echo.Application.Pagination;
+using Echo.Application.Query;
 using Echo.Core.Dtos;
 using Echo.Core.Repositories.Base;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core;
-using Echo.Application.Extensions.QueryMethods;
-using Echo.Application.Pagination;
-using Echo.Application.Query;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Core.Repositories;
@@ -31,12 +31,12 @@ public class TitheRepository(AppDbContext context) : PrimaryRepositoryBase<Tithe
             .Select(t => new TitheListResponseDto
             {
                 Id = t.Id,
-                MemberName =  t.Member.Name,
+                MemberName = t.Member.Name,
                 Amount = t.Amount,
                 ForYear = t.ForYear,
                 ForMonth = t.ForMonth,
                 PaymentMethod = t.PaymentMethod,
-                CollectionDate = t.CollectionDate
+                CollectionDate = t.CollectionDate,
             })
             .ApplyPagination(paginationParameters)
             .ToListAsync(ct);
@@ -44,24 +44,28 @@ public class TitheRepository(AppDbContext context) : PrimaryRepositoryBase<Tithe
         return new PagedResponse<TitheListResponseDto>(records, paginationParameters, totalRecords);
     }
 
-    public async Task<TitheResponseDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
+    public async Task<TitheResponseDto?> GetByIdAsync(
+        Guid id,
+        Guid congregationId,
+        CancellationToken ct = default
+    )
     {
         return await DbSet
             .AsNoTracking()
             .ApplySoftDeleteFilter()
-            .Where(t => t.Id == id)
+            .Where(t => t.Id == id && t.CongregationId == congregationId)
             .Select(t => new TitheResponseDto
             {
                 Id = t.Id,
-                MemberId =  t.MemberId,
+                MemberId = t.MemberId,
                 MemberName = t.Member.Name,
                 Amount = t.Amount,
                 ForYear = t.ForYear,
                 ForMonth = t.ForMonth,
                 PaymentMethod = t.PaymentMethod,
                 CollectionDate = t.CollectionDate,
-                Description =   t.Description,
-                CreatedAt =  t.CreatedAt
+                Description = t.Description,
+                CreatedAt = t.CreatedAt,
             })
             .FirstOrDefaultAsync(ct);
     }

@@ -6,10 +6,14 @@ namespace Echo.Auth.Controllers;
 
 [Route("/api/auth/v{version:apiVersion}/[controller]")]
 [AllowAnonymous]
-public class VerificationsController(EmailVerificationService emailVerificationService) : AuthBaseController
+public class VerificationsController(EmailVerificationService emailVerificationService)
+    : AuthBaseController
 {
     [HttpPost("send-email{userId:guid}")]
-    public async Task<ActionResult> SendVerificationLinkToEmail(Guid userId, CancellationToken ct = default)
+    public async Task<ActionResult> SendVerificationLinkToEmail(
+        Guid userId,
+        CancellationToken ct = default
+    )
     {
         var response = await emailVerificationService.SendVerificationLinkToEmail(userId, ct);
         return response.ToActionResult();

@@ -1,8 +1,8 @@
+using Echo.Application.Pagination;
+using Echo.Application.Query;
 using Echo.Core.Controllers.Base;
 using Echo.Core.Dtos;
 using Echo.Core.Services;
-using Echo.Application.Pagination;
-using Echo.Application.Query;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Echo.Core.Controllers;
@@ -30,7 +30,7 @@ public class MembersController(MemberService service) : CoreBaseController
     [HttpGet("{id}")]
     public async Task<ActionResult> GetByIdAsync(Guid id, CancellationToken ct)
     {
-        var response = await _service.GetByIdAsync(id, ct);
+        var response = await _service.GetByIdAsync(id, GetCongregationId(), ct);
         return response.ToActionResult();
     }
 

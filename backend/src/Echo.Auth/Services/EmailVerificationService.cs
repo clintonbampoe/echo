@@ -18,17 +18,23 @@ public class EmailVerificationService(
     [FromKeyedServices("Resend")] IEmailService emailService,
     ITokenGenerator tokenGenerator,
     [FromKeyedServices("Sha256")] IHashService hashService,
-    AuthLinkBuilder linkBuilder)
+    AuthLinkBuilder linkBuilder
+)
 {
-
-    public async Task<IOperationResult> SendVerificationLinkToEmail(Guid userId, CancellationToken ct = default)
+    public async Task<IOperationResult> SendVerificationLinkToEmail(
+        Guid userId,
+        CancellationToken ct = default
+    )
     {
-        var existingToken = await emailVerificationTokenRepository.GetActiveTokenForUser(userId, ct);
+        var existingToken = await emailVerificationTokenRepository.GetActiveTokenForUser(
+            userId,
+            ct
+        );
 
         if (RateLimitActive(existingToken))
             return new OkResult("A verification email was already sent. Please check your inbox.");
 
-        if(existingToken is not null)
+        if (existingToken is not null)
             existingToken.InvalidatedAt = DateTime.UtcNow;
 
         var token = tokenGenerator.GenerateToken(16);
@@ -36,10 +42,13 @@ public class EmailVerificationService(
         var tokenObject = new EmailVerificationToken(userId)
         {
             UserId = userId,
-            TokenHash = await hashService.HashPasswordAsync(token)
+            TokenHash = await hashService.HashPasswordAsync(token),
         };
 
-        var recordCreatedSuccessfully = await emailVerificationTokenRepository.CreateRecord(tokenObject, ct);
+        var recordCreatedSuccessfully = await emailVerificationTokenRepository.CreateRecord(
+            tokenObject,
+            ct
+        );
 
         if (!recordCreatedSuccessfully)
             return new InternalServerError();
@@ -64,8 +73,10 @@ public class EmailVerificationService(
     {
         var hashedInput = await hashService.HashPasswordAsync(token);
 
-        var tokenRecord = await emailVerificationTokenRepository
-            .GetTokenRecordByHashWithUser(hashedInput, ct);
+        var tokenRecord = await emailVerificationTokenRepository.GetTokenRecordByHashWithUser(
+            hashedInput,
+            ct
+        );
 
         if (tokenRecord is null)
             return new NotFoundResult("Not found.");
@@ -87,13 +98,13 @@ public class EmailVerificationService(
         if (token is null)
             return false;
 
-        if(token.ExpiresAt <= DateTime.UtcNow)
+        if (token.ExpiresAt <= DateTime.UtcNow)
             return false;
 
-        if(token.UsedAt is not null)
+        if (token.UsedAt is not null)
             return false;
 
-        if(token.InvalidatedAt is not null)
+        if (token.InvalidatedAt is not null)
             return false;
 
         return true;

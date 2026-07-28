@@ -1,10 +1,10 @@
+using Echo.Application.Extensions.QueryMethods;
+using Echo.Application.Pagination;
+using Echo.Application.Query;
 using Echo.Core.Dtos;
 using Echo.Core.Repositories.Base;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core;
-using Echo.Application.Extensions.QueryMethods;
-using Echo.Application.Pagination;
-using Echo.Application.Query;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Core.Repositories;
@@ -35,7 +35,7 @@ public class OrganizationMemberRepository(AppDbContext context)
                 MemberName = o.Member.Name,
                 OrganizationName = o.Organization.Name,
                 Role = o.Role,
-                JoinedAt = o.JoinedAt
+                JoinedAt = o.JoinedAt,
             })
             .ApplyPagination(paginationParameters)
             .ToListAsync(ct);
@@ -49,23 +49,24 @@ public class OrganizationMemberRepository(AppDbContext context)
 
     public async Task<OrganizationMemberResponseDto?> GetByIdAsync(
         Guid id,
+        Guid congregationId,
         CancellationToken ct = default
     )
     {
         return await DbSet
             .AsNoTracking()
             .ApplySoftDeleteFilter()
-            .Where(o => o.Id == id)
+            .Where(o => o.Id == id && o.CongregationId == congregationId)
             .Select(o => new OrganizationMemberResponseDto
             {
                 Id = o.Id,
                 MemberId = o.MemberId,
-                MemberName =  o.Member.Name,
+                MemberName = o.Member.Name,
                 OrganizationId = o.OrganizationId,
                 OrganizationName = o.Organization.Name,
                 Role = o.Role,
                 JoinedAt = o.JoinedAt,
-                CreatedAt = o.CreatedAt
+                CreatedAt = o.CreatedAt,
             })
             .FirstOrDefaultAsync(ct);
     }

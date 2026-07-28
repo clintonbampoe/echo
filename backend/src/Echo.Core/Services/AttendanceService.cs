@@ -1,12 +1,12 @@
 using AutoMapper;
+using Echo.Application.HttpResults;
+using Echo.Application.Pagination;
+using Echo.Application.Query;
 using Echo.Core.Dtos;
 using Echo.Core.Repositories;
 using Echo.Core.Services.Base;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core;
-using Echo.Application.HttpResults;
-using Echo.Application.Pagination;
-using Echo.Application.Query;
 
 namespace Echo.Core.Services;
 
@@ -36,10 +36,11 @@ public class AttendanceService(
 
     public override async Task<IOperationResult> GetByIdAsync(
         Guid id,
+        Guid congregationId,
         CancellationToken ct = default
     )
     {
-        var result = await _attendanceRepository.GetByIdAsync(id, ct);
+        var result = await _attendanceRepository.GetByIdAsync(id, congregationId, ct);
 
         if (result is null)
             return new NotFoundResult("Attendance record not found.");

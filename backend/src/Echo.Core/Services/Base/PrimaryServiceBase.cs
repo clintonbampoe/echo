@@ -1,11 +1,11 @@
 using AutoMapper;
+using Echo.Application.HttpResults;
+using Echo.Application.Pagination;
+using Echo.Application.Query;
 using Echo.Core.Dtos.Interfaces;
 using Echo.Core.Repositories.Base;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core.Interfaces;
-using Echo.Application.HttpResults;
-using Echo.Application.Pagination;
-using Echo.Application.Query;
 
 namespace Echo.Core.Services.Base;
 
@@ -27,7 +27,11 @@ public abstract class PrimaryServiceBase<T>(
         CancellationToken ct = default
     );
 
-    public abstract Task<IOperationResult> GetByIdAsync(Guid id, CancellationToken ct = default);
+    public abstract Task<IOperationResult> GetByIdAsync(
+        Guid id,
+        Guid congregationId,
+        CancellationToken ct = default
+    );
 
     public virtual async Task<IOperationResult> CreateAsync(
         Guid congregationId,
@@ -53,7 +57,7 @@ public abstract class PrimaryServiceBase<T>(
         var entity = Mapper.Map<T>(dto);
         entity.CongregationId = congregationId;
 
-        var success = await Repository.UpdateRecord(id,congregationId, entity, ct);
+        var success = await Repository.UpdateRecord(id, congregationId, entity, ct);
 
         if (!success)
             return new NotFoundResult("Record not found.");
@@ -62,7 +66,11 @@ public abstract class PrimaryServiceBase<T>(
         return new OkResult("Record updated successfully.");
     }
 
-    public virtual async Task<IOperationResult> DeleteAsync(Guid id, Guid congregationId, CancellationToken ct = default)
+    public virtual async Task<IOperationResult> DeleteAsync(
+        Guid id,
+        Guid congregationId,
+        CancellationToken ct = default
+    )
     {
         var success = await Repository.DeleteRecord(id, congregationId, ct);
 

@@ -1,10 +1,10 @@
 using AutoMapper;
+using Echo.Application.HttpResults;
 using Echo.Core.Dtos;
 using Echo.Core.Repositories;
 using Echo.Core.Services.Base;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core;
-using Echo.Application.HttpResults;
 
 namespace Echo.Core.Services;
 
@@ -27,10 +27,11 @@ public class AttendanceTypeService(
 
     public override async Task<IOperationResult> GetByIdAsync(
         int id,
+        Guid congregationId,
         CancellationToken ct = default
     )
     {
-        var result = await _attendanceTypeRepository.GetByIdAsync(id, ct);
+        var result = await _attendanceTypeRepository.GetByIdAsync(id, congregationId, ct);
 
         if (result is null)
             return new NotFoundResult("Attendance type not found.");

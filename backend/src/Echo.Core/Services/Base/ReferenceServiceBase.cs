@@ -1,9 +1,9 @@
 using AutoMapper;
+using Echo.Application.HttpResults;
 using Echo.Core.Dtos.Interfaces;
 using Echo.Core.Repositories.Base;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core.Interfaces;
-using Echo.Application.HttpResults;
 
 namespace Echo.Core.Services.Base;
 
@@ -23,7 +23,11 @@ public abstract class ReferenceServiceBase<T>(
         CancellationToken ct = default
     );
 
-    public abstract Task<IOperationResult> GetByIdAsync(int id, CancellationToken ct = default);
+    public abstract Task<IOperationResult> GetByIdAsync(
+        int id,
+        Guid congregationId,
+        CancellationToken ct = default
+    );
 
     public virtual async Task<IOperationResult> CreateAsync(
         Guid congregationId,
@@ -59,7 +63,11 @@ public abstract class ReferenceServiceBase<T>(
         return new OkResult("Record updated successfully.");
     }
 
-    public virtual async Task<IOperationResult> DeleteAsync(int id, Guid congregationId, CancellationToken ct = default)
+    public virtual async Task<IOperationResult> DeleteAsync(
+        int id,
+        Guid congregationId,
+        CancellationToken ct = default
+    )
     {
         var success = await Repository.DeleteRecord(id, congregationId, ct);
 

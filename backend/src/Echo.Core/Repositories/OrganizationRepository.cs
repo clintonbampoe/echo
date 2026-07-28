@@ -1,10 +1,10 @@
+using Echo.Application.Extensions.QueryMethods;
+using Echo.Application.Pagination;
+using Echo.Application.Query;
 using Echo.Core.Dtos;
 using Echo.Core.Repositories.Base;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core;
-using Echo.Application.Extensions.QueryMethods;
-using Echo.Application.Pagination;
-using Echo.Application.Query;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Core.Repositories;
@@ -34,7 +34,7 @@ public class OrganizationRepository(AppDbContext context)
             {
                 Id = o.Id,
                 Name = o.Name,
-                Description = o.Description
+                Description = o.Description,
             })
             .ApplyPagination(paginationParameters)
             .ToListAsync(ct);
@@ -48,18 +48,19 @@ public class OrganizationRepository(AppDbContext context)
 
     public async Task<OrganizationResponseDto?> GetByIdAsync(
         Guid id,
+        Guid congregationId,
         CancellationToken ct = default
     )
     {
         return await DbSet
             .AsNoTracking()
             .ApplySoftDeleteFilter()
-            .Where(o => o.Id == id)
+            .Where(o => o.Id == id && o.CongregationId == congregationId)
             .Select(o => new OrganizationResponseDto
             {
                 Id = o.Id,
                 Name = o.Name,
-                Description = o.Description
+                Description = o.Description,
             })
             .FirstOrDefaultAsync(ct);
     }

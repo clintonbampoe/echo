@@ -1,10 +1,10 @@
+using Echo.Application.Extensions.QueryMethods;
+using Echo.Application.Pagination;
+using Echo.Application.Query;
 using Echo.Core.Dtos;
 using Echo.Core.Repositories.Base;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core;
-using Echo.Application.Extensions.QueryMethods;
-using Echo.Application.Pagination;
-using Echo.Application.Query;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Core.Repositories;
@@ -32,13 +32,13 @@ public class ProjectRepository(AppDbContext context) : PrimaryRepositoryBase<Pro
             .Select(p => new ProjectListResponseDto
             {
                 Id = p.Id,
-                CategoryName =  p.Category.Name,
-                ManagerName =   p.Manager.Name,
+                CategoryName = p.Category.Name,
+                ManagerName = p.Manager.Name,
                 Name = p.Name,
                 TargetAmount = p.TargetAmount,
-                Status =  p.Status,
+                Status = p.Status,
                 StartDate = p.StartDate,
-                EndDate = p.EndDate
+                EndDate = p.EndDate,
             })
             .ApplyPagination(paginationParameters)
             .ToListAsync(ct);
@@ -50,12 +50,16 @@ public class ProjectRepository(AppDbContext context) : PrimaryRepositoryBase<Pro
         );
     }
 
-    public async Task<ProjectResponseDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
+    public async Task<ProjectResponseDto?> GetByIdAsync(
+        Guid id,
+        Guid congregationId,
+        CancellationToken ct = default
+    )
     {
         return await DbSet
             .AsNoTracking()
             .ApplySoftDeleteFilter()
-            .Where(p => p.Id == id)
+            .Where(p => p.Id == id && p.CongregationId == congregationId)
             .Select(p => new ProjectResponseDto
             {
                 Id = p.Id,
@@ -65,11 +69,11 @@ public class ProjectRepository(AppDbContext context) : PrimaryRepositoryBase<Pro
                 ManagerName = p.Manager.Name,
                 Name = p.Name,
                 TargetAmount = p.TargetAmount,
-                Status =  p.Status,
+                Status = p.Status,
                 StartDate = p.StartDate,
                 EndDate = p.EndDate,
-                Description =  p.Description,
-                CreatedAt =  p.CreatedAt
+                Description = p.Description,
+                CreatedAt = p.CreatedAt,
             })
             .FirstOrDefaultAsync(ct);
     }
