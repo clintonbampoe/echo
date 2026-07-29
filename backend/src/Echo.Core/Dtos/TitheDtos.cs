@@ -49,3 +49,9 @@ public record TitheResponseDto : IPrimaryResponseDto
     public string? Description { get; init; }
     public DateTime CreatedAt { get; init; }
 }
+
+public record TitheMonthlyTotalDto
+{
+    public required MonthOfYear Month { get; init; }
+    public required decimal Total { get; init; }
+}

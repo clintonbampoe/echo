@@ -1,8 +1,8 @@
+using Echo.Application.Pagination;
+using Echo.Application.Query;
 using Echo.Core.Controllers.Base;
 using Echo.Core.Dtos;
 using Echo.Core.Services;
-using Echo.Application.Pagination;
-using Echo.Application.Query;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Echo.Core.Controllers;
@@ -30,7 +30,31 @@ public class EventRegistrationsController(EventRegistrationService service) : Co
     [HttpGet("{id}")]
     public async Task<ActionResult> GetByIdAsync(Guid id, CancellationToken ct)
     {
-        var response = await _service.GetByIdAsync(id, ct);
+        var response = await _service.GetByIdAsync(id, GetCongregationId(), ct);
+        return response.ToActionResult();
+    }
+
+    [HttpGet("event{id}")]
+    public async Task<ActionResult> GetByEventId(
+        [FromQuery] PaginationParameters paginationParameters,
+        [FromQuery] QueryParameters queryParameters,
+        Guid id,
+        CancellationToken ct
+    )
+    {
+        var response = await _service.GetByEventId(paginationParameters, queryParameters, id, ct);
+        return response.ToActionResult();
+    }
+
+    [HttpGet("member{id}")]
+    public async Task<ActionResult> GetByMemberId(
+        [FromQuery] PaginationParameters paginationParameters,
+        [FromQuery] QueryParameters queryParameters,
+        Guid id,
+        CancellationToken ct
+    )
+    {
+        var response = await _service.GetByMemberId(paginationParameters, queryParameters, id, ct);
         return response.ToActionResult();
     }
 

@@ -5,5 +5,5 @@ namespace Echo.Auth.Controllers;
 
 [ApiController]
 [ApiVersion(1.0)]
-[Route("/api/auth/v{version:apiVersion}/[controller]")]
+[Route("/api/v{version:apiVersion}/auth/[controller]")]
 public abstract class AuthBaseController : ControllerBase { }

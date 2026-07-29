@@ -1,10 +1,11 @@
+using Echo.Application.Extensions.QueryMethods;
+using Echo.Application.Pagination;
+using Echo.Application.Query;
 using Echo.Core.Dtos;
 using Echo.Core.Repositories.Base;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core;
-using Echo.Application.Extensions.QueryMethods;
-using Echo.Application.Pagination;
-using Echo.Application.Query;
+using Echo.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Core.Repositories;
@@ -32,10 +33,10 @@ public class AssetRepository(AppDbContext context) : PrimaryRepositoryBase<Asset
             .Select(a => new AssetListResponseDto
             {
                 Id = a.Id,
-                CategoryName =  a.Category.Name,
-                Name =  a.Name,
+                CategoryName = a.Category.Name,
+                Name = a.Name,
                 Status = a.Status,
-                CurrentValue = a.CurrentValue
+                CurrentValue = a.CurrentValue,
             })
             .ApplyPagination(paginationParameters)
             .ToListAsync(ct);
@@ -43,12 +44,16 @@ public class AssetRepository(AppDbContext context) : PrimaryRepositoryBase<Asset
         return new PagedResponse<AssetListResponseDto>(records, paginationParameters, totalRecords);
     }
 
-    public async Task<AssetResponseDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
+    public async Task<AssetResponseDto?> GetByIdAsync(
+        Guid id,
+        Guid congregationId,
+        CancellationToken ct = default
+    )
     {
         return await DbSet
             .AsNoTracking()
             .ApplySoftDeleteFilter()
-            .Where(a => a.Id == id)
+            .Where(a => a.Id == id && a.CongregationId == congregationId)
             .Select(a => new AssetResponseDto
             {
                 Id = a.Id,
@@ -57,12 +62,36 @@ public class AssetRepository(AppDbContext context) : PrimaryRepositoryBase<Asset
                 Name = a.Name,
                 SerialNumber = a.SerialNumber,
                 PurchaseDate = a.PurchaseDate,
-                PurchaseCost =  a.PurchaseCost,
+                PurchaseCost = a.PurchaseCost,
                 CurrentValue = a.CurrentValue,
                 Status = a.Status,
-                Description =  a.Description,
-                CreatedAt =  a.CreatedAt
+                Description = a.Description,
+                CreatedAt = a.CreatedAt,
             })
             .FirstOrDefaultAsync(ct);
+    }
+
+    public async Task<AssetSummaryDto> GetSummaryAsync(Guid congregationId, CancellationToken ct = default)
+    {
+        var stats = await DbSet
+            .ApplySoftDeleteFilter()
+            .Where(a => a.CongregationId == congregationId && a.Status != AssetStatus.Liquidated)
+            .GroupBy(a => 1)
+            .Select(g => new
+            {
+                TotalAssets = g.Count(),
+                TotalCurrentValue = g.Sum(a => a.CurrentValue),
+                UnderMaintenance = g.Count(a => a.Status == AssetStatus.UnderMaintenance),
+                TotalDepreciation = g.Sum(a => a.PurchaseCost - a.CurrentValue),
+            })
+            .FirstOrDefaultAsync(ct);
+
+        return new AssetSummaryDto
+        {
+            TotalAssets = stats?.TotalAssets ?? 0,
+            TotalCurrentValue = stats?.TotalCurrentValue ?? 0,
+            UnderMaintenance = stats?.UnderMaintenance ?? 0,
+            TotalDepreciation = stats?.TotalDepreciation ?? 0,
+        };
     }
 }

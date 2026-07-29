@@ -1,12 +1,12 @@
 using AutoMapper;
+using Echo.Application.HttpResults;
+using Echo.Application.Pagination;
+using Echo.Application.Query;
 using Echo.Core.Dtos;
 using Echo.Core.Repositories;
 using Echo.Core.Services.Base;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core;
-using Echo.Application.HttpResults;
-using Echo.Application.Pagination;
-using Echo.Application.Query;
 
 namespace Echo.Core.Services;
 
@@ -33,14 +33,21 @@ public class AssetService(AssetRepository repository, AppDbContext context, IMap
 
     public override async Task<IOperationResult> GetByIdAsync(
         Guid id,
+        Guid congregationId,
         CancellationToken ct = default
     )
     {
-        var result = await _assetRepository.GetByIdAsync(id, ct);
+        var result = await _assetRepository.GetByIdAsync(id, congregationId, ct);
 
         if (result is null)
             return new NotFoundResult("Asset not found.");
 
         return new SuccessResult<AssetResponseDto>(result);
+    }
+
+    public async Task<IOperationResult> GetSummaryAsync(Guid congregationId, CancellationToken ct = default)
+    {
+        var result = await _assetRepository.GetSummaryAsync(congregationId, ct);
+        return new SuccessResult<AssetSummaryDto>(result);
     }
 }

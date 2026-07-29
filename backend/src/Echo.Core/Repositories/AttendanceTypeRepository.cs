@@ -1,8 +1,8 @@
+using Echo.Application.Extensions.QueryMethods;
 using Echo.Core.Dtos;
 using Echo.Core.Repositories.Base;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core;
-using Echo.Application.Extensions.QueryMethods;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Core.Repositories;
@@ -19,28 +19,21 @@ public class AttendanceTypeRepository(AppDbContext context)
             .AsNoTracking()
             .ApplySoftDeleteFilter()
             .Where(t => t.CongregationId == congregationId)
-            .Select(t => new AttendanceTypeResponseDto
-            {
-                Id = t.Id,
-                Name = t.Name
-            })
+            .Select(t => new AttendanceTypeResponseDto { Id = t.Id, Name = t.Name })
             .ToListAsync(ct);
     }
 
     public async Task<AttendanceTypeResponseDto?> GetByIdAsync(
         int id,
+        Guid congregationId,
         CancellationToken ct = default
     )
     {
         return await DbSet
             .AsNoTracking()
             .ApplySoftDeleteFilter()
-            .Where(t => t.Id == id)
-            .Select(t => new AttendanceTypeResponseDto
-            {
-                Id = t.Id,
-                Name = t.Name
-            })
+            .Where(t => t.Id == id && t.CongregationId == congregationId)
+            .Select(t => new AttendanceTypeResponseDto { Id = t.Id, Name = t.Name })
             .FirstOrDefaultAsync(ct);
     }
 }

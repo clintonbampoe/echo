@@ -1,13 +1,13 @@
 using AutoMapper;
+using Echo.Application.HttpResults;
+using Echo.Application.Pagination;
+using Echo.Application.Query;
 using Echo.Core.Dtos;
+using Echo.Core.Dtos.Interfaces;
 using Echo.Core.Repositories;
 using Echo.Core.Services.Base;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core;
-using Echo.Application.HttpResults;
-using Echo.Application.Pagination;
-using Echo.Application.Query;
-using Echo.Core.Dtos.Interfaces;
 
 namespace Echo.Core.Services;
 
@@ -16,8 +16,11 @@ public class UserService(UserRepository repository, AppDbContext context, IMappe
 {
     private readonly UserRepository _userRepository = repository;
 
-    public override async Task<IOperationResult> CreateAsync(Guid congregationId, IPrimaryCreateDto dto,
-        CancellationToken ct = default)
+    public override async Task<IOperationResult> CreateAsync(
+        Guid congregationId,
+        IPrimaryCreateDto dto,
+        CancellationToken ct = default
+    )
     {
         var userDto = (UserCreateDto)dto;
 
@@ -34,11 +37,11 @@ public class UserService(UserRepository repository, AppDbContext context, IMappe
             return new InternalServerError();
 
         return new OkResult("Operation completed successfully.");
-
     }
 
     public override async Task<IOperationResult> GetByIdAsync(
         Guid id,
+        Guid congregationId,
         CancellationToken ct = default
     )
     {

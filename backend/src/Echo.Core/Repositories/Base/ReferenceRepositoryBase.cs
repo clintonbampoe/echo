@@ -1,8 +1,6 @@
-// ReferenceRepositoryBase.cs
-
+using Echo.Application.Extensions.QueryMethods;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core.Interfaces;
-using Echo.Application.Extensions.QueryMethods;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Core.Repositories.Base;
@@ -19,7 +17,12 @@ public abstract class ReferenceRepositoryBase<T>(AppDbContext context)
         return true;
     }
 
-    public virtual async Task<bool> UpdateRecord(int id,Guid congregationId, T entity, CancellationToken ct = default)
+    public virtual async Task<bool> UpdateRecord(
+        int id,
+        Guid congregationId,
+        T entity,
+        CancellationToken ct = default
+    )
     {
         var existing = await DbSet
             .ApplySoftDeleteFilter()
@@ -35,7 +38,11 @@ public abstract class ReferenceRepositoryBase<T>(AppDbContext context)
         return true;
     }
 
-    public virtual async Task<bool> DeleteRecord(int id, Guid congregationId, CancellationToken ct = default)
+    public virtual async Task<bool> DeleteRecord(
+        int id,
+        Guid congregationId,
+        CancellationToken ct = default
+    )
     {
         var existing = await DbSet
             .ApplySoftDeleteFilter()

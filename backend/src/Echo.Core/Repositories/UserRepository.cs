@@ -1,10 +1,10 @@
+using Echo.Application.Extensions.QueryMethods;
+using Echo.Application.Pagination;
+using Echo.Application.Query;
 using Echo.Core.Dtos;
 using Echo.Core.Repositories.Base;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core;
-using Echo.Application.Extensions.QueryMethods;
-using Echo.Application.Pagination;
-using Echo.Application.Query;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Core.Repositories;
@@ -47,6 +47,7 @@ public class UserRepository(AppDbContext context) : PrimaryRepositoryBase<User>(
         return await DbSet
             .AsNoTracking()
             .ApplySoftDeleteFilter()
+            .Where(u => u.Id == id)
             .Select(u => new UserResponseDto
             {
                 Id = u.Id,
@@ -56,21 +57,25 @@ public class UserRepository(AppDbContext context) : PrimaryRepositoryBase<User>(
                 Role = u.Role,
                 CreatedAt = u.CreatedAt,
             })
-            .FirstOrDefaultAsync(u => u.Id == id, ct);
+            .FirstOrDefaultAsync(ct);
     }
 
     public async Task<bool> ExecuteUpdateAsync(User user, CancellationToken ct = default)
     {
         var affectedRows = await DbSet
             .Where(u => u.Id == user.Id)
-            .ExecuteUpdateAsync(setters => setters
-                .SetProperty(u => u.Name, user.Name)
-                .SetProperty(u => u.EmailAddress, user.EmailAddress)
-                .SetProperty(u => u.PasswordHash, user.PasswordHash)
-                .SetProperty(u => u.EmailVerifiedAt, user.EmailVerifiedAt)
-                .SetProperty(u => u.Role, user.Role), cancellationToken: ct);
+            .ExecuteUpdateAsync(
+                setters =>
+                    setters
+                        .SetProperty(u => u.Name, user.Name)
+                        .SetProperty(u => u.EmailAddress, user.EmailAddress)
+                        .SetProperty(u => u.PasswordHash, user.PasswordHash)
+                        .SetProperty(u => u.EmailVerifiedAt, user.EmailVerifiedAt)
+                        .SetProperty(u => u.Role, user.Role),
+                cancellationToken: ct
+            );
 
-        return (affectedRows > 0);
+        return affectedRows > 0;
     }
 
     public async Task<bool> IsEmailAddressTaken(string emailAddress, CancellationToken ct)
@@ -82,7 +87,10 @@ public class UserRepository(AppDbContext context) : PrimaryRepositoryBase<User>(
         return exists;
     }
 
-    public async Task<UserAuthDto?> GetActiveUserByEmail(string emailAddress, CancellationToken ct = default)
+    public async Task<UserAuthDto?> GetActiveUserByEmail(
+        string emailAddress,
+        CancellationToken ct = default
+    )
     {
         return await DbSet
             .ApplySoftDeleteFilter()
@@ -95,7 +103,7 @@ public class UserRepository(AppDbContext context) : PrimaryRepositoryBase<User>(
                 Name = u.Name,
                 EmailVerifiedAt = u.EmailVerifiedAt,
                 PasswordHash = u.PasswordHash,
-                Role = u.Role
+                Role = u.Role,
             })
             .FirstOrDefaultAsync(ct);
     }
@@ -113,7 +121,7 @@ public class UserRepository(AppDbContext context) : PrimaryRepositoryBase<User>(
                 Name = u.Name,
                 EmailVerifiedAt = u.EmailVerifiedAt,
                 PasswordHash = u.PasswordHash,
-                Role = u.Role
+                Role = u.Role,
             })
             .FirstOrDefaultAsync(ct);
     }

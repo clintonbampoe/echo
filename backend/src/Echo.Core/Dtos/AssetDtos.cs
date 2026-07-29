@@ -50,3 +50,11 @@ public record AssetResponseDto : IPrimaryResponseDto
     public string? Description { get; init; }
     public DateTime CreatedAt { get; init; }
 }
+
+public record AssetSummaryDto
+{
+    public required int TotalAssets { get; init; }
+    public required decimal TotalCurrentValue { get; init; }
+    public required int UnderMaintenance { get; init; }
+    public required decimal TotalDepreciation { get; init; }
+}

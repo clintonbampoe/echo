@@ -14,7 +14,9 @@ public record OrganizationUpdateDto : IPrimaryUpdateDto
     public string? Description { get; init; }
 }
 
-public record OrganizationListResponseDto : IPrimaryListResponseDto, Application.Dtos.Interfaces.IPrimaryListResponseDto
+public record OrganizationListResponseDto
+    : IPrimaryListResponseDto,
+        Application.Dtos.Interfaces.IPrimaryListResponseDto
 {
     public Guid Id { get; init; }
     public required string Name { get; init; }
@@ -27,4 +29,12 @@ public record OrganizationResponseDto : IPrimaryResponseDto
     public required string Name { get; init; }
     public string? Description { get; init; }
     public DateTime CreatedAt { get; init; }
+}
+
+public record OrganizationSummaryDto
+{
+    public required int TotalOrganizations { get; init; }
+    public required int TotalOrganizationMembers { get; init; }
+    public required int NewOrganizationsThisMonth { get; init; }
+    public required decimal AverageMembersPerOrganization { get; init; }
 }
