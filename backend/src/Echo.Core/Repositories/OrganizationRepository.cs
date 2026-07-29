@@ -90,7 +90,7 @@ public class OrganizationRepository(AppDbContext context)
             ct
         );
 
-        var totalOrganizationMembers = await context
+        var totalOrganizationMembers = await Context
             .Set<OrganizationMember>()
             .Where(m => m.DeletedAt == null && m.CongregationId == congregationId)
             .CountAsync(ct);
