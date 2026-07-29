@@ -13,6 +13,7 @@ builder.Services.AddOpenApi();
 builder.Services.AddApiVersioningSetup();
 builder.Services.AddJwtAuthentication(builder.Configuration);
 
+builder.Services.AddRateLimitingToEndpoints();
 builder.Services.AddCoreServices();
 builder.Services.AddAuthServices(builder.Configuration);
 builder.Services.AddApplicationServices();

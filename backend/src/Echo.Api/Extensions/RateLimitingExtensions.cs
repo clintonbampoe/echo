@@ -2,9 +2,9 @@ using System.Threading.RateLimiting;
 
 namespace Echo.Api.Extensions;
 
-public static class RateLimitingExtensions
+public static class AddRateLimitingExtensions
 {
-    public static IServiceCollection AddRateLimiting(this IServiceCollection services)
+    public static IServiceCollection AddRateLimitingToEndpoints(this IServiceCollection services)
     {
         services.AddRateLimiter(options =>
         {
