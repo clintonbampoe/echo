@@ -1,10 +1,12 @@
 using Echo.Auth.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Echo.Auth.Controllers;
 
 [Route("/api/auth/v{version:apiVersion}/[controller]")]
+[EnableRateLimiting("auth")]
 [AllowAnonymous]
 public class VerificationsController(EmailVerificationService emailVerificationService)
     : AuthBaseController

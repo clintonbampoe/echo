@@ -16,6 +16,11 @@ builder.Services.AddJwtAuthentication(builder.Configuration);
 builder.Services.AddCoreServices();
 builder.Services.AddAuthServices(builder.Configuration);
 builder.Services.AddApplicationServices();
+builder.Services.AddRouting(options =>
+{
+    options.LowercaseUrls = true;
+    options.LowercaseQueryStrings = true;
+});
 builder
     .Services.AddControllers()
     .AddJsonOptions(options =>
@@ -33,6 +38,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

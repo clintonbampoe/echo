@@ -4,6 +4,7 @@ using Echo.Core.Controllers.Base;
 using Echo.Core.Dtos;
 using Echo.Core.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Echo.Core.Controllers;
 
@@ -35,6 +36,7 @@ public class MembersController(MemberService service) : CoreBaseController
     }
 
     [HttpGet("search")]
+    [EnableRateLimiting("search")]
     public async Task<ActionResult> SearchMembersByName(
         [FromQuery] string name,
         CancellationToken ct
