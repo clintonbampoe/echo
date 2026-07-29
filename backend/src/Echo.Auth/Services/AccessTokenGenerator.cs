@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using System.Text;
 using Echo.Application.Options;
 using Echo.Core.Dtos;
 using Microsoft.Extensions.Options;
@@ -19,8 +20,13 @@ public class AccessTokenGenerator
         _jwtOptions = jwtOptions.Value;
         var rsa = RSA.Create();
 
-        rsa.ImportFromPem(_jwtOptions.PrivateKey);
-        _signingCredentials = new SigningCredentials(new RsaSecurityKey(rsa), SecurityAlgorithms.RsaSha256);
+        rsa.ImportFromPem(
+            Encoding.UTF8.GetString(Convert.FromBase64String(_jwtOptions.PrivateKey))
+        );
+        _signingCredentials = new SigningCredentials(
+            new RsaSecurityKey(rsa),
+            SecurityAlgorithms.RsaSha256
+        );
     }
 
     public (string Token, DateTime ExpiresAt) Generate(UserAuthDto user)
@@ -40,7 +46,8 @@ public class AccessTokenGenerator
             audience: _jwtOptions.Audience,
             claims: claims,
             expires: expiresAt,
-            signingCredentials: _signingCredentials);
+            signingCredentials: _signingCredentials
+        );
 
         var jwtToken = new JwtSecurityTokenHandler().WriteToken(token);
 

@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using System.Text;
 using Echo.Application.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -18,8 +19,9 @@ public static class JwtAuthenticationExtensions
             configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>()
             ?? throw new InvalidOperationException("Missing 'Jwt' configuration section.");
 
+        // RSA KEYS are Base64 encoded
         var rsa = RSA.Create();
-        rsa.ImportFromPem(jwtOptions.PublicKey);
+        rsa.ImportFromPem(Encoding.UTF8.GetString(Convert.FromBase64String(jwtOptions.PublicKey)));
 
         JsonWebTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
@@ -40,7 +42,7 @@ public static class JwtAuthenticationExtensions
                     IssuerSigningKey = new RsaSecurityKey(rsa),
 
                     NameClaimType = "sub",
-                    RoleClaimType = "role"
+                    RoleClaimType = "role",
                 };
             });
 
