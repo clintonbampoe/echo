@@ -2,10 +2,12 @@ using Echo.Auth.Dtos;
 using Echo.Auth.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Echo.Auth.Controllers;
 
 [Route("/api/auth/v{version:apiVersion}/register")]
+[EnableRateLimiting("auth")]
 [AllowAnonymous]
 public class RegisterController(RegistrationService service) : AuthBaseController
 {
@@ -27,7 +29,10 @@ public class RegisterController(RegistrationService service) : AuthBaseControlle
 
     [HttpPost("member")]
     [AllowAnonymous]
-    public async Task<ActionResult> RegisterMember([FromBody] RegisterMemberRequest request, CancellationToken ct)
+    public async Task<ActionResult> RegisterMember(
+        [FromBody] RegisterMemberRequest request,
+        CancellationToken ct
+    )
     {
         var response = await _service.RegisterMemberAsync(request, ct);
         return response.ToActionResult();
