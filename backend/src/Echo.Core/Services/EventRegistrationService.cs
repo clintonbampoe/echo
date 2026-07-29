@@ -47,4 +47,38 @@ public class EventRegistrationService(
 
         return new SuccessResult<EventRegistrationResponseDto>(result);
     }
+
+    public async Task<IOperationResult> GetByEventId(
+        PaginationParameters paginationParameters,
+        QueryParameters queryParameters,
+        Guid eventId,
+        CancellationToken ct
+    )
+    {
+        var result = await _eventRegistrationRepository.GetByEventId(
+            paginationParameters,
+            queryParameters,
+            eventId,
+            ct
+        );
+
+        return new SuccessResult<PagedResponse<EventRegistrationListResponseDto>>(result);
+    }
+
+    public async Task<IOperationResult> GetByMemberId(
+        PaginationParameters paginationParameters,
+        QueryParameters queryParameters,
+        Guid memberId,
+        CancellationToken ct
+    )
+    {
+        var result = await _eventRegistrationRepository.GetByMemberId(
+            paginationParameters,
+            queryParameters,
+            memberId,
+            ct
+        );
+
+        return new SuccessResult<PagedResponse<EventRegistrationListResponseDto>>(result);
+    }
 }

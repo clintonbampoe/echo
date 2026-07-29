@@ -3,7 +3,6 @@ using Echo.Application.Query;
 using Echo.Core.Controllers.Base;
 using Echo.Core.Dtos;
 using Echo.Core.Services;
-using Echo.Domain.Enums;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Echo.Core.Controllers;
@@ -11,6 +10,20 @@ namespace Echo.Core.Controllers;
 public class TransactionsController(TransactionService service) : CoreBaseController
 {
     private readonly TransactionService _service = service;
+
+    [HttpGet("summary")]
+    public async Task<ActionResult> GetSummaryAsync(CancellationToken ct)
+    {
+        var response = await _service.GetSummaryAsync(GetCongregationId(), ct);
+        return response.ToActionResult();
+    }
+
+    [HttpGet("streams")]
+    public async Task<ActionResult> GetStreamsAsync(CancellationToken ct)
+    {
+        var response = await _service.GetStreamsAsync(GetCongregationId(), ct);
+        return response.ToActionResult();
+    }
 
     [HttpGet]
     public async Task<ActionResult> GetPageAsync(
@@ -57,20 +70,6 @@ public class TransactionsController(TransactionService service) : CoreBaseContro
     public async Task<ActionResult> DeleteAsync(Guid id, CancellationToken ct)
     {
         var response = await _service.DeleteAsync(id, GetCongregationId(), ct);
-        return response.ToActionResult();
-    }
-
-    [HttpGet("summary")]
-    public async Task<ActionResult> GetSummaryAsync(CancellationToken ct)
-    {
-        var response = await _service.GetSummaryAsync(GetCongregationId(), ct);
-        return response.ToActionResult();
-    }
-
-    [HttpGet("streams")]
-    public async Task<ActionResult> GetStreamsAsync(CancellationToken ct)
-    {
-        var response = await _service.GetStreamsAsync(GetCongregationId(), ct);
         return response.ToActionResult();
     }
 }

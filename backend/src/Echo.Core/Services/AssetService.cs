@@ -44,4 +44,10 @@ public class AssetService(AssetRepository repository, AppDbContext context, IMap
 
         return new SuccessResult<AssetResponseDto>(result);
     }
+
+    public async Task<IOperationResult> GetSummaryAsync(Guid congregationId, CancellationToken ct = default)
+    {
+        var result = await _assetRepository.GetSummaryAsync(congregationId, ct);
+        return new SuccessResult<AssetSummaryDto>(result);
+    }
 }

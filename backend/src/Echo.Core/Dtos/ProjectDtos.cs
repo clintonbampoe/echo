@@ -54,3 +54,11 @@ public record ProjectResponseDto : IPrimaryResponseDto
     public string? Description { get; init; }
     public DateTime CreatedAt { get; init; }
 }
+
+public record ProjectSummaryDto
+{
+    public required int ActiveProjects { get; init; }
+    public required decimal TotalRaised { get; init; }
+    public required decimal TotalExpected { get; init; }
+    public required int CompletedThisQuarter { get; init; }
+}

@@ -52,3 +52,11 @@ public record AttendanceResponseDto : IPrimaryResponseDto
     public string? Description { get; init; }
     public DateTime CreatedAt { get; init; }
 }
+
+public record AttendanceSummaryDto
+{
+    public required int TotalPresent { get; init; }
+    public required int FirstTimeVisitors { get; init; }
+    public required int MembersPresent { get; init; }
+    public required int Children { get; init; }
+}

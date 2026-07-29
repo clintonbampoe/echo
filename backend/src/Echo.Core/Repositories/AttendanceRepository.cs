@@ -5,6 +5,7 @@ using Echo.Core.Dtos;
 using Echo.Core.Repositories.Base;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core;
+using Echo.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Core.Repositories;
@@ -74,5 +75,57 @@ public class AttendanceRepository(AppDbContext context) : PrimaryRepositoryBase<
                 CreatedAt = a.CreatedAt,
             })
             .FirstOrDefaultAsync(ct);
+    }
+
+    public async Task<AttendanceSummaryDto> GetSummaryAsync(
+        Guid congregationId,
+        int attendanceContextId,
+        DateOnly forDate,
+        CancellationToken ct = default
+    )
+    {
+        var attendeesForToday = await DbSet
+            .ApplySoftDeleteFilter()
+            .Where(a =>
+                a.CongregationId == congregationId
+                && a.AttendanceContextId == attendanceContextId
+                && a.ForDate == forDate
+            )
+            .Select(a => new { a.AttendeeType, a.GuestName })
+            .ToListAsync(ct);
+
+        var membersPresent = attendeesForToday.Count(a => a.AttendeeType == AttendeeType.Member);
+        var children = attendeesForToday.Count(a => a.AttendeeType == AttendeeType.Child);
+
+        var guestNames = attendeesForToday
+            .Where(a =>
+                a.AttendeeType is AttendeeType.Guest or AttendeeType.Visitor && a.GuestName != null
+            )
+            .Select(a => a.GuestName)
+            .Distinct()
+            .ToList();
+
+        var returningGuestNames =
+            guestNames.Count == 0
+                ? []
+                : await DbSet
+                    .ApplySoftDeleteFilter()
+                    .Where(a =>
+                        a.CongregationId == congregationId
+                        && a.ForDate < forDate
+                        && a.GuestName != null
+                        && guestNames.Contains(a.GuestName)
+                    )
+                    .Select(a => a.GuestName)
+                    .Distinct()
+                    .ToListAsync(ct);
+
+        return new AttendanceSummaryDto
+        {
+            TotalPresent = attendeesForToday.Count,
+            FirstTimeVisitors = guestNames.Except(returningGuestNames).Count(),
+            MembersPresent = membersPresent,
+            Children = children,
+        };
     }
 }

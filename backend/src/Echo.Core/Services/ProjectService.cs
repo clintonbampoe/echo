@@ -44,4 +44,10 @@ public class ProjectService(ProjectRepository repository, AppDbContext context, 
 
         return new SuccessResult<ProjectResponseDto>(result);
     }
+
+    public async Task<IOperationResult> GetSummaryAsync(Guid congregationId, CancellationToken ct = default)
+    {
+        var result = await _projectRepository.GetSummaryAsync(congregationId, ct);
+        return new SuccessResult<ProjectSummaryDto>(result);
+    }
 }

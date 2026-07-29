@@ -5,6 +5,7 @@ using Echo.Core.Dtos;
 using Echo.Core.Repositories.Base;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core;
+using Echo.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Core.Repositories;
@@ -83,5 +84,69 @@ public class MemberRepository(AppDbContext context) : PrimaryRepositoryBase<Memb
                 CreatedAt = m.CreatedAt,
             })
             .FirstOrDefaultAsync(ct);
+    }
+
+    public async Task<MemberSummaryDto> GetSummaryAsync(
+        Guid congregationId,
+        CancellationToken ct = default
+    )
+    {
+        var now = DateTime.UtcNow;
+        var currentMonthStart = new DateOnly(now.Year, now.Month, 1);
+
+        var stats = await DbSet
+            .ApplySoftDeleteFilter()
+            .Where(m => m.CongregationId == congregationId)
+            .GroupBy(m => 1)
+            .Select(g => new
+            {
+                TotalMembership = g.Count(m =>
+                    m.MemberActivityStatus != MemberActivityStatus.Archived
+                ),
+                NewMembers = g.Count(m =>
+                    m.JoinedDate != null && m.JoinedDate >= currentMonthStart
+                ),
+                Active = g.Count(m => m.MemberActivityStatus == MemberActivityStatus.Active),
+                Countable = g.Count(m => m.MemberActivityStatus != MemberActivityStatus.Archived),
+            })
+            .FirstOrDefaultAsync(ct);
+
+        var active = stats?.Active ?? 0;
+        var countable = stats?.Countable ?? 0;
+
+        return new MemberSummaryDto
+        {
+            TotalMembership = stats?.TotalMembership ?? 0,
+            NewMembers = stats?.NewMembers ?? 0,
+            RetentionRate = countable == 0 ? 0 : Math.Round((decimal)active / countable * 100, 1),
+        };
+    }
+
+    public async Task<List<MemberListResponseDto>> SearchMembersByName(
+        Guid congregationId,
+        string searchString,
+        CancellationToken ct
+    )
+    {
+        var results = await DbSet
+            .ApplySoftDeleteFilter()
+            .Where(m =>
+                m.CongregationId == congregationId
+                && EF.Functions.ILike(m.Name, $"%{searchString}%")
+            )
+            .OrderByDescending(m => EF.Functions.TrigramsSimilarity(m.Name, searchString))
+            .Take(5)
+            .Select(m => new MemberListResponseDto
+            {
+                Id = m.Id,
+                Name = m.Name,
+                PhoneNumber = m.PhoneNumber,
+                EmailAddress = m.EmailAddress,
+                Gender = m.Gender,
+                MemberActivityStatus = m.MemberActivityStatus,
+            })
+            .ToListAsync(ct);
+
+        return results;
     }
 }

@@ -40,3 +40,11 @@ public record ProjectContributionResponseDto : IPrimaryResponseDto
     public required string ? Description { get; init; }
     public DateTime CreatedAt { get; init; }
 }
+
+public record ProjectContributionSummaryDto
+{
+    public required decimal TotalRaised { get; init; }
+    public required decimal TargetGoal { get; init; }
+    public required int Contributors { get; init; }
+    public required DateOnly? MostRecentEntryDate { get; init; }
+}

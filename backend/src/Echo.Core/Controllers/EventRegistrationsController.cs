@@ -34,6 +34,30 @@ public class EventRegistrationsController(EventRegistrationService service) : Co
         return response.ToActionResult();
     }
 
+    [HttpGet("event{id}")]
+    public async Task<ActionResult> GetByEventId(
+        [FromQuery] PaginationParameters paginationParameters,
+        [FromQuery] QueryParameters queryParameters,
+        Guid id,
+        CancellationToken ct
+    )
+    {
+        var response = await _service.GetByEventId(paginationParameters, queryParameters, id, ct);
+        return response.ToActionResult();
+    }
+
+    [HttpGet("member{id}")]
+    public async Task<ActionResult> GetByMemberId(
+        [FromQuery] PaginationParameters paginationParameters,
+        [FromQuery] QueryParameters queryParameters,
+        Guid id,
+        CancellationToken ct
+    )
+    {
+        var response = await _service.GetByMemberId(paginationParameters, queryParameters, id, ct);
+        return response.ToActionResult();
+    }
+
     [HttpPost]
     public async Task<ActionResult> CreateAsync(
         EventRegistrationCreateDto dto,

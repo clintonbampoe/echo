@@ -17,7 +17,7 @@ public class AttendanceService(
 ) : PrimaryServiceBase<Attendance>(repository, context, mapper)
 {
     private readonly AttendanceRepository _attendanceRepository = repository;
-
+    
     public override async Task<IOperationResult> GetPageAsync(
         Guid congregationId,
         PaginationParameters paginationParameters,
@@ -46,5 +46,12 @@ public class AttendanceService(
             return new NotFoundResult("Attendance record not found.");
 
         return new SuccessResult<AttendanceResponseDto>(result);
+    }
+
+    public async Task<IOperationResult> GetSummaryAsync(
+        Guid congregationId, int attendanceContextId, DateOnly forDate, CancellationToken ct = default)
+    {
+        var result = await _attendanceRepository.GetSummaryAsync(congregationId, attendanceContextId, forDate, ct);
+        return new SuccessResult<AttendanceSummaryDto>(result);
     }
 }

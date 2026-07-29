@@ -81,3 +81,10 @@ public record MemberResponseDto : IPrimaryResponseDto
     public MemberActivityStatus MemberActivityStatus { get; init; }
     public DateTime CreatedAt { get; init; }
 }
+
+public record MemberSummaryDto
+{
+    public required int TotalMembership { get; init; }
+    public required int NewMembers { get; init; }
+    public required decimal RetentionRate { get; init; }
+}

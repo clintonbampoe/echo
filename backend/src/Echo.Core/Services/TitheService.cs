@@ -44,4 +44,11 @@ public class TitheService(TitheRepository repository, AppDbContext context, IMap
 
         return new SuccessResult<TitheResponseDto>(result);
     }
+
+    public async Task<IOperationResult> GetMonthlySummaryAsync(
+        Guid congregationId, int year, CancellationToken ct = default)
+    {
+        var result = await _titheRepository.GetMonthlySummaryAsync(congregationId, year, ct);
+        return new SuccessResult<List<TitheMonthlyTotalDto>>(result);
+    }
 }

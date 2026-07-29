@@ -44,4 +44,23 @@ public class MemberService(MemberRepository repository, AppDbContext context, IM
 
         return new SuccessResult<MemberResponseDto>(result);
     }
+
+    public async Task<IOperationResult> GetSummaryAsync(
+        Guid congregationId,
+        CancellationToken ct = default
+    )
+    {
+        var result = await _memberRepository.GetSummaryAsync(congregationId, ct);
+        return new SuccessResult<MemberSummaryDto>(result);
+    }
+
+    public async Task<IOperationResult> SearchMembersByName(
+        Guid congregationId,
+        string searchString,
+        CancellationToken ct
+    )
+    {
+        var results = await _memberRepository.SearchMembersByName(congregationId, searchString, ct);
+        return new SuccessResult<List<MemberListResponseDto>>(results);
+    }
 }

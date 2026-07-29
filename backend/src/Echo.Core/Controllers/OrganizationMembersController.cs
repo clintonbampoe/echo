@@ -34,13 +34,32 @@ public class OrganizationMembersController(OrganizationMemberService service) : 
         return response.ToActionResult();
     }
 
-    [HttpPost]
-    public async Task<ActionResult> CreateAsync(
-        OrganizationMemberCreateDto dto,
+    [HttpGet("member{id}")]
+    public async Task<ActionResult> GetByMemberId(
+        [FromQuery] PaginationParameters paginationParameters,
+        [FromQuery] QueryParameters queryParameters,
+        Guid id,
         CancellationToken ct
     )
     {
-        var response = await _service.CreateAsync(GetCongregationId(), dto, ct);
+        var response = await _service.GetByMemberId(paginationParameters, queryParameters, id, ct);
+        return response.ToActionResult();
+    }
+
+    [HttpGet("organizations{id}")]
+    public async Task<ActionResult> GetByOrganizationId(
+        [FromQuery] PaginationParameters paginationParameters,
+        [FromQuery] QueryParameters queryParameters,
+        Guid id,
+        CancellationToken ct
+    )
+    {
+        var response = await _service.GetByOrganizationId(
+            paginationParameters,
+            queryParameters,
+            id,
+            ct
+        );
         return response.ToActionResult();
     }
 

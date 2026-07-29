@@ -47,4 +47,10 @@ public class ProjectContributionService(
 
         return new SuccessResult<ProjectContributionResponseDto>(result);
     }
+
+    public async Task<IOperationResult> GetSummaryAsync(Guid congregationId, Guid projectId, CancellationToken ct = default)
+    {
+        var result = await _projectContributionRepository.GetSummaryAsync(congregationId, projectId, ct);
+        return new SuccessResult<ProjectContributionSummaryDto?>(result);
+    }
 }

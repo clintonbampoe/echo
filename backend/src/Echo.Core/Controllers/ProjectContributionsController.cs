@@ -11,6 +11,13 @@ public class ProjectContributionsController(ProjectContributionService service) 
 {
     private readonly ProjectContributionService _service = service;
 
+    [HttpGet("summary")]
+    public async Task<ActionResult> GetSummaryAsync(Guid projectId, CancellationToken ct)
+    {
+        var response = await _service.GetSummaryAsync(GetCongregationId(), projectId, ct);
+        return response.ToActionResult();
+    }
+
     [HttpGet]
     public async Task<ActionResult> GetPageAsync(
         [FromQuery] PaginationParameters paginationParameters,

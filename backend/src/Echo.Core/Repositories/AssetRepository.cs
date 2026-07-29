@@ -5,6 +5,7 @@ using Echo.Core.Dtos;
 using Echo.Core.Repositories.Base;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core;
+using Echo.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Core.Repositories;
@@ -68,5 +69,29 @@ public class AssetRepository(AppDbContext context) : PrimaryRepositoryBase<Asset
                 CreatedAt = a.CreatedAt,
             })
             .FirstOrDefaultAsync(ct);
+    }
+
+    public async Task<AssetSummaryDto> GetSummaryAsync(Guid congregationId, CancellationToken ct = default)
+    {
+        var stats = await DbSet
+            .ApplySoftDeleteFilter()
+            .Where(a => a.CongregationId == congregationId && a.Status != AssetStatus.Liquidated)
+            .GroupBy(a => 1)
+            .Select(g => new
+            {
+                TotalAssets = g.Count(),
+                TotalCurrentValue = g.Sum(a => a.CurrentValue),
+                UnderMaintenance = g.Count(a => a.Status == AssetStatus.UnderMaintenance),
+                TotalDepreciation = g.Sum(a => a.PurchaseCost - a.CurrentValue),
+            })
+            .FirstOrDefaultAsync(ct);
+
+        return new AssetSummaryDto
+        {
+            TotalAssets = stats?.TotalAssets ?? 0,
+            TotalCurrentValue = stats?.TotalCurrentValue ?? 0,
+            UnderMaintenance = stats?.UnderMaintenance ?? 0,
+            TotalDepreciation = stats?.TotalDepreciation ?? 0,
+        };
     }
 }

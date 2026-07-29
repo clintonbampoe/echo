@@ -44,4 +44,10 @@ public class EventService(EventRepository repository, AppDbContext context, IMap
 
         return new SuccessResult<EventResponseDto>(result);
     }
+
+    public async Task<IOperationResult> GetSummaryAsync(Guid congregationId, CancellationToken ct = default)
+    {
+        var result = await _eventRepository.GetSummaryAsync(congregationId, ct);
+        return new SuccessResult<EventSummaryDto>(result);
+    }
 }

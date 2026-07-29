@@ -11,6 +11,13 @@ public class MembersController(MemberService service) : CoreBaseController
 {
     private readonly MemberService _service = service;
 
+    [HttpGet("summary")]
+    public async Task<ActionResult> GetSummaryAsync(CancellationToken ct)
+    {
+        var response = await _service.GetSummaryAsync(GetCongregationId(), ct);
+        return response.ToActionResult();
+    }
+
     [HttpGet]
     public async Task<ActionResult> GetPageAsync(
         [FromQuery] PaginationParameters paginationParameters,
@@ -24,6 +31,16 @@ public class MembersController(MemberService service) : CoreBaseController
             queryParameters,
             ct
         );
+        return response.ToActionResult();
+    }
+
+    [HttpGet("search")]
+    public async Task<ActionResult> SearchMembersByName(
+        [FromQuery] string name,
+        CancellationToken ct
+    )
+    {
+        var response = await _service.SearchMembersByName(GetCongregationId(), name, ct);
         return response.ToActionResult();
     }
 

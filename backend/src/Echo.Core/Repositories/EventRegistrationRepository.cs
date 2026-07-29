@@ -68,4 +68,72 @@ public class EventRegistrationRepository(AppDbContext context)
             })
             .FirstOrDefaultAsync(ct);
     }
+
+    public async Task<PagedResponse<EventRegistrationListResponseDto>> GetByMemberId(
+        PaginationParameters paginationParameters,
+        QueryParameters queryParameters,
+        Guid memberId,
+        CancellationToken ct
+    )
+    {
+        var query = DbSet
+            .AsNoTracking()
+            .ApplySoftDeleteFilter()
+            .ApplyDateFilters(queryParameters)
+            .Where(e => e.MemberId == memberId);
+
+        var totalCount = await query.CountAsync(ct);
+
+        var records = await query
+            .OrderBy(e => e.Id)
+            .Select(e => new EventRegistrationListResponseDto
+            {
+                Id = e.Id,
+                MemberName = e.Member.Name,
+                EventName = e.Event.Name,
+                RegistrationDate = e.RegistrationDate,
+            })
+            .ApplyPagination(paginationParameters)
+            .ToListAsync(ct);
+
+        return new PagedResponse<EventRegistrationListResponseDto>(
+            records,
+            paginationParameters,
+            totalCount
+        );
+    }
+
+    public async Task<PagedResponse<EventRegistrationListResponseDto>> GetByEventId(
+        PaginationParameters paginationParameters,
+        QueryParameters queryParameters,
+        Guid eventId,
+        CancellationToken ct
+    )
+    {
+        var query = DbSet
+            .AsNoTracking()
+            .ApplySoftDeleteFilter()
+            .ApplyDateFilters(queryParameters)
+            .Where(e => e.MemberId == eventId);
+
+        var totalCount = await query.CountAsync(ct);
+
+        var records = await query
+            .OrderBy(e => e.Id)
+            .Select(e => new EventRegistrationListResponseDto
+            {
+                Id = e.Id,
+                MemberName = e.Member.Name,
+                EventName = e.Event.Name,
+                RegistrationDate = e.RegistrationDate,
+            })
+            .ApplyPagination(paginationParameters)
+            .ToListAsync(ct);
+
+        return new PagedResponse<EventRegistrationListResponseDto>(
+            records,
+            paginationParameters,
+            totalCount
+        );
+    }
 }

@@ -47,4 +47,13 @@ public class OrganizationService(
 
         return new SuccessResult<OrganizationResponseDto>(result);
     }
+
+    public async Task<IOperationResult> GetSummaryAsync(
+        Guid congregationId,
+        CancellationToken ct = default
+    )
+    {
+        var result = await _organizationRepository.GetSummaryAsync(congregationId, ct);
+        return new SuccessResult<OrganizationSummaryDto>(result);
+    }
 }

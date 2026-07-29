@@ -11,6 +11,14 @@ public class AttendanceController(AttendanceService service) : CoreBaseControlle
 {
     private readonly AttendanceService _service = service;
 
+    [HttpGet("summary")]
+    public async Task<ActionResult> GetSummaryAsync(
+        [FromQuery] int attendanceContextId, [FromQuery] DateOnly forDate, CancellationToken ct)
+    {
+        var response = await _service.GetSummaryAsync(GetCongregationId(), attendanceContextId, forDate, ct);
+        return response.ToActionResult();
+    }
+
     [HttpGet]
     public async Task<ActionResult> GetPageAsync(
         [FromQuery] PaginationParameters paginationParameters,

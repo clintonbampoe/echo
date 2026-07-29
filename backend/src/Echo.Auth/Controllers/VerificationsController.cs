@@ -9,7 +9,7 @@ namespace Echo.Auth.Controllers;
 public class VerificationsController(EmailVerificationService emailVerificationService)
     : AuthBaseController
 {
-    [HttpPost("send-email{userId:guid}")]
+    [HttpPost("send-email{userId}")]
     public async Task<ActionResult> SendVerificationLinkToEmail(
         Guid userId,
         CancellationToken ct = default

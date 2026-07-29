@@ -47,4 +47,38 @@ public class OrganizationMemberService(
 
         return new SuccessResult<OrganizationMemberResponseDto>(result);
     }
+
+    public async Task<IOperationResult> GetByMemberId(
+        PaginationParameters paginationParameters,
+        QueryParameters queryParameters,
+        Guid memberId,
+        CancellationToken ct
+    )
+    {
+        var result = await _organizationMemberRepository.GetByMemberId(
+            paginationParameters,
+            queryParameters,
+            memberId,
+            ct
+        );
+
+        return new SuccessResult<PagedResponse<OrganizationMemberListResponseDto>>(result);
+    }
+
+    public async Task<IOperationResult> GetByOrganizationId(
+        PaginationParameters paginationParameters,
+        QueryParameters queryParameters,
+        Guid memberId,
+        CancellationToken ct
+    )
+    {
+        var result = await _organizationMemberRepository.GetByOrganizationId(
+            paginationParameters,
+            queryParameters,
+            memberId,
+            ct
+        );
+
+        return new SuccessResult<PagedResponse<OrganizationMemberListResponseDto>>(result);
+    }
 }

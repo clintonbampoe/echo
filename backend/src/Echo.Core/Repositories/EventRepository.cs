@@ -74,4 +74,33 @@ public class EventRepository(AppDbContext context) : PrimaryRepositoryBase<Event
             })
             .FirstOrDefaultAsync(ct);
     }
+
+    public async Task<EventSummaryDto> GetSummaryAsync(Guid congregationId, CancellationToken ct = default)
+    {
+        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+
+        var eventStats = await DbSet
+            .ApplySoftDeleteFilter()
+            .Where(e => e.CongregationId == congregationId)
+            .GroupBy(e => 1)
+            .Select(g => new
+            {
+                TotalEvents = g.Count(),
+                UpcomingEvents = g.Count(e => e.StartDate >= today),
+                PastEvents = g.Count(e => e.EndDate < today),
+            })
+            .FirstOrDefaultAsync(ct);
+
+        var totalRegistrations = await Context.Set<EventRegistration>()
+            .Where(r => r.DeletedAt == null && r.CongregationId == congregationId)
+            .CountAsync(ct);
+
+        return new EventSummaryDto
+        {
+            TotalEvents = eventStats?.TotalEvents ?? 0,
+            UpcomingEvents = eventStats?.UpcomingEvents ?? 0,
+            PastEvents = eventStats?.PastEvents ?? 0,
+            TotalRegistrations = totalRegistrations,
+        };
+    }
 }

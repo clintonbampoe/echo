@@ -58,3 +58,11 @@ public record EventResponseDto : IPrimaryResponseDto
     public string? Description { get; init; }
     public DateTime CreatedAt { get; init; }
 }
+
+public record EventSummaryDto
+{
+    public required int TotalEvents { get; init; }
+    public required int UpcomingEvents { get; init; }
+    public required int PastEvents { get; init; }
+    public required int TotalRegistrations { get; init; }
+}

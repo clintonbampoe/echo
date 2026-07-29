@@ -70,4 +70,74 @@ public class OrganizationMemberRepository(AppDbContext context)
             })
             .FirstOrDefaultAsync(ct);
     }
+
+    public async Task<PagedResponse<OrganizationMemberListResponseDto>> GetByMemberId(
+        PaginationParameters paginationParameters,
+        QueryParameters queryParameters,
+        Guid memberId,
+        CancellationToken ct
+    )
+    {
+        var query = DbSet
+            .AsNoTracking()
+            .ApplySoftDeleteFilter()
+            .ApplyDateFilters(queryParameters)
+            .Where(o => o.MemberId == memberId);
+
+        var totalCount = await query.CountAsync(ct);
+
+        var records = await query
+            .OrderBy(o => o.Id)
+            .Select(o => new OrganizationMemberListResponseDto
+            {
+                Id = o.Id,
+                MemberName = o.Member.Name,
+                OrganizationName = o.Organization.Name,
+                Role = o.Role,
+                JoinedAt = o.JoinedAt,
+            })
+            .ApplyPagination(paginationParameters)
+            .ToListAsync(ct);
+
+        return new PagedResponse<OrganizationMemberListResponseDto>(
+            records,
+            paginationParameters,
+            totalCount
+        );
+    }
+
+    public async Task<PagedResponse<OrganizationMemberListResponseDto>> GetByOrganizationId(
+        PaginationParameters paginationParameters,
+        QueryParameters queryParameters,
+        Guid organizationId,
+        CancellationToken ct
+    )
+    {
+        var query = DbSet
+            .AsNoTracking()
+            .ApplySoftDeleteFilter()
+            .ApplyDateFilters(queryParameters)
+            .Where(o => o.OrganizationId == organizationId);
+
+        var totalCount = await query.CountAsync(ct);
+
+        var records = await query
+            .OrderBy(o => o.Id)
+            .Select(o => new OrganizationMemberListResponseDto
+            {
+                Id = o.Id,
+                MemberName = o.Member.Name,
+                OrganizationName = o.Organization.Name,
+                Role = o.Role,
+                JoinedAt = o.JoinedAt,
+            })
+            .ApplyPagination(paginationParameters)
+            .ToListAsync(ct);
+
+        return new PagedResponse<OrganizationMemberListResponseDto>(
+            records,
+            paginationParameters,
+            totalCount
+        );
+    }
 }

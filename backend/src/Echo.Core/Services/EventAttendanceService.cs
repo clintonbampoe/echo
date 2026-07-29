@@ -47,4 +47,38 @@ public class EventAttendanceService(
 
         return new SuccessResult<EventAttendanceResponseDto>(result);
     }
+
+    public async Task<IOperationResult> GetByEventId(
+        PaginationParameters paginationParameters,
+        QueryParameters queryParameters,
+        Guid eventId,
+        CancellationToken ct
+    )
+    {
+        var result = await _eventAttendanceRepository.GetByEventId(
+            paginationParameters,
+            queryParameters,
+            eventId,
+            ct
+        );
+
+        return new SuccessResult<PagedResponse<EventAttendanceListResponseDto>>(result);
+    }
+
+    public async Task<IOperationResult> GetByMemberId(
+        PaginationParameters paginationParameters,
+        QueryParameters queryParameters,
+        Guid memberId,
+        CancellationToken ct
+    )
+    {
+        var result = await _eventAttendanceRepository.GetByMemberId(
+            paginationParameters,
+            queryParameters,
+            memberId,
+            ct
+        );
+
+        return new SuccessResult<PagedResponse<EventAttendanceListResponseDto>>(result);
+    }
 }

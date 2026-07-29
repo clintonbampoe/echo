@@ -64,4 +64,46 @@ public class OrganizationRepository(AppDbContext context)
             })
             .FirstOrDefaultAsync(ct);
     }
+
+    public async Task<OrganizationSummaryDto> GetSummaryAsync(
+        Guid congregationId,
+        CancellationToken ct = default
+    )
+    {
+        var currentMonthStart = new DateTime(
+            DateTime.UtcNow.Year,
+            DateTime.UtcNow.Month,
+            1,
+            0,
+            0,
+            0,
+            DateTimeKind.Utc
+        );
+
+        var organizations = DbSet
+            .ApplySoftDeleteFilter()
+            .Where(o => o.CongregationId == congregationId);
+
+        var totalOrganizations = await organizations.CountAsync(ct);
+        var newOrganizationsThisMonth = await organizations.CountAsync(
+            o => o.CreatedAt >= currentMonthStart,
+            ct
+        );
+
+        var totalOrganizationMembers = await context
+            .Set<OrganizationMember>()
+            .Where(m => m.DeletedAt == null && m.CongregationId == congregationId)
+            .CountAsync(ct);
+
+        return new OrganizationSummaryDto
+        {
+            TotalOrganizations = totalOrganizations,
+            TotalOrganizationMembers = totalOrganizationMembers,
+            NewOrganizationsThisMonth = newOrganizationsThisMonth,
+            AverageMembersPerOrganization =
+                totalOrganizations == 0
+                    ? 0
+                    : Math.Round((decimal)totalOrganizationMembers / totalOrganizations, 1),
+        };
+    }
 }

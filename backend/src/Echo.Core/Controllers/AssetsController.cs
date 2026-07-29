@@ -11,6 +11,13 @@ public class AssetsController(AssetService service) : CoreBaseController
 {
     private readonly AssetService _service = service;
 
+    [HttpGet("summary")]
+    public async Task<ActionResult> GetSummaryAsync(CancellationToken ct)
+    {
+        var response = await _service.GetSummaryAsync(GetCongregationId(), ct);
+        return response.ToActionResult();
+    }
+
     [HttpGet]
     public async Task<ActionResult> GetPageAsync(
         [FromQuery] PaginationParameters paginationParameters,

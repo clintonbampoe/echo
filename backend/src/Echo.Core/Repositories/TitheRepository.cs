@@ -5,6 +5,7 @@ using Echo.Core.Dtos;
 using Echo.Core.Repositories.Base;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core;
+using Echo.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Core.Repositories;
@@ -68,5 +69,24 @@ public class TitheRepository(AppDbContext context) : PrimaryRepositoryBase<Tithe
                 CreatedAt = t.CreatedAt,
             })
             .FirstOrDefaultAsync(ct);
+    }
+
+    public async Task<List<TitheMonthlyTotalDto>> GetMonthlySummaryAsync(
+        Guid congregationId, int year, CancellationToken ct = default)
+    {
+        var totals = await DbSet
+            .ApplySoftDeleteFilter()
+            .Where(t => t.CongregationId == congregationId && t.ForYear == year)
+            .GroupBy(t => t.ForMonth)
+            .Select(g => new { Month = g.Key, Total = g.Sum(t => t.Amount) })
+            .ToListAsync(ct);
+
+        return Enum.GetValues<MonthOfYear>()
+            .Select(m => new TitheMonthlyTotalDto
+            {
+                Month = m,
+                Total = totals.FirstOrDefault(t => t.Month == m)?.Total ?? 0,
+            })
+            .ToList();
     }
 }

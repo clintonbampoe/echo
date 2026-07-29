@@ -70,4 +70,42 @@ public class ProjectContributionRepository(AppDbContext context)
             })
             .FirstOrDefaultAsync(ct);
     }
+
+    public async Task<ProjectContributionSummaryDto?> GetSummaryAsync(
+        Guid congregationId,
+        Guid projectId,
+        CancellationToken ct = default
+    )
+    {
+        var project = await Context
+            .Set<Project>()
+            .Where(p =>
+                p.DeletedAt == null && p.CongregationId == congregationId && p.Id == projectId
+            )
+            .Select(p => new { p.TargetAmount })
+            .FirstOrDefaultAsync(ct);
+
+        if (project is null)
+            return null;
+
+        var stats = await DbSet
+            .ApplySoftDeleteFilter()
+            .Where(c => c.CongregationId == congregationId && c.ProjectId == projectId)
+            .GroupBy(c => 1)
+            .Select(g => new
+            {
+                TotalRaised = g.Sum(c => c.Amount),
+                Contributors = g.Count(),
+                MostRecent = g.Max(c => c.DateContributed),
+            })
+            .FirstOrDefaultAsync(ct);
+
+        return new ProjectContributionSummaryDto
+        {
+            TotalRaised = stats?.TotalRaised ?? 0,
+            TargetGoal = project.TargetAmount,
+            Contributors = stats?.Contributors ?? 0,
+            MostRecentEntryDate = stats?.MostRecent,
+        };
+    }
 }
