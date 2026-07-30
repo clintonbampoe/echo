@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.RateLimiting;
 
 namespace Echo.Auth.Controllers;
 
-[Route("/api/auth/v{version:apiVersion}/register")]
 [EnableRateLimiting("auth")]
 [AllowAnonymous]
 public class RegisterController(RegistrationService service) : AuthBaseController

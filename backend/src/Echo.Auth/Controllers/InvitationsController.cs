@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Echo.Auth.Controllers;
 
-[Route("/api/auth/v{version:apiVersion}/[controller]")]
+[Route("/api/v{version:apiVersion}/auth/[controller]")]
 [Authorize(Roles = nameof(UserRole.Admin))]
 public class InvitationsController(InvitationService invitationService) : AuthBaseController
 {

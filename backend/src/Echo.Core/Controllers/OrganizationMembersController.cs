@@ -63,6 +63,13 @@ public class OrganizationMembersController(OrganizationMemberService service) : 
         return response.ToActionResult();
     }
 
+    [HttpPost]
+    public async Task<ActionResult> CreateAsync(OrganizationCreateDto dto, CancellationToken ct = default)
+    {
+        var response = await _service.CreateAsync(GetCongregationId(), dto, ct);
+        return response.ToActionResult();
+    }
+
     [HttpPut("{id}")]
     public async Task<ActionResult> UpdateAsync(
         Guid id,

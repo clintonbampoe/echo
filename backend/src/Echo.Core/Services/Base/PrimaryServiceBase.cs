@@ -56,6 +56,7 @@ public abstract class PrimaryServiceBase<T>(
     {
         var entity = Mapper.Map<T>(dto);
         entity.CongregationId = congregationId;
+        entity.Id = id;
 
         var success = await Repository.UpdateRecord(id, congregationId, entity, ct);
 

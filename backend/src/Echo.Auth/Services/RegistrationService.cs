@@ -81,7 +81,7 @@ public class RegistrationService(
             return new InternalServerError();
         }
 
-        await emailVerificationService.SendVerificationLinkToEmail(user.Id, ct);
+        await emailVerificationService.SendVerificationLinkToEmail(user.EmailAddress, ct);
 
         return new OkResult("Check your email to verify your account and complete registration.");
     }

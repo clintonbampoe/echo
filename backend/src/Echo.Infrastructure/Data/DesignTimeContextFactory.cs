@@ -1,7 +1,7 @@
+using Echo.Domain.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
-using Echo.Domain.Data;
 
 namespace Echo.Infrastructure.Data
 {
@@ -13,7 +13,10 @@ namespace Echo.Infrastructure.Data
             var connectionString = DbConnectionStringBuilder.Build(configuration);
 
             var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
-            optionsBuilder.UseNpgsql(connectionString, x => x.MigrationsAssembly("Echo.Infrastructure"));
+            optionsBuilder.UseNpgsql(
+                connectionString,
+                x => x.MigrationsAssembly("Echo.Infrastructure")
+            );
 
             return new AppDbContext(optionsBuilder.Options);
         }

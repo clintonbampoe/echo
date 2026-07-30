@@ -5,19 +5,18 @@ using Microsoft.AspNetCore.RateLimiting;
 
 namespace Echo.Auth.Controllers;
 
-[Route("/api/auth/v{version:apiVersion}/[controller]")]
-[EnableRateLimiting("auth")]
 [AllowAnonymous]
+[EnableRateLimiting("auth")]
 public class VerificationsController(EmailVerificationService emailVerificationService)
     : AuthBaseController
 {
-    [HttpPost("send-email{userId}")]
+    [HttpPost("account{email}")]
     public async Task<ActionResult> SendVerificationLinkToEmail(
-        Guid userId,
+        string email,
         CancellationToken ct = default
     )
     {
-        var response = await emailVerificationService.SendVerificationLinkToEmail(userId, ct);
+        var response = await emailVerificationService.SendVerificationLinkToEmail(email, ct);
         return response.ToActionResult();
     }
 
