@@ -1,0 +1,19 @@
+services:
+  api:
+    build:
+      target: build
+    working_dir: /src
+    command: dotnet watch run --project backend/src/Echo.Api/Echo.Api.csproj --urls http://0.0.0.0:8080
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      DOTNET_USE_POLLING_FILE_WATCHER: "true"
+    volumes:
+      - ./backend/src:/src/backend/src
+    ports:
+      - "5025:8080"
+  db:
+    ports:
+      - "5432:5432"
+  nginx:
+    ports:
+      - "8080:80"

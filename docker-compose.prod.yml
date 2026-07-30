@@ -1,0 +1,11 @@
+services:
+  api:
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+    restart: unless-stopped
+  db:
+    restart: unless-stopped
+  nginx:
+    restart: unless-stopped
+    ports:
+      - "80:80"

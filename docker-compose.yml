@@ -1,0 +1,54 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: backend/src/Echo.Api/Dockerfile
+    environment:
+      Database__Host: db
+      Database__Port: 5432
+      Database__Name: ${DB_NAME}
+      Database__Username: ${DB_USERNAME}
+      Database__Password: ${DB_PASSWORD}
+      Jwt__PrivateKey: ${JWT_PRIVATE_KEY}
+      Jwt__PublicKey: ${JWT_PUBLIC_KEY}
+      Jwt__Issuer: ${JWT_ISSUER}
+      Jwt__Audience: ${JWT_AUDIENCE}
+      FrontendClient__BaseUrl: ${FRONTEND_BASE_URL}
+      MailClient__Address: ${MAIL_CLIENT_ADDRESS}
+      Resend__ApiKey: ${RESEND_API_KEY}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - echo-network
+
+  db:
+    image: postgres:18
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - echo-network
+
+  nginx:
+    image: nginx:latest
+    volumes:
+      - ./infra/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - api
+    networks:
+      - echo-network
+
+networks:
+  echo-network:
+
+volumes:
+  postgres-data:

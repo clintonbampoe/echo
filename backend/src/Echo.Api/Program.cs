@@ -3,6 +3,8 @@ using Echo.Api.Extensions;
 using Echo.Application.Extensions;
 using Echo.Auth.Extensions;
 using Echo.Core.Extensions;
+using Echo.Domain.Data;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddEnvironmentVariables();
@@ -30,6 +32,13 @@ builder
     });
 
 var app = builder.Build();
+
+if (builder.Configuration.GetValue<bool>("RunMigrationsOnStartup"))
+{
+    using var scope = app.Services.CreateScope();
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await dbContext.Database.MigrateAsync();
+}
 
 if (app.Environment.IsDevelopment())
 {
