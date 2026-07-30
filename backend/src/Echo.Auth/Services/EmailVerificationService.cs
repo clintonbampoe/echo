@@ -7,6 +7,7 @@ using Echo.Auth.Repositories;
 using Echo.Core.Repositories;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Auth;
+using Echo.Domain.Entities.Core;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Echo.Auth.Services;
@@ -22,26 +23,28 @@ public class EmailVerificationService(
 )
 {
     public async Task<IOperationResult> SendVerificationLinkToEmail(
-        Guid userId,
+        string emailAddress,
         CancellationToken ct = default
     )
     {
-        var existingToken = await emailVerificationTokenRepository.GetActiveTokenForUser(
-            userId,
-            ct
-        );
+        var user = await userRepository.GetActiveUserByEmail(emailAddress, ct);
+
+        if (user is null)
+            return new OkResult("Operation completed successfully.");
+
+        var existingToken = await GetActiveTokenForUser(user.Id, ct);
 
         if (RateLimitActive(existingToken))
-            return new OkResult("A verification email was already sent. Please check your inbox.");
+            return new OkResult("A verification email was already sent. Please check your email inbox.");
 
         if (existingToken is not null)
             existingToken.InvalidatedAt = DateTime.UtcNow;
 
         var token = tokenGenerator.GenerateToken(16);
 
-        var tokenObject = new EmailVerificationToken(userId)
+        var tokenObject = new EmailVerificationToken(user.Id)
         {
-            UserId = userId,
+            UserId = user.Id,
             TokenHash = await hashService.HashPasswordAsync(token),
         };
 
@@ -53,7 +56,7 @@ public class EmailVerificationService(
         if (!recordCreatedSuccessfully)
             return new InternalServerError();
 
-        var userInfo = await userRepository.GetByIdAsync(userId, ct);
+        var userInfo = await userRepository.GetByIdAsync(user.Id, ct);
         if (userInfo == null)
             return new InternalServerError();
 
@@ -122,5 +125,10 @@ public class EmailVerificationService(
         }
 
         return false;
+    }
+
+    private async Task<EmailVerificationToken?> GetActiveTokenForUser(Guid userId, CancellationToken ct)
+    {
+        return await emailVerificationTokenRepository.GetActiveTokenForUser(userId, ct);
     }
 }

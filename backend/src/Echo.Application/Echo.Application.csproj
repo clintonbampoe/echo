@@ -18,12 +18,6 @@
       <PackageReference Include="Asp.Versioning.Mvc" />
       <PackageReference Include="BCrypt.Net-Next" />
       <PackageReference Include="System.IdentityModel.Tokens.Jwt" />
+      <PackageReference Include="Resend" />
     </ItemGroup>
-
-    <ItemGroup>
-      <Reference Include="Resend">
-        <HintPath>..\..\..\..\..\.nuget\packages\resend\0.5.1\lib\net8.0\Resend.dll</HintPath>
-      </Reference>
-    </ItemGroup>
-
 </Project>

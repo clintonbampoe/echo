@@ -3,6 +3,9 @@ using Echo.Api.Extensions;
 using Echo.Application.Extensions;
 using Echo.Auth.Extensions;
 using Echo.Core.Extensions;
+using Echo.Domain.Data;
+using Echo.Infrastructure.Extensions;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddEnvironmentVariables();
@@ -12,11 +15,8 @@ builder.Services.AddSwaggerDocumentation();
 builder.Services.AddOpenApi();
 builder.Services.AddApiVersioningSetup();
 builder.Services.AddJwtAuthentication(builder.Configuration);
-
 builder.Services.AddRateLimitingToEndpoints();
-builder.Services.AddCoreServices();
-builder.Services.AddAuthServices(builder.Configuration);
-builder.Services.AddApplicationServices();
+builder.Services.AddHealthCheckServices();
 builder.Services.AddRouting(options =>
 {
     options.LowercaseUrls = true;
@@ -25,11 +25,21 @@ builder.Services.AddRouting(options =>
 builder
     .Services.AddControllers()
     .AddJsonOptions(options =>
-    {
-        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-    });
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+
+builder.Services.AddCoreServices();
+builder.Services.AddAuthServices(builder.Configuration);
+builder.Services.AddApplicationServices();
+builder.Services.AddInfrastructureServices();
 
 var app = builder.Build();
+
+if (builder.Configuration.GetValue<bool>("RunMigrationsOnStartup"))
+{
+    using var scope = app.Services.CreateScope();
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await dbContext.Database.MigrateAsync();
+}
 
 if (app.Environment.IsDevelopment())
 {
@@ -38,7 +48,6 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi().AllowAnonymous();
 }
 
-app.UseHttpsRedirection();
 app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();

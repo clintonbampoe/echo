@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.RateLimiting;
 
 namespace Echo.Auth.Controllers;
 
-[Route("/api/auth/v{version:apiVersion}/[controller]")]
 [EnableRateLimiting("auth")]
 [AllowAnonymous]
 public class PasswordController(PasswordResetService passwordResetService) : AuthBaseController

@@ -34,7 +34,6 @@ public abstract class PrimaryRepositoryBase<T>(AppDbContext context)
 
         DbSet.Entry(existing).Property(x => x.Id).IsModified = false;
         DbSet.Entry(existing).Property(e => e.CongregationId).IsModified = false;
-        DbSet.Entry(existing).Property(x => x.Congregation).IsModified = false;
         DbSet.Entry(existing).Property(e => e.CreatedAt).IsModified = false;
         DbSet.Entry(existing).Property(e => e.DeletedAt).IsModified = false;
 
