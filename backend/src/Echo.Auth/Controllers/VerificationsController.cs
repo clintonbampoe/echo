@@ -10,9 +10,9 @@ namespace Echo.Auth.Controllers;
 public class VerificationsController(EmailVerificationService emailVerificationService)
     : AuthBaseController
 {
-    [HttpPost("account{email}")]
+    [HttpPost("account")]
     public async Task<ActionResult> SendVerificationLinkToEmail(
-        string email,
+        [FromQuery] string email,
         CancellationToken ct = default
     )
     {
@@ -23,8 +23,8 @@ public class VerificationsController(EmailVerificationService emailVerificationS
     /// <summary>
     /// Accepts email verification token as payload and verifies the user attached to that token
     /// </summary>
-    [HttpPost("verify-email{token}")]
-    public async Task<ActionResult> VerifyUserEmail(string token, CancellationToken ct = default)
+    [HttpPost("verify-email")]
+    public async Task<ActionResult> VerifyUserEmail([FromQuery] string token, CancellationToken ct = default)
     {
         var response = await emailVerificationService.VerifyEmail(token, ct);
         return response.ToActionResult();
