@@ -40,8 +40,6 @@ internal sealed class ConfigureSwaggerOptions(IApiVersionDescriptionProvider pro
 {
     public void Configure(SwaggerGenOptions options)
     {
-        options.OperationFilter<CongregationHeaderFilter>();
-
         foreach (var description in provider.ApiVersionDescriptions)
         {
             options.SwaggerDoc(
