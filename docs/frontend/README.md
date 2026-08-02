@@ -1,4 +1,7 @@
-# Echo Frontend Application Documentation
+# Echo Frontend Client Documentation
+
+**Written by**: @ebenquayson  
+**Last updated**: 2026-08-01 **by** @clintonbampoe
 
 This document provides a comprehensive overview of the Echo frontend codebase. It is designed to help new developers quickly understand the project structure, architectural decisions, and development workflows.
 
@@ -17,19 +20,18 @@ The Echo frontend is a Single Page Application (SPA) built to manage church admi
 
 The application source code lives inside `frontend/src/`. Here is the breakdown of the directory structure:
 
-```text
-frontend/src/
-├── assets/          # Static files, images, SVGs, and global assets
-├── components/      # React components (Pages, Shared Components, and UI Elements)
-├── context/         # React Context providers for global state (Auth, Layout)
-├── services/        # API service modules for interacting with the backend
-├── styles/          # Component-specific CSS files (e.g., Events.css, Finance.css)
-├── types/           # Global TypeScript interfaces and type definitions
-├── utils/           # Helper functions (e.g., exportUtils.ts for CSV generation)
-├── App.tsx          # Main application wrapper and router
-├── index.css        # Global CSS tokens, reset, and base typography
-└── main.tsx         # Vite entry point, renders App to the DOM
-```
+| `frontend/src` |                                                                 |
+| -------------- | --------------------------------------------------------------- |
+| `Assets/`      | Static files, images, SVGs and global assets                    |
+| `components/`  | React components (Pages, Shared Components, and UI Elements)    |
+| `context/`     | React Context providers for global state (Auth, Layout)         |
+| `services/`    | API service modules for interacting with the backend            |
+| `styles/`      | Component-specific CSS files (e.g. `Events.css`, `Finance.css`) |
+| `types/`       | Global TypeScript interfaces and type definitions               |
+| `utils`        | Helper functions (e.g., `exportUtils.ts` for CSV generation)    |
+| `App.tsx`      | Main application wrapper and router                             |
+| `index.css`    | Global CSS tokens, reset and base typography                    |
+| `main.tsx`     | Vite entry point, renders App to the Dom                        |
 
 ## 3. Pages and Routing Organization
 

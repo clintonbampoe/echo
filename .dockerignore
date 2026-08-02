@@ -1,3 +1,9 @@
+# .NET Build Output
+bin/
+obj/
+**/bin
+**/obj
+
 # IDE and Editor Files
 .idea/
 .vs/
@@ -14,11 +20,6 @@ idea/
 /queries/
 /dataSources/
 /dataSources.local.xml
-
-# .NET Build Output
-bin/
-obj/
-publish/
 
 # Node.js and React
 node_modules/

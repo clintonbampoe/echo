@@ -58,11 +58,11 @@ Send a valid login request to the `Sessions` endpoint with your valid credential
 }
 ```
 
-### Using a token
+### Using an `accessToken`
 
 Include the `accessToken` in the `Authorization` header of subsequent requests as a Bearer token.
 
-```json
+```text
 Authorization: Bearer <your-jwt-token>
 ```
 
@@ -180,6 +180,6 @@ All API responses follow a consistent format using HTTP result wrappers (defined
 
 ## Related Documentation
 
-- [Setup](./../Setup.md): Local development setup
+- [GettingStarted](GettingStarted.md): Local development setup
 - [Infrastructure](./../Infrastructure.md): Docker, containers, reverse proxy and environment variables
-- [Front-end](./../client_app/README.md): Front-end documentation
+- [Front-end](frontend/README.md): Front-end documentation

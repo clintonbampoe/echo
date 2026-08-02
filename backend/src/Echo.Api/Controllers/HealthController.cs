@@ -7,7 +7,7 @@ namespace Echo.Api.Controllers;
 
 [ApiController]
 [AllowAnonymous]
-[Route("health")]
+[Route("api/health")]
 public sealed class HealthController(HealthCheckService healthCheckService) : ControllerBase
 {
     private readonly HealthCheckService _healthCheckService = healthCheckService;

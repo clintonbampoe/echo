@@ -9,7 +9,7 @@ This explains how Echo runs: the Docker containers, how they're built, how they
 talk to each other, and every environment variable the app needs.
 
 Not covered here: how the back-end's code is organized (see `Architecture.md`,
-not written yet) or how to set up locally (see [Setup.md](./Setup.md)).
+not written yet) or how to set up locally (see [Setup.md](GettingStarted.md)).
 
 _If the compose files or Dockerfile have changed since
 then, this doc may be out of date — check `git log` on them before trusting it,
@@ -29,7 +29,7 @@ prod, only `api` can reach it — it's not open to the outside world.
 **`nginx`** — sits in front of `api` and forwards requests to it.
 
 **`migrator`** — runs database migrations. Doesn't start automatically — you run
-it yourself when you want to. See [Setup.md](./Setup.md) for when to use this.
+it yourself when you want to. See [Setup.md](GettingStarted.md) for when to use this.
 
 ### Why there are three compose files
 
@@ -94,7 +94,7 @@ If you add or change a variable or the structure of the `.env` file, update this
 | `FRONTEND_BASE_URL`                  | YES      | api     | Builds links in outgoing emails (password reset, email verification). This is not CORS config — it doesn't control which origins can call the API.                       |
 | `MAIL_CLIENT_ADDRESS`                | YES      | api     | The "from" address on outgoing emails                                                                                                                                    |
 | `RUN_DATABASE_MIGRATIONS_ON_STARTUP` | NO       | api     | `true` by default — applies migrations automatically when the API starts. Set to `false` if you'd rather run them yourself with `docker-compose run --rm migrator`.      |
-| `JWT_PRIVATE_KEY`                    | YES      | api     | Signs login tokens. Stored base64-encoded, not raw PEM — raw PEM has line breaks that don't survive `.env`'s format. See [setup.md](./setup.md).                         |
+| `JWT_PRIVATE_KEY`                    | YES      | api     | Signs login tokens. Stored base64-encoded, not raw PEM — raw PEM has line breaks that don't survive `.env`'s format. See [setup.md](GettingStarted.md).                         |
 | `JWT_PUBLIC_KEY`                     | YES      | api     | Checks that login tokens are genuine. Same base64 encoding as above.                                                                                                     |
 | `JWT_ISSUER`                         | YES      | api     | Stamped onto every token when it's created. Must exactly match the value the API checks tokens against — if it doesn't, logins fail with no clear error telling you why. |
 | `JWT_AUDIENCE`                       | YES      | api     | Same rule as `JWT_ISSUER` — created and checked with the same value, or you get a silent, confusing failure.                                                             |
