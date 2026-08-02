@@ -2,7 +2,7 @@
 
 Echo is a multi-tenant church management platform — a single place for a congregation to run its administration: who its members are, what it owns, what it's raising money for, and how it's doing financially. Each congregation is its own isolated tenant, with admins bringing members in and managing access from there.
 
-![Dashboard Screenshot](./docs/images/dashboard-screenshot.png)
+![Dashboard Screenshot](./docs/diagrams/DashboardScreenshot.png)
 
 ## Scope
 

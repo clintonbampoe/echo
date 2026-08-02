@@ -19,7 +19,7 @@ services:
       Resend__ApiKey: ${RESEND_API_KEY}
       RunMigrationsOnStartup: ${RUN_DATABASE_MIGRATIONS_ON_STARTUP}
     healthcheck:
-      test: [CMD, curl, -f, http://localhost:8080/health/live]
+      test: [CMD, curl, -f, http://localhost:8080/api/health/live]
       interval: 5s
       timeout: 5s
       retries: 5

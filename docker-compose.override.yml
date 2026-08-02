@@ -2,7 +2,7 @@
 services:
   api:
     build:
-      target: compile
+      target: build
     working_dir: /src
     command: dotnet run --project backend/src/Echo.Api/Echo.Api.csproj --urls http://0.0.0.0:8080
     environment:

@@ -5,8 +5,6 @@
 
 ---
 
-Index of everything documented about Echo. If a topic isn't listed here, it isn't documented yet — don't assume it exists elsewhere.
-
 ## Conventions
 
 - **One file per topic**, not one file per code layer. A doc should tell the whole story for something (e.g. "how auth works"), not just describe the controllers or just the entities.
@@ -30,19 +28,10 @@ Index of everything documented about Echo. If a topic isn't listed here, it isn'
 
 - **Update the table below whenever a doc is added, rewritten, or goes stale.** This index is only useful if it's honest.
 
-## Status
-
-| Topic          | File                | Status  | Last updated |
-| -------------- | ------------------- | ------- | ------------ |
-| Setup          | `Setup.md`          | Current | 2026-07-31   |
-| Infrastructure | `Infrastructure.md` | Current | 2026-07-31   |
-
-**Status values:**
-
-- `Current` (accurate as of last update),
-- `Stale` (known outdated, don't trust it, being rewritten),
-- `Not written` (doesn't exist yet).
+---
 
 ## Everything else
 
 Every doc that previously existed under `docs/api/` and `docs/database/`, and the setup section of `backend/README.md`, has been removed. All of it was stale and describing a setup/architecture that no longer reflects the real codebase. Rewrites happen incrementally, one topic at a time — check the table above for what's actually been redone.
+
+**You can look at [Table of Contents](./Index.md) to navigate the documentation.

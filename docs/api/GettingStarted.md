@@ -1,4 +1,4 @@
-# Getting Started
+# Getting Started with Echo API
 
 **Written by:** @clintonbampoe
 **Last updated:** 2026-07-31 by @clintonbampoe
