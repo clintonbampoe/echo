@@ -233,10 +233,10 @@
   transition: width 0.4s ease;
 }
 
-.project-card-bar-fill.status-on-track  { background-color: #2e7d32; }
-.project-card-bar-fill.status-completed { background-color: #1565c0; }
-.project-card-bar-fill.status-planning  { background-color: #f57f17; }
-.project-card-bar-fill.status-off-track { background-color: #c62828; }
+.project-card-bar-fill.status-on-track  { background-color: #1a1a1a; }
+.project-card-bar-fill.status-completed { background-color: #1a1a1a; }
+.project-card-bar-fill.status-planning  { background-color: #1a1a1a; }
+.project-card-bar-fill.status-off-track { background-color: #1a1a1a; }
 
 .project-card-pct {
   font-size: 11px;
@@ -504,10 +504,10 @@
   transition: width 0.5s ease;
 }
 
-.detail-progress-fill.status-on-track  { background-color: #2e7d32; }
-.detail-progress-fill.status-completed { background-color: #1565c0; }
-.detail-progress-fill.status-planning  { background-color: #f57f17; }
-.detail-progress-fill.status-off-track { background-color: #c62828; }
+.detail-progress-fill.status-on-track  { background-color: #1a1a1a; }
+.detail-progress-fill.status-completed { background-color: #1a1a1a; }
+.detail-progress-fill.status-planning  { background-color: #1a1a1a; }
+.detail-progress-fill.status-off-track { background-color: #1a1a1a; }
 
 .detail-progress-label {
   font-size: 11px;
@@ -726,12 +726,13 @@
 }
 
 .projects-btn-danger {
-  background-color: #c62828;
-  color: white;
+  background-color: transparent;
+  color: #c62828;
+  border: 1px solid #ffcdd2;
 }
 
 .projects-btn-danger:hover {
-  background-color: #b71c1c;
+  background-color: #ffebee;
 }
 
 /* ─── Form Fields ─────────────────────────────────────────────────────────── */

@@ -6,9 +6,9 @@ import {
   CloseIcon,
   EditIcon,
   MembersIcon,
-  TrashIcon,
-  WarningIcon
+  TrashIcon
 } from './Icons';
+import DeleteConfirmModal from './common/DeleteConfirmModal';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -653,47 +653,14 @@ const Projects: React.FC = () => {
       {/* ════════════════════════════════════════════════════════════════════
           DELETE CONFIRMATION MODAL
           ════════════════════════════════════════════════════════════════ */}
-      {showDeleteConfirm && deletingProject && (
-        <div className="projects-modal-overlay" onClick={() => setShowDeleteConfirm(false)}>
-          <div className="projects-modal" onClick={e => e.stopPropagation()}>
-            <div className="projects-modal-header">
-              <h2 className="projects-modal-title">Delete Project</h2>
-              <button
-                className="projects-panel-close"
-                onClick={() => setShowDeleteConfirm(false)}
-              >
-                <CloseIcon />
-              </button>
-            </div>
-            <div className="projects-modal-body">
-              <div className="delete-confirm-icon">
-                <WarningIcon size={28} />
-              </div>
-              <p className="delete-confirm-text">
-                Are you sure you want to delete{' '}
-                <span className="delete-confirm-name">"{deletingProject.name}"</span>?
-              </p>
-              <p className="delete-confirm-warning">
-                This action cannot be undone and all associated data will be permanently removed.
-              </p>
-            </div>
-            <div className="projects-modal-footer">
-              <button
-                className="projects-btn projects-btn-secondary"
-                onClick={() => setShowDeleteConfirm(false)}
-              >
-                Cancel
-              </button>
-              <button
-                className="projects-btn projects-btn-danger"
-                onClick={confirmDelete}
-              >
-                Delete Project
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <DeleteConfirmModal
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={confirmDelete}
+        itemName={deletingProject?.name || ''}
+        title="Delete Project"
+        confirmText="Delete Project"
+      />
     </div>
   );
 };

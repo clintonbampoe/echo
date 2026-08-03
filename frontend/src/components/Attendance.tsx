@@ -18,6 +18,7 @@ import {
     FilterIcon,
     SearchIcon,
 } from './Icons';
+import DeleteConfirmModal from './common/DeleteConfirmModal';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -60,6 +61,9 @@ const Attendance: React.FC = () => {
   const { setTitle, setCtas, searchQuery, setSearchQuery } = useLayout();
 
   // ── States ─────────────────────────────────────────────────────────────────
+
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deletingAttendance, setDeletingAttendance] = useState<(AttendanceRecord & { memberName?: string }) | null>(null);
 
   const [date, setDate] = useState('2026-10-23'); // Initialize to seeded date matching wireframe
   const [eventType, setEventType] = useState<'Service' | 'Practice' | 'Meeting'>('Service');
@@ -229,14 +233,20 @@ const Attendance: React.FC = () => {
     return () => clearTimeout(timer);
   }, [fetchData]);
 
-  const handleDeleteAttendance = async (attendanceId: number) => {
-    if (window.confirm('Are you sure you want to delete this attendance record?')) {
-      try {
-        await deleteAttendanceRecord(attendanceId);
-        fetchData();
-      } catch (err) {
-        console.error('Failed to delete attendance record:', err);
-      }
+  const handleDeleteAttendance = (att: AttendanceRecord) => {
+    setDeletingAttendance(att);
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDeleteAttendance = async () => {
+    if (!deletingAttendance) return;
+    try {
+      await deleteAttendanceRecord(deletingAttendance.attendanceId);
+      setShowDeleteConfirm(false);
+      setDeletingAttendance(null);
+      fetchData();
+    } catch (err) {
+      console.error('Failed to delete attendance record:', err);
     }
   };
 
@@ -446,7 +456,7 @@ const Attendance: React.FC = () => {
                           </button>
                           <button
                             className="action-btn delete"
-                            onClick={() => handleDeleteAttendance(att.attendanceId)}
+                            onClick={() => handleDeleteAttendance(att)}
                           >
                             Delete
                           </button>
@@ -633,6 +643,15 @@ const Attendance: React.FC = () => {
           </form>
         </div>
       )}
+
+      <DeleteConfirmModal
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={confirmDeleteAttendance}
+        itemName={deletingAttendance?.memberName || 'Record'}
+        title="Delete Attendance Record"
+        confirmText="Delete Record"
+      />
     </div>
   );
 };

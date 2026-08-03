@@ -579,12 +579,13 @@
 }
 
 .finance-btn-danger {
-  background-color: #ff3b30;
-  color: white;
+  background-color: transparent;
+  color: #c62828;
+  border: 1px solid #ffcdd2;
 }
 
 .finance-btn-danger:hover {
-  background-color: #e0342b;
+  background-color: #ffebee;
 }
 
 /* ─── Delete Confirmation ─────────────────────────────────────────────────── */
