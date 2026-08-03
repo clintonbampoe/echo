@@ -15,10 +15,12 @@ RUN dotnet restore src/Echo.Api/Echo.Api.csproj
 
 FROM restore AS build
 COPY backend/ .
+
+RUN dotnet tool restore
 RUN dotnet build src/Echo.Api/Echo.Api.csproj -c Release --no-restore
 
 # Install curl for health checks
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+RUN apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
 FROM build AS publish
 RUN dotnet publish src/Echo.Api/Echo.Api.csproj \
