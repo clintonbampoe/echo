@@ -33,5 +33,4 @@
 ## Everything else
 
 Every doc that previously existed under `docs/api/` and `docs/database/`, and the setup section of `backend/README.md`, has been removed. All of it was stale and describing a setup/architecture that no longer reflects the real codebase. Rewrites happen incrementally, one topic at a time — check the [Index](./Index.md) for what's actually been redone.
-
 **You can look at [Table of Contents](./Index.md) to navigate the documentation.
