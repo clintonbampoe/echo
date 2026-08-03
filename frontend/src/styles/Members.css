@@ -210,8 +210,8 @@
 }
 
 .status-active {
-  background-color: #1a1a1a;
-  color: #ffffff;
+  background-color: #e8f5e9;
+  color: #2e7d32;
 }
 
 .status-inactive {
@@ -220,8 +220,8 @@
 }
 
 .status-visitor {
-  background-color: #f2f2f7;
-  color: var(--text-muted);
+  background-color: #e3f2fd;
+  color: #1565c0;
 }
 
 /* Card meta rows */
@@ -298,14 +298,13 @@
 }
 
 .member-action-btn.danger {
-  background-color: var(--text-main);
-  color: white;
-  border-color: var(--text-main);
+  background-color: transparent;
+  color: #c62828;
+  border-color: #ffcdd2;
 }
 
 .member-action-btn.danger:hover {
-  background-color: #333;
-  border-color: #333;
+  background-color: #ffebee;
 }
 
 /* ─── Side Panel Overlay ──────────────────────────────────────────────────── */

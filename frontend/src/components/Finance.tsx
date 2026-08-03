@@ -5,7 +5,6 @@ import {
   MoreVerticalIcon,
   EditIcon,
   TrashIcon,
-  WarningIcon,
   TrendUpIcon,
   TrendDownIcon,
   DocumentIcon,
@@ -18,6 +17,7 @@ import {
   MembersIcon,
   DashboardIcon
 } from './Icons';
+import DeleteConfirmModal from './common/DeleteConfirmModal';
 import '../styles/Finance.css';
 import type {
   TransactionCategory,
@@ -756,42 +756,15 @@ const Finance: React.FC = () => {
       )}
 
       {/* ─── Delete Category Confirmation ───────────────────────────────────── */}
-      {showDeleteConfirm && deletingCategory && (
-        <div className="finance-modal-overlay" onClick={() => setShowDeleteConfirm(false)}>
-          <div className="finance-modal" onClick={e => e.stopPropagation()}>
-            <div className="finance-modal-header">
-              <h2 className="finance-modal-title">Delete Stream</h2>
-              <button className="finance-modal-close" onClick={() => setShowDeleteConfirm(false)}>
-                <CloseIcon />
-              </button>
-            </div>
-
-            <div className="finance-modal-body">
-              <div className="delete-confirm-body">
-                <div className="delete-confirm-icon">
-                  <WarningIcon />
-                </div>
-                <p className="delete-confirm-text">
-                  Are you sure you want to delete{' '}
-                  <span className="delete-confirm-name">"{deletingCategory.name}"</span>?
-                </p>
-                <p className="delete-confirm-warning">
-                  Transactions under this stream will become uncategorized. This action cannot be undone.
-                </p>
-              </div>
-            </div>
-
-            <div className="finance-modal-footer">
-              <button className="finance-btn finance-btn-secondary" onClick={() => setShowDeleteConfirm(false)}>
-                Cancel
-              </button>
-              <button className="finance-btn finance-btn-danger" onClick={confirmDeleteCategory}>
-                <TrashIcon /> Delete Stream
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <DeleteConfirmModal
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={confirmDeleteCategory}
+        itemName={deletingCategory?.name || ''}
+        title="Delete Stream"
+        confirmText="Delete Stream"
+        warningMessage="Transactions under this stream will become uncategorized. This action cannot be undone."
+      />
     </div>
   );
 };

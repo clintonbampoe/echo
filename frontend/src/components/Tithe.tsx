@@ -4,7 +4,8 @@ import { deleteTitheRecord, getTitheRecords, saveTitheRecord } from '../services
 import { getMembers } from '../services/attendanceService';
 import type { TitheRecord } from '../types/tithe';
 import type { Member } from '../types/attendance';
-import { CloseIcon, RecordIcon } from './Icons';
+import { RecordIcon, CloseIcon } from './Icons';
+import DeleteConfirmModal from './common/DeleteConfirmModal';
 import '../styles/Tithe.css';
 
 const ITEMS_PER_PAGE = 5;
@@ -55,12 +56,21 @@ const Tithe: React.FC = () => {
     return () => { mounted = false; };
   }, [selectedMonth, selectedYear]);
 
-  const handleDelete = async (id: number) => {
-    if (window.confirm('Are you sure you want to delete this tithe record?')) {
-      await deleteTitheRecord(id);
-      const data = await getTitheRecords(selectedMonth || undefined, selectedYear || undefined);
-      setRecords(data);
-    }
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deletingRecord, setDeletingRecord] = useState<(TitheRecord & { memberName?: string }) | null>(null);
+
+  const handleDelete = (record: TitheRecord) => {
+    setDeletingRecord(record);
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!deletingRecord) return;
+    await deleteTitheRecord(deletingRecord.titheId);
+    const data = await getTitheRecords(selectedMonth || undefined, selectedYear || undefined);
+    setRecords(data);
+    setShowDeleteConfirm(false);
+    setDeletingRecord(null);
   };
 
   const handleEdit = (record: TitheRecord) => {
@@ -270,7 +280,7 @@ const Tithe: React.FC = () => {
                         <button className="action-btn" onClick={() => handleEdit(record)}>
                           Edit
                         </button>
-                        <button className="action-btn delete" onClick={() => handleDelete(record.titheId)}>
+                        <button className="action-btn delete" onClick={() => handleDelete(record)}>
                           Delete
                         </button>
                       </div>
@@ -431,6 +441,15 @@ const Tithe: React.FC = () => {
           </form>
         </div>
       )}
+
+      <DeleteConfirmModal
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={confirmDelete}
+        itemName={deletingRecord?.memberName ? `Tithe for ${deletingRecord.memberName}` : 'Tithe Record'}
+        title="Delete Tithe Record"
+        confirmText="Delete Record"
+      />
     </div>
   );
 };

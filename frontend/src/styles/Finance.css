@@ -52,7 +52,7 @@
   font-weight: 600;
   display: flex;
   align-items: center;
-  color: var(--text-main);
+  color: #34c759;
 }
 
 .finance-card-trend svg {
@@ -97,11 +97,11 @@
 }
 
 .stream-header-icon.income {
-  color: var(--text-main);
+  color: #34c759;
 }
 
 .stream-header-icon.expenditure {
-  color: var(--text-muted);
+  color: #ff3b30;
 }
 
 .stream-header-title {
@@ -159,13 +159,13 @@
 }
 
 .stream-card-icon.income {
-  background-color: #1a1a1a;
-  color: #ffffff;
+  background-color: #e8f5e9;
+  color: #34c759;
 }
 
 .stream-card-icon.expenditure {
-  background-color: #f2f2f7;
-  color: var(--text-muted);
+  background-color: #ffebee;
+  color: #ff3b30;
 }
 
 .stream-card-info {
@@ -277,11 +277,11 @@
 }
 
 .stream-card-dropdown-item.danger {
-  color: var(--text-main);
+  color: #ff3b30;
 }
 
 .stream-card-dropdown-item.danger:hover {
-  background-color: #f2f2f7;
+  background-color: #fff0f0;
 }
 
 /* ─── Modal Overlay (used by Category + Delete confirmation) ─────────────── */
@@ -580,12 +580,12 @@
 
 .finance-btn-danger {
   background-color: transparent;
-  color: var(--text-main);
-  border: 1px solid var(--text-main);
+  color: #c62828;
+  border: 1px solid #ffcdd2;
 }
 
 .finance-btn-danger:hover {
-  background-color: #f2f2f7;
+  background-color: #ffebee;
 }
 
 /* ─── Delete Confirmation ─────────────────────────────────────────────────── */
@@ -599,12 +599,12 @@
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background-color: #f2f2f7;
+  background-color: #fff0f0;
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0 auto 16px;
-  color: var(--text-main);
+  color: #ff3b30;
 }
 
 .delete-confirm-text {

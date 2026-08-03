@@ -240,10 +240,14 @@
   border-color: #a1a1a6;
 }
 
+.action-btn.delete {
+  color: #c62828;
+  border-color: #ffcdd2;
+  background-color: transparent;
+}
+
 .action-btn.delete:hover {
-  background-color: var(--text-main);
-  border-color: var(--text-main);
-  color: white;
+  background-color: #ffebee;
 }
 
 /* Pagination */

@@ -3,6 +3,7 @@ import { useLayout } from '../context/LayoutContext';
 import {
   CloseIcon, CalendarIcon, MapPinIcon, ClockIcon, ChevronLeftIcon
 } from './Icons';
+import DeleteConfirmModal from './common/DeleteConfirmModal';
 import ExportPanel from './ExportPanel';
 import '../styles/Events.css';
 
@@ -259,8 +260,17 @@ const Events: React.FC = () => {
     setShowAttForm(true);
   };
 
-  const handleDelete = () => {
-    alert('Entry deleted (mock)');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deletingItemName, setDeletingItemName] = useState('');
+
+  const handleDelete = (name: string) => {
+    setDeletingItemName(name);
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = () => {
+    setShowDeleteConfirm(false);
+    setDeletingItemName('');
   };
 
   // ─── Stats ──────────────────────────────────────────────────────────────────
@@ -460,7 +470,7 @@ const Events: React.FC = () => {
                   <td>
                     <div className="actions-cell">
                       <button className="action-sm-btn" onClick={() => handleEditReg(reg)}>Edit</button>
-                      <button className="action-sm-btn" onClick={handleDelete}>Delete</button>
+                      <button className="action-sm-btn" onClick={() => handleDelete(`Registration for ${reg.memberName}`)}>Delete</button>
                     </div>
                   </td>
                 </tr>
@@ -497,7 +507,7 @@ const Events: React.FC = () => {
                   <td>
                     <div className="actions-cell">
                       <button className="action-sm-btn" onClick={() => handleEditAtt(att)}>Edit</button>
-                      <button className="action-sm-btn" onClick={handleDelete}>Delete</button>
+                      <button className="action-sm-btn" onClick={() => handleDelete(`Attendance for ${att.memberName}`)}>Delete</button>
                     </div>
                   </td>
                 </tr>
@@ -722,6 +732,14 @@ const Events: React.FC = () => {
         />
       )}
 
+      <DeleteConfirmModal
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={confirmDelete}
+        itemName={deletingItemName}
+        title="Delete Record"
+        confirmText="Delete"
+      />
     </div>
   );
 };
