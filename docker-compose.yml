@@ -6,7 +6,7 @@ services:
       dockerfile: backend/src/Echo.Api/Dockerfile
     environment:
       Database__Host: db
-      Database__Port: 5432
+      Database__Port: ${DB_PORT}
       Database__Name: ${DB_NAME}
       Database__Username: ${DB_USERNAME}
       Database__Password: ${DB_PASSWORD}
@@ -57,18 +57,20 @@ services:
     networks: [echo-network]
   migrator:
     build:
+      context: .
       target: build
+      dockerfile: backend/src/Echo.Api/Dockerfile
     environment:
       Database__Host: db
       Database__Port: 5432
       Database__Name: ${DB_NAME}
       Database__Username: ${DB_USERNAME}
       Database__Password: ${DB_PASSWORD}
+      ASPNETCORE_ENVIRONMENT: Development
     entrypoint:
       - sh
       - -c
-      - dotnet tool restore && dotnet ef database update --project backend/src/Echo.Infrastructure
-        --startup-project backend/src/Echo.Api
+      - dotnet tool restore && dotnet ef database update --project src/Echo.Infrastructure
     depends_on:
       db:
         condition: service_healthy

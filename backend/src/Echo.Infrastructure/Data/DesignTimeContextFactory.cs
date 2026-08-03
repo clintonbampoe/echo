@@ -23,14 +23,8 @@ namespace Echo.Infrastructure.Data
 
         private IConfiguration LoadConfiguration()
         {
-            // Call your central .env loading logic here
-            // e.g., YourExistingLoader.LoadEnvFiles();
-
             var configuration = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", optional: false)
-                .AddJsonFile("appsettings.Development.json", optional: true)
-                .AddUserSecrets("<paste Echo.Api's UserSecretsId GUID here>")
                 .AddEnvironmentVariables()
                 .Build();
 
