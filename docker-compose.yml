@@ -47,6 +47,14 @@ services:
       api:
         condition: service_healthy
     networks: [echo-network]
+  client:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    depends_on:
+      api:
+        condition: service_healthy
+    networks: [echo-network]
   migrator:
     build:
       target: build
