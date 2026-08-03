@@ -1,14 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useLayout } from '../context/LayoutContext';
 import {
-  CloseIcon, SearchIcon, CalendarIcon, MembersIcon, MapPinIcon, ClockIcon, ChevronLeftIcon
+  CloseIcon, CalendarIcon, MapPinIcon, ClockIcon, ChevronLeftIcon
 } from './Icons';
 import ExportPanel from './ExportPanel';
 import '../styles/Events.css';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type EventStatus = 'Upcoming' | 'Past' | 'Ongoing';
 
 interface ChurchEvent {
   id: string;

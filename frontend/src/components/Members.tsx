@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useLayout } from '../context/LayoutContext';
-import { CloseIcon, ExportIcon, MembersIcon, CalendarIcon, PlusIcon } from './Icons';
+import { CloseIcon, MembersIcon, CalendarIcon } from './Icons';
 import ExportPanel from './ExportPanel';
 import '../styles/Members.css';
 
