@@ -53,6 +53,7 @@
   display: flex;
   align-items: center;
   color: #34c759;
+  color: #34c759;
 }
 
 .finance-card-trend svg {
@@ -585,7 +586,7 @@
 }
 
 .finance-btn-danger:hover {
-  background-color: #ffebee;
+  background-color: #e0342b;
 }
 
 /* ─── Delete Confirmation ─────────────────────────────────────────────────── */
