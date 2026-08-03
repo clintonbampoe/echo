@@ -248,8 +248,6 @@
 
 .action-btn.delete:hover {
   background-color: #ffebee;
-  border-color: #ffcdd2;
-  color: #ff3b30;
 }
 
 /* Pagination */

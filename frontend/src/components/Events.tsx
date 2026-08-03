@@ -1,11 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { useLayout } from '../hooks/useLayout';
-import {
-  CloseIcon, CalendarIcon, MapPinIcon, ClockIcon, ChevronLeftIcon
-} from './Icons';
+import '../styles/Events.css';
 import DeleteConfirmModal from './common/DeleteConfirmModal';
 import ExportPanel from './ExportPanel';
-import '../styles/Events.css';
+import {
+  CalendarIcon,
+  ChevronLeftIcon,
+  ClockIcon,
+  CloseIcon,
+  MapPinIcon
+} from './Icons';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
