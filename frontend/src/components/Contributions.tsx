@@ -99,7 +99,7 @@ const Contributions: React.FC = () => {
   // View state
   const [viewingFund, setViewingFund] = useState<Fund | null>(null);
   const [activeTab, setActiveTab] = useState<'Active Funds' | 'Completed' | 'All Funds'>('Active Funds');
-  const [searchQuery, setSearchQuery] = useState('');
+
 
   // Modals state
   const [showAddPanel, setShowAddPanel] = useState(false);

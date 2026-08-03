@@ -1,7 +1,7 @@
 # Infrastructure
 
 **Written by:** @clintonbampoe
-**Last updated:** 2026-07-31 by @clintonbampoe
+**Last updated:** 2026-08-03 by @ebenezerquayson
 
 ---
 
@@ -23,10 +23,14 @@ and update this doc if you're the one making the change. If not flag this to the
 step on every change. In prod, it runs the final, compiled version. Nginx only
 sends it traffic once it's confirmed healthy.
 
+**`client`** — the frontend React application. In dev, it runs Vite's hot-reloading
+server directly on port 5173 (bypassing Nginx). In prod, it is a lightweight Nginx
+container serving static files, which the edge Nginx proxies to.
+
 **`db`** — Postgres 18. Data is stored in a volume so it survives restarts. In
 prod, only `api` can reach it — it's not open to the outside world.
 
-**`nginx`** — sits in front of `api` and forwards requests to it.
+**`nginx`** — sits in front as the edge proxy. In prod, it routes `/api`, `/health`, and `/swagger` to the `api` container, and all other traffic `/` to the `client` container. In dev, it only routes API traffic.
 
 **`migrator`** — runs database migrations. Doesn't start automatically — you run
 it yourself when you want to. See [Setup.md](GettingStarted.md) for when to use this.
@@ -66,10 +70,11 @@ Building the app happens in four steps:
 | ---- | ------- | ---------------------------------- | --- | ---- |
 | 8080 | nginx   | YES                                | YES | —    |
 | 80   | nginx   | YES                                | —   | YES  |
+| 5173 | client  | YES (dev convenience, skips nginx) | YES | —    |
 | 5025 | api     | YES (dev convenience, skips nginx) | YES | —    |
 | 5432 | db      | YES in dev, no in prod             | YES | --   |
 
-Requests always flow the same way: **nginx → api → db**. Nothing else is open.
+Requests in production always flow the same way: **edge nginx → api (or client)**. Nothing else is open.
 
 ## How data persists
 
@@ -134,3 +139,14 @@ See [Conventions in README](./README.md#conventions) for the full ruleset on who
 | Fix         | Run `sh backend/tools/jwt-key-setup/setup-jwt-keys.sh env` to regenerate the keys correctly.           |
 | Date        | 2026-07-31                                                                                             |
 | Added by    | @clintonbampoe                                                                                         |
+
+### API Healthcheck Fails on Startup
+
+| Field       | Value                                                                                                  |
+| ----------- | ------------------------------------------------------------------------------------------------------ |
+| Symptom     | Docker compose fails to start the stack with error: `dependency failed to start: container echo-api-1 is unhealthy`. API logs show it has started and is listening properly. |
+| First check | Inspect `docker-compose.yml` to see what command the healthcheck is running (usually `curl -f http://localhost:8080/api/health/live`). |
+| Root cause  | The `curl` package was installed in the `build` stage of the Dockerfile, but was missing in the final `runtime` image based on `mcr.microsoft.com/dotnet/aspnet`. |
+| Fix         | Moved `RUN apt-get update && apt-get install -y curl` from the `build` stage down to the `runtime` stage in `backend/src/Echo.Api/Dockerfile`. |
+| Date        | 2026-08-03                                                                                             |
+| Added by    | @ebenezerquayson                                                                                       |
