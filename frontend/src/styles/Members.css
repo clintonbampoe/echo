@@ -210,8 +210,8 @@
 }
 
 .status-active {
-  background-color: #1a1a1a;
-  color: #ffffff;
+  background-color: #e8f5e9;
+  color: #2e7d32;
 }
 
 .status-inactive {
@@ -220,8 +220,8 @@
 }
 
 .status-visitor {
-  background-color: #f2f2f7;
-  color: var(--text-muted);
+  background-color: #e3f2fd;
+  color: #1565c0;
 }
 
 /* Card meta rows */

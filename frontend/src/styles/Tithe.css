@@ -241,9 +241,9 @@
 }
 
 .action-btn.delete:hover {
-  background-color: var(--text-main);
-  border-color: var(--text-main);
-  color: white;
+  background-color: #ffebee;
+  border-color: #ffcdd2;
+  color: #ff3b30;
 }
 
 /* Pagination */

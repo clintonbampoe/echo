@@ -12,12 +12,12 @@ const getInitials = (name: string) => {
 
 const getAvatarColor = (name: string) => {
   const colors = [
-    { bg: '#1a1a1a', text: '#ffffff' },
-    { bg: '#f2f2f7', text: '#636366' },
-    { bg: '#e5e5ea', text: '#1a1a1a' },
-    { bg: '#8e8e93', text: '#ffffff' },
-    { bg: '#333333', text: '#ffffff' },
-    { bg: '#a1a1a6', text: '#1a1a1a' },
+    { bg: '#e8f5e9', text: '#2e7d32' }, // green
+    { bg: '#e3f2fd', text: '#1565c0' }, // blue
+    { bg: '#f3e5f5', text: '#6a1b9a' }, // purple
+    { bg: '#fff3e0', text: '#e65100' }, // orange
+    { bg: '#ffebee', text: '#c62828' }, // red
+    { bg: '#e0f7fa', text: '#00838f' }, // cyan
   ];
   let hash = 0;
   for (let i = 0; i < name.length; i++) {
@@ -40,10 +40,10 @@ const Dashboard: React.FC = () => {
   }, [setTitle, setCtas]);
 
   const stats = [
-    { label: 'Total Members', value: '428', trend: '+12 this month', color: 'var(--text-main)' },
-    { label: 'Avg Weekly Attendance', value: '214', trend: '+10 this month', color: 'var(--text-main)' },
-    { label: 'Monthly Offering', value: '₵ 45,900', trend: '+54 this month', color: 'var(--text-main)' },
-    { label: 'Active Members', value: '178', trend: '+21 this month', color: 'var(--text-main)' },
+    { label: 'Total Members', value: '428', trend: '+12 this month', color: '#34c759' },
+    { label: 'Avg Weekly Attendance', value: '214', trend: '+10 this month', color: '#34c759' },
+    { label: 'Monthly Offering', value: '₵ 45,900', trend: '+54 this month', color: '#34c759' },
+    { label: 'Active Members', value: '178', trend: '+21 this month', color: '#34c759' },
   ];
 
   const recentActivity = [
