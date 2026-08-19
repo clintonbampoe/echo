@@ -25,7 +25,8 @@ public class RegistrationService(
     public async Task<IOperationResult> RegisterCongregation(
         CongregationCreateDto congregationDto,
         UserCreateDto userDto,
-        CancellationToken ct)
+        CancellationToken ct
+    )
     {
         var congregation = mapper.Map<Congregation>(congregationDto);
         var user = mapper.Map<User>(userDto);
@@ -52,7 +53,10 @@ public class RegistrationService(
         return new OkResult("Operation completed successfully.");
     }
 
-    public async Task<IOperationResult> RegisterMemberAsync(RegisterMemberRequest request, CancellationToken ct)
+    public async Task<IOperationResult> RegisterMemberAsync(
+        RegisterMemberRequest request,
+        CancellationToken ct
+    )
     {
         var invitation = await invitationService.ValidateAsync(request.Token, ct);
         if (invitation is null)

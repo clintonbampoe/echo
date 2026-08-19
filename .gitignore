@@ -54,3 +54,7 @@ Thumbs.db
 
 # Neovim artifacts
 *.vim
+
+# Database Backups
+.dump
+db_dumps/

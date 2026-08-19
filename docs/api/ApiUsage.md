@@ -1,19 +1,17 @@
 # Api Usage
 
 **Written by:** @clintonbampoe
-**Last updated**: 2026-07-31 by @clintonbampoe
+**Last updated**: 2026-08-19 by @clintonbampoe
 
 ---
 
 This is the official guide to using the Echo API.
 >**New Developer?** Start with [Getting Started](./GettingStarted.md) to create your first admin and obtain a JWT Token.
 
-For granular endpoint details, we have a myriad of options which you can choose from depending on your use case:
+For granular endpoint details, we have two options you can choose from. These are live endpoints and can be accessed **only** when the api is running in **development**:
 
-- [Swagger UI](./ApiDocsSwagger.html) - Interactive API docs
-- [Bruno UI](./ApiDocsBruno.html) - Interactive API docs
-- [OpenApi Spec](./OpenApi.json) - Open Api specifications in json format which you can import anywhere
-- [Scalar UI](http://localhost:8080/scalar) - Dynamic API tester with clean UI rendered in browser. This URL only works as long as the Echo API containers are running.
+- [Swagger UI](http://localhost:5025/swagger) - Interactive API docs with **Swagger**.
+- [Scalar UI](http://localhost:8080/scalar) - Dynamic API tester with clean UI rendered in browser.
 
 ---
 
@@ -36,7 +34,7 @@ The Echo API uses JWT (JSON Web Token) authentication.
 
 Send a valid login request to the `Sessions` endpoint with your valid credentials. If you don't have any valid credentials yet, see [Creating a User Account](./GettingStarted#creating-a-new-user-account)
 
-**Endpoint:** `POST /api/v1/auth/sessions/login`
+**Endpoint:** `POST /api/auth/v1/sessions/login`
 
 **Payload**
 
@@ -70,7 +68,7 @@ Authorization: Bearer <your-jwt-token>
 > For this, we use the `refreshToken`
 
 Use the **refresh** endpoint under sessions to refresh your access token.
-**Endpoint:** `POST /api/v1/auth/sessions/refresh`
+**Endpoint:** `POST /api/auth/v1/sessions/refresh`
 
 **Payload**
 
@@ -168,7 +166,7 @@ or through Nginx at:
 http://localhost:8080/scalar
 ```
 
-This URLs provides an interactive UI to explore and test all endpoints.
+These URLs provide an interactive UI to explore and test all endpoints.
 
 ---
 

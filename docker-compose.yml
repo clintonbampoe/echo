@@ -33,7 +33,10 @@ services:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-    volumes: [postgres-data:/var/lib/postgresql]
+    volumes:
+      - postgres-data:/var/lib/postgresql
+      - ./infra/postgres/init/extensions.sql:/docker-entrypoint-initdb.d/extensions.sql
+      - ./infra/postgres/backup/db_dumps:/db_dumps:ro
     healthcheck:
       test: [CMD-SHELL, 'pg_isready -U ${DB_USERNAME} -d ${DB_NAME}']
       interval: 5s
@@ -55,6 +58,24 @@ services:
       api:
         condition: service_healthy
     networks: [echo-network]
+  backup:
+    build:
+      context: .
+      dockerfile: infra/postgres/backup/Dockerfile
+    environment:
+      DB_NAME: ${DB_NAME}
+      DB_USERNAME: ${DB_USERNAME}
+      PGPASSWORD: ${DB_PASSWORD}
+    volumes:
+      - ./infra/postgres/backup/backup.sh:/backup.sh:ro
+      - ./infra/postgres/backup/db_dumps:/db_dumps
+    # Entry point is defined per environment in override/prod files
+    # Since schedule differs between dev and prod
+    depends_on:
+      db:
+        condition: service_healthy
+    networks: [echo-network]
+    restart: unless-stopped
   migrator:
     build:
       context: .
