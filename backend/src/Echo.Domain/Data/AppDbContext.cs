@@ -46,7 +46,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
 
-        // Trigram search for Name field in Member entity
+        // Trigram search extension for Name field in Member entity
         modelBuilder.HasPostgresExtension("pg_trgm");
     }
 }

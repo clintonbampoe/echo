@@ -10,6 +10,7 @@ COPY ["backend/src/Echo.Auth/Echo.Auth.csproj", "./src/Echo.Auth/"]
 COPY ["backend/src/Echo.Core/Echo.Core.csproj", "./src/Echo.Core/"]
 COPY ["backend/src/Echo.Domain/Echo.Domain.csproj", "./src/Echo.Domain/"]
 COPY ["backend/src/Echo.Infrastructure/Echo.Infrastructure.csproj", "./src/Echo.Infrastructure/"]
+COPY "backend/.config/dotnet-tools.json" "/backend/.config/"
 
 RUN dotnet restore src/Echo.Api/Echo.Api.csproj
 
