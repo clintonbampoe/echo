@@ -60,24 +60,6 @@ public class UserRepository(AppDbContext context) : PrimaryRepositoryBase<User>(
             .FirstOrDefaultAsync(ct);
     }
 
-    public async Task<bool> ExecuteUpdateAsync(User user, CancellationToken ct = default)
-    {
-        var affectedRows = await DbSet
-            .Where(u => u.Id == user.Id)
-            .ExecuteUpdateAsync(
-                setters =>
-                    setters
-                        .SetProperty(u => u.Name, user.Name)
-                        .SetProperty(u => u.EmailAddress, user.EmailAddress)
-                        .SetProperty(u => u.PasswordHash, user.PasswordHash)
-                        .SetProperty(u => u.EmailVerifiedAt, user.EmailVerifiedAt)
-                        .SetProperty(u => u.Role, user.Role),
-                cancellationToken: ct
-            );
-
-        return affectedRows > 0;
-    }
-
     public async Task<bool> IsEmailAddressTaken(string emailAddress, CancellationToken ct)
     {
         var exists = await DbSet
@@ -124,5 +106,32 @@ public class UserRepository(AppDbContext context) : PrimaryRepositoryBase<User>(
                 Role = u.Role,
             })
             .FirstOrDefaultAsync(ct);
+    }
+
+    public async Task<List<UserListResponseDto>> SearchUsersByName(
+        Guid congregationId,
+        string searchString,
+        CancellationToken ct
+    )
+    {
+        var results = await DbSet
+            .ApplySoftDeleteFilter()
+            .Where(u =>
+                u.CongregationId == congregationId
+                && EF.Functions.ILike(u.Name, $"%{searchString}%")
+            )
+            .OrderByDescending(u => EF.Functions.TrigramsSimilarity(u.Name, searchString))
+            .Take(5)
+            .Select(u => new UserListResponseDto
+            {
+                Id = u.Id,
+                Name = u.Name,
+                EmailAddress = u.EmailAddress,
+                Role = u.Role,
+                VerifiedAt = u.EmailVerifiedAt,
+            })
+            .ToListAsync(ct);
+
+        return results;
     }
 }

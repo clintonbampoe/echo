@@ -62,16 +62,18 @@ public class RegistrationService(
         if (invitation is null)
             return new BadRequestResult("Invitation is invalid, expired, or revoked.");
 
-        if (await IsEmailTaken(request.Email, ct))
+        if (await IsEmailTaken(request.UserInfo.EmailAddress, ct))
             return new BadRequestResult("Email already in use");
 
         var user = new User
         {
-            Name = request.Name,
-            EmailAddress = request.Email,
+            LastName = request.UserInfo.LastName,
+            FirstName = request.UserInfo.FirstName,
+            OtherNames = request.UserInfo.OtherNames,
+            EmailAddress = request.UserInfo.EmailAddress,
             Role = invitation.AllowedRole,
             CongregationId = invitation.CongregationId,
-            PasswordHash = await hashService.HashPasswordAsync(request.Password),
+            PasswordHash = await hashService.HashPasswordAsync(request.UserInfo.Password),
         };
 
         await userRepository.CreateRecord(user, ct);
