@@ -5,7 +5,9 @@ namespace Echo.Core.Dtos;
 
 public record UserCreateDto : IPrimaryCreateDto
 {
-    public required string Name { get; init; }
+    public required string LastName { get; init; }
+    public required string FirstName { get; init; }
+    public string? OtherNames { get; init; }
     public required string EmailAddress { get; init; }
     public required string Password { get; init; }
     public UserRole Role { get; init; }
@@ -25,6 +27,7 @@ public record UserListResponseDto
 {
     public Guid Id { get; init; }
     public required string EmailAddress { get; init; }
+    public string Name { get; init; } = string.Empty;
     public DateTime? VerifiedAt { get; init; }
     public UserRole Role { get; init; }
 }

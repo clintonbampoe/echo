@@ -1,3 +1,4 @@
+using Echo.Core.Dtos;
 using Echo.Domain.Enums;
 
 namespace Echo.Auth.Dtos;
@@ -18,7 +19,5 @@ public record InviteResponseDto
 public record RegisterMemberRequest
 {
     public required string Token { get; init; }
-    public required string Name { get; init; }
-    public required string Email { get; init; }
-    public required string Password { get; init; }
+    public required UserCreateDto UserInfo { get; init; }
 }

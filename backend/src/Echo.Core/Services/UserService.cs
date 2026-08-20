@@ -70,6 +70,16 @@ public class UserService(UserRepository repository, AppDbContext context, IMappe
         return new SuccessResult<PagedResponse<UserListResponseDto>>(result);
     }
 
+    public async Task<IOperationResult> SearchUsersByName(
+        Guid congregationId,
+        string searchString,
+        CancellationToken ct
+    )
+    {
+        var results = await _userRepository.SearchUsersByName(congregationId, searchString, ct);
+        return new SuccessResult<List<UserListResponseDto>>(results);
+    }
+
     private async Task<bool> IsEmailTaken(string emailAddress, CancellationToken ct)
     {
         return await _userRepository.IsEmailAddressTaken(emailAddress, ct);
