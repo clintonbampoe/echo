@@ -8,7 +8,6 @@ using Echo.Domain.Data;
 using Echo.Domain.Entities.Core;
 using Echo.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Echo.Auth.Services;
 
@@ -19,7 +18,7 @@ public class RegistrationService(
     EmailVerificationService emailVerificationService,
     InvitationService invitationService,
     IMapper mapper,
-    [FromKeyedServices("Bcrypt")] IHashService hashService
+    IPasswordHasher passwordHashService
 )
 {
     public async Task<IOperationResult> RegisterCongregation(
@@ -73,7 +72,7 @@ public class RegistrationService(
             EmailAddress = request.UserInfo.EmailAddress,
             Role = invitation.AllowedRole,
             CongregationId = invitation.CongregationId,
-            PasswordHash = await hashService.HashPasswordAsync(request.UserInfo.Password),
+            PasswordHash = await passwordHashService.HashAsync(request.UserInfo.Password),
         };
 
         await userRepository.CreateRecord(user, ct);
@@ -99,6 +98,6 @@ public class RegistrationService(
 
     private async Task HashPassword(User user, UserCreateDto userDto)
     {
-        user.PasswordHash = await hashService.HashPasswordAsync(userDto.Password);
+        user.PasswordHash = await passwordHashService.HashAsync(userDto.Password);
     }
 }

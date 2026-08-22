@@ -18,11 +18,15 @@ public class PasswordResetService(
     RefreshTokenService refreshTokenService,
     [FromKeyedServices("Resend")] IEmailService emailService,
     ITokenGenerator tokenGenerator,
-    [FromKeyedServices("Sha256")] IHashService tokenHashService,
-    [FromKeyedServices("Bcrypt")] IHashService passwordHashService,
-    AuthLinkBuilder linkBuilder)
+    ITokenHasher tokenHashService,
+    IPasswordHasher passwordHashService,
+    AuthLinkBuilder linkBuilder
+)
 {
-    public async Task<IOperationResult> ForgotPasswordAsync(string email, CancellationToken ct = default)
+    public async Task<IOperationResult> ForgotPasswordAsync(
+        string email,
+        CancellationToken ct = default
+    )
     {
         var user = await userRepository.GetActiveUserByEmail(email, ct);
 
@@ -34,8 +38,8 @@ public class PasswordResetService(
         var tokenEntity = new PasswordVerificationToken
         {
             UserId = user.Id,
-            TokenHash = await tokenHashService.HashPasswordAsync(token),
-            ExpiresAt = DateTime.UtcNow.AddHours(1)
+            TokenHash = await tokenHashService.HashAsync(token),
+            ExpiresAt = DateTime.UtcNow.AddHours(1),
         };
 
         await passwordVerificationTokenRepository.CreateRecord(tokenEntity, ct);
@@ -48,11 +52,17 @@ public class PasswordResetService(
         return new OkResult("Reset link has been sent.");
     }
 
-    public async Task<IOperationResult> ResetPasswordAsync(string token, string newPassword,
-        CancellationToken ct = default)
+    public async Task<IOperationResult> ResetPasswordAsync(
+        string token,
+        string newPassword,
+        CancellationToken ct = default
+    )
     {
-        var hashedInput = await tokenHashService.HashPasswordAsync(token);
-        var tokenEntity = await passwordVerificationTokenRepository.GetTokenRecordByHashWithUser(hashedInput, ct);
+        var hashedInput = await tokenHashService.HashAsync(token);
+        var tokenEntity = await passwordVerificationTokenRepository.GetTokenRecordByHashWithUser(
+            hashedInput,
+            ct
+        );
 
         if (tokenEntity is null)
             return new NotFoundResult("Not found.");
@@ -60,7 +70,7 @@ public class PasswordResetService(
         if (tokenEntity.ExpiresAt <= DateTime.UtcNow || tokenEntity.UsedAt is not null)
             return new BadRequestResult("Token is invalid or already used.");
 
-        tokenEntity.User.PasswordHash = await passwordHashService.HashPasswordAsync(newPassword);
+        tokenEntity.User.PasswordHash = await passwordHashService.HashAsync(newPassword);
         tokenEntity.UsedAt = DateTime.UtcNow;
 
         await refreshTokenService.RevokeAllActiveSessionsForUser(tokenEntity.UserId, ct);

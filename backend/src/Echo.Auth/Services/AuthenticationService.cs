@@ -4,7 +4,6 @@ using Echo.Auth.Dtos;
 using Echo.Auth.Models;
 using Echo.Core.Repositories;
 using Echo.Domain.Data;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Echo.Auth.Services;
 
@@ -13,7 +12,7 @@ public class AuthenticationService(
     UserRepository userRepository,
     AccessTokenGenerator accessTokenGenerator,
     RefreshTokenService refreshTokenService,
-    [FromKeyedServices("Bcrypt")] IHashService hashService
+    ITokenHasher hashService
 )
 {
     public async Task<IOperationResult> LoginAsync(
@@ -27,7 +26,7 @@ public class AuthenticationService(
         if (user is null)
             return new BadRequestResult("Email or password is invalid.");
 
-        var isPasswordValid = await hashService.VerifyPasswordAsync(password, user.PasswordHash);
+        var isPasswordValid = await hashService.VerifyAsync(password, user.PasswordHash);
 
         if (!isPasswordValid)
             return new BadRequestResult("Email or password is invalid.");

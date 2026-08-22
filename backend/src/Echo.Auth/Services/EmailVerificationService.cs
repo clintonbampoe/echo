@@ -17,7 +17,7 @@ public class EmailVerificationService(
     UserRepository userRepository,
     [FromKeyedServices("Resend")] IEmailService emailService,
     ITokenGenerator tokenGenerator,
-    [FromKeyedServices("Sha256")] IHashService hashService,
+    ITokenHasher hashService,
     AuthLinkBuilder linkBuilder
 )
 {
@@ -46,7 +46,7 @@ public class EmailVerificationService(
         var tokenObject = new EmailVerificationToken(user.Id)
         {
             UserId = user.Id,
-            TokenHash = await hashService.HashPasswordAsync(token),
+            TokenHash = await hashService.HashAsync(token),
         };
 
         var recordCreatedSuccessfully = await emailVerificationTokenRepository.CreateRecord(
@@ -76,7 +76,7 @@ public class EmailVerificationService(
 
     public async Task<IOperationResult> VerifyEmail(string token, CancellationToken ct = default)
     {
-        var hashedInput = await hashService.HashPasswordAsync(token);
+        var hashedInput = await hashService.HashAsync(token);
 
         var tokenRecord = await emailVerificationTokenRepository.GetTokenRecordByHashWithUser(
             hashedInput,
@@ -98,7 +98,7 @@ public class EmailVerificationService(
         return new OkResult("Operation Completed successfully.");
     }
 
-    private bool IsTokenValid(EmailVerificationToken? token)
+    private static bool IsTokenValid(EmailVerificationToken? token)
     {
         if (token is null)
             return false;

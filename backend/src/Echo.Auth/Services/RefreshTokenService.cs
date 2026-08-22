@@ -5,7 +5,6 @@ using Echo.Auth.Dtos;
 using Echo.Auth.Models;
 using Echo.Auth.Repositories;
 using Echo.Domain.Entities.Auth;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
 namespace Echo.Auth.Services;
@@ -13,19 +12,23 @@ namespace Echo.Auth.Services;
 public class RefreshTokenService(
     RefreshTokenRepository refreshTokenRepository,
     ITokenGenerator tokenGenerator,
-    [FromKeyedServices("Sha256")] IHashService tokenHashService,
-    IOptions<JwtOptions> jwtOptions)
+    ITokenHasher tokenHashService,
+    IOptions<JwtOptions> jwtOptions
+)
 {
     private readonly JwtOptions _jwtOptions = jwtOptions.Value;
 
-    public async Task<(RefreshToken TokenEntity, string PlainToken)> IssueAsync(Guid userId, CancellationToken ct = default)
+    public async Task<(RefreshToken TokenEntity, string PlainToken)> IssueAsync(
+        Guid userId,
+        CancellationToken ct = default
+    )
     {
         var plainToken = tokenGenerator.GenerateToken(32);
 
         var tokenEntity = new RefreshToken(userId)
         {
-            TokenHash = await tokenHashService.HashPasswordAsync(plainToken),
-            ExpiresAt = DateTime.UtcNow.AddDays(_jwtOptions.RefreshTokenLifetimeDays)
+            TokenHash = await tokenHashService.HashAsync(plainToken),
+            ExpiresAt = DateTime.UtcNow.AddDays(_jwtOptions.RefreshTokenLifetimeDays),
         };
 
         await refreshTokenRepository.CreateNewToken(tokenEntity, ct);
@@ -33,10 +36,12 @@ public class RefreshTokenService(
         return (tokenEntity, plainToken);
     }
 
-    public async Task<RefreshTokenValidationResult> ValidateAndRotateAsync(string presentedToken,
-        CancellationToken ct = default)
+    public async Task<RefreshTokenValidationResult> ValidateAndRotateAsync(
+        string presentedToken,
+        CancellationToken ct = default
+    )
     {
-        var hashedInput = await tokenHashService.HashPasswordAsync(presentedToken);
+        var hashedInput = await tokenHashService.HashAsync(presentedToken);
         var existing = await refreshTokenRepository.GetTokenRecordByHashWithUser(hashedInput, ct);
 
         if (existing is null)
@@ -67,13 +72,13 @@ public class RefreshTokenService(
             FailureReason = null,
             UserId = existing.UserId,
             NewRefreshToken = newPlainToken,
-            NewRefreshTokenExpiresAt = newTokenEntity.ExpiresAt
+            NewRefreshTokenExpiresAt = newTokenEntity.ExpiresAt,
         };
     }
 
     public async Task RevokeAsync(string presentedToken, CancellationToken ct = default)
     {
-        var hashedInput = await tokenHashService.HashPasswordAsync(presentedToken);
+        var hashedInput = await tokenHashService.HashAsync(presentedToken);
         var existing = await refreshTokenRepository.GetTokenRecordByHashWithUser(hashedInput, ct);
 
         if (existing is not null)
