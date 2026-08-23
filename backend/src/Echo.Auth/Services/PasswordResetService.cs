@@ -4,6 +4,7 @@ using Echo.Application.Services.Email;
 using Echo.Application.Services.Hashing;
 using Echo.Auth.Models;
 using Echo.Auth.Repositories;
+using Echo.Auth.Validation;
 using Echo.Core.Repositories;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Auth;
@@ -64,11 +65,15 @@ public class PasswordResetService(
             ct
         );
 
+        var passwordIsValid = PasswordPolicy.IsValid(newPassword, out var policyError);
+        if (!passwordIsValid)
+            return new BadRequestResult(policyError!);
+
         if (tokenEntity is null)
-            return new NotFoundResult("Not found.");
+            return new InvalidTokenResult();
 
         if (tokenEntity.ExpiresAt <= DateTime.UtcNow || tokenEntity.UsedAt is not null)
-            return new BadRequestResult("Token is invalid or already used.");
+            return new InvalidTokenResult();
 
         tokenEntity.User.PasswordHash = await passwordHashService.HashAsync(newPassword);
         tokenEntity.UsedAt = DateTime.UtcNow;

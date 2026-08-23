@@ -2,6 +2,7 @@ using AutoMapper;
 using Echo.Application.HttpResults;
 using Echo.Application.Services.Hashing;
 using Echo.Auth.Dtos;
+using Echo.Auth.Validation;
 using Echo.Core.Dtos;
 using Echo.Core.Repositories;
 using Echo.Domain.Data;
@@ -32,6 +33,10 @@ public class RegistrationService(
         user.Role = UserRole.Admin;
         user.CongregationId = congregation.Id;
 
+        var passwordIsValid = PasswordPolicy.IsValid(userDto.Password, out var policyError);
+        if (!passwordIsValid)
+            return new BadRequestResult(policyError!);
+
         if (await IsEmailTaken(user.EmailAddress, ct))
             return new BadRequestResult("Email already in use");
 
@@ -60,6 +65,13 @@ public class RegistrationService(
         var invitation = await invitationService.ValidateAsync(request.Token, ct);
         if (invitation is null)
             return new BadRequestResult("Invitation is invalid, expired, or revoked.");
+
+        var passwordIsValid = PasswordPolicy.IsValid(
+            request.UserInfo.Password,
+            out var policyError
+        );
+        if (!passwordIsValid)
+            return new BadRequestResult(policyError!);
 
         if (await IsEmailTaken(request.UserInfo.EmailAddress, ct))
             return new BadRequestResult("Email already in use");
