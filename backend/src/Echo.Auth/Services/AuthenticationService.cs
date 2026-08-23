@@ -12,7 +12,7 @@ public class AuthenticationService(
     UserRepository userRepository,
     AccessTokenGenerator accessTokenGenerator,
     RefreshTokenService refreshTokenService,
-    ITokenHasher hashService
+    IPasswordHasher hashService
 )
 {
     public async Task<IOperationResult> LoginAsync(

@@ -75,6 +75,7 @@ services:
       db:
         condition: service_healthy
     networks: [echo-network]
+    profiles: [db-tools]
     restart: unless-stopped
   migrator:
     build:
@@ -96,7 +97,7 @@ services:
       db:
         condition: service_healthy
     networks: [echo-network]
-    profiles: [tools]
+    profiles: [db-tools]
 networks:
   echo-network:
 volumes:

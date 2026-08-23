@@ -10,7 +10,7 @@ This is the official guide to using the Echo API.
 
 For granular endpoint details, we have two options you can choose from. These are live endpoints and can be accessed **only** when the api is running in **development**:
 
-- [Swagger UI](http://localhost:5025/swagger) - Interactive API docs with **Swagger**.
+- [Swagger UI](http://localhost:8080/swagger/index.html) - Interactive API docs with **Swagger**.
 - [Scalar UI](http://localhost:8080/scalar) - Dynamic API tester with clean UI rendered in browser.
 
 ---
