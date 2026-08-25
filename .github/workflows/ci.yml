@@ -47,7 +47,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: npm
             # Relative to working-directory (frontend), resolves to frontend/package-lock.json.
           cache-dependency-path: frontend/package-lock.json
