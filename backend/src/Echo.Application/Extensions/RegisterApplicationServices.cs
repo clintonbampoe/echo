@@ -10,9 +10,9 @@ public static class RegisterApplicationServices
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
         services.AddScoped<ITokenGenerator, TokenGenerator>();
-        services.AddKeyedScoped<IHashService, BcryptHashService>("Bcrypt");
-        services.AddKeyedScoped<IHashService, Sha256HashService>("Sha256");
-        services.AddKeyedScoped<IEmailService,  ResendEmailService>("Resend");
+        services.AddScoped<IPasswordHasher, BcryptHashService>();
+        services.AddScoped<ITokenHasher, Sha256HashService>();
+        services.AddKeyedScoped<IEmailService, ResendEmailService>("Resend");
 
         return services;
     }

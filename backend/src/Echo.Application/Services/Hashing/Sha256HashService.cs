@@ -3,9 +3,9 @@ using System.Text;
 
 namespace Echo.Application.Services.Hashing;
 
-public class Sha256HashService : IHashService
+public class Sha256HashService : ITokenHasher
 {
-    public Task<string> HashPasswordAsync(string input)
+    public Task<string> HashAsync(string input)
     {
         var bytes = Encoding.UTF8.GetBytes(input);
         var hashBytes = SHA256.HashData(bytes);
@@ -13,9 +13,9 @@ public class Sha256HashService : IHashService
         return Task.FromResult(hash);
     }
 
-    public async Task<bool> VerifyPasswordAsync(string input, string hash)
+    public async Task<bool> VerifyAsync(string input, string hash)
     {
-        var computedHash = await HashPasswordAsync(input);
+        var computedHash = await HashAsync(input);
 
         var computedBytes = Encoding.UTF8.GetBytes(computedHash);
         var expectedBytes = Encoding.UTF8.GetBytes(hash);

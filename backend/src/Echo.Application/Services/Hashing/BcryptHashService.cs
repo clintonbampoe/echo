@@ -1,14 +1,16 @@
 namespace Echo.Application.Services.Hashing;
 
-public class BcryptHashService : IHashService
+using BCrypt.Net;
+
+public class BcryptHashService : IPasswordHasher
 {
-    public Task<string> HashPasswordAsync(string input)
+    public Task<string> HashAsync(string input)
     {
-        return Task.Run(() => BCrypt.Net.BCrypt.HashPassword(input, 12));
+        return Task.Run(() => BCrypt.HashPassword(input, 12));
     }
 
-    public Task<bool> VerifyPasswordAsync(string input, string hash)
+    public Task<bool> VerifyAsync(string input, string hash)
     {
-        return Task.Run(() => BCrypt.Net.BCrypt.Verify(input, hash));
+        return Task.Run(() => BCrypt.Verify(input, hash));
     }
 }
