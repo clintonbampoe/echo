@@ -1,7 +1,7 @@
 # Infrastructure
 
 **Written by:** @clintonbampoe
-**Last updated:** 2026-08-03 by @ebenezerquayson
+**Last updated:** 2026-08-25 by @clintonbampoe
 
 ---
 
@@ -104,6 +104,8 @@ If you add or change a variable or the structure of the `.env` file, update this
 | `JWT_ISSUER`                         | YES      | api     | Stamped onto every token when it's created. Must exactly match the value the API checks tokens against — if it doesn't, logins fail with no clear error telling you why. |
 | `JWT_AUDIENCE`                       | YES      | api     | Same rule as `JWT_ISSUER` — created and checked with the same value, or you get a silent, confusing failure.                                                             |
 
+---
+
 ## Troubleshooting
 
 This section is empty cause there have been no incidents yet.
@@ -140,13 +142,29 @@ See [Conventions in README](./README.md#conventions) for the full ruleset on who
 | Date        | 2026-07-31                                                                                             |
 | Added by    | @clintonbampoe                                                                                         |
 
-### API Healthcheck Fails on Startup
+---
 
-| Field       | Value                                                                                                  |
-| ----------- | ------------------------------------------------------------------------------------------------------ |
+### 1. API Healthcheck Fails on Startup
+
+| Field       | Value                                                                                                                                                                        |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Symptom     | Docker compose fails to start the stack with error: `dependency failed to start: container echo-api-1 is unhealthy`. API logs show it has started and is listening properly. |
-| First check | Inspect `docker-compose.yml` to see what command the healthcheck is running (usually `curl -f http://localhost:8080/api/health/live`). |
-| Root cause  | The `curl` package was installed in the `build` stage of the Dockerfile, but was missing in the final `runtime` image based on `mcr.microsoft.com/dotnet/aspnet`. |
-| Fix         | Moved `RUN apt-get update && apt-get install -y curl` from the `build` stage down to the `runtime` stage in `backend/src/Echo.Api/Dockerfile`. |
-| Date        | 2026-08-03                                                                                             |
-| Added by    | @ebenezerquayson                                                                                       |
+| First check | Inspect `docker-compose.yml` to see what command the healthcheck is running (usually `curl -f http://localhost:8080/api/health/live`).                                       |
+| Root cause  | The `curl` package was installed in the `build` stage of the Dockerfile, but was missing in the final `runtime` image based on `mcr.microsoft.com/dotnet/aspnet`.            |
+| Fix         | Moved `RUN apt-get update && apt-get install -y curl` from the `build` stage down to the `runtime` stage in `backend/src/Echo.Api/Dockerfile`.                               |
+| Date        | 2026-08-03                                                                                                                                                                   |
+| Added by    | @ebenezerquayson                                                                                                                                                             |
+
+---
+
+### 2. API Healthcheck Fails on Compose Startup
+
+| Field       | Value                                                                                                                                                                                                                                                                   |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Symptom     | Docker compose fails to start the stack with error: `dependency failed to start: container echo-api-1 is unhealthy`. API logs show it has started and is listening properly.                                                                                            |
+| First check | Inspect the docker network to make sure the api was properly bound to the network. Confirm that the api was reachable from outside through the `echo-network` IP gateway. This proved that the root cause wasn't from the api but a configuration in our docker compose |
+| Root cause  | Since api takes about 10-15 seconds on average to startup, all the healthchecks hit the api while it was building. Hence, all the checks failed prematurely and marked the api as unhealthy but the api was completely fine.                                            |
+| Fix         | Added a `start_period: 10s` tag to the yaml config to delay the health checks until the api had completed its build.                                                                                                                                                    |
+| Date        | 2026-08-25                                                                                                                                                                                                                                                              |
+| Added by    | @clintonbampoe                                                                                                                                                                                                                                                          |
+

@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Echo.Application.HttpResults;
 
-public class OkResult(string message) : IOperationResult
+public class GenericEmailSentSuccessResult : IOperationResult
 {
     public ActionResult ToActionResult() =>
         new ObjectResult(
@@ -11,7 +11,7 @@ public class OkResult(string message) : IOperationResult
             {
                 Status = StatusCodes.Status200OK,
                 Title = "Operation completed successfully.",
-                Detail = message,
+                Detail = "You'll receive an email shortly if account exists",
             }
         )
         {

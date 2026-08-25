@@ -32,9 +32,7 @@ services:
     build:
       target: deps
     command: npm run dev -- --host 0.0.0.0 --port 5173
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
+    volumes: [./frontend:/app, /app/node_modules]
     ports: [5173:5173]
 volumes:
   nuget-cache:

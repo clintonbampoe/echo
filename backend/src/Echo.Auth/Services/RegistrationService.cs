@@ -2,13 +2,13 @@ using AutoMapper;
 using Echo.Application.HttpResults;
 using Echo.Application.Services.Hashing;
 using Echo.Auth.Dtos;
+using Echo.Auth.Validation;
 using Echo.Core.Dtos;
 using Echo.Core.Repositories;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core;
 using Echo.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Echo.Auth.Services;
 
@@ -19,7 +19,7 @@ public class RegistrationService(
     EmailVerificationService emailVerificationService,
     InvitationService invitationService,
     IMapper mapper,
-    [FromKeyedServices("Bcrypt")] IHashService hashService
+    IPasswordHasher passwordHashService
 )
 {
     public async Task<IOperationResult> RegisterCongregation(
@@ -32,6 +32,10 @@ public class RegistrationService(
         var user = mapper.Map<User>(userDto);
         user.Role = UserRole.Admin;
         user.CongregationId = congregation.Id;
+
+        var passwordIsValid = PasswordPolicy.IsValid(userDto.Password, out var policyError);
+        if (!passwordIsValid)
+            return new BadRequestResult(policyError!);
 
         if (await IsEmailTaken(user.EmailAddress, ct))
             return new BadRequestResult("Email already in use");
@@ -62,6 +66,13 @@ public class RegistrationService(
         if (invitation is null)
             return new BadRequestResult("Invitation is invalid, expired, or revoked.");
 
+        var passwordIsValid = PasswordPolicy.IsValid(
+            request.UserInfo.Password,
+            out var policyError
+        );
+        if (!passwordIsValid)
+            return new BadRequestResult(policyError!);
+
         if (await IsEmailTaken(request.UserInfo.EmailAddress, ct))
             return new BadRequestResult("Email already in use");
 
@@ -73,7 +84,7 @@ public class RegistrationService(
             EmailAddress = request.UserInfo.EmailAddress,
             Role = invitation.AllowedRole,
             CongregationId = invitation.CongregationId,
-            PasswordHash = await hashService.HashPasswordAsync(request.UserInfo.Password),
+            PasswordHash = await passwordHashService.HashAsync(request.UserInfo.Password),
         };
 
         await userRepository.CreateRecord(user, ct);
@@ -99,6 +110,6 @@ public class RegistrationService(
 
     private async Task HashPassword(User user, UserCreateDto userDto)
     {
-        user.PasswordHash = await hashService.HashPasswordAsync(userDto.Password);
+        user.PasswordHash = await passwordHashService.HashAsync(userDto.Password);
     }
 }
