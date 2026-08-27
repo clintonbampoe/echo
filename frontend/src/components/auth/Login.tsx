@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
-import echoLogo from '../assets/echo.svg';
-import '../styles/Login.css';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
+import echoLogo from '../../assets/echo.svg';
+import '../../styles/Login.css';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -9,12 +10,14 @@ const Login: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { login, isLoading } = useAuth();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     try {
       await login(email, password);
+      navigate('/dashboard');
     } catch {
       setError('Invalid email or password. Please try again.');
     }
@@ -81,7 +84,7 @@ const Login: React.FC = () => {
               <label className="remember-me">
                 <input type="checkbox" disabled={isLoading} /> Remember me
               </label>
-              <a href="#" className="forgot-password">Forgot password?</a>
+              <Link to="/reset-password" className="forgot-password">Forgot password?</Link>
             </div>
 
             <button type="submit" className="login-button" disabled={isLoading}>
@@ -90,7 +93,7 @@ const Login: React.FC = () => {
           </form>
 
           <div className="create-account">
-            Don't have an account? <a href="#">Create Account</a>
+            Don't have an account? <Link to="/signup">Create Account</Link>
           </div>
         </div>
       </div>
