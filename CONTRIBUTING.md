@@ -1,42 +1,51 @@
-# Contributing
+# Contributing to Echo
 
-Thank you for your interest in contributing to Echo. To maintain a clean and efficient development process, please follow these guidelines.
+First off, thank you for considering contributing! It means a lot. Whether you're fixing a typo, reporting a bug, or adding a whole new feature—every bit helps.
 
-## Project Tracking
+We want to make contributing as smooth as possible. Here's how the project works.
 
-All project management and task tracking is automated so that devs can focus on writing quality code. Please read the following text below carefully and minimize the time spent on administrative tasks. Pushing your branch and managing your draft pull requests will handle all card movement on the board automatically. Hence, please read the text below carefully, as understanding it reduces the amount of work drastically.
-Thank you.
+## How to report an issue
 
-## Getting Started With Linear
+Open a GitHub Issue and pick the right template for the problem you're trying to fix or draw our attention to:
 
-We use Linear to manage our backlog and assign work. Before writing any code, locate your assigned issue in Linear to check its point estimation and copy the pre-formatted branch name using `Ctrl + Shift + .`.
+- **Bug report** – Something is broken. Include steps to reproduce and what you expected.
+- **Feature request** – An idea or enhancement. Explain the use case and why it matters.
+- **Security vulnerability** – **Do not** file a public issue for non critical security concerns. Report for critical exploitable vulnerabilities, see (SECURITY.md)[./SECURITY.md]
+- **Chore / Maintenance** – Refactors, dependency bumps, or tooling improvements.
 
-Creating your branch locally with this exact name connects your terminal directly to our tracking system.
+Before opening a new issue, search to see if someone already reported it. If you find an existing one, add a comment instead of creating a duplicate.
 
-## Development Workflow
+## How to contribute code
 
-Our development loop relies on GitHub Draft Pull Requests to define the scope of work early and prevent conflicting architectural changes.
+1. **Fork the repo** (if you're an external contributor) or **create a branch** (if you're on the core team).
+   Branch name suggestion: `feature/your-feature-name`, `fix/issue-number`, or `chore/what-you-did`.
 
-1. Create your local branch from main using the copied Linear name (the branch name should follow the format: prefix/scope-branchId e.g feat/frontend-clnt-11-implement-client-app-login-page).
-2. Make an initial setup commit with your basic file structure and push it to GitHub.
-3. Open a Draft Pull Request on GitHub instead of a standard one. This signals that work is underway and automatically moves your Linear card to In Progress.
-4. Use Markdown checkboxes in the pull request description to outline your technical plan and include `Closes {Identifier}-{Number}` at the bottom.
-5. Push your commits regularly as you work. Each push updates the draft automatically.
-6. Check off your description boxes as you complete parts of the task.
-7. Click Ready for Review at the bottom of the GitHub page once all unit tests pass. This alerts your teammate for a final code review and blocks accidental merges until approval.
+2. **Make your changes** – keep them focused. One PR per logical change, please.
 
-Merging the finalized pull request will automatically close the linked Linear issue.
-NB: For the issue identifiers in Linear, just use a **four letter name that is easily identifiable**, I use CLNT-{number}. It's just a convenient way for us to know who is working on what.
+3. **Write tests** for your changes.
+   > **Note:** We're currently building out our test suite. The project started as a small experiment, but with more contributors joining, we're taking testing seriously now.
+   > If you're adding new features, please include tests. If you're fixing a bug, add a test that would have caught it.
+   > If you're unsure how to test something, ask in the PR—we're figuring this out together.
 
-## Code Standards
+4. **Run the tests** locally and make sure they pass.
+   (If tests don't exist for the area you're touching yet, that's okay—but we'll ask you to at least manually verify your changes.)
 
-To keep the codebase consistent, please adhere to these practices:
+5. **Open a Pull Request** against the `main` branch. Use the PR template—it helps us review faster.
 
-* Follow the established architectural conventions, naming styles, and patterns of the repository.
-* Keep logic decoupled to ensure business rules, user interfaces, and data access remain separate.
-* **Update all technical documentation**, schemas, and diagrams immediately when making structural changes to keep team mates up to date *(We can't read your mind)*.
-* Write corresponding unit tests for all new logic to prevent regressions.
+## Code style & conventions
 
-## Reporting Issues
+- We follow the rules defined in the `.editorconfig` file at the repository root. Your editor should pick them up automatically.
+- Write meaningful commit messages (e.g., `Add validation to registration endpoint`, not `fix stuff`).
+- Keep functions and methods small and focused. If it's doing more than one thing, split it up.
 
-If you find a bug or have a suggestion for a new feature, open an issue in Linear. Provide enough detailed context so the problem can be reproduced or evaluated effectively.
+## Review process
+
+- At least one maintainer will review your PR.
+- We may ask for changes—that's normal. It's about improving the code and keeping it very maintainable, please bear with us.
+- Once approved, a maintainer will merge it.
+
+## Getting help
+
+If you're stuck, open a **Discussion** or comment on the relevant issue. We're happy to point you in the right direction.
+
+Thanks again for contributing!
