@@ -1,3 +1,11 @@
+---
+name: Security Vulnerability
+about: Report a security issue privately.
+title: ''
+labels: security
+assignees: ''
+---
+
 ## Summary
 [Describe the vulnerability clearly and factually. What is the issue?]
 

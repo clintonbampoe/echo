@@ -1,3 +1,11 @@
+---
+name: Bug Report
+about: Something is broken. Help us fix it.
+title: ''
+labels: bug
+assignees: ''
+---
+
 ## Summary
 [In one sentence: what’s broken, and who does it affect?]
 
