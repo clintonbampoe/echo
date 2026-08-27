@@ -1,3 +1,11 @@
+---
+name: Chore / Maintenance
+about: Refactors, dependency bumps, or tooling improvements.
+title: ''
+labels: chore
+assignees: ''
+---
+
 ## Summary
 [What maintenance task, refactor, or cleanup is needed? Keep it specific.]
 

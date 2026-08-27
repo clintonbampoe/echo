@@ -1,3 +1,11 @@
+---
+name: Feature Request
+about: Suggest a new feature or improvement.
+title: ''
+labels: enhancement
+assignees: ''
+---
+
 ## Summary
 [What’s the new thing you’re proposing? Keep it concise and clear. It should solve a problem or improve the improve the project (either UX, developer experience, etc)]
 
