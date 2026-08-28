@@ -23,14 +23,19 @@ It is designed to be modular, containerized and ready for multiple clients.
 ## Tech Stack
 
 - **Database**: PostgreSQL 18
+
 - **ORM**: Entity Framework Core
+
 - **API**: ASP.NET Core Web API
+
 - **Presentation Layer**:
-    - React: Frontend SPA (Vite for dev hot-reload, static Nginx serving in production).
+
+  - React: Frontend SPA (Vite for dev hot-reload, static Nginx serving in production).
 
 - **Infrastructure & Orchestration**:
-    - Containerization: Docker
-    - Reverse Proxy: Nginx
+
+  - Containerization: Docker
+  - Reverse Proxy: Nginx
 
 - **Testing & QA**: xUnit / Moq
 
@@ -62,7 +67,7 @@ cp .env.example .env
 
 > [!IMPORTANT]
 > **Note**: JWT Keys need to be base64 encoded because raw PEM keys break the `.env` format.
-> The application decodes them before use. See (Infrastructure)[./docs/Infrastructure.md] for all required env variables.
+> The application decodes them before use. See [Infrastructure](./docs/Infrastructure.md) for all required env variables.
 > To generate them, run:
 
 ```bash
@@ -82,6 +87,7 @@ docker compose Build
 # In Production (uses docker-compose.prod.yml override)
 docker compose -f docker-compose.yml -f docker-compose.prod.yml build
 ```
+
 > First build takes a seconds to minutes depending on your internet speed, since Docker pulls the SDKs and dependencies.
 > Subsequent builds are cached and fast.
 
@@ -105,7 +111,7 @@ docker-compose run --rm migrator
 ### 5. Verify the API is running
 
 You can verify the api is running by checking the health endpoint.
-For more details on how to use the API, see (Api Usage)[./docs/api/ApiUsage.md]
+For more details on how to use the API, see [Api Usage](./docs/api/ApiUsage.md)
 
 ```bash
 curl http://localhost:8080/api/health/ready
@@ -113,20 +119,20 @@ curl http://localhost:8080/api/health/ready
 
 **Available Endpoints (When API is running)**
 
-Dev: API at `http://localhost:5025` (direct) or `http://localhost:8080` (via nginx)
+Dev: API at [http://localhost:5025](http://localhost) (direct) or [http://locahost:8080/](http://localhost:8080)(via nginx)
 
-Prod: `http://localhost:80` (via nginx only)
+Prod: [http://localhost:80](http://localhost:80) (via nginx only)
 
-Api Docs Swagger UI: `http://localhost:8080/swagger`
+Api Docs Swagger UI: [http://localhost:8080/swagger](http://localhost:8080/swagger/index.html)
 
-Api Docs Scalar UI: `http://localhost:8080/scalar`
+Api Docs Scalar UI: [http://localhost:8080/scalar](http://localhost:8080/scalar/)
 
 ---
 
 ## Documentation
 
 Complete documentation lives in the `/docs` directory.
-See (Documentation)[./docs/README.md]
+See [Documentation](./docs/README.md)
 
 ---
 
@@ -149,18 +155,17 @@ We welcome contributions of all kinds--bug reports, feature ideas, code or even 
 
 - **Report a bug** -- Use the Bug Report template.
 - **Suggest a feature** -- Use the Feature Request template.
-- **Security issues** -- Do not open a public issue. See (Security Policy)[./SECURITY.md].
+- **Security issues** -- Do not open a public issue. See [Security Policy](./SECURITY.md)
 - **Chores / Refactors** -- Use the Chore template.
 
-Check out (CONTRIBUTING.md)[./CONTRIBUTING.md] for full details, including how to report issues, code style, and the review process.
+Check out [Contributing guide](./CONTRIBUTING.md) for full details, including how to report issues, code style, and the review process.
 
 ---
 
 ## License
 
-See the (License Policy)[./LICENSE.md] for full details.
+See the [License policy](./LICENSE.md) for full details.
 
 ## Acknowledgements
 
 Thanks to everyone who has contributed so far--whether by reporting issues, suggesting improvements, or writing code. Echo wouldn't be where it is without you.
-
