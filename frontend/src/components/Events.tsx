@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useLayout } from '../context/LayoutContext';
+import { useLayout } from '../hooks/useLayout';
 import {
   CloseIcon, CalendarIcon, MapPinIcon, ClockIcon, ChevronLeftIcon
 } from './Icons';
@@ -154,7 +154,7 @@ const Events: React.FC = () => {
 
   // Form State
   const [form, setForm] = useState(emptyEventForm());
-  
+
   const [showRegForm, setShowRegForm] = useState(false);
   const [editingReg, setEditingReg] = useState<RegistrationRecord | null>(null);
   const [regForm, setRegForm] = useState({ memberId: '', registrationDate: '', checkInTime: '' });
@@ -162,52 +162,6 @@ const Events: React.FC = () => {
   const [showAttForm, setShowAttForm] = useState(false);
   const [editingAtt, setEditingAtt] = useState<AttendanceRecord | null>(null);
   const [attForm, setAttForm] = useState({ memberId: '', checkInTime: '' });
-
-  // ─── Layout TopBar Setup ────────────────────────────────────────────────────
-
-  useEffect(() => {
-    if (viewMode === 'registrations' && viewingEvent) {
-      setTitle(
-        <button className="back-btn" onClick={() => { setViewMode('list'); setShowEventDetailPanel(true); }}>
-          <ChevronLeftIcon size={20} />
-          <span>Events / {viewingEvent.name}</span>
-        </button>
-      );
-      setCtas([
-        { type: 'search', placeholder: 'Search Attendees...' },
-        { type: 'button', label: 'Export', icon: 'export', variant: 'secondary', onClick: () => setShowExportModal(true) },
-        { type: 'button', label: 'Add Entry', icon: 'plus', variant: 'primary', onClick: () => {
-          setRegForm({ memberId: '', registrationDate: new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }), checkInTime: '' });
-          setEditingReg(null);
-          setShowRegForm(true);
-        } },
-      ]);
-    } else if (viewMode === 'attendance' && viewingEvent) {
-      setTitle(
-        <button className="back-btn" onClick={() => { setViewMode('list'); setShowEventDetailPanel(true); }}>
-          <ChevronLeftIcon size={20} />
-          <span>Events / {viewingEvent.name}</span>
-        </button>
-      );
-      setCtas([
-        { type: 'search', placeholder: 'Search Attendees...' },
-        { type: 'button', label: 'Export', icon: 'export', variant: 'secondary', onClick: () => setShowExportModal(true) },
-        { type: 'button', label: 'Check-in', icon: 'plus', variant: 'primary', onClick: () => {
-          setAttForm({ memberId: '', checkInTime: new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) });
-          setEditingAtt(null);
-          setShowAttForm(true);
-        } },
-      ]);
-    } else {
-      setTitle('Events');
-      setCtas([
-        { type: 'search', placeholder: 'Search Events...' },
-        { type: 'button', label: 'Calendar View', icon: 'calendar', variant: 'secondary', onClick: () => {} },
-        { type: 'button', label: 'Add Event', icon: 'plus', variant: 'primary', onClick: handleOpenCreate },
-      ]);
-    }
-  }, [viewMode, viewingEvent, setTitle, setCtas]);
-
 
   // ─── Handlers ───────────────────────────────────────────────────────────────
 
@@ -272,6 +226,51 @@ const Events: React.FC = () => {
     setShowDeleteConfirm(false);
     setDeletingItemName('');
   };
+
+  // ─── Layout TopBar Setup ────────────────────────────────────────────────────
+
+  useEffect(() => {
+    if (viewMode === 'registrations' && viewingEvent) {
+      setTitle(
+        <button className="back-btn" onClick={() => { setViewMode('list'); setShowEventDetailPanel(true); }}>
+          <ChevronLeftIcon size={20} />
+          <span>Events / {viewingEvent.name}</span>
+        </button>
+      );
+      setCtas([
+        { type: 'search', placeholder: 'Search Attendees...' },
+        { type: 'button', label: 'Export', icon: 'export', variant: 'secondary', onClick: () => setShowExportModal(true) },
+        { type: 'button', label: 'Add Entry', icon: 'plus', variant: 'primary', onClick: () => {
+          setRegForm({ memberId: '', registrationDate: new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }), checkInTime: '' });
+          setEditingReg(null);
+          setShowRegForm(true);
+        } },
+      ]);
+    } else if (viewMode === 'attendance' && viewingEvent) {
+      setTitle(
+        <button className="back-btn" onClick={() => { setViewMode('list'); setShowEventDetailPanel(true); }}>
+          <ChevronLeftIcon size={20} />
+          <span>Events / {viewingEvent.name}</span>
+        </button>
+      );
+      setCtas([
+        { type: 'search', placeholder: 'Search Attendees...' },
+        { type: 'button', label: 'Export', icon: 'export', variant: 'secondary', onClick: () => setShowExportModal(true) },
+        { type: 'button', label: 'Check-in', icon: 'plus', variant: 'primary', onClick: () => {
+          setAttForm({ memberId: '', checkInTime: new Date().toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }) });
+          setEditingAtt(null);
+          setShowAttForm(true);
+        } },
+      ]);
+    } else {
+      setTitle('Events');
+      setCtas([
+        { type: 'search', placeholder: 'Search Events...' },
+        { type: 'button', label: 'Calendar View', icon: 'calendar', variant: 'secondary', onClick: () => {} },
+        { type: 'button', label: 'Add Event', icon: 'plus', variant: 'primary', onClick: handleOpenCreate },
+      ]);
+    }
+  }, [viewMode, viewingEvent, setTitle, setCtas]);
 
   // ─── Stats ──────────────────────────────────────────────────────────────────
 
@@ -358,7 +357,7 @@ const Events: React.FC = () => {
 
   return (
     <div className="events-container">
-      
+
       {/* ─── LIST VIEW ──────────────────────────────────────────────────────── */}
       {viewMode === 'list' && (
         <>
@@ -521,14 +520,14 @@ const Events: React.FC = () => {
       {showEventDetailPanel && viewingEvent && (
         <div className="event-panel-overlay" onClick={() => setShowEventDetailPanel(false)}>
           <div className="event-side-panel" onClick={e => e.stopPropagation()}>
-            
+
             <div className="event-panel-header">
               <h2 className="event-panel-title">{viewingEvent.name}</h2>
               <button className="event-panel-close" onClick={() => setShowEventDetailPanel(false)}>
                 <CloseIcon />
               </button>
             </div>
-            
+
             <div className="event-panel-body">
               <div className="event-detail-section">
                 <div className="event-detail-date-time">
@@ -608,7 +607,7 @@ const Events: React.FC = () => {
       {(showCreatePanel || showEditPanel) && (
         <div className="event-panel-overlay" onClick={() => { setShowCreatePanel(false); setShowEditPanel(false); }}>
           <div className="event-side-panel" onClick={e => e.stopPropagation()}>
-            
+
             <div className="event-panel-header">
               <h2 className="event-panel-title">
                 {showCreatePanel ? 'Create Event' : 'Edit Event'}
@@ -617,7 +616,7 @@ const Events: React.FC = () => {
                 <CloseIcon />
               </button>
             </div>
-            
+
             <div className="event-panel-body">
               {renderEventForm()}
             </div>

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
 import echoLogo from '../../assets/echo.svg';
+import { useAuth } from '../../hooks/useAuth';
 import '../../styles/Login.css';
 
 const Login: React.FC = () => {

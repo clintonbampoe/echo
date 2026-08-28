@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useLayout } from '../context/LayoutContext';
+import { useLayout } from '../hooks/useLayout';
 import '../styles/Projects.css';
 import {
   CalendarIcon,
@@ -211,49 +211,6 @@ const Projects: React.FC = () => {
 
   const nextId = useRef(mockProjects.length + 1);
 
-  // ── Layout ─────────────────────────────────────────────────────────────────
-
-  useEffect(() => {
-    setTitle('Projects');
-    setCtas([
-      {
-        type: 'button',
-        label: 'Filter',
-        icon: 'filter',
-        variant: 'secondary',
-        onClick: () => {},
-      },
-      {
-        type: 'button',
-        label: 'Add Project',
-        icon: 'plus',
-        variant: 'primary',
-        onClick: openCreatePanel,
-      },
-    ]);
-  }, [setTitle, setCtas]);
-
-  // ── Derived data ───────────────────────────────────────────────────────────
-
-  const activeCount  = projects.filter(p => p.status === 'On Track').length;
-  const totalRaised  = projects.reduce((s, p) => s + p.raised, 0);
-  const totalTarget  = projects.reduce((s, p) => s + p.target, 0);
-  const completedCount = projects.filter(p => p.status === 'Completed').length;
-
-  const tabFiltered = projects.filter(p => {
-    if (activeTab === 'All Members') return true;
-    if (activeTab === 'Active')      return p.status === 'On Track';
-    if (activeTab === 'Planning')    return p.status === 'Planning';
-    if (activeTab === 'Completed')   return p.status === 'Completed';
-    return true;
-  });
-
-  const filtered = tabFiltered.filter(p =>
-    p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.lead.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.category.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
   // ── Handlers ───────────────────────────────────────────────────────────────
 
   const openCreatePanel = () => {
@@ -330,6 +287,49 @@ const Projects: React.FC = () => {
     setShowDeleteConfirm(false);
     setDeletingProject(null);
   };
+
+  // ── Layout ─────────────────────────────────────────────────────────────────
+
+  useEffect(() => {
+    setTitle('Projects');
+    setCtas([
+      {
+        type: 'button',
+        label: 'Filter',
+        icon: 'filter',
+        variant: 'secondary',
+        onClick: () => {},
+      },
+      {
+        type: 'button',
+        label: 'Add Project',
+        icon: 'plus',
+        variant: 'primary',
+        onClick: openCreatePanel,
+      },
+    ]);
+  }, [setTitle, setCtas]);
+
+  // ── Derived data ───────────────────────────────────────────────────────────
+
+  const activeCount  = projects.filter(p => p.status === 'On Track').length;
+  const totalRaised  = projects.reduce((s, p) => s + p.raised, 0);
+  const totalTarget  = projects.reduce((s, p) => s + p.target, 0);
+  const completedCount = projects.filter(p => p.status === 'Completed').length;
+
+  const tabFiltered = projects.filter(p => {
+    if (activeTab === 'All Members') return true;
+    if (activeTab === 'Active')      return p.status === 'On Track';
+    if (activeTab === 'Planning')    return p.status === 'Planning';
+    if (activeTab === 'Completed')   return p.status === 'Completed';
+    return true;
+  });
+
+  const filtered = tabFiltered.filter(p =>
+    p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    p.lead.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    p.category.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   // ── Render ─────────────────────────────────────────────────────────────────
 

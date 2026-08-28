@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useLayout } from '../context/LayoutContext';
+import { useLayout } from '../hooks/useLayout';
 import {
   CloseIcon,
   MoreVerticalIcon,
@@ -273,14 +273,14 @@ const Finance: React.FC = () => {
         categoryType: 'Income',
       },
       totalAmount: titheSummary.totalAmount,
-      percentOfTotal: totalIncome + titheSummary.totalAmount > 0 
-        ? Math.round((titheSummary.totalAmount / (totalIncome + titheSummary.totalAmount)) * 100) 
+      percentOfTotal: totalIncome + titheSummary.totalAmount > 0
+        ? Math.round((titheSummary.totalAmount / (totalIncome + titheSummary.totalAmount)) * 100)
         : 0,
       isRecurring: false,
       recurrenceLabel: 'Recurring · Monthly', // Custom label for tithes
       transactionCount: titheSummary.transactionCount,
     };
-    
+
     // Adjust other percentages if necessary, but visually prepending is usually enough
     incomeStreams.unshift(titheVirtualStream);
   }

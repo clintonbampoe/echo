@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useLayout } from '../context/LayoutContext';
+import { useLayout } from '../hooks/useLayout';
 import { CloseIcon, SearchIcon, CalendarIcon, MembersIcon, ClockIcon, ChevronLeftIcon } from './Icons';
 import ExportPanel from './ExportPanel';
 import '../styles/Contributions.css';
@@ -273,7 +273,7 @@ const Contributions: React.FC = () => {
 
   return (
     <div className="contributions-container">
-      
+
       {/* ─── LIST VIEW ──────────────────────────────────────────────────────── */}
       {!viewingFund && (
         <>
@@ -436,7 +436,7 @@ const Contributions: React.FC = () => {
                 <CloseIcon />
               </button>
             </div>
-            
+
             <div className="contrib-panel-body">
               {renderFormFields()}
             </div>

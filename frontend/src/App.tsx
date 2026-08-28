@@ -1,20 +1,22 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Dashboard from './components/Dashboard';
-import Finance from './components/Finance';
-import Login from './components/auth/Login';
-import SignUp from './components/auth/SignUp';
-import ResetPassword from './components/auth/ResetPassword';
-import Sidebar from './components/Sidebar';
-import Topbar from './components/Topbar';
+import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
 import Attendance from './components/Attendance';
-import Tithe from './components/Tithe';
-import Projects from './components/Projects';
 import Contributions from './components/Contributions';
+import Dashboard from './components/Dashboard';
 import Events from './components/Events';
+import Finance from './components/Finance';
+import Login from './components/Login';
 import Members from './components/Members';
-import { LayoutProvider, useLayout } from './context/LayoutContext';
-import { AuthProvider, useAuth } from './context/AuthContext';
+import Projects from './components/Projects';
+import Sidebar from './components/Sidebar';
+import Tithe from './components/Tithe';
+import Topbar from './components/Topbar';
+import ResetPassword from './components/auth/ResetPassword';
+import SignUp from './components/auth/SignUp';
+import { AuthProvider } from './context/AuthProvider';
+import { LayoutProvider } from './context/LayoutProvider';
+import { useAuth } from './hooks/useAuth';
+import { useLayout } from './hooks/useLayout';
 import './styles/App.css';
 
 const PlaceholderTab: React.FC<{ name: string }> = ({ name }) => {
