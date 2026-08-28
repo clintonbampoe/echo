@@ -44,13 +44,13 @@ git clone https://github.com/clintonbampoe/echo.git
 
 ## 3. Building container images
 
-Echo has a stack that consists of multiple containers (database, nginx, api, etc. See [Infrastructure](./Infrastructure.md) for more details)). Some of these containers run on custom images.
+Echo has a stack that consists of multiple containers (database, nginx, api, etc. See [Infrastructure](Infrastructure.md) for more details)). Some of these containers run on custom images.
 
 For example, the **api** image is a custom image that runs a multistage build process.
 Hence, in order to run them you would need to build the image first, so that Docker can cache and reuse it for later sessions.
 
-We have two environments in which our containers can run in: 
-- **Development** 
+We have two environments in which our containers can run in:
+- **Development**
 - **Production**
 
 **Development** is the default environment and it is the image docker builds when you run the command:
@@ -69,7 +69,7 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml build
 This would pull all the dependencies it needs to build our images and prepare your containers for execution.
 
 > One first run, the build might take a while (*about 5 minutes or so depending on your internet connectivity speed*). This is because, docker is pulling all the sdks, and dependencies it needs to run the containers. Rest assured this process only happens once. After that, the dependencies and images are cached and reused for later builds.
-> 
+>
 > **THIS IMPLIES THAT YOU'LL NEED INTERNET CONNECTION FOR THE FIRST BUILD**
 
 ---
@@ -128,6 +128,6 @@ To confirm it's working, you can test the health endpoint by using:
 
 ## Related Documentation
 
-- [Infrastructure](./Infrastructure.md)
-- [Echo API](./api/ApiUsage.md)
-- [Front-end](./frontend/README.md)
+- [Infrastructure](Infrastructure.md)
+- [Echo API](ApiUsage.md)
+- [Front-end](frontend/README.md)
