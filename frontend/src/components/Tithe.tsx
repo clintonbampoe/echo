@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useLayout } from '../context/LayoutContext';
+import { useLayout } from '../hooks/useLayout';
 import { deleteTitheRecord, getTitheRecords, saveTitheRecord } from '../services/titheService';
 import { getMembers } from '../services/attendanceService';
 import type { TitheRecord } from '../types/tithe';
@@ -11,18 +11,18 @@ import '../styles/Tithe.css';
 const ITEMS_PER_PAGE = 5;
 
 const MONTHS = [
-  'January', 'February', 'March', 'April', 'May', 'June', 
+  'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December'
 ];
 
 const Tithe: React.FC = () => {
   const { setTitle, setCtas } = useLayout();
-  
+
   const [records, setRecords] = useState<TitheRecord[]>([]);
   const [selectedMonth, setSelectedMonth] = useState<string>('');
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const [currentPage, setCurrentPage] = useState<number>(1);
-  
+
   const [members, setMembers] = useState<Member[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [editingRecord, setEditingRecord] = useState<TitheRecord | null>(null);
@@ -115,8 +115,8 @@ const Tithe: React.FC = () => {
         titheId: editingRecord?.titheId,
         memberId: parseInt(formData.memberId),
         amount: parseFloat(formData.amount),
-        paymentMethod: formData.paymentMethod as any,
-        forMonth: formData.forMonth as any,
+        paymentMethod: formData.paymentMethod as TitheRecord["paymentMethod"],
+        forMonth: formData.forMonth as TitheRecord["forMonth"],
         forYear: parseInt(String(formData.forYear)),
         collectionDate: formData.collectionDate,
         description: formData.description,
@@ -147,10 +147,10 @@ const Tithe: React.FC = () => {
     // We'll quickly fetch all data for the year to build the chart, bypassing month filter
     const buildChart = async () => {
       const yearData = await getTitheRecords(undefined, selectedYear);
-      
+
       const monthlyTotals = new Map<string, number>();
       MONTHS.forEach(m => monthlyTotals.set(m, 0));
-      
+
       yearData.forEach(r => {
         const current = monthlyTotals.get(r.forMonth) || 0;
         monthlyTotals.set(r.forMonth, current + r.amount);
@@ -166,7 +166,7 @@ const Tithe: React.FC = () => {
           heightPercent: (val / maxVal) * 100
         };
       });
-      
+
       setChartData(mapped);
     };
 
@@ -197,8 +197,8 @@ const Tithe: React.FC = () => {
       <div className="tithe-filters-row">
         <div className="tithe-filter-group">
           <span className="tithe-filter-label">Year</span>
-          <select 
-            className="tithe-select" 
+          <select
+            className="tithe-select"
             value={selectedYear}
             onChange={e => setSelectedYear(parseInt(e.target.value))}
           >
@@ -210,7 +210,7 @@ const Tithe: React.FC = () => {
 
         <div className="tithe-filter-group">
           <span className="tithe-filter-label">Month</span>
-          <select 
+          <select
             className="tithe-select"
             value={selectedMonth}
             onChange={e => setSelectedMonth(e.target.value)}
@@ -229,12 +229,12 @@ const Tithe: React.FC = () => {
           <h3 className="tithe-chart-title">Tithe Contributions Overview</h3>
           <div className="tithe-chart-subtitle">Monthly aggregate for {selectedYear}</div>
         </div>
-        
+
         <div className="tithe-chart-container">
           {chartData.map((data, idx) => (
             <div key={idx} className="tithe-chart-bar-wrapper">
-              <div 
-                className="tithe-chart-bar" 
+              <div
+                className="tithe-chart-bar"
                 style={{ height: `${data.heightPercent}%`, minHeight: data.value > 0 ? '4px' : '0' }}
               />
               <div className="tithe-chart-label">{data.label}</div>
@@ -251,7 +251,7 @@ const Tithe: React.FC = () => {
         <div className="tithe-table-header">
           <h3 className="tithe-table-title">Recent Tithes</h3>
         </div>
-        
+
         <div className="tithe-table-container">
           {currentRecords.length === 0 ? (
             <div className="tithe-table-empty">No tithe records found for the selected period.</div>
@@ -295,7 +295,7 @@ const Tithe: React.FC = () => {
         {/* Pagination */}
         {totalPages > 1 && (
           <div className="tithe-pagination">
-            <button 
+            <button
               className="pagination-btn"
               disabled={currentPage === 1}
               onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
@@ -305,7 +305,7 @@ const Tithe: React.FC = () => {
             <span className="pagination-info">
               Page {currentPage} of {totalPages}
             </span>
-            <button 
+            <button
               className="pagination-btn"
               disabled={currentPage === totalPages}
               onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}

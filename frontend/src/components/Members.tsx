@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useLayout } from '../context/LayoutContext';
+import { useLayout } from '../hooks/useLayout';
 import { CloseIcon, MembersIcon, CalendarIcon } from './Icons';
 import DeleteConfirmModal from './common/DeleteConfirmModal';
 import ExportPanel from './ExportPanel';
@@ -600,7 +600,7 @@ const Members: React.FC = () => {
             ],
             // Use the filtered members list or all members based on preference.
             // Using all members for the full roster is usually safer.
-            rows: members, 
+            rows: members,
           }}
           onClose={() => setShowExportModal(false)}
         />
