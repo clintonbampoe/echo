@@ -4,10 +4,10 @@ root = true
 # Global settings for all files
 [*]
 indent_style = space
-indent_size = 4
+indent_size = 2
 end_of_line = lf
 charset = utf-8
-trim_trailing_whitespace = true
+trim_trailing_whitespace = false
 insert_final_newline = true
 
 # C# settings for the Web API and Core logic
@@ -39,6 +39,3 @@ dotnet_naming_style.prefix_underscore_style.capitalization = camel_case
 [*.{js,jsx,ts,tsx,json,css}]
 indent_size = 2
 
-# Settings for DBML files (if still used)
-[*.dbml]
-indent_size = 2
