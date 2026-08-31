@@ -13,5 +13,7 @@ public class CongregationConfiguration : IEntityTypeConfiguration<Congregation>
         builder.Property(cong => cong.Id).HasDefaultValueSql("uuidv7()").ValueGeneratedOnAdd();
 
         builder.Property(cong => cong.CreatedAt).HasDefaultValueSql("now()").ValueGeneratedOnAdd();
+
+        builder.HasQueryFilter("SoftDeleteFilter", cong => cong.DeletedAt == null);
     }
 }

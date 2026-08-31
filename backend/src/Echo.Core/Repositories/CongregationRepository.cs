@@ -1,7 +1,6 @@
 using Echo.Core.Dtos;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core;
-using Echo.Application.Extensions.QueryMethods;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Core.Repositories;
@@ -17,7 +16,6 @@ public class CongregationRepository(AppDbContext context)
     {
         return await _dbSet
             .AsNoTracking()
-            .ApplySoftDeleteFilter()
             .Where(c => c.Id == id)
             .Select(c => new CongregationResponseDto
             {
@@ -56,7 +54,6 @@ public class CongregationRepository(AppDbContext context)
     )
     {
         var existing = await _dbSet
-            .ApplySoftDeleteFilter()
             .FirstOrDefaultAsync(e => e.Id == id, ct);
 
         if (existing is null)
@@ -69,7 +66,6 @@ public class CongregationRepository(AppDbContext context)
     public virtual async Task<bool> DeleteRecordAsync(Guid id, CancellationToken ct = default)
     {
         var existing = await _dbSet
-            .ApplySoftDeleteFilter()
             .FirstOrDefaultAsync(e => e.Id == id, ct);
 
         if (existing is null)

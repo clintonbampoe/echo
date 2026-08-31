@@ -1,4 +1,3 @@
-using Echo.Application.Extensions.QueryMethods;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Auth;
 using Microsoft.EntityFrameworkCore;
@@ -12,7 +11,6 @@ public class InvitationTokenRepository(AppDbContext context)
     public async Task<InvitationToken?> GetTokenRecordByHash(string hashedInput, CancellationToken ct = default)
     {
         return await _tokens
-            .ApplySoftDeleteFilter()
             .FirstOrDefaultAsync(i => i.TokenHash == hashedInput, ct);
     }
 

@@ -14,6 +14,8 @@ public abstract class AuthEntityConfigurationBase<TEntity> : IEntityTypeConfigur
 
         builder.Property(e => e.CreatedAt).HasDefaultValueSql("now()").ValueGeneratedOnAdd();
 
+        builder.HasQueryFilter("SoftDeleteFilter", e => e.DeletedAt == null);
+
         ConfigureEntity(builder);
     }
 

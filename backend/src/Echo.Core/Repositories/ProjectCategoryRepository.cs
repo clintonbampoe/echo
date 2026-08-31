@@ -1,4 +1,3 @@
-using Echo.Application.Extensions.QueryMethods;
 using Echo.Core.Dtos;
 using Echo.Core.Repositories.Base;
 using Echo.Domain.Data;
@@ -17,7 +16,6 @@ public class ProjectCategoryRepository(AppDbContext context)
     {
         return await DbSet
             .AsNoTracking()
-            .ApplySoftDeleteFilter()
             .Where(c => c.CongregationId == congregationId)
             .Select(c => new ProjectCategoryResponseDto { Id = c.Id, Name = c.Name })
             .ToListAsync(ct);
@@ -31,7 +29,6 @@ public class ProjectCategoryRepository(AppDbContext context)
     {
         return await DbSet
             .AsNoTracking()
-            .ApplySoftDeleteFilter()
             .Where(c => c.Id == id && c.CongregationId == congregationId)
             .Select(c => new ProjectCategoryResponseDto { Id = c.Id, Name = c.Name })
             .FirstOrDefaultAsync(ct);

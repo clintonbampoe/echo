@@ -21,7 +21,6 @@ public class EventRegistrationRepository(AppDbContext context)
     {
         var query = DbSet
             .AsNoTracking()
-            .ApplySoftDeleteFilter()
             .ApplyDateFilters(queryParameters)
             .Where(e => e.CongregationId == congregationId);
 
@@ -54,7 +53,6 @@ public class EventRegistrationRepository(AppDbContext context)
     {
         return await DbSet
             .AsNoTracking()
-            .ApplySoftDeleteFilter()
             .Where(e => e.Id == id && e.CongregationId == congregationId)
             .Select(e => new EventRegistrationResponseDto
             {
@@ -78,7 +76,6 @@ public class EventRegistrationRepository(AppDbContext context)
     {
         var query = DbSet
             .AsNoTracking()
-            .ApplySoftDeleteFilter()
             .ApplyDateFilters(queryParameters)
             .Where(e => e.MemberId == memberId);
 
@@ -112,7 +109,6 @@ public class EventRegistrationRepository(AppDbContext context)
     {
         var query = DbSet
             .AsNoTracking()
-            .ApplySoftDeleteFilter()
             .ApplyDateFilters(queryParameters)
             .Where(e => e.MemberId == eventId);
 

@@ -21,7 +21,6 @@ public class TitheRepository(AppDbContext context) : PrimaryRepositoryBase<Tithe
     {
         var query = DbSet
             .AsNoTracking()
-            .ApplySoftDeleteFilter()
             .ApplyDateFilters(queryParameters)
             .Where(t => t.CongregationId == congregationId);
 
@@ -53,7 +52,6 @@ public class TitheRepository(AppDbContext context) : PrimaryRepositoryBase<Tithe
     {
         return await DbSet
             .AsNoTracking()
-            .ApplySoftDeleteFilter()
             .Where(t => t.Id == id && t.CongregationId == congregationId)
             .Select(t => new TitheResponseDto
             {
@@ -75,7 +73,6 @@ public class TitheRepository(AppDbContext context) : PrimaryRepositoryBase<Tithe
         Guid congregationId, int year, CancellationToken ct = default)
     {
         var totals = await DbSet
-            .ApplySoftDeleteFilter()
             .Where(t => t.CongregationId == congregationId && t.ForYear == year)
             .GroupBy(t => t.ForMonth)
             .Select(g => new { Month = g.Key, Total = g.Sum(t => t.Amount) })

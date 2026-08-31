@@ -1,4 +1,3 @@
-using Echo.Application.Extensions.QueryMethods;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Auth;
 using Microsoft.EntityFrameworkCore;
@@ -13,7 +12,6 @@ public class PasswordVerificationTokenRepository(AppDbContext dbContext)
         CancellationToken ct = default)
     {
         return await _tokens
-            .ApplySoftDeleteFilter()
             .Include(t => t.User)
             .FirstOrDefaultAsync(t => t.TokenHash == hashedInput, ct);
     }
@@ -21,7 +19,6 @@ public class PasswordVerificationTokenRepository(AppDbContext dbContext)
     public async Task<PasswordVerificationToken?> GetActiveTokenForUser(Guid userId, CancellationToken ct = default)
     {
         return await _tokens
-            .ApplySoftDeleteFilter()
             .Where(t => t.UserId == userId && t.ExpiresAt > DateTime.UtcNow && t.UsedAt == null)
             .FirstOrDefaultAsync(ct);
     }

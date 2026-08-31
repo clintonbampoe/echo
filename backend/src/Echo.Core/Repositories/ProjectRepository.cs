@@ -21,7 +21,6 @@ public class ProjectRepository(AppDbContext context) : PrimaryRepositoryBase<Pro
     {
         var query = DbSet
             .AsNoTracking()
-            .ApplySoftDeleteFilter()
             .ApplySearchFilter(queryParameters)
             .ApplyDateFilters(queryParameters)
             .Where(p => p.CongregationId == congregationId);
@@ -59,7 +58,6 @@ public class ProjectRepository(AppDbContext context) : PrimaryRepositoryBase<Pro
     {
         return await DbSet
             .AsNoTracking()
-            .ApplySoftDeleteFilter()
             .Where(p => p.Id == id && p.CongregationId == congregationId)
             .Select(p => new ProjectResponseDto
             {
@@ -91,7 +89,6 @@ public class ProjectRepository(AppDbContext context) : PrimaryRepositoryBase<Pro
         // GroupBy(1) forces every matching row into one bucket, letting us compute
         // the sum + both counts below in a single SQL query instead of 3 separate round trips.
         var projectStats = await DbSet
-            .ApplySoftDeleteFilter()
             .Where(p => p.CongregationId == congregationId)
             .GroupBy(p => 1)
             .Select(g => new
@@ -111,7 +108,7 @@ public class ProjectRepository(AppDbContext context) : PrimaryRepositoryBase<Pro
 
         var totalRaised = await Context
             .Set<ProjectContribution>()
-            .Where(c => c.DeletedAt == null && c.CongregationId == congregationId)
+            .Where(c => c.CongregationId == congregationId)
             .SumAsync(c => c.Amount, ct);
 
         return new ProjectSummaryDto

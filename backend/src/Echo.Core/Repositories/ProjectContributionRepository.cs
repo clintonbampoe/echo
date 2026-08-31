@@ -21,7 +21,6 @@ public class ProjectContributionRepository(AppDbContext context)
     {
         var query = DbSet
             .AsNoTracking()
-            .ApplySoftDeleteFilter()
             .ApplyDateFilters(queryParameters)
             .Where(p => p.CongregationId == congregationId);
 
@@ -55,7 +54,6 @@ public class ProjectContributionRepository(AppDbContext context)
     {
         return await DbSet
             .AsNoTracking()
-            .ApplySoftDeleteFilter()
             .Where(p => p.Id == id && p.CongregationId == congregationId)
             .Select(p => new ProjectContributionResponseDto
             {
@@ -79,9 +77,7 @@ public class ProjectContributionRepository(AppDbContext context)
     {
         var project = await Context
             .Set<Project>()
-            .Where(p =>
-                p.DeletedAt == null && p.CongregationId == congregationId && p.Id == projectId
-            )
+            .Where(p => p.CongregationId == congregationId && p.Id == projectId)
             .Select(p => new { p.TargetAmount })
             .FirstOrDefaultAsync(ct);
 
@@ -89,7 +85,6 @@ public class ProjectContributionRepository(AppDbContext context)
             return null;
 
         var stats = await DbSet
-            .ApplySoftDeleteFilter()
             .Where(c => c.CongregationId == congregationId && c.ProjectId == projectId)
             .GroupBy(c => 1)
             .Select(g => new
