@@ -59,7 +59,7 @@ public class RefreshTokenService(
         if (existing.ExpiresAt <= DateTime.UtcNow)
             return Failure(RefreshTokenFailureReason.Expired);
 
-        if (existing.User.DeletedAt is not null)
+        if (existing.User is null)
             return Failure(RefreshTokenFailureReason.UserInactive);
 
         var (newTokenEntity, newPlainToken) = await IssueAsync(existing.UserId, ct);

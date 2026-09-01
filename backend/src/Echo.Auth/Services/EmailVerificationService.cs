@@ -89,6 +89,9 @@ public class EmailVerificationService(
         if (!IsTokenValid(tokenRecord))
             return new InvalidTokenResult();
 
+        if (tokenRecord.User is null)
+            return new InvalidTokenResult();
+
         var user = tokenRecord.User;
         user.EmailVerifiedAt = DateTime.UtcNow;
         tokenRecord.UsedAt = DateTime.UtcNow;
