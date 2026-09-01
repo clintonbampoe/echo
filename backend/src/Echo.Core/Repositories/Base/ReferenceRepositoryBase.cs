@@ -1,4 +1,3 @@
-using Echo.Application.Extensions.QueryMethods;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -25,7 +24,6 @@ public abstract class ReferenceRepositoryBase<T>(AppDbContext context)
     )
     {
         var existing = await DbSet
-            .ApplySoftDeleteFilter()
             .FirstOrDefaultAsync(e => e.Id == id && e.CongregationId == congregationId, ct);
         if (existing is null)
             return false;
@@ -45,7 +43,6 @@ public abstract class ReferenceRepositoryBase<T>(AppDbContext context)
     )
     {
         var existing = await DbSet
-            .ApplySoftDeleteFilter()
             .FirstOrDefaultAsync(e => e.Id == id && e.CongregationId == congregationId, ct);
 
         if (existing is null)

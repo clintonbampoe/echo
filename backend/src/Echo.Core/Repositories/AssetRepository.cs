@@ -21,7 +21,6 @@ public class AssetRepository(AppDbContext context) : PrimaryRepositoryBase<Asset
     {
         var query = DbSet
             .AsNoTracking()
-            .ApplySoftDeleteFilter()
             .ApplyDateFilters(queryParameters)
             .ApplySearchFilter(queryParameters)
             .Where(a => a.CongregationId == congregationId);
@@ -52,7 +51,6 @@ public class AssetRepository(AppDbContext context) : PrimaryRepositoryBase<Asset
     {
         return await DbSet
             .AsNoTracking()
-            .ApplySoftDeleteFilter()
             .Where(a => a.Id == id && a.CongregationId == congregationId)
             .Select(a => new AssetResponseDto
             {
@@ -74,7 +72,6 @@ public class AssetRepository(AppDbContext context) : PrimaryRepositoryBase<Asset
     public async Task<AssetSummaryDto> GetSummaryAsync(Guid congregationId, CancellationToken ct = default)
     {
         var stats = await DbSet
-            .ApplySoftDeleteFilter()
             .Where(a => a.CongregationId == congregationId && a.Status != AssetStatus.Liquidated)
             .GroupBy(a => 1)
             .Select(g => new

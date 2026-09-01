@@ -21,7 +21,6 @@ public class OrganizationRepository(AppDbContext context)
     {
         var query = DbSet
             .AsNoTracking()
-            .ApplySoftDeleteFilter()
             .ApplyDateFilters(queryParameters)
             .ApplySearchFilter(queryParameters)
             .Where(o => o.CongregationId == congregationId);
@@ -54,7 +53,6 @@ public class OrganizationRepository(AppDbContext context)
     {
         return await DbSet
             .AsNoTracking()
-            .ApplySoftDeleteFilter()
             .Where(o => o.Id == id && o.CongregationId == congregationId)
             .Select(o => new OrganizationResponseDto
             {
@@ -81,7 +79,6 @@ public class OrganizationRepository(AppDbContext context)
         );
 
         var organizations = DbSet
-            .ApplySoftDeleteFilter()
             .Where(o => o.CongregationId == congregationId);
 
         var totalOrganizations = await organizations.CountAsync(ct);
@@ -92,7 +89,7 @@ public class OrganizationRepository(AppDbContext context)
 
         var totalOrganizationMembers = await Context
             .Set<OrganizationMember>()
-            .Where(m => m.DeletedAt == null && m.CongregationId == congregationId)
+            .Where(m => m.CongregationId == congregationId)
             .CountAsync(ct);
 
         return new OrganizationSummaryDto

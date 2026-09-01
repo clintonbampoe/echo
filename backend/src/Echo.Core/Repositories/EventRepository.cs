@@ -20,7 +20,6 @@ public class EventRepository(AppDbContext context) : PrimaryRepositoryBase<Event
     {
         var query = DbSet
             .AsNoTracking()
-            .ApplySoftDeleteFilter()
             .ApplySearchFilter(queryParameters)
             .ApplyDateFilters(queryParameters)
             .Where(e => e.CongregationId == congregationId);
@@ -53,7 +52,6 @@ public class EventRepository(AppDbContext context) : PrimaryRepositoryBase<Event
     {
         return await DbSet
             .AsNoTracking()
-            .ApplySoftDeleteFilter()
             .Where(e => e.Id == id && e.CongregationId == congregationId)
             .Select(e => new EventResponseDto
             {
@@ -80,7 +78,6 @@ public class EventRepository(AppDbContext context) : PrimaryRepositoryBase<Event
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
 
         var eventStats = await DbSet
-            .ApplySoftDeleteFilter()
             .Where(e => e.CongregationId == congregationId)
             .GroupBy(e => 1)
             .Select(g => new
@@ -92,7 +89,7 @@ public class EventRepository(AppDbContext context) : PrimaryRepositoryBase<Event
             .FirstOrDefaultAsync(ct);
 
         var totalRegistrations = await Context.Set<EventRegistration>()
-            .Where(r => r.DeletedAt == null && r.CongregationId == congregationId)
+            .Where(r => r.CongregationId == congregationId)
             .CountAsync(ct);
 
         return new EventSummaryDto

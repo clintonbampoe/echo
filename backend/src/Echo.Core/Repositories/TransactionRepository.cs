@@ -22,7 +22,6 @@ public class TransactionRepository(AppDbContext context)
     {
         var query = DbSet
             .AsNoTracking()
-            .ApplySoftDeleteFilter()
             .ApplyDateFilters(queryParameters)
             .Where(t => t.CongregationId == congregationId);
 
@@ -56,7 +55,6 @@ public class TransactionRepository(AppDbContext context)
     {
         return await DbSet
             .AsNoTracking()
-            .ApplySoftDeleteFilter()
             .Where(t => t.Id == id && t.CongregationId == congregationId)
             .Select(t => new TransactionResponseDto
             {
@@ -82,7 +80,6 @@ public class TransactionRepository(AppDbContext context)
         var previousMonthStart = currentMonthStart.AddMonths(-1);
 
         var totals = await DbSet
-            .ApplySoftDeleteFilter()
             .Where(t =>
                 t.CongregationId == congregationId && t.TransactionDate >= previousMonthStart
             )
@@ -127,7 +124,6 @@ public class TransactionRepository(AppDbContext context)
     )
     {
         var grouped = await DbSet
-            .ApplySoftDeleteFilter()
             .Where(t => t.CongregationId == congregationId)
             .GroupBy(t => new
             {

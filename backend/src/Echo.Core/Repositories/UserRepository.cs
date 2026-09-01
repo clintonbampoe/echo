@@ -20,7 +20,6 @@ public class UserRepository(AppDbContext context) : PrimaryRepositoryBase<User>(
     {
         var query = DbSet
             .AsNoTracking()
-            .ApplySoftDeleteFilter()
             .ApplySearchFilter(queryParameters)
             .ApplyDateFilters(queryParameters)
             .Where(u => u.CongregationId == congregationId);
@@ -46,7 +45,6 @@ public class UserRepository(AppDbContext context) : PrimaryRepositoryBase<User>(
     {
         return await DbSet
             .AsNoTracking()
-            .ApplySoftDeleteFilter()
             .Where(u => u.Id == id)
             .Select(u => new UserResponseDto
             {
@@ -63,7 +61,6 @@ public class UserRepository(AppDbContext context) : PrimaryRepositoryBase<User>(
     public async Task<bool> IsEmailAddressTaken(string emailAddress, CancellationToken ct)
     {
         var exists = await DbSet
-            .ApplySoftDeleteFilter()
             .AnyAsync(u => u.EmailAddress == emailAddress, ct);
 
         return exists;
@@ -75,7 +72,6 @@ public class UserRepository(AppDbContext context) : PrimaryRepositoryBase<User>(
     )
     {
         return await DbSet
-            .ApplySoftDeleteFilter()
             .Where(u => u.EmailAddress == emailAddress)
             .Select(u => new UserAuthDto()
             {
@@ -93,7 +89,6 @@ public class UserRepository(AppDbContext context) : PrimaryRepositoryBase<User>(
     public async Task<UserAuthDto?> GetActiveUserById(Guid id, CancellationToken ct = default)
     {
         return await DbSet
-            .ApplySoftDeleteFilter()
             .Where(u => u.Id == id)
             .Select(u => new UserAuthDto()
             {
@@ -115,7 +110,6 @@ public class UserRepository(AppDbContext context) : PrimaryRepositoryBase<User>(
     )
     {
         var results = await DbSet
-            .ApplySoftDeleteFilter()
             .Where(u =>
                 u.CongregationId == congregationId
                 && EF.Functions.ILike(u.Name, $"%{searchString}%")

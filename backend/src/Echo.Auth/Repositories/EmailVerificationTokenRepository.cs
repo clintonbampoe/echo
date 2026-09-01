@@ -1,4 +1,3 @@
-using Echo.Application.Extensions.QueryMethods;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Auth;
 using Microsoft.EntityFrameworkCore;
@@ -13,7 +12,6 @@ public class EmailVerificationTokenRepository(AppDbContext context)
         CancellationToken ct = default)
     {
         var entity = await _tokens
-            .ApplySoftDeleteFilter()
             .Include(e => e.User)
             .FirstOrDefaultAsync(e => e.TokenHash == hashedInput, cancellationToken: ct);
 
@@ -23,7 +21,6 @@ public class EmailVerificationTokenRepository(AppDbContext context)
     public async Task<EmailVerificationToken?> GetActiveTokenForUser(Guid userId, CancellationToken ct = default)
     {
         var existing = await _tokens
-            .ApplySoftDeleteFilter()
             .Where(e => e.UserId == userId && e.ExpiresAt > DateTime.UtcNow && e.InvalidatedAt == null &&
                         e.UsedAt == null)
             .OrderByDescending(e => e.CreatedAt)
@@ -41,7 +38,6 @@ public class EmailVerificationTokenRepository(AppDbContext context)
     public async Task<bool> UpdateRecord(Guid id, EmailVerificationToken token, CancellationToken ct = default)
     {
         var existing = await _tokens
-            .ApplySoftDeleteFilter()
             .FirstOrDefaultAsync(e => e.Id == id, ct);
         if (existing is null)
             return false;

@@ -21,7 +21,6 @@ public class MemberRepository(AppDbContext context) : PrimaryRepositoryBase<Memb
     {
         var query = DbSet
             .AsNoTracking()
-            .ApplySoftDeleteFilter()
             .ApplySearchFilter(queryParameters)
             .ApplyDateFilters(queryParameters)
             .Where(m => m.CongregationId == congregationId);
@@ -57,7 +56,6 @@ public class MemberRepository(AppDbContext context) : PrimaryRepositoryBase<Memb
     {
         return await DbSet
             .AsNoTracking()
-            .ApplySoftDeleteFilter()
             .Where(m => m.Id == id && m.CongregationId == congregationId)
             .Select(m => new MemberResponseDto
             {
@@ -95,7 +93,6 @@ public class MemberRepository(AppDbContext context) : PrimaryRepositoryBase<Memb
         var currentMonthStart = new DateOnly(now.Year, now.Month, 1);
 
         var stats = await DbSet
-            .ApplySoftDeleteFilter()
             .Where(m => m.CongregationId == congregationId)
             .GroupBy(m => 1)
             .Select(g => new
@@ -129,7 +126,6 @@ public class MemberRepository(AppDbContext context) : PrimaryRepositoryBase<Memb
     )
     {
         var results = await DbSet
-            .ApplySoftDeleteFilter()
             .Where(m =>
                 m.CongregationId == congregationId
                 && EF.Functions.ILike(m.Name, $"%{searchString}%")

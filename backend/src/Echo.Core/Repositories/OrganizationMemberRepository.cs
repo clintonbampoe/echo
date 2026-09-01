@@ -21,7 +21,6 @@ public class OrganizationMemberRepository(AppDbContext context)
     {
         var query = DbSet
             .AsNoTracking()
-            .ApplySoftDeleteFilter()
             .ApplyDateFilters(queryParameters)
             .Where(o => o.CongregationId == congregationId);
 
@@ -55,7 +54,6 @@ public class OrganizationMemberRepository(AppDbContext context)
     {
         return await DbSet
             .AsNoTracking()
-            .ApplySoftDeleteFilter()
             .Where(o => o.Id == id && o.CongregationId == congregationId)
             .Select(o => new OrganizationMemberResponseDto
             {
@@ -80,7 +78,6 @@ public class OrganizationMemberRepository(AppDbContext context)
     {
         var query = DbSet
             .AsNoTracking()
-            .ApplySoftDeleteFilter()
             .ApplyDateFilters(queryParameters)
             .Where(o => o.MemberId == memberId);
 
@@ -115,7 +112,6 @@ public class OrganizationMemberRepository(AppDbContext context)
     {
         var query = DbSet
             .AsNoTracking()
-            .ApplySoftDeleteFilter()
             .ApplyDateFilters(queryParameters)
             .Where(o => o.OrganizationId == organizationId);
 

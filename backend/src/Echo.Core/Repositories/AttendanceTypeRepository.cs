@@ -1,4 +1,3 @@
-using Echo.Application.Extensions.QueryMethods;
 using Echo.Core.Dtos;
 using Echo.Core.Repositories.Base;
 using Echo.Domain.Data;
@@ -17,7 +16,6 @@ public class AttendanceTypeRepository(AppDbContext context)
     {
         return await DbSet
             .AsNoTracking()
-            .ApplySoftDeleteFilter()
             .Where(t => t.CongregationId == congregationId)
             .Select(t => new AttendanceTypeResponseDto { Id = t.Id, Name = t.Name })
             .ToListAsync(ct);
@@ -31,7 +29,6 @@ public class AttendanceTypeRepository(AppDbContext context)
     {
         return await DbSet
             .AsNoTracking()
-            .ApplySoftDeleteFilter()
             .Where(t => t.Id == id && t.CongregationId == congregationId)
             .Select(t => new AttendanceTypeResponseDto { Id = t.Id, Name = t.Name })
             .FirstOrDefaultAsync(ct);

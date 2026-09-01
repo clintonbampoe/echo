@@ -21,7 +21,6 @@ public class AttendanceRepository(AppDbContext context) : PrimaryRepositoryBase<
     {
         var query = DbSet
             .AsNoTracking()
-            .ApplySoftDeleteFilter()
             .ApplyDateFilters(queryParameters)
             .Where(a => a.CongregationId == congregationId);
 
@@ -58,7 +57,6 @@ public class AttendanceRepository(AppDbContext context) : PrimaryRepositoryBase<
     {
         return await DbSet
             .AsNoTracking()
-            .ApplySoftDeleteFilter()
             .Where(a => a.Id == id && a.CongregationId == congregationId)
             .Select(a => new AttendanceResponseDto
             {
@@ -85,7 +83,6 @@ public class AttendanceRepository(AppDbContext context) : PrimaryRepositoryBase<
     )
     {
         var attendeesForToday = await DbSet
-            .ApplySoftDeleteFilter()
             .Where(a =>
                 a.CongregationId == congregationId
                 && a.AttendanceContextId == attendanceContextId
@@ -109,7 +106,6 @@ public class AttendanceRepository(AppDbContext context) : PrimaryRepositoryBase<
             guestNames.Count == 0
                 ? []
                 : await DbSet
-                    .ApplySoftDeleteFilter()
                     .Where(a =>
                         a.CongregationId == congregationId
                         && a.ForDate < forDate
