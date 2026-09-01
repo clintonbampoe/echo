@@ -76,11 +76,3 @@ dotnet ef database update --project backend/src/Echo.Infrastructure --startup-pr
 The connection string is a template in `appsettings.json` (`DefaultConnection`), with `__DB_USER__` and `__DB_PASSWORD__`  placeholders substituted at startup from the .env in the repository.
 The `.env` file must live at the git repo root as the `EnvLoader` method walks up from the running assembly to find it.
 If there is no .env file at the repo root, the application will throw an error and gracefully close.
-
-## Soft delete
-
-Soft-deleted rows (`DeletedAt != null`) are excluded automatically by EF Core global query filters configured on entity configuration base classes (`PrimaryEntityConfigurationBase`, `ReferenceEntityConfigurationBase`, `AuthEntityConfigurationBase`, `CongregationConfiguration`). **Do not** add `.Where(x => x.DeletedAt == null)` or similar manual filters in repositories.
-
-- **Tenant scoping** is separate: repositories still filter by `CongregationId` explicitly.
-- **Include navigations**: a soft-deleted related entity (e.g. `User`) is returned as `null` on the navigation — check `entity.User is null`, not `entity.User.DeletedAt`.
-- **Admin/restore paths**: use `.IgnoreQueryFilters()` when deleted rows must be visible.

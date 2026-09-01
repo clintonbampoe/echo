@@ -75,9 +75,6 @@ public class PasswordResetService(
         if (tokenEntity.ExpiresAt <= DateTime.UtcNow || tokenEntity.UsedAt is not null)
             return new InvalidTokenResult();
 
-        if (tokenEntity.User is null)
-            return new InvalidTokenResult();
-
         tokenEntity.User.PasswordHash = await passwordHashService.HashAsync(newPassword);
         tokenEntity.UsedAt = DateTime.UtcNow;
 
