@@ -1,5 +1,5 @@
 import React from 'react';
-import { useLayout } from '../context/LayoutContext';
+import { useLayout } from '../hooks/useLayout';
 import { PlusIcon, SearchIcon, ExportIcon, CalendarIcon, FilterIcon } from './Icons';
 import '../styles/Topbar.css';
 
@@ -27,24 +27,24 @@ const Topbar: React.FC = () => {
   return (
     <header className="topbar">
       <h2 className="topbar-title">{title}</h2>
-      
+
       <div className="right-section">
         {ctas.map((cta, index) => {
           if (cta.type === 'search') {
             return (
               <div key={index} className="search-container">
                 <div className="search-icon">{renderIcon('search')}</div>
-                <input 
-                  type="text" 
-                  placeholder={cta.placeholder || "Search..."} 
-                  className="search-input" 
+                <input
+                  type="text"
+                  placeholder={cta.placeholder || "Search..."}
+                  className="search-input"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
             );
           }
-          
+
           if (cta.type === 'avatar') {
             return <div key={index} className="user-circle">JD</div>;
           }
@@ -52,10 +52,10 @@ const Topbar: React.FC = () => {
           if (cta.type === 'button' || cta.type === 'dropdown') {
             const isPrimary = cta.variant === 'primary';
             const isDropdown = cta.type === 'dropdown';
-            
+
             return (
-              <button 
-                key={index} 
+              <button
+                key={index}
                 onClick={cta.onClick}
                 className={`button-base ${isPrimary ? 'button-primary' : 'button-secondary'}`}
               >
@@ -69,7 +69,7 @@ const Topbar: React.FC = () => {
               </button>
             );
           }
-          
+
           return null;
         })}
       </div>
