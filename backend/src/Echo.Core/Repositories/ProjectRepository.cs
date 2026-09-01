@@ -111,7 +111,8 @@ public class ProjectRepository(AppDbContext context) : PrimaryRepositoryBase<Pro
 
         var totalRaised = await Context
             .Set<ProjectContribution>()
-            .Where(c => c.DeletedAt == null && c.CongregationId == congregationId)
+            .ApplySoftDeleteFilter()
+            .Where(c => c.CongregationId == congregationId)
             .SumAsync(c => c.Amount, ct);
 
         return new ProjectSummaryDto

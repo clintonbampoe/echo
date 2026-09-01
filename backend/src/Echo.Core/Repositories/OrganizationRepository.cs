@@ -92,7 +92,8 @@ public class OrganizationRepository(AppDbContext context)
 
         var totalOrganizationMembers = await Context
             .Set<OrganizationMember>()
-            .Where(m => m.DeletedAt == null && m.CongregationId == congregationId)
+            .ApplySoftDeleteFilter()
+            .Where(m => m.CongregationId == congregationId)
             .CountAsync(ct);
 
         return new OrganizationSummaryDto

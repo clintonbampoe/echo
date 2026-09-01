@@ -92,7 +92,8 @@ public class EventRepository(AppDbContext context) : PrimaryRepositoryBase<Event
             .FirstOrDefaultAsync(ct);
 
         var totalRegistrations = await Context.Set<EventRegistration>()
-            .Where(r => r.DeletedAt == null && r.CongregationId == congregationId)
+            .ApplySoftDeleteFilter()
+            .Where(r => r.CongregationId == congregationId)
             .CountAsync(ct);
 
         return new EventSummaryDto
