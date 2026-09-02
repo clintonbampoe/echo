@@ -79,9 +79,8 @@ public class ProjectContributionRepository(AppDbContext context)
     {
         var project = await Context
             .Set<Project>()
-            .Where(p =>
-                p.DeletedAt == null && p.CongregationId == congregationId && p.Id == projectId
-            )
+            .ApplySoftDeleteFilter()
+            .Where(p => p.CongregationId == congregationId && p.Id == projectId)
             .Select(p => new { p.TargetAmount })
             .FirstOrDefaultAsync(ct);
 
