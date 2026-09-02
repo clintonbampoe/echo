@@ -17,7 +17,7 @@ public class User : IPrimaryEntity, ISearchableEntity
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
     public string? OtherNames { get; set; } = string.Empty;
-    public string Name { get; set; } = string.Empty;
+    public string Name { get; private set; } = string.Empty;
 
     public DateTime CreatedAt { get; set; }
     public DateTime? DeletedAt { get; set; }
