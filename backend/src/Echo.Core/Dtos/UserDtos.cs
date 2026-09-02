@@ -15,7 +15,6 @@ public record UserCreateDto : IPrimaryCreateDto
 
 public record UserUpdateDto : IPrimaryUpdateDto
 {
-    public required string Name { get; init; }
     public required string EmailAddress { get; init; }
     public required string Password { get; init; }
     public UserRole Role { get; init; }

@@ -9,7 +9,7 @@ public class Member : IPrimaryEntity, ISearchableEntity
     public Guid CongregationId { get; set; }
     public Congregation Congregation { get; set; } = null!;
 
-    public string Name { get; set; } = string.Empty;
+    public string Name { get; private set; } = string.Empty;
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
     public string? OtherNames { get; set; } = string.Empty;

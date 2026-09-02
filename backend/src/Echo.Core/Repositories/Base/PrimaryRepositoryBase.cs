@@ -2,6 +2,7 @@ using Echo.Application.Extensions.QueryMethods;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace Echo.Core.Repositories.Base;
 
@@ -32,10 +33,11 @@ public abstract class PrimaryRepositoryBase<T>(AppDbContext context)
 
         DbSet.Entry(existing).CurrentValues.SetValues(entity);
 
-        DbSet.Entry(existing).Property(x => x.Id).IsModified = false;
-        DbSet.Entry(existing).Property(e => e.CongregationId).IsModified = false;
-        DbSet.Entry(existing).Property(e => e.CreatedAt).IsModified = false;
-        DbSet.Entry(existing).Property(e => e.DeletedAt).IsModified = false;
+        foreach (var property in DbSet.Entry(existing).Properties)
+        {
+            if (property.Metadata.ValueGenerated != ValueGenerated.Never)
+                property.IsModified = false;
+        }
 
         return true;
     }
