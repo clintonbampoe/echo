@@ -22,6 +22,21 @@ builder.Services.AddRouting(options =>
     options.LowercaseUrls = true;
     options.LowercaseQueryStrings = true;
 });
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        var frontendBaseUrl = builder.Configuration["FrontendClient:BaseUrl"]
+            ?? throw new InvalidOperationException("Missing 'FrontendClient:BaseUrl'.");
+
+        policy
+            .WithOrigins(frontendBaseUrl)
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+    });
+});
+
 builder
     .Services.AddControllers()
     .AddJsonOptions(options =>
@@ -49,6 +64,7 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi().AllowAnonymous();
 }
 
+app.UseCors();
 app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
