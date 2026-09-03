@@ -27,7 +27,6 @@ public class RegisterController(RegistrationService service) : AuthBaseControlle
     }
 
     [HttpPost("member")]
-    [AllowAnonymous]
     public async Task<ActionResult> RegisterMember(
         [FromBody] RegisterMemberRequest request,
         CancellationToken ct
