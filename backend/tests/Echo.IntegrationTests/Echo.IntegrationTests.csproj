@@ -16,4 +16,12 @@
     <Using Include="Xunit" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="xunit.v3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Echo.Api\Echo.Api.csproj" />
+  </ItemGroup>
+
 </Project>
