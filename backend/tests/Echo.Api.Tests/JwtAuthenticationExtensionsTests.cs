@@ -2,7 +2,6 @@ using System.Security.Claims;
 using Echo.Api.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.JsonWebTokens;
-using Xunit;
 
 namespace Echo.Api.Tests;
 
@@ -12,10 +11,12 @@ public class JwtAuthenticationExtensionsTests
     public void AddJwtAuthentication_DoesNotMutateDefaultInboundClaimTypeMap()
     {
         var keysBefore = JsonWebTokenHandler.DefaultInboundClaimTypeMap.Keys.ToList();
-        var (privateKeyB64, publicKeyB64) = JwtTestHelper.GenerateRsaKeyPair();
+        var (privateKeyBase64, publicKeyB64) = JwtTestHelper.GenerateRsaKeyPair();
 
         var services = new ServiceCollection();
-        services.AddJwtAuthentication(JwtTestHelper.BuildConfiguration(privateKeyB64, publicKeyB64));
+        services.AddJwtAuthentication(
+            JwtTestHelper.BuildConfiguration(privateKeyBase64, publicKeyB64)
+        );
 
         var keysAfter = JsonWebTokenHandler.DefaultInboundClaimTypeMap.Keys.ToList();
 
@@ -25,9 +26,9 @@ public class JwtAuthenticationExtensionsTests
     [Fact]
     public async Task ValidatedToken_PreservesRawClaimTypes_WhenMapInboundClaimsIsFalse()
     {
-        var (privateKeyB64, publicKeyB64) = JwtTestHelper.GenerateRsaKeyPair();
-        var token = JwtTestHelper.CreateSignedToken(privateKeyB64);
-        var result = await JwtTestHelper.ValidateTokenAsync(token, publicKeyB64);
+        var (privateKeyBase64, publicKeyBase64) = JwtTestHelper.GenerateRsaKeyPair();
+        var token = JwtTestHelper.CreateSignedToken(privateKeyBase64);
+        var result = await JwtTestHelper.ValidateTokenAsync(token, publicKeyBase64);
 
         Assert.True(result.IsValid, result.Exception?.Message);
 

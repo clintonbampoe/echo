@@ -12,7 +12,7 @@ internal static class JwtTestHelper
     internal const string Issuer = "test-issuer";
     internal const string Audience = "test-audience";
 
-    internal static (string PrivateKeyB64, string PublicKeyB64) GenerateRsaKeyPair()
+    internal static (string PrivateKeyBase64, string PublicKeyB64) GenerateRsaKeyPair()
     {
         using var rsa = RSA.Create(2048);
 
@@ -26,7 +26,7 @@ internal static class JwtTestHelper
         return (privateB64, publicB64);
     }
 
-    internal static IConfiguration BuildConfiguration(string privateKeyB64, string publicKeyB64)
+    internal static IConfiguration BuildConfiguration(string privateKeyBase64, string publicKeyBase64)
     {
         return new ConfigurationBuilder()
             .AddInMemoryCollection(
@@ -34,17 +34,17 @@ internal static class JwtTestHelper
                 {
                     ["Jwt:Issuer"] = Issuer,
                     ["Jwt:Audience"] = Audience,
-                    ["Jwt:PrivateKey"] = privateKeyB64,
-                    ["Jwt:PublicKey"] = publicKeyB64,
+                    ["Jwt:PrivateKey"] = privateKeyBase64,
+                    ["Jwt:PublicKey"] = publicKeyBase64,
                 }
             )
             .Build();
     }
 
-    internal static string CreateSignedToken(string privateKeyB64)
+    internal static string CreateSignedToken(string privateKeyBase64)
     {
         using var rsa = RSA.Create();
-        rsa.ImportFromPem(Encoding.UTF8.GetString(Convert.FromBase64String(privateKeyB64)));
+        rsa.ImportFromPem(Encoding.UTF8.GetString(Convert.FromBase64String(privateKeyBase64)));
 
         var signingCredentials = new SigningCredentials(
             new RsaSecurityKey(rsa),
@@ -71,11 +71,11 @@ internal static class JwtTestHelper
 
     internal static async Task<TokenValidationResult> ValidateTokenAsync(
         string token,
-        string publicKeyB64
+        string publicKeyBase64
     )
     {
         using var rsa = RSA.Create();
-        rsa.ImportFromPem(Encoding.UTF8.GetString(Convert.FromBase64String(publicKeyB64)));
+        rsa.ImportFromPem(Encoding.UTF8.GetString(Convert.FromBase64String(publicKeyBase64)));
 
         var validationParameters = new TokenValidationParameters
         {
