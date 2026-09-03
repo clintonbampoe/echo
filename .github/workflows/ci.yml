@@ -32,9 +32,9 @@ jobs:
           key: nuget-${{ hashFiles('backend/Directory.Packages.props', 'backend/src/**/*.csproj') }}
           restore-keys: nuget-
       - name: Restore
-        run: dotnet restore backend/src/Echo.Api/Echo.Api.csproj
+        run: dotnet restore backend/Echo.slnx
       - name: Build
-        run: dotnet build backend/src/Echo.Api/Echo.Api.csproj --no-restore -c Release
+        run: dotnet build backend/Echo.slnx --no-restore -c Release
       - name: Test
         run: dotnet test --solution backend/Echo.slnx --filter "Category=Unit" --no-restore
           --no-build -c Release
