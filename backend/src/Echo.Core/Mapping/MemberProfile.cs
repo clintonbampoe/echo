@@ -10,10 +10,6 @@ public class MemberProfile : Profile
     {
         CreateMap<MemberCreateDto, Member>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())
-            .ForMember(
-                dest => dest.Name,
-                opt => opt.MapFrom(src => $"{src.FirstName} {src.LastName}".Trim())
-            )
             .ForMember(dest => dest.CongregationId, opt => opt.Ignore())
             .ForMember(dest => dest.Congregation, opt => opt.Ignore())
             .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
@@ -21,10 +17,6 @@ public class MemberProfile : Profile
 
         CreateMap<MemberUpdateDto, Member>()
             .ForMember(dest => dest.Id, opt => opt.Ignore())
-            .ForMember(
-                dest => dest.Name,
-                opt => opt.MapFrom(src => $"{src.FirstName} {src.LastName}".Trim())
-            )
             .ForMember(dest => dest.CongregationId, opt => opt.Ignore())
             .ForMember(dest => dest.Congregation, opt => opt.Ignore())
             .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
