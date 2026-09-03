@@ -3,8 +3,9 @@ using Echo.Api.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.JsonWebTokens;
 
-namespace Echo.Api.Tests;
+namespace Echo.Api.Tests.Extensions;
 
+[Trait("Category", "Unit")]
 public class JwtAuthenticationExtensionsTests
 {
     [Fact]

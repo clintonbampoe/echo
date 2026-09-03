@@ -1,5 +1,6 @@
 namespace Echo.IntegrationTests;
 
+[Trait("Category", "Integration")]
 public class UnitTest1
 {
     [Fact]

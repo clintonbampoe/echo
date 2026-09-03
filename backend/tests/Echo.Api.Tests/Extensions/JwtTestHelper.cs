@@ -5,7 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 
-namespace Echo.Api.Tests;
+namespace Echo.Api.Tests.Extensions;
 
 internal static class JwtTestHelper
 {
@@ -26,7 +26,10 @@ internal static class JwtTestHelper
         return (privateB64, publicB64);
     }
 
-    internal static IConfiguration BuildConfiguration(string privateKeyBase64, string publicKeyBase64)
+    internal static IConfiguration BuildConfiguration(
+        string privateKeyBase64,
+        string publicKeyBase64
+    )
     {
         return new ConfigurationBuilder()
             .AddInMemoryCollection(
