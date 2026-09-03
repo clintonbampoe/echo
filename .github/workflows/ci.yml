@@ -36,8 +36,8 @@ jobs:
       - name: Build
         run: dotnet build backend/src/Echo.Api/Echo.Api.csproj --no-restore -c Release
       - name: Test
-        run: dotnet test backend/Echo.slnx --filter "Category=Unit" --no-restore --no-build
-          -c Release
+        run: dotnet test --solution backend/Echo.slnx --filter "Category=Unit" --no-restore
+          --no-build -c Release
   frontend:
     runs-on: ubuntu-latest
     timeout-minutes: 10
