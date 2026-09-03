@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Echo.Core.Dtos.Interfaces;
 using Echo.Domain.Enums;
 
@@ -6,18 +7,27 @@ namespace Echo.Core.Dtos;
 public record ProjectContributionCreateDto : IPrimaryCreateDto
 {
     public Guid ProjectId { get; init; }
+
+    [Range(0.01, 1_000_000)]
     public decimal Amount { get; init; }
+
     public DateOnly DateContributed { get; init; }
     public PaymentMethod PaymentMethod { get; init; }
-    public required string ? Description { get; init; }
+
+    [StringLength(2000)]
+    public required string? Description { get; init; }
 }
 
 public record ProjectContributionUpdateDto : IPrimaryUpdateDto
 {
+    [Range(0.01, 1_000_000)]
     public decimal Amount { get; init; }
+
     public DateOnly DateContributed { get; init; }
     public PaymentMethod PaymentMethod { get; init; }
-    public required string ? Description { get; init; }
+
+    [StringLength(2000)]
+    public required string? Description { get; init; }
 }
 
 public record ProjectContributionListResponseDto : IPrimaryListResponseDto, Application.Dtos.Interfaces.IPrimaryListResponseDto

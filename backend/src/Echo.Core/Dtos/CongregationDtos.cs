@@ -1,35 +1,65 @@
+using System.ComponentModel.DataAnnotations;
 using Echo.Domain.Enums;
 
 namespace Echo.Core.Dtos;
 
 public record CongregationCreateDto
 {
+    [Required, StringLength(100, MinimumLength = 1)]
     public string Name { get; init; } = string.Empty;
+
     public ReligiousOrganizationType OrgType { get; init; }
 
+    [Required, Phone, StringLength(20)]
     public string PhoneNumber { get; init; } = string.Empty;
+
+    [Required, EmailAddress, StringLength(255)]
     public string EmailAddress { get; init; } = string.Empty;
+
+    [StringLength(255)]
     public string? PostalAddress { get; init; }
+
+    [Url, StringLength(500)]
     public string? WebsiteUrl { get; init; }
 
     public Region Region { get; init; }
+
+    [Required, StringLength(100, MinimumLength = 1)]
     public string City { get; init; } = string.Empty;
+
+    [Required, StringLength(100, MinimumLength = 1)]
     public string Town { get; init; } = string.Empty;
+
+    [Required, StringLength(255, MinimumLength = 1)]
     public string GpsAddress { get; init; } = string.Empty;
 }
 
 public record CongregationUpdateDto
 {
+    [StringLength(100)]
     public string? Name { get; init; } = string.Empty;
 
+    [Phone, StringLength(20)]
     public string? PhoneNumber { get; init; } = string.Empty;
+
+    [EmailAddress, StringLength(255)]
     public string? EmailAddress { get; init; } = string.Empty;
+
+    [StringLength(255)]
     public string? PostalAddress { get; init; }
+
+    [Url, StringLength(500)]
     public string? WebsiteUrl { get; init; }
 
     public Region? Region { get; init; }
+
+    [StringLength(100)]
     public string? City { get; init; } = string.Empty;
+
+    [StringLength(100)]
     public string? Town { get; init; } = string.Empty;
+
+    [StringLength(255)]
     public string? GpsAddress { get; init; } = string.Empty;
 }
 
