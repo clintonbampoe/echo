@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Echo.Core.Dtos.Interfaces;
 using Echo.Domain.Enums;
 
@@ -5,23 +6,37 @@ namespace Echo.Core.Dtos;
 
 public record AttendanceCreateDto : IPrimaryCreateDto
 {
+    [Range(1, int.MaxValue)]
     public int AttendanceContextId { get; init; }
+
     public Guid? MemberId { get; init; }
+
+    [StringLength(100)]
     public string? GuestName { get; init; }
+
     public AttendeeType AttendeeType { get; init; }
     public DateOnly ForDate { get; init; }
     public TimeOnly CheckInTime { get; init; }
+
+    [StringLength(2000)]
     public string? Description { get; init; }
 }
 
 public record AttendanceUpdateDto : IPrimaryUpdateDto
 {
+    [Range(1, int.MaxValue)]
     public int AttendanceContextId { get; init; }
+
     public Guid? MemberId { get; init; }
+
+    [StringLength(100)]
     public string? GuestName { get; init; }
+
     public AttendeeType AttendeeType { get; init; }
     public DateOnly ForDate { get; init; }
     public TimeOnly CheckInTime { get; init; }
+
+    [StringLength(2000)]
     public string? Description { get; init; }
 }
 
