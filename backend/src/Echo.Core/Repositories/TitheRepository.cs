@@ -72,20 +72,24 @@ public class TitheRepository(AppDbContext context) : PrimaryRepositoryBase<Tithe
     }
 
     public async Task<List<TitheMonthlyTotalDto>> GetMonthlySummaryAsync(
-        Guid congregationId, int year, CancellationToken ct = default)
+        Guid congregationId,
+        int year,
+        CancellationToken ct = default
+    )
     {
-        var totals = await DbSet
+        var byMonth = await DbSet
             .ApplySoftDeleteFilter()
             .Where(t => t.CongregationId == congregationId && t.ForYear == year)
             .GroupBy(t => t.ForMonth)
             .Select(g => new { Month = g.Key, Total = g.Sum(t => t.Amount) })
-            .ToListAsync(ct);
+            .ToDictionaryAsync(t => t.Month, t => t.Total, ct);
 
         return Enum.GetValues<MonthOfYear>()
+            .Distinct()
             .Select(m => new TitheMonthlyTotalDto
             {
                 Month = m,
-                Total = totals.FirstOrDefault(t => t.Month == m)?.Total ?? 0,
+                Total = byMonth.GetValueOrDefault(m, 0m),
             })
             .ToList();
     }

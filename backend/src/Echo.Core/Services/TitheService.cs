@@ -48,6 +48,9 @@ public class TitheService(TitheRepository repository, AppDbContext context, IMap
     public async Task<IOperationResult> GetMonthlySummaryAsync(
         Guid congregationId, int year, CancellationToken ct = default)
     {
+        if (year == 0)
+            year = DateTime.UtcNow.Year;
+
         var result = await _titheRepository.GetMonthlySummaryAsync(congregationId, year, ct);
         return new SuccessResult<List<TitheMonthlyTotalDto>>(result);
     }
