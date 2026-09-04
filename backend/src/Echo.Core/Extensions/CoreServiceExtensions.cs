@@ -1,12 +1,16 @@
 using Echo.Core.Repositories;
 using Echo.Core.Services;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Echo.Core.Extensions;
 
 public static class CoreServiceExtensions
 {
-    public static IServiceCollection AddCoreServices(this IServiceCollection services)
+    public static IServiceCollection AddCoreServices(
+        this IServiceCollection services,
+        IConfiguration configuration
+    )
     {
         services.AddScoped<MemberRepository>();
         services.AddScoped<AssetRepository>();
@@ -47,8 +51,13 @@ public static class CoreServiceExtensions
         services.AddScoped<AttendanceContextService>();
         services.AddScoped<UserService>();
 
-        // first parameter is ignored because we have no configurations outside our AutoMapper profiles
-        services.AddAutoMapper(_ => { }, typeof(CoreServiceExtensions));
+        services.AddAutoMapper(
+            cfg =>
+            {
+                cfg.LicenseKey = configuration["LUCKYPENNY_LICENSE_KEY"];
+            },
+            typeof(CoreServiceExtensions)
+        );
 
         return services;
     }

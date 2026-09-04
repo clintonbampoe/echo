@@ -26,14 +26,11 @@ builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
     {
-        var frontendBaseUrl = builder.Configuration["FrontendClient:BaseUrl"]
+        var frontendBaseUrl =
+            builder.Configuration["FrontendClient:BaseUrl"]
             ?? throw new InvalidOperationException("Missing 'FrontendClient:BaseUrl'.");
 
-        policy
-            .WithOrigins(frontendBaseUrl)
-            .AllowAnyHeader()
-            .AllowAnyMethod()
-            .AllowCredentials();
+        policy.WithOrigins(frontendBaseUrl).AllowAnyHeader().AllowAnyMethod().AllowCredentials();
     });
 });
 
@@ -43,7 +40,7 @@ builder
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter())
     );
 
-builder.Services.AddCoreServices();
+builder.Services.AddCoreServices(builder.Configuration);
 builder.Services.AddAuthServices(builder.Configuration);
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices();
