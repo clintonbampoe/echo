@@ -18,7 +18,8 @@ public class MemberConfiguration : PrimaryEntityConfigurationBase<Member>
             .HasComputedColumnSql(
                 $"TRIM(COALESCE(\"{nameof(Member.LastName)}\", '') || ' ' || COALESCE(\"{nameof(Member.FirstName)}\", '') || ' ' || COALESCE(\"{nameof(Member.OtherNames)}\", ''))",
                 stored: true
-            );
+            )
+            .ValueGeneratedOnAddOrUpdate();
 
         builder.HasIndex(m => m.Name).HasMethod("GIN").HasOperators("gin_trgm_ops");
     }

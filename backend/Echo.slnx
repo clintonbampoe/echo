@@ -1,4 +1,8 @@
 <Solution>
+  <Folder Name="/tests/">
+    <Project Path="tests/Echo.Api.Tests/Echo.Api.Tests.csproj" />
+    <Project Path="tests/Echo.Auth.Tests/Echo.Auth.Tests.csproj" />
+  </Folder>
   <Folder Name="/src/">
     <Project Path="src/Echo.Api/Echo.Api.csproj" />
     <Project Path="src/Echo.Auth/Echo.Auth.csproj" />
