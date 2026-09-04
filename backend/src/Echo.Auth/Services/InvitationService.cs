@@ -13,7 +13,8 @@ public class InvitationService(
     AppDbContext dbContext,
     InvitationTokenRepository invitationTokenRepository,
     ITokenGenerator tokenGenerator,
-    ITokenHasher hashService
+    ITokenHasher hashService,
+    TimeProvider timeProvider
 )
 {
     private const int _defaultExpiryDays = 30;
@@ -34,7 +35,7 @@ public class InvitationService(
             CreatedByUserId = createdByUserId,
             AllowedRole = allowedRole,
             TokenHash = await hashService.HashAsync(token),
-            ExpiresAt = DateTime.UtcNow.AddDays(expiryDays ?? _defaultExpiryDays),
+            ExpiresAt = timeProvider.GetUtcNow().UtcDateTime.AddDays(expiryDays ?? _defaultExpiryDays),
         };
 
         await invitationTokenRepository.CreateRecord(tokenEntity, ct);
@@ -58,7 +59,7 @@ public class InvitationService(
         if (
             tokenRecord is null
             || tokenRecord.IsRevoked
-            || tokenRecord.ExpiresAt <= DateTime.UtcNow
+            || tokenRecord.ExpiresAt <= timeProvider.GetUtcNow().UtcDateTime
         )
             return null;
 

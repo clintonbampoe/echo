@@ -9,6 +9,7 @@ public static class RegisterApplicationServices
 {
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
+        services.AddSingleton(TimeProvider.System);
         services.AddScoped<ITokenGenerator, TokenGenerator>();
         services.AddScoped<IPasswordHasher, BcryptHashService>();
         services.AddScoped<ITokenHasher, Sha256HashService>();

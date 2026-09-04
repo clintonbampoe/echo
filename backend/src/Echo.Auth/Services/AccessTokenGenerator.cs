@@ -13,11 +13,13 @@ namespace Echo.Auth.Services;
 public class AccessTokenGenerator
 {
     private readonly JwtOptions _jwtOptions;
+    private readonly TimeProvider _timeProvider;
     private readonly SigningCredentials _signingCredentials;
 
-    public AccessTokenGenerator(IOptions<JwtOptions> jwtOptions)
+    public AccessTokenGenerator(IOptions<JwtOptions> jwtOptions, TimeProvider timeProvider)
     {
         _jwtOptions = jwtOptions.Value;
+        _timeProvider = timeProvider;
         var rsa = RSA.Create();
 
         rsa.ImportFromPem(
@@ -31,7 +33,7 @@ public class AccessTokenGenerator
 
     public (string Token, DateTime ExpiresAt) Generate(UserAuthDto user)
     {
-        var expiresAt = DateTime.UtcNow.AddMinutes(_jwtOptions.AccessTokenLifetimeMinutes);
+        var expiresAt = _timeProvider.GetUtcNow().UtcDateTime.AddMinutes(_jwtOptions.AccessTokenLifetimeMinutes);
 
         var claims = new[]
         {

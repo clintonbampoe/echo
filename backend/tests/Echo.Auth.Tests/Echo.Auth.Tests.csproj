@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <OutputType>Exe</OutputType>
-    <IsTestProject>true</IsTestProject>
+    <IsTestProject>True</IsTestProject>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,9 +18,12 @@
 
   <ItemGroup>
     <PackageReference Include="xunit.v3" />
+    <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
+    <PackageReference Include="Microsoft.Extensions.Options" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Echo.Api\Echo.Api.csproj" />
+    <ProjectReference Include="..\..\src\Echo.Auth\Echo.Auth.csproj" />
   </ItemGroup>
-</Project>
+
+  </Project>

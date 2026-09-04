@@ -18,7 +18,8 @@ public class EmailVerificationService(
     [FromKeyedServices("Resend")] IEmailService emailService,
     ITokenGenerator tokenGenerator,
     ITokenHasher hashService,
-    AuthLinkBuilder linkBuilder
+    AuthLinkBuilder linkBuilder,
+    TimeProvider timeProvider
 )
 {
     public async Task<IOperationResult> SendVerificationLinkToEmail(
@@ -39,7 +40,7 @@ public class EmailVerificationService(
             );
 
         if (existingToken is not null)
-            existingToken.InvalidatedAt = DateTime.UtcNow;
+            existingToken.InvalidatedAt = timeProvider.GetUtcNow().UtcDateTime;
 
         var token = tokenGenerator.GenerateToken(16);
 
@@ -90,20 +91,20 @@ public class EmailVerificationService(
             return new InvalidTokenResult();
 
         var user = tokenRecord.User;
-        user.EmailVerifiedAt = DateTime.UtcNow;
-        tokenRecord.UsedAt = DateTime.UtcNow;
+        user.EmailVerifiedAt = timeProvider.GetUtcNow().UtcDateTime;
+        tokenRecord.UsedAt = timeProvider.GetUtcNow().UtcDateTime;
 
         await dbContext.SaveChangesAsync(ct);
 
         return new OkResult("Operation Completed successfully.");
     }
 
-    private static bool IsTokenValid(EmailVerificationToken? token)
+    private bool IsTokenValid(EmailVerificationToken? token)
     {
         if (token is null)
             return false;
 
-        if (token.ExpiresAt <= DateTime.UtcNow)
+        if (token.ExpiresAt <= timeProvider.GetUtcNow().UtcDateTime)
             return false;
 
         if (token.UsedAt is not null)
@@ -122,7 +123,7 @@ public class EmailVerificationService(
             if (token is null)
                 return false;
 
-            var isActive = token.CreatedAt > DateTime.UtcNow.AddSeconds(-60);
+            var isActive = token.CreatedAt > timeProvider.GetUtcNow().UtcDateTime.AddSeconds(-60);
             return isActive;
         }
 

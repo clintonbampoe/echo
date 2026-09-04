@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Auth.Repositories;
 
-public class EmailVerificationTokenRepository(AppDbContext context)
+public class EmailVerificationTokenRepository(AppDbContext context, TimeProvider timeProvider)
 {
     private readonly DbSet<EmailVerificationToken> _tokens = context.Set<EmailVerificationToken>();
 
@@ -22,9 +22,10 @@ public class EmailVerificationTokenRepository(AppDbContext context)
 
     public async Task<EmailVerificationToken?> GetActiveTokenForUser(Guid userId, CancellationToken ct = default)
     {
+        var now = timeProvider.GetUtcNow().UtcDateTime;
         var existing = await _tokens
             .ApplySoftDeleteFilter()
-            .Where(e => e.UserId == userId && e.ExpiresAt > DateTime.UtcNow && e.InvalidatedAt == null &&
+            .Where(e => e.UserId == userId && e.ExpiresAt > now && e.InvalidatedAt == null &&
                         e.UsedAt == null)
             .OrderByDescending(e => e.CreatedAt)
             .FirstOrDefaultAsync(ct);
