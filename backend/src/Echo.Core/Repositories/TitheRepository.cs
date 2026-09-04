@@ -81,11 +81,13 @@ public class TitheRepository(AppDbContext context) : PrimaryRepositoryBase<Tithe
             .Select(g => new { Month = g.Key, Total = g.Sum(t => t.Amount) })
             .ToListAsync(ct);
 
+        var byMonth = totals.ToDictionary(t => t.Month, t => t.Total);
+
         return Enum.GetValues<MonthOfYear>()
             .Select(m => new TitheMonthlyTotalDto
             {
                 Month = m,
-                Total = totals.FirstOrDefault(t => t.Month == m)?.Total ?? 0,
+                Total = byMonth.GetValueOrDefault(m),
             })
             .ToList();
     }
