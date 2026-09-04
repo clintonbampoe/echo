@@ -7,14 +7,17 @@ using Echo.Domain.Enums;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Time.Testing;
 
-namespace Echo.Auth.Tests;
+namespace Echo.Auth.Tests.Services;
 
+[Trait("Category", "Unit")]
 public class AccessTokenGeneratorTests
 {
     [Fact]
     public void Generate_UsesTimeProviderForExpiry()
     {
-        var fakeTime = new FakeTimeProvider(new DateTimeOffset(2026, 1, 1, 12, 0, 0, TimeSpan.Zero));
+        var fakeTime = new FakeTimeProvider(
+            new DateTimeOffset(2026, 1, 1, 12, 0, 0, TimeSpan.Zero)
+        );
         var generator = CreateGenerator(fakeTime, accessTokenLifetimeMinutes: 15);
 
         var user = new UserAuthDto
@@ -36,7 +39,10 @@ public class AccessTokenGeneratorTests
         Assert.Equal(new DateTime(2026, 1, 1, 12, 35, 0, DateTimeKind.Utc), laterExpiresAt);
     }
 
-    private static AccessTokenGenerator CreateGenerator(TimeProvider timeProvider, int accessTokenLifetimeMinutes)
+    private static AccessTokenGenerator CreateGenerator(
+        TimeProvider timeProvider,
+        int accessTokenLifetimeMinutes
+    )
     {
         using var rsa = RSA.Create(2048);
         var privateKeyPem = rsa.ExportPkcs8PrivateKeyPem();
