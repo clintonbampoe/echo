@@ -7,4 +7,7 @@
     <Project Path="src/Echo.Infrastructure/Echo.Infrastructure.csproj" />
     <Project Path="src\Echo.Application\Echo.Application.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Echo.Auth.Tests/Echo.Auth.Tests.csproj" />
+  </Folder>
 </Solution>
