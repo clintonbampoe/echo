@@ -1,16 +1,23 @@
+using System.ComponentModel.DataAnnotations;
 using Echo.Core.Dtos.Interfaces;
 
 namespace Echo.Core.Dtos;
 
 public record OrganizationCreateDto : IPrimaryCreateDto
 {
+    [Required, StringLength(100, MinimumLength = 1)]
     public required string Name { get; init; }
+
+    [StringLength(2000)]
     public string? Description { get; init; }
 }
 
 public record OrganizationUpdateDto : IPrimaryUpdateDto
 {
+    [Required, StringLength(100, MinimumLength = 1)]
     public required string Name { get; init; }
+
+    [StringLength(2000)]
     public string? Description { get; init; }
 }
 
