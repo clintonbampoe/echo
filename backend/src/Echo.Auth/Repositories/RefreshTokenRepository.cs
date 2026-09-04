@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Auth.Repositories;
 
-public class RefreshTokenRepository(AppDbContext context)
+public class RefreshTokenRepository(AppDbContext context, TimeProvider timeProvider)
 {
     private readonly DbSet<RefreshToken> _tokens = context.Set<RefreshToken>();
 
@@ -34,7 +34,7 @@ public class RefreshTokenRepository(AppDbContext context)
         if (existing is null)
             return false;
 
-        existing.RevokedAt = DateTime.UtcNow;
+        existing.RevokedAt = timeProvider.GetUtcNow().UtcDateTime;
         existing.ReplacedByTokenId = replacedByTokenId;
 
         return true;
@@ -48,7 +48,7 @@ public class RefreshTokenRepository(AppDbContext context)
             .ToListAsync(ct);
 
         foreach (var token in activeTokens)
-            token.RevokedAt = DateTime.UtcNow;
+            token.RevokedAt = timeProvider.GetUtcNow().UtcDateTime;
 
         return true;
     }

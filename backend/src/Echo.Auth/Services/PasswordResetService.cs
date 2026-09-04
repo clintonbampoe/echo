@@ -21,7 +21,8 @@ public class PasswordResetService(
     ITokenGenerator tokenGenerator,
     ITokenHasher tokenHashService,
     IPasswordHasher passwordHashService,
-    AuthLinkBuilder linkBuilder
+    AuthLinkBuilder linkBuilder,
+    TimeProvider timeProvider
 )
 {
     public async Task<IOperationResult> ForgotPasswordAsync(
@@ -40,7 +41,7 @@ public class PasswordResetService(
         {
             UserId = user.Id,
             TokenHash = await tokenHashService.HashAsync(token),
-            ExpiresAt = DateTime.UtcNow.AddHours(1),
+            ExpiresAt = timeProvider.GetUtcNow().UtcDateTime.AddHours(1),
         };
 
         await passwordVerificationTokenRepository.CreateRecord(tokenEntity, ct);
@@ -72,11 +73,11 @@ public class PasswordResetService(
         if (tokenEntity is null)
             return new InvalidTokenResult();
 
-        if (tokenEntity.ExpiresAt <= DateTime.UtcNow || tokenEntity.UsedAt is not null)
+        if (tokenEntity.ExpiresAt <= timeProvider.GetUtcNow().UtcDateTime || tokenEntity.UsedAt is not null)
             return new InvalidTokenResult();
 
         tokenEntity.User.PasswordHash = await passwordHashService.HashAsync(newPassword);
-        tokenEntity.UsedAt = DateTime.UtcNow;
+        tokenEntity.UsedAt = timeProvider.GetUtcNow().UtcDateTime;
 
         await refreshTokenService.RevokeAllActiveSessionsForUser(tokenEntity.UserId, ct);
 
