@@ -7,15 +7,16 @@ using Echo.Domain.Entities.Core.Interfaces;
 
 namespace Echo.Core.Services.Base;
 
-public abstract class ReferenceServiceBase<T>(
+public abstract class ReferenceServiceBase<T, TResponseDto>(
     ReferenceRepositoryBase<T> repository,
-    AppDbContext context,
+    IUnitOfWork unitOfWork,
     IMapper mapper
 )
     where T : class, IReferenceEntity
+    where TResponseDto : IReferenceResponseDto
 {
     protected readonly ReferenceRepositoryBase<T> Repository = repository;
-    protected readonly AppDbContext Context = context;
+    protected readonly IUnitOfWork UnitOfWork = unitOfWork;
     protected readonly IMapper Mapper = mapper;
 
     public abstract Task<IOperationResult> GetAllAsync(
@@ -39,8 +40,10 @@ public abstract class ReferenceServiceBase<T>(
         entity.CongregationId = congregationId;
 
         await Repository.CreateRecord(entity, ct);
-        await Context.SaveChangesAsync(ct);
-        return new OkResult("Record created successfully.");
+        await UnitOfWork.CommitAsync(ct);
+
+        var resource = Mapper.Map<TResponseDto>(entity);
+        return new CreatedAtResult<TResponseDto>(resource);
     }
 
     public virtual async Task<IOperationResult> UpdateAsync(
@@ -59,7 +62,7 @@ public abstract class ReferenceServiceBase<T>(
         if (!success)
             return new NotFoundResult("Record not found.");
 
-        await Context.SaveChangesAsync(ct);
+        await UnitOfWork.CommitAsync(ct);
         return new OkResult("Record updated successfully.");
     }
 
@@ -74,7 +77,7 @@ public abstract class ReferenceServiceBase<T>(
         if (!success)
             return new NotFoundResult("Record not found.");
 
-        await Context.SaveChangesAsync(ct);
+        await UnitOfWork.CommitAsync(ct);
         return new OkResult("Record deleted successfully.");
     }
 }

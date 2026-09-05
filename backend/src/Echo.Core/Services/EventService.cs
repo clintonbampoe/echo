@@ -10,8 +10,8 @@ using Echo.Domain.Entities.Core;
 
 namespace Echo.Core.Services;
 
-public class EventService(EventRepository repository, AppDbContext context, IMapper mapper)
-    : PrimaryServiceBase<Event>(repository, context, mapper)
+public class EventService(EventRepository repository, IUnitOfWork unitOfWork, IMapper mapper)
+    : PrimaryServiceBase<Event, EventResponseDto>(repository, unitOfWork, mapper)
 {
     private readonly EventRepository _eventRepository = repository;
 
@@ -45,7 +45,10 @@ public class EventService(EventRepository repository, AppDbContext context, IMap
         return new SuccessResult<EventResponseDto>(result);
     }
 
-    public async Task<IOperationResult> GetSummaryAsync(Guid congregationId, CancellationToken ct = default)
+    public async Task<IOperationResult> GetSummaryAsync(
+        Guid congregationId,
+        CancellationToken ct = default
+    )
     {
         var result = await _eventRepository.GetSummaryAsync(congregationId, ct);
         return new SuccessResult<EventSummaryDto>(result);

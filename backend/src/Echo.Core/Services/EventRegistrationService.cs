@@ -12,9 +12,14 @@ namespace Echo.Core.Services;
 
 public class EventRegistrationService(
     EventRegistrationRepository repository,
-    AppDbContext context,
+    IUnitOfWork unitOfWork,
     IMapper mapper
-) : PrimaryServiceBase<EventRegistration>(repository, context, mapper)
+)
+    : PrimaryServiceBase<EventRegistration, EventRegistrationResponseDto>(
+        repository,
+        unitOfWork,
+        mapper
+    )
 {
     private readonly EventRegistrationRepository _eventRegistrationRepository = repository;
 

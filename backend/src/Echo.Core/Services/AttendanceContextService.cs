@@ -10,9 +10,14 @@ namespace Echo.Core.Services;
 
 public class AttendanceContextService(
     AttendanceContextRepository repository,
-    AppDbContext context,
+    IUnitOfWork unitOfWork,
     IMapper mapper
-) : ReferenceServiceBase<AttendanceContext>(repository, context, mapper)
+)
+    : ReferenceServiceBase<AttendanceContext, AttendanceContextResponseDto>(
+        repository,
+        unitOfWork,
+        mapper
+    )
 {
     private readonly AttendanceContextRepository _attendanceContextRepository = repository;
 
