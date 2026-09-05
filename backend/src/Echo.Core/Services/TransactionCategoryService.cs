@@ -10,9 +10,14 @@ namespace Echo.Core.Services;
 
 public class TransactionCategoryService(
     TransactionCategoryRepository repository,
-    AppDbContext context,
+    IUnitOfWork unitOfWork,
     IMapper mapper
-) : ReferenceServiceBase<TransactionCategory>(repository, context, mapper)
+)
+    : ReferenceServiceBase<TransactionCategory, TransactionCategoryResponseDto>(
+        repository,
+        unitOfWork,
+        mapper
+    )
 {
     private readonly TransactionCategoryRepository _transactionCategoryRepository = repository;
 

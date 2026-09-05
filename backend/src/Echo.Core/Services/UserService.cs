@@ -11,8 +11,8 @@ using Echo.Domain.Entities.Core;
 
 namespace Echo.Core.Services;
 
-public class UserService(UserRepository repository, AppDbContext context, IMapper mapper)
-    : PrimaryServiceBase<User>(repository, context, mapper)
+public class UserService(UserRepository repository, IUnitOfWork unitOfWork, IMapper mapper)
+    : PrimaryServiceBase<User, UserResponseDto>(repository, unitOfWork, mapper)
 {
     private readonly UserRepository _userRepository = repository;
 
@@ -31,7 +31,7 @@ public class UserService(UserRepository repository, AppDbContext context, IMappe
         user.CongregationId = congregationId;
 
         var createdSuccessfully = await _userRepository.CreateRecord(user, ct);
-        await Context.SaveChangesAsync(ct);
+        await UnitOfWork.CommitAsync(ct);
 
         if (!createdSuccessfully)
             return new InternalServerError();

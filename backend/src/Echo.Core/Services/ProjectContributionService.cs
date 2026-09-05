@@ -12,9 +12,14 @@ namespace Echo.Core.Services;
 
 public class ProjectContributionService(
     ProjectContributionRepository repository,
-    AppDbContext context,
+    IUnitOfWork context,
     IMapper mapper
-) : PrimaryServiceBase<ProjectContribution>(repository, context, mapper)
+)
+    : PrimaryServiceBase<ProjectContribution, ProjectContributionResponseDto>(
+        repository,
+        context,
+        mapper
+    )
 {
     private readonly ProjectContributionRepository _projectContributionRepository = repository;
 
@@ -48,9 +53,17 @@ public class ProjectContributionService(
         return new SuccessResult<ProjectContributionResponseDto>(result);
     }
 
-    public async Task<IOperationResult> GetSummaryAsync(Guid congregationId, Guid projectId, CancellationToken ct = default)
+    public async Task<IOperationResult> GetSummaryAsync(
+        Guid congregationId,
+        Guid projectId,
+        CancellationToken ct = default
+    )
     {
-        var result = await _projectContributionRepository.GetSummaryAsync(congregationId, projectId, ct);
+        var result = await _projectContributionRepository.GetSummaryAsync(
+            congregationId,
+            projectId,
+            ct
+        );
         return new SuccessResult<ProjectContributionSummaryDto?>(result);
     }
 }

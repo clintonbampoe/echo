@@ -12,12 +12,12 @@ namespace Echo.Core.Services;
 
 public class AttendanceService(
     AttendanceRepository repository,
-    AppDbContext context,
+    IUnitOfWork unitOfWork,
     IMapper mapper
-) : PrimaryServiceBase<Attendance>(repository, context, mapper)
+) : PrimaryServiceBase<Attendance, AttendanceResponseDto>(repository, unitOfWork, mapper)
 {
     private readonly AttendanceRepository _attendanceRepository = repository;
-    
+
     public override async Task<IOperationResult> GetPageAsync(
         Guid congregationId,
         PaginationParameters paginationParameters,
@@ -49,9 +49,18 @@ public class AttendanceService(
     }
 
     public async Task<IOperationResult> GetSummaryAsync(
-        Guid congregationId, int attendanceContextId, DateOnly forDate, CancellationToken ct = default)
+        Guid congregationId,
+        int attendanceContextId,
+        DateOnly forDate,
+        CancellationToken ct = default
+    )
     {
-        var result = await _attendanceRepository.GetSummaryAsync(congregationId, attendanceContextId, forDate, ct);
+        var result = await _attendanceRepository.GetSummaryAsync(
+            congregationId,
+            attendanceContextId,
+            forDate,
+            ct
+        );
         return new SuccessResult<AttendanceSummaryDto>(result);
     }
 }

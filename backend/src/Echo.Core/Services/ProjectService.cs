@@ -10,8 +10,8 @@ using Echo.Domain.Entities.Core;
 
 namespace Echo.Core.Services;
 
-public class ProjectService(ProjectRepository repository, AppDbContext context, IMapper mapper)
-    : PrimaryServiceBase<Project>(repository, context, mapper)
+public class ProjectService(ProjectRepository repository, IUnitOfWork unitOfWork, IMapper mapper)
+    : PrimaryServiceBase<Project, ProjectResponseDto>(repository, unitOfWork, mapper)
 {
     private readonly ProjectRepository _projectRepository = repository;
 
@@ -45,7 +45,10 @@ public class ProjectService(ProjectRepository repository, AppDbContext context, 
         return new SuccessResult<ProjectResponseDto>(result);
     }
 
-    public async Task<IOperationResult> GetSummaryAsync(Guid congregationId, CancellationToken ct = default)
+    public async Task<IOperationResult> GetSummaryAsync(
+        Guid congregationId,
+        CancellationToken ct = default
+    )
     {
         var result = await _projectRepository.GetSummaryAsync(congregationId, ct);
         return new SuccessResult<ProjectSummaryDto>(result);

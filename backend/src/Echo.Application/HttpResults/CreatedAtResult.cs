@@ -3,15 +3,15 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Echo.Application.HttpResults;
 
-public class CreatedAtResult(string message) : IOperationResult
+public class CreatedAtResult<T>(T resource) : IOperationResult
 {
     public ActionResult ToActionResult() =>
         new ObjectResult(
-            new ProblemDetails
+            new
             {
                 Status = StatusCodes.Status201Created,
                 Title = "Resource created successfully",
-                Detail = message,
+                Resource = resource,
             }
         )
         {

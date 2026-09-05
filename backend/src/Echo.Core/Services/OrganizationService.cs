@@ -12,9 +12,9 @@ namespace Echo.Core.Services;
 
 public class OrganizationService(
     OrganizationRepository repository,
-    AppDbContext context,
+    IUnitOfWork unitOfWork,
     IMapper mapper
-) : PrimaryServiceBase<Organization>(repository, context, mapper)
+) : PrimaryServiceBase<Organization, OrganizationResponseDto>(repository, unitOfWork, mapper)
 {
     private readonly OrganizationRepository _organizationRepository = repository;
 

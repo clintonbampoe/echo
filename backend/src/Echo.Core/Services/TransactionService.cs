@@ -12,9 +12,9 @@ namespace Echo.Core.Services;
 
 public class TransactionService(
     TransactionRepository repository,
-    AppDbContext context,
+    IUnitOfWork unitOfWork,
     IMapper mapper
-) : PrimaryServiceBase<Transaction>(repository, context, mapper)
+) : PrimaryServiceBase<Transaction, TransactionResponseDto>(repository, unitOfWork, mapper)
 {
     private readonly TransactionRepository _transactionRepository = repository;
 

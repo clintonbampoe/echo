@@ -9,15 +9,16 @@ using Echo.Domain.Entities.Core.Interfaces;
 
 namespace Echo.Core.Services.Base;
 
-public abstract class PrimaryServiceBase<T>(
+public abstract class PrimaryServiceBase<T, TResponseDto>(
     PrimaryRepositoryBase<T> repository,
-    AppDbContext context,
+    IUnitOfWork unitOfWork,
     IMapper mapper
 )
     where T : class, IPrimaryEntity
+    where TResponseDto : IPrimaryResponseDto
 {
     protected readonly PrimaryRepositoryBase<T> Repository = repository;
-    protected readonly AppDbContext Context = context;
+    protected readonly IUnitOfWork UnitOfWork = unitOfWork;
     protected readonly IMapper Mapper = mapper;
 
     public abstract Task<IOperationResult> GetPageAsync(
@@ -43,8 +44,10 @@ public abstract class PrimaryServiceBase<T>(
         entity.CongregationId = congregationId;
 
         await Repository.CreateRecord(entity, ct);
-        await Context.SaveChangesAsync(ct);
-        return new OkResult("Record created successfully.");
+        await UnitOfWork.CommitAsync(ct);
+
+        var resource = Mapper.Map<TResponseDto>(entity);
+        return new CreatedAtResult<TResponseDto>(resource);
     }
 
     public virtual async Task<IOperationResult> UpdateAsync(
@@ -61,9 +64,9 @@ public abstract class PrimaryServiceBase<T>(
         var success = await Repository.UpdateRecord(id, congregationId, entity, ct);
 
         if (!success)
-            return new NotFoundResult("Record not found.");
+            return new NotFoundResult($"{nameof(entity)} with Id: {entity.Id} does not exist or has been deleted.");
 
-        await Context.SaveChangesAsync(ct);
+        await UnitOfWork.CommitAsync(ct);
         return new OkResult("Record updated successfully.");
     }
 
@@ -78,7 +81,7 @@ public abstract class PrimaryServiceBase<T>(
         if (!success)
             return new NotFoundResult("Record not found.");
 
-        await Context.SaveChangesAsync(ct);
+        await UnitOfWork.CommitAsync(ct);
         return new OkResult("Record deleted successfully.");
     }
 }

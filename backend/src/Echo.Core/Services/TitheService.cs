@@ -10,8 +10,8 @@ using Echo.Domain.Entities.Core;
 
 namespace Echo.Core.Services;
 
-public class TitheService(TitheRepository repository, AppDbContext context, IMapper mapper)
-    : PrimaryServiceBase<Tithe>(repository, context, mapper)
+public class TitheService(TitheRepository repository, IUnitOfWork unitOfWork, IMapper mapper)
+    : PrimaryServiceBase<Tithe, TitheResponseDto>(repository, unitOfWork, mapper)
 {
     private readonly TitheRepository _titheRepository = repository;
 
@@ -46,7 +46,10 @@ public class TitheService(TitheRepository repository, AppDbContext context, IMap
     }
 
     public async Task<IOperationResult> GetMonthlySummaryAsync(
-        Guid congregationId, int year, CancellationToken ct = default)
+        Guid congregationId,
+        int year,
+        CancellationToken ct = default
+    )
     {
         if (year == 0)
             year = DateTime.UtcNow.Year;

@@ -10,8 +10,8 @@ using Echo.Domain.Entities.Core;
 
 namespace Echo.Core.Services;
 
-public class AssetService(AssetRepository repository, AppDbContext context, IMapper mapper)
-    : PrimaryServiceBase<Asset>(repository, context, mapper)
+public class AssetService(AssetRepository repository, IUnitOfWork unitOfWork, IMapper mapper)
+    : PrimaryServiceBase<Asset, AssetResponseDto>(repository, unitOfWork, mapper)
 {
     private readonly AssetRepository _assetRepository = repository;
 
@@ -45,7 +45,10 @@ public class AssetService(AssetRepository repository, AppDbContext context, IMap
         return new SuccessResult<AssetResponseDto>(result);
     }
 
-    public async Task<IOperationResult> GetSummaryAsync(Guid congregationId, CancellationToken ct = default)
+    public async Task<IOperationResult> GetSummaryAsync(
+        Guid congregationId,
+        CancellationToken ct = default
+    )
     {
         var result = await _assetRepository.GetSummaryAsync(congregationId, ct);
         return new SuccessResult<AssetSummaryDto>(result);

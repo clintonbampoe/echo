@@ -10,9 +10,9 @@ namespace Echo.Core.Services;
 
 public class AssetCategoryService(
     AssetCategoryRepository repository,
-    AppDbContext context,
+    IUnitOfWork unitOfWork,
     IMapper mapper
-) : ReferenceServiceBase<AssetCategory>(repository, context, mapper)
+) : ReferenceServiceBase<AssetCategory, AssetCategoryResponseDto>(repository, unitOfWork, mapper)
 {
     private readonly AssetCategoryRepository _assetCategoryRepository = repository;
 

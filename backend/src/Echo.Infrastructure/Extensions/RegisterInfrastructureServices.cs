@@ -1,3 +1,5 @@
+using Echo.Domain.Data;
+using Echo.Infrastructure.Data;
 using Echo.Infrastructure.Health;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -9,6 +11,7 @@ public static class RegisterInfrastructureServices
     public static IServiceCollection AddInfrastructureServices(this IServiceCollection services)
     {
         services.AddScoped<IHealthCheck, DatabaseHealthCheck>();
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         return services;
     }

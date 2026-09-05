@@ -10,9 +10,14 @@ namespace Echo.Core.Services;
 
 public class ProjectCategoryService(
     ProjectCategoryRepository repository,
-    AppDbContext context,
+    IUnitOfWork unitOfWork,
     IMapper mapper
-) : ReferenceServiceBase<ProjectCategory>(repository, context, mapper)
+)
+    : ReferenceServiceBase<ProjectCategory, ProjectCategoryResponseDto>(
+        repository,
+        unitOfWork,
+        mapper
+    )
 {
     private readonly ProjectCategoryRepository _projectCategoryRepository = repository;
 
