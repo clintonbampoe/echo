@@ -7,7 +7,7 @@ namespace Echo.Domain.Data;
 
 public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
-    // CORE
+    // Tables
     public DbSet<Asset> Assets { get; set; }
     public DbSet<AssetCategory> AssetCategories { get; set; }
     public DbSet<Attendance> AttendanceRecords { get; set; }
@@ -28,8 +28,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<User> Users { get; set; }
     public DbSet<Congregation> Congregations { get; set; }
     public DbSet<InvitationToken> InvitationTokens { get; set; }
-
-    // AUTH
     public DbSet<EmailVerificationToken> EmailVerificationTokens { get; set; }
     public DbSet<PasswordVerificationToken> PasswordVerificationTokens { get; set; }
     public DbSet<RefreshToken> RefreshTokens { get; set; }

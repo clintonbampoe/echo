@@ -10,8 +10,8 @@ using Echo.Domain.Entities.Core;
 
 namespace Echo.Core.Services;
 
-public class MemberService(MemberRepository repository, AppDbContext context, IMapper mapper)
-    : PrimaryServiceBase<Member>(repository, context, mapper)
+public class MemberService(MemberRepository repository, IUnitOfWork unitOfWork, IMapper mapper)
+    : PrimaryServiceBase<Member, MemberResponseDto>(repository, unitOfWork, mapper)
 {
     private readonly MemberRepository _memberRepository = repository;
 

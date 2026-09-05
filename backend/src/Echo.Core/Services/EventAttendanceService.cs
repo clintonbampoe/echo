@@ -12,9 +12,9 @@ namespace Echo.Core.Services;
 
 public class EventAttendanceService(
     EventAttendanceRepository repository,
-    AppDbContext context,
+    IUnitOfWork unitOfWork,
     IMapper mapper
-) : PrimaryServiceBase<EventAttendance>(repository, context, mapper)
+) : PrimaryServiceBase<EventAttendance, EventAttendanceResponseDto>(repository, unitOfWork, mapper)
 {
     private readonly EventAttendanceRepository _eventAttendanceRepository = repository;
 
