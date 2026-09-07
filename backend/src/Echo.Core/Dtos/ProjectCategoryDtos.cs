@@ -11,8 +11,8 @@ public record ProjectCategoryCreateDto : IReferenceCreateDto
 
 public record ProjectCategoryUpdateDto : IReferenceUpdateDto
 {
-    [Required, StringLength(100, MinimumLength = 1)]
-    public required string Name { get; init; }
+    [StringLength(100, MinimumLength = 1)]
+    public string? Name { get; init; }
 }
 
 public record ProjectCategoryResponseDto : IReferenceResponseDto
