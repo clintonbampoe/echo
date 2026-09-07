@@ -12,7 +12,7 @@ namespace Echo.Core.Repositories;
 
 public class AssetRepository(AppDbContext context) : PrimaryRepositoryBase<Asset>(context)
 {
-    public async Task<PagedResponse<AssetListResponseDto>> GetPageAsync(
+    public async Task<PagedResponse<AssetListResponseDto>> GetPage(
         Guid congregationId,
         PaginationParameters paginationParameters,
         QueryParameters? queryParameters,
@@ -44,7 +44,7 @@ public class AssetRepository(AppDbContext context) : PrimaryRepositoryBase<Asset
         return new PagedResponse<AssetListResponseDto>(records, paginationParameters, totalRecords);
     }
 
-    public async Task<AssetResponseDto?> GetByIdAsync(
+    public async Task<AssetResponseDto?> GetById(
         Guid id,
         Guid congregationId,
         CancellationToken ct = default
@@ -71,7 +71,7 @@ public class AssetRepository(AppDbContext context) : PrimaryRepositoryBase<Asset
             .FirstOrDefaultAsync(ct);
     }
 
-    public async Task<AssetSummaryDto> GetSummaryAsync(Guid congregationId, CancellationToken ct = default)
+    public async Task<AssetSummaryDto> GetSummary(Guid congregationId, CancellationToken ct = default)
     {
         var stats = await DbSet
             .ApplySoftDeleteFilter()

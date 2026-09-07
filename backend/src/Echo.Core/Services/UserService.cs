@@ -1,51 +1,27 @@
-using AutoMapper;
 using Echo.Application.HttpResults;
 using Echo.Application.Pagination;
 using Echo.Application.Query;
+using Echo.Application.Services.Generators;
 using Echo.Core.Dtos;
-using Echo.Core.Dtos.Interfaces;
+using Echo.Core.Mapping.UserMapping;
 using Echo.Core.Repositories;
-using Echo.Core.Services.Base;
 using Echo.Domain.Data;
-using Echo.Domain.Entities.Core;
 
 namespace Echo.Core.Services;
 
-public class UserService(UserRepository repository, IUnitOfWork unitOfWork, IMapper mapper)
-    : PrimaryServiceBase<User, UserResponseDto>(repository, unitOfWork, mapper)
+public class UserService(
+    UserRepository repository,
+    IUnitOfWork unitOfWork,
+    IUserMapper mapper,
+    IIdGenerator idGenerator)
 {
-    private readonly UserRepository _userRepository = repository;
-
-    public override async Task<IOperationResult> CreateAsync(
-        Guid congregationId,
-        IPrimaryCreateDto dto,
-        CancellationToken ct = default
-    )
-    {
-        var userDto = (UserCreateDto)dto;
-
-        if (await IsEmailTaken(userDto.EmailAddress, ct))
-            return new BadRequestResult("Email already exists.");
-
-        var user = Mapper.Map<User>(userDto);
-        user.CongregationId = congregationId;
-
-        var createdSuccessfully = await _userRepository.CreateRecord(user, ct);
-        await UnitOfWork.CommitAsync(ct);
-
-        if (!createdSuccessfully)
-            return new InternalServerError();
-
-        return new OkResult("Operation completed successfully.");
-    }
-
-    public override async Task<IOperationResult> GetByIdAsync(
+    public async Task<IOperationResult> GetById(
         Guid id,
         Guid congregationId,
         CancellationToken ct = default
     )
     {
-        var result = await _userRepository.GetByIdAsync(id, ct);
+        var result = await repository.GetById(id, ct);
 
         if (result is null)
             return new NotFoundResult("Invalid request.");
@@ -53,14 +29,44 @@ public class UserService(UserRepository repository, IUnitOfWork unitOfWork, IMap
         return new SuccessResult<UserResponseDto>(result);
     }
 
-    public override async Task<IOperationResult> GetPageAsync(
+    public async Task<IOperationResult> Create(
+        Guid congregationId,
+        UserCreateDto dto,
+        CancellationToken ct = default
+    )
+    {
+        if (await IsEmailTaken(dto.EmailAddress, ct))
+            return new BadRequestResult("Email already exists or is invalid.");
+
+        var entity = mapper.ToEntity(dto);
+        entity.CongregationId = congregationId;
+        entity.Id = idGenerator.Generate();
+
+        await repository.Create(entity, ct);
+        await unitOfWork.CommitAsync(ct);
+
+        var res = mapper.ToDto(entity);
+        return new CreatedAtResult<UserResponseDto>(res);
+    }
+
+    public async Task<IOperationResult> Update(Guid congregationId, Guid id, UserUpdateDto dto, CancellationToken ct)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<IOperationResult> Delete(Guid congregationId, Guid id, CancellationToken ct)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<IOperationResult> GetPage(
         Guid congregationId,
         PaginationParameters paginationParameters,
         QueryParameters? queryParameters,
         CancellationToken ct = default
     )
     {
-        var result = await _userRepository.GetPageAsync(
+        var result = await repository.GetPage(
             congregationId,
             paginationParameters,
             queryParameters,
@@ -76,12 +82,12 @@ public class UserService(UserRepository repository, IUnitOfWork unitOfWork, IMap
         CancellationToken ct
     )
     {
-        var results = await _userRepository.SearchUsersByName(congregationId, searchString, ct);
+        var results = await repository.SearchUsersByName(congregationId, searchString, ct);
         return new SuccessResult<List<UserListResponseDto>>(results);
     }
 
     private async Task<bool> IsEmailTaken(string emailAddress, CancellationToken ct)
     {
-        return await _userRepository.IsEmailAddressTaken(emailAddress, ct);
+        return await repository.IsEmailAddressTaken(emailAddress, ct);
     }
 }

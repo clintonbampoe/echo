@@ -11,7 +11,7 @@ public abstract class ReferenceRepositoryBase<T>(AppDbContext context)
     protected readonly AppDbContext Context = context;
     protected readonly DbSet<T> DbSet = context.Set<T>();
 
-    public virtual async Task<bool> CreateRecord(T entity, CancellationToken ct = default)
+    public virtual async Task<bool> Create(T entity, CancellationToken ct = default)
     {
         await DbSet.AddAsync(entity, ct);
         return true;

@@ -11,7 +11,7 @@ namespace Echo.Core.Repositories;
 
 public class UserRepository(AppDbContext context) : PrimaryRepositoryBase<User>(context)
 {
-    public async Task<PagedResponse<UserListResponseDto>> GetPageAsync(
+    public async Task<PagedResponse<UserListResponseDto>> GetPage(
         Guid congregationId,
         PaginationParameters paginationParameters,
         QueryParameters? queryParameters,
@@ -42,7 +42,7 @@ public class UserRepository(AppDbContext context) : PrimaryRepositoryBase<User>(
         return new PagedResponse<UserListResponseDto>(records, paginationParameters, totalRecords);
     }
 
-    public async Task<UserResponseDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
+    public async Task<UserResponseDto?> GetById(Guid id, CancellationToken ct = default)
     {
         return await DbSet
             .AsNoTracking()

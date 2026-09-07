@@ -58,7 +58,7 @@ public class EmailVerificationService(
         if (!recordCreatedSuccessfully)
             return new InternalServerError();
 
-        var userInfo = await userRepository.GetByIdAsync(user.Id, ct);
+        var userInfo = await userRepository.GetById(user.Id, ct);
         if (userInfo == null)
             return new InternalServerError();
 
