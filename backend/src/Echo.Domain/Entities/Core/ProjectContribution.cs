@@ -5,7 +5,7 @@ namespace Echo.Domain.Entities.Core;
 
 public class ProjectContribution : IPrimaryEntity
 {
-    public Guid Id { get; set; } = Guid.CreateVersion7();
+    public Guid Id { get; set; }
     public Guid CongregationId { get; set; }
     public Congregation Congregation { get; set; } = null!;
     public DateTime CreatedAt { get; set; }

@@ -1,5 +1,5 @@
 using Echo.Application.HttpResults;
-using Echo.Application.Services;
+using Echo.Application.Services.Generators;
 using Echo.Application.Services.Hashing;
 using Echo.Auth.Dtos;
 using Echo.Auth.Repositories;

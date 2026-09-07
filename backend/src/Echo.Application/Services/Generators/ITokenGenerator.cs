@@ -1,4 +1,4 @@
-namespace Echo.Application.Services;
+namespace Echo.Application.Services.Generators;
 
 public interface ITokenGenerator
 {

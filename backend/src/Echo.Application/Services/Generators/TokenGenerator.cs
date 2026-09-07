@@ -1,6 +1,6 @@
 using System.Security.Cryptography;
 
-namespace Echo.Application.Services;
+namespace Echo.Application.Services.Generators;
 
 public class TokenGenerator : ITokenGenerator
 {
