@@ -11,10 +11,12 @@ public record EventAttendanceCreateDto : IPrimaryCreateDto
 
 public record EventAttendanceUpdateDto : IPrimaryUpdateDto
 {
-    public TimeOnly CheckInTime { get; init; }
+    public TimeOnly? CheckInTime { get; init; }
 }
 
-public record EventAttendanceListResponseDto : IPrimaryListResponseDto, Application.Dtos.Interfaces.IPrimaryListResponseDto
+public record EventAttendanceListResponseDto
+    : IPrimaryListResponseDto,
+        Application.Dtos.Interfaces.IPrimaryListResponseDto
 {
     public Guid Id { get; init; }
     public required string MemberName { get; init; }
