@@ -4,7 +4,7 @@ namespace Echo.Domain.Entities.Core;
 
 public class EventRegistration : IPrimaryEntity
 {
-    public Guid Id { get; set; } = Guid.CreateVersion7();
+    public Guid Id { get; set; }
     public Guid CongregationId { get; set; }
     public Congregation Congregation { get; set; } = null!;
 
@@ -12,7 +12,6 @@ public class EventRegistration : IPrimaryEntity
     public Member Member { get; set; } = null!;
     public Guid EventId { get; set; }
     public Event Event { get; set; } = null!;
-    public TimeOnly CheckInTime { get; set; }
     public DateOnly RegistrationDate { get; set; }
 
     public DateTime CreatedAt { get; set; }

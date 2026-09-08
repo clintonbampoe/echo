@@ -1,6 +1,6 @@
 using Echo.Application.HttpResults;
-using Echo.Application.Services;
 using Echo.Application.Services.Email;
+using Echo.Application.Services.Generators;
 using Echo.Application.Services.Hashing;
 using Echo.Auth.Models;
 using Echo.Auth.Repositories;
@@ -58,7 +58,7 @@ public class EmailVerificationService(
         if (!recordCreatedSuccessfully)
             return new InternalServerError();
 
-        var userInfo = await userRepository.GetByIdAsync(user.Id, ct);
+        var userInfo = await userRepository.GetById(user.Id, ct);
         if (userInfo == null)
             return new InternalServerError();
 

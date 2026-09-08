@@ -12,7 +12,7 @@ namespace Echo.Core.Repositories;
 public class ProjectContributionRepository(AppDbContext context)
     : PrimaryRepositoryBase<ProjectContribution>(context)
 {
-    public async Task<PagedResponse<ProjectContributionListResponseDto>> GetPageAsync(
+    public async Task<PagedResponse<ProjectContributionListResponseDto>> GetPage(
         Guid congregationId,
         PaginationParameters paginationParameters,
         QueryParameters? queryParameters,
@@ -47,7 +47,7 @@ public class ProjectContributionRepository(AppDbContext context)
         );
     }
 
-    public async Task<ProjectContributionResponseDto?> GetByIdAsync(
+    public async Task<ProjectContributionResponseDto?> GetById(
         Guid id,
         Guid congregationId,
         CancellationToken ct = default
@@ -71,7 +71,7 @@ public class ProjectContributionRepository(AppDbContext context)
             .FirstOrDefaultAsync(ct);
     }
 
-    public async Task<ProjectContributionSummaryDto?> GetSummaryAsync(
+    public async Task<ProjectContributionSummaryDto?> GetSummary(
         Guid congregationId,
         Guid projectId,
         CancellationToken ct = default

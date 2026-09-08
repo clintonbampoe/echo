@@ -7,44 +7,42 @@ namespace Echo.Core.Controllers;
 
 public class ProjectCategoriesController(ProjectCategoryService service) : CoreBaseController
 {
-    private readonly ProjectCategoryService _service = service;
-
     [HttpGet]
-    public async Task<ActionResult> GetAllAsync(CancellationToken ct)
+    public async Task<ActionResult> GetAll(CancellationToken ct)
     {
-        var response = await _service.GetAllAsync(GetCongregationId(), ct);
+        var response = await service.GetAll(GetCongregationId(), ct);
         return response.ToActionResult();
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult> GetByIdAsync(int id, CancellationToken ct)
+    public async Task<ActionResult> GetById(int id, CancellationToken ct)
     {
-        var response = await _service.GetByIdAsync(id, GetCongregationId(), ct);
+        var response = await service.GetById(id, GetCongregationId(), ct);
         return response.ToActionResult();
     }
 
     [HttpPost]
-    public async Task<ActionResult> CreateAsync(ProjectCategoryCreateDto dto, CancellationToken ct)
+    public async Task<ActionResult> Create(ProjectCategoryCreateDto dto, CancellationToken ct)
     {
-        var response = await _service.CreateAsync(GetCongregationId(), dto, ct);
+        var response = await service.Create(GetCongregationId(), dto, ct);
         return response.ToActionResult();
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult> UpdateAsync(
+    public async Task<ActionResult> Update(
         int id,
         ProjectCategoryUpdateDto dto,
         CancellationToken ct
     )
     {
-        var response = await _service.UpdateAsync(GetCongregationId(), id, dto, ct);
+        var response = await service.Update(GetCongregationId(), id, dto, ct);
         return response.ToActionResult();
     }
 
     [HttpDelete("{id}")]
-    public async Task<ActionResult> DeleteAsync(int id, CancellationToken ct)
+    public async Task<ActionResult> Delete(int id, CancellationToken ct)
     {
-        var response = await _service.DeleteAsync(id, GetCongregationId(), ct);
+        var response = await service.Delete(GetCongregationId(), id, ct);
         return response.ToActionResult();
     }
 }

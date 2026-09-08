@@ -1,36 +1,31 @@
-using AutoMapper;
 using Echo.Application.HttpResults;
 using Echo.Application.Pagination;
 using Echo.Application.Query;
+using Echo.Application.Services.Generators;
 using Echo.Core.Dtos;
+using Echo.Core.Mapping.ProjectContributionMapping;
 using Echo.Core.Repositories;
-using Echo.Core.Services.Base;
 using Echo.Domain.Data;
-using Echo.Domain.Entities.Core;
 
 namespace Echo.Core.Services;
 
 public class ProjectContributionService(
     ProjectContributionRepository repository,
-    IUnitOfWork context,
-    IMapper mapper
+    IUnitOfWork unitOfWork,
+    IProjectContributionMapper mapper,
+    IIdGenerator idGenerator
 )
-    : PrimaryServiceBase<ProjectContribution, ProjectContributionResponseDto>(
-        repository,
-        context,
-        mapper
-    )
-{
-    private readonly ProjectContributionRepository _projectContributionRepository = repository;
 
-    public override async Task<IOperationResult> GetPageAsync(
-        Guid congregationId,
-        PaginationParameters paginationParameters,
-        QueryParameters? queryParameters,
-        CancellationToken ct = default
-    )
+{
+    public
+        async Task<IOperationResult> GetPage(
+            Guid congregationId,
+            PaginationParameters paginationParameters,
+            QueryParameters? queryParameters,
+            CancellationToken ct = default
+        )
     {
-        var result = await _projectContributionRepository.GetPageAsync(
+        var result = await repository.GetPage(
             congregationId,
             paginationParameters,
             queryParameters,
@@ -39,13 +34,13 @@ public class ProjectContributionService(
         return new SuccessResult<PagedResponse<ProjectContributionListResponseDto>>(result);
     }
 
-    public override async Task<IOperationResult> GetByIdAsync(
+    public async Task<IOperationResult> GetById(
         Guid id,
         Guid congregationId,
         CancellationToken ct = default
     )
     {
-        var result = await _projectContributionRepository.GetByIdAsync(id, congregationId, ct);
+        var result = await repository.GetById(id, congregationId, ct);
 
         if (result is null)
             return new NotFoundResult("Project contribution not found.");
@@ -53,13 +48,55 @@ public class ProjectContributionService(
         return new SuccessResult<ProjectContributionResponseDto>(result);
     }
 
-    public async Task<IOperationResult> GetSummaryAsync(
+    public async Task<IOperationResult> Create(Guid congregationId, ProjectContributionCreateDto dto,
+        CancellationToken ct)
+    {
+        var entity = mapper.ToEntity(dto);
+        entity.CongregationId = congregationId;
+        entity.Id = idGenerator.Generate();
+
+        await repository.Create(entity, ct);
+        await unitOfWork.CommitAsync(ct);
+
+        var res = mapper.ToDto(entity);
+        return new CreatedAtResult<ProjectContributionResponseDto>(res);
+    }
+
+    public async Task<IOperationResult> Update(Guid congregationId, Guid id, ProjectContributionUpdateDto dto,
+        CancellationToken ct)
+    {
+        var entity = await repository.GetEntityById(congregationId, id, ct);
+
+        if (entity is null)
+            return new NotFoundResult(id.ToString());
+
+        mapper.Patch(dto, entity);
+        await unitOfWork.CommitAsync(ct);
+
+        var res = mapper.ToDto(entity);
+        return new SuccessResult<ProjectContributionResponseDto>(res);
+    }
+
+    public async Task<IOperationResult> Delete(Guid congregationId, Guid id, CancellationToken ct)
+    {
+        var entity = await repository.GetEntityById(congregationId, id, ct);
+
+        if (entity is null)
+            return new NotFoundResult(id.ToString());
+
+        await repository.SoftDelete(entity, ct);
+        await unitOfWork.CommitAsync(ct);
+
+        return new NoContentResult();
+    }
+
+    public async Task<IOperationResult> GetSummary(
         Guid congregationId,
         Guid projectId,
         CancellationToken ct = default
     )
     {
-        var result = await _projectContributionRepository.GetSummaryAsync(
+        var result = await repository.GetSummary(
             congregationId,
             projectId,
             ct

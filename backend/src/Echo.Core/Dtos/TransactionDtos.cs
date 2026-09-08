@@ -40,13 +40,13 @@ public record TransactionStreamDto
 public record TransactionUpdateDto : IPrimaryUpdateDto
 {
     [Range(1, int.MaxValue)]
-    public int CategoryId { get; init; }
+    public int? CategoryId { get; init; }
 
-    public TransactionType TransactionType { get; init; }
-    public DateOnly TransactionDate { get; init; }
+    public TransactionType? TransactionType { get; init; }
+    public DateOnly? TransactionDate { get; init; }
 
     [Range(0.01, 1_000_000)]
-    public decimal Amount { get; init; }
+    public decimal? Amount { get; init; }
 
     [StringLength(2000)]
     public string? Description { get; init; }

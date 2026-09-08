@@ -37,13 +37,13 @@ public record CongregationCreateDto
 public record CongregationUpdateDto
 {
     [StringLength(100)]
-    public string? Name { get; init; } = string.Empty;
+    public string? Name { get; init; }
 
     [Phone, StringLength(20)]
-    public string? PhoneNumber { get; init; } = string.Empty;
+    public string? PhoneNumber { get; init; }
 
     [EmailAddress, StringLength(255)]
-    public string? EmailAddress { get; init; } = string.Empty;
+    public string? EmailAddress { get; init; }
 
     [StringLength(255)]
     public string? PostalAddress { get; init; }
@@ -53,14 +53,16 @@ public record CongregationUpdateDto
 
     public Region? Region { get; init; }
 
-    [StringLength(100)]
-    public string? City { get; init; } = string.Empty;
+    public ReligiousOrganizationType? OrgType { get; init; }
 
     [StringLength(100)]
-    public string? Town { get; init; } = string.Empty;
+    public string? City { get; init; }
+
+    [StringLength(100)]
+    public string? Town { get; init; }
 
     [StringLength(255)]
-    public string? GpsAddress { get; init; } = string.Empty;
+    public string? GpsAddress { get; init; }
 }
 
 public record CongregationResponseDto

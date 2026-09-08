@@ -24,6 +24,14 @@ dotnet_naming_symbols.all_types_and_methods.applicable_accessibilities = public,
 
 dotnet_naming_style.pascal_case_style.capitalization = pascal_case
 
+# The universal .NET rule to minimize full qualifications
+dotnet_style_qualification_for_field = false:suggestion
+dotnet_style_qualification_for_property = false:suggestion
+dotnet_style_qualification_for_method = false:suggestion
+dotnet_style_qualification_for_event = false:suggestion
+resharper_csharp_prefer_fully_qualified_references = false
+
+
 # ---- Naming rule: Private fields should be prefixed with _ ----
 dotnet_naming_rule.private_fields_prefix.severity = suggestion
 dotnet_naming_rule.private_fields_prefix.symbols = private_fields
