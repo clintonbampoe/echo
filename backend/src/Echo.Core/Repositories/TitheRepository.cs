@@ -12,7 +12,7 @@ namespace Echo.Core.Repositories;
 
 public class TitheRepository(AppDbContext context) : PrimaryRepositoryBase<Tithe>(context)
 {
-    public async Task<PagedResponse<TitheListResponseDto>> GetPageAsync(
+    public async Task<PagedResponse<TitheListResponseDto>> GetPage(
         Guid congregationId,
         PaginationParameters paginationParameters,
         QueryParameters? queryParameters,
@@ -45,7 +45,7 @@ public class TitheRepository(AppDbContext context) : PrimaryRepositoryBase<Tithe
         return new PagedResponse<TitheListResponseDto>(records, paginationParameters, totalRecords);
     }
 
-    public async Task<TitheResponseDto?> GetByIdAsync(
+    public async Task<TitheResponseDto?> GetById(
         Guid id,
         Guid congregationId,
         CancellationToken ct = default
@@ -71,7 +71,7 @@ public class TitheRepository(AppDbContext context) : PrimaryRepositoryBase<Tithe
             .FirstOrDefaultAsync(ct);
     }
 
-    public async Task<List<TitheMonthlyTotalDto>> GetMonthlySummaryAsync(
+    public async Task<List<TitheMonthlyTotalDto>> GetAnnualSummary(
         Guid congregationId,
         int year,
         CancellationToken ct = default

@@ -6,52 +6,41 @@ namespace Echo.Core.Dtos;
 
 public record AssetCreateDto : IPrimaryCreateDto
 {
-    [Range(1, int.MaxValue)]
-    public int CategoryId { get; init; }
+    [Range(1, int.MaxValue)] public int CategoryId { get; init; }
 
     [Required, StringLength(100, MinimumLength = 1)]
     public required string Name { get; init; }
 
-    [StringLength(100)]
-    public string? SerialNumber { get; init; }
+    [StringLength(100)] public string? SerialNumber { get; init; }
 
     public DateOnly? PurchaseDate { get; init; }
 
-    [Range(0, 1_000_000)]
-    public decimal PurchaseCost { get; init; }
+    [Range(0, 1_000_000)] public decimal PurchaseCost { get; init; }
 
-    [Range(0, 1_000_000)]
-    public decimal CurrentValue { get; init; }
+    [Range(0, 1_000_000)] public decimal CurrentValue { get; init; }
 
     public AssetStatus Status { get; init; }
 
-    [StringLength(2000)]
-    public string? Description { get; init; }
+    [StringLength(2000)] public string? Description { get; init; }
 }
 
 public record AssetUpdateDto : IPrimaryUpdateDto
 {
-    [Range(1, int.MaxValue)]
-    public int CategoryId { get; init; }
+    [Range(1, int.MaxValue)] public int? CategoryId { get; init; }
 
-    [Required, StringLength(100, MinimumLength = 1)]
-    public required string Name { get; init; }
+    [StringLength(100, MinimumLength = 1)] public string? Name { get; init; }
 
-    [StringLength(100)]
-    public string? SerialNumber { get; init; }
+    [StringLength(100)] public string? SerialNumber { get; init; }
 
     public DateOnly? PurchaseDate { get; init; }
 
-    [Range(0, 1_000_000)]
-    public decimal PurchaseCost { get; init; }
+    [Range(0, 1_000_000)] public decimal? PurchaseCost { get; init; }
 
-    [Range(0, 1_000_000)]
-    public decimal CurrentValue { get; init; }
+    [Range(0, 1_000_000)] public decimal? CurrentValue { get; init; }
 
-    public AssetStatus Status { get; init; }
+    public AssetStatus? Status { get; init; }
 
-    [StringLength(2000)]
-    public string? Description { get; init; }
+    [StringLength(2000)] public string? Description { get; init; }
 }
 
 public record AssetListResponseDto : IPrimaryListResponseDto, Application.Dtos.Interfaces.IPrimaryListResponseDto

@@ -1,31 +1,29 @@
-using AutoMapper;
 using Echo.Application.HttpResults;
 using Echo.Application.Pagination;
 using Echo.Application.Query;
+using Echo.Application.Services.Generators;
 using Echo.Core.Dtos;
+using Echo.Core.Mapping.OrganizationMapping;
 using Echo.Core.Repositories;
-using Echo.Core.Services.Base;
 using Echo.Domain.Data;
-using Echo.Domain.Entities.Core;
 
 namespace Echo.Core.Services;
 
 public class OrganizationService(
     OrganizationRepository repository,
     IUnitOfWork unitOfWork,
-    IMapper mapper
-) : PrimaryServiceBase<Organization, OrganizationResponseDto>(repository, unitOfWork, mapper)
+    IOrganizationMapper mapper,
+    IIdGenerator idGenerator
+)
 {
-    private readonly OrganizationRepository _organizationRepository = repository;
-
-    public override async Task<IOperationResult> GetPageAsync(
+    public async Task<IOperationResult> GetPage(
         Guid congregationId,
         PaginationParameters paginationParameters,
         QueryParameters? queryParameters,
         CancellationToken ct = default
     )
     {
-        var result = await _organizationRepository.GetPageAsync(
+        var result = await repository.GetPage(
             congregationId,
             paginationParameters,
             queryParameters,
@@ -34,13 +32,13 @@ public class OrganizationService(
         return new SuccessResult<PagedResponse<OrganizationListResponseDto>>(result);
     }
 
-    public override async Task<IOperationResult> GetByIdAsync(
+    public async Task<IOperationResult> GetById(
         Guid id,
         Guid congregationId,
         CancellationToken ct = default
     )
     {
-        var result = await _organizationRepository.GetByIdAsync(id, congregationId, ct);
+        var result = await repository.GetById(id, congregationId, ct);
 
         if (result is null)
             return new NotFoundResult("Organization not found.");
@@ -48,12 +46,53 @@ public class OrganizationService(
         return new SuccessResult<OrganizationResponseDto>(result);
     }
 
-    public async Task<IOperationResult> GetSummaryAsync(
+    public async Task<IOperationResult> Create(Guid congregationId, OrganizationCreateDto dto, CancellationToken ct)
+    {
+        var entity = mapper.ToEntity(dto);
+        entity.CongregationId = congregationId;
+        entity.Id = idGenerator.Generate();
+
+        await repository.Create(entity, ct);
+        await unitOfWork.CommitAsync(ct);
+
+        var res = mapper.ToDto(entity);
+        return new CreatedAtResult<OrganizationResponseDto>(res);
+    }
+
+    public async Task<IOperationResult> Update(Guid congregationId, Guid id, OrganizationUpdateDto dto,
+        CancellationToken ct)
+    {
+        var entity = await repository.GetEntityById(congregationId, id, ct);
+
+        if (entity is null)
+            return new NotFoundResult(id.ToString());
+
+        mapper.Patch(dto, entity);
+        await unitOfWork.CommitAsync(ct);
+
+        var res = mapper.ToDto(entity);
+        return new SuccessResult<OrganizationResponseDto>(res);
+    }
+
+    public async Task<IOperationResult> Delete(Guid congregationId, Guid id, CancellationToken ct)
+    {
+        var entity = await repository.GetEntityById(congregationId, id, ct);
+
+        if (entity is null)
+            return new NotFoundResult(id.ToString());
+
+        await repository.SoftDelete(entity, ct);
+        await unitOfWork.CommitAsync(ct);
+
+        return new NoContentResult();
+    }
+
+    public async Task<IOperationResult> GetSummary(
         Guid congregationId,
         CancellationToken ct = default
     )
     {
-        var result = await _organizationRepository.GetSummaryAsync(congregationId, ct);
+        var result = await repository.GetSummary(congregationId, ct);
         return new SuccessResult<OrganizationSummaryDto>(result);
     }
 }

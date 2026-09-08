@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Echo.Application.HttpResults;
 
-public class NotFoundResult(string message) : IOperationResult
+public class NotFoundResult(string id) : IOperationResult
 {
     public ActionResult ToActionResult() =>
         new ObjectResult(
@@ -11,7 +11,7 @@ public class NotFoundResult(string message) : IOperationResult
             {
                 Status = StatusCodes.Status404NotFound,
                 Title = "The requested resource was not found",
-                Detail = message,
+                Detail = $"The resource with Id: {id} is invalid or has been deleted.",
             }
         )
         {

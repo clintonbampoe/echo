@@ -43,7 +43,7 @@ public class RegistrationService(
         await HashPassword(user, userDto);
 
         await congregationRepository.CreateRecord(congregation, ct);
-        await userRepository.CreateRecord(user, ct);
+        await userRepository.Create(user, ct);
 
         try
         {
@@ -87,7 +87,7 @@ public class RegistrationService(
             PasswordHash = await passwordHashService.HashAsync(request.UserInfo.Password),
         };
 
-        await userRepository.CreateRecord(user, ct);
+        await userRepository.Create(user, ct);
 
         try
         {

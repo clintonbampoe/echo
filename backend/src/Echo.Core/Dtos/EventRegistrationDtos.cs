@@ -11,7 +11,7 @@ public record EventRegistrationCreateDto : IPrimaryCreateDto
 
 public record EventRegistrationUpdateDto : IPrimaryUpdateDto
 {
-    public DateOnly RegistrationDate { get; init; }
+    public DateOnly? RegistrationDate { get; init; }
 }
 
 public record EventRegistrationListResponseDto : IPrimaryListResponseDto, Application.Dtos.Interfaces.IPrimaryListResponseDto
