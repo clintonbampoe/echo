@@ -11,47 +11,24 @@ public abstract class ReferenceRepositoryBase<T>(AppDbContext context)
     protected readonly AppDbContext Context = context;
     protected readonly DbSet<T> DbSet = context.Set<T>();
 
-    public virtual async Task<bool> Create(T entity, CancellationToken ct = default)
+    public virtual async Task<T?> GetEntityById(
+        Guid congregationId,
+        int id,
+        CancellationToken ct = default)
+    {
+        return await DbSet
+            .ApplySoftDeleteFilter()
+            .FirstOrDefaultAsync(e => e.Id == id && e.CongregationId == congregationId, ct);
+    }
+
+    public virtual async Task Create(T entity, CancellationToken ct = default)
     {
         await DbSet.AddAsync(entity, ct);
-        return true;
     }
 
-    public virtual async Task<bool> UpdateRecord(
-        int id,
-        Guid congregationId,
-        T entity,
-        CancellationToken ct = default
-    )
+    public virtual Task SoftDelete(T entity, CancellationToken ct = default)
     {
-        var existing = await DbSet
-            .ApplySoftDeleteFilter()
-            .FirstOrDefaultAsync(e => e.Id == id && e.CongregationId == congregationId, ct);
-        if (existing is null)
-            return false;
-
-        DbSet.Entry(existing).CurrentValues.SetValues(entity);
-        DbSet.Entry(existing).Property(e => e.Id).IsModified = false;
-        DbSet.Entry(existing).Property(e => e.CreatedAt).IsModified = false;
-        DbSet.Entry(existing).Property(e => e.DeletedAt).IsModified = false;
-
-        return true;
-    }
-
-    public virtual async Task<bool> DeleteRecord(
-        int id,
-        Guid congregationId,
-        CancellationToken ct = default
-    )
-    {
-        var existing = await DbSet
-            .ApplySoftDeleteFilter()
-            .FirstOrDefaultAsync(e => e.Id == id && e.CongregationId == congregationId, ct);
-
-        if (existing is null)
-            return false;
-
-        existing.DeletedAt = DateTime.UtcNow;
-        return true;
+        entity.DeletedAt = DateTime.UtcNow;
+        return Task.CompletedTask;
     }
 }
