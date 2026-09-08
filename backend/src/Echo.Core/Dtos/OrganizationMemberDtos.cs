@@ -13,8 +13,8 @@ public record OrganizationMemberCreateDto : IPrimaryCreateDto
 
 public record OrganizationMemberUpdateDto : IPrimaryUpdateDto
 {
-    public MemberOrganizationalRole Role { get; init; }
-    public DateOnly JoinedAt { get; init; }
+    public MemberOrganizationalRole? Role { get; init; }
+    public DateOnly? JoinedAt { get; init; }
 }
 
 public record OrganizationMemberListResponseDto : IPrimaryListResponseDto, Application.Dtos.Interfaces.IPrimaryListResponseDto

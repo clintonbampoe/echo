@@ -28,18 +28,18 @@ public record ProjectCreateDto : IPrimaryCreateDto
 public record ProjectUpdateDto : IPrimaryUpdateDto
 {
     [Range(1, int.MaxValue)]
-    public int CategoryId { get; init; }
+    public int? CategoryId { get; init; }
 
-    public Guid ManagerId { get; init; }
+    public Guid? ManagerId { get; init; }
 
-    [Required, StringLength(100, MinimumLength = 1)]
-    public required string Name { get; init; }
+    [StringLength(100)]
+    public string? Name { get; init; }
 
     [Range(0.01, 1_000_000)]
-    public decimal TargetAmount { get; init; }
+    public decimal? TargetAmount { get; init; }
 
-    public ProjectStatus Status { get; init; }
-    public DateOnly StartDate { get; init; }
+    public ProjectStatus? Status { get; init; }
+    public DateOnly? StartDate { get; init; }
     public DateOnly? EndDate { get; init; }
 
     [StringLength(2000)]

@@ -12,8 +12,7 @@ public record UserCreateDto : IPrimaryCreateDto
     [Required, StringLength(100, MinimumLength = 1)]
     public required string FirstName { get; init; }
 
-    [StringLength(100)]
-    public string? OtherNames { get; init; }
+    [StringLength(100)] public string? OtherNames { get; init; }
 
     [Required, EmailAddress, StringLength(255)]
     public required string EmailAddress { get; init; }
@@ -26,13 +25,11 @@ public record UserCreateDto : IPrimaryCreateDto
 
 public record UserUpdateDto : IPrimaryUpdateDto
 {
-    [Required, EmailAddress, StringLength(255)]
-    public required string EmailAddress { get; init; }
+    [EmailAddress, StringLength(255)] public string? EmailAddress { get; init; }
 
-    [Required, StringLength(128, MinimumLength = 8)]
-    public required string Password { get; init; }
+    [StringLength(128, MinimumLength = 8)] public string? Password { get; init; }
 
-    public UserRole Role { get; init; }
+    public UserRole? Role { get; init; }
 }
 
 public record UserListResponseDto
