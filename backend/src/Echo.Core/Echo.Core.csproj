@@ -9,6 +9,7 @@
     <ItemGroup>
         <PackageReference Include="AutoMapper" />
         <FrameworkReference Include="Microsoft.AspNetCore.App" />
+        <PackageReference Include="Riok.Mapperly" />
     </ItemGroup>
 
     <ItemGroup>

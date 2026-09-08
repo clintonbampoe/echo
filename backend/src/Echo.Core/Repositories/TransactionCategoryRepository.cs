@@ -10,7 +10,7 @@ namespace Echo.Core.Repositories;
 public class TransactionCategoryRepository(AppDbContext context)
     : ReferenceRepositoryBase<TransactionCategory>(context)
 {
-    public async Task<List<TransactionCategoryResponseDto>> GetAllAsync(
+    public async Task<List<TransactionCategoryResponseDto>> GetAll(
         Guid congregationId,
         CancellationToken ct = default
     )
@@ -28,7 +28,7 @@ public class TransactionCategoryRepository(AppDbContext context)
             .ToListAsync(ct);
     }
 
-    public async Task<TransactionCategoryResponseDto?> GetByIdAsync(
+    public async Task<TransactionCategoryResponseDto?> GetById(
         int id,
         Guid congregationId,
         CancellationToken ct = default

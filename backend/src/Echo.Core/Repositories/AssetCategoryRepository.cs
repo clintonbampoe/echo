@@ -10,7 +10,7 @@ namespace Echo.Core.Repositories;
 public class AssetCategoryRepository(AppDbContext context)
     : ReferenceRepositoryBase<AssetCategory>(context)
 {
-    public async Task<List<AssetCategoryResponseDto>> GetAllAsync(
+    public async Task<List<AssetCategoryResponseDto>> GetAll(
         Guid congregationId,
         CancellationToken ct = default
     )
@@ -23,7 +23,7 @@ public class AssetCategoryRepository(AppDbContext context)
             .ToListAsync(ct);
     }
 
-    public async Task<AssetCategoryResponseDto?> GetByIdAsync(
+    public async Task<AssetCategoryResponseDto?> GetById(
         int id,
         Guid congregationId,
         CancellationToken ct = default

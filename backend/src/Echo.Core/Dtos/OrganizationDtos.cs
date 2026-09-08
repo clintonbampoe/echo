@@ -14,8 +14,8 @@ public record OrganizationCreateDto : IPrimaryCreateDto
 
 public record OrganizationUpdateDto : IPrimaryUpdateDto
 {
-    [Required, StringLength(100, MinimumLength = 1)]
-    public required string Name { get; init; }
+    [StringLength(100)]
+    public string? Name { get; init; }
 
     [StringLength(2000)]
     public string? Description { get; init; }
