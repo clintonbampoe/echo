@@ -1,31 +1,29 @@
-using AutoMapper;
 using Echo.Application.HttpResults;
 using Echo.Application.Pagination;
 using Echo.Application.Query;
+using Echo.Application.Services.Generators;
 using Echo.Core.Dtos;
+using Echo.Core.Mapping.TransactionMapping;
 using Echo.Core.Repositories;
-using Echo.Core.Services.Base;
 using Echo.Domain.Data;
-using Echo.Domain.Entities.Core;
 
 namespace Echo.Core.Services;
 
 public class TransactionService(
     TransactionRepository repository,
     IUnitOfWork unitOfWork,
-    IMapper mapper
-) : PrimaryServiceBase<Transaction, TransactionResponseDto>(repository, unitOfWork, mapper)
+    ITransactionMapper mapper,
+    IIdGenerator idGenerator
+)
 {
-    private readonly TransactionRepository _transactionRepository = repository;
-
-    public override async Task<IOperationResult> GetPageAsync(
+    public async Task<IOperationResult> GetPage(
         Guid congregationId,
         PaginationParameters paginationParameters,
         QueryParameters? queryParameters,
         CancellationToken ct = default
     )
     {
-        var result = await _transactionRepository.GetPageAsync(
+        var result = await repository.GetPage(
             congregationId,
             paginationParameters,
             queryParameters,
@@ -34,13 +32,13 @@ public class TransactionService(
         return new SuccessResult<PagedResponse<TransactionListResponseDto>>(result);
     }
 
-    public override async Task<IOperationResult> GetByIdAsync(
+    public async Task<IOperationResult> GetById(
         Guid id,
         Guid congregationId,
         CancellationToken ct = default
     )
     {
-        var result = await _transactionRepository.GetByIdAsync(id, congregationId, ct);
+        var result = await repository.GetById(id, congregationId, ct);
 
         if (result is null)
             return new NotFoundResult("Transaction not found.");
@@ -48,21 +46,62 @@ public class TransactionService(
         return new SuccessResult<TransactionResponseDto>(result);
     }
 
-    public async Task<IOperationResult> GetSummaryAsync(
+    public async Task<IOperationResult> Create(Guid congregationId, TransactionCreateDto dto, CancellationToken ct)
+    {
+        var entity = mapper.ToEntity(dto);
+        entity.CongregationId = congregationId;
+        entity.Id = idGenerator.Generate();
+
+        await repository.Create(entity, ct);
+        await unitOfWork.CommitAsync(ct);
+
+        var res = mapper.ToDto(entity);
+        return new CreatedAtResult<TransactionResponseDto>(res);
+    }
+
+    public async Task<IOperationResult> Update(Guid congregationId, Guid id, TransactionUpdateDto dto,
+        CancellationToken ct)
+    {
+        var entity = await repository.GetEntityById(congregationId, id, ct);
+
+        if (entity is null)
+            return new NotFoundResult(id.ToString());
+
+        mapper.Patch(dto, entity);
+        await unitOfWork.CommitAsync(ct);
+
+        var res = mapper.ToDto(entity);
+        return new SuccessResult<TransactionResponseDto>(res);
+    }
+
+    public async Task<IOperationResult> Delete(Guid congregationId, Guid id, CancellationToken ct)
+    {
+        var entity = await repository.GetEntityById(congregationId, id, ct);
+
+        if (entity is null)
+            return new NotFoundResult(id.ToString());
+
+        await repository.SoftDelete(entity, ct);
+        await unitOfWork.CommitAsync(ct);
+
+        return new NoContentResult();
+    }
+
+    public async Task<IOperationResult> GetSummary(
         Guid congregationId,
         CancellationToken ct = default
     )
     {
-        var result = await _transactionRepository.GetSummaryAsync(congregationId, ct);
+        var result = await repository.GetSummary(congregationId, ct);
         return new SuccessResult<FinanceSummaryDto>(result);
     }
 
-    public async Task<IOperationResult> GetStreamsAsync(
+    public async Task<IOperationResult> GetStreams(
         Guid congregationId,
         CancellationToken ct = default
     )
     {
-        var result = await _transactionRepository.GetStreamsAsync(congregationId, ct);
+        var result = await repository.GetStreams(congregationId, ct);
         return new SuccessResult<FinanceStreamsDto>(result);
     }
 }

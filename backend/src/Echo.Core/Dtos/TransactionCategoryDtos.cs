@@ -14,10 +14,10 @@ public record TransactionCategoryCreateDto : IReferenceCreateDto
 
 public record TransactionCategoryUpdateDto : IReferenceUpdateDto
 {
-    [Required, StringLength(100, MinimumLength = 1)]
-    public required string Name { get; init; }
+    [StringLength(100, MinimumLength = 1)]
+    public string? Name { get; init; }
 
-    public TransactionType CategoryType { get; init; }
+    public TransactionType? CategoryType { get; init; }
 }
 
 public record TransactionCategoryResponseDto : IReferenceResponseDto

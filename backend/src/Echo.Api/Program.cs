@@ -10,6 +10,9 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddEnvironmentVariables();
 
+builder
+    .Configuration.ValidateFrontendClientBaseUrl(builder.Environment);
+
 builder.Services.AddDbContext(builder.Configuration);
 builder.Services.AddSwaggerDocumentation();
 builder.Services.AddOpenApi();

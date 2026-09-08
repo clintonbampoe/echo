@@ -28,14 +28,14 @@ public record EventCreateDto : IPrimaryCreateDto
 
 public record EventUpdateDto : IPrimaryUpdateDto
 {
-    public Guid OrganizationId { get; init; }
-    public Guid OrganizerId { get; init; }
+    public Guid? OrganizationId { get; init; }
+    public Guid? OrganizerId { get; init; }
 
-    [Required, StringLength(100, MinimumLength = 1)]
-    public required string Name { get; init; }
+    [StringLength(100)]
+    public string? Name { get; init; }
 
-    public DateOnly StartDate { get; init; }
-    public DateOnly EndDate { get; init; }
+    public DateOnly? StartDate { get; init; }
+    public DateOnly? EndDate { get; init; }
     public TimeOnly? StartTime { get; init; }
     public TimeOnly? EndTime { get; init; }
 

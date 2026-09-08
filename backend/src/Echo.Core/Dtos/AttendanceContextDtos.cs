@@ -14,8 +14,8 @@ public record AttendanceContextCreateDto : IReferenceCreateDto
 
 public record AttendanceContextUpdateDto : IReferenceUpdateDto
 {
-    [Required, StringLength(100, MinimumLength = 1)]
-    public required string Name { get; init; }
+    [StringLength(100, MinimumLength = 1)]
+    public string? Name { get; init; }
 }
 
 public record AttendanceContextResponseDto : IReferenceResponseDto

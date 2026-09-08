@@ -10,7 +10,7 @@ namespace Echo.Core.Repositories;
 public class AttendanceContextRepository(AppDbContext context)
     : ReferenceRepositoryBase<AttendanceContext>(context)
 {
-    public async Task<List<AttendanceContextResponseDto>> GetAllAsync(
+    public async Task<List<AttendanceContextResponseDto>> GetAll(
         Guid congregationId,
         CancellationToken ct = default
     )
@@ -28,7 +28,7 @@ public class AttendanceContextRepository(AppDbContext context)
             .ToListAsync(ct);
     }
 
-    public async Task<AttendanceContextResponseDto?> GetByIdAsync(
+    public async Task<AttendanceContextResponseDto?> GetById(
         int id,
         Guid congregationId,
         CancellationToken ct = default
