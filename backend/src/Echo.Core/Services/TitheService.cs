@@ -13,7 +13,8 @@ public class TitheService(
     TitheRepository repository,
     IUnitOfWork unitOfWork,
     ITitheMapper mapper,
-    IIdGenerator idGenerator)
+    IIdGenerator idGenerator
+)
 {
     public async Task<IOperationResult> GetPage(
         Guid congregationId,
@@ -60,12 +61,29 @@ public class TitheService(
 
     public async Task<IOperationResult> Update(Guid congregationId, Guid id, TitheUpdateDto dto, CancellationToken ct)
     {
-        throw new NotImplementedException();
+        var entity = await repository.GetEntityById(congregationId, id, ct);
+
+        if (entity is null)
+            return new NotFoundResult(id.ToString());
+
+        mapper.Patch(dto, entity);
+        await unitOfWork.CommitAsync(ct);
+
+        var res = mapper.ToDto(entity);
+        return new SuccessResult<TitheResponseDto>(res);
     }
 
     public async Task<IOperationResult> Delete(Guid congregationId, Guid id, CancellationToken ct)
     {
-        throw new NotImplementedException();
+        var entity = await repository.GetEntityById(congregationId, id, ct);
+
+        if (entity is null)
+            return new NotFoundResult(id.ToString());
+
+        await repository.SoftDelete(entity, ct);
+        await unitOfWork.CommitAsync(ct);
+
+        return new NoContentResult();
     }
 
     public async Task<IOperationResult> GetAnnualSummary(

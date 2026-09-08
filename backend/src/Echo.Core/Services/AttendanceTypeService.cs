@@ -50,11 +50,28 @@ public class AttendanceTypeService(
     public async Task<IOperationResult> Update(Guid congregationId, int id, AttendanceTypeUpdateDto dto,
         CancellationToken ct)
     {
-        throw new NotImplementedException();
+        var entity = await repository.GetEntityById(congregationId, id, ct);
+
+        if (entity is null)
+            return new NotFoundResult(id.ToString());
+
+        mapper.Patch(dto, entity);
+        await unitOfWork.CommitAsync(ct);
+
+        var res = mapper.ToDto(entity);
+        return new SuccessResult<AttendanceTypeResponseDto>(res);
     }
 
     public async Task<IOperationResult> Delete(Guid congregationId, int id, CancellationToken ct)
     {
-        throw new NotImplementedException();
+        var entity = await repository.GetEntityById(congregationId, id, ct);
+
+        if (entity is null)
+            return new NotFoundResult(id.ToString());
+
+        await repository.SoftDelete(entity, ct);
+        await unitOfWork.CommitAsync(ct);
+
+        return new NoContentResult();
     }
 }

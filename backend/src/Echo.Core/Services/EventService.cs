@@ -13,7 +13,8 @@ public class EventService(
     EventRepository repository,
     IUnitOfWork unitOfWork,
     IEventMapper mapper,
-    IIdGenerator idGenerator)
+    IIdGenerator idGenerator
+)
 {
     public async Task<IOperationResult> GetPage(
         Guid congregationId,
@@ -60,12 +61,29 @@ public class EventService(
 
     public async Task<IOperationResult> Update(Guid congregationId, Guid id, EventUpdateDto dto, CancellationToken ct)
     {
-        throw new NotImplementedException();
+        var entity = await repository.GetEntityById(congregationId, id, ct);
+
+        if (entity is null)
+            return new NotFoundResult(id.ToString());
+
+        mapper.Patch(dto, entity);
+        await unitOfWork.CommitAsync(ct);
+
+        var res = mapper.ToDto(entity);
+        return new SuccessResult<EventResponseDto>(res);
     }
 
     public async Task<IOperationResult> Delete(Guid congregationId, Guid id, CancellationToken ct)
     {
-        throw new NotImplementedException();
+        var entity = await repository.GetEntityById(congregationId, id, ct);
+
+        if (entity is null)
+            return new NotFoundResult(id.ToString());
+
+        await repository.SoftDelete(entity, ct);
+        await unitOfWork.CommitAsync(ct);
+
+        return new NoContentResult();
     }
 
     public async Task<IOperationResult> GetSummary(
