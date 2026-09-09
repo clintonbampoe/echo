@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Auth.Repositories;
 
-public class PasswordVerificationTokenRepository(AppDbContext dbContext)
+public class PasswordVerificationTokenRepository(AppDbContext dbContext, TimeProvider timeProvider)
 {
     private readonly DbSet<PasswordVerificationToken> _tokens = dbContext.Set<PasswordVerificationToken>();
 
@@ -20,9 +20,10 @@ public class PasswordVerificationTokenRepository(AppDbContext dbContext)
 
     public async Task<PasswordVerificationToken?> GetActiveTokenForUser(Guid userId, CancellationToken ct = default)
     {
+        var now = timeProvider.GetUtcNow().UtcDateTime;
         return await _tokens
             .ApplySoftDeleteFilter()
-            .Where(t => t.UserId == userId && t.ExpiresAt > DateTime.UtcNow && t.UsedAt == null)
+            .Where(t => t.UserId == userId && t.ExpiresAt > now && t.UsedAt == null)
             .FirstOrDefaultAsync(ct);
     }
 

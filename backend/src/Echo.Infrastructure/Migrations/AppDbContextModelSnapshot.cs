@@ -1138,8 +1138,24 @@ namespace Echo.Infrastructure.Migrations
                     b.Property<DateTime?>("EmailVerifiedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
+
                     b.Property<string>("Name")
                         .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasComputedColumnSql("TRIM(COALESCE(\"LastName\", '') || ' ' || COALESCE(\"FirstName\", '') || ' ' || COALESCE(\"OtherNames\", ''))", true);
+
+                    b.Property<string>("OtherNames")
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 
@@ -1161,6 +1177,11 @@ namespace Echo.Infrastructure.Migrations
                     b.HasIndex("EmailAddress")
                         .IsUnique()
                         .HasFilter("\"DeletedAt\" IS NULL");
+
+                    b.HasIndex("Name");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("Name"), "GIN");
+                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex("Name"), new[] { "gin_trgm_ops" });
 
                     b.ToTable("Users");
                 });

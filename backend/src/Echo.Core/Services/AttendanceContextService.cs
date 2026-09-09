@@ -1,41 +1,78 @@
-using AutoMapper;
 using Echo.Application.HttpResults;
 using Echo.Core.Dtos;
+using Echo.Core.Mapping.AttendanceContextMapping;
 using Echo.Core.Repositories;
-using Echo.Core.Services.Base;
 using Echo.Domain.Data;
-using Echo.Domain.Entities.Core;
 
 namespace Echo.Core.Services;
 
 public class AttendanceContextService(
     AttendanceContextRepository repository,
-    AppDbContext context,
-    IMapper mapper
-) : ReferenceServiceBase<AttendanceContext>(repository, context, mapper)
+    IUnitOfWork unitOfWork,
+    IAttendanceContextMapper mapper
+)
 {
-    private readonly AttendanceContextRepository _attendanceContextRepository = repository;
-
-    public override async Task<IOperationResult> GetAllAsync(
+    public async Task<IOperationResult> GetAll(
         Guid congregationId,
         CancellationToken ct = default
     )
     {
-        var result = await _attendanceContextRepository.GetAllAsync(congregationId, ct);
+        var result = await repository.GetAll(congregationId, ct);
         return new SuccessResult<IEnumerable<AttendanceContextResponseDto>>(result);
     }
 
-    public override async Task<IOperationResult> GetByIdAsync(
+    public async Task<IOperationResult> GetById(
         int id,
         Guid congregationId,
         CancellationToken ct = default
     )
     {
-        var result = await _attendanceContextRepository.GetByIdAsync(id, congregationId, ct);
+        var result = await repository.GetById(id, congregationId, ct);
 
         if (result is null)
             return new NotFoundResult("Attendance context not found.");
 
         return new SuccessResult<AttendanceContextResponseDto>(result);
+    }
+
+    public async Task<IOperationResult> Create(Guid congregationId, AttendanceContextCreateDto dto,
+        CancellationToken ct)
+    {
+        var entity = mapper.ToEntity(dto);
+        entity.CongregationId = congregationId;
+
+        await repository.Create(entity, ct);
+        await unitOfWork.CommitAsync(ct);
+
+        var res = mapper.ToDto(entity);
+        return new CreatedAtResult<AttendanceContextResponseDto>(res);
+    }
+
+    public async Task<IOperationResult> Update(Guid congregationId, int id, AttendanceContextUpdateDto dto,
+        CancellationToken ct)
+    {
+        var entity = await repository.GetEntityById(congregationId, id, ct);
+
+        if (entity is null)
+            return new NotFoundResult(id.ToString());
+
+        mapper.Patch(dto, entity);
+        await unitOfWork.CommitAsync(ct);
+
+        var res = mapper.ToDto(entity);
+        return new SuccessResult<AttendanceContextResponseDto>(res);
+    }
+
+    public async Task<IOperationResult> Delete(Guid congregationId, int id, CancellationToken ct)
+    {
+        var entity = await repository.GetEntityById(congregationId, id, ct);
+
+        if (entity is null)
+            return new NotFoundResult(id.ToString());
+
+        await repository.SoftDelete(entity, ct);
+        await unitOfWork.CommitAsync(ct);
+
+        return new NoContentResult();
     }
 }

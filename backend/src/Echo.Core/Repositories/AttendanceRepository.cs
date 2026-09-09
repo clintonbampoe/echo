@@ -50,7 +50,7 @@ public class AttendanceRepository(AppDbContext context) : PrimaryRepositoryBase<
         );
     }
 
-    public async Task<AttendanceResponseDto?> GetByIdAsync(
+    public async Task<AttendanceResponseDto?> GetById(
         Guid id,
         Guid congregationId,
         CancellationToken ct = default

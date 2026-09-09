@@ -298,14 +298,13 @@
 }
 
 .member-action-btn.danger {
-  background-color: var(--text-main);
-  color: white;
-  border-color: var(--text-main);
+  background-color: transparent;
+  color: #c62828;
+  border-color: #ffcdd2;
 }
 
 .member-action-btn.danger:hover {
-  background-color: #333;
-  border-color: #333;
+  background-color: #ffebee;
 }
 
 /* ─── Side Panel Overlay ──────────────────────────────────────────────────── */

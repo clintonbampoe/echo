@@ -10,8 +10,10 @@ import Projects from './components/Projects'
 import Contributions from './components/Contributions'
 import Events from './components/Events'
 import Members from './components/Members'
-import { LayoutProvider, useLayout } from './context/LayoutContext'
-import { AuthProvider, useAuth } from './context/AuthContext'
+import { LayoutProvider } from './context/LayoutProvider'
+import { AuthProvider } from './context/AuthProvider'
+import { useLayout } from './hooks/useLayout'
+import { useAuth } from './hooks/useAuth'
 import './styles/App.css'
 
 const PlaceholderTab: React.FC<{ name: string }> = ({ name }) => {

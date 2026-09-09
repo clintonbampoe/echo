@@ -12,7 +12,7 @@ namespace Echo.Core.Repositories;
 public class OrganizationRepository(AppDbContext context)
     : PrimaryRepositoryBase<Organization>(context)
 {
-    public async Task<PagedResponse<OrganizationListResponseDto>> GetPageAsync(
+    public async Task<PagedResponse<OrganizationListResponseDto>> GetPage(
         Guid congregationId,
         PaginationParameters paginationParameters,
         QueryParameters? queryParameters,
@@ -46,7 +46,7 @@ public class OrganizationRepository(AppDbContext context)
         );
     }
 
-    public async Task<OrganizationResponseDto?> GetByIdAsync(
+    public async Task<OrganizationResponseDto?> GetById(
         Guid id,
         Guid congregationId,
         CancellationToken ct = default
@@ -65,7 +65,7 @@ public class OrganizationRepository(AppDbContext context)
             .FirstOrDefaultAsync(ct);
     }
 
-    public async Task<OrganizationSummaryDto> GetSummaryAsync(
+    public async Task<OrganizationSummaryDto> GetSummary(
         Guid congregationId,
         CancellationToken ct = default
     )
@@ -92,7 +92,8 @@ public class OrganizationRepository(AppDbContext context)
 
         var totalOrganizationMembers = await Context
             .Set<OrganizationMember>()
-            .Where(m => m.DeletedAt == null && m.CongregationId == congregationId)
+            .ApplySoftDeleteFilter()
+            .Where(m => m.CongregationId == congregationId)
             .CountAsync(ct);
 
         return new OrganizationSummaryDto

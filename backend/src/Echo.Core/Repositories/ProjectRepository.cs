@@ -12,7 +12,7 @@ namespace Echo.Core.Repositories;
 
 public class ProjectRepository(AppDbContext context) : PrimaryRepositoryBase<Project>(context)
 {
-    public async Task<PagedResponse<ProjectListResponseDto>> GetPageAsync(
+    public async Task<PagedResponse<ProjectListResponseDto>> GetPage(
         Guid congregationId,
         PaginationParameters paginationParameters,
         QueryParameters? queryParameters,
@@ -51,7 +51,7 @@ public class ProjectRepository(AppDbContext context) : PrimaryRepositoryBase<Pro
         );
     }
 
-    public async Task<ProjectResponseDto?> GetByIdAsync(
+    public async Task<ProjectResponseDto?> GetById(
         Guid id,
         Guid congregationId,
         CancellationToken ct = default
@@ -79,7 +79,7 @@ public class ProjectRepository(AppDbContext context) : PrimaryRepositoryBase<Pro
             .FirstOrDefaultAsync(ct);
     }
 
-    public async Task<ProjectSummaryDto> GetSummaryAsync(
+    public async Task<ProjectSummaryDto> GetSummary(
         Guid congregationId,
         CancellationToken ct = default
     )
@@ -111,7 +111,8 @@ public class ProjectRepository(AppDbContext context) : PrimaryRepositoryBase<Pro
 
         var totalRaised = await Context
             .Set<ProjectContribution>()
-            .Where(c => c.DeletedAt == null && c.CongregationId == congregationId)
+            .ApplySoftDeleteFilter()
+            .Where(c => c.CongregationId == congregationId)
             .SumAsync(c => c.Amount, ct);
 
         return new ProjectSummaryDto

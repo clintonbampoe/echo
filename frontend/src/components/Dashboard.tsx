@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { useLayout } from '../context/LayoutContext';
+import { useLayout } from '../hooks/useLayout';
 import '../styles/Dashboard.css';
 
 const getInitials = (name: string) => {
@@ -106,7 +106,7 @@ const Dashboard: React.FC = () => {
               const avatarStyle = getAvatarColor(activity.user);
               return (
                 <div key={activity.id} className="activity-item">
-                  <div 
+                  <div
                     className="activity-avatar"
                     style={{ backgroundColor: avatarStyle.bg, color: avatarStyle.text }}
                   >

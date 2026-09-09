@@ -9,16 +9,14 @@ namespace Echo.Core.Controllers;
 
 public class OrganizationMembersController(OrganizationMemberService service) : CoreBaseController
 {
-    private readonly OrganizationMemberService _service = service;
-
     [HttpGet]
-    public async Task<ActionResult> GetPageAsync(
+    public async Task<ActionResult> GetPage(
         [FromQuery] PaginationParameters paginationParameters,
         [FromQuery] QueryParameters? queryParameters,
         CancellationToken ct
     )
     {
-        var response = await _service.GetPageAsync(
+        var response = await service.GetPage(
             GetCongregationId(),
             paginationParameters,
             queryParameters,
@@ -28,9 +26,9 @@ public class OrganizationMembersController(OrganizationMemberService service) : 
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult> GetByIdAsync(Guid id, CancellationToken ct)
+    public async Task<ActionResult> GetById(Guid id, CancellationToken ct)
     {
-        var response = await _service.GetByIdAsync(id, GetCongregationId(), ct);
+        var response = await service.GetById(id, GetCongregationId(), ct);
         return response.ToActionResult();
     }
 
@@ -42,7 +40,7 @@ public class OrganizationMembersController(OrganizationMemberService service) : 
         CancellationToken ct
     )
     {
-        var response = await _service.GetByMemberId(paginationParameters, queryParameters, id, ct);
+        var response = await service.GetByMemberId(paginationParameters, queryParameters, id, ct);
         return response.ToActionResult();
     }
 
@@ -54,7 +52,7 @@ public class OrganizationMembersController(OrganizationMemberService service) : 
         CancellationToken ct
     )
     {
-        var response = await _service.GetByOrganizationId(
+        var response = await service.GetByOrganizationId(
             paginationParameters,
             queryParameters,
             id,
@@ -64,27 +62,27 @@ public class OrganizationMembersController(OrganizationMemberService service) : 
     }
 
     [HttpPost]
-    public async Task<ActionResult> CreateAsync(OrganizationCreateDto dto, CancellationToken ct = default)
+    public async Task<ActionResult> Create(OrganizationMemberCreateDto dto, CancellationToken ct = default)
     {
-        var response = await _service.CreateAsync(GetCongregationId(), dto, ct);
+        var response = await service.Create(GetCongregationId(), dto, ct);
         return response.ToActionResult();
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult> UpdateAsync(
+    public async Task<ActionResult> Update(
         Guid id,
         OrganizationMemberUpdateDto dto,
         CancellationToken ct
     )
     {
-        var response = await _service.UpdateAsync(GetCongregationId(), id, dto, ct);
+        var response = await service.Update(GetCongregationId(), id, dto, ct);
         return response.ToActionResult();
     }
 
     [HttpDelete("{id}")]
-    public async Task<ActionResult> DeleteAsync(Guid id, CancellationToken ct)
+    public async Task<ActionResult> Delete(Guid id, CancellationToken ct)
     {
-        var response = await _service.DeleteAsync(id, GetCongregationId(), ct);
+        var response = await service.Delete(id, GetCongregationId(), ct);
         return response.ToActionResult();
     }
 }

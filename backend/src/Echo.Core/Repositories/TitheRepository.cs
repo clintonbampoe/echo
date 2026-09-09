@@ -12,7 +12,7 @@ namespace Echo.Core.Repositories;
 
 public class TitheRepository(AppDbContext context) : PrimaryRepositoryBase<Tithe>(context)
 {
-    public async Task<PagedResponse<TitheListResponseDto>> GetPageAsync(
+    public async Task<PagedResponse<TitheListResponseDto>> GetPage(
         Guid congregationId,
         PaginationParameters paginationParameters,
         QueryParameters? queryParameters,
@@ -45,7 +45,7 @@ public class TitheRepository(AppDbContext context) : PrimaryRepositoryBase<Tithe
         return new PagedResponse<TitheListResponseDto>(records, paginationParameters, totalRecords);
     }
 
-    public async Task<TitheResponseDto?> GetByIdAsync(
+    public async Task<TitheResponseDto?> GetById(
         Guid id,
         Guid congregationId,
         CancellationToken ct = default
@@ -71,21 +71,25 @@ public class TitheRepository(AppDbContext context) : PrimaryRepositoryBase<Tithe
             .FirstOrDefaultAsync(ct);
     }
 
-    public async Task<List<TitheMonthlyTotalDto>> GetMonthlySummaryAsync(
-        Guid congregationId, int year, CancellationToken ct = default)
+    public async Task<List<TitheMonthlyTotalDto>> GetAnnualSummary(
+        Guid congregationId,
+        int year,
+        CancellationToken ct = default
+    )
     {
-        var totals = await DbSet
+        var byMonth = await DbSet
             .ApplySoftDeleteFilter()
             .Where(t => t.CongregationId == congregationId && t.ForYear == year)
             .GroupBy(t => t.ForMonth)
             .Select(g => new { Month = g.Key, Total = g.Sum(t => t.Amount) })
-            .ToListAsync(ct);
+            .ToDictionaryAsync(t => t.Month, t => t.Total, ct);
 
         return Enum.GetValues<MonthOfYear>()
+            .Distinct()
             .Select(m => new TitheMonthlyTotalDto
             {
                 Month = m,
-                Total = totals.FirstOrDefault(t => t.Month == m)?.Total ?? 0,
+                Total = byMonth.GetValueOrDefault(m, 0m),
             })
             .ToList();
     }

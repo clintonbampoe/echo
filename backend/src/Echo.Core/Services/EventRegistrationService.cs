@@ -1,31 +1,29 @@
-using AutoMapper;
 using Echo.Application.HttpResults;
 using Echo.Application.Pagination;
 using Echo.Application.Query;
+using Echo.Application.Services.Generators;
 using Echo.Core.Dtos;
+using Echo.Core.Mapping.EventRegistrationMapping;
 using Echo.Core.Repositories;
-using Echo.Core.Services.Base;
 using Echo.Domain.Data;
-using Echo.Domain.Entities.Core;
 
 namespace Echo.Core.Services;
 
 public class EventRegistrationService(
     EventRegistrationRepository repository,
-    AppDbContext context,
-    IMapper mapper
-) : PrimaryServiceBase<EventRegistration>(repository, context, mapper)
+    IUnitOfWork unitOfWork,
+    IEventRegistrationMapper mapper,
+    IIdGenerator idGenerator
+)
 {
-    private readonly EventRegistrationRepository _eventRegistrationRepository = repository;
-
-    public override async Task<IOperationResult> GetPageAsync(
+    public async Task<IOperationResult> GetPage(
         Guid congregationId,
         PaginationParameters paginationParameters,
         QueryParameters? queryParameters,
         CancellationToken ct = default
     )
     {
-        var result = await _eventRegistrationRepository.GetPageAsync(
+        var result = await repository.GetPage(
             congregationId,
             paginationParameters,
             queryParameters,
@@ -34,13 +32,13 @@ public class EventRegistrationService(
         return new SuccessResult<PagedResponse<EventRegistrationListResponseDto>>(result);
     }
 
-    public override async Task<IOperationResult> GetByIdAsync(
+    public async Task<IOperationResult> GetById(
         Guid id,
         Guid congregationId,
         CancellationToken ct = default
     )
     {
-        var result = await _eventRegistrationRepository.GetByIdAsync(id, congregationId, ct);
+        var result = await repository.GetById(id, congregationId, ct);
 
         if (result is null)
             return new NotFoundResult("Event registration not found.");
@@ -55,7 +53,7 @@ public class EventRegistrationService(
         CancellationToken ct
     )
     {
-        var result = await _eventRegistrationRepository.GetByEventId(
+        var result = await repository.GetByEventId(
             paginationParameters,
             queryParameters,
             eventId,
@@ -72,7 +70,7 @@ public class EventRegistrationService(
         CancellationToken ct
     )
     {
-        var result = await _eventRegistrationRepository.GetByMemberId(
+        var result = await repository.GetByMemberId(
             paginationParameters,
             queryParameters,
             memberId,
@@ -80,5 +78,47 @@ public class EventRegistrationService(
         );
 
         return new SuccessResult<PagedResponse<EventRegistrationListResponseDto>>(result);
+    }
+
+    public async Task<IOperationResult> Create(Guid congregationId, EventRegistrationCreateDto dto,
+        CancellationToken ct)
+    {
+        var entity = mapper.ToEntity(dto);
+        entity.CongregationId = congregationId;
+        entity.Id = idGenerator.Generate();
+
+        await repository.Create(entity, ct);
+        await unitOfWork.CommitAsync(ct);
+
+        var res = mapper.ToDto(entity);
+        return new CreatedAtResult<EventRegistrationResponseDto>(res);
+    }
+
+    public async Task<IOperationResult> Update(Guid congregationId, Guid id, EventRegistrationUpdateDto dto,
+        CancellationToken ct)
+    {
+        var entity = await repository.GetEntityById(congregationId, id, ct);
+
+        if (entity is null)
+            return new NotFoundResult(id.ToString());
+
+        mapper.Patch(dto, entity);
+        await unitOfWork.CommitAsync(ct);
+
+        var res = mapper.ToDto(entity);
+        return new SuccessResult<EventRegistrationResponseDto>(res);
+    }
+
+    public async Task<IOperationResult> Delete(Guid congregationId, Guid id, CancellationToken ct)
+    {
+        var entity = await repository.GetEntityById(congregationId, id, ct);
+
+        if (entity is null)
+            return new NotFoundResult(id.ToString());
+
+        await repository.SoftDelete(entity, ct);
+        await unitOfWork.CommitAsync(ct);
+
+        return new NoContentResult();
     }
 }

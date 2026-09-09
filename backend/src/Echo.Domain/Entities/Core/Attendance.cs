@@ -5,7 +5,7 @@ namespace Echo.Domain.Entities.Core;
 
 public class Attendance : IPrimaryEntity
 {
-    public Guid Id { get; set; } = Guid.CreateVersion7(DateTime.UtcNow);
+    public Guid Id { get; set; }
     public Guid CongregationId { get; set; }
     public Congregation Congregation { get; set; } = null!;
 
@@ -19,6 +19,6 @@ public class Attendance : IPrimaryEntity
     public TimeOnly CheckInTime { get; set; } = TimeOnly.FromDateTime(DateTime.UtcNow);
     public string? Description { get; set; } = string.Empty;
 
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; }
     public DateTime? DeletedAt { get; set; }
 }

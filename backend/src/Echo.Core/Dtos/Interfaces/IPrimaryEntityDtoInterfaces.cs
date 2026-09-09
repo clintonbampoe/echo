@@ -1,8 +1,8 @@
 namespace Echo.Core.Dtos.Interfaces;
 
-public interface IPrimaryCreateDto { }
+public interface IPrimaryCreateDto;
 
-public interface IPrimaryUpdateDto { }
+public interface IPrimaryUpdateDto;
 
 public interface IPrimaryListResponseDto
 {

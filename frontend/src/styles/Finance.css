@@ -98,9 +98,11 @@
 
 .stream-header-icon.income {
   color: #34c759;
+  color: #34c759;
 }
 
 .stream-header-icon.expenditure {
+  color: #ff3b30;
   color: #ff3b30;
 }
 
@@ -161,9 +163,13 @@
 .stream-card-icon.income {
   background-color: #e8f5e9;
   color: #34c759;
+  background-color: #e8f5e9;
+  color: #34c759;
 }
 
 .stream-card-icon.expenditure {
+  background-color: #ffebee;
+  color: #ff3b30;
   background-color: #ffebee;
   color: #ff3b30;
 }
@@ -278,9 +284,11 @@
 
 .stream-card-dropdown-item.danger {
   color: #ff3b30;
+  color: #ff3b30;
 }
 
 .stream-card-dropdown-item.danger:hover {
+  background-color: #fff0f0;
   background-color: #fff0f0;
 }
 
@@ -599,10 +607,12 @@
   height: 56px;
   border-radius: 50%;
   background-color: #fff0f0;
+  background-color: #fff0f0;
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0 auto 16px;
+  color: #ff3b30;
   color: #ff3b30;
 }
 

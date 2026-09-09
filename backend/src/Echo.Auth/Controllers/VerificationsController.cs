@@ -1,3 +1,4 @@
+using Echo.Auth.Dtos;
 using Echo.Auth.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -12,11 +13,11 @@ public class VerificationsController(EmailVerificationService emailVerificationS
 {
     [HttpPost("account")]
     public async Task<ActionResult> SendVerificationLinkToEmail(
-        [FromQuery] string email,
+        [FromBody] SendVerificationLinkRequest request,
         CancellationToken ct = default
     )
     {
-        var response = await emailVerificationService.SendVerificationLinkToEmail(email, ct);
+        var response = await emailVerificationService.SendVerificationLinkToEmail(request.Email, ct);
         return response.ToActionResult();
     }
 

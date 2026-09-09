@@ -1,12 +1,35 @@
+using Echo.Core.Mapping.AssetCategoryMapping;
+using Echo.Core.Mapping.AssetMapping;
+using Echo.Core.Mapping.AttendanceContextMapping;
+using Echo.Core.Mapping.AttendanceMapping;
+using Echo.Core.Mapping.AttendanceTypeMapping;
+using Echo.Core.Mapping.CongregationMapping;
+using Echo.Core.Mapping.EventAttendanceMapping;
+using Echo.Core.Mapping.EventMapping;
+using Echo.Core.Mapping.EventRegistrationMapping;
+using Echo.Core.Mapping.MemberMapping;
+using Echo.Core.Mapping.OrganizationMapping;
+using Echo.Core.Mapping.OrganizationMemberMapping;
+using Echo.Core.Mapping.ProjectCategoryMapping;
+using Echo.Core.Mapping.ProjectContributionMapping;
+using Echo.Core.Mapping.ProjectMapping;
+using Echo.Core.Mapping.TitheMapping;
+using Echo.Core.Mapping.TransactionCategoryMapping;
+using Echo.Core.Mapping.TransactionMapping;
+using Echo.Core.Mapping.UserMapping;
 using Echo.Core.Repositories;
 using Echo.Core.Services;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Echo.Core.Extensions;
 
 public static class CoreServiceExtensions
 {
-    public static IServiceCollection AddCoreServices(this IServiceCollection services)
+    public static IServiceCollection AddCoreServices(
+        this IServiceCollection services,
+        IConfiguration configuration
+    )
     {
         services.AddScoped<MemberRepository>();
         services.AddScoped<AssetRepository>();
@@ -47,8 +70,32 @@ public static class CoreServiceExtensions
         services.AddScoped<AttendanceContextService>();
         services.AddScoped<UserService>();
 
-        // first parameter is ignored because we have no configurations outside our AutoMapper profiles
-        services.AddAutoMapper(_ => { }, typeof(CoreServiceExtensions));
+        services.AddAutoMapper(
+            cfg => { cfg.LicenseKey = configuration["LUCKYPENNY_LICENSE_KEY"]; },
+            typeof(CoreServiceExtensions)
+        );
+
+        services.AddSingleton<IAssetCategoryMapper, AssetCategoryMapper>();
+        services.AddSingleton<IAssetMapper, AssetMapper>();
+        services.AddSingleton<IAttendanceTypeMapper, AttendanceTypeMapper>();
+        services.AddSingleton<IAttendanceContextMapper, AttendanceContextMapper>();
+        services.AddSingleton<IAttendanceMapper, AttendanceMapper>();
+        services.AddSingleton<ICongregationMapper, CongregationMapper>();
+        services.AddSingleton<IMemberMapper, MemberMapper>();
+        services.AddSingleton<IUserMapper, UserMapper>();
+        services.AddSingleton<IEventMapper, EventMapper>();
+        services.AddSingleton<IEventRegistrationMapper, EventRegistrationMapper>();
+        services.AddSingleton<IEventAttendanceMapper, EventAttendanceMapper>();
+        services.AddSingleton<ICongregationMapper, CongregationMapper>();
+        services.AddSingleton<IMemberMapper, MemberMapper>();
+        services.AddSingleton<IOrganizationMapper, OrganizationMapper>();
+        services.AddSingleton<IOrganizationMemberMapper, OrganizationMemberMapper>();
+        services.AddSingleton<ITitheMapper, TitheMapper>();
+        services.AddSingleton<ITransactionMapper, TransactionMapper>();
+        services.AddSingleton<ITransactionCategoryMapper, TransactionCategoryMapper>();
+        services.AddSingleton<IProjectMapper, ProjectMapper>();
+        services.AddSingleton<IProjectCategoryMapper, ProjectCategoryMapper>();
+        services.AddSingleton<IProjectContributionMapper, ProjectContributionMapper>();
 
         return services;
     }

@@ -7,7 +7,7 @@ public interface IReferenceCreateDto
 
 public interface IReferenceUpdateDto
 {
-    string Name { get; }
+    string? Name { get; }
 }
 
 public interface IReferenceResponseDto

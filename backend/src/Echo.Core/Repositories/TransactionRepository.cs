@@ -13,7 +13,7 @@ namespace Echo.Core.Repositories;
 public class TransactionRepository(AppDbContext context)
     : PrimaryRepositoryBase<Transaction>(context)
 {
-    public async Task<PagedResponse<TransactionListResponseDto>> GetPageAsync(
+    public async Task<PagedResponse<TransactionListResponseDto>> GetPage(
         Guid congregationId,
         PaginationParameters paginationParameters,
         QueryParameters? queryParameters,
@@ -48,7 +48,7 @@ public class TransactionRepository(AppDbContext context)
         );
     }
 
-    public async Task<TransactionResponseDto?> GetByIdAsync(
+    public async Task<TransactionResponseDto?> GetById(
         Guid id,
         Guid congregationId,
         CancellationToken ct = default
@@ -72,7 +72,7 @@ public class TransactionRepository(AppDbContext context)
             .FirstOrDefaultAsync(ct);
     }
 
-    public async Task<FinanceSummaryDto> GetSummaryAsync(
+    public async Task<FinanceSummaryDto> GetSummary(
         Guid congregationId,
         CancellationToken ct = default
     )
@@ -121,7 +121,7 @@ public class TransactionRepository(AppDbContext context)
         };
     }
 
-    public async Task<FinanceStreamsDto> GetStreamsAsync(
+    public async Task<FinanceStreamsDto> GetStreams(
         Guid congregationId,
         CancellationToken ct = default
     )

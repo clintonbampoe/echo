@@ -11,7 +11,7 @@ namespace Echo.Core.Repositories;
 
 public class EventRepository(AppDbContext context) : PrimaryRepositoryBase<Event>(context)
 {
-    public async Task<PagedResponse<EventListResponseDto>> GetPageAsync(
+    public async Task<PagedResponse<EventListResponseDto>> GetPage(
         Guid congregationId,
         PaginationParameters paginationParameters,
         QueryParameters? queryParameters,
@@ -45,7 +45,7 @@ public class EventRepository(AppDbContext context) : PrimaryRepositoryBase<Event
         return new PagedResponse<EventListResponseDto>(records, paginationParameters, totalRecords);
     }
 
-    public async Task<EventResponseDto?> GetByIdAsync(
+    public async Task<EventResponseDto?> GetById(
         Guid id,
         Guid congregationId,
         CancellationToken ct = default
@@ -75,7 +75,7 @@ public class EventRepository(AppDbContext context) : PrimaryRepositoryBase<Event
             .FirstOrDefaultAsync(ct);
     }
 
-    public async Task<EventSummaryDto> GetSummaryAsync(Guid congregationId, CancellationToken ct = default)
+    public async Task<EventSummaryDto> GetSummary(Guid congregationId, CancellationToken ct = default)
     {
         var today = DateOnly.FromDateTime(DateTime.UtcNow);
 
@@ -92,7 +92,8 @@ public class EventRepository(AppDbContext context) : PrimaryRepositoryBase<Event
             .FirstOrDefaultAsync(ct);
 
         var totalRegistrations = await Context.Set<EventRegistration>()
-            .Where(r => r.DeletedAt == null && r.CongregationId == congregationId)
+            .ApplySoftDeleteFilter()
+            .Where(r => r.CongregationId == congregationId)
             .CountAsync(ct);
 
         return new EventSummaryDto

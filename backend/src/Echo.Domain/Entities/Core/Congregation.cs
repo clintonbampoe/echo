@@ -5,7 +5,7 @@ namespace Echo.Domain.Entities.Core;
 
 public class Congregation : ISearchableEntity, ISoftDeletable
 {
-    public Guid Id { get; set; } = Guid.CreateVersion7(DateTime.UtcNow);
+    public Guid Id { get; set; }
 
     public string Name { get; set; } = string.Empty;
     public ReligiousOrganizationType OrgType { get; set; }

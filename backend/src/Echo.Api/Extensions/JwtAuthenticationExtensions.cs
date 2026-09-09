@@ -3,7 +3,6 @@ using System.Text;
 using Echo.Application.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Echo.Api.Extensions;
@@ -23,12 +22,14 @@ public static class JwtAuthenticationExtensions
         var rsa = RSA.Create();
         rsa.ImportFromPem(Encoding.UTF8.GetString(Convert.FromBase64String(jwtOptions.PublicKey)));
 
-        JsonWebTokenHandler.DefaultInboundClaimTypeMap.Clear();
-
         services
             .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
+                // Keep JWT claim names as-is ("sub", "role", "congregationId") instead of
+                // remapping to ClaimTypes.*. Scoped to this handler only — do NOT reintroduce
+                // JsonWebTokenHandler.DefaultInboundClaimTypeMap.Clear(), which mutates global
+                // state for every JsonWebTokenHandler in the process.
                 options.MapInboundClaims = false;
 
                 options.TokenValidationParameters = new TokenValidationParameters

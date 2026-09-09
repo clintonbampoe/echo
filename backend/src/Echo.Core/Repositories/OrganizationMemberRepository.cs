@@ -12,7 +12,7 @@ namespace Echo.Core.Repositories;
 public class OrganizationMemberRepository(AppDbContext context)
     : PrimaryRepositoryBase<OrganizationMember>(context)
 {
-    public async Task<PagedResponse<OrganizationMemberListResponseDto>> GetPageAsync(
+    public async Task<PagedResponse<OrganizationMemberListResponseDto>> GetPage(
         Guid congregationId,
         PaginationParameters paginationParameters,
         QueryParameters? queryParameters,
@@ -47,7 +47,7 @@ public class OrganizationMemberRepository(AppDbContext context)
         );
     }
 
-    public async Task<OrganizationMemberResponseDto?> GetByIdAsync(
+    public async Task<OrganizationMemberResponseDto?> GetById(
         Guid id,
         Guid congregationId,
         CancellationToken ct = default

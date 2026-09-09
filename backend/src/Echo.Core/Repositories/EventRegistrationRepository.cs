@@ -12,7 +12,7 @@ namespace Echo.Core.Repositories;
 public class EventRegistrationRepository(AppDbContext context)
     : PrimaryRepositoryBase<EventRegistration>(context)
 {
-    public async Task<PagedResponse<EventRegistrationListResponseDto>> GetPageAsync(
+    public async Task<PagedResponse<EventRegistrationListResponseDto>> GetPage(
         Guid congregationId,
         PaginationParameters paginationParameters,
         QueryParameters? queryParameters,
@@ -46,7 +46,7 @@ public class EventRegistrationRepository(AppDbContext context)
         );
     }
 
-    public async Task<EventRegistrationResponseDto?> GetByIdAsync(
+    public async Task<EventRegistrationResponseDto?> GetById(
         Guid id,
         Guid congregationId,
         CancellationToken ct = default

@@ -1,0 +1,62 @@
+---
+name: Echo CI
+on:
+  push:
+    branches: [main]
+    paths: [backend/**, frontend/**]
+  pull_request:
+    branches: [main]
+    paths:
+      - backend/**
+      - frontend/**
+
+  # Cancel in-flight runs on the same ref when a new push arrives.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  api:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages/
+          key: nuget-${{ hashFiles('backend/Directory.Packages.props', 'backend/src/**/*.csproj') }}
+          restore-keys: nuget-
+      - name: Restore
+        run: dotnet restore backend/Echo.slnx
+      - name: Build
+        run: dotnet build backend/Echo.slnx --no-restore -c Release
+      - name: Test
+        run: dotnet test --solution backend/Echo.slnx --filter "Category=Unit" --no-restore
+          --no-build -c Release
+  frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+            # Relative to working-directory (frontend), resolves to frontend/package-lock.json.
+          cache-dependency-path: frontend/package-lock.json
+      - name: Install
+        run: npm ci --no-audit --no-fund
+      - name: Lint
+        run: npm run lint
+      - name: Build
+        run: npm run build

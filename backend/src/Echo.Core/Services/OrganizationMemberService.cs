@@ -1,31 +1,29 @@
-using AutoMapper;
 using Echo.Application.HttpResults;
 using Echo.Application.Pagination;
 using Echo.Application.Query;
+using Echo.Application.Services.Generators;
 using Echo.Core.Dtos;
+using Echo.Core.Mapping.OrganizationMemberMapping;
 using Echo.Core.Repositories;
-using Echo.Core.Services.Base;
 using Echo.Domain.Data;
-using Echo.Domain.Entities.Core;
 
 namespace Echo.Core.Services;
 
 public class OrganizationMemberService(
     OrganizationMemberRepository repository,
-    AppDbContext context,
-    IMapper mapper
-) : PrimaryServiceBase<OrganizationMember>(repository, context, mapper)
+    IUnitOfWork unitOfWork,
+    IOrganizationMemberMapper mapper,
+    IIdGenerator idGenerator
+)
 {
-    private readonly OrganizationMemberRepository _organizationMemberRepository = repository;
-
-    public override async Task<IOperationResult> GetPageAsync(
+    public async Task<IOperationResult> GetPage(
         Guid congregationId,
         PaginationParameters paginationParameters,
         QueryParameters? queryParameters,
         CancellationToken ct = default
     )
     {
-        var result = await _organizationMemberRepository.GetPageAsync(
+        var result = await repository.GetPage(
             congregationId,
             paginationParameters,
             queryParameters,
@@ -34,13 +32,13 @@ public class OrganizationMemberService(
         return new SuccessResult<PagedResponse<OrganizationMemberListResponseDto>>(result);
     }
 
-    public override async Task<IOperationResult> GetByIdAsync(
+    public async Task<IOperationResult> GetById(
         Guid id,
         Guid congregationId,
         CancellationToken ct = default
     )
     {
-        var result = await _organizationMemberRepository.GetByIdAsync(id, congregationId, ct);
+        var result = await repository.GetById(id, congregationId, ct);
 
         if (result is null)
             return new NotFoundResult("Organization member not found.");
@@ -55,7 +53,7 @@ public class OrganizationMemberService(
         CancellationToken ct
     )
     {
-        var result = await _organizationMemberRepository.GetByMemberId(
+        var result = await repository.GetByMemberId(
             paginationParameters,
             queryParameters,
             memberId,
@@ -72,7 +70,7 @@ public class OrganizationMemberService(
         CancellationToken ct
     )
     {
-        var result = await _organizationMemberRepository.GetByOrganizationId(
+        var result = await repository.GetByOrganizationId(
             paginationParameters,
             queryParameters,
             memberId,
@@ -80,5 +78,47 @@ public class OrganizationMemberService(
         );
 
         return new SuccessResult<PagedResponse<OrganizationMemberListResponseDto>>(result);
+    }
+
+    public async Task<IOperationResult> Create(Guid congregationId, OrganizationMemberCreateDto dto,
+        CancellationToken ct)
+    {
+        var entity = mapper.ToEntity(dto);
+        entity.CongregationId = congregationId;
+        entity.Id = idGenerator.Generate();
+
+        await repository.Create(entity, ct);
+        await unitOfWork.CommitAsync(ct);
+
+        var res = mapper.ToDto(entity);
+        return new CreatedAtResult<OrganizationMemberResponseDto>(res);
+    }
+
+    public async Task<IOperationResult> Update(Guid congregationId, Guid id, OrganizationMemberUpdateDto dto,
+        CancellationToken ct)
+    {
+        var entity = await repository.GetEntityById(congregationId, id, ct);
+
+        if (entity is null)
+            return new NotFoundResult(id.ToString());
+
+        mapper.Patch(dto, entity);
+        await unitOfWork.CommitAsync(ct);
+
+        var res = mapper.ToDto(entity);
+        return new SuccessResult<OrganizationMemberResponseDto>(res);
+    }
+
+    public async Task<IOperationResult> Delete(Guid congregationId, Guid id, CancellationToken ct)
+    {
+        var entity = await repository.GetEntityById(congregationId, id, ct);
+
+        if (entity is null)
+            return new NotFoundResult(id.ToString());
+
+        await repository.SoftDelete(entity, ct);
+        await unitOfWork.CommitAsync(ct);
+
+        return new NoContentResult();
     }
 }

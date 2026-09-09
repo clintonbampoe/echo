@@ -58,6 +58,13 @@ The output will be generated in the `dist` folder.
 - `npm run lint`: Run ESLint to check for code quality issues.
 - `npm run preview`: Preview the production build locally.
 
+> **Note**: Currently, we're trying to utilize the fast compile and build times of TypeScript 7 to reduce our CI/CD minutes.
+> However, since TypeScript7 doesn't expose the programmatic API that `typescript-eslint` depends on, we install two versions side by side using npm aliases.
+> `typescript` resolves to `@typescript/typescript6` (the TS6 compatibility shim) so that `eslint` and `typescript-eslint` continue to work.
+> `@typescript/native` resolves to the real `typescript@7.x` and supplies the `tsc` binary used for type-checking.
+> Once `typescript-eslint` ships support for the TS7.1 programmatic API, remove `@typescript/typescript6` and point `typescript` back at the real package.
+
+
 ## 📁 Project Structure
 
 - `src/components`: Reusable UI components.

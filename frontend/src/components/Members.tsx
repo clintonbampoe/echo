@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useLayout } from '../context/LayoutContext';
+import { useLayout } from '../hooks/useLayout';
 import { CloseIcon, MembersIcon, CalendarIcon } from './Icons';
+import DeleteConfirmModal from './common/DeleteConfirmModal';
 import ExportPanel from './ExportPanel';
 import '../styles/Members.css';
 
@@ -381,8 +382,19 @@ const Members: React.FC = () => {
     setEditingMember(null);
   };
 
-  const handleDelete = (id: number) => {
-    setMembers(prev => prev.filter(m => m.id !== id));
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deletingMember, setDeletingMember] = useState<ChurchMember | null>(null);
+
+  const handleDelete = (member: ChurchMember) => {
+    setDeletingMember(member);
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = () => {
+    if (!deletingMember) return;
+    setMembers(prev => prev.filter(m => m.id !== deletingMember.id));
+    setShowDeleteConfirm(false);
+    setDeletingMember(null);
   };
 
   const closePanel = () => {
@@ -502,7 +514,7 @@ const Members: React.FC = () => {
                     </button>
                     <button
                       className="member-action-btn danger"
-                      onClick={() => handleDelete(member.id)}
+                      onClick={() => handleDelete(member)}
                     >
                       Delete
                     </button>
@@ -588,12 +600,23 @@ const Members: React.FC = () => {
             ],
             // Use the filtered members list or all members based on preference.
             // Using all members for the full roster is usually safer.
-            rows: members, 
+            rows: members,
           }}
           onClose={() => setShowExportModal(false)}
         />
       )}
 
+      {/* ════════════════════════════════════════════════════════════════════
+          DELETE CONFIRMATION MODAL
+          ════════════════════════════════════════════════════════════════ */}
+      <DeleteConfirmModal
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={confirmDelete}
+        itemName={deletingMember ? `${deletingMember.firstName} ${deletingMember.lastName}`.trim() : ''}
+        title="Delete Member"
+        confirmText="Delete Member"
+      />
     </div>
   );
 };

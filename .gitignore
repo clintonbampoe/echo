@@ -8,6 +8,7 @@
 
 # JetBrains Specific
 idea/
+*.idea/
 /shelf/
 /workspace.xml
 /httpRequests/
@@ -54,3 +55,7 @@ Thumbs.db
 
 # Neovim artifacts
 *.vim
+
+# Database Backups
+.dump
+db_dumps/

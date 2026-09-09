@@ -24,6 +24,8 @@ public abstract class ReferenceEntityConfigurationBase<TEntity> : IEntityTypeCon
         builder.HasIndex(e => e.CongregationId);
         builder.HasIndex(e => e.DeletedAt);
 
+        builder.HasQueryFilter("SoftDeleteFilter", e => e.DeletedAt == null);
+
         ConfigureEntity(builder);
     }
 

@@ -19,7 +19,10 @@ public sealed class HealthController(HealthCheckService healthCheckService) : Co
     [HttpGet("live")]
     public async Task<IActionResult> Live(CancellationToken ct)
     {
-        var report = await _healthCheckService.CheckHealthAsync(predicate: reg => reg.Tags.Contains(HealthCheckTags.Liveness), ct);
+        var report = await _healthCheckService.CheckHealthAsync(
+            predicate: reg => reg.Tags.Contains(HealthCheckTags.Liveness),
+            ct
+        );
 
         return BuildResponse(report);
     }
@@ -48,15 +51,15 @@ public sealed class HealthController(HealthCheckService healthCheckService) : Co
                 status = kvp.Value.Status.ToString(),
                 description = kvp.Value.Description,
                 durationMs = kvp.Value.Duration.TotalMilliseconds,
-                exception = kvp.Value.Exception?.Message
-            })
+                exception = kvp.Value.Exception?.Message,
+            }),
         };
 
         return report.Status switch
         {
             HealthStatus.Unhealthy => StatusCode(StatusCodes.Status503ServiceUnavailable, body),
             HealthStatus.Degraded => StatusCode(StatusCodes.Status200OK, body),
-            _ => Ok(body)
+            _ => Ok(body),
         };
     }
 }

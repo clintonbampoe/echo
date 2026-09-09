@@ -10,6 +10,7 @@ COPY ["backend/src/Echo.Auth/Echo.Auth.csproj", "./src/Echo.Auth/"]
 COPY ["backend/src/Echo.Core/Echo.Core.csproj", "./src/Echo.Core/"]
 COPY ["backend/src/Echo.Domain/Echo.Domain.csproj", "./src/Echo.Domain/"]
 COPY ["backend/src/Echo.Infrastructure/Echo.Infrastructure.csproj", "./src/Echo.Infrastructure/"]
+COPY "backend/.config/dotnet-tools.json" "/backend/.config/"
 
 RUN dotnet restore src/Echo.Api/Echo.Api.csproj
 
@@ -20,7 +21,7 @@ RUN dotnet tool restore
 RUN dotnet build src/Echo.Api/Echo.Api.csproj -c Release --no-restore
 
 # Install curl for health checks
-RUN apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
 
 FROM build AS publish
 RUN dotnet publish src/Echo.Api/Echo.Api.csproj \
@@ -30,9 +31,6 @@ RUN dotnet publish src/Echo.Api/Echo.Api.csproj \
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
-
-# Install curl for health checks
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
 COPY --from=publish /app/publish .
 
