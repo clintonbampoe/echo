@@ -9,13 +9,6 @@ namespace Echo.Core.Controllers;
 
 public class ProjectContributionsController(ProjectContributionService service) : CoreBaseController
 {
-    [HttpGet("summary")]
-    public async Task<ActionResult> GetSummary(Guid projectId, CancellationToken ct)
-    {
-        var response = await service.GetSummary(GetCongregationId(), projectId, ct);
-        return response.ToActionResult();
-    }
-
     [HttpGet]
     public async Task<ActionResult> GetPage(
         [FromQuery] PaginationParameters paginationParameters,
@@ -40,10 +33,7 @@ public class ProjectContributionsController(ProjectContributionService service) 
     }
 
     [HttpPost]
-    public async Task<ActionResult> Create(
-        ProjectContributionCreateDto dto,
-        CancellationToken ct
-    )
+    public async Task<ActionResult> Create(ProjectContributionCreateDto dto, CancellationToken ct)
     {
         var response = await service.Create(GetCongregationId(), dto, ct);
         return response.ToActionResult();

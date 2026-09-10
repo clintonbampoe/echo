@@ -1,10 +1,9 @@
 using System.ComponentModel.DataAnnotations;
-using Echo.Core.Dtos.Interfaces;
 using Echo.Domain.Enums;
 
 namespace Echo.Core.Dtos;
 
-public record TransactionCreateDto : IPrimaryCreateDto
+public record TransactionCreateDto
 {
     [Range(1, int.MaxValue)]
     public int CategoryId { get; init; }
@@ -37,7 +36,7 @@ public record TransactionStreamDto
     public decimal PercentOfTotal { get; init; }
 }
 
-public record TransactionUpdateDto : IPrimaryUpdateDto
+public record TransactionUpdateDto
 {
     [Range(1, int.MaxValue)]
     public int? CategoryId { get; init; }
@@ -52,7 +51,7 @@ public record TransactionUpdateDto : IPrimaryUpdateDto
     public string? Description { get; init; }
 }
 
-public record TransactionListResponseDto : IPrimaryListResponseDto, Application.Dtos.Interfaces.IPrimaryListResponseDto
+public record TransactionListResponseDto
 {
     public Guid Id { get; init; }
     public required string CategoryName { get; init; }
@@ -61,7 +60,7 @@ public record TransactionListResponseDto : IPrimaryListResponseDto, Application.
     public decimal Amount { get; init; }
 }
 
-public record TransactionResponseDto : IPrimaryResponseDto
+public record TransactionResponseDto
 {
     public Guid Id { get; init; }
     public int CategoryId { get; init; }

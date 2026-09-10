@@ -1,5 +1,4 @@
 using Echo.Core.Dtos;
-using Echo.Core.Tests.Helpers;
 using Echo.Domain.Entities.Core;
 using Echo.Domain.Enums;
 
@@ -16,9 +15,8 @@ public static class AttendanceFactory
             Congregation = CongregationFactory.NewEntity(),
             AttendanceContextId = Constants.DefaultInt,
             AttendanceContext = AttendanceContextFactory.NewEntity(),
-            MemberId = null,
-            Member = null,
-            GuestName = "Guest-01",
+            MemberId = Constants.DefaultGuid,
+            Member = MemberFactory.NewEntity(),
             ForDate = Constants.DefaultDateOnly,
             AttendeeType = default,
             CheckInTime = Constants.DefaultTimeOnly,
@@ -33,8 +31,7 @@ public static class AttendanceFactory
         return new AttendanceCreateDto()
         {
             AttendanceContextId = Constants.DefaultInt,
-            MemberId = null,
-            GuestName = "AttendanceCreate-01",
+            MemberId = Constants.DefaultGuid,
             AttendeeType = default,
             ForDate = Constants.DefaultDateOnly,
             CheckInTime = Constants.DefaultTimeOnly,
@@ -48,7 +45,6 @@ public static class AttendanceFactory
         {
             AttendanceContextId = Constants.DefaultInt,
             MemberId = Constants.DefaultGuid,
-            GuestName = "AttendanceUpdate-01",
             AttendeeType = AttendeeType.Member,
             ForDate = Constants.DefaultDateOnly,
             CheckInTime = Constants.DefaultTimeOnly,
@@ -62,25 +58,10 @@ public static class AttendanceFactory
         {
             AttendanceContextId = null,
             MemberId = null,
-            GuestName = null,
             AttendeeType = null,
             ForDate = null,
             CheckInTime = null,
             Description = null,
-        };
-    }
-
-    public static AttendanceUpdateDto NewUpdateDtoWithRandomValues()
-    {
-        return new AttendanceUpdateDto()
-        {
-            AttendanceContextId = 99,
-            MemberId = Guid.NewGuid(),
-            GuestName = RandomGenerators.String(10),
-            AttendeeType = AttendeeType.Guest,
-            ForDate = new DateOnly(2024, 6, 15),
-            CheckInTime = new TimeOnly(10, 30),
-            Description = RandomGenerators.String(20),
         };
     }
 }

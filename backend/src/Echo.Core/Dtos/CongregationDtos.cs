@@ -84,3 +84,9 @@ public record CongregationResponseDto
 
     public DateTime CreatedAt { get; set; }
 }
+
+public record CongregationSearchResultDto
+{
+    public Guid Id { get; init; }
+    public required string Name { get; init; }
+}

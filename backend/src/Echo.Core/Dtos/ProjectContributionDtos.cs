@@ -1,10 +1,9 @@
 using System.ComponentModel.DataAnnotations;
-using Echo.Core.Dtos.Interfaces;
 using Echo.Domain.Enums;
 
 namespace Echo.Core.Dtos;
 
-public record ProjectContributionCreateDto : IPrimaryCreateDto
+public record ProjectContributionCreateDto
 {
     public Guid ProjectId { get; init; }
 
@@ -18,7 +17,7 @@ public record ProjectContributionCreateDto : IPrimaryCreateDto
     public required string? Description { get; init; }
 }
 
-public record ProjectContributionUpdateDto : IPrimaryUpdateDto
+public record ProjectContributionUpdateDto
 {
     [Range(0.01, 1_000_000)]
     public decimal? Amount { get; init; }
@@ -30,24 +29,24 @@ public record ProjectContributionUpdateDto : IPrimaryUpdateDto
     public string? Description { get; init; }
 }
 
-public record ProjectContributionListResponseDto : IPrimaryListResponseDto, Application.Dtos.Interfaces.IPrimaryListResponseDto
+public record ProjectContributionListResponseDto
 {
     public Guid Id { get; init; }
-    public required string  ProjectName { get; init; }
+    public required string ProjectName { get; init; }
     public decimal Amount { get; init; }
     public DateOnly DateContributed { get; init; }
     public PaymentMethod PaymentMethod { get; init; }
 }
 
-public record ProjectContributionResponseDto : IPrimaryResponseDto
+public record ProjectContributionResponseDto
 {
     public Guid Id { get; init; }
     public Guid ProjectId { get; init; }
-    public required string  ProjectName { get; init; }
+    public required string ProjectName { get; init; }
     public decimal Amount { get; init; }
     public DateOnly DateContributed { get; init; }
     public PaymentMethod PaymentMethod { get; init; }
-    public required string ? Description { get; init; }
+    public required string? Description { get; init; }
     public DateTime CreatedAt { get; init; }
 }
 

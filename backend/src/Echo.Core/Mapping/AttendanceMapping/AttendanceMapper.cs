@@ -10,13 +10,18 @@ public partial class AttendanceMapper : IAttendanceMapper
     [MapperIgnoreSource(nameof(entity.Congregation))]
     [MapperIgnoreSource(nameof(entity.CongregationId))]
     [MapperIgnoreSource(nameof(entity.DeletedAt))]
-    [MapProperty([nameof(entity.AttendanceContext), nameof(entity.AttendanceContext.Name)],
-        nameof(AttendanceResponseDto.AttendanceContextName))]
     [MapProperty(
-    [
-        nameof(entity.AttendanceContext), nameof(entity.AttendanceContext.AttendanceType),
-        nameof(entity.AttendanceContext.AttendanceType.Name)
-    ], nameof(AttendanceResponseDto.AttendanceTypeName))]
+        [nameof(entity.AttendanceContext), nameof(entity.AttendanceContext.Name)],
+        nameof(AttendanceResponseDto.AttendanceContextName)
+    )]
+    [MapProperty(
+        [
+            nameof(entity.AttendanceContext),
+            nameof(entity.AttendanceContext.AttendanceType),
+            nameof(entity.AttendanceContext.AttendanceType.Name),
+        ],
+        nameof(AttendanceResponseDto.AttendanceTypeName)
+    )]
     public partial AttendanceResponseDto ToDto(Attendance entity);
 
     [MapperIgnoreTarget(nameof(Attendance.Congregation))]
@@ -28,14 +33,21 @@ public partial class AttendanceMapper : IAttendanceMapper
     [MapperIgnoreTarget(nameof(Attendance.DeletedAt))]
     public partial Attendance ToEntity(AttendanceCreateDto dto);
 
+    public partial List<AttendanceResponseDto> ToListDto(List<Attendance> entities);
+
     public void Patch(AttendanceUpdateDto dto, Attendance entity)
     {
-        if (dto.AttendanceContextId.HasValue) entity.AttendanceContextId = dto.AttendanceContextId.Value;
-        if (dto.MemberId.HasValue) entity.MemberId = dto.MemberId.Value;
-        if (dto.GuestName != null) entity.GuestName = dto.GuestName;
-        if (dto.AttendeeType.HasValue) entity.AttendeeType = dto.AttendeeType.Value;
-        if (dto.ForDate.HasValue) entity.ForDate = dto.ForDate.Value;
-        if (dto.CheckInTime.HasValue) entity.CheckInTime = dto.CheckInTime.Value;
-        if (dto.Description != null) entity.Description = dto.Description;
+        if (dto.AttendanceContextId.HasValue)
+            entity.AttendanceContextId = dto.AttendanceContextId.Value;
+        if (dto.MemberId.HasValue)
+            entity.MemberId = dto.MemberId.Value;
+        if (dto.AttendeeType.HasValue)
+            entity.AttendeeType = dto.AttendeeType.Value;
+        if (dto.ForDate.HasValue)
+            entity.ForDate = dto.ForDate.Value;
+        if (dto.CheckInTime.HasValue)
+            entity.CheckInTime = dto.CheckInTime.Value;
+        if (dto.Description != null)
+            entity.Description = dto.Description;
     }
 }

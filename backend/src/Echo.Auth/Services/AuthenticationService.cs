@@ -2,46 +2,47 @@ using Echo.Application.HttpResults;
 using Echo.Application.Services.Hashing;
 using Echo.Auth.Dtos;
 using Echo.Auth.Models;
+using Echo.Core.Mapping.UserMapping;
 using Echo.Core.Repositories;
 using Echo.Domain.Data;
 
 namespace Echo.Auth.Services;
 
 public class AuthenticationService(
-    AppDbContext dbContext,
     UserRepository userRepository,
     AccessTokenGenerator accessTokenGenerator,
     RefreshTokenService refreshTokenService,
+    IUnitOfWork unitOfWork,
+    IUserMapper mapper,
     IPasswordHasher hashService
 )
 {
-    public async Task<IOperationResult> LoginAsync(
+    public async Task<IOperationResult> Login(
         string email,
         string password,
         CancellationToken ct = default
     )
     {
-        var user = await userRepository.GetActiveUserByEmail(email, ct);
-
-        if (user is null)
+        var entity = await userRepository.GetByEmail(email, ct);
+        if (entity is null)
             return new BadRequestResult("Email or password is invalid.");
 
-        var isPasswordValid = await hashService.VerifyAsync(password, user.PasswordHash);
+        var isPasswordValid = await hashService.VerifyAsync(password, entity.PasswordHash);
 
         if (!isPasswordValid)
             return new BadRequestResult("Email or password is invalid.");
 
-        if (user.EmailVerifiedAt is null)
+        if (entity.EmailVerifiedAt is null)
             return new BadRequestResult("Verify your email before logging in.");
 
+        var user = mapper.ToAuthDto(entity);
         var (accessToken, accessExpiresAt) = accessTokenGenerator.Generate(user);
-        var (refreshTokenEntity, plainRefreshToken) = await refreshTokenService.IssueAsync(
-            user.Id,
+        var (refreshTokenEntity, plainRefreshToken) = await refreshTokenService.IssueToken(
+            entity.Id,
             ct
         );
 
-        await dbContext.SaveChangesAsync(ct);
-
+        await unitOfWork.CommitAsync(ct);
         var tokenPair = new TokenPairResponseDtos()
         {
             AccessToken = accessToken,
@@ -49,28 +50,25 @@ public class AuthenticationService(
             RefreshToken = plainRefreshToken,
             RefreshTokenExpiresAt = refreshTokenEntity.ExpiresAt,
         };
-
         return new SuccessResult<TokenPairResponseDtos>(tokenPair);
     }
 
-    public async Task<IOperationResult> RefreshAsync(
+    public async Task<IOperationResult> RefreshAuthToken(
         string refreshToken,
         CancellationToken ct = default
     )
     {
         var result = await refreshTokenService.ValidateAndRotateAsync(refreshToken, ct);
-
         if (!result.Success)
             return new BadRequestResult(MapFailureReason(result.FailureReason!.Value));
 
-        var user = await userRepository.GetActiveUserById(result.UserId, ct);
-
-        if (user is null)
+        var entity = await userRepository.GetById(result.UserId, ct);
+        if (entity is null)
             return new InternalServerError();
 
-        var (accessToken, accessExpiresAt) = accessTokenGenerator.Generate(user);
-
-        await dbContext.SaveChangesAsync(ct);
+        var userDto = mapper.ToAuthDto(entity);
+        var (accessToken, accessExpiresAt) = accessTokenGenerator.Generate(userDto);
+        await unitOfWork.CommitAsync(ct);
 
         var tokenPair = new TokenPairResponseDtos()
         {
@@ -79,18 +77,17 @@ public class AuthenticationService(
             RefreshToken = result.NewRefreshToken!,
             RefreshTokenExpiresAt = result.NewRefreshTokenExpiresAt!.Value,
         };
-
         return new SuccessResult<TokenPairResponseDtos>(tokenPair);
     }
 
-    public async Task<IOperationResult> LogoutAsync(
+    public async Task<IOperationResult> RevokeAuthToken(
         string refreshToken,
         CancellationToken ct = default
     )
     {
-        await refreshTokenService.RevokeAsync(refreshToken, ct);
-        await dbContext.SaveChangesAsync(ct);
-        return new OkResult("Logged out.");
+        await refreshTokenService.RevokeToken(refreshToken, ct);
+        await unitOfWork.CommitAsync(ct);
+        return new OkResult("Token revoked successfully.");
     }
 
     private static string MapFailureReason(RefreshTokenFailureReason reason) =>

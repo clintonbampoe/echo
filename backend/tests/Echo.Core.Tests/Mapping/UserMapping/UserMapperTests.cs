@@ -75,4 +75,39 @@ public class UserMapperTests
         Assert.Equal(original.PasswordHash, entity.PasswordHash);
         Assert.Equal(original.Role, entity.Role);
     }
+
+    [Fact]
+    public void ToAuthDto_ShouldMapAllFields_FromEntity()
+    {
+        var entity = UserFactory.NewEntity();
+
+        var result = _mapper.ToAuthDto(entity);
+
+        Assert.Equal(entity.Id, result.Id);
+        Assert.Equal(entity.CongregationId, result.CongregationId);
+        Assert.Equal(entity.EmailAddress, result.EmailAddress);
+        Assert.Equal(entity.Name, result.Name);
+        Assert.Equal(entity.PasswordHash, result.PasswordHash);
+        Assert.Equal(entity.EmailVerifiedAt, result.EmailVerifiedAt);
+        Assert.Equal(entity.Role, result.Role);
+    }
+
+    [Fact]
+    public void ToSearchDto_ShouldMapFields_FromEntityList()
+    {
+        var entityList = UserFactory.NewEntityList();
+        var dtoList = _mapper.ToSearchDto(entityList);
+
+        var firstEntity = entityList.First();
+        var firstDto = dtoList.First();
+
+        var lastEntity = entityList.Last();
+        var lastDto = dtoList.Last();
+
+        Assert.Equal(firstEntity.Id, firstDto.Id);
+        Assert.Equal(firstEntity.Name, firstDto.Name);
+
+        Assert.Equal(lastEntity.Id, lastDto.Id);
+        Assert.Equal(lastEntity.Name, lastDto.Name);
+    }
 }

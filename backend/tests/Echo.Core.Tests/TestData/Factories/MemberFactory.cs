@@ -35,6 +35,17 @@ public static class MemberFactory
         };
     }
 
+    public static List<Member> NewEntityList()
+    {
+        var res = new List<Member>();
+        for (int i = 0; i < 5; i++)
+        {
+            res.Add(NewEntity());
+        }
+
+        return res;
+    }
+
     public static MemberCreateDto NewCreateDto()
     {
         return new MemberCreateDto()
@@ -106,7 +117,7 @@ public static class MemberFactory
             NextOfKin = null,
             EmergencyContactName = null,
             EmergencyContactPhoneNumber = null,
-            MemberActivityStatus = null
+            MemberActivityStatus = null,
         };
     }
 }

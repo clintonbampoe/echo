@@ -11,62 +11,69 @@ namespace Echo.Core.Services;
 
 public class ProjectContributionService(
     ProjectContributionRepository repository,
+    ProjectRepository projectRepository,
     IUnitOfWork unitOfWork,
     IProjectContributionMapper mapper,
     IIdGenerator idGenerator
 )
-
 {
-    public
-        async Task<IOperationResult> GetPage(
-            Guid congregationId,
-            PaginationParameters paginationParameters,
-            QueryParameters? queryParameters,
-            CancellationToken ct = default
-        )
+    public async Task<IOperationResult> GetPage(
+        Guid congregationId,
+        PaginationParameters paginationParameters,
+        QueryParameters? queryParameters,
+        CancellationToken ct
+    )
     {
-        var result = await repository.GetPage(
+        var entities = await repository.GetPage(
             congregationId,
             paginationParameters,
             queryParameters,
             ct
         );
-        return new SuccessResult<PagedResponse<ProjectContributionListResponseDto>>(result);
+        var res = mapper.ToListDto(entities);
+        return new SuccessResult<List<ProjectContributionResponseDto>>(res);
     }
 
-    public async Task<IOperationResult> GetById(
-        Guid id,
+    public async Task<IOperationResult> GetById(Guid id, Guid congregationId, CancellationToken ct)
+    {
+        var entity = await repository.GetById(congregationId, id, ct);
+        if (entity is null)
+            return new NotFoundResult(id.ToString());
+
+        var res = mapper.ToDto(entity);
+        return new SuccessResult<ProjectContributionResponseDto>(res);
+    }
+
+    public async Task<IOperationResult> Create(
         Guid congregationId,
-        CancellationToken ct = default
+        ProjectContributionCreateDto dto,
+        CancellationToken ct
     )
     {
-        var result = await repository.GetById(id, congregationId, ct);
+        var project = await projectRepository.GetById(congregationId, dto.ProjectId, ct);
+        if (project is null)
+            return new ForeignKeyEntityNotFound(nameof(project));
 
-        if (result is null)
-            return new NotFoundResult("Project contribution not found.");
-
-        return new SuccessResult<ProjectContributionResponseDto>(result);
-    }
-
-    public async Task<IOperationResult> Create(Guid congregationId, ProjectContributionCreateDto dto,
-        CancellationToken ct)
-    {
         var entity = mapper.ToEntity(dto);
         entity.CongregationId = congregationId;
         entity.Id = idGenerator.Generate();
+        entity.Project = project;
 
-        await repository.Create(entity, ct);
+        repository.Create(entity);
         await unitOfWork.CommitAsync(ct);
 
         var res = mapper.ToDto(entity);
         return new CreatedAtResult<ProjectContributionResponseDto>(res);
     }
 
-    public async Task<IOperationResult> Update(Guid congregationId, Guid id, ProjectContributionUpdateDto dto,
-        CancellationToken ct)
+    public async Task<IOperationResult> Update(
+        Guid congregationId,
+        Guid id,
+        ProjectContributionUpdateDto dto,
+        CancellationToken ct
+    )
     {
-        var entity = await repository.GetEntityById(congregationId, id, ct);
-
+        var entity = await repository.GetById(congregationId, id, ct);
         if (entity is null)
             return new NotFoundResult(id.ToString());
 
@@ -79,28 +86,22 @@ public class ProjectContributionService(
 
     public async Task<IOperationResult> Delete(Guid congregationId, Guid id, CancellationToken ct)
     {
-        var entity = await repository.GetEntityById(congregationId, id, ct);
-
+        var entity = await repository.GetById(congregationId, id, ct);
         if (entity is null)
             return new NotFoundResult(id.ToString());
 
-        await repository.SoftDelete(entity, ct);
+        repository.SoftDelete(entity);
         await unitOfWork.CommitAsync(ct);
 
         return new NoContentResult();
     }
 
-    public async Task<IOperationResult> GetSummary(
+    public Task<IOperationResult> GetSummary(
         Guid congregationId,
         Guid projectId,
-        CancellationToken ct = default
+        CancellationToken ct
     )
     {
-        var result = await repository.GetSummary(
-            congregationId,
-            projectId,
-            ct
-        );
-        return new SuccessResult<ProjectContributionSummaryDto?>(result);
+        throw new NotImplementedException();
     }
 }

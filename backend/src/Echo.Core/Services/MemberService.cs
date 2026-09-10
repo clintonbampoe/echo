@@ -20,47 +20,54 @@ public class MemberService(
         Guid congregationId,
         PaginationParameters paginationParameters,
         QueryParameters? queryParameters,
-        CancellationToken ct = default
+        CancellationToken ct
     )
     {
-        var result = await repository.GetPage(
+        var entities = await repository.GetPage(
             congregationId,
             paginationParameters,
             queryParameters,
             ct
         );
-        return new SuccessResult<PagedResponse<MemberListResponseDto>>(result);
+        var res = mapper.ToListDto(entities);
+        return new SuccessResult<List<MemberResponseDto>>(res);
     }
 
-    public async Task<IOperationResult> GetById(
-        Guid id,
-        Guid congregationId,
-        CancellationToken ct = default
-    )
+    public async Task<IOperationResult> GetById(Guid id, Guid congregationId, CancellationToken ct)
     {
-        var result = await repository.GetById(id, congregationId, ct);
-        if (result is null)
-            return new NotFoundResult("Member not found.");
+        var entity = await repository.GetById(id, congregationId, ct);
+        if (entity is null)
+            return new NotFoundResult(nameof(entity));
 
-        return new SuccessResult<MemberResponseDto>(result);
+        var res = mapper.ToDto(entity);
+        return new SuccessResult<MemberResponseDto>(res);
     }
 
-    public async Task<IOperationResult> Create(Guid congregationId, MemberCreateDto dto, CancellationToken ct)
+    public async Task<IOperationResult> Create(
+        Guid congregationId,
+        MemberCreateDto dto,
+        CancellationToken ct
+    )
     {
         var entity = mapper.ToEntity(dto);
         entity.CongregationId = congregationId;
         entity.Id = idGenerator.Generate();
 
-        await repository.Create(entity, ct);
+        repository.Create(entity);
         await unitOfWork.CommitAsync(ct);
 
         var res = mapper.ToDto(entity);
         return new CreatedAtResult<MemberResponseDto>(res);
     }
 
-    public async Task<IOperationResult> Update(Guid congregationId, Guid id, MemberUpdateDto dto, CancellationToken ct)
+    public async Task<IOperationResult> Update(
+        Guid congregationId,
+        Guid id,
+        MemberUpdateDto dto,
+        CancellationToken ct
+    )
     {
-        var entity = await repository.GetEntityById(congregationId, id, ct);
+        var entity = await repository.GetById(congregationId, id, ct);
 
         if (entity is null)
             return new NotFoundResult(id.ToString());
@@ -74,33 +81,30 @@ public class MemberService(
 
     public async Task<IOperationResult> Delete(Guid congregationId, Guid id, CancellationToken ct)
     {
-        var entity = await repository.GetEntityById(congregationId, id, ct);
+        var entity = await repository.GetById(congregationId, id, ct);
 
         if (entity is null)
             return new NotFoundResult(id.ToString());
 
-        await repository.SoftDelete(entity, ct);
+        repository.SoftDelete(entity);
         await unitOfWork.CommitAsync(ct);
 
         return new NoContentResult();
     }
 
-    public async Task<IOperationResult> GetSummary(
-        Guid congregationId,
-        CancellationToken ct = default
-    )
-    {
-        var result = await repository.GetSummary(congregationId, ct);
-        return new SuccessResult<MemberSummaryDto>(result);
-    }
-
-    public async Task<IOperationResult> SearchMembersByName(
+    public async Task<IOperationResult> Search(
         Guid congregationId,
         string searchString,
         CancellationToken ct
     )
     {
-        var results = await repository.SearchMembersByName(congregationId, searchString, ct);
-        return new SuccessResult<List<MemberListResponseDto>>(results);
+        var entities = await repository.Search(congregationId, searchString, ct);
+        var res = mapper.ToSearchDto(entities);
+        return new SuccessResult<List<MemberSearchResultDto>>(res);
+    }
+
+    public Task<IOperationResult> GetSummary(Guid congregationId, CancellationToken ct)
+    {
+        throw new NotImplementedException();
     }
 }

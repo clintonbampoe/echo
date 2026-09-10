@@ -10,8 +10,14 @@ public partial class EventRegistrationMapper : IEventRegistrationMapper
     [MapperIgnoreSource(nameof(entity.Congregation))]
     [MapperIgnoreSource(nameof(entity.CongregationId))]
     [MapperIgnoreSource(nameof(entity.DeletedAt))]
-    [MapProperty(nameof(EventRegistration.Member.Name), nameof(EventRegistrationResponseDto.MemberName))]
-    [MapProperty(nameof(EventRegistration.Event.Name), nameof(EventRegistrationResponseDto.EventName))]
+    [MapProperty(
+        nameof(EventRegistration.Member.Name),
+        nameof(EventRegistrationResponseDto.MemberName)
+    )]
+    [MapProperty(
+        nameof(EventRegistration.Event.Name),
+        nameof(EventRegistrationResponseDto.EventName)
+    )]
     public partial EventRegistrationResponseDto ToDto(EventRegistration entity);
 
     [MapperIgnoreTarget(nameof(EventRegistration.Congregation))]
@@ -23,8 +29,11 @@ public partial class EventRegistrationMapper : IEventRegistrationMapper
     [MapperIgnoreTarget(nameof(EventRegistration.DeletedAt))]
     public partial EventRegistration ToEntity(EventRegistrationCreateDto dto);
 
+    public partial List<EventRegistrationResponseDto> ToListDto(List<EventRegistration> entities);
+
     public void Patch(EventRegistrationUpdateDto dto, EventRegistration entity)
     {
-        if (dto.RegistrationDate.HasValue) entity.RegistrationDate = dto.RegistrationDate.Value;
+        if (dto.RegistrationDate.HasValue)
+            entity.RegistrationDate = dto.RegistrationDate.Value;
     }
 }

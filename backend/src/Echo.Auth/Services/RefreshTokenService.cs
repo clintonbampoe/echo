@@ -19,7 +19,7 @@ public class RefreshTokenService(
 {
     private readonly JwtOptions _jwtOptions = jwtOptions.Value;
 
-    public async Task<(RefreshToken TokenEntity, string PlainToken)> IssueAsync(
+    public async Task<(RefreshToken TokenEntity, string PlainToken)> IssueToken(
         Guid userId,
         CancellationToken ct = default
     )
@@ -28,8 +28,10 @@ public class RefreshTokenService(
 
         var tokenEntity = new RefreshToken(userId)
         {
-            TokenHash = await tokenHashService.HashAsync(plainToken),
-            ExpiresAt = timeProvider.GetUtcNow().UtcDateTime.AddDays(_jwtOptions.RefreshTokenLifetimeDays),
+            TokenHash = tokenHashService.Hash(plainToken),
+            ExpiresAt = timeProvider
+                .GetUtcNow()
+                .UtcDateTime.AddDays(_jwtOptions.RefreshTokenLifetimeDays),
         };
 
         await refreshTokenRepository.CreateNewToken(tokenEntity, ct);
@@ -42,17 +44,15 @@ public class RefreshTokenService(
         CancellationToken ct = default
     )
     {
-        var hashedInput = await tokenHashService.HashAsync(presentedToken);
+        var hashedInput = tokenHashService.Hash(presentedToken);
         var existing = await refreshTokenRepository.GetTokenRecordByHashWithUser(hashedInput, ct);
 
         if (existing is null)
             return Failure(RefreshTokenFailureReason.NotFound);
-
         if (existing.RevokedAt is not null)
         {
             // Already-rotated token presented again — treat as a stolen/reused token,
             // kill every active session for this user, not just this one.
-
             await refreshTokenRepository.RevokeAllActiveSessionsForUser(existing.UserId, ct);
             return Failure(RefreshTokenFailureReason.Reused);
         }
@@ -63,7 +63,7 @@ public class RefreshTokenService(
         if (existing.User.DeletedAt is not null)
             return Failure(RefreshTokenFailureReason.UserInactive);
 
-        var (newTokenEntity, newPlainToken) = await IssueAsync(existing.UserId, ct);
+        var (newTokenEntity, newPlainToken) = await IssueToken(existing.UserId, ct);
 
         await refreshTokenRepository.Revoke(existing.Id, newTokenEntity.Id, ct);
 
@@ -77,16 +77,19 @@ public class RefreshTokenService(
         };
     }
 
-    public async Task RevokeAsync(string presentedToken, CancellationToken ct = default)
+    public async Task RevokeToken(string presentedToken, CancellationToken ct = default)
     {
-        var hashedInput = await tokenHashService.HashAsync(presentedToken);
+        var hashedInput = tokenHashService.Hash(presentedToken);
         var existing = await refreshTokenRepository.GetTokenRecordByHashWithUser(hashedInput, ct);
 
         if (existing is not null)
             await refreshTokenRepository.Revoke(existing.Id, null, ct);
     }
 
-    public async Task RevokeAllActiveSessionsForUser(Guid userId, CancellationToken ct = default)
+    public async Task RevokeAllActiveSessionsForUserByUserId(
+        Guid userId,
+        CancellationToken ct = default
+    )
     {
         await refreshTokenRepository.RevokeAllActiveSessionsForUser(userId, ct);
     }

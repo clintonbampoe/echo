@@ -11,6 +11,8 @@ namespace Echo.Core.Services;
 
 public class OrganizationMemberService(
     OrganizationMemberRepository repository,
+    OrganizationRepository organizationRepository,
+    MemberRepository memberRepository,
     IUnitOfWork unitOfWork,
     IOrganizationMemberMapper mapper,
     IIdGenerator idGenerator
@@ -20,30 +22,27 @@ public class OrganizationMemberService(
         Guid congregationId,
         PaginationParameters paginationParameters,
         QueryParameters? queryParameters,
-        CancellationToken ct = default
+        CancellationToken ct
     )
     {
-        var result = await repository.GetPage(
+        var entities = await repository.GetPage(
             congregationId,
             paginationParameters,
             queryParameters,
             ct
         );
-        return new SuccessResult<PagedResponse<OrganizationMemberListResponseDto>>(result);
+        var res = mapper.ToListDto(entities);
+        return new SuccessResult<List<OrganizationMemberResponseDto>>(res);
     }
 
-    public async Task<IOperationResult> GetById(
-        Guid id,
-        Guid congregationId,
-        CancellationToken ct = default
-    )
+    public async Task<IOperationResult> GetById(Guid id, Guid congregationId, CancellationToken ct)
     {
-        var result = await repository.GetById(id, congregationId, ct);
+        var entity = await repository.GetById(id, congregationId, ct);
+        if (entity is null)
+            return new NotFoundResult(id.ToString());
 
-        if (result is null)
-            return new NotFoundResult("Organization member not found.");
-
-        return new SuccessResult<OrganizationMemberResponseDto>(result);
+        var res = mapper.ToDto(entity);
+        return new SuccessResult<OrganizationMemberResponseDto>(res);
     }
 
     public async Task<IOperationResult> GetByMemberId(
@@ -53,14 +52,15 @@ public class OrganizationMemberService(
         CancellationToken ct
     )
     {
-        var result = await repository.GetByMemberId(
+        var entities = await repository.GetByMemberId(
             paginationParameters,
             queryParameters,
             memberId,
             ct
         );
 
-        return new SuccessResult<PagedResponse<OrganizationMemberListResponseDto>>(result);
+        var res = mapper.ToListDto(entities);
+        return new SuccessResult<List<OrganizationMemberResponseDto>>(res);
     }
 
     public async Task<IOperationResult> GetByOrganizationId(
@@ -70,34 +70,56 @@ public class OrganizationMemberService(
         CancellationToken ct
     )
     {
-        var result = await repository.GetByOrganizationId(
+        var entities = await repository.GetByOrganizationId(
             paginationParameters,
             queryParameters,
             memberId,
             ct
         );
 
-        return new SuccessResult<PagedResponse<OrganizationMemberListResponseDto>>(result);
+        var res = mapper.ToListDto(entities);
+        return new SuccessResult<List<OrganizationMemberResponseDto>>(res);
     }
 
-    public async Task<IOperationResult> Create(Guid congregationId, OrganizationMemberCreateDto dto,
-        CancellationToken ct)
+    public async Task<IOperationResult> Create(
+        Guid congregationId,
+        OrganizationMemberCreateDto dto,
+        CancellationToken ct
+    )
     {
+        var member = await memberRepository.GetById(congregationId, dto.MemberId, ct);
+        if (member is null)
+            return new ForeignKeyEntityNotFound(nameof(member));
+
+        var organization = await organizationRepository.GetById(
+            congregationId,
+            dto.OrganizationId,
+            ct
+        );
+        if (organization is null)
+            return new ForeignKeyEntityNotFound(nameof(organization));
+
         var entity = mapper.ToEntity(dto);
         entity.CongregationId = congregationId;
         entity.Id = idGenerator.Generate();
+        entity.Member = member;
+        entity.Organization = organization;
 
-        await repository.Create(entity, ct);
+        repository.Create(entity);
         await unitOfWork.CommitAsync(ct);
 
         var res = mapper.ToDto(entity);
         return new CreatedAtResult<OrganizationMemberResponseDto>(res);
     }
 
-    public async Task<IOperationResult> Update(Guid congregationId, Guid id, OrganizationMemberUpdateDto dto,
-        CancellationToken ct)
+    public async Task<IOperationResult> Update(
+        Guid congregationId,
+        Guid id,
+        OrganizationMemberUpdateDto dto,
+        CancellationToken ct
+    )
     {
-        var entity = await repository.GetEntityById(congregationId, id, ct);
+        var entity = await repository.GetById(congregationId, id, ct);
 
         if (entity is null)
             return new NotFoundResult(id.ToString());
@@ -111,12 +133,12 @@ public class OrganizationMemberService(
 
     public async Task<IOperationResult> Delete(Guid congregationId, Guid id, CancellationToken ct)
     {
-        var entity = await repository.GetEntityById(congregationId, id, ct);
+        var entity = await repository.GetById(congregationId, id, ct);
 
         if (entity is null)
             return new NotFoundResult(id.ToString());
 
-        await repository.SoftDelete(entity, ct);
+        repository.SoftDelete(entity);
         await unitOfWork.CommitAsync(ct);
 
         return new NoContentResult();

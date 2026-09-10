@@ -21,12 +21,19 @@ public partial class TransactionMapper : ITransactionMapper
     [MapperIgnoreTarget(nameof(Transaction.DeletedAt))]
     public partial Transaction ToEntity(TransactionCreateDto dto);
 
+    public partial List<TransactionResponseDto> ToListDto(List<Transaction> entities);
+
     public void Patch(TransactionUpdateDto dto, Transaction entity)
     {
-        if (dto.CategoryId.HasValue) entity.CategoryId = dto.CategoryId.Value;
-        if (dto.TransactionType.HasValue) entity.TransactionType = dto.TransactionType.Value;
-        if (dto.TransactionDate.HasValue) entity.TransactionDate = dto.TransactionDate.Value;
-        if (dto.Amount.HasValue) entity.Amount = dto.Amount.Value;
-        if (dto.Description != null) entity.Description = dto.Description;
+        if (dto.CategoryId.HasValue)
+            entity.CategoryId = dto.CategoryId.Value;
+        if (dto.TransactionType.HasValue)
+            entity.TransactionType = dto.TransactionType.Value;
+        if (dto.TransactionDate.HasValue)
+            entity.TransactionDate = dto.TransactionDate.Value;
+        if (dto.Amount.HasValue)
+            entity.Amount = dto.Amount.Value;
+        if (dto.Description != null)
+            entity.Description = dto.Description;
     }
 }

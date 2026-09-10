@@ -20,6 +20,17 @@ public static class TransactionCategoryFactory
         };
     }
 
+    public static List<TransactionCategory> NewEntityList()
+    {
+        var res = new List<TransactionCategory>();
+        for (int i = 0; i < 5; i++)
+        {
+            res.Add(NewEntity());
+        }
+
+        return res;
+    }
+
     public static TransactionCategoryCreateDto NewCreateDto()
     {
         return new TransactionCategoryCreateDto()
@@ -34,16 +45,12 @@ public static class TransactionCategoryFactory
         return new TransactionCategoryUpdateDto()
         {
             Name = "CatCreateDto-01",
-            CategoryType = TransactionType.Income
+            CategoryType = TransactionType.Income,
         };
     }
 
     public static TransactionCategoryUpdateDto NewUpdateDtoWithNullValues()
     {
-        return new TransactionCategoryUpdateDto()
-        {
-            Name = null,
-            CategoryType = null,
-        };
+        return new TransactionCategoryUpdateDto() { Name = null, CategoryType = null };
     }
 }

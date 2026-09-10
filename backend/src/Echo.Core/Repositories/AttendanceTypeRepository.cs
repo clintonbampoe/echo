@@ -1,6 +1,4 @@
-using Echo.Application.Extensions.QueryMethods;
-using Echo.Core.Dtos;
-using Echo.Core.Repositories.Base;
+using Echo.Application.Extensions.QueryExtensions;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core;
 using Microsoft.EntityFrameworkCore;
@@ -8,32 +6,53 @@ using Microsoft.EntityFrameworkCore;
 namespace Echo.Core.Repositories;
 
 public class AttendanceTypeRepository(AppDbContext context)
-    : ReferenceRepositoryBase<AttendanceType>(context)
 {
-    public async Task<List<AttendanceTypeResponseDto>> GetAllAsync(
+    private readonly DbSet<AttendanceType> _dbSet = context.Set<AttendanceType>();
+
+    public async Task<List<AttendanceType>> GetAll(
         Guid congregationId,
         CancellationToken ct = default
     )
     {
-        return await DbSet
+        return await _dbSet
             .AsNoTracking()
-            .ApplySoftDeleteFilter()
+            .FilterSoftDeleted()
             .Where(t => t.CongregationId == congregationId)
-            .Select(t => new AttendanceTypeResponseDto { Id = t.Id, Name = t.Name })
             .ToListAsync(ct);
     }
 
-    public async Task<AttendanceTypeResponseDto?> GetByIdAsync(
-        int id,
+    public async Task<AttendanceType?> GetById(
         Guid congregationId,
+        int id,
         CancellationToken ct = default
     )
     {
-        return await DbSet
-            .AsNoTracking()
-            .ApplySoftDeleteFilter()
+        return await _dbSet
+            .FilterSoftDeleted()
             .Where(t => t.Id == id && t.CongregationId == congregationId)
-            .Select(t => new AttendanceTypeResponseDto { Id = t.Id, Name = t.Name })
             .FirstOrDefaultAsync(ct);
+    }
+
+    public async Task<List<AttendanceType>> Search(
+        Guid congregationId,
+        string name,
+        CancellationToken ct
+    )
+    {
+        return await _dbSet
+            .FilterSoftDeleted()
+            .Where(at => at.CongregationId == congregationId)
+            .SearchName(name)
+            .ToListAsync(ct);
+    }
+
+    public void Create(AttendanceType entity)
+    {
+        _dbSet.Add(entity);
+    }
+
+    public void SoftDelete(AttendanceType entity)
+    {
+        entity.DeletedAt = DateTime.UtcNow;
     }
 }
