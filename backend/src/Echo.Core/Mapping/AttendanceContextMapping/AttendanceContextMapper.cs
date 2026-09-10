@@ -7,8 +7,10 @@ namespace Echo.Core.Mapping.AttendanceContextMapping;
 [Mapper]
 public partial class AttendanceContextMapper : IAttendanceContextMapper
 {
-    [MapProperty(nameof(AttendanceContext.AttendanceType.Name),
-        nameof(AttendanceContextResponseDto.AttendanceTypeName))]
+    [MapProperty(
+        nameof(AttendanceContext.AttendanceType.Name),
+        nameof(AttendanceContextResponseDto.AttendanceTypeName)
+    )]
     [MapperIgnoreSource(nameof(entity.Congregation))]
     [MapperIgnoreSource(nameof(entity.CongregationId))]
     [MapperIgnoreSource(nameof(entity.AttendanceTypeId))]
@@ -24,8 +26,19 @@ public partial class AttendanceContextMapper : IAttendanceContextMapper
     [MapperIgnoreTarget(nameof(AttendanceContext.DeletedAt))]
     public partial AttendanceContext ToEntity(AttendanceContextCreateDto dto);
 
+    public partial List<AttendanceContextResponseDto> ToListDto(List<AttendanceContext> entities);
+
+    public List<AttendanceContextSearchResultDto> ToSearchDto(List<AttendanceContext> entities)
+    {
+        var res = entities
+            .Select(e => new AttendanceContextSearchResultDto() { Id = e.Id, Name = e.Name })
+            .ToList();
+        return res;
+    }
+
     public void Patch(AttendanceContextUpdateDto dto, AttendanceContext entity)
     {
-        if (dto.Name != null) entity.Name = dto.Name;
+        if (dto.Name != null)
+            entity.Name = dto.Name;
     }
 }

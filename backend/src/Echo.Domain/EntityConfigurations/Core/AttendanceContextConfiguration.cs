@@ -16,5 +16,6 @@ public class AttendanceContextConfiguration : ReferenceEntityConfigurationBase<A
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasIndex(c => new { c.AttendanceTypeId, c.Name }).IsUnique();
+        builder.HasIndex(m => m.Name).HasMethod("GIN").HasOperators("gin_trgm_ops");
     }
 }

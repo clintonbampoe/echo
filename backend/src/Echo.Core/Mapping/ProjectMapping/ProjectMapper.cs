@@ -14,7 +14,6 @@ public partial class ProjectMapper : IProjectMapper
     [MapProperty(nameof(Project.Manager.Name), nameof(ProjectResponseDto.ManagerName))]
     public partial ProjectResponseDto ToDto(Project entity);
 
-
     [MapperIgnoreTarget(nameof(Project.Congregation))]
     [MapperIgnoreTarget(nameof(Project.CongregationId))]
     [MapperIgnoreTarget(nameof(Project.Id))]
@@ -24,15 +23,33 @@ public partial class ProjectMapper : IProjectMapper
     [MapperIgnoreTarget(nameof(Project.DeletedAt))]
     public partial Project ToEntity(ProjectCreateDto dto);
 
+    public partial List<ProjectResponseDto> ToListDto(List<Project> entities);
+
+    public List<ProjectSearchResultDto> ToSearchDto(List<Project> entities)
+    {
+        var res = entities
+            .Select(e => new ProjectSearchResultDto() { Id = e.Id, Name = e.Name })
+            .ToList();
+        return res;
+    }
+
     public void Patch(ProjectUpdateDto dto, Project entity)
     {
-        if (dto.CategoryId.HasValue) entity.CategoryId = dto.CategoryId.Value;
-        if (dto.ManagerId.HasValue) entity.ManagerId = dto.ManagerId.Value;
-        if (dto.Name != null) entity.Name = dto.Name;
-        if (dto.TargetAmount.HasValue) entity.TargetAmount = dto.TargetAmount.Value;
-        if (dto.Status.HasValue) entity.Status = dto.Status.Value;
-        if (dto.StartDate.HasValue) entity.StartDate = dto.StartDate.Value;
-        if (dto.EndDate.HasValue) entity.EndDate = dto.EndDate.Value;
-        if (dto.Description != null) entity.Description = dto.Description;
+        if (dto.CategoryId.HasValue)
+            entity.CategoryId = dto.CategoryId.Value;
+        if (dto.ManagerId.HasValue)
+            entity.ManagerId = dto.ManagerId.Value;
+        if (dto.Name != null)
+            entity.Name = dto.Name;
+        if (dto.TargetAmount.HasValue)
+            entity.TargetAmount = dto.TargetAmount.Value;
+        if (dto.Status.HasValue)
+            entity.Status = dto.Status.Value;
+        if (dto.StartDate.HasValue)
+            entity.StartDate = dto.StartDate.Value;
+        if (dto.EndDate.HasValue)
+            entity.EndDate = dto.EndDate.Value;
+        if (dto.Description != null)
+            entity.Description = dto.Description;
     }
 }

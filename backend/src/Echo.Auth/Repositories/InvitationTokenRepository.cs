@@ -1,4 +1,4 @@
-using Echo.Application.Extensions.QueryMethods;
+using Echo.Application.Extensions.QueryExtensions;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Auth;
 using Microsoft.EntityFrameworkCore;
@@ -9,14 +9,17 @@ public class InvitationTokenRepository(AppDbContext context)
 {
     private readonly DbSet<InvitationToken> _tokens = context.Set<InvitationToken>();
 
-    public async Task<InvitationToken?> GetTokenRecordByHash(string hashedInput, CancellationToken ct = default)
+    public async Task<InvitationToken?> GetTokenRecordByHash(
+        string hashedInput,
+        CancellationToken ct = default
+    )
     {
         return await _tokens
-            .ApplySoftDeleteFilter()
+            .FilterSoftDeleted()
             .FirstOrDefaultAsync(i => i.TokenHash == hashedInput, ct);
     }
 
-    public async Task<bool> CreateRecord(InvitationToken token, CancellationToken ct = default)
+    public async Task<bool> Create(InvitationToken token, CancellationToken ct = default)
     {
         await _tokens.AddAsync(token, ct);
         return true;

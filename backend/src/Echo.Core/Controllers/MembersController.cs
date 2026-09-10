@@ -10,13 +10,6 @@ namespace Echo.Core.Controllers;
 
 public class MembersController(MemberService service) : CoreBaseController
 {
-    [HttpGet("summary")]
-    public async Task<ActionResult> GetSummary(CancellationToken ct)
-    {
-        var response = await service.GetSummary(GetCongregationId(), ct);
-        return response.ToActionResult();
-    }
-
     [HttpGet]
     public async Task<ActionResult> GetPage(
         [FromQuery] PaginationParameters paginationParameters,
@@ -30,17 +23,6 @@ public class MembersController(MemberService service) : CoreBaseController
             queryParameters,
             ct
         );
-        return response.ToActionResult();
-    }
-
-    [HttpGet("search")]
-    [EnableRateLimiting("search")]
-    public async Task<ActionResult> SearchMembersByName(
-        [FromQuery] string name,
-        CancellationToken ct
-    )
-    {
-        var response = await service.SearchMembersByName(GetCongregationId(), name, ct);
         return response.ToActionResult();
     }
 
@@ -70,5 +52,13 @@ public class MembersController(MemberService service) : CoreBaseController
     {
         var response = await service.Delete(id, GetCongregationId(), ct);
         return response.ToActionResult();
+    }
+
+    [HttpGet("search")]
+    [EnableRateLimiting("search")]
+    public async Task<ActionResult> Search([FromQuery] string q, CancellationToken ct)
+    {
+        var res = await service.Search(GetCongregationId(), q, ct);
+        return res.ToActionResult();
     }
 }

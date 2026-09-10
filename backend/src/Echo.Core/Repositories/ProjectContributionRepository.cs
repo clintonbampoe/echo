@@ -1,8 +1,6 @@
-using Echo.Application.Extensions.QueryMethods;
+using Echo.Application.Extensions.QueryExtensions;
 using Echo.Application.Pagination;
 using Echo.Application.Query;
-using Echo.Core.Dtos;
-using Echo.Core.Repositories.Base;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core;
 using Microsoft.EntityFrameworkCore;
@@ -10,101 +8,65 @@ using Microsoft.EntityFrameworkCore;
 namespace Echo.Core.Repositories;
 
 public class ProjectContributionRepository(AppDbContext context)
-    : PrimaryRepositoryBase<ProjectContribution>(context)
 {
-    public async Task<PagedResponse<ProjectContributionListResponseDto>> GetPage(
+    private readonly DbSet<ProjectContribution> _dbSet = context.Set<ProjectContribution>();
+
+    public async Task<List<ProjectContribution>> GetPage(
         Guid congregationId,
         PaginationParameters paginationParameters,
         QueryParameters? queryParameters,
-        CancellationToken ct = default
+        CancellationToken ct
     )
     {
-        var query = DbSet
+        var query = _dbSet
             .AsNoTracking()
-            .ApplySoftDeleteFilter()
+            .FilterSoftDeleted()
             .ApplyDateFilters(queryParameters)
             .Where(p => p.CongregationId == congregationId);
 
-        int totalRecords = await query.CountAsync(ct);
-
-        var records = await query
-            .OrderBy(p => p.Id)
-            .Select(p => new ProjectContributionListResponseDto
-            {
-                Id = p.Id,
-                ProjectName = p.Project.Name,
-                Amount = p.Amount,
-                DateContributed = p.DateContributed,
-                PaymentMethod = p.PaymentMethod,
-            })
-            .ApplyPagination(paginationParameters)
-            .ToListAsync(ct);
-
-        return new PagedResponse<ProjectContributionListResponseDto>(
-            records,
-            paginationParameters,
-            totalRecords
-        );
+        var res = await query.OrderBy(p => p.Id).Include(p => p.Project).ToListAsync(ct);
+        return res;
     }
 
-    public async Task<ProjectContributionResponseDto?> GetById(
-        Guid id,
+    public async Task<ProjectContribution?> GetById(
         Guid congregationId,
+        Guid id,
         CancellationToken ct = default
     )
     {
-        return await DbSet
-            .AsNoTracking()
-            .ApplySoftDeleteFilter()
+        return await _dbSet
+            .FilterSoftDeleted()
             .Where(p => p.Id == id && p.CongregationId == congregationId)
-            .Select(p => new ProjectContributionResponseDto
-            {
-                Id = p.Id,
-                ProjectId = p.Project.Id,
-                ProjectName = p.Project.Name,
-                Amount = p.Amount,
-                DateContributed = p.DateContributed,
-                PaymentMethod = p.PaymentMethod,
-                Description = p.Description,
-                CreatedAt = p.CreatedAt,
-            })
+            .Include(p => p.Project)
             .FirstOrDefaultAsync(ct);
     }
 
-    public async Task<ProjectContributionSummaryDto?> GetSummary(
+    public async Task<List<ProjectContribution>> GetByProjectId(
         Guid congregationId,
         Guid projectId,
-        CancellationToken ct = default
+        CancellationToken ct
     )
     {
-        var project = await Context
-            .Set<Project>()
-            .ApplySoftDeleteFilter()
-            .Where(p => p.CongregationId == congregationId && p.Id == projectId)
-            .Select(p => new { p.TargetAmount })
-            .FirstOrDefaultAsync(ct);
+        return await _dbSet
+            .FilterSoftDeleted()
+            .AsNoTracking()
+            .Where(p => p.CongregationId == congregationId && p.ProjectId == projectId)
+            .Include(p => p.Project)
+            .ToListAsync(ct);
+    }
 
-        if (project is null)
-            return null;
+    public void Create(ProjectContribution entity)
+    {
+        _dbSet.Add(entity);
+    }
 
-        var stats = await DbSet
-            .ApplySoftDeleteFilter()
-            .Where(c => c.CongregationId == congregationId && c.ProjectId == projectId)
-            .GroupBy(c => 1)
-            .Select(g => new
-            {
-                TotalRaised = g.Sum(c => c.Amount),
-                Contributors = g.Count(),
-                MostRecent = g.Max(c => c.DateContributed),
-            })
-            .FirstOrDefaultAsync(ct);
+    public void SoftDelete(ProjectContribution entity)
+    {
+        entity.DeletedAt = DateTime.UtcNow;
+    }
 
-        return new ProjectContributionSummaryDto
-        {
-            TotalRaised = stats?.TotalRaised ?? 0,
-            TargetGoal = project.TargetAmount,
-            Contributors = stats?.Contributors ?? 0,
-            MostRecentEntryDate = stats?.MostRecent,
-        };
+    public Task GetSummary(Guid congregationId, Guid projectId, CancellationToken ct)
+    {
+        throw new NotImplementedException();
     }
 }

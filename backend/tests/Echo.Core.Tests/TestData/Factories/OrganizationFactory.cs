@@ -18,6 +18,17 @@ public static class OrganizationFactory
         };
     }
 
+    public static List<Organization> NewEntityList()
+    {
+        var res = new List<Organization>();
+        for (int i = 0; i < 5; i++)
+        {
+            res.Add(NewEntity());
+        }
+
+        return res;
+    }
+
     public static OrganizationCreateDto NewCreateDto()
     {
         return new OrganizationCreateDto()
@@ -38,10 +49,6 @@ public static class OrganizationFactory
 
     public static OrganizationUpdateDto NewUpdateDtoWithNullValues()
     {
-        return new OrganizationUpdateDto()
-        {
-            Name = null,
-            Description = null
-        };
+        return new OrganizationUpdateDto() { Name = null, Description = null };
     }
 }

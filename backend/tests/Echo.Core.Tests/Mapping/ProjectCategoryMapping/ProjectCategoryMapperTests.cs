@@ -65,4 +65,23 @@ public class ProjectCategoryMapperTests
 
         Assert.Equal(original.Name, entity.Name);
     }
+
+    [Fact]
+    public void ToSearchDto_ShouldMapFields_FromEntityList()
+    {
+        var entityList = ProjectCategoryFactory.NewEntityList();
+        var dtoList = _mapper.ToSearchDto(entityList);
+
+        var firstEntity = entityList.First();
+        var firstDto = dtoList.First();
+
+        var lastEntity = entityList.Last();
+        var lastDto = dtoList.Last();
+
+        Assert.Equal(firstEntity.Id, firstDto.Id);
+        Assert.Equal(firstEntity.Name, firstDto.Name);
+
+        Assert.Equal(lastEntity.Id, lastDto.Id);
+        Assert.Equal(lastEntity.Name, lastDto.Name);
+    }
 }

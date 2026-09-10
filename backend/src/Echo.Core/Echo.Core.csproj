@@ -1,19 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
 
-    <PropertyGroup>
-        <TargetFramework>net10.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
-        <Nullable>enable</Nullable>
-    </PropertyGroup>
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Riok.Mapperly" />
+  </ItemGroup>
 
-    <ItemGroup>
-        <PackageReference Include="AutoMapper" />
-        <FrameworkReference Include="Microsoft.AspNetCore.App" />
-        <PackageReference Include="Riok.Mapperly" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <ProjectReference Include="..\Echo.Application\Echo.Application.csproj" />
-    </ItemGroup>
-
+  <ItemGroup>
+    <ProjectReference Include="..\Echo.Application\Echo.Application.csproj" />
+  </ItemGroup>
 </Project>

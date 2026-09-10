@@ -1,107 +1,71 @@
-using Echo.Application.Extensions.QueryMethods;
+using Echo.Application.Extensions.QueryExtensions;
 using Echo.Application.Pagination;
 using Echo.Application.Query;
-using Echo.Core.Dtos;
-using Echo.Core.Repositories.Base;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Core.Repositories;
 
-public class EventRepository(AppDbContext context) : PrimaryRepositoryBase<Event>(context)
+public class EventRepository(AppDbContext context)
 {
-    public async Task<PagedResponse<EventListResponseDto>> GetPage(
+    private readonly DbSet<Event> _dbSet = context.Set<Event>();
+
+    public async Task<List<Event>> GetPage(
         Guid congregationId,
         PaginationParameters paginationParameters,
         QueryParameters? queryParameters,
         CancellationToken ct = default
     )
     {
-        var query = DbSet
+        var query = _dbSet
             .AsNoTracking()
-            .ApplySoftDeleteFilter()
+            .FilterSoftDeleted()
             .ApplySearchFilter(queryParameters)
             .ApplyDateFilters(queryParameters)
             .Where(e => e.CongregationId == congregationId);
 
-        int totalRecords = await query.CountAsync(ct);
-
-        var records = await query
+        var res = await query
             .OrderBy(e => e.Id)
-            .Select(e => new EventListResponseDto
-            {
-                Id = e.Id,
-                OrganizationName = e.Organization.Name,
-                OrganizerName = e.Organizer.Name,
-                Name = e.Name,
-                StartDate = e.StartDate,
-                EndDate = e.EndDate,
-                Location = e.Location,
-            })
-            .ApplyPagination(paginationParameters)
+            .Include(e => e.Organization)
+            .Include(e => e.Organizer)
             .ToListAsync(ct);
 
-        return new PagedResponse<EventListResponseDto>(records, paginationParameters, totalRecords);
+        return res;
     }
 
-    public async Task<EventResponseDto?> GetById(
-        Guid id,
-        Guid congregationId,
-        CancellationToken ct = default
-    )
+    public async Task<Event?> GetById(Guid id, Guid congregationId, CancellationToken ct = default)
     {
-        return await DbSet
-            .AsNoTracking()
-            .ApplySoftDeleteFilter()
+        return await _dbSet
+            .FilterSoftDeleted()
             .Where(e => e.Id == id && e.CongregationId == congregationId)
-            .Select(e => new EventResponseDto
-            {
-                Id = e.Id,
-                OrganizationId = e.OrganizationId,
-                OrganizationName = e.Organization.Name,
-                OrganizerId = e.Organizer.Id,
-                OrganizerName = e.Organizer.Name,
-                Name = e.Name,
-                StartDate = e.StartDate,
-                EndDate = e.EndDate,
-                StartTime = e.StartTime,
-                EndTime = e.EndTime,
-                Location = e.Location,
-                Capacity = e.Capacity,
-                Description = e.Description,
-                CreatedAt = e.CreatedAt,
-            })
+            .Include(e => e.Organizer)
+            .Include(e => e.Organization)
             .FirstOrDefaultAsync(ct);
     }
 
-    public async Task<EventSummaryDto> GetSummary(Guid congregationId, CancellationToken ct = default)
+    public void Create(Event entity)
     {
-        var today = DateOnly.FromDateTime(DateTime.UtcNow);
+        _dbSet.Add(entity);
+    }
 
-        var eventStats = await DbSet
-            .ApplySoftDeleteFilter()
-            .Where(e => e.CongregationId == congregationId)
-            .GroupBy(e => 1)
-            .Select(g => new
-            {
-                TotalEvents = g.Count(),
-                UpcomingEvents = g.Count(e => e.StartDate >= today),
-                PastEvents = g.Count(e => e.EndDate < today),
-            })
-            .FirstOrDefaultAsync(ct);
+    public void SoftDelete(Event entity)
+    {
+        entity.DeletedAt = DateTime.UtcNow;
+    }
 
-        var totalRegistrations = await Context.Set<EventRegistration>()
-            .ApplySoftDeleteFilter()
-            .Where(r => r.CongregationId == congregationId)
-            .CountAsync(ct);
+    public async Task<List<Event>> Search(Guid congregationId, string name, CancellationToken ct)
+    {
+        return await _dbSet
+            .AsNoTracking()
+            .FilterSoftDeleted()
+            .Where(a => a.CongregationId == congregationId)
+            .SearchName(name)
+            .ToListAsync(ct);
+    }
 
-        return new EventSummaryDto
-        {
-            TotalEvents = eventStats?.TotalEvents ?? 0,
-            UpcomingEvents = eventStats?.UpcomingEvents ?? 0,
-            PastEvents = eventStats?.PastEvents ?? 0,
-            TotalRegistrations = totalRegistrations,
-        };
+    public Task GetSummary(Guid congregationId, CancellationToken ct)
+    {
+        throw new NotImplementedException();
     }
 }

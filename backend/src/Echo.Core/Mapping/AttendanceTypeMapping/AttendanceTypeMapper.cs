@@ -20,8 +20,19 @@ public partial class AttendanceTypeMapper : IAttendanceTypeMapper
     [MapperIgnoreTarget(nameof(AttendanceType.DeletedAt))]
     public partial AttendanceType ToEntity(AttendanceTypeCreateDto dto);
 
+    public partial List<AttendanceTypeResponseDto> ToListDto(List<AttendanceType> entities);
+
+    public List<AttendanceTypeSearchResultDto> ToSearchDto(List<AttendanceType> entities)
+    {
+        var res = entities
+            .Select(e => new AttendanceTypeSearchResultDto() { Id = e.Id, Name = e.Name })
+            .ToList();
+        return res;
+    }
+
     public void Patch(AttendanceTypeUpdateDto dto, AttendanceType entity)
     {
-        if (dto.Name != null) entity.Name = dto.Name;
+        if (dto.Name != null)
+            entity.Name = dto.Name;
     }
 }

@@ -11,6 +11,7 @@ namespace Echo.Core.Services;
 
 public class TitheService(
     TitheRepository repository,
+    MemberRepository memberRepository,
     IUnitOfWork unitOfWork,
     ITitheMapper mapper,
     IIdGenerator idGenerator
@@ -20,49 +21,59 @@ public class TitheService(
         Guid congregationId,
         PaginationParameters paginationParameters,
         QueryParameters? queryParameters,
-        CancellationToken ct = default
+        CancellationToken ct
     )
     {
-        var result = await repository.GetPage(
+        var entities = await repository.GetPage(
             congregationId,
             paginationParameters,
             queryParameters,
             ct
         );
-        return new SuccessResult<PagedResponse<TitheListResponseDto>>(result);
+        var res = mapper.ToListDto(entities);
+        return new SuccessResult<List<TitheResponseDto>>(res);
     }
 
-    public async Task<IOperationResult> GetById(
-        Guid id,
+    public async Task<IOperationResult> GetById(Guid id, Guid congregationId, CancellationToken ct)
+    {
+        var entity = await repository.GetById(congregationId, id, ct);
+        if (entity is null)
+            return new NotFoundResult(id.ToString());
+
+        var res = mapper.ToDto(entity);
+        return new SuccessResult<TitheResponseDto>(res);
+    }
+
+    public async Task<IOperationResult> Create(
         Guid congregationId,
-        CancellationToken ct = default
+        TitheCreateDto dto,
+        CancellationToken ct
     )
     {
-        var result = await repository.GetById(id, congregationId, ct);
+        var member = await memberRepository.GetById(congregationId, dto.MemberId, ct);
+        if (member is null)
+            return new ForeignKeyEntityNotFound(nameof(member));
 
-        if (result is null)
-            return new NotFoundResult("Tithe not found.");
-
-        return new SuccessResult<TitheResponseDto>(result);
-    }
-
-    public async Task<IOperationResult> Create(Guid congregationId, TitheCreateDto dto, CancellationToken ct)
-    {
         var entity = mapper.ToEntity(dto);
         entity.CongregationId = congregationId;
         entity.Id = idGenerator.Generate();
+        entity.Member = member;
 
-        await repository.Create(entity, ct);
+        repository.Create(entity);
         await unitOfWork.CommitAsync(ct);
 
         var res = mapper.ToDto(entity);
         return new CreatedAtResult<TitheResponseDto>(res);
     }
 
-    public async Task<IOperationResult> Update(Guid congregationId, Guid id, TitheUpdateDto dto, CancellationToken ct)
+    public async Task<IOperationResult> Update(
+        Guid congregationId,
+        Guid id,
+        TitheUpdateDto dto,
+        CancellationToken ct
+    )
     {
-        var entity = await repository.GetEntityById(congregationId, id, ct);
-
+        var entity = await repository.GetById(congregationId, id, ct);
         if (entity is null)
             return new NotFoundResult(id.ToString());
 
@@ -75,27 +86,18 @@ public class TitheService(
 
     public async Task<IOperationResult> Delete(Guid congregationId, Guid id, CancellationToken ct)
     {
-        var entity = await repository.GetEntityById(congregationId, id, ct);
-
+        var entity = await repository.GetById(congregationId, id, ct);
         if (entity is null)
             return new NotFoundResult(id.ToString());
 
-        await repository.SoftDelete(entity, ct);
+        repository.SoftDelete(entity);
         await unitOfWork.CommitAsync(ct);
 
         return new NoContentResult();
     }
 
-    public async Task<IOperationResult> GetAnnualSummary(
-        Guid congregationId,
-        int year,
-        CancellationToken ct = default
-    )
+    public Task<IOperationResult> GetSummary(Guid congregationId, int year, CancellationToken ct)
     {
-        if (year == 0)
-            year = DateTime.UtcNow.Year;
-
-        var result = await repository.GetAnnualSummary(congregationId, year, ct);
-        return new SuccessResult<List<TitheMonthlyTotalDto>>(result);
+        throw new NotImplementedException();
     }
 }

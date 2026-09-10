@@ -1,8 +1,6 @@
-using Echo.Application.Extensions.QueryMethods;
+using Echo.Application.Extensions.QueryExtensions;
 using Echo.Application.Pagination;
 using Echo.Application.Query;
-using Echo.Core.Dtos;
-using Echo.Core.Repositories.Base;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core;
 using Microsoft.EntityFrameworkCore;
@@ -10,101 +8,65 @@ using Microsoft.EntityFrameworkCore;
 namespace Echo.Core.Repositories;
 
 public class OrganizationRepository(AppDbContext context)
-    : PrimaryRepositoryBase<Organization>(context)
 {
-    public async Task<PagedResponse<OrganizationListResponseDto>> GetPage(
+    private readonly DbSet<Organization> _dbSet = context.Set<Organization>();
+
+    public async Task<List<Organization>> GetPage(
         Guid congregationId,
         PaginationParameters paginationParameters,
         QueryParameters? queryParameters,
-        CancellationToken ct = default
+        CancellationToken ct
     )
     {
-        var query = DbSet
+        var query = _dbSet
             .AsNoTracking()
-            .ApplySoftDeleteFilter()
+            .FilterSoftDeleted()
             .ApplyDateFilters(queryParameters)
             .ApplySearchFilter(queryParameters)
             .Where(o => o.CongregationId == congregationId);
 
-        int totalRecords = await query.CountAsync(ct);
+        var res = await query.OrderBy(o => o.Id).ToListAsync(ct);
 
-        var records = await query
-            .OrderBy(o => o.Id)
-            .Select(o => new OrganizationListResponseDto
-            {
-                Id = o.Id,
-                Name = o.Name,
-                Description = o.Description,
-            })
-            .ApplyPagination(paginationParameters)
-            .ToListAsync(ct);
-
-        return new PagedResponse<OrganizationListResponseDto>(
-            records,
-            paginationParameters,
-            totalRecords
-        );
+        return res;
     }
 
-    public async Task<OrganizationResponseDto?> GetById(
+    public async Task<Organization?> GetById(
         Guid id,
         Guid congregationId,
         CancellationToken ct = default
     )
     {
-        return await DbSet
-            .AsNoTracking()
-            .ApplySoftDeleteFilter()
+        return await _dbSet
+            .FilterSoftDeleted()
             .Where(o => o.Id == id && o.CongregationId == congregationId)
-            .Select(o => new OrganizationResponseDto
-            {
-                Id = o.Id,
-                Name = o.Name,
-                Description = o.Description,
-            })
             .FirstOrDefaultAsync(ct);
     }
 
-    public async Task<OrganizationSummaryDto> GetSummary(
+    public async Task<List<Organization>> Search(
         Guid congregationId,
-        CancellationToken ct = default
+        string name,
+        CancellationToken ct
     )
     {
-        var currentMonthStart = new DateTime(
-            DateTime.UtcNow.Year,
-            DateTime.UtcNow.Month,
-            1,
-            0,
-            0,
-            0,
-            DateTimeKind.Utc
-        );
+        return await _dbSet
+            .FilterSoftDeleted()
+            .Where(o => o.CongregationId == congregationId)
+            .SearchName(name)
+            .ToListAsync(ct);
+    }
 
-        var organizations = DbSet
-            .ApplySoftDeleteFilter()
-            .Where(o => o.CongregationId == congregationId);
+    public void Create(Organization entity)
+    {
+        _dbSet.Add(entity);
+    }
 
-        var totalOrganizations = await organizations.CountAsync(ct);
-        var newOrganizationsThisMonth = await organizations.CountAsync(
-            o => o.CreatedAt >= currentMonthStart,
-            ct
-        );
+    public void SoftDelete(Organization entity)
+    {
+        entity.DeletedAt = DateTime.UtcNow;
+    }
 
-        var totalOrganizationMembers = await Context
-            .Set<OrganizationMember>()
-            .ApplySoftDeleteFilter()
-            .Where(m => m.CongregationId == congregationId)
-            .CountAsync(ct);
-
-        return new OrganizationSummaryDto
-        {
-            TotalOrganizations = totalOrganizations,
-            TotalOrganizationMembers = totalOrganizationMembers,
-            NewOrganizationsThisMonth = newOrganizationsThisMonth,
-            AverageMembersPerOrganization =
-                totalOrganizations == 0
-                    ? 0
-                    : Math.Round((decimal)totalOrganizationMembers / totalOrganizations, 1),
-        };
+    public Task GetSummary(Guid congregationId, CancellationToken ct)
+    {
+        throw new NotImplementedException();
     }
 }

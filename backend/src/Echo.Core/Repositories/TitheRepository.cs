@@ -1,96 +1,59 @@
-using Echo.Application.Extensions.QueryMethods;
+using Echo.Application.Extensions.QueryExtensions;
 using Echo.Application.Pagination;
 using Echo.Application.Query;
-using Echo.Core.Dtos;
-using Echo.Core.Repositories.Base;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core;
-using Echo.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Core.Repositories;
 
-public class TitheRepository(AppDbContext context) : PrimaryRepositoryBase<Tithe>(context)
+public class TitheRepository(AppDbContext context)
 {
-    public async Task<PagedResponse<TitheListResponseDto>> GetPage(
+    private readonly DbSet<Tithe> _dbSet = context.Set<Tithe>();
+
+    public async Task<List<Tithe>> GetPage(
         Guid congregationId,
         PaginationParameters paginationParameters,
         QueryParameters? queryParameters,
-        CancellationToken ct = default
+        CancellationToken ct
     )
     {
-        var query = DbSet
+        var query = _dbSet
             .AsNoTracking()
-            .ApplySoftDeleteFilter()
+            .FilterSoftDeleted()
             .ApplyDateFilters(queryParameters)
             .Where(t => t.CongregationId == congregationId);
 
-        int totalRecords = await query.CountAsync(ct);
-
-        var records = await query
-            .OrderBy(t => t.Id)
-            .Select(t => new TitheListResponseDto
-            {
-                Id = t.Id,
-                MemberName = t.Member.Name,
-                Amount = t.Amount,
-                ForYear = t.ForYear,
-                ForMonth = t.ForMonth,
-                PaymentMethod = t.PaymentMethod,
-                CollectionDate = t.CollectionDate,
-            })
-            .ApplyPagination(paginationParameters)
+        var res = await query
+            .OrderBy(t => t.ForYear)
+            .ThenBy(t => t.ForMonth)
+            .Include(t => t.Member)
             .ToListAsync(ct);
 
-        return new PagedResponse<TitheListResponseDto>(records, paginationParameters, totalRecords);
+        return res;
     }
 
-    public async Task<TitheResponseDto?> GetById(
-        Guid id,
-        Guid congregationId,
-        CancellationToken ct = default
-    )
+    public async Task<Tithe?> GetById(Guid id, Guid congregationId, CancellationToken ct)
     {
-        return await DbSet
-            .AsNoTracking()
-            .ApplySoftDeleteFilter()
+        return await _dbSet
+            .FilterSoftDeleted()
             .Where(t => t.Id == id && t.CongregationId == congregationId)
-            .Select(t => new TitheResponseDto
-            {
-                Id = t.Id,
-                MemberId = t.MemberId,
-                MemberName = t.Member.Name,
-                Amount = t.Amount,
-                ForYear = t.ForYear,
-                ForMonth = t.ForMonth,
-                PaymentMethod = t.PaymentMethod,
-                CollectionDate = t.CollectionDate,
-                Description = t.Description,
-                CreatedAt = t.CreatedAt,
-            })
+            .Include(t => t.Member)
             .FirstOrDefaultAsync(ct);
     }
 
-    public async Task<List<TitheMonthlyTotalDto>> GetAnnualSummary(
-        Guid congregationId,
-        int year,
-        CancellationToken ct = default
-    )
+    public void Create(Tithe entity)
     {
-        var byMonth = await DbSet
-            .ApplySoftDeleteFilter()
-            .Where(t => t.CongregationId == congregationId && t.ForYear == year)
-            .GroupBy(t => t.ForMonth)
-            .Select(g => new { Month = g.Key, Total = g.Sum(t => t.Amount) })
-            .ToDictionaryAsync(t => t.Month, t => t.Total, ct);
+        _dbSet.Add(entity);
+    }
 
-        return Enum.GetValues<MonthOfYear>()
-            .Distinct()
-            .Select(m => new TitheMonthlyTotalDto
-            {
-                Month = m,
-                Total = byMonth.GetValueOrDefault(m, 0m),
-            })
-            .ToList();
+    public void SoftDelete(Tithe entity)
+    {
+        entity.DeletedAt = DateTime.UtcNow;
+    }
+
+    public Task GetSummary(Guid congregationId, int year, CancellationToken ct)
+    {
+        throw new NotImplementedException();
     }
 }

@@ -1,9 +1,9 @@
 using Echo.Application.Query;
 using Echo.Domain.Entities.Core.Interfaces;
 
-namespace Echo.Application.Extensions.QueryMethods;
+namespace Echo.Application.Extensions.QueryExtensions;
 
-public static class QueryFilterMethods
+public static class FilterExtensions
 {
     public static IQueryable<T> ApplySearchFilter<T>(
         this IQueryable<T> query,
@@ -38,7 +38,7 @@ public static class QueryFilterMethods
         return query;
     }
 
-    public static IQueryable<T> ApplySoftDeleteFilter<T>(this IQueryable<T> query)
+    public static IQueryable<T> FilterSoftDeleted<T>(this IQueryable<T> query)
         where T : ISoftDeletable
     {
         return query.Where(x => x.DeletedAt == null);

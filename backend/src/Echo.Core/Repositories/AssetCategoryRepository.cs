@@ -1,6 +1,4 @@
-using Echo.Application.Extensions.QueryMethods;
-using Echo.Core.Dtos;
-using Echo.Core.Repositories.Base;
+using Echo.Application.Extensions.QueryExtensions;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core;
 using Microsoft.EntityFrameworkCore;
@@ -8,32 +6,46 @@ using Microsoft.EntityFrameworkCore;
 namespace Echo.Core.Repositories;
 
 public class AssetCategoryRepository(AppDbContext context)
-    : ReferenceRepositoryBase<AssetCategory>(context)
 {
-    public async Task<List<AssetCategoryResponseDto>> GetAll(
-        Guid congregationId,
-        CancellationToken ct = default
-    )
+    private readonly DbSet<AssetCategory> _dbSet = context.Set<AssetCategory>();
+
+    public async Task<List<AssetCategory>> GetAll(Guid congregationId, CancellationToken ct)
     {
-        return await DbSet
+        return await _dbSet
             .AsNoTracking()
-            .ApplySoftDeleteFilter()
+            .FilterSoftDeleted()
             .Where(c => c.CongregationId == congregationId)
-            .Select(c => new AssetCategoryResponseDto { Id = c.Id, Name = c.Name })
             .ToListAsync(ct);
     }
 
-    public async Task<AssetCategoryResponseDto?> GetById(
-        int id,
+    public async Task<AssetCategory?> GetById(Guid congregationId, int id, CancellationToken ct)
+    {
+        return await _dbSet
+            .FilterSoftDeleted()
+            .Where(c => c.Id == id && c.CongregationId == congregationId)
+            .FirstOrDefaultAsync(ct);
+    }
+
+    public async Task<List<AssetCategory>> Search(
         Guid congregationId,
-        CancellationToken ct = default
+        string name,
+        CancellationToken ct
     )
     {
-        return await DbSet
-            .AsNoTracking()
-            .ApplySoftDeleteFilter()
-            .Where(c => c.Id == id && c.CongregationId == congregationId)
-            .Select(c => new AssetCategoryResponseDto { Id = c.Id, Name = c.Name })
-            .FirstOrDefaultAsync(ct);
+        return await _dbSet
+            .FilterSoftDeleted()
+            .Where(a => a.CongregationId == congregationId)
+            .SearchName(name)
+            .ToListAsync(ct);
+    }
+
+    public void Create(AssetCategory entity)
+    {
+        _dbSet.Add(entity);
+    }
+
+    public void SoftDelete(AssetCategory entity)
+    {
+        entity.DeletedAt = DateTime.UtcNow;
     }
 }
