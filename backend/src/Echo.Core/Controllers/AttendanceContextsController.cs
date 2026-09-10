@@ -2,6 +2,7 @@ using Echo.Core.Controllers.Base;
 using Echo.Core.Dtos;
 using Echo.Core.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Echo.Core.Controllers;
 
@@ -22,10 +23,7 @@ public class AttendanceContextsController(AttendanceContextService service) : Co
     }
 
     [HttpPost]
-    public async Task<ActionResult> Create(
-        AttendanceContextCreateDto dto,
-        CancellationToken ct
-    )
+    public async Task<ActionResult> Create(AttendanceContextCreateDto dto, CancellationToken ct)
     {
         var response = await service.Create(GetCongregationId(), dto, ct);
         return response.ToActionResult();
@@ -47,5 +45,13 @@ public class AttendanceContextsController(AttendanceContextService service) : Co
     {
         var response = await service.Delete(GetCongregationId(), id, ct);
         return response.ToActionResult();
+    }
+
+    [HttpGet("search")]
+    [EnableRateLimiting("search")]
+    public async Task<ActionResult> Search([FromQuery] string q, CancellationToken ct)
+    {
+        var res = await service.Search(GetCongregationId(), q, ct);
+        return res.ToActionResult();
     }
 }

@@ -4,18 +4,12 @@ using Echo.Core.Controllers.Base;
 using Echo.Core.Dtos;
 using Echo.Core.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace Echo.Core.Controllers;
 
 public class OrganizationsController(OrganizationService service) : CoreBaseController
 {
-    [HttpGet("summary")]
-    public async Task<ActionResult> GetSummary(CancellationToken ct)
-    {
-        var response = await service.GetSummary(GetCongregationId(), ct);
-        return response.ToActionResult();
-    }
-
     [HttpGet]
     public async Task<ActionResult> GetPage(
         [FromQuery] PaginationParameters paginationParameters,
@@ -47,11 +41,7 @@ public class OrganizationsController(OrganizationService service) : CoreBaseCont
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult> Update(
-        Guid id,
-        OrganizationUpdateDto dto,
-        CancellationToken ct
-    )
+    public async Task<ActionResult> Update(Guid id, OrganizationUpdateDto dto, CancellationToken ct)
     {
         var response = await service.Update(GetCongregationId(), id, dto, ct);
         return response.ToActionResult();
@@ -62,5 +52,13 @@ public class OrganizationsController(OrganizationService service) : CoreBaseCont
     {
         var response = await service.Delete(id, GetCongregationId(), ct);
         return response.ToActionResult();
+    }
+
+    [HttpGet("search")]
+    [EnableRateLimiting("search")]
+    public async Task<ActionResult> Search([FromQuery] string q, CancellationToken ct)
+    {
+        var res = await service.Search(GetCongregationId(), q, ct);
+        return res.ToActionResult();
     }
 }

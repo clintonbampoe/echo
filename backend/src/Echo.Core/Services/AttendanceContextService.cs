@@ -12,46 +12,50 @@ public class AttendanceContextService(
     IAttendanceContextMapper mapper
 )
 {
-    public async Task<IOperationResult> GetAll(
-        Guid congregationId,
-        CancellationToken ct = default
-    )
+    public async Task<IOperationResult> GetAll(Guid congregationId, CancellationToken ct)
     {
-        var result = await repository.GetAll(congregationId, ct);
-        return new SuccessResult<IEnumerable<AttendanceContextResponseDto>>(result);
+        var entities = await repository.GetAll(congregationId, ct);
+        var res = mapper.ToListDto(entities);
+        return new SuccessResult<List<AttendanceContextResponseDto>>(res);
     }
 
-    public async Task<IOperationResult> GetById(
-        int id,
-        Guid congregationId,
-        CancellationToken ct = default
-    )
+    public async Task<IOperationResult> GetById(int id, Guid congregationId, CancellationToken ct)
     {
-        var result = await repository.GetById(id, congregationId, ct);
+        var entity = await repository.GetById(congregationId, id, ct);
 
-        if (result is null)
-            return new NotFoundResult("Attendance context not found.");
+        if (entity is null)
+        {
+            return new ForeignKeyEntityNotFound(nameof(entity.AttendanceType));
+        }
 
-        return new SuccessResult<AttendanceContextResponseDto>(result);
+        var res = mapper.ToDto(entity);
+        return new SuccessResult<AttendanceContextResponseDto>(res);
     }
 
-    public async Task<IOperationResult> Create(Guid congregationId, AttendanceContextCreateDto dto,
-        CancellationToken ct)
+    public async Task<IOperationResult> Create(
+        Guid congregationId,
+        AttendanceContextCreateDto dto,
+        CancellationToken ct
+    )
     {
         var entity = mapper.ToEntity(dto);
         entity.CongregationId = congregationId;
 
-        await repository.Create(entity, ct);
+        repository.Create(entity);
         await unitOfWork.CommitAsync(ct);
 
         var res = mapper.ToDto(entity);
         return new CreatedAtResult<AttendanceContextResponseDto>(res);
     }
 
-    public async Task<IOperationResult> Update(Guid congregationId, int id, AttendanceContextUpdateDto dto,
-        CancellationToken ct)
+    public async Task<IOperationResult> Update(
+        Guid congregationId,
+        int id,
+        AttendanceContextUpdateDto dto,
+        CancellationToken ct
+    )
     {
-        var entity = await repository.GetEntityById(congregationId, id, ct);
+        var entity = await repository.GetById(congregationId, id, ct);
 
         if (entity is null)
             return new NotFoundResult(id.ToString());
@@ -65,14 +69,25 @@ public class AttendanceContextService(
 
     public async Task<IOperationResult> Delete(Guid congregationId, int id, CancellationToken ct)
     {
-        var entity = await repository.GetEntityById(congregationId, id, ct);
+        var entity = await repository.GetById(congregationId, id, ct);
 
         if (entity is null)
             return new NotFoundResult(id.ToString());
 
-        await repository.SoftDelete(entity, ct);
+        repository.SoftDelete(entity);
         await unitOfWork.CommitAsync(ct);
 
         return new NoContentResult();
+    }
+
+    public async Task<IOperationResult> Search(
+        Guid congregationId,
+        string name,
+        CancellationToken ct
+    )
+    {
+        var entities = await repository.Search(congregationId, name, ct);
+        var res = mapper.ToSearchDto(entities);
+        return new SuccessResult<List<AttendanceContextSearchResultDto>>(res);
     }
 }

@@ -9,20 +9,6 @@ namespace Echo.Core.Controllers;
 
 public class TransactionsController(TransactionService service) : CoreBaseController
 {
-    [HttpGet("summary")]
-    public async Task<ActionResult> GetSummary(CancellationToken ct)
-    {
-        var response = await service.GetSummary(GetCongregationId(), ct);
-        return response.ToActionResult();
-    }
-
-    [HttpGet("streams")]
-    public async Task<ActionResult> GetStreams(CancellationToken ct)
-    {
-        var response = await service.GetStreams(GetCongregationId(), ct);
-        return response.ToActionResult();
-    }
-
     [HttpGet]
     public async Task<ActionResult> GetPage(
         [FromQuery] PaginationParameters paginationParameters,
@@ -54,11 +40,7 @@ public class TransactionsController(TransactionService service) : CoreBaseContro
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult> Update(
-        Guid id,
-        TransactionUpdateDto dto,
-        CancellationToken ct
-    )
+    public async Task<ActionResult> Update(Guid id, TransactionUpdateDto dto, CancellationToken ct)
     {
         var response = await service.Update(GetCongregationId(), id, dto, ct);
         return response.ToActionResult();

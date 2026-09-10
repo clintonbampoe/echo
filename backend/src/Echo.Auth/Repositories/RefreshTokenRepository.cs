@@ -1,4 +1,4 @@
-using Echo.Application.Extensions.QueryMethods;
+using Echo.Application.Extensions.QueryExtensions;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Auth;
 using Microsoft.EntityFrameworkCore;
@@ -12,7 +12,7 @@ public class RefreshTokenRepository(AppDbContext context, TimeProvider timeProvi
     public async Task<RefreshToken?> GetTokenRecordByHashWithUser(string hashedInput, CancellationToken ct = default)
     {
         var tokenObject = await _tokens
-            .ApplySoftDeleteFilter()
+            .FilterSoftDeleted()
             .Include(x => x.User)
             .FirstOrDefaultAsync(x => x.TokenHash == hashedInput, ct);
 
@@ -28,7 +28,7 @@ public class RefreshTokenRepository(AppDbContext context, TimeProvider timeProvi
     public async Task<bool> Revoke(Guid tokenId, Guid? replacedByTokenId = null, CancellationToken ct = default)
     {
         var existing = await _tokens
-            .ApplySoftDeleteFilter()
+            .FilterSoftDeleted()
             .FirstOrDefaultAsync(x => x.Id == tokenId, ct);
 
         if (existing is null)
@@ -43,7 +43,7 @@ public class RefreshTokenRepository(AppDbContext context, TimeProvider timeProvi
     public async Task<bool> RevokeAllActiveSessionsForUser(Guid userId, CancellationToken ct = default)
     {
         var activeTokens = await _tokens
-            .ApplySoftDeleteFilter()
+            .FilterSoftDeleted()
             .Where(u => u.UserId == userId && u.RevokedAt == null)
             .ToListAsync(ct);
 

@@ -18,27 +18,29 @@ public static class ProjectCategoryFactory
         };
     }
 
+    public static List<ProjectCategory> NewEntityList()
+    {
+        var res = new List<ProjectCategory>();
+        for (int i = 0; i < 5; i++)
+        {
+            res.Add(NewEntity());
+        }
+
+        return res;
+    }
+
     public static ProjectCategoryCreateDto NewCreateDto()
     {
-        return new ProjectCategoryCreateDto()
-        {
-            Name = "CatCreateDto-01",
-        };
+        return new ProjectCategoryCreateDto() { Name = "CatCreateDto-01" };
     }
 
     public static ProjectCategoryUpdateDto NewUpdateDto()
     {
-        return new ProjectCategoryUpdateDto()
-        {
-            Name = "ProjectCat UpdateDto-01"
-        };
+        return new ProjectCategoryUpdateDto() { Name = "ProjectCat UpdateDto-01" };
     }
 
     public static ProjectCategoryUpdateDto NewUpdateDtoWithNullValues()
     {
-        return new ProjectCategoryUpdateDto()
-        {
-            Name = null,
-        };
+        return new ProjectCategoryUpdateDto() { Name = null };
     }
 }

@@ -11,6 +11,7 @@ namespace Echo.Core.Services;
 
 public class AttendanceService(
     AttendanceRepository repository,
+    AttendanceContextRepository contextRepository,
     IUnitOfWork unitOfWork,
     IAttendanceMapper mapper,
     IIdGenerator idGenerator
@@ -20,49 +21,61 @@ public class AttendanceService(
         Guid congregationId,
         PaginationParameters paginationParameters,
         QueryParameters? queryParameters,
-        CancellationToken ct = default
+        CancellationToken ct
     )
     {
-        var result = await repository.GetPageAsync(
+        var entities = await repository.GetPage(
             congregationId,
             paginationParameters,
             queryParameters,
             ct
         );
-        return new SuccessResult<PagedResponse<AttendanceListResponseDto>>(result);
+        var res = mapper.ToListDto(entities);
+        return new SuccessResult<List<AttendanceResponseDto>>(res);
     }
 
-    public async Task<IOperationResult> GetById(
-        Guid id,
+    public async Task<IOperationResult> GetById(Guid id, Guid congregationId, CancellationToken ct)
+    {
+        var entity = await repository.GetById(id, congregationId, ct);
+
+        if (entity is null)
+            return new NotFoundResult(id.ToString());
+
+        var res = mapper.ToDto(entity);
+        return new SuccessResult<AttendanceResponseDto>(res);
+    }
+
+    public async Task<IOperationResult> Create(
         Guid congregationId,
-        CancellationToken ct = default
+        AttendanceCreateDto dto,
+        CancellationToken ct
     )
     {
-        var result = await repository.GetById(id, congregationId, ct);
+        var context = await contextRepository.GetById(congregationId, dto.AttendanceContextId, ct);
 
-        if (result is null)
-            return new NotFoundResult("Attendance record not found.");
+        if (context is null)
+            return new ForeignKeyEntityNotFound(nameof(context));
 
-        return new SuccessResult<AttendanceResponseDto>(result);
-    }
-
-    public async Task<IOperationResult> Create(Guid congregationId, AttendanceCreateDto dto, CancellationToken ct)
-    {
         var entity = mapper.ToEntity(dto);
         entity.CongregationId = congregationId;
         entity.Id = idGenerator.Generate();
+        entity.AttendanceContext = context;
 
-        await repository.Create(entity, ct);
+        repository.Create(entity);
         await unitOfWork.CommitAsync(ct);
 
         var res = mapper.ToDto(entity);
         return new CreatedAtResult<AttendanceResponseDto>(res);
     }
 
-    public async Task<IOperationResult> Update(Guid congregationId, Guid id, AttendanceUpdateDto dto,
-        CancellationToken ct)
+    public async Task<IOperationResult> Update(
+        Guid congregationId,
+        Guid id,
+        AttendanceUpdateDto dto,
+        CancellationToken ct
+    )
     {
-        var entity = await repository.GetEntityById(congregationId, id, ct);
+        var entity = await repository.GetById(congregationId, id, ct);
 
         if (entity is null)
             return new NotFoundResult(id.ToString());
@@ -76,30 +89,24 @@ public class AttendanceService(
 
     public async Task<IOperationResult> Delete(Guid congregationId, Guid id, CancellationToken ct)
     {
-        var entity = await repository.GetEntityById(congregationId, id, ct);
+        var entity = await repository.GetById(congregationId, id, ct);
 
         if (entity is null)
             return new NotFoundResult(id.ToString());
 
-        await repository.SoftDelete(entity, ct);
+        repository.SoftDelete(entity);
         await unitOfWork.CommitAsync(ct);
 
         return new NoContentResult();
     }
 
-    public async Task<IOperationResult> GetSummary(
+    public Task<IOperationResult> GetSummary(
         Guid congregationId,
         int attendanceContextId,
         DateOnly forDate,
-        CancellationToken ct = default
+        CancellationToken ct
     )
     {
-        var result = await repository.GetSummaryAsync(
-            congregationId,
-            attendanceContextId,
-            forDate,
-            ct
-        );
-        return new SuccessResult<AttendanceSummaryDto>(result);
+        throw new NotImplementedException();
     }
 }

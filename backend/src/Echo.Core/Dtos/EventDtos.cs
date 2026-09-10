@@ -1,9 +1,8 @@
 using System.ComponentModel.DataAnnotations;
-using Echo.Core.Dtos.Interfaces;
 
 namespace Echo.Core.Dtos;
 
-public record EventCreateDto : IPrimaryCreateDto
+public record EventCreateDto
 {
     public Guid OrganizationId { get; init; }
     public Guid OrganizerId { get; init; }
@@ -26,7 +25,7 @@ public record EventCreateDto : IPrimaryCreateDto
     public string? Description { get; init; }
 }
 
-public record EventUpdateDto : IPrimaryUpdateDto
+public record EventUpdateDto
 {
     public Guid? OrganizationId { get; init; }
     public Guid? OrganizerId { get; init; }
@@ -49,7 +48,7 @@ public record EventUpdateDto : IPrimaryUpdateDto
     public string? Description { get; init; }
 }
 
-public record EventListResponseDto : IPrimaryListResponseDto, Application.Dtos.Interfaces.IPrimaryListResponseDto
+public record EventListResponseDto
 {
     public Guid Id { get; init; }
     public required string OrganizationName { get; init; }
@@ -60,7 +59,7 @@ public record EventListResponseDto : IPrimaryListResponseDto, Application.Dtos.I
     public string? Location { get; init; }
 }
 
-public record EventResponseDto : IPrimaryResponseDto
+public record EventResponseDto
 {
     public Guid Id { get; init; }
     public Guid OrganizationId { get; init; }
@@ -84,4 +83,10 @@ public record EventSummaryDto
     public required int UpcomingEvents { get; init; }
     public required int PastEvents { get; init; }
     public required int TotalRegistrations { get; init; }
+}
+
+public record EventSearchResultDto
+{
+    public Guid Id { get; init; }
+    public required string Name { get; init; }
 }

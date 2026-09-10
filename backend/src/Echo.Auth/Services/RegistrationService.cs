@@ -1,25 +1,28 @@
-using AutoMapper;
 using Echo.Application.HttpResults;
+using Echo.Application.Services.Generators;
 using Echo.Application.Services.Hashing;
 using Echo.Auth.Dtos;
 using Echo.Auth.Validation;
 using Echo.Core.Dtos;
+using Echo.Core.Mapping.CongregationMapping;
+using Echo.Core.Mapping.UserMapping;
 using Echo.Core.Repositories;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core;
 using Echo.Domain.Enums;
-using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Auth.Services;
 
 public class RegistrationService(
-    AppDbContext context,
     CongregationRepository congregationRepository,
     UserRepository userRepository,
     EmailVerificationService emailVerificationService,
     InvitationService invitationService,
-    IMapper mapper,
-    IPasswordHasher passwordHashService
+    IUnitOfWork unitOfWork,
+    IUserMapper userMapper,
+    ICongregationMapper congregationMapper,
+    IPasswordHasher passwordHashService,
+    IIdGenerator idGenerator
 )
 {
     public async Task<IOperationResult> RegisterCongregation(
@@ -28,8 +31,11 @@ public class RegistrationService(
         CancellationToken ct
     )
     {
-        var congregation = mapper.Map<Congregation>(congregationDto);
-        var user = mapper.Map<User>(userDto);
+        var congregation = congregationMapper.ToEntity(congregationDto);
+        congregation.Id = idGenerator.Generate();
+
+        var user = userMapper.ToEntity(userDto);
+        user.Id = idGenerator.Generate();
         user.Role = UserRole.Admin;
         user.CongregationId = congregation.Id;
 
@@ -42,27 +48,19 @@ public class RegistrationService(
 
         await HashPassword(user, userDto);
 
-        await congregationRepository.CreateRecord(congregation, ct);
-        await userRepository.Create(user, ct);
+        congregationRepository.Create(congregation);
+        userRepository.Create(user);
 
-        try
-        {
-            await context.SaveChangesAsync(ct);
-        }
-        catch (DbUpdateException)
-        {
-            return new InternalServerError();
-        }
-
+        await unitOfWork.CommitAsync(ct);
         return new OkResult("Operation completed successfully.");
     }
 
-    public async Task<IOperationResult> RegisterMemberAsync(
+    public async Task<IOperationResult> RegisterUser(
         RegisterMemberRequest request,
         CancellationToken ct
     )
     {
-        var invitation = await invitationService.ValidateAsync(request.Token, ct);
+        var invitation = await invitationService.Validate(request.Token, ct);
         if (invitation is null)
             return new BadRequestResult("Invitation is invalid, expired, or revoked.");
 
@@ -70,6 +68,7 @@ public class RegistrationService(
             request.UserInfo.Password,
             out var policyError
         );
+
         if (!passwordIsValid)
             return new BadRequestResult(policyError!);
 
@@ -87,19 +86,10 @@ public class RegistrationService(
             PasswordHash = await passwordHashService.HashAsync(request.UserInfo.Password),
         };
 
-        await userRepository.Create(user, ct);
-
-        try
-        {
-            await context.SaveChangesAsync(ct);
-        }
-        catch (DbUpdateException)
-        {
-            return new InternalServerError();
-        }
+        userRepository.Create(user);
+        await unitOfWork.CommitAsync(ct);
 
         await emailVerificationService.SendVerificationLinkToEmail(user.EmailAddress, ct);
-
         return new OkResult("Check your email to verify your account and complete registration.");
     }
 

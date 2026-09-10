@@ -1,25 +1,25 @@
 import React from 'react';
+import { NavLink } from 'react-router-dom';
 import echoLogo from '../assets/echo.svg';
-import {
-    DashboardIcon,
-    FinanceIcon,
-    AttendanceIcon,
-    TitheIcon,
-    ReportingIcon,
-    ProjectsIcon,
-    CalendarIcon,
-    BoxIcon,
-    MembersIcon,
-    ContributionsIcon
-} from './Icons';
+import { useAuth } from '../hooks/useAuth';
 import '../styles/Sidebar.css';
+import {
+  AttendanceIcon,
+  BoxIcon,
+  CalendarIcon,
+  ContributionsIcon,
+  DashboardIcon,
+  FinanceIcon,
+  LogoutIcon,
+  MembersIcon,
+  ProjectsIcon,
+  ReportingIcon,
+  TitheIcon
+} from './Icons';
 
-interface SidebarProps {
-    activeTab: string;
-    onTabChange: (tab: string) => void;
-}
+const Sidebar: React.FC = () => {
+    const { logout } = useAuth();
 
-const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
     const menuItems = [
         { id: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
         { id: 'finance', label: 'Finance', icon: 'finance' },
@@ -59,22 +59,33 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
 
             <nav className="sidebar-nav">
                 {menuItems.map((item) => (
-                    <button
+                    <NavLink
                         key={item.id}
-                        onClick={() => onTabChange(item.id)}
-                        className={`nav-item ${activeTab === item.id ? 'nav-item-active' : ''}`}
+                        to={`/${item.id}`}
+                        className={({ isActive }) => `nav-item ${isActive ? 'nav-item-active' : ''}`}
                     >
-                        {renderSidebarIcon(item.icon)}
-                        <span className={`nav-label ${activeTab === item.id ? 'nav-label-active' : ''}`}>{item.label}</span>
-                    </button>
+                        {({ isActive }) => (
+                            <>
+                                {renderSidebarIcon(item.icon)}
+                                <span className={`nav-label ${isActive ? 'nav-label-active' : ''}`}>{item.label}</span>
+                            </>
+                        )}
+                    </NavLink>
                 ))}
             </nav>
 
             <div className="sidebar-footer">
                 <div className="footer-avatar">JD</div>
-                <div className="footer-user-info">
+                <div className="footer-user-info" style={{ flex: 1 }}>
                     <span className="footer-user-name">John Doe</span>
                 </div>
+                <button
+                  onClick={logout}
+                  className="logout-btn"
+                  title="Log out"
+                >
+                    <LogoutIcon size={18} />
+                </button>
             </div>
         </aside>
     );

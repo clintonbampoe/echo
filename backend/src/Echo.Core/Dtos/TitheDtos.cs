@@ -1,10 +1,9 @@
 using System.ComponentModel.DataAnnotations;
-using Echo.Core.Dtos.Interfaces;
 using Echo.Domain.Enums;
 
 namespace Echo.Core.Dtos;
 
-public record TitheCreateDto : IPrimaryCreateDto
+public record TitheCreateDto
 {
     public Guid MemberId { get; init; }
 
@@ -22,7 +21,7 @@ public record TitheCreateDto : IPrimaryCreateDto
     public string? Description { get; init; }
 }
 
-public record TitheUpdateDto : IPrimaryUpdateDto
+public record TitheUpdateDto
 {
     public Guid? MemberId { get; init; }
 
@@ -40,7 +39,7 @@ public record TitheUpdateDto : IPrimaryUpdateDto
     public string? Description { get; init; }
 }
 
-public record TitheListResponseDto : IPrimaryListResponseDto, Application.Dtos.Interfaces.IPrimaryListResponseDto
+public record TitheListResponseDto
 {
     public Guid Id { get; init; }
     public required string MemberName { get; init; }
@@ -51,7 +50,7 @@ public record TitheListResponseDto : IPrimaryListResponseDto, Application.Dtos.I
     public DateOnly CollectionDate { get; init; }
 }
 
-public record TitheResponseDto : IPrimaryResponseDto
+public record TitheResponseDto
 {
     public Guid Id { get; init; }
     public Guid MemberId { get; init; }

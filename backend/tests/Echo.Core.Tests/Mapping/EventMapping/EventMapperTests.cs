@@ -104,4 +104,23 @@ public class EventMapperTests
         Assert.Equal(original.Capacity, entity.Capacity);
         Assert.Equal(original.Description, entity.Description);
     }
+
+    [Fact]
+    public void ToSearchDto_ShowMapFields_FromEntityList()
+    {
+        var entityList = EventFactory.NewEntityList();
+        var dtoList = _mapper.ToSearchDto(entityList);
+
+        var firstEntity = entityList.First();
+        var firstDto = dtoList.First();
+
+        var lastEntity = entityList.Last();
+        var lastDto = dtoList.Last();
+
+        Assert.Equal(firstEntity.Id, firstDto.Id);
+        Assert.Equal(firstEntity.Name, firstDto.Name);
+
+        Assert.Equal(lastEntity.Id, lastDto.Id);
+        Assert.Equal(lastEntity.Name, lastDto.Name);
+    }
 }

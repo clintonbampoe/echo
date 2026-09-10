@@ -62,7 +62,7 @@ public class OrganizationMembersController(OrganizationMemberService service) : 
     }
 
     [HttpPost]
-    public async Task<ActionResult> Create(OrganizationMemberCreateDto dto, CancellationToken ct = default)
+    public async Task<ActionResult> Create(OrganizationMemberCreateDto dto, CancellationToken ct)
     {
         var response = await service.Create(GetCongregationId(), dto, ct);
         return response.ToActionResult();

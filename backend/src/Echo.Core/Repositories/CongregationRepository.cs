@@ -1,5 +1,4 @@
-using Echo.Application.Extensions.QueryMethods;
-using Echo.Core.Dtos;
+using Echo.Application.Extensions.QueryExtensions;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core;
 using Microsoft.EntityFrameworkCore;
@@ -10,72 +9,24 @@ public class CongregationRepository(AppDbContext context)
 {
     private readonly DbSet<Congregation> _dbSet = context.Set<Congregation>();
 
-    public async Task<CongregationResponseDto?> GetByIdAsync(
+    public async Task<Congregation?> GetById(
         Guid id,
         CancellationToken ct = default
     )
     {
         return await _dbSet
-            .AsNoTracking()
-            .ApplySoftDeleteFilter()
+            .FilterSoftDeleted()
             .Where(c => c.Id == id)
-            .Select(c => new CongregationResponseDto
-            {
-                Id = c.Id,
-                Name = c.Name,
-                OrgType = c.OrgType,
-
-                EmailAddress = c.EmailAddress,
-                PhoneNumber = c.PhoneNumber,
-                PostalAddress = c.PostalAddress,
-                WebsiteUrl = c.WebsiteUrl,
-
-                Region = c.Region,
-                City = c.City,
-                Town = c.Town,
-                GpsAddress = c.GpsAddress,
-
-                CreatedAt = c.CreatedAt,
-            })
             .FirstOrDefaultAsync(ct);
     }
 
-    public virtual async Task<bool> CreateRecord(
-        Congregation entity,
-        CancellationToken ct = default
-    )
+    public void Create(Congregation entity)
     {
-        await _dbSet.AddAsync(entity, ct);
-        return true;
+        _dbSet.Add(entity);
     }
 
-    public virtual async Task<bool> UpdateRecordAsync(
-        Guid id,
-        Congregation entity,
-        CancellationToken ct = default
-    )
+    public void Delete(Congregation entity)
     {
-        var existing = await _dbSet
-            .ApplySoftDeleteFilter()
-            .FirstOrDefaultAsync(e => e.Id == id, ct);
-
-        if (existing is null)
-            return false;
-
-        _dbSet.Entry(existing).CurrentValues.SetValues(entity);
-        return true;
-    }
-
-    public virtual async Task<bool> DeleteRecordAsync(Guid id, CancellationToken ct = default)
-    {
-        var existing = await _dbSet
-            .ApplySoftDeleteFilter()
-            .FirstOrDefaultAsync(e => e.Id == id, ct);
-
-        if (existing is null)
-            return false;
-
-        existing.DeletedAt = DateTime.UtcNow;
-        return true;
+        entity.DeletedAt = DateTime.UtcNow;
     }
 }

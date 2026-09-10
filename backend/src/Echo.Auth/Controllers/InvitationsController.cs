@@ -12,10 +12,18 @@ namespace Echo.Auth.Controllers;
 public class InvitationsController(InvitationService invitationService) : AuthBaseController
 {
     [HttpPost]
-    public async Task<ActionResult> CreateInvite([FromBody] InviteRequest request, CancellationToken ct)
+    public async Task<ActionResult> CreateInvite(
+        [FromBody] InviteRequest request,
+        CancellationToken ct
+    )
     {
-        var response = await invitationService.CreateInvitationAsync(
-            User.GetCongregationId(), User.GetUserId(), request.AllowedRole, request.ExpiryDays, ct);
+        var response = await invitationService.CreateInvitationToken(
+            User.GetCongregationId(),
+            User.GetUserId(),
+            request.AllowedRole,
+            request.ExpiryDays,
+            ct
+        );
 
         return response.ToActionResult();
     }

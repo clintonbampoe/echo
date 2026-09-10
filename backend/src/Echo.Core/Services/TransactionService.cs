@@ -11,6 +11,7 @@ namespace Echo.Core.Services;
 
 public class TransactionService(
     TransactionRepository repository,
+    TransactionCategoryRepository categoryRepository,
     IUnitOfWork unitOfWork,
     ITransactionMapper mapper,
     IIdGenerator idGenerator
@@ -20,50 +21,63 @@ public class TransactionService(
         Guid congregationId,
         PaginationParameters paginationParameters,
         QueryParameters? queryParameters,
-        CancellationToken ct = default
+        CancellationToken ct
     )
     {
-        var result = await repository.GetPage(
+        var entities = await repository.GetPage(
             congregationId,
             paginationParameters,
             queryParameters,
             ct
         );
-        return new SuccessResult<PagedResponse<TransactionListResponseDto>>(result);
+        var res = mapper.ToListDto(entities);
+        return new SuccessResult<List<TransactionResponseDto>>(res);
     }
 
-    public async Task<IOperationResult> GetById(
-        Guid id,
+    public async Task<IOperationResult> GetById(Guid id, Guid congregationId, CancellationToken ct)
+    {
+        var entity = await repository.GetById(congregationId, id, ct);
+        if (entity is null)
+            return new NotFoundResult(id.ToString());
+
+        var res = mapper.ToDto(entity);
+        return new SuccessResult<TransactionResponseDto>(res);
+    }
+
+    public async Task<IOperationResult> Create(
         Guid congregationId,
-        CancellationToken ct = default
+        TransactionCreateDto dto,
+        CancellationToken ct
     )
     {
-        var result = await repository.GetById(id, congregationId, ct);
+        var transactionCategory = await categoryRepository.GetById(
+            congregationId,
+            dto.CategoryId,
+            ct
+        );
+        if (transactionCategory is null)
+            return new ForeignKeyEntityNotFound(nameof(transactionCategory));
 
-        if (result is null)
-            return new NotFoundResult("Transaction not found.");
-
-        return new SuccessResult<TransactionResponseDto>(result);
-    }
-
-    public async Task<IOperationResult> Create(Guid congregationId, TransactionCreateDto dto, CancellationToken ct)
-    {
         var entity = mapper.ToEntity(dto);
         entity.CongregationId = congregationId;
         entity.Id = idGenerator.Generate();
+        entity.Category = transactionCategory;
 
-        await repository.Create(entity, ct);
+        repository.Create(entity);
         await unitOfWork.CommitAsync(ct);
 
         var res = mapper.ToDto(entity);
         return new CreatedAtResult<TransactionResponseDto>(res);
     }
 
-    public async Task<IOperationResult> Update(Guid congregationId, Guid id, TransactionUpdateDto dto,
-        CancellationToken ct)
+    public async Task<IOperationResult> Update(
+        Guid congregationId,
+        Guid id,
+        TransactionUpdateDto dto,
+        CancellationToken ct
+    )
     {
-        var entity = await repository.GetEntityById(congregationId, id, ct);
-
+        var entity = await repository.GetById(congregationId, id, ct);
         if (entity is null)
             return new NotFoundResult(id.ToString());
 
@@ -76,32 +90,18 @@ public class TransactionService(
 
     public async Task<IOperationResult> Delete(Guid congregationId, Guid id, CancellationToken ct)
     {
-        var entity = await repository.GetEntityById(congregationId, id, ct);
-
+        var entity = await repository.GetById(congregationId, id, ct);
         if (entity is null)
             return new NotFoundResult(id.ToString());
 
-        await repository.SoftDelete(entity, ct);
+        repository.SoftDelete(entity);
         await unitOfWork.CommitAsync(ct);
 
         return new NoContentResult();
     }
 
-    public async Task<IOperationResult> GetSummary(
-        Guid congregationId,
-        CancellationToken ct = default
-    )
+    public Task<IOperationResult> GetSummary(Guid congregationId, CancellationToken ct)
     {
-        var result = await repository.GetSummary(congregationId, ct);
-        return new SuccessResult<FinanceSummaryDto>(result);
-    }
-
-    public async Task<IOperationResult> GetStreams(
-        Guid congregationId,
-        CancellationToken ct = default
-    )
-    {
-        var result = await repository.GetStreams(congregationId, ct);
-        return new SuccessResult<FinanceStreamsDto>(result);
+        throw new NotImplementedException();
     }
 }

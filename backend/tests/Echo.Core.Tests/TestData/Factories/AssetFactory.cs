@@ -1,5 +1,4 @@
 using Echo.Core.Dtos;
-using Echo.Core.Tests.Helpers;
 using Echo.Domain.Entities.Core;
 using Echo.Domain.Enums;
 
@@ -26,6 +25,16 @@ public static class AssetFactory
             CreatedAt = Constants.DefaultDateTime,
             DeletedAt = null,
         };
+    }
+
+    public static List<Asset> NewEntityList()
+    {
+        var res = new List<Asset>();
+        for (int i = 0; i < 5; i++)
+        {
+            res.Add(NewEntity());
+        }
+        return res;
     }
 
     public static AssetCreateDto NewCreateDto()
@@ -70,21 +79,6 @@ public static class AssetFactory
             CurrentValue = null,
             Status = null,
             Description = null,
-        };
-    }
-
-    public static AssetUpdateDto NewUpdateDtoWithRandomValues()
-    {
-        return new AssetUpdateDto()
-        {
-            CategoryId = 99,
-            Name = RandomGenerators.String(10),
-            SerialNumber = RandomGenerators.String(10),
-            PurchaseDate = new DateOnly(2023, 6, 15),
-            PurchaseCost = 750,
-            CurrentValue = 600,
-            Status = AssetStatus.UnderMaintenance,
-            Description = RandomGenerators.String(20),
         };
     }
 }

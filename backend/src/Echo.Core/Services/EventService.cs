@@ -11,6 +11,8 @@ namespace Echo.Core.Services;
 
 public class EventService(
     EventRepository repository,
+    OrganizationRepository organizationRepository,
+    MemberRepository memberRepository,
     IUnitOfWork unitOfWork,
     IEventMapper mapper,
     IIdGenerator idGenerator
@@ -20,48 +22,69 @@ public class EventService(
         Guid congregationId,
         PaginationParameters paginationParameters,
         QueryParameters? queryParameters,
-        CancellationToken ct = default
+        CancellationToken ct
     )
     {
-        var result = await repository.GetPage(
+        var entities = await repository.GetPage(
             congregationId,
             paginationParameters,
             queryParameters,
             ct
         );
-        return new SuccessResult<PagedResponse<EventListResponseDto>>(result);
+        var res = mapper.ToListDto(entities);
+        return new SuccessResult<List<EventResponseDto>>(res);
     }
 
-    public async Task<IOperationResult> GetById(
-        Guid id,
+    public async Task<IOperationResult> GetById(Guid id, Guid congregationId, CancellationToken ct)
+    {
+        var entity = await repository.GetById(id, congregationId, ct);
+
+        if (entity is null)
+            return new NotFoundResult(id.ToString());
+
+        var res = mapper.ToDto(entity);
+        return new SuccessResult<EventResponseDto>(res);
+    }
+
+    public async Task<IOperationResult> Create(
         Guid congregationId,
-        CancellationToken ct = default
+        EventCreateDto dto,
+        CancellationToken ct
     )
     {
-        var result = await repository.GetById(id, congregationId, ct);
+        var organizer = await memberRepository.GetById(congregationId, dto.OrganizerId, ct);
+        if (organizer is null)
+            return new ForeignKeyEntityNotFound(nameof(organizer));
 
-        if (result is null)
-            return new NotFoundResult("Event not found.");
+        var organization = await organizationRepository.GetById(
+            congregationId,
+            dto.OrganizationId,
+            ct
+        );
+        if (organization is null)
+            return new ForeignKeyEntityNotFound(nameof(organization));
 
-        return new SuccessResult<EventResponseDto>(result);
-    }
-
-    public async Task<IOperationResult> Create(Guid congregationId, EventCreateDto dto, CancellationToken ct)
-    {
         var entity = mapper.ToEntity(dto);
         entity.CongregationId = congregationId;
         entity.Id = idGenerator.Generate();
+        entity.Organization = organization;
+        entity.Organizer = organizer;
 
-        await repository.Create(entity, ct);
+        repository.Create(entity);
         await unitOfWork.CommitAsync(ct);
 
         var res = mapper.ToDto(entity);
         return new CreatedAtResult<EventResponseDto>(res);
     }
 
-    public async Task<IOperationResult> Update(Guid congregationId, Guid id, EventUpdateDto dto, CancellationToken ct)
+    public async Task<IOperationResult> Update(
+        Guid congregationId,
+        Guid id,
+        EventUpdateDto dto,
+        CancellationToken ct
+    )
     {
-        var entity = await repository.GetEntityById(congregationId, id, ct);
+        var entity = await repository.GetById(congregationId, id, ct);
 
         if (entity is null)
             return new NotFoundResult(id.ToString());
@@ -75,23 +98,30 @@ public class EventService(
 
     public async Task<IOperationResult> Delete(Guid congregationId, Guid id, CancellationToken ct)
     {
-        var entity = await repository.GetEntityById(congregationId, id, ct);
+        var entity = await repository.GetById(congregationId, id, ct);
 
         if (entity is null)
             return new NotFoundResult(id.ToString());
 
-        await repository.SoftDelete(entity, ct);
+        repository.SoftDelete(entity);
         await unitOfWork.CommitAsync(ct);
 
         return new NoContentResult();
     }
 
-    public async Task<IOperationResult> GetSummary(
+    public async Task<IOperationResult> Search(
         Guid congregationId,
-        CancellationToken ct = default
+        string name,
+        CancellationToken ct
     )
     {
-        var result = await repository.GetSummary(congregationId, ct);
-        return new SuccessResult<EventSummaryDto>(result);
+        var entities = await repository.Search(congregationId, name, ct);
+        var res = mapper.ToSearchDto(entities);
+        return new SuccessResult<List<EventSearchResultDto>>(res);
+    }
+
+    public Task<IOperationResult> GetSummary(Guid congregationId, CancellationToken ct)
+    {
+        throw new NotImplementedException();
     }
 }

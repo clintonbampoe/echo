@@ -1,5 +1,4 @@
 using Echo.Core.Dtos;
-using Echo.Core.Tests.Helpers;
 using Echo.Domain.Entities.Core;
 using Echo.Domain.Enums;
 
@@ -25,6 +24,17 @@ public static class CongregationFactory
             CreatedAt = Constants.DefaultDateTime,
             DeletedAt = null,
         };
+    }
+
+    public static List<Congregation> NewEntityList()
+    {
+        var res = new List<Congregation>();
+        for (int i = 0; i < 5; i++)
+        {
+            res.Add(NewEntity());
+        }
+
+        return res;
     }
 
     public static CongregationCreateDto NewCreateDto()
@@ -75,23 +85,6 @@ public static class CongregationFactory
             City = null,
             Town = null,
             GpsAddress = null,
-        };
-    }
-
-    public static CongregationUpdateDto NewUpdateDtoWithRandomValues()
-    {
-        return new CongregationUpdateDto()
-        {
-            Name = "CongregationUpdate-01 With Random Values",
-            PhoneNumber = RandomGenerators.String(10),
-            EmailAddress = RandomGenerators.String(10),
-            PostalAddress = RandomGenerators.String(10),
-            WebsiteUrl = RandomGenerators.String(10),
-            Region = Region.WesternNorth,
-            OrgType = ReligiousOrganizationType.Other,
-            City = RandomGenerators.String(10),
-            Town = RandomGenerators.String(10),
-            GpsAddress = RandomGenerators.String(10),
         };
     }
 }

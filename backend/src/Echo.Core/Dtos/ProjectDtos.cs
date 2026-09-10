@@ -1,10 +1,9 @@
 using System.ComponentModel.DataAnnotations;
-using Echo.Core.Dtos.Interfaces;
 using Echo.Domain.Enums;
 
 namespace Echo.Core.Dtos;
 
-public record ProjectCreateDto : IPrimaryCreateDto
+public record ProjectCreateDto
 {
     [Range(1, int.MaxValue)]
     public int CategoryId { get; init; }
@@ -25,7 +24,7 @@ public record ProjectCreateDto : IPrimaryCreateDto
     public string? Description { get; init; }
 }
 
-public record ProjectUpdateDto : IPrimaryUpdateDto
+public record ProjectUpdateDto
 {
     [Range(1, int.MaxValue)]
     public int? CategoryId { get; init; }
@@ -46,7 +45,7 @@ public record ProjectUpdateDto : IPrimaryUpdateDto
     public string? Description { get; init; }
 }
 
-public record ProjectListResponseDto : IPrimaryListResponseDto, Application.Dtos.Interfaces.IPrimaryListResponseDto
+public record ProjectListResponseDto
 {
     public Guid Id { get; init; }
     public required string CategoryName { get; init; }
@@ -58,7 +57,7 @@ public record ProjectListResponseDto : IPrimaryListResponseDto, Application.Dtos
     public DateOnly? EndDate { get; init; }
 }
 
-public record ProjectResponseDto : IPrimaryResponseDto
+public record ProjectResponseDto
 {
     public Guid Id { get; init; }
     public int CategoryId { get; init; }
@@ -80,4 +79,10 @@ public record ProjectSummaryDto
     public required decimal TotalRaised { get; init; }
     public required decimal TotalExpected { get; init; }
     public required int CompletedThisQuarter { get; init; }
+}
+
+public record ProjectSearchResultDto
+{
+    public Guid Id { get; init; }
+    public required string Name { get; init; }
 }

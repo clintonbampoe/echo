@@ -13,26 +13,23 @@ public class UserService(
     UserRepository repository,
     IUnitOfWork unitOfWork,
     IUserMapper mapper,
-    IIdGenerator idGenerator)
+    IIdGenerator idGenerator
+)
 {
-    public async Task<IOperationResult> GetById(
-        Guid id,
-        Guid congregationId,
-        CancellationToken ct = default
-    )
+    public async Task<IOperationResult> GetById(Guid id, Guid congregationId, CancellationToken ct)
     {
-        var result = await repository.GetById(id, ct);
+        var entity = await repository.GetById(id, ct);
+        if (entity is null)
+            return new NotFoundResult(id.ToString());
 
-        if (result is null)
-            return new NotFoundResult("Invalid request.");
-
-        return new SuccessResult<UserResponseDto>(result);
+        var res = mapper.ToDto(entity);
+        return new SuccessResult<UserResponseDto>(res);
     }
 
     public async Task<IOperationResult> Create(
         Guid congregationId,
         UserCreateDto dto,
-        CancellationToken ct = default
+        CancellationToken ct
     )
     {
         if (await IsEmailTaken(dto.EmailAddress, ct))
@@ -42,17 +39,21 @@ public class UserService(
         entity.CongregationId = congregationId;
         entity.Id = idGenerator.Generate();
 
-        await repository.Create(entity, ct);
+        repository.Create(entity);
         await unitOfWork.CommitAsync(ct);
 
         var res = mapper.ToDto(entity);
         return new CreatedAtResult<UserResponseDto>(res);
     }
 
-    public async Task<IOperationResult> Update(Guid congregationId, Guid id, UserUpdateDto dto, CancellationToken ct)
+    public async Task<IOperationResult> Update(
+        Guid congregationId,
+        Guid id,
+        UserUpdateDto dto,
+        CancellationToken ct
+    )
     {
-        var entity = await repository.GetEntityById(congregationId, id, ct);
-
+        var entity = await repository.GetById(id, ct);
         if (entity is null)
             return new NotFoundResult(id.ToString());
 
@@ -65,12 +66,11 @@ public class UserService(
 
     public async Task<IOperationResult> Delete(Guid congregationId, Guid id, CancellationToken ct)
     {
-        var entity = await repository.GetEntityById(congregationId, id, ct);
-
+        var entity = await repository.GetById(id, ct);
         if (entity is null)
             return new NotFoundResult(id.ToString());
 
-        await repository.SoftDelete(entity, ct);
+        repository.SoftDelete(entity);
         await unitOfWork.CommitAsync(ct);
 
         return new NoContentResult();
@@ -83,24 +83,26 @@ public class UserService(
         CancellationToken ct = default
     )
     {
-        var result = await repository.GetPage(
+        var entities = await repository.GetPage(
             congregationId,
             paginationParameters,
             queryParameters,
             ct
         );
 
-        return new SuccessResult<PagedResponse<UserListResponseDto>>(result);
+        var res = mapper.ToListDto(entities);
+        return new SuccessResult<List<UserResponseDto>>(res);
     }
 
-    public async Task<IOperationResult> SearchUsersByName(
+    public async Task<IOperationResult> Search(
         Guid congregationId,
-        string searchString,
+        string name,
         CancellationToken ct
     )
     {
-        var results = await repository.SearchUsersByName(congregationId, searchString, ct);
-        return new SuccessResult<List<UserListResponseDto>>(results);
+        var entities = await repository.Search(congregationId, name, ct);
+        var res = mapper.ToSearchDto(entities);
+        return new SuccessResult<List<UserSearchResultDto>>(res);
     }
 
     private async Task<bool> IsEmailTaken(string emailAddress, CancellationToken ct)

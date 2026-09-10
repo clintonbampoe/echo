@@ -34,14 +34,6 @@ public class UsersController(UserService service) : CoreBaseController
         return response.ToActionResult();
     }
 
-    [HttpGet("search")]
-    [EnableRateLimiting("search")]
-    public async Task<ActionResult> SearchUsersByName([FromQuery] string name, CancellationToken ct)
-    {
-        var response = await service.SearchUsersByName(GetCongregationId(), name, ct);
-        return response.ToActionResult();
-    }
-
     [HttpPost]
     public async Task<ActionResult> Create(UserCreateDto dto, CancellationToken ct)
     {
@@ -61,5 +53,13 @@ public class UsersController(UserService service) : CoreBaseController
     {
         var response = await service.Delete(id, GetCongregationId(), ct);
         return response.ToActionResult();
+    }
+
+    [HttpGet("search")]
+    [EnableRateLimiting("search")]
+    public async Task<ActionResult> Search([FromQuery] string q, CancellationToken ct)
+    {
+        var res = await service.Search(GetCongregationId(), q, ct);
+        return res.ToActionResult();
     }
 }

@@ -5,17 +5,17 @@ namespace Echo.Application.Services.Hashing;
 
 public class Sha256HashService : ITokenHasher
 {
-    public Task<string> HashAsync(string input)
+    public string Hash(string input)
     {
         var bytes = Encoding.UTF8.GetBytes(input);
         var hashBytes = SHA256.HashData(bytes);
         var hash = Convert.ToBase64String(hashBytes);
-        return Task.FromResult(hash);
+        return hash;
     }
 
-    public async Task<bool> VerifyAsync(string input, string hash)
+    public bool Verify(string input, string hash)
     {
-        var computedHash = await HashAsync(input);
+        var computedHash = Hash(input);
 
         var computedBytes = Encoding.UTF8.GetBytes(computedHash);
         var expectedBytes = Encoding.UTF8.GetBytes(hash);
@@ -26,6 +26,6 @@ public class Sha256HashService : ITokenHasher
             return false;
 
         var isEqual = CryptographicOperations.FixedTimeEquals(computedBytes, expectedBytes);
-        return await Task.FromResult(isEqual);
+        return isEqual;
     }
 }

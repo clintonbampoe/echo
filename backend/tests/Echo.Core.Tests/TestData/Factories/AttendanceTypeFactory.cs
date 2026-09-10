@@ -1,5 +1,4 @@
 using Echo.Core.Dtos;
-using Echo.Core.Tests.Helpers;
 using Echo.Domain.Entities.Core;
 
 namespace Echo.Core.Tests.TestData.Factories;
@@ -19,6 +18,17 @@ public static class AttendanceTypeFactory
         };
     }
 
+    public static List<AttendanceType> NewEntityList()
+    {
+        var res = new List<AttendanceType>();
+        for (int i = 0; i < 5; i++)
+        {
+            res.Add(NewEntity());
+        }
+
+        return res;
+    }
+
     public static AttendanceTypeCreateDto NewCreateDto()
     {
         return new AttendanceTypeCreateDto() { Name = "AttendanceTypeCreate-01" };
@@ -32,10 +42,5 @@ public static class AttendanceTypeFactory
     public static AttendanceTypeUpdateDto NewUpdateDtoWithNullFields()
     {
         return new AttendanceTypeUpdateDto() { Name = null };
-    }
-
-    public static AttendanceTypeUpdateDto NewUpdateDtoWithRandomValues()
-    {
-        return new AttendanceTypeUpdateDto() { Name = RandomGenerators.String(10) };
     }
 }

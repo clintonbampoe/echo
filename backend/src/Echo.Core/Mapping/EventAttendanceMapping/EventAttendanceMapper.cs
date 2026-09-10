@@ -26,6 +26,8 @@ public partial class EventAttendanceMapper : IEventAttendanceMapper
     [MapperIgnoreTarget(nameof(EventAttendance.DeletedAt))]
     public partial EventAttendance ToEntity(EventAttendanceCreateDto dto);
 
+    public partial List<EventAttendanceResponseDto> ToListDto(List<EventAttendance> entities);
+
     public void Patch(EventAttendanceUpdateDto dto, EventAttendance entity)
     {
         if (dto.CheckInTime != null)

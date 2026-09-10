@@ -12,47 +12,47 @@ public class TransactionCategoryService(
     ITransactionCategoryMapper mapper
 )
 {
-    public async Task<IOperationResult> GetAll(
-        Guid congregationId,
-        CancellationToken ct = default
-    )
+    public async Task<IOperationResult> GetAll(Guid congregationId, CancellationToken ct)
     {
-        var result = await repository.GetAll(congregationId, ct);
-        return new SuccessResult<IEnumerable<TransactionCategoryResponseDto>>(result);
+        var entities = await repository.GetAll(congregationId, ct);
+        var res = mapper.ToListDto(entities);
+        return new SuccessResult<List<TransactionCategoryResponseDto>>(res);
     }
 
-    public async Task<IOperationResult> GetById(
-        int id,
-        Guid congregationId,
-        CancellationToken ct = default
-    )
+    public async Task<IOperationResult> GetById(int id, Guid congregationId, CancellationToken ct)
     {
-        var result = await repository.GetById(id, congregationId, ct);
+        var entity = await repository.GetById(congregationId, id, ct);
+        if (entity is null)
+            return new NotFoundResult(id.ToString());
 
-        if (result is null)
-            return new NotFoundResult("Transaction category not found.");
-
-        return new SuccessResult<TransactionCategoryResponseDto>(result);
+        var res = mapper.ToDto(entity);
+        return new SuccessResult<TransactionCategoryResponseDto>(res);
     }
 
-    public async Task<IOperationResult> Create(Guid congregationId, TransactionCategoryCreateDto dto,
-        CancellationToken ct)
+    public async Task<IOperationResult> Create(
+        Guid congregationId,
+        TransactionCategoryCreateDto dto,
+        CancellationToken ct
+    )
     {
         var entity = mapper.ToEntity(dto);
         entity.CongregationId = congregationId;
 
-        await repository.Create(entity, ct);
+        repository.Create(entity);
         await unitOfWork.CommitAsync(ct);
 
         var res = mapper.ToDto(entity);
         return new CreatedAtResult<TransactionCategoryResponseDto>(res);
     }
 
-    public async Task<IOperationResult> Update(Guid congregationId, int id, TransactionCategoryUpdateDto dto,
-        CancellationToken ct)
+    public async Task<IOperationResult> Update(
+        Guid congregationId,
+        int id,
+        TransactionCategoryUpdateDto dto,
+        CancellationToken ct
+    )
     {
-        var entity = await repository.GetEntityById(congregationId, id, ct);
-
+        var entity = await repository.GetById(congregationId, id, ct);
         if (entity is null)
             return new NotFoundResult(id.ToString());
 
@@ -65,14 +65,24 @@ public class TransactionCategoryService(
 
     public async Task<IOperationResult> Delete(Guid congregationId, int id, CancellationToken ct)
     {
-        var entity = await repository.GetEntityById(congregationId, id, ct);
-
+        var entity = await repository.GetById(congregationId, id, ct);
         if (entity is null)
             return new NotFoundResult(id.ToString());
 
-        await repository.SoftDelete(entity, ct);
+        repository.SoftDelete(entity);
         await unitOfWork.CommitAsync(ct);
 
         return new NoContentResult();
+    }
+
+    public async Task<IOperationResult> Search(
+        Guid congregationId,
+        string name,
+        CancellationToken ct
+    )
+    {
+        var entities = await repository.Search(congregationId, name, ct);
+        var res = mapper.ToSearchDto(entities);
+        return new SuccessResult<List<TransactionCategorySearchResponseDto>>(res);
     }
 }

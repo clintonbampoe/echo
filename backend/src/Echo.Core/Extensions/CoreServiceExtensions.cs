@@ -70,11 +70,6 @@ public static class CoreServiceExtensions
         services.AddScoped<AttendanceContextService>();
         services.AddScoped<UserService>();
 
-        services.AddAutoMapper(
-            cfg => { cfg.LicenseKey = configuration["LUCKYPENNY_LICENSE_KEY"]; },
-            typeof(CoreServiceExtensions)
-        );
-
         services.AddSingleton<IAssetCategoryMapper, AssetCategoryMapper>();
         services.AddSingleton<IAssetMapper, AssetMapper>();
         services.AddSingleton<IAttendanceTypeMapper, AttendanceTypeMapper>();

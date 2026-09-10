@@ -28,6 +28,17 @@ public static class EventFactory
         };
     }
 
+    public static List<Event> NewEntityList()
+    {
+        var res = new List<Event>();
+        for (int i = 0; i < 5; i++)
+        {
+            res.Add(NewEntity());
+        }
+
+        return res;
+    }
+
     public static EventCreateDto NewCreateDto()
     {
         return new EventCreateDto()
@@ -75,7 +86,7 @@ public static class EventFactory
             EndTime = null,
             Location = null,
             Capacity = null,
-            Description = null
+            Description = null,
         };
     }
 }

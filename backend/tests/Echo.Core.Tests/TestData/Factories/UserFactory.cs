@@ -24,6 +24,18 @@ public static class UserFactory
         };
     }
 
+    public static List<User> NewEntityList()
+    {
+        var res = new List<User>();
+
+        for (int i = 0; i < 5; i++)
+        {
+            res.Add(NewEntity());
+        }
+
+        return res;
+    }
+
     public static UserCreateDto NewCreateDto()
     {
         return new UserCreateDto()
@@ -43,7 +55,7 @@ public static class UserFactory
         {
             EmailAddress = Constants.DefaultEmailAddress,
             Password = "Password",
-            Role = UserRole.Admin
+            Role = UserRole.Admin,
         };
     }
 

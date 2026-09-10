@@ -2,11 +2,11 @@ using System.Linq.Expressions;
 using Echo.Application.Dtos.Interfaces;
 using Echo.Application.Pagination;
 
-namespace Echo.Application.Extensions.QueryMethods;
+namespace Echo.Application.Extensions.QueryExtensions;
 
-public static class PaginationFilterMethods
+public static class PaginationExtensions
 {
-    public static IQueryable<T> ApplyPagination<T>(
+    public static IQueryable<T> Paginate<T>(
         this IQueryable<T> query,
         PaginationParameters? paginationParams
     )
@@ -52,8 +52,10 @@ public static class PaginationFilterMethods
             {
                 return true;
             }
+
             return HasOrderBy(call.Arguments[0]);
         }
+
         return false;
     }
 }

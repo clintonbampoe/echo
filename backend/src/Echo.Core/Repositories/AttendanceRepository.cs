@@ -1,131 +1,58 @@
-using Echo.Application.Extensions.QueryMethods;
+using Echo.Application.Extensions.QueryExtensions;
 using Echo.Application.Pagination;
 using Echo.Application.Query;
-using Echo.Core.Dtos;
-using Echo.Core.Repositories.Base;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core;
-using Echo.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Core.Repositories;
 
-public class AttendanceRepository(AppDbContext context) : PrimaryRepositoryBase<Attendance>(context)
+public class AttendanceRepository(AppDbContext context)
 {
-    public async Task<PagedResponse<AttendanceListResponseDto>> GetPageAsync(
+    private readonly DbSet<Attendance> _dbSet = context.Set<Attendance>();
+
+    public async Task<List<Attendance>> GetPage(
         Guid congregationId,
         PaginationParameters paginationParameters,
         QueryParameters? queryParameters,
         CancellationToken ct = default
     )
     {
-        var query = DbSet
+        var query = _dbSet
             .AsNoTracking()
-            .ApplySoftDeleteFilter()
+            .FilterSoftDeleted()
             .ApplyDateFilters(queryParameters)
             .Where(a => a.CongregationId == congregationId);
 
-        int totalRecords = await query.CountAsync(ct);
-
-        var records = await query
+        var res = await query
             .OrderBy(a => a.Id)
-            .Select(a => new AttendanceListResponseDto
-            {
-                Id = a.Id,
-                AttendanceContextName = a.AttendanceContext.Name,
-                AttendanceTypeName = a.AttendanceContext.AttendanceType.Name,
-                MemberName = a.Member != null ? a.Member.Name : null,
-                GuestName = a.GuestName,
-                AttendeeType = a.AttendeeType,
-                ForDate = a.ForDate,
-                CheckInTime = a.CheckInTime,
-            })
-            .ApplyPagination(paginationParameters)
+            .Include(a => a.AttendanceContext)
+            .Include(a => a.Member)
             .ToListAsync(ct);
-
-        return new PagedResponse<AttendanceListResponseDto>(
-            records,
-            paginationParameters,
-            totalRecords
-        );
+        return res;
     }
 
-    public async Task<AttendanceResponseDto?> GetById(
+    public async Task<Attendance?> GetById(
         Guid id,
         Guid congregationId,
         CancellationToken ct = default
     )
     {
-        return await DbSet
-            .AsNoTracking()
-            .ApplySoftDeleteFilter()
+        return await _dbSet
+            .FilterSoftDeleted()
             .Where(a => a.Id == id && a.CongregationId == congregationId)
-            .Select(a => new AttendanceResponseDto
-            {
-                Id = a.Id,
-                AttendanceContextId = a.AttendanceContext.Id,
-                AttendanceContextName = a.AttendanceContext.Name,
-                AttendanceTypeName = a.AttendanceContext.AttendanceType.Name,
-                MemberName = a.Member != null ? a.Member.Name : null,
-                GuestName = a.GuestName,
-                AttendeeType = a.AttendeeType,
-                ForDate = a.ForDate,
-                CheckInTime = a.CheckInTime,
-                Description = a.Description,
-                CreatedAt = a.CreatedAt,
-            })
+            .Include(a => a.Member)
+            .Include(a => a.AttendanceContext)
             .FirstOrDefaultAsync(ct);
     }
 
-    public async Task<AttendanceSummaryDto> GetSummaryAsync(
-        Guid congregationId,
-        int attendanceContextId,
-        DateOnly forDate,
-        CancellationToken ct = default
-    )
+    public void Create(Attendance entity)
     {
-        var attendeesForToday = await DbSet
-            .ApplySoftDeleteFilter()
-            .Where(a =>
-                a.CongregationId == congregationId
-                && a.AttendanceContextId == attendanceContextId
-                && a.ForDate == forDate
-            )
-            .Select(a => new { a.AttendeeType, a.GuestName })
-            .ToListAsync(ct);
+        _dbSet.Add(entity);
+    }
 
-        var membersPresent = attendeesForToday.Count(a => a.AttendeeType == AttendeeType.Member);
-        var children = attendeesForToday.Count(a => a.AttendeeType == AttendeeType.Child);
-
-        var guestNames = attendeesForToday
-            .Where(a =>
-                a.AttendeeType is AttendeeType.Guest or AttendeeType.Visitor && a.GuestName != null
-            )
-            .Select(a => a.GuestName)
-            .Distinct()
-            .ToList();
-
-        var returningGuestNames =
-            guestNames.Count == 0
-                ? []
-                : await DbSet
-                    .ApplySoftDeleteFilter()
-                    .Where(a =>
-                        a.CongregationId == congregationId
-                        && a.ForDate < forDate
-                        && a.GuestName != null
-                        && guestNames.Contains(a.GuestName)
-                    )
-                    .Select(a => a.GuestName)
-                    .Distinct()
-                    .ToListAsync(ct);
-
-        return new AttendanceSummaryDto
-        {
-            TotalPresent = attendeesForToday.Count,
-            FirstTimeVisitors = guestNames.Except(returningGuestNames).Count(),
-            MembersPresent = membersPresent,
-            Children = children,
-        };
+    public void SoftDelete(Attendance entity)
+    {
+        entity.DeletedAt = DateTime.UtcNow;
     }
 }

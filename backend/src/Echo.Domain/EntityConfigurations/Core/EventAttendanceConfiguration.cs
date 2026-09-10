@@ -13,13 +13,13 @@ public class EventAttendanceConfiguration : PrimaryEntityConfigurationBase<Event
             .HasOne(ea => ea.Member)
             .WithMany()
             .HasForeignKey(ea => ea.MemberId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder
             .HasOne(ea => ea.Event)
             .WithMany()
             .HasForeignKey(ea => ea.EventId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasIndex(ea => new { ea.EventId, ea.MemberId }).IsUnique();
     }

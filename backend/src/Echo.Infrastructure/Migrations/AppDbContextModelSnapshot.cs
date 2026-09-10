@@ -252,6 +252,14 @@ namespace Echo.Infrastructure.Migrations
 
                     b.HasIndex("DeletedAt");
 
+                    b.HasIndex("Name");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("Name"), "GIN");
+                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex("Name"), new[] { "gin_trgm_ops" });
+
+                    b.HasIndex("CongregationId", "Name")
+                        .IsUnique();
+
                     b.ToTable("Assets");
                 });
 
@@ -284,6 +292,11 @@ namespace Echo.Infrastructure.Migrations
                     b.HasIndex("CongregationId");
 
                     b.HasIndex("DeletedAt");
+
+                    b.HasIndex("Name");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("Name"), "GIN");
+                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex("Name"), new[] { "gin_trgm_ops" });
 
                     b.HasIndex("CongregationId", "Name")
                         .IsUnique();
@@ -325,11 +338,7 @@ namespace Echo.Infrastructure.Migrations
                     b.Property<DateOnly>("ForDate")
                         .HasColumnType("date");
 
-                    b.Property<string>("GuestName")
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
-
-                    b.Property<Guid?>("MemberId")
+                    b.Property<Guid>("MemberId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
@@ -380,6 +389,11 @@ namespace Echo.Infrastructure.Migrations
 
                     b.HasIndex("DeletedAt");
 
+                    b.HasIndex("Name");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("Name"), "GIN");
+                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex("Name"), new[] { "gin_trgm_ops" });
+
                     b.HasIndex("AttendanceTypeId", "Name")
                         .IsUnique();
 
@@ -415,6 +429,11 @@ namespace Echo.Infrastructure.Migrations
                     b.HasIndex("CongregationId");
 
                     b.HasIndex("DeletedAt");
+
+                    b.HasIndex("Name");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("Name"), "GIN");
+                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex("Name"), new[] { "gin_trgm_ops" });
 
                     b.HasIndex("CongregationId", "Name")
                         .IsUnique();
@@ -485,6 +504,11 @@ namespace Echo.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Name");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("Name"), "GIN");
+                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex("Name"), new[] { "gin_trgm_ops" });
+
                     b.ToTable("Congregations");
                 });
 
@@ -545,6 +569,11 @@ namespace Echo.Infrastructure.Migrations
 
                     b.HasIndex("DeletedAt");
 
+                    b.HasIndex("Name");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("Name"), "GIN");
+                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex("Name"), new[] { "gin_trgm_ops" });
+
                     b.HasIndex("OrganizationId");
 
                     b.HasIndex("OrganizerId");
@@ -600,9 +629,6 @@ namespace Echo.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
-
-                    b.Property<TimeOnly>("CheckInTime")
-                        .HasColumnType("time without time zone");
 
                     b.Property<Guid>("CongregationId")
                         .HasColumnType("uuid");
@@ -787,6 +813,11 @@ namespace Echo.Infrastructure.Migrations
 
                     b.HasIndex("DeletedAt");
 
+                    b.HasIndex("Name");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("Name"), "GIN");
+                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex("Name"), new[] { "gin_trgm_ops" });
+
                     b.HasIndex("CongregationId", "Name")
                         .IsUnique();
 
@@ -892,6 +923,11 @@ namespace Echo.Infrastructure.Migrations
 
                     b.HasIndex("ManagerId");
 
+                    b.HasIndex("Name");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("Name"), "GIN");
+                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex("Name"), new[] { "gin_trgm_ops" });
+
                     b.ToTable("Projects");
                 });
 
@@ -924,6 +960,11 @@ namespace Echo.Infrastructure.Migrations
                     b.HasIndex("CongregationId");
 
                     b.HasIndex("DeletedAt");
+
+                    b.HasIndex("Name");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("Name"), "GIN");
+                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex("Name"), new[] { "gin_trgm_ops" });
 
                     b.HasIndex("CongregationId", "Name")
                         .IsUnique();
@@ -1106,6 +1147,11 @@ namespace Echo.Infrastructure.Migrations
                     b.HasIndex("CongregationId");
 
                     b.HasIndex("DeletedAt");
+
+                    b.HasIndex("Name");
+
+                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("Name"), "GIN");
+                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex("Name"), new[] { "gin_trgm_ops" });
 
                     b.HasIndex("CongregationId", "Name")
                         .IsUnique();
@@ -1362,13 +1408,13 @@ namespace Echo.Infrastructure.Migrations
                     b.HasOne("Echo.Domain.Entities.Core.Event", "Event")
                         .WithMany()
                         .HasForeignKey("EventId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Echo.Domain.Entities.Core.Member", "Member")
                         .WithMany()
                         .HasForeignKey("MemberId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Congregation");
@@ -1389,13 +1435,13 @@ namespace Echo.Infrastructure.Migrations
                     b.HasOne("Echo.Domain.Entities.Core.Event", "Event")
                         .WithMany()
                         .HasForeignKey("EventId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Echo.Domain.Entities.Core.Member", "Member")
                         .WithMany()
                         .HasForeignKey("MemberId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Congregation");
@@ -1438,13 +1484,13 @@ namespace Echo.Infrastructure.Migrations
                     b.HasOne("Echo.Domain.Entities.Core.Member", "Member")
                         .WithMany()
                         .HasForeignKey("MemberId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Echo.Domain.Entities.Core.Organization", "Organization")
                         .WithMany()
                         .HasForeignKey("OrganizationId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Congregation");
@@ -1503,7 +1549,7 @@ namespace Echo.Infrastructure.Migrations
                     b.HasOne("Echo.Domain.Entities.Core.Project", "Project")
                         .WithMany()
                         .HasForeignKey("ProjectId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Congregation");

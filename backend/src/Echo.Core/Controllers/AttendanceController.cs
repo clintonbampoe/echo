@@ -9,14 +9,6 @@ namespace Echo.Core.Controllers;
 
 public class AttendanceController(AttendanceService service) : CoreBaseController
 {
-    [HttpGet("summary")]
-    public async Task<ActionResult> GetSummary(
-        [FromQuery] int attendanceContextId, [FromQuery] DateOnly forDate, CancellationToken ct)
-    {
-        var response = await service.GetSummary(GetCongregationId(), attendanceContextId, forDate, ct);
-        return response.ToActionResult();
-    }
-
     [HttpGet]
     public async Task<ActionResult> GetPage(
         [FromQuery] PaginationParameters paginationParameters,
@@ -48,11 +40,7 @@ public class AttendanceController(AttendanceService service) : CoreBaseControlle
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult> Update(
-        Guid id,
-        AttendanceUpdateDto dto,
-        CancellationToken ct
-    )
+    public async Task<ActionResult> Update(Guid id, AttendanceUpdateDto dto, CancellationToken ct)
     {
         var response = await service.Update(GetCongregationId(), id, dto, ct);
         return response.ToActionResult();

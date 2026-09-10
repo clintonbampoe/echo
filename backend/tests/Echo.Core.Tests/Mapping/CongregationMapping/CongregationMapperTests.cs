@@ -72,7 +72,7 @@ public class CongregationMapperTests
     [Fact]
     public void Patch_ShouldUpdateAllFields_WhenDtoHasValues()
     {
-        var dto = CongregationFactory.NewUpdateDtoWithRandomValues();
+        var dto = CongregationFactory.NewUpdateDto();
         var entity = CongregationFactory.NewEntity();
 
         _mapper.Patch(dto, entity);
@@ -110,5 +110,24 @@ public class CongregationMapperTests
         Assert.Equal(original.City, entity.City);
         Assert.Equal(original.Town, entity.Town);
         Assert.Equal(original.GpsAddress, entity.GpsAddress);
+    }
+
+    [Fact]
+    public void ToSearchDto_ShouldMapFields_FromEntityList()
+    {
+        var entityList = CongregationFactory.NewEntityList();
+        var dtoList = _mapper.ToSearchDto(entityList);
+
+        var firstEntity = entityList.First();
+        var firstDto = dtoList.First();
+
+        var lastEntity = entityList.Last();
+        var lastDto = dtoList.Last();
+
+        Assert.Equal(firstEntity.Id, firstDto.Id);
+        Assert.Equal(firstEntity.Name, firstDto.Name);
+
+        Assert.Equal(lastEntity.Id, lastDto.Id);
+        Assert.Equal(lastEntity.Name, lastDto.Name);
     }
 }

@@ -16,7 +16,7 @@ public class PasswordController(PasswordResetService passwordResetService) : Aut
         CancellationToken ct
     )
     {
-        var response = await passwordResetService.ForgotPasswordAsync(request.Email, ct);
+        var response = await passwordResetService.SendForgotPasswordLinkToEmail(request.Email, ct);
         return response.ToActionResult();
     }
 
@@ -26,7 +26,7 @@ public class PasswordController(PasswordResetService passwordResetService) : Aut
         CancellationToken ct
     )
     {
-        var response = await passwordResetService.ResetPasswordAsync(
+        var response = await passwordResetService.ResetPassword(
             request.Token,
             request.NewPassword,
             ct
