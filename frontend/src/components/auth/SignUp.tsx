@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
 import echoLogo from '../../assets/echo.svg';
+import { useAuth } from '../../hooks/useAuth';
 import '../../styles/Login.css';
 
 const SignUp: React.FC = () => {
@@ -13,7 +13,7 @@ const SignUp: React.FC = () => {
   const [organization, setOrganization] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   const { login } = useAuth(); // Mocking signup as login for now
   const navigate = useNavigate();
 

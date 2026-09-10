@@ -1,21 +1,21 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import echoLogo from '../assets/echo.svg';
-import {
-    DashboardIcon,
-    FinanceIcon,
-    AttendanceIcon,
-    TitheIcon,
-    ReportingIcon,
-    ProjectsIcon,
-    CalendarIcon,
-    BoxIcon,
-    MembersIcon,
-    ContributionsIcon,
-    LogoutIcon
-} from './Icons';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import '../styles/Sidebar.css';
+import {
+  AttendanceIcon,
+  BoxIcon,
+  CalendarIcon,
+  ContributionsIcon,
+  DashboardIcon,
+  FinanceIcon,
+  LogoutIcon,
+  MembersIcon,
+  ProjectsIcon,
+  ReportingIcon,
+  TitheIcon
+} from './Icons';
 
 const Sidebar: React.FC = () => {
     const { logout } = useAuth();
@@ -79,9 +79,9 @@ const Sidebar: React.FC = () => {
                 <div className="footer-user-info" style={{ flex: 1 }}>
                     <span className="footer-user-name">John Doe</span>
                 </div>
-                <button 
-                  onClick={logout} 
-                  className="logout-btn" 
+                <button
+                  onClick={logout}
+                  className="logout-btn"
                   title="Log out"
                 >
                     <LogoutIcon size={18} />
