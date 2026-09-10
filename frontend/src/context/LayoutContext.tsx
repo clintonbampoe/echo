@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 export interface TopBarCTA {
     type: 'search' | 'button' | 'dropdown' | 'avatar';
@@ -25,6 +25,14 @@ export const LayoutProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     const [title, setTitle] = useState<React.ReactNode>('');
     const [ctas, setCtas] = useState<TopBarCTA[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
+
+    useEffect(() => {
+        if (typeof title === 'string') {
+            document.title = title ? `${title} | Echo` : 'Echo';
+        } else {
+            document.title = 'Echo';
+        }
+    }, [title]);
 
     return (
         <LayoutContext.Provider value={{ title, setTitle, ctas, setCtas, searchQuery, setSearchQuery }}>
