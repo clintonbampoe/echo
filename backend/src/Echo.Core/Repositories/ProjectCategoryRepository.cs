@@ -1,6 +1,4 @@
-using Echo.Application.Extensions.QueryMethods;
-using Echo.Core.Dtos;
-using Echo.Core.Repositories.Base;
+using Echo.Application.Extensions.QueryExtensions;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core;
 using Microsoft.EntityFrameworkCore;
@@ -8,32 +6,50 @@ using Microsoft.EntityFrameworkCore;
 namespace Echo.Core.Repositories;
 
 public class ProjectCategoryRepository(AppDbContext context)
-    : ReferenceRepositoryBase<ProjectCategory>(context)
 {
-    public async Task<List<ProjectCategoryResponseDto>> GetAll(
-        Guid congregationId,
-        CancellationToken ct = default
-    )
+    private readonly DbSet<ProjectCategory> _dbSet = context.Set<ProjectCategory>();
+
+    public async Task<List<ProjectCategory>> GetAll(Guid congregationId, CancellationToken ct)
     {
-        return await DbSet
+        return await _dbSet
             .AsNoTracking()
-            .ApplySoftDeleteFilter()
+            .FilterSoftDeleted()
             .Where(c => c.CongregationId == congregationId)
-            .Select(c => new ProjectCategoryResponseDto { Id = c.Id, Name = c.Name })
             .ToListAsync(ct);
     }
 
-    public async Task<ProjectCategoryResponseDto?> GetById(
-        int id,
+    public async Task<ProjectCategory?> GetById(
         Guid congregationId,
+        int id,
         CancellationToken ct = default
     )
     {
-        return await DbSet
-            .AsNoTracking()
-            .ApplySoftDeleteFilter()
+        return await _dbSet
+            .FilterSoftDeleted()
             .Where(c => c.Id == id && c.CongregationId == congregationId)
-            .Select(c => new ProjectCategoryResponseDto { Id = c.Id, Name = c.Name })
             .FirstOrDefaultAsync(ct);
+    }
+
+    public async Task<List<ProjectCategory>> Search(
+        Guid congregationId,
+        string name,
+        CancellationToken ct
+    )
+    {
+        return await _dbSet
+            .FilterSoftDeleted()
+            .Where(pc => pc.CongregationId == congregationId)
+            .SearchName(name)
+            .ToListAsync(ct);
+    }
+
+    public void Create(ProjectCategory entity)
+    {
+        _dbSet.Add(entity);
+    }
+
+    public void SoftDelete(ProjectCategory entity)
+    {
+        entity.DeletedAt = DateTime.UtcNow;
     }
 }

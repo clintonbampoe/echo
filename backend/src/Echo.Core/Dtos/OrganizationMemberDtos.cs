@@ -1,9 +1,8 @@
-using Echo.Core.Dtos.Interfaces;
 using Echo.Domain.Enums;
 
 namespace Echo.Core.Dtos;
 
-public record OrganizationMemberCreateDto : IPrimaryCreateDto
+public record OrganizationMemberCreateDto
 {
     public Guid MemberId { get; init; }
     public Guid OrganizationId { get; init; }
@@ -11,13 +10,13 @@ public record OrganizationMemberCreateDto : IPrimaryCreateDto
     public DateOnly JoinedAt { get; init; }
 }
 
-public record OrganizationMemberUpdateDto : IPrimaryUpdateDto
+public record OrganizationMemberUpdateDto
 {
     public MemberOrganizationalRole? Role { get; init; }
     public DateOnly? JoinedAt { get; init; }
 }
 
-public record OrganizationMemberListResponseDto : IPrimaryListResponseDto, Application.Dtos.Interfaces.IPrimaryListResponseDto
+public record OrganizationMemberListResponseDto
 {
     public Guid Id { get; init; }
     public required string MemberName { get; init; }
@@ -26,7 +25,7 @@ public record OrganizationMemberListResponseDto : IPrimaryListResponseDto, Appli
     public DateOnly JoinedAt { get; init; }
 }
 
-public record OrganizationMemberResponseDto : IPrimaryResponseDto
+public record OrganizationMemberResponseDto
 {
     public Guid Id { get; init; }
     public Guid MemberId { get; init; }

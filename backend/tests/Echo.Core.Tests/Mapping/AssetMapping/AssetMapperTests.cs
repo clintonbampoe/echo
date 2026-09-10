@@ -63,7 +63,7 @@ public class AssetMapperTests
     [Fact]
     public void Patch_ShouldUpdateAllFields_WhenDtoHasValues()
     {
-        var dto = AssetFactory.NewUpdateDtoWithRandomValues();
+        var dto = AssetFactory.NewUpdateDto();
         var entity = AssetFactory.NewEntity();
 
         _mapper.Patch(dto, entity);
@@ -95,5 +95,24 @@ public class AssetMapperTests
         Assert.Equal(original.CurrentValue, entity.CurrentValue);
         Assert.Equal(original.Status, entity.Status);
         Assert.Equal(original.Description, entity.Description);
+    }
+
+    [Fact]
+    public void ToSearchDto_ShouldMapFields_FromEntityList()
+    {
+        var entityList = AssetFactory.NewEntityList();
+        var dtoList = _mapper.ToSearchDto(entityList);
+
+        var firstEntity = entityList.First();
+        var firstDto = dtoList.First();
+
+        var lastEntity = entityList.Last();
+        var lastDto = dtoList.Last();
+
+        Assert.Equal(firstEntity.Id, firstDto.Id);
+        Assert.Equal(firstEntity.Name, firstDto.Name);
+
+        Assert.Equal(lastEntity.Id, lastDto.Id);
+        Assert.Equal(lastEntity.Name, lastDto.Name);
     }
 }

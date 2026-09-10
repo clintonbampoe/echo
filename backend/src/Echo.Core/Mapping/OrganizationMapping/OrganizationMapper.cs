@@ -19,9 +19,21 @@ public partial class OrganizationMapper : IOrganizationMapper
     [MapperIgnoreTarget(nameof(Organization.DeletedAt))]
     public partial Organization ToEntity(OrganizationCreateDto dto);
 
+    public partial List<OrganizationResponseDto> ToListDto(List<Organization> entities);
+
+    public List<OrganizationSearchResultDto> ToSearchDto(List<Organization> entities)
+    {
+        var res = entities
+            .Select(e => new OrganizationSearchResultDto() { Id = e.Id, Name = e.Name })
+            .ToList();
+        return res;
+    }
+
     public void Patch(OrganizationUpdateDto dto, Organization entity)
     {
-        if (dto.Name != null) entity.Name = dto.Name;
-        if (dto.Description != null) entity.Description = dto.Description;
+        if (dto.Name != null)
+            entity.Name = dto.Name;
+        if (dto.Description != null)
+            entity.Description = dto.Description;
     }
 }

@@ -20,8 +20,19 @@ public partial class AssetCategoryMapper : IAssetCategoryMapper
     [MapperIgnoreTarget(nameof(AssetCategory.Id))]
     public partial AssetCategory ToEntity(AssetCategoryCreateDto dto);
 
+    public partial List<AssetCategoryResponseDto> ToListDto(List<AssetCategory> entities);
+
+    public List<AssetCategorySearchResultDto> ToSearchDto(List<AssetCategory> entities)
+    {
+        var res = entities
+            .Select(a => new AssetCategorySearchResultDto() { Id = a.Id, Name = a.Name })
+            .ToList();
+        return res;
+    }
+
     public void Patch(AssetCategoryUpdateDto dto, AssetCategory entity)
     {
-        if (dto.Name != null) entity.Name = dto.Name;
+        if (dto.Name != null)
+            entity.Name = dto.Name;
     }
 }

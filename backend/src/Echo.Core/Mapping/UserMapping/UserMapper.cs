@@ -26,10 +26,36 @@ public partial class UserMapper : IUserMapper
     [MapProperty(nameof(dto.Password), nameof(User.PasswordHash))]
     public partial User ToEntity(UserCreateDto dto);
 
+    [MapperIgnoreSource(nameof(entity.Congregation))]
+    [MapperIgnoreSource(nameof(entity.FirstName))]
+    [MapperIgnoreSource(nameof(entity.LastName))]
+    [MapperIgnoreSource(nameof(entity.OtherNames))]
+    [MapperIgnoreSource(nameof(entity.CreatedAt))]
+    [MapperIgnoreSource(nameof(entity.DeletedAt))]
+    public partial UserAuthDto ToAuthDto(User entity);
+
+    public partial List<UserResponseDto> ToListDto(List<User> entities);
+
+    public List<UserSearchResultDto> ToSearchDto(List<User> entities)
+    {
+        var res = entities
+            .Select(x => new UserSearchResultDto
+            {
+                Id = x.Id,
+                Name = x.Name,
+                EmailAddress = x.EmailAddress,
+            })
+            .ToList();
+        return res;
+    }
+
     public void Patch(UserUpdateDto dto, User entity)
     {
-        if (dto.EmailAddress != null) entity.EmailAddress = dto.EmailAddress;
-        if (dto.Password != null) entity.PasswordHash = dto.Password; // Note: In real app, this would be hashed
-        if (dto.Role.HasValue) entity.Role = dto.Role.Value;
+        if (dto.EmailAddress != null)
+            entity.EmailAddress = dto.EmailAddress;
+        if (dto.Password != null)
+            entity.PasswordHash = dto.Password; // Note: In real app, this would be hashed
+        if (dto.Role.HasValue)
+            entity.Role = dto.Role.Value;
     }
 }

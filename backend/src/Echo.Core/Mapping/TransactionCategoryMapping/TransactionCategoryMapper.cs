@@ -20,9 +20,30 @@ public partial class TransactionCategoryMapper : ITransactionCategoryMapper
     [MapperIgnoreTarget(nameof(TransactionCategory.DeletedAt))]
     public partial TransactionCategory ToEntity(TransactionCategoryCreateDto dto);
 
+    public partial List<TransactionCategoryResponseDto> ToListDto(
+        List<TransactionCategory> entities
+    );
+
+    public List<TransactionCategorySearchResponseDto> ToSearchDto(
+        List<TransactionCategory> entities
+    )
+    {
+        var res = entities
+            .Select(x => new TransactionCategorySearchResponseDto
+            {
+                Id = x.Id,
+                Name = x.Name,
+                Type = x.CategoryType,
+            })
+            .ToList();
+        return res;
+    }
+
     public void Patch(TransactionCategoryUpdateDto dto, TransactionCategory entity)
     {
-        if (dto.Name != null) entity.Name = dto.Name;
-        if (dto.CategoryType.HasValue) entity.CategoryType = dto.CategoryType.Value;
+        if (dto.Name != null)
+            entity.Name = dto.Name;
+        if (dto.CategoryType.HasValue)
+            entity.CategoryType = dto.CategoryType.Value;
     }
 }

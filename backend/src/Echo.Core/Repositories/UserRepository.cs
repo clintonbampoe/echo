@@ -1,137 +1,72 @@
-using Echo.Application.Extensions.QueryMethods;
+using Echo.Application.Extensions.QueryExtensions;
 using Echo.Application.Pagination;
 using Echo.Application.Query;
-using Echo.Core.Dtos;
-using Echo.Core.Repositories.Base;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Core.Repositories;
 
-public class UserRepository(AppDbContext context) : PrimaryRepositoryBase<User>(context)
+public class UserRepository(AppDbContext context)
 {
-    public async Task<PagedResponse<UserListResponseDto>> GetPage(
+    private readonly DbSet<User> _dbSet = context.Set<User>();
+
+    public async Task<List<User>> GetPage(
         Guid congregationId,
         PaginationParameters paginationParameters,
         QueryParameters? queryParameters,
         CancellationToken ct
     )
     {
-        var query = DbSet
+        var query = _dbSet
             .AsNoTracking()
-            .ApplySoftDeleteFilter()
+            .FilterSoftDeleted()
             .ApplySearchFilter(queryParameters)
             .ApplyDateFilters(queryParameters)
             .Where(u => u.CongregationId == congregationId);
 
-        int totalRecords = await query.CountAsync(ct);
-
-        var records = await query
-            .OrderBy(u => u.Id)
-            .Select(u => new UserListResponseDto
-            {
-                Id = u.Id,
-                EmailAddress = u.EmailAddress,
-                VerifiedAt = u.EmailVerifiedAt,
-                Role = u.Role,
-            })
-            .ApplyPagination(paginationParameters)
-            .ToListAsync(ct);
-
-        return new PagedResponse<UserListResponseDto>(records, paginationParameters, totalRecords);
+        var res = await query.OrderBy(u => u.Name).ThenBy(u => u.EmailAddress).ToListAsync(ct);
+        return res;
     }
 
-    public async Task<UserResponseDto?> GetById(Guid id, CancellationToken ct = default)
+    public async Task<User?> GetById(Guid id, CancellationToken ct = default)
     {
-        return await DbSet
-            .AsNoTracking()
-            .ApplySoftDeleteFilter()
-            .Where(u => u.Id == id)
-            .Select(u => new UserResponseDto
-            {
-                Id = u.Id,
-                Name = u.Name,
-                EmailAddress = u.EmailAddress,
-                VerifiedAt = u.EmailVerifiedAt,
-                Role = u.Role,
-                CreatedAt = u.CreatedAt,
-            })
+        return await _dbSet.FilterSoftDeleted().Where(u => u.Id == id).FirstOrDefaultAsync(ct);
+    }
+
+    public async Task<List<User>> Search(Guid congregationId, string name, CancellationToken ct)
+    {
+        return await _dbSet
+            .FilterSoftDeleted()
+            .Where(u => u.CongregationId == congregationId)
+            .SearchName(name)
+            .ToListAsync(ct);
+    }
+
+    public void Create(User entity)
+    {
+        _dbSet.Add(entity);
+    }
+
+    public void SoftDelete(User entity)
+    {
+        entity.DeletedAt = DateTime.UtcNow;
+    }
+
+    public async Task<User?> GetByEmail(string emailAddress, CancellationToken ct)
+    {
+        return await _dbSet
+            .FilterSoftDeleted()
+            .Where(u => u.EmailAddress == emailAddress)
             .FirstOrDefaultAsync(ct);
     }
 
     public async Task<bool> IsEmailAddressTaken(string emailAddress, CancellationToken ct)
     {
-        var exists = await DbSet
-            .ApplySoftDeleteFilter()
+        var exists = await _dbSet
+            .FilterSoftDeleted()
             .AnyAsync(u => u.EmailAddress == emailAddress, ct);
 
         return exists;
-    }
-
-    public async Task<UserAuthDto?> GetActiveUserByEmail(
-        string emailAddress,
-        CancellationToken ct = default
-    )
-    {
-        return await DbSet
-            .ApplySoftDeleteFilter()
-            .Where(u => u.EmailAddress == emailAddress)
-            .Select(u => new UserAuthDto()
-            {
-                Id = u.Id,
-                CongregationId = u.CongregationId,
-                EmailAddress = u.EmailAddress,
-                Name = u.Name,
-                EmailVerifiedAt = u.EmailVerifiedAt,
-                PasswordHash = u.PasswordHash,
-                Role = u.Role,
-            })
-            .FirstOrDefaultAsync(ct);
-    }
-
-    public async Task<UserAuthDto?> GetActiveUserById(Guid id, CancellationToken ct = default)
-    {
-        return await DbSet
-            .ApplySoftDeleteFilter()
-            .Where(u => u.Id == id)
-            .Select(u => new UserAuthDto()
-            {
-                Id = u.Id,
-                CongregationId = u.CongregationId,
-                EmailAddress = u.EmailAddress,
-                Name = u.Name,
-                EmailVerifiedAt = u.EmailVerifiedAt,
-                PasswordHash = u.PasswordHash,
-                Role = u.Role,
-            })
-            .FirstOrDefaultAsync(ct);
-    }
-
-    public async Task<List<UserListResponseDto>> SearchUsersByName(
-        Guid congregationId,
-        string searchString,
-        CancellationToken ct
-    )
-    {
-        var results = await DbSet
-            .ApplySoftDeleteFilter()
-            .Where(u =>
-                u.CongregationId == congregationId
-                && EF.Functions.ILike(u.Name, $"%{searchString}%")
-            )
-            .OrderByDescending(u => EF.Functions.TrigramsSimilarity(u.Name, searchString))
-            .Take(5)
-            .Select(u => new UserListResponseDto
-            {
-                Id = u.Id,
-                Name = u.Name,
-                EmailAddress = u.EmailAddress,
-                Role = u.Role,
-                VerifiedAt = u.EmailVerifiedAt,
-            })
-            .ToListAsync(ct);
-
-        return results;
     }
 }

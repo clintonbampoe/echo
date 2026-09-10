@@ -9,13 +9,6 @@ namespace Echo.Core.Controllers;
 
 public class TithesController(TitheService service) : CoreBaseController
 {
-    [HttpGet("monthly-summary")]
-    public async Task<ActionResult> GetMonthlySummary([FromQuery] int year, CancellationToken ct)
-    {
-        var response = await service.GetAnnualSummary(GetCongregationId(), year, ct);
-        return response.ToActionResult();
-    }
-
     [HttpGet]
     public async Task<ActionResult> GetPage(
         [FromQuery] PaginationParameters paginationParameters,

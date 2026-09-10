@@ -1,8 +1,6 @@
-using Echo.Application.Extensions.QueryMethods;
+using Echo.Application.Extensions.QueryExtensions;
 using Echo.Application.Pagination;
 using Echo.Application.Query;
-using Echo.Core.Dtos;
-using Echo.Core.Repositories.Base;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core;
 using Microsoft.EntityFrameworkCore;
@@ -10,134 +8,96 @@ using Microsoft.EntityFrameworkCore;
 namespace Echo.Core.Repositories;
 
 public class OrganizationMemberRepository(AppDbContext context)
-    : PrimaryRepositoryBase<OrganizationMember>(context)
 {
-    public async Task<PagedResponse<OrganizationMemberListResponseDto>> GetPage(
+    private readonly DbSet<OrganizationMember> _dbSet = context.Set<OrganizationMember>();
+
+    public async Task<List<OrganizationMember>> GetPage(
         Guid congregationId,
         PaginationParameters paginationParameters,
         QueryParameters? queryParameters,
-        CancellationToken ct = default
+        CancellationToken ct
     )
     {
-        var query = DbSet
+        var query = _dbSet
             .AsNoTracking()
-            .ApplySoftDeleteFilter()
+            .FilterSoftDeleted()
             .ApplyDateFilters(queryParameters)
             .Where(o => o.CongregationId == congregationId);
 
-        int totalRecords = await query.CountAsync(ct);
-
-        var records = await query
+        var res = await query
             .OrderBy(o => o.Id)
-            .Select(o => new OrganizationMemberListResponseDto
-            {
-                Id = o.Id,
-                MemberName = o.Member.Name,
-                OrganizationName = o.Organization.Name,
-                Role = o.Role,
-                JoinedAt = o.JoinedAt,
-            })
-            .ApplyPagination(paginationParameters)
+            .Include(o => o.Member)
+            .Include(o => o.Organization)
             .ToListAsync(ct);
 
-        return new PagedResponse<OrganizationMemberListResponseDto>(
-            records,
-            paginationParameters,
-            totalRecords
-        );
+        return res;
     }
 
-    public async Task<OrganizationMemberResponseDto?> GetById(
+    public async Task<OrganizationMember?> GetById(
         Guid id,
         Guid congregationId,
         CancellationToken ct = default
     )
     {
-        return await DbSet
-            .AsNoTracking()
-            .ApplySoftDeleteFilter()
+        return await _dbSet
+            .FilterSoftDeleted()
             .Where(o => o.Id == id && o.CongregationId == congregationId)
-            .Select(o => new OrganizationMemberResponseDto
-            {
-                Id = o.Id,
-                MemberId = o.MemberId,
-                MemberName = o.Member.Name,
-                OrganizationId = o.OrganizationId,
-                OrganizationName = o.Organization.Name,
-                Role = o.Role,
-                JoinedAt = o.JoinedAt,
-                CreatedAt = o.CreatedAt,
-            })
+            .Include(o => o.Member)
+            .Include(o => o.Organization)
             .FirstOrDefaultAsync(ct);
     }
 
-    public async Task<PagedResponse<OrganizationMemberListResponseDto>> GetByMemberId(
+    public void Create(OrganizationMember entity)
+    {
+        _dbSet.Add(entity);
+    }
+
+    public void SoftDelete(OrganizationMember entity)
+    {
+        entity.DeletedAt = DateTime.UtcNow;
+    }
+
+    public async Task<List<OrganizationMember>> GetByMemberId(
         PaginationParameters paginationParameters,
         QueryParameters queryParameters,
         Guid memberId,
         CancellationToken ct
     )
     {
-        var query = DbSet
+        var query = _dbSet
             .AsNoTracking()
-            .ApplySoftDeleteFilter()
+            .FilterSoftDeleted()
             .ApplyDateFilters(queryParameters)
             .Where(o => o.MemberId == memberId);
 
-        var totalCount = await query.CountAsync(ct);
-
-        var records = await query
-            .OrderBy(o => o.Id)
-            .Select(o => new OrganizationMemberListResponseDto
-            {
-                Id = o.Id,
-                MemberName = o.Member.Name,
-                OrganizationName = o.Organization.Name,
-                Role = o.Role,
-                JoinedAt = o.JoinedAt,
-            })
-            .ApplyPagination(paginationParameters)
+        var res = await query
+            .OrderBy(o => o.Organization.Name)
+            .Include(o => o.Member)
+            .Include(o => o.Organization)
             .ToListAsync(ct);
 
-        return new PagedResponse<OrganizationMemberListResponseDto>(
-            records,
-            paginationParameters,
-            totalCount
-        );
+        return res;
     }
 
-    public async Task<PagedResponse<OrganizationMemberListResponseDto>> GetByOrganizationId(
+    public async Task<List<OrganizationMember>> GetByOrganizationId(
         PaginationParameters paginationParameters,
         QueryParameters queryParameters,
         Guid organizationId,
         CancellationToken ct
     )
     {
-        var query = DbSet
+        var query = _dbSet
             .AsNoTracking()
-            .ApplySoftDeleteFilter()
+            .FilterSoftDeleted()
             .ApplyDateFilters(queryParameters)
             .Where(o => o.OrganizationId == organizationId);
 
-        var totalCount = await query.CountAsync(ct);
-
-        var records = await query
-            .OrderBy(o => o.Id)
-            .Select(o => new OrganizationMemberListResponseDto
-            {
-                Id = o.Id,
-                MemberName = o.Member.Name,
-                OrganizationName = o.Organization.Name,
-                Role = o.Role,
-                JoinedAt = o.JoinedAt,
-            })
-            .ApplyPagination(paginationParameters)
+        var res = await query
+            .OrderBy(o => o.Organization.Name)
+            .Include(o => o.Member)
+            .Include(o => o.Organization)
             .ToListAsync(ct);
 
-        return new PagedResponse<OrganizationMemberListResponseDto>(
-            records,
-            paginationParameters,
-            totalCount
-        );
+        return res;
     }
 }

@@ -13,13 +13,13 @@ public class EventRegistrationConfiguration : PrimaryEntityConfigurationBase<Eve
             .HasOne(er => er.Member)
             .WithMany()
             .HasForeignKey(er => er.MemberId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder
             .HasOne(er => er.Event)
             .WithMany()
             .HasForeignKey(er => er.EventId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasIndex(er => new { er.EventId, er.MemberId }).IsUnique();
     }

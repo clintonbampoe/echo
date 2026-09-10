@@ -1,10 +1,9 @@
 using System.ComponentModel.DataAnnotations;
-using Echo.Core.Dtos.Interfaces;
 using Echo.Domain.Enums;
 
 namespace Echo.Core.Dtos;
 
-public record UserCreateDto : IPrimaryCreateDto
+public record UserCreateDto
 {
     [Required, StringLength(100, MinimumLength = 1)]
     public required string LastName { get; init; }
@@ -12,7 +11,8 @@ public record UserCreateDto : IPrimaryCreateDto
     [Required, StringLength(100, MinimumLength = 1)]
     public required string FirstName { get; init; }
 
-    [StringLength(100)] public string? OtherNames { get; init; }
+    [StringLength(100)]
+    public string? OtherNames { get; init; }
 
     [Required, EmailAddress, StringLength(255)]
     public required string EmailAddress { get; init; }
@@ -23,27 +23,18 @@ public record UserCreateDto : IPrimaryCreateDto
     public UserRole Role { get; init; }
 }
 
-public record UserUpdateDto : IPrimaryUpdateDto
+public record UserUpdateDto
 {
-    [EmailAddress, StringLength(255)] public string? EmailAddress { get; init; }
+    [EmailAddress, StringLength(255)]
+    public string? EmailAddress { get; init; }
 
-    [StringLength(128, MinimumLength = 8)] public string? Password { get; init; }
+    [StringLength(128, MinimumLength = 8)]
+    public string? Password { get; init; }
 
     public UserRole? Role { get; init; }
 }
 
-public record UserListResponseDto
-    : IPrimaryListResponseDto,
-        Application.Dtos.Interfaces.IPrimaryListResponseDto
-{
-    public Guid Id { get; init; }
-    public required string EmailAddress { get; init; }
-    public string Name { get; init; } = string.Empty;
-    public DateTime? VerifiedAt { get; init; }
-    public UserRole Role { get; init; }
-}
-
-public record UserResponseDto : IPrimaryResponseDto
+public record UserResponseDto
 {
     public Guid Id { get; init; }
     public required string Name { get; init; }
@@ -62,4 +53,11 @@ public record UserAuthDto
     public DateTime? EmailVerifiedAt { get; init; }
     public UserRole Role { get; init; }
     public Guid CongregationId { get; init; }
+}
+
+public record UserSearchResultDto
+{
+    public Guid Id { get; init; }
+    public required string Name { get; init; }
+    public required string EmailAddress { get; init; }
 }

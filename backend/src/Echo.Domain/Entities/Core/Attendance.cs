@@ -11,9 +11,8 @@ public class Attendance : IPrimaryEntity
 
     public int AttendanceContextId { get; set; }
     public AttendanceContext AttendanceContext { get; set; } = null!;
-    public Guid? MemberId { get; set; }
-    public Member? Member { get; set; }
-    public string? GuestName { get; set; }
+    public Guid MemberId { get; set; }
+    public Member Member { get; set; } = null!;
     public DateOnly ForDate { get; set; }
     public AttendeeType AttendeeType { get; set; }
     public TimeOnly CheckInTime { get; set; } = TimeOnly.FromDateTime(DateTime.UtcNow);

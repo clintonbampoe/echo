@@ -27,6 +27,17 @@ public static class ProjectFactory
         };
     }
 
+    public static List<Project> NewEntityList()
+    {
+        var res = new List<Project>();
+        for (int i = 0; i < 5; i++)
+        {
+            res.Add(NewEntity());
+        }
+
+        return res;
+    }
+
     public static ProjectCreateDto NewCreateDto()
     {
         return new ProjectCreateDto()

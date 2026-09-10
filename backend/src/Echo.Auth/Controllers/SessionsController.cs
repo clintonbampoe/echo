@@ -16,7 +16,7 @@ public class SessionsController(AuthenticationService authenticationService) : A
         CancellationToken ct = default
     )
     {
-        var response = await authenticationService.LoginAsync(request.Email, request.Password, ct);
+        var response = await authenticationService.Login(request.Email, request.Password, ct);
         return response.ToActionResult();
     }
 
@@ -26,7 +26,7 @@ public class SessionsController(AuthenticationService authenticationService) : A
         CancellationToken ct = default
     )
     {
-        var response = await authenticationService.RefreshAsync(request.RefreshToken, ct);
+        var response = await authenticationService.RefreshAuthToken(request.RefreshToken, ct);
         return response.ToActionResult();
     }
 
@@ -36,7 +36,7 @@ public class SessionsController(AuthenticationService authenticationService) : A
         CancellationToken ct = default
     )
     {
-        var response = await authenticationService.LogoutAsync(request.RefreshToken, ct);
+        var response = await authenticationService.RevokeAuthToken(request.RefreshToken, ct);
         return response.ToActionResult();
     }
 }

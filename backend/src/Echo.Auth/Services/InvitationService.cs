@@ -10,16 +10,16 @@ using Echo.Domain.Enums;
 namespace Echo.Auth.Services;
 
 public class InvitationService(
-    AppDbContext dbContext,
     InvitationTokenRepository invitationTokenRepository,
     ITokenGenerator tokenGenerator,
+    IUnitOfWork unitOfWork,
     ITokenHasher hashService,
     TimeProvider timeProvider
 )
 {
     private const int _defaultExpiryDays = 30;
 
-    public async Task<IOperationResult> CreateInvitationAsync(
+    public async Task<IOperationResult> CreateInvitationToken(
         Guid congregationId,
         Guid createdByUserId,
         UserRole allowedRole,
@@ -27,19 +27,21 @@ public class InvitationService(
         CancellationToken ct = default
     )
     {
-        var token = tokenGenerator.GenerateToken(8);
+        var token = tokenGenerator.GenerateToken();
 
         var tokenEntity = new InvitationToken
         {
             CongregationId = congregationId,
             CreatedByUserId = createdByUserId,
             AllowedRole = allowedRole,
-            TokenHash = await hashService.HashAsync(token),
-            ExpiresAt = timeProvider.GetUtcNow().UtcDateTime.AddDays(expiryDays ?? _defaultExpiryDays),
+            TokenHash = hashService.Hash(token),
+            ExpiresAt = timeProvider
+                .GetUtcNow()
+                .UtcDateTime.AddDays(expiryDays ?? _defaultExpiryDays),
         };
 
-        await invitationTokenRepository.CreateRecord(tokenEntity, ct);
-        await dbContext.SaveChangesAsync(ct);
+        await invitationTokenRepository.Create(tokenEntity, ct);
+        await unitOfWork.CommitAsync(ct);
 
         return new SuccessResult<InviteResponseDto>(
             new InviteResponseDto
@@ -51,9 +53,9 @@ public class InvitationService(
         );
     }
 
-    public async Task<InvitationToken?> ValidateAsync(string token, CancellationToken ct = default)
+    public async Task<InvitationToken?> Validate(string token, CancellationToken ct = default)
     {
-        var hashedInput = await hashService.HashAsync(token);
+        var hashedInput = hashService.Hash(token);
         var tokenRecord = await invitationTokenRepository.GetTokenRecordByHash(hashedInput, ct);
 
         if (
