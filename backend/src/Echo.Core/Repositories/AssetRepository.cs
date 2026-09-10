@@ -25,7 +25,7 @@ public class AssetRepository(AppDbContext context)
             .ApplySearchFilter(queryParameters)
             .Where(a => a.CongregationId == congregationId);
 
-        var res = await query.OrderBy(e => e.Id).ToListAsync(ct);
+        var res = await query.OrderBy(a => a.Id).Include(a => a.Category).ToListAsync(ct);
         return res;
     }
 

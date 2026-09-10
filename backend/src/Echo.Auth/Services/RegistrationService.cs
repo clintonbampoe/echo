@@ -1,9 +1,11 @@
-using AutoMapper;
 using Echo.Application.HttpResults;
+using Echo.Application.Services.Generators;
 using Echo.Application.Services.Hashing;
 using Echo.Auth.Dtos;
 using Echo.Auth.Validation;
 using Echo.Core.Dtos;
+using Echo.Core.Mapping.CongregationMapping;
+using Echo.Core.Mapping.UserMapping;
 using Echo.Core.Repositories;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core;
@@ -17,8 +19,10 @@ public class RegistrationService(
     EmailVerificationService emailVerificationService,
     InvitationService invitationService,
     IUnitOfWork unitOfWork,
-    IMapper mapper,
-    IPasswordHasher passwordHashService
+    IUserMapper userMapper,
+    ICongregationMapper congregationMapper,
+    IPasswordHasher passwordHashService,
+    IIdGenerator idGenerator
 )
 {
     public async Task<IOperationResult> RegisterCongregation(
@@ -27,8 +31,11 @@ public class RegistrationService(
         CancellationToken ct
     )
     {
-        var congregation = mapper.Map<Congregation>(congregationDto);
-        var user = mapper.Map<User>(userDto);
+        var congregation = congregationMapper.ToEntity(congregationDto);
+        congregation.Id = idGenerator.Generate();
+
+        var user = userMapper.ToEntity(userDto);
+        user.Id = idGenerator.Generate();
         user.Role = UserRole.Admin;
         user.CongregationId = congregation.Id;
 
@@ -48,7 +55,7 @@ public class RegistrationService(
         return new OkResult("Operation completed successfully.");
     }
 
-    public async Task<IOperationResult> RegisterMemberAsync(
+    public async Task<IOperationResult> RegisterUser(
         RegisterMemberRequest request,
         CancellationToken ct
     )

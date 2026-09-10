@@ -11,7 +11,7 @@ public class AttendanceRepository(AppDbContext context)
 {
     private readonly DbSet<Attendance> _dbSet = context.Set<Attendance>();
 
-    public async Task<List<Attendance>> GetPageAsync(
+    public async Task<List<Attendance>> GetPage(
         Guid congregationId,
         PaginationParameters paginationParameters,
         QueryParameters? queryParameters,

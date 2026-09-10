@@ -23,9 +23,6 @@ public static class RegisterAuthServices
         });
         services.AddScoped<IEmailService, ResendEmailService>();
 
-        // first parameter is ignored because we have no configurations outside our AutoMapper profiles
-        services.AddAutoMapper(_ => { }, typeof(RegisterAuthServices));
-
         services.AddScoped<RegistrationService>();
         services.AddScoped<RegisterController>();
         services.AddScoped<EmailVerificationTokenRepository>();

@@ -24,7 +24,7 @@ public class AttendanceService(
         CancellationToken ct
     )
     {
-        var entities = await repository.GetPageAsync(
+        var entities = await repository.GetPage(
             congregationId,
             paginationParameters,
             queryParameters,
