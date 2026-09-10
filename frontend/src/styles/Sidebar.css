@@ -51,6 +51,7 @@
   color: var(--text-muted);
   transition: all 0.2s ease;
   cursor: pointer;
+  text-decoration: none;
 }
 
 .nav-item:hover {
@@ -111,4 +112,22 @@
   font-size: 15px;
   font-weight: 600;
   color: black;
+}
+
+.logout-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.logout-btn:hover {
+  background-color: #f2f2f7;
+  color: #c62828;
 }

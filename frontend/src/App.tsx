@@ -1,20 +1,23 @@
-import React, { useEffect, useState } from 'react'
-import Dashboard from './components/Dashboard'
-import Finance from './components/Finance'
-import Login from './components/Login'
-import Sidebar from './components/Sidebar'
-import Topbar from './components/Topbar'
-import Attendance from './components/Attendance'
-import Tithe from './components/Tithe'
-import Projects from './components/Projects'
-import Contributions from './components/Contributions'
-import Events from './components/Events'
-import Members from './components/Members'
-import { LayoutProvider } from './context/LayoutProvider'
-import { AuthProvider } from './context/AuthProvider'
-import { useLayout } from './hooks/useLayout'
-import { useAuth } from './hooks/useAuth'
-import './styles/App.css'
+import React, { useEffect } from 'react';
+import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+import Attendance from './components/Attendance';
+import Contributions from './components/Contributions';
+import Dashboard from './components/Dashboard';
+import Events from './components/Events';
+import Finance from './components/Finance';
+import Members from './components/Members';
+import Projects from './components/Projects';
+import Sidebar from './components/Sidebar';
+import Tithe from './components/Tithe';
+import Topbar from './components/Topbar';
+import Login from './components/auth/Login';
+import ResetPassword from './components/auth/ResetPassword';
+import SignUp from './components/auth/SignUp';
+import { AuthProvider } from './context/AuthProvider';
+import { LayoutProvider } from './context/LayoutProvider';
+import { useAuth } from './hooks/useAuth';
+import { useLayout } from './hooks/useLayout';
+import './styles/App.css';
 
 const PlaceholderTab: React.FC<{ name: string }> = ({ name }) => {
     const { setTitle, setCtas } = useLayout();
@@ -34,9 +37,40 @@ const PlaceholderTab: React.FC<{ name: string }> = ({ name }) => {
     );
 };
 
+const ProtectedLayout: React.FC = () => {
+    const { isAuthenticated } = useAuth();
+    if (!isAuthenticated) return <Navigate to="/login" replace />;
+
+    return (
+        <LayoutProvider>
+            <div className="app-layout">
+                <Sidebar />
+                <div className="main-content">
+                    <Topbar />
+                    <div className="page-content">
+                        <Routes>
+                            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                            <Route path="/dashboard" element={<Dashboard />} />
+                            <Route path="/finance" element={<Finance />} />
+                            <Route path="/attendance" element={<Attendance />} />
+                            <Route path="/tithe" element={<Tithe />} />
+                            <Route path="/projects" element={<Projects />} />
+                            <Route path="/contributions" element={<Contributions />} />
+                            <Route path="/events" element={<Events />} />
+                            <Route path="/members" element={<Members />} />
+                            <Route path="/reporting" element={<PlaceholderTab name="Reporting" />} />
+                            <Route path="/assets" element={<PlaceholderTab name="Assets" />} />
+                            <Route path="*" element={<PlaceholderTab name="Not Found" />} />
+                        </Routes>
+                    </div>
+                </div>
+            </div>
+        </LayoutProvider>
+    );
+};
+
 const AppContent: React.FC = () => {
-    const { isAuthenticated, isLoading: isAuthLoading } = useAuth();
-    const [activeTab, setActiveTab] = useState('dashboard');
+    const { isLoading: isAuthLoading } = useAuth();
 
     if (isAuthLoading) {
         return (
@@ -46,46 +80,24 @@ const AppContent: React.FC = () => {
         );
     }
 
-    if (!isAuthenticated) {
-        return (
-            <main>
-                <Login />
-            </main>
-        );
-    }
-
     return (
-        <LayoutProvider>
-            <div className="app-layout">
-                <Sidebar activeTab={activeTab} onTabChange={setActiveTab} />
-                <div className="main-content">
-                    <Topbar />
-                    <div className="page-content">
-                        {activeTab === 'dashboard' && <Dashboard />}
-                        {activeTab === 'finance' && <Finance />}
-                        {activeTab === 'attendance' && <Attendance />}
-                        {activeTab === 'tithe' && <Tithe />}
-                        {activeTab === 'projects' && <Projects />}
-                        {activeTab === 'contributions' && <Contributions />}
-                        {activeTab === 'events' && <Events />}
-                        {activeTab === 'members' && <Members />}
-                        {activeTab !== 'dashboard' && activeTab !== 'finance' && activeTab !== 'attendance' && activeTab !== 'tithe' && activeTab !== 'projects' && activeTab !== 'contributions' && activeTab !== 'events' && activeTab !== 'members' && <PlaceholderTab name={activeTab} />}
-                    </div>
-                </div>
-            </div>
-        </LayoutProvider>
+        <Routes>
+            <Route path="/login" element={<main><Login /></main>} />
+            <Route path="/signup" element={<main><SignUp /></main>} />
+            <Route path="/reset-password" element={<main><ResetPassword /></main>} />
+            <Route path="/*" element={<ProtectedLayout />} />
+        </Routes>
     );
 };
 
 function App() {
     return (
-        <AuthProvider>
-            <AppContent />
-        </AuthProvider>
+        <Router>
+            <AuthProvider>
+                <AppContent />
+            </AuthProvider>
+        </Router>
     );
 }
 
 export default App;
-
-
-
