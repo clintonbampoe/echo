@@ -21,7 +21,7 @@ public class OrganizationMemberService(
     public async Task<IOperationResult> GetPage(
         Guid congregationId,
         PaginationParameters paginationParameters,
-        QueryParameters? queryParameters,
+        Parameters? queryParameters,
         CancellationToken ct
     )
     {
@@ -47,7 +47,7 @@ public class OrganizationMemberService(
 
     public async Task<IOperationResult> GetByMemberId(
         PaginationParameters paginationParameters,
-        QueryParameters queryParameters,
+        Parameters queryParameters,
         Guid memberId,
         CancellationToken ct
     )
@@ -65,7 +65,7 @@ public class OrganizationMemberService(
 
     public async Task<IOperationResult> GetByOrganizationId(
         PaginationParameters paginationParameters,
-        QueryParameters queryParameters,
+        Parameters queryParameters,
         Guid memberId,
         CancellationToken ct
     )

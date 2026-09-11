@@ -1,6 +1,6 @@
-using Echo.Application.Extensions.QueryExtensions;
 using Echo.Application.Pagination;
 using Echo.Application.Query;
+using Echo.Application.Query.Extensions;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core;
 using Microsoft.EntityFrameworkCore;
@@ -14,7 +14,7 @@ public class EventRegistrationRepository(AppDbContext context)
     public async Task<List<EventRegistration>> GetAll(
         Guid congregationId,
         PaginationParameters paginationParameters,
-        QueryParameters? queryParameters,
+        Parameters? queryParameters,
         CancellationToken ct = default
     )
     {
@@ -59,7 +59,7 @@ public class EventRegistrationRepository(AppDbContext context)
 
     public async Task<List<EventRegistration>> GetByMemberId(
         PaginationParameters paginationParameters,
-        QueryParameters queryParameters,
+        Parameters queryParameters,
         Guid memberId,
         CancellationToken ct
     )
@@ -81,7 +81,7 @@ public class EventRegistrationRepository(AppDbContext context)
 
     public async Task<List<EventRegistration>> GetByEventId(
         PaginationParameters paginationParameters,
-        QueryParameters queryParameters,
+        Parameters queryParameters,
         Guid eventId,
         CancellationToken ct
     )

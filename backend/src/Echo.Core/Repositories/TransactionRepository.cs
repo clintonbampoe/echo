@@ -1,6 +1,6 @@
-using Echo.Application.Extensions.QueryExtensions;
 using Echo.Application.Pagination;
 using Echo.Application.Query;
+using Echo.Application.Query.Extensions;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core;
 using Microsoft.EntityFrameworkCore;
@@ -14,7 +14,7 @@ public class TransactionRepository(AppDbContext context)
     public async Task<List<Transaction>> GetPage(
         Guid congregationId,
         PaginationParameters paginationParameters,
-        QueryParameters? queryParameters,
+        Parameters? queryParameters,
         CancellationToken ct
     )
     {

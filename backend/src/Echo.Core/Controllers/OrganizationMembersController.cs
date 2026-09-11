@@ -12,7 +12,7 @@ public class OrganizationMembersController(OrganizationMemberService service) : 
     [HttpGet]
     public async Task<ActionResult> GetPage(
         [FromQuery] PaginationParameters paginationParameters,
-        [FromQuery] QueryParameters? queryParameters,
+        [FromQuery] Parameters? queryParameters,
         CancellationToken ct
     )
     {
@@ -35,7 +35,7 @@ public class OrganizationMembersController(OrganizationMemberService service) : 
     [HttpGet("member{id}")]
     public async Task<ActionResult> GetByMemberId(
         [FromQuery] PaginationParameters paginationParameters,
-        [FromQuery] QueryParameters queryParameters,
+        [FromQuery] Parameters queryParameters,
         Guid id,
         CancellationToken ct
     )
@@ -47,7 +47,7 @@ public class OrganizationMembersController(OrganizationMemberService service) : 
     [HttpGet("organizations{id}")]
     public async Task<ActionResult> GetByOrganizationId(
         [FromQuery] PaginationParameters paginationParameters,
-        [FromQuery] QueryParameters queryParameters,
+        [FromQuery] Parameters queryParameters,
         Guid id,
         CancellationToken ct
     )

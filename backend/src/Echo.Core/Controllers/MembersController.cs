@@ -1,5 +1,4 @@
 using Echo.Application.Pagination;
-using Echo.Application.Query;
 using Echo.Core.Controllers.Base;
 using Echo.Core.Dtos;
 using Echo.Core.Services;
@@ -12,17 +11,12 @@ public class MembersController(MemberService service) : CoreBaseController
 {
     [HttpGet]
     public async Task<ActionResult> GetPage(
-        [FromQuery] PaginationParameters paginationParameters,
-        [FromQuery] QueryParameters? queryParameters,
+        [FromQuery] MemberFilters filters,
+        [FromQuery] PaginationRequest pagination,
         CancellationToken ct
     )
     {
-        var response = await service.GetPage(
-            GetCongregationId(),
-            paginationParameters,
-            queryParameters,
-            ct
-        );
+        var response = await service.GetPage(GetCongregationId(), filters, pagination, ct);
         return response.ToActionResult();
     }
 

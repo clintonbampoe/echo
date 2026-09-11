@@ -1,6 +1,6 @@
 using Echo.Application.HttpResults;
 using Echo.Application.Pagination;
-using Echo.Application.Query;
+using Echo.Application.Services.Encoders;
 using Echo.Application.Services.Generators;
 using Echo.Core.Dtos;
 using Echo.Core.Mapping.MemberMapping;
@@ -13,24 +13,46 @@ public class MemberService(
     MemberRepository repository,
     IUnitOfWork unitOfWork,
     IMemberMapper mapper,
+    IEncoder encoder,
     IIdGenerator idGenerator
 )
 {
     public async Task<IOperationResult> GetPage(
         Guid congregationId,
-        PaginationParameters paginationParameters,
-        QueryParameters? queryParameters,
+        MemberFilters filters,
+        PaginationRequest pagination,
         CancellationToken ct
     )
     {
+        var cursor = encoder.Decode<MemberCursor>(pagination.Cursor);
+
         var entities = await repository.GetPage(
             congregationId,
-            paginationParameters,
-            queryParameters,
+            filters,
+            cursor,
+            pagination.PageSize + 1,
             ct
         );
-        var res = mapper.ToListDto(entities);
-        return new SuccessResult<List<MemberResponseDto>>(res);
+
+        var hasMore = entities.Count > pagination.PageSize;
+        string? nextCursor = null;
+        if (hasMore)
+        {
+            entities.RemoveAt(entities.Count - 1);
+
+            nextCursor = encoder.Encode(
+                new MemberCursor() { Name = entities.Last().Name, Id = entities.Last().Id }
+            );
+        }
+
+        var data = mapper.ToListDto(entities);
+        var res = new PagedResponse<MemberResponseDto>
+        {
+            Data = data,
+            HasMore = hasMore,
+            Next = nextCursor,
+        };
+        return new SuccessResult<PagedResponse<MemberResponseDto>>(res);
     }
 
     public async Task<IOperationResult> GetById(Guid id, Guid congregationId, CancellationToken ct)

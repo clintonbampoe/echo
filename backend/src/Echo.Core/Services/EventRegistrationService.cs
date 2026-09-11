@@ -21,7 +21,7 @@ public class EventRegistrationService(
     public async Task<IOperationResult> GetPage(
         Guid congregationId,
         PaginationParameters paginationParameters,
-        QueryParameters? queryParameters,
+        Parameters? queryParameters,
         CancellationToken ct = default
     )
     {
@@ -48,7 +48,7 @@ public class EventRegistrationService(
 
     public async Task<IOperationResult> GetByEventId(
         PaginationParameters paginationParameters,
-        QueryParameters queryParameters,
+        Parameters queryParameters,
         Guid eventId,
         CancellationToken ct
     )
@@ -66,7 +66,7 @@ public class EventRegistrationService(
 
     public async Task<IOperationResult> GetByMemberId(
         PaginationParameters paginationParameters,
-        QueryParameters queryParameters,
+        Parameters queryParameters,
         Guid memberId,
         CancellationToken ct
     )

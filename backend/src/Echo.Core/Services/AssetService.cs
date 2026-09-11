@@ -20,7 +20,7 @@ public class AssetService(
     public async Task<IOperationResult> GetPage(
         Guid congregationId,
         PaginationParameters paginationParameters,
-        QueryParameters? queryParameters,
+        Parameters? queryParameters,
         CancellationToken ct
     )
     {

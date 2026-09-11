@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
 using Echo.Api.Extensions;
 using Echo.Application.Extensions;
+using Echo.Application.Extensions.DI;
 using Echo.Auth.Extensions;
 using Echo.Core.Extensions;
 using Echo.Domain.Data;
@@ -10,8 +11,7 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddEnvironmentVariables();
 
-builder
-    .Configuration.ValidateFrontendClientBaseUrl(builder.Environment);
+builder.Configuration.ValidateFrontendClientBaseUrl(builder.Environment);
 
 builder.Services.AddDbContext(builder.Configuration);
 builder.Services.AddSwaggerDocumentation();
@@ -45,7 +45,7 @@ builder
 
 builder.Services.AddCoreServices(builder.Configuration);
 builder.Services.AddAuthServices(builder.Configuration);
-builder.Services.AddApplicationServices();
+builder.Services.InjectApplicationServices();
 builder.Services.AddInfrastructureServices();
 
 var app = builder.Build();

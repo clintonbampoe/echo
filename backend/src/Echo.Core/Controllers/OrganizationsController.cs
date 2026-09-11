@@ -13,7 +13,7 @@ public class OrganizationsController(OrganizationService service) : CoreBaseCont
     [HttpGet]
     public async Task<ActionResult> GetPage(
         [FromQuery] PaginationParameters paginationParameters,
-        [FromQuery] QueryParameters? queryParameters,
+        [FromQuery] Parameters? queryParameters,
         CancellationToken ct
     )
     {

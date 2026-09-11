@@ -1,6 +1,6 @@
 namespace Echo.Domain.Enums;
 
-public enum MemberActivityStatus
+public enum MemberStatus
 {
     Active,
     Inactive,
