@@ -61,3 +61,9 @@ public record UserSearchResultDto
     public required string Name { get; init; }
     public required string EmailAddress { get; init; }
 }
+
+public record UserCursor
+{
+    public string Name { get; init; } = string.Empty;
+    public Guid Id { get; init; }
+}

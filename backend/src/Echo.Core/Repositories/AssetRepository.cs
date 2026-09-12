@@ -1,6 +1,5 @@
-using Echo.Application.Extensions.QueryExtensions;
-using Echo.Application.Pagination;
-using Echo.Application.Query;
+using Echo.Application.Query.Extensions;
+using Echo.Core.Dtos;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core;
 using Microsoft.EntityFrameworkCore;
@@ -11,22 +10,24 @@ public class AssetRepository(AppDbContext context)
 {
     private readonly DbSet<Asset> _dbSet = context.Set<Asset>();
 
-    public async Task<List<Asset>> GetPage(
+    public async Task<List<Asset>> List(
         Guid congregationId,
-        PaginationParameters paginationParameters,
-        QueryParameters? queryParameters,
+        AssetFilters filters,
+        AssetCursor? cursor,
+        int pageSize,
         CancellationToken ct = default
     )
     {
-        var query = _dbSet
+        return await _dbSet
             .AsNoTracking()
             .FilterSoftDeleted()
-            .ApplyDateFilters(queryParameters)
-            .ApplySearchFilter(queryParameters)
-            .Where(a => a.CongregationId == congregationId);
-
-        var res = await query.OrderBy(a => a.Id).Include(a => a.Category).ToListAsync(ct);
-        return res;
+            .Where(a => a.CongregationId == congregationId)
+            .Include(a => a.Category)
+            .Filter(filters)
+            .OrderBy(a => a.Name)
+            .ThenBy(a => a.Id)
+            .Paginate(cursor, pageSize)
+            .ToListAsync(ct);
     }
 
     public async Task<Asset?> GetById(Guid id, Guid congregationId, CancellationToken ct = default)
@@ -57,9 +58,37 @@ public class AssetRepository(AppDbContext context)
     {
         entity.DeletedAt = DateTime.UtcNow;
     }
+}
 
-    public Task GetSummary(Guid congregationId, CancellationToken ct)
+internal static class AssetQueryExtensions
+{
+    internal static IQueryable<Asset> Filter(this IQueryable<Asset> query, AssetFilters filters)
     {
-        throw new NotImplementedException();
+        if (filters.Name is not null)
+            query = query.Where(a => EF.Functions.ILike(a.Name, $"%{filters.Name}%"));
+
+        if (filters.CategoryId is not null)
+            query = query.Where(a => a.CategoryId == filters.CategoryId);
+
+        if (filters.Status is not null)
+            query = query.Where(a => a.Status == filters.Status);
+
+        return query;
+    }
+
+    internal static IQueryable<Asset> Paginate(
+        this IQueryable<Asset> query,
+        AssetCursor? cursor,
+        int pageSize
+    )
+    {
+        if (cursor is not null)
+            query = query.Where(a =>
+                string.Compare(a.Name, cursor.Name) > 0
+                || (a.Name == cursor.Name && a.Id > cursor.Id)
+            );
+
+        query = query.Take(pageSize);
+        return query;
     }
 }

@@ -1,4 +1,4 @@
-using Echo.Application.Extensions.QueryExtensions;
+using Echo.Application.Query.Extensions;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core;
 using Microsoft.EntityFrameworkCore;

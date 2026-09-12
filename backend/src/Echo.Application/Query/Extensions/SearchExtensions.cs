@@ -1,7 +1,7 @@
 using Echo.Domain.Entities.Core.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
-namespace Echo.Application.Extensions.QueryExtensions;
+namespace Echo.Application.Query.Extensions;
 
 public static class SearchExtensions
 {

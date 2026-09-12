@@ -1,6 +1,6 @@
-using Echo.Application.Extensions.QueryExtensions;
-using Echo.Application.Pagination;
-using Echo.Application.Query;
+using Echo.Application.Query.Extensions;
+using Echo.Application.Utilities;
+using Echo.Core.Dtos;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core;
 using Microsoft.EntityFrameworkCore;
@@ -11,26 +11,24 @@ public class TransactionRepository(AppDbContext context)
 {
     private readonly DbSet<Transaction> _dbSet = context.Set<Transaction>();
 
-    public async Task<List<Transaction>> GetPage(
+    public async Task<List<Transaction>> List(
         Guid congregationId,
-        PaginationParameters paginationParameters,
-        QueryParameters? queryParameters,
+        TransactionFilters filters,
+        TransactionCursor? cursor,
+        int pageSize,
         CancellationToken ct
     )
     {
-        var query = _dbSet
+        return await _dbSet
             .AsNoTracking()
             .FilterSoftDeleted()
-            .ApplyDateFilters(queryParameters)
-            .Where(t => t.CongregationId == congregationId);
-
-        var res = await query
+            .Where(t => t.CongregationId == congregationId)
+            .Include(t => t.Category)
+            .Filter(filters)
             .OrderByDescending(t => t.TransactionDate)
             .ThenBy(t => t.Id)
-            .Include(t => t.Category)
+            .Paginate(cursor, pageSize)
             .ToListAsync(ct);
-
-        return res;
     }
 
     public async Task<Transaction?> GetById(Guid id, Guid congregationId, CancellationToken ct)
@@ -51,9 +49,42 @@ public class TransactionRepository(AppDbContext context)
     {
         entity.DeletedAt = DateTime.UtcNow;
     }
+}
 
-    public Task GetSummary(Guid congregationId, CancellationToken ct)
+internal static class TransactionQueryExtensions
+{
+    internal static IQueryable<Transaction> Filter(
+        this IQueryable<Transaction> query,
+        TransactionFilters filters
+    )
     {
-        throw new NotImplementedException();
+        var firstDayOfWeek = DateUtils.GetFirstDayOfWeek(TimeProvider.System.GetUtcNow().DateTime);
+
+        query = filters.Date is not null
+            ? query.Where(t => t.TransactionDate == filters.Date)
+            : query.Where(t => t.TransactionDate == firstDayOfWeek);
+
+        if (filters.CategoryId is not null)
+            query = query.Where(a => a.CategoryId == filters.CategoryId);
+
+        if (filters.TransactionType is not null)
+            query = query.Where(a => a.TransactionType == filters.TransactionType);
+
+        return query;
+    }
+
+    internal static IQueryable<Transaction> Paginate(
+        this IQueryable<Transaction> query,
+        TransactionCursor? cursor,
+        int pageSize
+    )
+    {
+        if (cursor is not null)
+            query = query.Where(e =>
+                e.TransactionDate < cursor.TransactionDate
+                || (e.TransactionDate == cursor.TransactionDate && e.Id > cursor.Id)
+            );
+
+        return query.Take(pageSize);
     }
 }

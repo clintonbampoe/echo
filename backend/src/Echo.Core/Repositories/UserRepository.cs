@@ -1,6 +1,5 @@
-using Echo.Application.Extensions.QueryExtensions;
-using Echo.Application.Pagination;
-using Echo.Application.Query;
+using Echo.Application.Query.Extensions;
+using Echo.Core.Dtos;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core;
 using Microsoft.EntityFrameworkCore;
@@ -11,22 +10,21 @@ public class UserRepository(AppDbContext context)
 {
     private readonly DbSet<User> _dbSet = context.Set<User>();
 
-    public async Task<List<User>> GetPage(
+    public async Task<List<User>> List(
         Guid congregationId,
-        PaginationParameters paginationParameters,
-        QueryParameters? queryParameters,
+        UserCursor? cursor,
+        int pageSize,
         CancellationToken ct
     )
     {
-        var query = _dbSet
+        return await _dbSet
             .AsNoTracking()
             .FilterSoftDeleted()
-            .ApplySearchFilter(queryParameters)
-            .ApplyDateFilters(queryParameters)
-            .Where(u => u.CongregationId == congregationId);
-
-        var res = await query.OrderBy(u => u.Name).ThenBy(u => u.EmailAddress).ToListAsync(ct);
-        return res;
+            .Where(u => u.CongregationId == congregationId)
+            .OrderBy(u => u.Name)
+            .ThenBy(u => u.Id)
+            .Paginate(cursor, pageSize)
+            .ToListAsync(ct);
     }
 
     public async Task<User?> GetById(Guid id, CancellationToken ct = default)
@@ -68,5 +66,24 @@ public class UserRepository(AppDbContext context)
             .AnyAsync(u => u.EmailAddress == emailAddress, ct);
 
         return exists;
+    }
+}
+
+internal static class UserQueryExtensions
+{
+    internal static IQueryable<User> Paginate(
+        this IQueryable<User> query,
+        UserCursor? cursor,
+        int pageSize
+    )
+    {
+        if (cursor is not null)
+            query = query.Where(u =>
+                string.Compare(u.Name, cursor.Name) > 0
+                || (u.Name == cursor.Name && u.Id > cursor.Id)
+            );
+
+        query = query.Take(pageSize);
+        return query;
     }
 }

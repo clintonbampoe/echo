@@ -16,5 +16,9 @@ public class TitheConfiguration : PrimaryEntityConfigurationBase<Tithe>
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasIndex(t => t.MemberId);
+
+        builder
+            .HasIndex(t => new { t.CollectionDate, t.Id })
+            .HasFilter($"\"{nameof(Tithe.DeletedAt)}\" IS NULL");
     }
 }
