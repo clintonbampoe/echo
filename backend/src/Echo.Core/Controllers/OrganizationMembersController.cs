@@ -1,5 +1,4 @@
 using Echo.Application.Pagination;
-using Echo.Application.Query;
 using Echo.Core.Controllers.Base;
 using Echo.Core.Dtos;
 using Echo.Core.Services;
@@ -10,18 +9,13 @@ namespace Echo.Core.Controllers;
 public class OrganizationMembersController(OrganizationMemberService service) : CoreBaseController
 {
     [HttpGet]
-    public async Task<ActionResult> GetPage(
-        [FromQuery] PaginationParameters paginationParameters,
-        [FromQuery] QueryParameters? queryParameters,
+    public async Task<ActionResult> List(
+        [FromQuery] OrganizationMemberFilters filters,
+        [FromQuery] PaginationRequest pagination,
         CancellationToken ct
     )
     {
-        var response = await service.GetPage(
-            GetCongregationId(),
-            paginationParameters,
-            queryParameters,
-            ct
-        );
+        var response = await service.List(GetCongregationId(), filters, pagination, ct);
         return response.ToActionResult();
     }
 
@@ -33,29 +27,36 @@ public class OrganizationMembersController(OrganizationMemberService service) : 
     }
 
     [HttpGet("member{id}")]
-    public async Task<ActionResult> GetByMemberId(
-        [FromQuery] PaginationParameters paginationParameters,
-        [FromQuery] QueryParameters queryParameters,
+    public async Task<ActionResult> ListByMemberId(
         Guid id,
+        [FromQuery] OrganizationMemberFilters filters,
+        [FromQuery] PaginationRequest pagination,
         CancellationToken ct
     )
     {
-        var response = await service.GetByMemberId(paginationParameters, queryParameters, id, ct);
+        var response = await service.ListByMemberId(
+            GetCongregationId(),
+            id,
+            filters,
+            pagination,
+            ct
+        );
         return response.ToActionResult();
     }
 
     [HttpGet("organizations{id}")]
-    public async Task<ActionResult> GetByOrganizationId(
-        [FromQuery] PaginationParameters paginationParameters,
-        [FromQuery] QueryParameters queryParameters,
+    public async Task<ActionResult> ListByOrganizationId(
         Guid id,
+        [FromQuery] OrganizationMemberFilters filters,
+        [FromQuery] PaginationRequest pagination,
         CancellationToken ct
     )
     {
-        var response = await service.GetByOrganizationId(
-            paginationParameters,
-            queryParameters,
+        var response = await service.ListByOrganizationId(
+            GetCongregationId(),
             id,
+            filters,
+            pagination,
             ct
         );
         return response.ToActionResult();

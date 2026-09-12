@@ -49,7 +49,7 @@ public record MemberCreateDto
     [Required, Phone, StringLength(20)]
     public required string EmergencyContactPhoneNumber { get; init; }
 
-    public MemberActivityStatus MemberActivityStatus { get; init; }
+    public MemberStatus Status { get; init; }
 }
 
 public record MemberUpdateDto
@@ -98,17 +98,7 @@ public record MemberUpdateDto
     [Phone, StringLength(20)]
     public string? EmergencyContactPhoneNumber { get; init; }
 
-    public MemberActivityStatus? MemberActivityStatus { get; init; }
-}
-
-public record MemberListResponseDto
-{
-    public Guid Id { get; init; }
-    public required string Name { get; init; }
-    public required string PhoneNumber { get; init; }
-    public string? EmailAddress { get; init; }
-    public Gender Gender { get; init; }
-    public MemberActivityStatus MemberActivityStatus { get; init; }
+    public MemberStatus? Status { get; init; }
 }
 
 // TODO: Remove redundant Name field
@@ -135,15 +125,8 @@ public record MemberResponseDto
     public required string NextOfKin { get; init; }
     public required string EmergencyContactName { get; init; }
     public required string EmergencyContactPhoneNumber { get; init; }
-    public MemberActivityStatus MemberActivityStatus { get; init; }
+    public MemberStatus Status { get; init; }
     public DateTime CreatedAt { get; init; }
-}
-
-public record MemberSummaryDto
-{
-    public required int TotalMembership { get; init; }
-    public required int NewMembers { get; init; }
-    public required decimal RetentionRate { get; init; }
 }
 
 public record MemberSearchResultDto
@@ -151,4 +134,18 @@ public record MemberSearchResultDto
     public Guid Id { get; init; }
     public required string Name { get; init; }
     public required string PhoneNumber { get; init; }
+}
+
+public record MemberFilters
+{
+    public string? Name { get; init; }
+    public MemberStatus? Status { get; init; }
+    public Gender? Gender { get; init; }
+    public DateOnly? JoinedDate { get; init; }
+}
+
+public record MemberCursor
+{
+    public Guid Id { get; init; }
+    public string Name { get; init; } = string.Empty;
 }

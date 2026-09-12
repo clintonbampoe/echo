@@ -25,5 +25,9 @@ public class AttendanceConfiguration : PrimaryEntityConfigurationBase<Attendance
         builder.HasIndex(a => a.MemberId);
         builder.HasIndex(a => a.AttendanceContextId);
         builder.HasIndex(a => a.ForDate);
+
+        builder
+            .HasIndex(a => new { a.ForDate, a.Id })
+            .HasFilter($"\"{nameof(Attendance.DeletedAt)}\" IS NULL");
     }
 }

@@ -27,7 +27,7 @@ public class Member : IPrimaryEntity, ISearchableEntity
     public string NextOfKin { get; set; } = string.Empty;
     public string EmergencyContactName { get; set; } = string.Empty;
     public string EmergencyContactPhoneNumber { get; set; } = string.Empty;
-    public MemberActivityStatus MemberActivityStatus { get; set; }
+    public MemberStatus Status { get; set; }
 
     public DateTime CreatedAt { get; set; }
     public DateTime? DeletedAt { get; set; }

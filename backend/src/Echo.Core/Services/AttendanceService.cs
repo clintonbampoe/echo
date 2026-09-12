@@ -1,11 +1,12 @@
 using Echo.Application.HttpResults;
 using Echo.Application.Pagination;
-using Echo.Application.Query;
+using Echo.Application.Services.Encoders;
 using Echo.Application.Services.Generators;
 using Echo.Core.Dtos;
 using Echo.Core.Mapping.AttendanceMapping;
 using Echo.Core.Repositories;
 using Echo.Domain.Data;
+using Echo.Domain.Entities.Core;
 
 namespace Echo.Core.Services;
 
@@ -13,25 +14,36 @@ public class AttendanceService(
     AttendanceRepository repository,
     AttendanceContextRepository contextRepository,
     IUnitOfWork unitOfWork,
+    IEncoder encoder,
     IAttendanceMapper mapper,
     IIdGenerator idGenerator
 )
 {
-    public async Task<IOperationResult> GetPage(
+    public async Task<IOperationResult> List(
         Guid congregationId,
-        PaginationParameters paginationParameters,
-        QueryParameters? queryParameters,
+        AttendanceFilters filters,
+        PaginationRequest pagination,
         CancellationToken ct
     )
     {
-        var entities = await repository.GetPage(
+        var cursor = encoder.Decode<AttendanceCursor>(pagination.Cursor);
+
+        var entities = await repository.List(
             congregationId,
-            paginationParameters,
-            queryParameters,
+            filters,
+            cursor,
+            pagination.PageSize + 1,
             ct
         );
-        var res = mapper.ToListDto(entities);
-        return new SuccessResult<List<AttendanceResponseDto>>(res);
+
+        var hasMore = entities.Count > pagination.PageSize;
+        if (hasMore)
+            entities.RemoveAt(entities.Count - 1);
+        var nextCursor = hasMore ? encoder.Encode(BuildCursor(entities.Last())) : null;
+
+        var data = mapper.ToListDto(entities);
+        var res = new PagedResponse<AttendanceResponseDto>(hasMore, nextCursor, data);
+        return new SuccessResult<PagedResponse<AttendanceResponseDto>>(res);
     }
 
     public async Task<IOperationResult> GetById(Guid id, Guid congregationId, CancellationToken ct)
@@ -100,13 +112,8 @@ public class AttendanceService(
         return new NoContentResult();
     }
 
-    public Task<IOperationResult> GetSummary(
-        Guid congregationId,
-        int attendanceContextId,
-        DateOnly forDate,
-        CancellationToken ct
-    )
+    private AttendanceCursor BuildCursor(Attendance last)
     {
-        throw new NotImplementedException();
+        return new AttendanceCursor { ForDate = last.ForDate, Id = last.Id };
     }
 }

@@ -22,5 +22,9 @@ public class EventAttendanceConfiguration : PrimaryEntityConfigurationBase<Event
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasIndex(ea => new { ea.EventId, ea.MemberId }).IsUnique();
+
+        builder
+            .HasIndex(ea => new { ea.CheckInTime, ea.Id })
+            .HasFilter($"\"{nameof(EventAttendance.DeletedAt)}\" IS NULL");
     }
 }

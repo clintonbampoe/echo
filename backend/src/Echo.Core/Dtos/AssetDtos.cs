@@ -53,15 +53,6 @@ public record AssetUpdateDto
     public string? Description { get; init; }
 }
 
-public record AssetListResponseDto
-{
-    public Guid Id { get; init; }
-    public required string CategoryName { get; init; }
-    public required string Name { get; init; }
-    public AssetStatus Status { get; init; }
-    public decimal CurrentValue { get; init; }
-}
-
 public record AssetResponseDto
 {
     public Guid Id { get; init; }
@@ -77,16 +68,21 @@ public record AssetResponseDto
     public DateTime CreatedAt { get; init; }
 }
 
-public record AssetSummaryDto
-{
-    public int TotalAssets { get; init; }
-    public decimal TotalCurrentValue { get; init; }
-    public int UnderMaintenance { get; init; }
-    public decimal TotalDepreciation { get; init; }
-}
-
 public record AssetSearchResultDto
 {
     public Guid Id { get; init; }
     public required string Name { get; init; }
+}
+
+public record AssetCursor
+{
+    public string Name { get; init; } = string.Empty;
+    public Guid Id { get; init; }
+}
+
+public record AssetFilters
+{
+    public AssetStatus? Status { get; init; }
+    public int? CategoryId { get; init; }
+    public string? Name { get; init; }
 }

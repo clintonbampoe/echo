@@ -1,6 +1,6 @@
 namespace Echo.Application.Query;
 
-public class QueryParameters
+public class Parameters
 {
     public string? SearchTerm { get; set; }
     public DateTime? StartDate { get; set; }

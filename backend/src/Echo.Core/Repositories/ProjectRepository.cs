@@ -1,6 +1,6 @@
-using Echo.Application.Extensions.QueryExtensions;
-using Echo.Application.Pagination;
-using Echo.Application.Query;
+using Echo.Application.Query.Extensions;
+using Echo.Application.Utilities;
+using Echo.Core.Dtos;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core;
 using Microsoft.EntityFrameworkCore;
@@ -11,27 +11,25 @@ public class ProjectRepository(AppDbContext context)
 {
     private readonly DbSet<Project> _dbSet = context.Set<Project>();
 
-    public async Task<List<Project>> GetPage(
+    public async Task<List<Project>> List(
         Guid congregationId,
-        PaginationParameters paginationParameters,
-        QueryParameters? queryParameters,
+        ProjectFilters filters,
+        ProjectCursor? cursor,
+        int pageSize,
         CancellationToken ct
     )
     {
-        var query = _dbSet
+        return await _dbSet
             .AsNoTracking()
             .FilterSoftDeleted()
-            .ApplySearchFilter(queryParameters)
-            .ApplyDateFilters(queryParameters)
-            .Where(p => p.CongregationId == congregationId);
-
-        var res = await query
-            .OrderBy(p => p.Id)
+            .Where(p => p.CongregationId == congregationId)
             .Include(p => p.Category)
             .Include(p => p.Manager)
+            .Filter(filters)
+            .OrderBy(p => p.StartDate)
+            .ThenBy(p => p.Id)
+            .Paginate(cursor, pageSize)
             .ToListAsync(ct);
-
-        return res;
     }
 
     public async Task<Project?> GetById(Guid id, Guid congregationId, CancellationToken ct)
@@ -62,9 +60,46 @@ public class ProjectRepository(AppDbContext context)
     {
         entity.DeletedAt = DateTime.UtcNow;
     }
+}
 
-    public Task GetSummary(Guid congregationId, CancellationToken ct)
+internal static class ProjectQueryExtensions
+{
+    internal static IQueryable<Project> Filter(
+        this IQueryable<Project> query,
+        ProjectFilters filters
+    )
     {
-        throw new NotImplementedException();
+        var today = DateUtils.GetDateToday();
+
+        query = filters.StartDate is not null
+            ? query.Where(p => p.StartDate == filters.StartDate)
+            : query.Where(p => p.StartDate == today);
+
+        if (filters.CategoryId is not null)
+            query = query.Where(p => p.CategoryId == filters.CategoryId);
+
+        if (filters.Status is not null)
+            query = query.Where(p => p.Status == filters.Status);
+
+        if (filters.Name is not null)
+            query = query.Where(p => EF.Functions.ILike(p.Name, $"%{filters.Name}%"));
+
+        return query;
+    }
+
+    internal static IQueryable<Project> Paginate(
+        this IQueryable<Project> query,
+        ProjectCursor? cursor,
+        int pageSize
+    )
+    {
+        if (cursor is not null)
+            query = query.Where(p =>
+                p.StartDate > cursor.StartDate
+                || (p.StartDate == cursor.StartDate && p.Id > cursor.Id)
+            );
+
+        query = query.Take(pageSize);
+        return query;
     }
 }

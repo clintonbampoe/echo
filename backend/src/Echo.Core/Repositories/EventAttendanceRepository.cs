@@ -1,6 +1,5 @@
-using Echo.Application.Extensions.QueryExtensions;
-using Echo.Application.Pagination;
-using Echo.Application.Query;
+using Echo.Application.Query.Extensions;
+using Echo.Core.Dtos;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core;
 using Microsoft.EntityFrameworkCore;
@@ -11,26 +10,23 @@ public class EventAttendanceRepository(AppDbContext context)
 {
     private readonly DbSet<EventAttendance> _dbSet = context.Set<EventAttendance>();
 
-    public async Task<List<EventAttendance>> GetAll(
+    public async Task<List<EventAttendance>> List(
         Guid congregationId,
-        PaginationParameters paginationParameters,
-        QueryParameters? queryParameters,
+        EventAttendanceCursor? cursor,
+        int pageSize,
         CancellationToken ct = default
     )
     {
-        var query = _dbSet
+        return await _dbSet
             .AsNoTracking()
             .FilterSoftDeleted()
-            .ApplyDateFilters(queryParameters)
-            .Where(e => e.CongregationId == congregationId);
-
-        var res = await query
-            .OrderByDescending(e => e.CreatedAt)
+            .Where(e => e.CongregationId == congregationId)
             .Include(e => e.Member)
             .Include(e => e.Event)
+            .OrderByDescending(e => e.CheckInTime)
+            .ThenBy(e => e.Id)
+            .Paginate(cursor, pageSize)
             .ToListAsync(ct);
-
-        return res;
     }
 
     public async Task<EventAttendance?> GetById(
@@ -57,47 +53,64 @@ public class EventAttendanceRepository(AppDbContext context)
         entity.DeletedAt = DateTime.UtcNow;
     }
 
-    public async Task<List<EventAttendance>> GetByMemberId(
-        PaginationParameters paginationParameters,
-        QueryParameters queryParameters,
+    public async Task<List<EventAttendance>> ListByMemberId(
+        Guid congregationId,
         Guid memberId,
+        EventAttendanceCursor? cursor,
+        int pageSize,
         CancellationToken ct
     )
     {
-        var query = _dbSet
+        return await _dbSet
             .AsNoTracking()
             .FilterSoftDeleted()
-            .ApplyDateFilters(queryParameters)
-            .Where(e => e.MemberId == memberId);
-
-        var res = await query
-            .OrderBy(e => e.Event.StartDate)
+            .Where(e => e.CongregationId == congregationId)
+            .Where(e => e.MemberId == memberId)
             .Include(e => e.Member)
             .Include(e => e.Event)
+            .OrderByDescending(e => e.CheckInTime)
+            .ThenBy(e => e.Id)
+            .Paginate(cursor, pageSize)
             .ToListAsync(ct);
-
-        return res;
     }
 
-    public async Task<List<EventAttendance>> GetByEventId(
-        PaginationParameters paginationParameters,
-        QueryParameters queryParameters,
+    public async Task<List<EventAttendance>> ListByEventId(
+        Guid congregationId,
         Guid eventId,
+        EventAttendanceCursor? cursor,
+        int pageSize,
         CancellationToken ct
     )
     {
-        var query = _dbSet
+        return await _dbSet
             .AsNoTracking()
             .FilterSoftDeleted()
-            .ApplyDateFilters(queryParameters)
-            .Where(e => e.EventId == eventId);
-
-        var res = await query
-            .OrderBy(e => e.Member.Name)
+            .Where(e => e.CongregationId == congregationId)
+            .Where(e => e.EventId == eventId)
             .Include(e => e.Member)
             .Include(e => e.Event)
+            .OrderByDescending(e => e.CheckInTime)
+            .ThenBy(e => e.Id)
+            .Paginate(cursor, pageSize)
             .ToListAsync(ct);
+    }
+}
 
-        return res;
+internal static class EventAttendanceQueryExtensions
+{
+    internal static IQueryable<EventAttendance> Paginate(
+        this IQueryable<EventAttendance> query,
+        EventAttendanceCursor? cursor,
+        int pageSize
+    )
+    {
+        if (cursor is not null)
+            query = query.Where(e =>
+                e.CheckInTime < cursor.CheckInTime
+                || (e.CheckInTime == cursor.CheckInTime && e.Id > cursor.Id)
+            );
+
+        query = query.Take(pageSize);
+        return query;
     }
 }
