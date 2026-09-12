@@ -16,5 +16,9 @@ public class TransactionConfiguration : PrimaryEntityConfigurationBase<Transacti
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasIndex(t => t.CategoryId);
+
+        builder
+            .HasIndex(t => new { t.TransactionDate, t.Id })
+            .HasFilter($"\"{nameof(Transaction.DeletedAt)}\" IS NULL");
     }
 }

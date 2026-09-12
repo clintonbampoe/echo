@@ -22,5 +22,9 @@ public class OrganizationMemberConfiguration : PrimaryEntityConfigurationBase<Or
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasIndex(om => new { om.MemberId, om.OrganizationId }).IsUnique();
+
+        builder
+            .HasIndex(om => new { om.CreatedAt, om.Id })
+            .HasFilter($"\"{nameof(Project.DeletedAt)}\" IS NULL");
     }
 }
