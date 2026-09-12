@@ -1,6 +1,5 @@
-using Echo.Application.Pagination;
-using Echo.Application.Query;
 using Echo.Application.Query.Extensions;
+using Echo.Core.Dtos;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core;
 using Microsoft.EntityFrameworkCore;
@@ -11,21 +10,24 @@ public class ProjectContributionRepository(AppDbContext context)
 {
     private readonly DbSet<ProjectContribution> _dbSet = context.Set<ProjectContribution>();
 
-    public async Task<List<ProjectContribution>> GetPage(
+    public async Task<List<ProjectContribution>> List(
         Guid congregationId,
-        PaginationParameters paginationParameters,
-        Parameters? queryParameters,
+        ProjectContributionFilters filters,
+        ProjectContributionCursor? cursor,
+        int pageSize,
         CancellationToken ct
     )
     {
-        var query = _dbSet
+        return await _dbSet
             .AsNoTracking()
             .FilterSoftDeleted()
-            .ApplyDateFilters(queryParameters)
-            .Where(p => p.CongregationId == congregationId);
-
-        var res = await query.OrderBy(p => p.Id).Include(p => p.Project).ToListAsync(ct);
-        return res;
+            .Where(p => p.CongregationId == congregationId)
+            .Include(p => p.Project)
+            .Filter(filters)
+            .OrderByDescending(p => p.DateContributed)
+            .ThenBy(p => p.Id)
+            .Paginate(cursor, pageSize)
+            .ToListAsync(ct);
     }
 
     public async Task<ProjectContribution?> GetById(
@@ -41,20 +43,6 @@ public class ProjectContributionRepository(AppDbContext context)
             .FirstOrDefaultAsync(ct);
     }
 
-    public async Task<List<ProjectContribution>> GetByProjectId(
-        Guid congregationId,
-        Guid projectId,
-        CancellationToken ct
-    )
-    {
-        return await _dbSet
-            .FilterSoftDeleted()
-            .AsNoTracking()
-            .Where(p => p.CongregationId == congregationId && p.ProjectId == projectId)
-            .Include(p => p.Project)
-            .ToListAsync(ct);
-    }
-
     public void Create(ProjectContribution entity)
     {
         _dbSet.Add(entity);
@@ -64,9 +52,40 @@ public class ProjectContributionRepository(AppDbContext context)
     {
         entity.DeletedAt = DateTime.UtcNow;
     }
+}
 
-    public Task GetSummary(Guid congregationId, Guid projectId, CancellationToken ct)
+internal static class ProjectContributionQueryExtensions
+{
+    internal static IQueryable<ProjectContribution> Filter(
+        this IQueryable<ProjectContribution> query,
+        ProjectContributionFilters filters
+    )
     {
-        throw new NotImplementedException();
+        if (filters.Amount is not null)
+            query = query.Where(p => p.Amount > filters.Amount);
+
+        if (filters.Date is not null)
+            query = query.Where(p => p.DateContributed == filters.Date);
+
+        if (filters.PaymentMethod is not null)
+            query = query.Where(p => p.PaymentMethod == filters.PaymentMethod);
+
+        return query;
+    }
+
+    internal static IQueryable<ProjectContribution> Paginate(
+        this IQueryable<ProjectContribution> query,
+        ProjectContributionCursor? cursor,
+        int pageSize
+    )
+    {
+        if (cursor is not null)
+            query = query.Where(e =>
+                e.DateContributed < cursor.DateContributed
+                || (e.DateContributed == cursor.DateContributed && e.Id > cursor.Id)
+            );
+
+        query = query.Take(pageSize);
+        return query;
     }
 }

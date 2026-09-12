@@ -48,10 +48,16 @@ public record AttendanceResponseDto
     public DateTime CreatedAt { get; init; }
 }
 
-public record AttendanceSummaryDto
+public record AttendanceCursor
 {
-    public required int TotalPresent { get; init; }
-    public required int FirstTimeVisitors { get; init; }
-    public required int MembersPresent { get; init; }
-    public required int Children { get; init; }
+    public DateOnly ForDate { get; init; }
+    public Guid Id { get; init; }
+}
+
+public record AttendanceFilters
+{
+    public DateOnly? ForDate { get; init; }
+    public int? AttendanceContextId { get; init; }
+    public Guid? MemberId { get; init; }
+    public string? MemberName { get; init; }
 }

@@ -1,8 +1,8 @@
 namespace Echo.Application.Pagination;
 
-public class PagedResponse<T>
+public class PagedResponse<T>(bool hasMore, string? next, List<T> data)
 {
-    public required List<T> Data { get; init; }
-    public bool HasMore { get; init; }
-    public string? Next { get; init; }
+    public bool HasMore { get; init; } = hasMore;
+    public string? Next { get; init; } = next;
+    public List<T> Data { get; init; } = data;
 }

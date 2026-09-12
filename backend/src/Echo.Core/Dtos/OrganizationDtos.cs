@@ -20,13 +20,6 @@ public record OrganizationUpdateDto
     public string? Description { get; init; }
 }
 
-public record OrganizationListResponseDto
-{
-    public Guid Id { get; init; }
-    public required string Name { get; init; }
-    public string? Description { get; init; }
-}
-
 public record OrganizationResponseDto
 {
     public Guid Id { get; init; }
@@ -35,16 +28,14 @@ public record OrganizationResponseDto
     public DateTime CreatedAt { get; init; }
 }
 
-public record OrganizationSummaryDto
-{
-    public required int TotalOrganizations { get; init; }
-    public required int TotalOrganizationMembers { get; init; }
-    public required int NewOrganizationsThisMonth { get; init; }
-    public required decimal AverageMembersPerOrganization { get; init; }
-}
-
 public record OrganizationSearchResultDto
 {
     public Guid Id { get; init; }
     public required string Name { get; init; }
+}
+
+public record OrganizationCursor
+{
+    public string Name { get; init; } = string.Empty;
+    public Guid Id { get; init; }
 }

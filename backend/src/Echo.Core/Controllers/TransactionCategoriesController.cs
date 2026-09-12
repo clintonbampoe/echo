@@ -10,9 +10,9 @@ public class TransactionCategoriesController(TransactionCategoryService service)
     : CoreBaseController
 {
     [HttpGet]
-    public async Task<ActionResult> GetAll(CancellationToken ct)
+    public async Task<ActionResult> List(CancellationToken ct)
     {
-        var response = await service.GetAll(GetCongregationId(), ct);
+        var response = await service.List(GetCongregationId(), ct);
         return response.ToActionResult();
     }
 

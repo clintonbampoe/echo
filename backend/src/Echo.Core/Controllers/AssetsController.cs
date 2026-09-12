@@ -1,5 +1,4 @@
 using Echo.Application.Pagination;
-using Echo.Application.Query;
 using Echo.Core.Controllers.Base;
 using Echo.Core.Dtos;
 using Echo.Core.Services;
@@ -11,18 +10,13 @@ namespace Echo.Core.Controllers;
 public class AssetsController(AssetService service) : CoreBaseController
 {
     [HttpGet]
-    public async Task<ActionResult> GetPage(
-        [FromQuery] PaginationParameters paginationParameters,
-        [FromQuery] Parameters? queryParameters,
+    public async Task<ActionResult> List(
+        [FromQuery] AssetFilters filters,
+        [FromQuery] PaginationRequest pagination,
         CancellationToken ct
     )
     {
-        var response = await service.GetPage(
-            GetCongregationId(),
-            paginationParameters,
-            queryParameters,
-            ct
-        );
+        var response = await service.List(GetCongregationId(), filters, pagination, ct);
         return response.ToActionResult();
     }
 

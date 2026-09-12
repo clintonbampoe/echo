@@ -1,6 +1,5 @@
 using System.Text.Json.Serialization;
 using Echo.Api.Extensions;
-using Echo.Application.Extensions;
 using Echo.Application.Extensions.DI;
 using Echo.Auth.Extensions;
 using Echo.Core.Extensions;

@@ -39,17 +39,6 @@ public record TitheUpdateDto
     public string? Description { get; init; }
 }
 
-public record TitheListResponseDto
-{
-    public Guid Id { get; init; }
-    public required string MemberName { get; init; }
-    public decimal Amount { get; init; }
-    public int ForYear { get; init; }
-    public MonthOfYear ForMonth { get; init; }
-    public PaymentMethod PaymentMethod { get; init; }
-    public DateOnly CollectionDate { get; init; }
-}
-
 public record TitheResponseDto
 {
     public Guid Id { get; init; }
@@ -64,8 +53,16 @@ public record TitheResponseDto
     public DateTime CreatedAt { get; init; }
 }
 
-public record TitheMonthlyTotalDto
+public record TitheCursor
 {
-    public required MonthOfYear Month { get; init; }
-    public required decimal Total { get; init; }
+    public DateOnly CollectionDate { get; init; }
+    public Guid Id { get; init; }
+}
+
+public record TitheFilter
+{
+    public int? Year { get; init; }
+    public MonthOfYear? Month { get; init; }
+    public PaymentMethod? PaymentMethod { get; init; }
+    public Guid? MemberId { get; init; }
 }

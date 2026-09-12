@@ -21,9 +21,9 @@ public class CursorEncoder : IEncoder
             var res = JsonSerializer.Deserialize<T>(bytes);
             return res;
         }
-        catch (InvalidOperationException ex)
+        catch (Exception ex) when (ex is FormatException or JsonException)
         {
-            // Log return default
+            // Invalid or tampered cursor
             // Treat as empty cursor
             Console.WriteLine(ex);
             return default;

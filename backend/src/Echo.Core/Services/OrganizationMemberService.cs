@@ -1,11 +1,12 @@
 using Echo.Application.HttpResults;
 using Echo.Application.Pagination;
-using Echo.Application.Query;
+using Echo.Application.Services.Encoders;
 using Echo.Application.Services.Generators;
 using Echo.Core.Dtos;
 using Echo.Core.Mapping.OrganizationMemberMapping;
 using Echo.Core.Repositories;
 using Echo.Domain.Data;
+using Echo.Domain.Entities.Core;
 
 namespace Echo.Core.Services;
 
@@ -14,25 +15,36 @@ public class OrganizationMemberService(
     OrganizationRepository organizationRepository,
     MemberRepository memberRepository,
     IUnitOfWork unitOfWork,
+    IEncoder encoder,
     IOrganizationMemberMapper mapper,
     IIdGenerator idGenerator
 )
 {
-    public async Task<IOperationResult> GetPage(
+    public async Task<IOperationResult> List(
         Guid congregationId,
-        PaginationParameters paginationParameters,
-        Parameters? queryParameters,
+        OrganizationMemberFilters filters,
+        PaginationRequest pagination,
         CancellationToken ct
     )
     {
+        var cursor = encoder.Decode<OrganizationMemberCursor>(pagination.Cursor);
         var entities = await repository.GetPage(
             congregationId,
-            paginationParameters,
-            queryParameters,
+            filters,
+            cursor,
+            pagination.PageSize + 1,
             ct
         );
-        var res = mapper.ToListDto(entities);
-        return new SuccessResult<List<OrganizationMemberResponseDto>>(res);
+
+        var hasMore = entities.Count > pagination.PageSize;
+        if (hasMore)
+            entities.RemoveAt(entities.Count - 1);
+
+        var nextCursor = hasMore ? encoder.Encode(BuildCursor(entities.Last())) : null;
+
+        var data = mapper.ToListDto(entities);
+        var res = new PagedResponse<OrganizationMemberResponseDto>(hasMore, nextCursor, data);
+        return new SuccessResult<PagedResponse<OrganizationMemberResponseDto>>(res);
     }
 
     public async Task<IOperationResult> GetById(Guid id, Guid congregationId, CancellationToken ct)
@@ -45,40 +57,62 @@ public class OrganizationMemberService(
         return new SuccessResult<OrganizationMemberResponseDto>(res);
     }
 
-    public async Task<IOperationResult> GetByMemberId(
-        PaginationParameters paginationParameters,
-        Parameters queryParameters,
+    public async Task<IOperationResult> ListByMemberId(
+        Guid congregationId,
         Guid memberId,
+        OrganizationMemberFilters filters,
+        PaginationRequest pagination,
         CancellationToken ct
     )
     {
-        var entities = await repository.GetByMemberId(
-            paginationParameters,
-            queryParameters,
+        var cursor = encoder.Decode<OrganizationMemberCursor>(pagination.Cursor);
+        var entities = await repository.ListByMemberId(
+            congregationId,
             memberId,
+            filters,
+            cursor,
+            pagination.PageSize + 1,
             ct
         );
 
-        var res = mapper.ToListDto(entities);
-        return new SuccessResult<List<OrganizationMemberResponseDto>>(res);
+        var hasMore = entities.Count > pagination.PageSize;
+        if (hasMore)
+            entities.RemoveAt(entities.Count - 1);
+
+        var nextCursor = hasMore ? encoder.Encode(BuildCursor(entities.Last())) : null;
+
+        var data = mapper.ToListDto(entities);
+        var res = new PagedResponse<OrganizationMemberResponseDto>(hasMore, nextCursor, data);
+        return new SuccessResult<PagedResponse<OrganizationMemberResponseDto>>(res);
     }
 
-    public async Task<IOperationResult> GetByOrganizationId(
-        PaginationParameters paginationParameters,
-        Parameters queryParameters,
-        Guid memberId,
+    public async Task<IOperationResult> ListByOrganizationId(
+        Guid congregationId,
+        Guid organizationId,
+        OrganizationMemberFilters filters,
+        PaginationRequest pagination,
         CancellationToken ct
     )
     {
-        var entities = await repository.GetByOrganizationId(
-            paginationParameters,
-            queryParameters,
-            memberId,
+        var cursor = encoder.Decode<OrganizationMemberCursor>(pagination.Cursor);
+        var entities = await repository.ListByOrganizationId(
+            congregationId,
+            organizationId,
+            filters,
+            cursor,
+            pagination.PageSize + 1,
             ct
         );
 
-        var res = mapper.ToListDto(entities);
-        return new SuccessResult<List<OrganizationMemberResponseDto>>(res);
+        var hasMore = entities.Count > pagination.PageSize;
+        if (hasMore)
+            entities.RemoveAt(entities.Count - 1);
+
+        var nextCursor = hasMore ? encoder.Encode(BuildCursor(entities.Last())) : null;
+
+        var data = mapper.ToListDto(entities);
+        var res = new PagedResponse<OrganizationMemberResponseDto>(hasMore, nextCursor, data);
+        return new SuccessResult<PagedResponse<OrganizationMemberResponseDto>>(res);
     }
 
     public async Task<IOperationResult> Create(
@@ -142,5 +176,10 @@ public class OrganizationMemberService(
         await unitOfWork.CommitAsync(ct);
 
         return new NoContentResult();
+    }
+
+    private OrganizationMemberCursor BuildCursor(OrganizationMember last)
+    {
+        return new OrganizationMemberCursor { CreatedAt = last.CreatedAt, Id = last.Id };
     }
 }

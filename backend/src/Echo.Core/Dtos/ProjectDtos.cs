@@ -45,18 +45,6 @@ public record ProjectUpdateDto
     public string? Description { get; init; }
 }
 
-public record ProjectListResponseDto
-{
-    public Guid Id { get; init; }
-    public required string CategoryName { get; init; }
-    public required string ManagerName { get; init; }
-    public required string Name { get; init; }
-    public decimal TargetAmount { get; init; }
-    public ProjectStatus Status { get; init; }
-    public DateOnly StartDate { get; init; }
-    public DateOnly? EndDate { get; init; }
-}
-
 public record ProjectResponseDto
 {
     public Guid Id { get; init; }
@@ -73,16 +61,22 @@ public record ProjectResponseDto
     public DateTime CreatedAt { get; init; }
 }
 
-public record ProjectSummaryDto
-{
-    public required int ActiveProjects { get; init; }
-    public required decimal TotalRaised { get; init; }
-    public required decimal TotalExpected { get; init; }
-    public required int CompletedThisQuarter { get; init; }
-}
-
 public record ProjectSearchResultDto
 {
     public Guid Id { get; init; }
     public required string Name { get; init; }
+}
+
+public record ProjectCursor
+{
+    public DateOnly StartDate { get; init; }
+    public Guid Id { get; init; }
+}
+
+public record ProjectFilters
+{
+    public DateOnly? StartDate { get; init; }
+    public ProjectStatus? Status { get; init; }
+    public int? CategoryId { get; init; }
+    public string? Name { get; init; }
 }

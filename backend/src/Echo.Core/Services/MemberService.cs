@@ -6,6 +6,7 @@ using Echo.Core.Dtos;
 using Echo.Core.Mapping.MemberMapping;
 using Echo.Core.Repositories;
 using Echo.Domain.Data;
+using Echo.Domain.Entities.Core;
 
 namespace Echo.Core.Services;
 
@@ -17,7 +18,7 @@ public class MemberService(
     IIdGenerator idGenerator
 )
 {
-    public async Task<IOperationResult> GetPage(
+    public async Task<IOperationResult> List(
         Guid congregationId,
         MemberFilters filters,
         PaginationRequest pagination,
@@ -26,7 +27,7 @@ public class MemberService(
     {
         var cursor = encoder.Decode<MemberCursor>(pagination.Cursor);
 
-        var entities = await repository.GetPage(
+        var entities = await repository.List(
             congregationId,
             filters,
             cursor,
@@ -35,23 +36,13 @@ public class MemberService(
         );
 
         var hasMore = entities.Count > pagination.PageSize;
-        string? nextCursor = null;
         if (hasMore)
-        {
             entities.RemoveAt(entities.Count - 1);
 
-            nextCursor = encoder.Encode(
-                new MemberCursor() { Name = entities.Last().Name, Id = entities.Last().Id }
-            );
-        }
+        var nextCursor = hasMore ? encoder.Encode(BuildCursor(entities.Last())) : null;
 
         var data = mapper.ToListDto(entities);
-        var res = new PagedResponse<MemberResponseDto>
-        {
-            Data = data,
-            HasMore = hasMore,
-            Next = nextCursor,
-        };
+        var res = new PagedResponse<MemberResponseDto>(hasMore, nextCursor, data);
         return new SuccessResult<PagedResponse<MemberResponseDto>>(res);
     }
 
@@ -128,5 +119,10 @@ public class MemberService(
     public Task<IOperationResult> GetSummary(Guid congregationId, CancellationToken ct)
     {
         throw new NotImplementedException();
+    }
+
+    private MemberCursor BuildCursor(Member last)
+    {
+        return new MemberCursor { Name = last.Name, Id = last.Id };
     }
 }

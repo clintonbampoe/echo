@@ -1,5 +1,4 @@
 using Echo.Application.Pagination;
-using Echo.Application.Query;
 using Echo.Core.Controllers.Base;
 using Echo.Core.Dtos;
 using Echo.Core.Services;
@@ -12,18 +11,11 @@ public class UsersController(UserService service) : CoreBaseController
 {
     [HttpGet]
     public async Task<ActionResult> GetPage(
-        [FromQuery] PaginationParameters paginationParameters,
-        [FromQuery] Parameters queryParameters,
+        [FromQuery] PaginationRequest pagination,
         CancellationToken ct
     )
     {
-        var response = await service.GetPage(
-            GetCongregationId(),
-            paginationParameters,
-            queryParameters,
-            ct
-        );
-
+        var response = await service.List(GetCongregationId(), pagination, ct);
         return response.ToActionResult();
     }
 

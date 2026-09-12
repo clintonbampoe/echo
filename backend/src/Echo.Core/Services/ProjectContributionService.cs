@@ -1,11 +1,12 @@
 using Echo.Application.HttpResults;
 using Echo.Application.Pagination;
-using Echo.Application.Query;
+using Echo.Application.Services.Encoders;
 using Echo.Application.Services.Generators;
 using Echo.Core.Dtos;
 using Echo.Core.Mapping.ProjectContributionMapping;
 using Echo.Core.Repositories;
 using Echo.Domain.Data;
+using Echo.Domain.Entities.Core;
 
 namespace Echo.Core.Services;
 
@@ -13,25 +14,36 @@ public class ProjectContributionService(
     ProjectContributionRepository repository,
     ProjectRepository projectRepository,
     IUnitOfWork unitOfWork,
+    IEncoder encoder,
     IProjectContributionMapper mapper,
     IIdGenerator idGenerator
 )
 {
-    public async Task<IOperationResult> GetPage(
+    public async Task<IOperationResult> List(
         Guid congregationId,
-        PaginationParameters paginationParameters,
-        Parameters? queryParameters,
+        ProjectContributionFilters filters,
+        PaginationRequest pagination,
         CancellationToken ct
     )
     {
-        var entities = await repository.GetPage(
+        var cursor = encoder.Decode<ProjectContributionCursor>(pagination.Cursor);
+        var entities = await repository.List(
             congregationId,
-            paginationParameters,
-            queryParameters,
+            filters,
+            cursor,
+            pagination.PageSize + 1,
             ct
         );
-        var res = mapper.ToListDto(entities);
-        return new SuccessResult<List<ProjectContributionResponseDto>>(res);
+
+        var hasMore = entities.Count > pagination.PageSize;
+        if (hasMore)
+            entities.RemoveAt(entities.Count - 1);
+
+        var nextCursor = hasMore ? encoder.Encode(BuildCursor(entities.Last())) : null;
+
+        var data = mapper.ToListDto(entities);
+        var res = new PagedResponse<ProjectContributionResponseDto>(hasMore, nextCursor, data);
+        return new SuccessResult<PagedResponse<ProjectContributionResponseDto>>(res);
     }
 
     public async Task<IOperationResult> GetById(Guid id, Guid congregationId, CancellationToken ct)
@@ -96,12 +108,12 @@ public class ProjectContributionService(
         return new NoContentResult();
     }
 
-    public Task<IOperationResult> GetSummary(
-        Guid congregationId,
-        Guid projectId,
-        CancellationToken ct
-    )
+    private ProjectContributionCursor BuildCursor(ProjectContribution last)
     {
-        throw new NotImplementedException();
+        return new ProjectContributionCursor
+        {
+            DateContributed = last.DateContributed,
+            Id = last.Id,
+        };
     }
 }

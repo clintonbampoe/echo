@@ -10,13 +10,13 @@ namespace Echo.Core.Controllers;
 public class MembersController(MemberService service) : CoreBaseController
 {
     [HttpGet]
-    public async Task<ActionResult> GetPage(
+    public async Task<ActionResult> List(
         [FromQuery] MemberFilters filters,
         [FromQuery] PaginationRequest pagination,
         CancellationToken ct
     )
     {
-        var response = await service.GetPage(GetCongregationId(), filters, pagination, ct);
+        var response = await service.List(GetCongregationId(), filters, pagination, ct);
         return response.ToActionResult();
     }
 

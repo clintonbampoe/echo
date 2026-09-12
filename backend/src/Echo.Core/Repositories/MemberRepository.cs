@@ -10,7 +10,7 @@ public class MemberRepository(AppDbContext context)
 {
     private readonly DbSet<Member> _dbSet = context.Set<Member>();
 
-    public async Task<List<Member>> GetPage(
+    public async Task<List<Member>> List(
         Guid congregationId,
         MemberFilters filters,
         MemberCursor? cursor,
@@ -23,10 +23,9 @@ public class MemberRepository(AppDbContext context)
             .FilterSoftDeleted()
             .Where(m => m.CongregationId == congregationId)
             .Filter(filters)
-            .Paginate(cursor)
             .OrderBy(m => m.Name)
             .ThenBy(m => m.Id)
-            .Take(pageSize + 1)
+            .Paginate(cursor, pageSize)
             .ToListAsync(ct);
     }
 
@@ -57,11 +56,6 @@ public class MemberRepository(AppDbContext context)
     {
         entity.DeletedAt = DateTime.UtcNow;
     }
-
-    public Task GetSummary(Guid congregationId, CancellationToken ct = default)
-    {
-        throw new NotImplementedException();
-    }
 }
 
 internal static class MemberQueryExtensions
@@ -83,14 +77,18 @@ internal static class MemberQueryExtensions
         return query;
     }
 
-    internal static IQueryable<Member> Paginate(this IQueryable<Member> query, MemberCursor? cursor)
+    internal static IQueryable<Member> Paginate(
+        this IQueryable<Member> query,
+        MemberCursor? cursor,
+        int pageSize
+    )
     {
         if (cursor is not null)
             query = query.Where(m =>
                 string.Compare(m.Name, cursor.Name) > 0
-                || (string.Compare(m.Name, cursor.Name) == 0 && m.Id > cursor.Id)
+                || (m.Name == cursor.Name && m.Id > cursor.Id)
             );
 
-        return query;
+        return query.Take(pageSize);
     }
 }

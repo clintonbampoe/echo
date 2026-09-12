@@ -1,6 +1,5 @@
-using Echo.Application.Pagination;
-using Echo.Application.Query;
 using Echo.Application.Query.Extensions;
+using Echo.Core.Dtos;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core;
 using Microsoft.EntityFrameworkCore;
@@ -11,32 +10,29 @@ public class EventRegistrationRepository(AppDbContext context)
 {
     private readonly DbSet<EventRegistration> _dbSet = context.Set<EventRegistration>();
 
-    public async Task<List<EventRegistration>> GetAll(
+    public async Task<List<EventRegistration>> List(
         Guid congregationId,
-        PaginationParameters paginationParameters,
-        Parameters? queryParameters,
-        CancellationToken ct = default
+        EventRegistrationCursor? cursor,
+        int pageSize,
+        CancellationToken ct
     )
     {
-        var query = _dbSet
+        return await _dbSet
             .AsNoTracking()
             .FilterSoftDeleted()
-            .ApplyDateFilters(queryParameters)
-            .Where(e => e.CongregationId == congregationId);
-
-        var res = await query
-            .OrderBy(e => e.Id)
+            .Where(e => e.CongregationId == congregationId)
             .Include(e => e.Member)
             .Include(e => e.Event)
+            .OrderByDescending(e => e.RegistrationDate)
+            .ThenBy(e => e.Id)
+            .Paginate(cursor, pageSize)
             .ToListAsync(ct);
-
-        return res;
     }
 
     public async Task<EventRegistration?> GetById(
         Guid id,
         Guid congregationId,
-        CancellationToken ct = default
+        CancellationToken ct
     )
     {
         return await _dbSet
@@ -57,47 +53,64 @@ public class EventRegistrationRepository(AppDbContext context)
         entity.DeletedAt = DateTime.UtcNow;
     }
 
-    public async Task<List<EventRegistration>> GetByMemberId(
-        PaginationParameters paginationParameters,
-        Parameters queryParameters,
+    public async Task<List<EventRegistration>> ListByMemberId(
+        Guid congregationId,
         Guid memberId,
-        CancellationToken ct
+        EventRegistrationCursor? cursor,
+        int pageSize,
+        CancellationToken ct = default
     )
     {
-        var query = _dbSet
+        return await _dbSet
             .AsNoTracking()
             .FilterSoftDeleted()
-            .ApplyDateFilters(queryParameters)
-            .Where(e => e.MemberId == memberId);
-
-        var res = await query
-            .OrderBy(e => e.Event.StartDate)
+            .Where(e => e.CongregationId == congregationId)
+            .Where(e => e.MemberId == memberId)
             .Include(e => e.Member)
             .Include(e => e.Event)
+            .OrderByDescending(e => e.RegistrationDate)
+            .ThenBy(e => e.Id)
+            .Paginate(cursor, pageSize)
             .ToListAsync(ct);
-
-        return res;
     }
 
-    public async Task<List<EventRegistration>> GetByEventId(
-        PaginationParameters paginationParameters,
-        Parameters queryParameters,
+    public async Task<List<EventRegistration>> ListByEventId(
+        Guid congregationId,
         Guid eventId,
+        EventRegistrationCursor? cursor,
+        int pageSize,
         CancellationToken ct
     )
     {
-        var query = _dbSet
+        return await _dbSet
             .AsNoTracking()
             .FilterSoftDeleted()
-            .ApplyDateFilters(queryParameters)
-            .Where(e => e.EventId == eventId);
-
-        var res = await query
-            .OrderBy(e => e.Member.Name)
+            .Where(e => e.CongregationId == congregationId)
+            .Where(e => e.EventId == eventId)
             .Include(e => e.Member)
             .Include(e => e.Event)
+            .OrderByDescending(e => e.RegistrationDate)
+            .ThenBy(e => e.Id)
+            .Paginate(cursor, pageSize)
             .ToListAsync(ct);
+    }
+}
 
-        return res;
+internal static class EventRegistrationQueryExtensions
+{
+    internal static IQueryable<EventRegistration> Paginate(
+        this IQueryable<EventRegistration> query,
+        EventRegistrationCursor? cursor,
+        int pageSize
+    )
+    {
+        if (cursor is not null)
+            query = query.Where(e =>
+                e.RegistrationDate < cursor.RegistrationDate
+                || (e.RegistrationDate == cursor.RegistrationDate && e.Id > cursor.Id)
+            );
+
+        query = query.Take(pageSize);
+        return query;
     }
 }

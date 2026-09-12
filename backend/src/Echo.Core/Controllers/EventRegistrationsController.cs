@@ -1,5 +1,4 @@
 using Echo.Application.Pagination;
-using Echo.Application.Query;
 using Echo.Core.Controllers.Base;
 using Echo.Core.Dtos;
 using Echo.Core.Services;
@@ -10,18 +9,12 @@ namespace Echo.Core.Controllers;
 public class EventRegistrationsController(EventRegistrationService service) : CoreBaseController
 {
     [HttpGet]
-    public async Task<ActionResult> GetPage(
-        [FromQuery] PaginationParameters paginationParameters,
-        [FromQuery] Parameters? queryParameters,
+    public async Task<ActionResult> List(
+        [FromQuery] PaginationRequest pagination,
         CancellationToken ct
     )
     {
-        var response = await service.GetPage(
-            GetCongregationId(),
-            paginationParameters,
-            queryParameters,
-            ct
-        );
+        var response = await service.List(GetCongregationId(), pagination, ct);
         return response.ToActionResult();
     }
 
@@ -33,26 +26,24 @@ public class EventRegistrationsController(EventRegistrationService service) : Co
     }
 
     [HttpGet("event{id}")]
-    public async Task<ActionResult> GetByEventId(
-        [FromQuery] PaginationParameters paginationParameters,
-        [FromQuery] Parameters queryParameters,
+    public async Task<ActionResult> ListByEventId(
         Guid id,
+        [FromQuery] PaginationRequest pagination,
         CancellationToken ct
     )
     {
-        var response = await service.GetByEventId(paginationParameters, queryParameters, id, ct);
+        var response = await service.ListByEventId(GetCongregationId(), id, pagination, ct);
         return response.ToActionResult();
     }
 
     [HttpGet("member{id}")]
-    public async Task<ActionResult> GetByMemberId(
-        [FromQuery] PaginationParameters paginationParameters,
-        [FromQuery] Parameters queryParameters,
+    public async Task<ActionResult> ListByMemberId(
         Guid id,
+        [FromQuery] PaginationRequest pagination,
         CancellationToken ct
     )
     {
-        var response = await service.GetByMemberId(paginationParameters, queryParameters, id, ct);
+        var response = await service.ListByMemberId(GetCongregationId(), id, pagination, ct);
         return response.ToActionResult();
     }
 
