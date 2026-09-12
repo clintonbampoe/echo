@@ -1,13 +1,12 @@
-using Echo.Application.Query;
 using Echo.Domain.Entities.Core.Interfaces;
 
-namespace Echo.Application.Extensions.QueryExtensions;
+namespace Echo.Application.Query.Extensions;
 
 public static class FilterExtensions
 {
     public static IQueryable<T> ApplySearchFilter<T>(
         this IQueryable<T> query,
-        QueryParameters? queryParameters
+        Parameters? queryParameters
     )
         where T : class, ISearchableEntity
     {
@@ -22,7 +21,7 @@ public static class FilterExtensions
 
     public static IQueryable<T> ApplyDateFilters<T>(
         this IQueryable<T> query,
-        QueryParameters? queryParameters
+        Parameters? queryParameters
     )
         where T : ICongregationEntity
     {

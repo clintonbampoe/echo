@@ -1,6 +1,5 @@
-using Echo.Application.Extensions.QueryExtensions;
-using Echo.Application.Pagination;
-using Echo.Application.Query;
+using Echo.Application.Query.Extensions;
+using Echo.Core.Dtos;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core;
 using Microsoft.EntityFrameworkCore;
@@ -11,25 +10,26 @@ public class MemberRepository(AppDbContext context)
 {
     private readonly DbSet<Member> _dbSet = context.Set<Member>();
 
-    public async Task<List<Member>> GetPage(
+    public async Task<List<Member>> List(
         Guid congregationId,
-        PaginationParameters paginationParameters,
-        QueryParameters? queryParameters,
+        MemberFilters filters,
+        MemberCursor? cursor,
+        int pageSize,
         CancellationToken ct = default
     )
     {
-        var query = _dbSet
+        return await _dbSet
             .AsNoTracking()
             .FilterSoftDeleted()
-            .ApplySearchFilter(queryParameters)
-            .ApplyDateFilters(queryParameters)
-            .Where(m => m.CongregationId == congregationId);
-
-        var res = await query.OrderBy(m => m.Id).ToListAsync(ct);
-        return res;
+            .Where(m => m.CongregationId == congregationId)
+            .Filter(filters)
+            .OrderBy(m => m.Name)
+            .ThenBy(m => m.Id)
+            .Paginate(cursor, pageSize)
+            .ToListAsync(ct);
     }
 
-    public async Task<Member?> GetById(Guid id, Guid congregationId, CancellationToken ct = default)
+    public async Task<Member?> GetById(Guid id, Guid congregationId, CancellationToken ct)
     {
         return await _dbSet
             .FilterSoftDeleted()
@@ -40,6 +40,7 @@ public class MemberRepository(AppDbContext context)
     public async Task<List<Member>> Search(Guid congregationId, string name, CancellationToken ct)
     {
         return await _dbSet
+            .AsNoTracking()
             .FilterSoftDeleted()
             .Where(m => m.CongregationId == congregationId)
             .SearchName(name)
@@ -55,9 +56,39 @@ public class MemberRepository(AppDbContext context)
     {
         entity.DeletedAt = DateTime.UtcNow;
     }
+}
 
-    public Task GetSummary(Guid congregationId, CancellationToken ct = default)
+internal static class MemberQueryExtensions
+{
+    internal static IQueryable<Member> Filter(this IQueryable<Member> query, MemberFilters filters)
     {
-        throw new NotImplementedException();
+        if (filters.Status.HasValue)
+            query = query.Where(m => m.Status == filters.Status.Value);
+
+        if (filters.Gender.HasValue)
+            query = query.Where(m => m.Gender == filters.Gender.Value);
+
+        if (filters.JoinedDate is not null)
+            query = query.Where(m => m.JoinedDate >= filters.JoinedDate);
+
+        if (filters.Name is not null)
+            query = query.Where(m => EF.Functions.ILike(m.Name, $"%{filters.Name}%"));
+
+        return query;
+    }
+
+    internal static IQueryable<Member> Paginate(
+        this IQueryable<Member> query,
+        MemberCursor? cursor,
+        int pageSize
+    )
+    {
+        if (cursor is not null)
+            query = query.Where(m =>
+                string.Compare(m.Name, cursor.Name) > 0
+                || (m.Name == cursor.Name && m.Id > cursor.Id)
+            );
+
+        return query.Take(pageSize);
     }
 }

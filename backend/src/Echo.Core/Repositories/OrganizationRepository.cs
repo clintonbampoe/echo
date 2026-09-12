@@ -1,6 +1,5 @@
-using Echo.Application.Extensions.QueryExtensions;
-using Echo.Application.Pagination;
-using Echo.Application.Query;
+using Echo.Application.Query.Extensions;
+using Echo.Core.Dtos;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core;
 using Microsoft.EntityFrameworkCore;
@@ -11,23 +10,21 @@ public class OrganizationRepository(AppDbContext context)
 {
     private readonly DbSet<Organization> _dbSet = context.Set<Organization>();
 
-    public async Task<List<Organization>> GetPage(
+    public async Task<List<Organization>> List(
         Guid congregationId,
-        PaginationParameters paginationParameters,
-        QueryParameters? queryParameters,
+        OrganizationCursor? cursor,
+        int pageSize,
         CancellationToken ct
     )
     {
-        var query = _dbSet
+        return await _dbSet
             .AsNoTracking()
             .FilterSoftDeleted()
-            .ApplyDateFilters(queryParameters)
-            .ApplySearchFilter(queryParameters)
-            .Where(o => o.CongregationId == congregationId);
-
-        var res = await query.OrderBy(o => o.Id).ToListAsync(ct);
-
-        return res;
+            .Where(o => o.CongregationId == congregationId)
+            .OrderBy(o => o.Name)
+            .ThenBy(o => o.Id)
+            .Paginate(cursor, pageSize)
+            .ToListAsync(ct);
     }
 
     public async Task<Organization?> GetById(
@@ -64,9 +61,22 @@ public class OrganizationRepository(AppDbContext context)
     {
         entity.DeletedAt = DateTime.UtcNow;
     }
+}
 
-    public Task GetSummary(Guid congregationId, CancellationToken ct)
+internal static class OrganizationQueryExtensions
+{
+    internal static IQueryable<Organization> Paginate(
+        this IQueryable<Organization> query,
+        OrganizationCursor? cursor,
+        int pageSize
+    )
     {
-        throw new NotImplementedException();
+        if (cursor is not null)
+            query = query.Where(o =>
+                string.Compare(o.Name, cursor.Name) > 0
+                || (o.Name == cursor.Name && o.Id > cursor.Id)
+            );
+
+        return query;
     }
 }

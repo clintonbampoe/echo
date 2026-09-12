@@ -70,7 +70,7 @@ public partial class MemberMapper : IMemberMapper
             entity.EmergencyContactName = dto.EmergencyContactName;
         if (dto.EmergencyContactPhoneNumber != null)
             entity.EmergencyContactPhoneNumber = dto.EmergencyContactPhoneNumber;
-        if (dto.MemberActivityStatus.HasValue)
-            entity.MemberActivityStatus = dto.MemberActivityStatus.Value;
+        if (dto.Status.HasValue)
+            entity.Status = dto.Status.Value;
     }
 }

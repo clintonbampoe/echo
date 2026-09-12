@@ -1,11 +1,12 @@
 using Echo.Application.HttpResults;
 using Echo.Application.Pagination;
-using Echo.Application.Query;
+using Echo.Application.Services.Encoders;
 using Echo.Application.Services.Generators;
 using Echo.Core.Dtos;
 using Echo.Core.Mapping.EventRegistrationMapping;
 using Echo.Core.Repositories;
 using Echo.Domain.Data;
+using Echo.Domain.Entities.Core;
 
 namespace Echo.Core.Services;
 
@@ -14,25 +15,29 @@ public class EventRegistrationService(
     EventRepository eventRepository,
     MemberRepository memberRepository,
     IUnitOfWork unitOfWork,
+    IEncoder encoder,
     IEventRegistrationMapper mapper,
     IIdGenerator idGenerator
 )
 {
-    public async Task<IOperationResult> GetPage(
+    public async Task<IOperationResult> List(
         Guid congregationId,
-        PaginationParameters paginationParameters,
-        QueryParameters? queryParameters,
+        PaginationRequest pagination,
         CancellationToken ct = default
     )
     {
-        var entities = await repository.GetAll(
-            congregationId,
-            paginationParameters,
-            queryParameters,
-            ct
-        );
-        var res = mapper.ToListDto(entities);
-        return new SuccessResult<List<EventRegistrationResponseDto>>(res);
+        var cursor = encoder.Decode<EventRegistrationCursor>(pagination.Cursor);
+        var entities = await repository.List(congregationId, cursor, pagination.PageSize + 1, ct);
+
+        var hasMore = entities.Count > pagination.PageSize;
+        if (hasMore)
+            entities.RemoveAt(entities.Count - 1);
+
+        var nextCursor = hasMore ? encoder.Encode(BuildCursor(entities.Last())) : null;
+
+        var data = mapper.ToListDto(entities);
+        var res = new PagedResponse<EventRegistrationResponseDto>(hasMore, nextCursor, data);
+        return new SuccessResult<PagedResponse<EventRegistrationResponseDto>>(res);
     }
 
     public async Task<IOperationResult> GetById(Guid id, Guid congregationId, CancellationToken ct)
@@ -46,40 +51,58 @@ public class EventRegistrationService(
         return new SuccessResult<EventRegistrationResponseDto>(res);
     }
 
-    public async Task<IOperationResult> GetByEventId(
-        PaginationParameters paginationParameters,
-        QueryParameters queryParameters,
+    public async Task<IOperationResult> ListByEventId(
+        Guid congregationId,
         Guid eventId,
+        PaginationRequest pagination,
         CancellationToken ct
     )
     {
-        var entities = await repository.GetByEventId(
-            paginationParameters,
-            queryParameters,
+        var cursor = encoder.Decode<EventRegistrationCursor>(pagination.Cursor);
+        var entities = await repository.ListByEventId(
+            congregationId,
             eventId,
+            cursor,
+            pagination.PageSize + 1,
             ct
         );
 
-        var res = mapper.ToListDto(entities);
-        return new SuccessResult<List<EventRegistrationResponseDto>>(res);
+        var hasMore = entities.Count > pagination.PageSize;
+        if (hasMore)
+            entities.RemoveAt(entities.Count - 1);
+
+        var nextCursor = hasMore ? encoder.Encode(BuildCursor(entities.Last())) : null;
+
+        var data = mapper.ToListDto(entities);
+        var res = new PagedResponse<EventRegistrationResponseDto>(hasMore, nextCursor, data);
+        return new SuccessResult<PagedResponse<EventRegistrationResponseDto>>(res);
     }
 
-    public async Task<IOperationResult> GetByMemberId(
-        PaginationParameters paginationParameters,
-        QueryParameters queryParameters,
+    public async Task<IOperationResult> ListByMemberId(
+        Guid congregationId,
         Guid memberId,
+        PaginationRequest pagination,
         CancellationToken ct
     )
     {
-        var entities = await repository.GetByMemberId(
-            paginationParameters,
-            queryParameters,
+        var cursor = encoder.Decode<EventRegistrationCursor>(pagination.Cursor);
+        var entities = await repository.ListByMemberId(
+            congregationId,
             memberId,
+            cursor,
+            pagination.PageSize + 1,
             ct
         );
 
-        var res = mapper.ToListDto(entities);
-        return new SuccessResult<List<EventRegistrationResponseDto>>(res);
+        var hasMore = entities.Count > pagination.PageSize;
+        if (hasMore)
+            entities.RemoveAt(entities.Count - 1);
+
+        var nextCursor = hasMore ? encoder.Encode(BuildCursor(entities.Last())) : null;
+
+        var data = mapper.ToListDto(entities);
+        var res = new PagedResponse<EventRegistrationResponseDto>(hasMore, nextCursor, data);
+        return new SuccessResult<PagedResponse<EventRegistrationResponseDto>>(res);
     }
 
     public async Task<IOperationResult> Create(
@@ -139,5 +162,14 @@ public class EventRegistrationService(
         await unitOfWork.CommitAsync(ct);
 
         return new NoContentResult();
+    }
+
+    private EventRegistrationCursor BuildCursor(EventRegistration last)
+    {
+        return new EventRegistrationCursor
+        {
+            RegistrationDate = last.RegistrationDate,
+            Id = last.Id,
+        };
     }
 }

@@ -29,15 +29,6 @@ public record ProjectContributionUpdateDto
     public string? Description { get; init; }
 }
 
-public record ProjectContributionListResponseDto
-{
-    public Guid Id { get; init; }
-    public required string ProjectName { get; init; }
-    public decimal Amount { get; init; }
-    public DateOnly DateContributed { get; init; }
-    public PaymentMethod PaymentMethod { get; init; }
-}
-
 public record ProjectContributionResponseDto
 {
     public Guid Id { get; init; }
@@ -50,10 +41,15 @@ public record ProjectContributionResponseDto
     public DateTime CreatedAt { get; init; }
 }
 
-public record ProjectContributionSummaryDto
+public record ProjectContributionCursor
 {
-    public required decimal TotalRaised { get; init; }
-    public required decimal TargetGoal { get; init; }
-    public required int Contributors { get; init; }
-    public required DateOnly? MostRecentEntryDate { get; init; }
+    public DateOnly DateContributed { get; init; }
+    public Guid Id { get; init; }
+}
+
+public record ProjectContributionFilters
+{
+    public decimal? Amount { get; init; }
+    public DateOnly? Date { get; init; }
+    public PaymentMethod? PaymentMethod { get; init; }
 }

@@ -9,9 +9,9 @@ namespace Echo.Core.Controllers;
 public class AssetCategoriesController(AssetCategoryService service) : CoreBaseController
 {
     [HttpGet]
-    public async Task<ActionResult> GetAll(CancellationToken ct)
+    public async Task<ActionResult> List(CancellationToken ct)
     {
-        var res = await service.GetAll(GetCongregationId(), ct);
+        var res = await service.List(GetCongregationId(), ct);
         return res.ToActionResult();
     }
 

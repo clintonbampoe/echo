@@ -12,5 +12,9 @@ public class OrganizationConfiguration : PrimaryEntityConfigurationBase<Organiza
         builder.HasIndex(o => new { o.CongregationId, o.Name }).IsUnique();
 
         builder.HasIndex(o => o.Name).HasMethod("GIN").HasOperators("gin_trgm_ops");
+
+        builder
+            .HasIndex(p => new { p.Name, p.Id })
+            .HasFilter($"\"{nameof(Organization.DeletedAt)}\" IS NULL");
     }
 }
