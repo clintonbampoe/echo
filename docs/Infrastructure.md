@@ -1,7 +1,7 @@
 # Infrastructure
 
 **Written by:** @clintonbampoe
-**Last updated:** 2026-08-25 by @clintonbampoe
+**Last updated:** 2026-09-13 by @clintonbampoe
 
 ---
 
@@ -32,8 +32,9 @@ prod, only `api` can reach it — it's not open to the outside world.
 
 **`nginx`** — sits in front as the edge proxy. In prod, it routes `/api`, `/health`, and `/swagger` to the `api` container, and all other traffic `/` to the `client` container. In dev, it only routes API traffic.
 
-**`migrator`** — runs database migrations. Doesn't start automatically — you run
-it yourself when you want to. See [Setup.md](GettingStarted.md) for when to use this.
+**`migrator`** — runs database migrations. This is used for controlled updates in CI/CD or when the API is not yet online.
+
+**`backup`** — handles scheduled database dumps. It uses Supercronic instead of standard cron to ensure that environment variables are passed correctly to the backup scripts.
 
 ### Why there are three compose files
 
@@ -84,6 +85,31 @@ To persist data in the containers, we've mounted certain named volumes that data
 | --------------- | ---------------------- | ---------------------------------------------------- |
 | `postgres-data` | The actual database    | No — deleting this deletes your data.                |
 | `nuget-cache`   | Speeds up dev rebuilds | YES, safely. It'll just rebuild the cache next time. |
+| `backup-dumps`   | Database backup files | No — deleting this removes your backups.             |
+
+## Database Backups
+
+Supercronic is used to schedule database backups.
+
+- **Tooling**: The container uses `postgresql18-client`. The client version must match the server version (Postgres 18) to ensure backup reliability.
+- **Format**: Backups are created in the Postgres custom binary format (`-Fc`). This format allows for compressed files and selective restoration.
+- **Logging**: The crontab uses `2>&1 | tee -a /app/dumps/backup.log`. This captures both standard output and error messages in both the Docker logs and the log file.
+- **Scheduling**: The crontab is copied into the image but is also mounted as a volume. This allows the backup schedule to be changed on the host without rebuilding the image.
+
+## Database Migrations
+
+The database schema is updated through two primary paths:
+
+- **Automatic**: When `RUN_DATABASE_MIGRATIONS_ON_STARTUP` is set to `true`, the API applies pending migrations automatically during startup.
+- **Manual**: The `migrator` container can be run independently to apply migrations:
+  ```bash
+  docker compose run --rm migrator
+  ```
+- **Local Development**: To manage migrations during development, use the following .NET EF commands:
+  ```bash
+  dotnet ef migrations add "MigrationName" --project backend/src/Echo.Infrastructure --startup-project backend/src/Echo.Api
+  dotnet ef database update --project backend/src/Echo.Infrastructure --startup-project backend/src/Echo.Api
+  ```
 
 ## Environment variables
 
