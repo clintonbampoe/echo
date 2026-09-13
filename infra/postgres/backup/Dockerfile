@@ -3,11 +3,8 @@
 
 FROM postgres:18
 
-RUN apt-get update && apt-get install -y --no-install-recommends cron nano \
-    && rm -rf /var/lib/apt/lists/*
+COPY infra/postgres/backup/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
-RUN export EDITOR=nano
-
-# Script is mounted at runtime via compose volume, not baked in —
-# so changes to backup.sh don't require rebuilding this image.
-CMD [ "cron", "-f" ]
+# backup.sh is mounted at runtime — changes don't require a rebuild
+CMD [ "/entrypoint.sh" ]

@@ -4,7 +4,7 @@ set -euo pipefail
 TIMESTAMP="$(date +%Y-%m-%dT%H-%M-%S)"
 DUMP_FILE="/db_dumps/echo_${TIMESTAMP}.dump"
 
-BACKUP_START_TIMESTAMP="$(date +%H-%M-%S)"
+BACKUP_START_TIMESTAMP=$TIMESTAMP
 echo "[${BACKUP_START_TIMESTAMP}] Starting backup of ${DB_NAME}"
 
 # -Fc custom format - compressed by default, supports selective restore via pg_restore

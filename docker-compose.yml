@@ -67,8 +67,10 @@ services:
       DB_NAME: ${DB_NAME}
       DB_USERNAME: ${DB_USERNAME}
       PGPASSWORD: ${DB_PASSWORD}
+      BACKUP_INTERVAL_SECONDS: ${BACKUP_INTERVAL_SECONDS}
     volumes:
       - ./infra/postgres/backup/backup.sh:/backup.sh:ro
+      - ./infra/postgres/backup/restore.sh:/restore.sh:ro
       - ./infra/postgres/backup/db_dumps:/db_dumps
     # Entry point is defined per environment in override/prod files
     # Since schedule differs between dev and prod

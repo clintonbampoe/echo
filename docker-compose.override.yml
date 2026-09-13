@@ -26,6 +26,9 @@ services:
     ports: [5025:8080]
   db:
     ports: [5432:5432]
+  backup:
+    environment:
+      BACKUP_INTERVAL_SECONDS: 86400
   nginx:
     ports: [8080:80]
   client:
