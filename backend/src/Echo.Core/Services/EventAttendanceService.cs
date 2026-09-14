@@ -1,11 +1,12 @@
 using Echo.Application.HttpResults;
 using Echo.Application.Pagination;
-using Echo.Application.Query;
+using Echo.Application.Services.Encoders;
 using Echo.Application.Services.Generators;
 using Echo.Core.Dtos;
 using Echo.Core.Mapping.EventAttendanceMapping;
 using Echo.Core.Repositories;
 using Echo.Domain.Data;
+using Echo.Domain.Entities.Core;
 
 namespace Echo.Core.Services;
 
@@ -13,27 +14,30 @@ public class EventAttendanceService(
     EventAttendanceRepository repository,
     EventRepository eventRepository,
     MemberRepository memberRepository,
+    IEncoder encoder,
     IUnitOfWork unitOfWork,
     IEventAttendanceMapper mapper,
     IIdGenerator idGenerator
 )
 {
-    public async Task<IOperationResult> GetPage(
+    public async Task<IOperationResult> List(
         Guid congregationId,
-        PaginationParameters paginationParameters,
-        QueryParameters? queryParameters,
+        PaginationRequest pagination,
         CancellationToken ct
     )
     {
-        var entities = await repository.GetAll(
-            congregationId,
-            paginationParameters,
-            queryParameters,
-            ct
-        );
+        var cursor = encoder.Decode<EventAttendanceCursor>(pagination.Cursor);
+        var entities = await repository.List(congregationId, cursor, pagination.PageSize + 1, ct);
 
-        var res = mapper.ToListDto(entities);
-        return new SuccessResult<List<EventAttendanceResponseDto>>(res);
+        var hasMore = entities.Count > pagination.PageSize;
+        if (hasMore)
+            entities.RemoveAt(entities.Count - 1);
+
+        var nextCursor = hasMore ? encoder.Encode(BuildCursor(entities.Last())) : null;
+
+        var data = mapper.ToListDto(entities);
+        var res = new PagedResponse<EventAttendanceResponseDto>(hasMore, nextCursor, data);
+        return new SuccessResult<PagedResponse<EventAttendanceResponseDto>>(res);
     }
 
     public async Task<IOperationResult> GetById(Guid id, Guid congregationId, CancellationToken ct)
@@ -47,40 +51,58 @@ public class EventAttendanceService(
         return new SuccessResult<EventAttendanceResponseDto>(res);
     }
 
-    public async Task<IOperationResult> GetByEventId(
-        PaginationParameters paginationParameters,
-        QueryParameters queryParameters,
+    public async Task<IOperationResult> ListByEventId(
+        Guid congregationId,
         Guid eventId,
+        PaginationRequest pagination,
         CancellationToken ct
     )
     {
-        var entities = await repository.GetByEventId(
-            paginationParameters,
-            queryParameters,
+        var cursor = encoder.Decode<EventAttendanceCursor>(pagination.Cursor);
+        var entities = await repository.ListByEventId(
+            congregationId,
             eventId,
+            cursor,
+            pagination.PageSize + 1,
             ct
         );
 
-        var res = mapper.ToListDto(entities);
-        return new SuccessResult<List<EventAttendanceResponseDto>>(res);
+        var hasMore = entities.Count > pagination.PageSize;
+        if (hasMore)
+            entities.RemoveAt(entities.Count - 1);
+
+        var nextCursor = hasMore ? encoder.Encode(BuildCursor(entities.Last())) : null;
+
+        var data = mapper.ToListDto(entities);
+        var res = new PagedResponse<EventAttendanceResponseDto>(hasMore, nextCursor, data);
+        return new SuccessResult<PagedResponse<EventAttendanceResponseDto>>(res);
     }
 
-    public async Task<IOperationResult> GetByMemberId(
-        PaginationParameters paginationParameters,
-        QueryParameters queryParameters,
+    public async Task<IOperationResult> ListByMemberId(
+        Guid congregationId,
         Guid memberId,
+        PaginationRequest pagination,
         CancellationToken ct
     )
     {
-        var entities = await repository.GetByMemberId(
-            paginationParameters,
-            queryParameters,
+        var cursor = encoder.Decode<EventAttendanceCursor>(pagination.Cursor);
+        var entities = await repository.ListByMemberId(
+            congregationId,
             memberId,
+            cursor,
+            pagination.PageSize + 1,
             ct
         );
 
-        var res = mapper.ToListDto(entities);
-        return new SuccessResult<List<EventAttendanceResponseDto>>(res);
+        var hasMore = entities.Count > pagination.PageSize;
+        if (hasMore)
+            entities.RemoveAt(entities.Count - 1);
+
+        var nextCursor = hasMore ? encoder.Encode(BuildCursor(entities.Last())) : null;
+
+        var data = mapper.ToListDto(entities);
+        var res = new PagedResponse<EventAttendanceResponseDto>(hasMore, nextCursor, data);
+        return new SuccessResult<PagedResponse<EventAttendanceResponseDto>>(res);
     }
 
     public async Task<IOperationResult> Create(
@@ -140,5 +162,10 @@ public class EventAttendanceService(
         await unitOfWork.CommitAsync(ct);
 
         return new NoContentResult();
+    }
+
+    private EventAttendanceCursor BuildCursor(EventAttendance last)
+    {
+        return new EventAttendanceCursor { CheckInTime = last.CheckInTime, Id = last.Id };
     }
 }

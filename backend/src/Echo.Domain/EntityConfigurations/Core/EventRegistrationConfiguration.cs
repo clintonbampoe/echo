@@ -22,5 +22,9 @@ public class EventRegistrationConfiguration : PrimaryEntityConfigurationBase<Eve
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasIndex(er => new { er.EventId, er.MemberId }).IsUnique();
+
+        builder
+            .HasIndex(er => new { er.RegistrationDate, er.Id })
+            .HasFilter($"\"{nameof(EventRegistration.DeletedAt)}\" IS NULL");
     }
 }

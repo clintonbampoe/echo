@@ -16,5 +16,9 @@ public class ProjectContributionConfiguration : PrimaryEntityConfigurationBase<P
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasIndex(pc => pc.ProjectId);
+
+        builder
+            .HasIndex(pc => new { pc.DateContributed, pc.Id })
+            .HasFilter($"\"{nameof(ProjectContribution.DeletedAt)}\" IS NULL");
     }
 }

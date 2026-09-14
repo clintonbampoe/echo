@@ -32,7 +32,7 @@ public class MemberMapperTests
         Assert.Equal(dto.NextOfKin, entity.NextOfKin);
         Assert.Equal(dto.EmergencyContactName, entity.EmergencyContactName);
         Assert.Equal(dto.EmergencyContactPhoneNumber, entity.EmergencyContactPhoneNumber);
-        Assert.Equal(dto.MemberActivityStatus, entity.MemberActivityStatus);
+        Assert.Equal(dto.Status, entity.Status);
     }
 
     [Fact]
@@ -71,7 +71,7 @@ public class MemberMapperTests
         Assert.Equal(entity.NextOfKin, result.NextOfKin);
         Assert.Equal(entity.EmergencyContactName, result.EmergencyContactName);
         Assert.Equal(entity.EmergencyContactPhoneNumber, result.EmergencyContactPhoneNumber);
-        Assert.Equal(entity.MemberActivityStatus, result.MemberActivityStatus);
+        Assert.Equal(entity.Status, result.Status);
         Assert.Equal(entity.CreatedAt, result.CreatedAt);
     }
 
@@ -100,7 +100,7 @@ public class MemberMapperTests
         Assert.Equal(dto.NextOfKin, entity.NextOfKin);
         Assert.Equal(dto.EmergencyContactName, entity.EmergencyContactName);
         Assert.Equal(dto.EmergencyContactPhoneNumber, entity.EmergencyContactPhoneNumber);
-        Assert.Equal(dto.MemberActivityStatus, entity.MemberActivityStatus);
+        Assert.Equal(dto.Status, entity.Status);
     }
 
     [Fact]
@@ -129,7 +129,7 @@ public class MemberMapperTests
         Assert.Equal(original.NextOfKin, entity.NextOfKin);
         Assert.Equal(original.EmergencyContactName, entity.EmergencyContactName);
         Assert.Equal(original.EmergencyContactPhoneNumber, entity.EmergencyContactPhoneNumber);
-        Assert.Equal(original.MemberActivityStatus, entity.MemberActivityStatus);
+        Assert.Equal(original.Status, entity.Status);
     }
 
     [Fact]

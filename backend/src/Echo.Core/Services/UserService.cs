@@ -1,21 +1,44 @@
 using Echo.Application.HttpResults;
 using Echo.Application.Pagination;
-using Echo.Application.Query;
+using Echo.Application.Services.Encoders;
 using Echo.Application.Services.Generators;
 using Echo.Core.Dtos;
 using Echo.Core.Mapping.UserMapping;
 using Echo.Core.Repositories;
 using Echo.Domain.Data;
+using Echo.Domain.Entities.Core;
 
 namespace Echo.Core.Services;
 
 public class UserService(
     UserRepository repository,
     IUnitOfWork unitOfWork,
+    IEncoder encoder,
     IUserMapper mapper,
     IIdGenerator idGenerator
 )
 {
+    public async Task<IOperationResult> List(
+        Guid congregationId,
+        PaginationRequest pagination,
+        CancellationToken ct = default
+    )
+    {
+        var cursor = encoder.Decode<UserCursor>(pagination.Cursor);
+
+        var entities = await repository.List(congregationId, cursor, pagination.PageSize + 1, ct);
+
+        var hasMore = entities.Count > pagination.PageSize;
+
+        if (hasMore)
+            entities.RemoveAt(entities.Count - 1);
+        var nextCursor = encoder.Encode(BuildCursor(entities.Last()));
+
+        var data = mapper.ToListDto(entities);
+        var res = new PagedResponse<UserResponseDto>(hasMore, nextCursor, data);
+        return new SuccessResult<PagedResponse<UserResponseDto>>(res);
+    }
+
     public async Task<IOperationResult> GetById(Guid id, Guid congregationId, CancellationToken ct)
     {
         var entity = await repository.GetById(id, ct);
@@ -76,24 +99,6 @@ public class UserService(
         return new NoContentResult();
     }
 
-    public async Task<IOperationResult> GetPage(
-        Guid congregationId,
-        PaginationParameters paginationParameters,
-        QueryParameters? queryParameters,
-        CancellationToken ct = default
-    )
-    {
-        var entities = await repository.GetPage(
-            congregationId,
-            paginationParameters,
-            queryParameters,
-            ct
-        );
-
-        var res = mapper.ToListDto(entities);
-        return new SuccessResult<List<UserResponseDto>>(res);
-    }
-
     public async Task<IOperationResult> Search(
         Guid congregationId,
         string name,
@@ -108,5 +113,10 @@ public class UserService(
     private async Task<bool> IsEmailTaken(string emailAddress, CancellationToken ct)
     {
         return await repository.IsEmailAddressTaken(emailAddress, ct);
+    }
+
+    private UserCursor BuildCursor(User last)
+    {
+        return new UserCursor { Name = last.Name, Id = last.Id };
     }
 }

@@ -68,8 +68,9 @@ services:
       DB_USERNAME: ${DB_USERNAME}
       PGPASSWORD: ${DB_PASSWORD}
     volumes:
-      - ./infra/postgres/backup/backup.sh:/backup.sh:ro
-      - ./infra/postgres/backup/db_dumps:/db_dumps
+      - ./infra/postgres/backup/backup.sh:/app/backup.sh:ro
+      - ./infra/postgres/backup/restore.sh:/app/restore.sh:ro
+      - ./infra/postgres/backup/dumps/:/app/dumps
     # Entry point is defined per environment in override/prod files
     # Since schedule differs between dev and prod
     depends_on:

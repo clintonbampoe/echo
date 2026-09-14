@@ -48,17 +48,6 @@ public record EventUpdateDto
     public string? Description { get; init; }
 }
 
-public record EventListResponseDto
-{
-    public Guid Id { get; init; }
-    public required string OrganizationName { get; init; }
-    public required string OrganizerName { get; init; }
-    public required string Name { get; init; }
-    public DateOnly StartDate { get; init; }
-    public DateOnly EndDate { get; init; }
-    public string? Location { get; init; }
-}
-
 public record EventResponseDto
 {
     public Guid Id { get; init; }
@@ -77,16 +66,22 @@ public record EventResponseDto
     public DateTime CreatedAt { get; init; }
 }
 
-public record EventSummaryDto
-{
-    public required int TotalEvents { get; init; }
-    public required int UpcomingEvents { get; init; }
-    public required int PastEvents { get; init; }
-    public required int TotalRegistrations { get; init; }
-}
-
 public record EventSearchResultDto
 {
     public Guid Id { get; init; }
     public required string Name { get; init; }
+}
+
+public record EventCursor
+{
+    public DateOnly StartDate { get; init; }
+    public Guid Id { get; init; }
+}
+
+public record EventFilters
+{
+    public DateOnly? StartDate { get; init; }
+    public string? Name { get; init; }
+    public Guid? OrganizationId { get; init; }
+    public Guid? OrganizerId { get; init; }
 }

@@ -21,5 +21,9 @@ public class UserConfiguration : PrimaryEntityConfigurationBase<User>
             .ValueGeneratedOnAddOrUpdate();
 
         builder.HasIndex(m => m.Name).HasMethod("GIN").HasOperators("gin_trgm_ops");
+
+        builder
+            .HasIndex(u => new { u.Name, u.Id })
+            .HasFilter($"\"{nameof(User.DeletedAt)}\" IS NULL");
     }
 }

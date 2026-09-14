@@ -1,18 +1,8 @@
 namespace Echo.Application.Pagination;
 
-public class PagedResponse<T>
-    where T : class
+public class PagedResponse<T>(bool hasMore, string? next, List<T> data)
 {
-    public List<T> Data { get; set; }
-    public int PageNumber { get; set; }
-    public int PageSize { get; set; }
-    public int TotalRecordCount { get; set; }
-
-    public PagedResponse(List<T> data, PaginationParameters paginationParams, int totalRecords)
-    {
-        Data = data;
-        PageNumber = paginationParams.PageNumber;
-        PageSize = paginationParams.PageSize;
-        TotalRecordCount = totalRecords;
-    }
+    public bool HasMore { get; init; } = hasMore;
+    public string? Next { get; init; } = next;
+    public List<T> Data { get; init; } = data;
 }

@@ -12,7 +12,7 @@ public class ProjectCategoryService(
     IProjectCategoryMapper mapper
 )
 {
-    public async Task<IOperationResult> GetAll(Guid congregationId, CancellationToken ct)
+    public async Task<IOperationResult> List(Guid congregationId, CancellationToken ct)
     {
         var entities = await repository.GetAll(congregationId, ct);
         var res = mapper.ToListDto(entities);

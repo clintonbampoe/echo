@@ -22,5 +22,9 @@ public class MemberConfiguration : PrimaryEntityConfigurationBase<Member>
             .ValueGeneratedOnAddOrUpdate();
 
         builder.HasIndex(m => m.Name).HasMethod("GIN").HasOperators("gin_trgm_ops");
+
+        builder
+            .HasIndex(m => new { m.Name, m.Id })
+            .HasFilter($"\"{nameof(Member.DeletedAt)}\" IS NULL");
     }
 }

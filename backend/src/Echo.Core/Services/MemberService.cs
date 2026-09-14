@@ -1,11 +1,12 @@
 using Echo.Application.HttpResults;
 using Echo.Application.Pagination;
-using Echo.Application.Query;
+using Echo.Application.Services.Encoders;
 using Echo.Application.Services.Generators;
 using Echo.Core.Dtos;
 using Echo.Core.Mapping.MemberMapping;
 using Echo.Core.Repositories;
 using Echo.Domain.Data;
+using Echo.Domain.Entities.Core;
 
 namespace Echo.Core.Services;
 
@@ -13,24 +14,36 @@ public class MemberService(
     MemberRepository repository,
     IUnitOfWork unitOfWork,
     IMemberMapper mapper,
+    IEncoder encoder,
     IIdGenerator idGenerator
 )
 {
-    public async Task<IOperationResult> GetPage(
+    public async Task<IOperationResult> List(
         Guid congregationId,
-        PaginationParameters paginationParameters,
-        QueryParameters? queryParameters,
+        MemberFilters filters,
+        PaginationRequest pagination,
         CancellationToken ct
     )
     {
-        var entities = await repository.GetPage(
+        var cursor = encoder.Decode<MemberCursor>(pagination.Cursor);
+
+        var entities = await repository.List(
             congregationId,
-            paginationParameters,
-            queryParameters,
+            filters,
+            cursor,
+            pagination.PageSize + 1,
             ct
         );
-        var res = mapper.ToListDto(entities);
-        return new SuccessResult<List<MemberResponseDto>>(res);
+
+        var hasMore = entities.Count > pagination.PageSize;
+        if (hasMore)
+            entities.RemoveAt(entities.Count - 1);
+
+        var nextCursor = hasMore ? encoder.Encode(BuildCursor(entities.Last())) : null;
+
+        var data = mapper.ToListDto(entities);
+        var res = new PagedResponse<MemberResponseDto>(hasMore, nextCursor, data);
+        return new SuccessResult<PagedResponse<MemberResponseDto>>(res);
     }
 
     public async Task<IOperationResult> GetById(Guid id, Guid congregationId, CancellationToken ct)
@@ -106,5 +119,10 @@ public class MemberService(
     public Task<IOperationResult> GetSummary(Guid congregationId, CancellationToken ct)
     {
         throw new NotImplementedException();
+    }
+
+    private MemberCursor BuildCursor(Member last)
+    {
+        return new MemberCursor { Name = last.Name, Id = last.Id };
     }
 }

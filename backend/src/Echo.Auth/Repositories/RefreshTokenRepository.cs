@@ -1,4 +1,4 @@
-using Echo.Application.Extensions.QueryExtensions;
+using Echo.Application.Query.Extensions;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Auth;
 using Microsoft.EntityFrameworkCore;
@@ -9,7 +9,10 @@ public class RefreshTokenRepository(AppDbContext context, TimeProvider timeProvi
 {
     private readonly DbSet<RefreshToken> _tokens = context.Set<RefreshToken>();
 
-    public async Task<RefreshToken?> GetTokenRecordByHashWithUser(string hashedInput, CancellationToken ct = default)
+    public async Task<RefreshToken?> GetTokenRecordByHashWithUser(
+        string hashedInput,
+        CancellationToken ct = default
+    )
     {
         var tokenObject = await _tokens
             .FilterSoftDeleted()
@@ -25,7 +28,11 @@ public class RefreshTokenRepository(AppDbContext context, TimeProvider timeProvi
         return true;
     }
 
-    public async Task<bool> Revoke(Guid tokenId, Guid? replacedByTokenId = null, CancellationToken ct = default)
+    public async Task<bool> Revoke(
+        Guid tokenId,
+        Guid? replacedByTokenId = null,
+        CancellationToken ct = default
+    )
     {
         var existing = await _tokens
             .FilterSoftDeleted()
@@ -40,7 +47,10 @@ public class RefreshTokenRepository(AppDbContext context, TimeProvider timeProvi
         return true;
     }
 
-    public async Task<bool> RevokeAllActiveSessionsForUser(Guid userId, CancellationToken ct = default)
+    public async Task<bool> RevokeAllActiveSessionsForUser(
+        Guid userId,
+        CancellationToken ct = default
+    )
     {
         var activeTokens = await _tokens
             .FilterSoftDeleted()

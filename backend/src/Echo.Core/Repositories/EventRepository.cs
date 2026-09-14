@@ -1,6 +1,5 @@
-using Echo.Application.Extensions.QueryExtensions;
-using Echo.Application.Pagination;
-using Echo.Application.Query;
+using Echo.Application.Query.Extensions;
+using Echo.Core.Dtos;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core;
 using Microsoft.EntityFrameworkCore;
@@ -11,27 +10,25 @@ public class EventRepository(AppDbContext context)
 {
     private readonly DbSet<Event> _dbSet = context.Set<Event>();
 
-    public async Task<List<Event>> GetPage(
+    public async Task<List<Event>> List(
         Guid congregationId,
-        PaginationParameters paginationParameters,
-        QueryParameters? queryParameters,
-        CancellationToken ct = default
+        EventFilters filters,
+        EventCursor? cursor,
+        int pageSize,
+        CancellationToken ct
     )
     {
-        var query = _dbSet
+        return await _dbSet
             .AsNoTracking()
             .FilterSoftDeleted()
-            .ApplySearchFilter(queryParameters)
-            .ApplyDateFilters(queryParameters)
-            .Where(e => e.CongregationId == congregationId);
-
-        var res = await query
-            .OrderBy(e => e.Id)
+            .Where(e => e.CongregationId == congregationId)
             .Include(e => e.Organization)
             .Include(e => e.Organizer)
+            .Filter(filters)
+            .OrderBy(e => e.StartDate)
+            .ThenBy(e => e.Id)
+            .Paginate(cursor, pageSize)
             .ToListAsync(ct);
-
-        return res;
     }
 
     public async Task<Event?> GetById(Guid id, Guid congregationId, CancellationToken ct = default)
@@ -63,9 +60,42 @@ public class EventRepository(AppDbContext context)
             .SearchName(name)
             .ToListAsync(ct);
     }
+}
 
-    public Task GetSummary(Guid congregationId, CancellationToken ct)
+internal static class EventQueryExtensions
+{
+    internal static IQueryable<Event> Filter(this IQueryable<Event> query, EventFilters filters)
     {
-        throw new NotImplementedException();
+        var dateToday = DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().DateTime);
+
+        query = filters.StartDate is not null
+            ? query.Where(e => e.StartDate == filters.StartDate)
+            : query.Where(e => e.StartDate > dateToday);
+
+        if (filters.OrganizerId is not null)
+            query = query.Where(e => e.OrganizerId == filters.OrganizerId);
+
+        if (filters.OrganizationId is not null)
+            query = query.Where(e => e.OrganizationId == filters.OrganizationId);
+
+        if (filters.Name is not null)
+            query = query.Where(e => EF.Functions.ILike(e.Name, $"%{filters.Name}%"));
+
+        return query;
+    }
+
+    internal static IQueryable<Event> Paginate(
+        this IQueryable<Event> query,
+        EventCursor? cursor,
+        int pageSize
+    )
+    {
+        if (cursor is not null)
+            query = query.Where(e =>
+                e.StartDate > cursor.StartDate
+                || (e.StartDate == cursor.StartDate && e.Id > cursor.Id)
+            );
+
+        return query.Take(pageSize);
     }
 }

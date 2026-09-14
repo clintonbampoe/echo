@@ -29,7 +29,7 @@ public static class MemberFactory
             NextOfKin = "Kin-01",
             EmergencyContactName = Constants.DefaultName,
             EmergencyContactPhoneNumber = Constants.DefaultPhoneNumber,
-            MemberActivityStatus = default,
+            Status = default,
             CreatedAt = Constants.DefaultDateTime,
             DeletedAt = null,
         };
@@ -67,7 +67,7 @@ public static class MemberFactory
             NextOfKin = "Kin-01",
             EmergencyContactName = Constants.DefaultName,
             EmergencyContactPhoneNumber = Constants.DefaultPhoneNumber,
-            MemberActivityStatus = MemberActivityStatus.Active,
+            Status = MemberStatus.Active,
         };
     }
 
@@ -92,7 +92,7 @@ public static class MemberFactory
             NextOfKin = "Kin-01",
             EmergencyContactName = Constants.DefaultName,
             EmergencyContactPhoneNumber = Constants.DefaultPhoneNumber,
-            MemberActivityStatus = MemberActivityStatus.Active,
+            Status = MemberStatus.Active,
         };
     }
 
@@ -117,7 +117,7 @@ public static class MemberFactory
             NextOfKin = null,
             EmergencyContactName = null,
             EmergencyContactPhoneNumber = null,
-            MemberActivityStatus = null,
+            Status = null,
         };
     }
 }

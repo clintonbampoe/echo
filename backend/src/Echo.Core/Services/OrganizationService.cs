@@ -1,36 +1,41 @@
 using Echo.Application.HttpResults;
 using Echo.Application.Pagination;
-using Echo.Application.Query;
+using Echo.Application.Services.Encoders;
 using Echo.Application.Services.Generators;
 using Echo.Core.Dtos;
 using Echo.Core.Mapping.OrganizationMapping;
 using Echo.Core.Repositories;
 using Echo.Domain.Data;
+using Echo.Domain.Entities.Core;
 
 namespace Echo.Core.Services;
 
 public class OrganizationService(
     OrganizationRepository repository,
     IUnitOfWork unitOfWork,
+    IEncoder encoder,
     IOrganizationMapper mapper,
     IIdGenerator idGenerator
 )
 {
-    public async Task<IOperationResult> GetPage(
+    public async Task<IOperationResult> List(
         Guid congregationId,
-        PaginationParameters paginationParameters,
-        QueryParameters? queryParameters,
+        PaginationRequest pagination,
         CancellationToken ct = default
     )
     {
-        var entities = await repository.GetPage(
-            congregationId,
-            paginationParameters,
-            queryParameters,
-            ct
-        );
-        var res = mapper.ToListDto(entities);
-        return new SuccessResult<List<OrganizationResponseDto>>(res);
+        var cursor = encoder.Decode<OrganizationCursor>(pagination.Cursor);
+        var entities = await repository.List(congregationId, cursor, pagination.PageSize + 1, ct);
+
+        var hasMore = entities.Count > pagination.PageSize;
+        if (hasMore)
+            entities.RemoveAt(entities.Count - 1);
+
+        var nextCursor = hasMore ? encoder.Encode(BuildCursor(entities.Last())) : null;
+
+        var data = mapper.ToListDto(entities);
+        var res = new PagedResponse<OrganizationResponseDto>(hasMore, nextCursor, data);
+        return new SuccessResult<PagedResponse<OrganizationResponseDto>>(res);
     }
 
     public async Task<IOperationResult> GetById(Guid id, Guid congregationId, CancellationToken ct)
@@ -102,8 +107,8 @@ public class OrganizationService(
         return new SuccessResult<List<OrganizationSearchResultDto>>(res);
     }
 
-    public Task<IOperationResult> GetSummary(Guid congregationId, CancellationToken ct)
+    private OrganizationCursor BuildCursor(Organization last)
     {
-        throw new NotImplementedException();
+        return new OrganizationCursor { Name = last.Name, Id = last.Id };
     }
 }

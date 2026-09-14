@@ -16,15 +16,6 @@ public record OrganizationMemberUpdateDto
     public DateOnly? JoinedAt { get; init; }
 }
 
-public record OrganizationMemberListResponseDto
-{
-    public Guid Id { get; init; }
-    public required string MemberName { get; init; }
-    public required string OrganizationName { get; init; }
-    public MemberOrganizationalRole Role { get; init; }
-    public DateOnly JoinedAt { get; init; }
-}
-
 public record OrganizationMemberResponseDto
 {
     public Guid Id { get; init; }
@@ -35,4 +26,15 @@ public record OrganizationMemberResponseDto
     public MemberOrganizationalRole Role { get; init; }
     public DateOnly JoinedAt { get; init; }
     public DateTime CreatedAt { get; init; }
+}
+
+public record OrganizationMemberCursor
+{
+    public DateTime CreatedAt { get; init; }
+    public Guid Id { get; init; }
+}
+
+public record OrganizationMemberFilters
+{
+    public MemberOrganizationalRole? Role { get; init; }
 }

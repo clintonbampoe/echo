@@ -1,4 +1,4 @@
-using Echo.Application.Extensions.QueryExtensions;
+using Echo.Application.Query.Extensions;
 using Echo.Domain.Data;
 using Echo.Domain.Entities.Core;
 using Microsoft.EntityFrameworkCore;
@@ -9,15 +9,9 @@ public class CongregationRepository(AppDbContext context)
 {
     private readonly DbSet<Congregation> _dbSet = context.Set<Congregation>();
 
-    public async Task<Congregation?> GetById(
-        Guid id,
-        CancellationToken ct = default
-    )
+    public async Task<Congregation?> GetById(Guid id, CancellationToken ct = default)
     {
-        return await _dbSet
-            .FilterSoftDeleted()
-            .Where(c => c.Id == id)
-            .FirstOrDefaultAsync(ct);
+        return await _dbSet.FilterSoftDeleted().Where(c => c.Id == id).FirstOrDefaultAsync(ct);
     }
 
     public void Create(Congregation entity)
