@@ -46,14 +46,16 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setIsLoading(true);
     try {
       const tokenPair = await authService.login(email, password);
-      const claims = parseJwt(tokenPair.accessToken);
+      const token = tokenPair?.accessToken || (tokenPair as any)?.data?.accessToken || '';
+      const refreshToken = tokenPair?.refreshToken || (tokenPair as any)?.data?.refreshToken || '';
+      const claims = token ? parseJwt(token) : null;
 
       const loggedInUser: User = {
         id: claims?.sub || claims?.nameid || '',
         email,
         name: email.split('@')[0],
-        token: tokenPair.accessToken,
-        refreshToken: tokenPair.refreshToken,
+        token,
+        refreshToken,
         role: claims?.role || '',
         congregationId: claims?.congregationId || '',
       };

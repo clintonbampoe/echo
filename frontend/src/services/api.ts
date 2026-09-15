@@ -57,7 +57,11 @@ export const apiFetch = async (endpoint: string, options: RequestInit = {}): Pro
           });
 
           if (refreshRes.ok) {
-            const data = await refreshRes.json();
+            let data = await refreshRes.json();
+            if (data && typeof data === 'object' && 'data' in data) {
+              data = data.data;
+            }
+
             const currentUser = userStr ? JSON.parse(userStr) : {};
             const updatedUser = {
               ...currentUser,
@@ -109,7 +113,12 @@ export const apiFetch = async (endpoint: string, options: RequestInit = {}): Pro
 
   const contentType = response.headers.get('content-type');
   if (contentType && contentType.includes('application/json')) {
-    return response.json();
+    const json = await response.json();
+    if (json && typeof json === 'object') {
+      if ('data' in json) return json.data;
+      if ('resource' in json) return json.resource;
+    }
+    return json;
   }
 
   const text = await response.text();
