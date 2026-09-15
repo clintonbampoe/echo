@@ -131,10 +131,10 @@ const Members: React.FC = () => {
   // ── Derived stats ─────────────────────────────────────────────────────────
 
   const totalMembership = members.length;
-  const newMembers = members.filter(m => m.status === 'New Visitor').length;
+  const newMembers = members.filter(m => m.status === 'NewVisitor').length;
   // "Active Families" — mock: count distinct first-letter families
   const activeFamilies = new Set(members.filter(m => m.status === 'Active').map(m => m.lastName)).size;
-  const retentionRate = Math.round((members.filter(m => m.status === 'Active').length / totalMembership) * 100);
+  const retentionRate = totalMembership === 0 ? 0 : Math.round((members.filter(m => m.status === 'Active').length / totalMembership) * 100);
 
   // ── Filtering ─────────────────────────────────────────────────────────────
 
