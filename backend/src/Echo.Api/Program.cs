@@ -32,7 +32,17 @@ builder.Services.AddCors(options =>
             builder.Configuration["FrontendClient:BaseUrl"]
             ?? throw new InvalidOperationException("Missing 'FrontendClient:BaseUrl'.");
 
-        policy.WithOrigins(frontendBaseUrl).AllowAnyHeader().AllowAnyMethod().AllowCredentials();
+        if (builder.Environment.IsDevelopment())
+        {
+            policy.SetIsOriginAllowed(origin => new Uri(origin).Host == "localhost")
+                .AllowAnyHeader()
+                .AllowAnyMethod()
+                .AllowCredentials();
+        }
+        else
+        {
+            policy.WithOrigins(frontendBaseUrl).AllowAnyHeader().AllowAnyMethod().AllowCredentials();
+        }
     });
 });
 
