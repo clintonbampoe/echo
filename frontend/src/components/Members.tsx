@@ -21,23 +21,22 @@ const MINISTRY_GROUPS = [
 ];
 
 const GHANA_REGIONS = [
-  'Greater Accra Region',
-  'Ashanti Region',
-  'Eastern Region',
-  'Western Region',
-  'Central Region',
-  'Northern Region',
-  'Upper East Region',
-  'Upper West Region',
-  'Volta Region',
-  'Brong-Ahafo Region',
-  'Oti Region',
-  'Savannah Region',
-  'North East Region',
-  'Bono Region',
-  'Bono East Region',
-  'Ahafo Region',
-  'Western North Region',
+  { value: 'GreaterAccra', label: 'Greater Accra Region' },
+  { value: 'Ashanti', label: 'Ashanti Region' },
+  { value: 'Eastern', label: 'Eastern Region' },
+  { value: 'Western', label: 'Western Region' },
+  { value: 'Central', label: 'Central Region' },
+  { value: 'Northern', label: 'Northern Region' },
+  { value: 'UpperEast', label: 'Upper East Region' },
+  { value: 'UpperWest', label: 'Upper West Region' },
+  { value: 'Volta', label: 'Volta Region' },
+  { value: 'Bono', label: 'Bono Region' },
+  { value: 'Oti', label: 'Oti Region' },
+  { value: 'Savannah', label: 'Savannah Region' },
+  { value: 'NorthEast', label: 'North East Region' },
+  { value: 'BonoEast', label: 'Bono East Region' },
+  { value: 'Ahafo', label: 'Ahafo Region' },
+  { value: 'WesternNorth', label: 'Western North Region' },
 ];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -81,8 +80,9 @@ const Members: React.FC = () => {
   // Map ActiveTab to backend status
   let backendStatus = '';
   if (activeTab === 'Active') backendStatus = 'Active';
-  if (activeTab === 'New Visitors') backendStatus = 'NewVisitor';
-  if (activeTab === 'Archived') backendStatus = 'Inactive';
+  
+  if (activeTab === 'Inactive') backendStatus = 'Inactive';
+  if (activeTab === 'Archived') backendStatus = 'Archived';
 
   const { data: pagedResponse, isLoading } = useMembers({ 
     name: searchQuery || undefined,
@@ -131,7 +131,7 @@ const Members: React.FC = () => {
   // ── Derived stats ─────────────────────────────────────────────────────────
 
   const totalMembership = members.length;
-  const newMembers = members.filter(m => m.status === 'NewVisitor').length;
+  const newMembers = members.filter(m => m.status === 'Archived').length;
   // "Active Families" — mock: count distinct first-letter families
   const activeFamilies = new Set(members.filter(m => m.status === 'Active').map(m => m.lastName)).size;
   const retentionRate = totalMembership === 0 ? 0 : Math.round((members.filter(m => m.status === 'Active').length / totalMembership) * 100);
@@ -204,7 +204,7 @@ const Members: React.FC = () => {
     setEditingMember(null);
   };
 
-  const tabs = ['All Members', 'Active', 'New Visitors', 'Archived'];
+  const tabs = ['All Members', 'Active', 'Inactive', 'Archived'];
   const panelOpen = showAddPanel || !!editingMember;
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -466,7 +466,7 @@ const MemberFormFields: React.FC<{
             onChange={e => set('maritalStatus', e.target.value as any)}>
             <option value="Single">Single</option>
             <option value="Married">Married</option>
-            <option value="Divorced">Divorced</option>
+            
             <option value="Widowed">Widowed</option>
           </select>
         </div>
@@ -476,7 +476,7 @@ const MemberFormFields: React.FC<{
             onChange={e => set('status', e.target.value as any)}>
             <option value="Active">Active</option>
             <option value="Inactive">Inactive</option>
-            <option value="NewVisitor">New Visitor</option>
+            <option value="Archived">Archived</option>
           </select>
         </div>
       </div>
@@ -523,7 +523,7 @@ const MemberFormFields: React.FC<{
         <select className="mf-select" value={form.region || ''}
           onChange={e => set('region', e.target.value)}>
           <option value="">Select region</option>
-          {GHANA_REGIONS.map(r => <option key={r} value={r}>{r}</option>)}
+          {GHANA_REGIONS.map(r => <option key={r.value} value={r.value}>{r.label}</option>)}
         </select>
       </div>
 

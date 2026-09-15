@@ -14,11 +14,11 @@ export interface Member {
   hometown: string;
   region: string;
   gpsAddress?: string;
-  maritalStatus: 'Single' | 'Married' | 'Divorced' | 'Widowed';
+  maritalStatus: 'Single' | 'Married' | 'Widowed';
   nextOfKin: string;
   emergencyContactName: string;
   emergencyContactPhoneNumber: string;
-  status: 'Active' | 'Inactive' | 'NewVisitor';
+  status: 'Active' | 'Inactive' | 'Archived' | 'Transferred';
   createdAt: string;
 }
 
