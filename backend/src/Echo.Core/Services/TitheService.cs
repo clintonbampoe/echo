@@ -61,7 +61,7 @@ public class TitheService(
         CancellationToken ct
     )
     {
-        var member = await memberRepository.GetById(congregationId, dto.MemberId, ct);
+        var member = await memberRepository.GetById(dto.MemberId, congregationId, ct);
         if (member is null)
             return new ForeignKeyEntityNotFound(nameof(member));
 

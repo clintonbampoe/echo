@@ -1,191 +1,93 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useLayout } from '../hooks/useLayout';
+import { useMembers } from '../hooks/useMembers';
+import { useProjectContributions } from '../hooks/useProjectContributions';
+import {
+  useCreateProject,
+  useCreateProjectCategory,
+  useDeleteProject,
+  useProjectCategories,
+  useProjects,
+  useUpdateProject,
+} from '../hooks/useProjects';
 import '../styles/Projects.css';
+import type { Project, ProjectStatus } from '../types/project';
 import {
   CalendarIcon,
   CloseIcon,
   EditIcon,
   MembersIcon,
-  TrashIcon
+  TrashIcon,
 } from './Icons';
 import DeleteConfirmModal from './common/DeleteConfirmModal';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type ProjectStatus = 'On Track' | 'Planning' | 'Completed' | 'Off Track';
+type TabFilter = 'All Projects' | 'Active' | 'Planning' | 'Completed';
 
-interface TeamMember {
-  id: number;
+interface FormState {
   name: string;
-  role: string;
-  initials: string;
-}
-
-interface Project {
-  id: number;
-  name: string;
-  category: string;
-  lead: string;
-  leadInitials: string;
-  status: ProjectStatus;
-  target: number;
-  raised: number;
+  categoryId: number | '';
+  managerId: string;
+  targetAmount: string;
   startDate: string;
-  deadline: string;
+  endDate: string;
+  status: ProjectStatus;
   description: string;
-  team: TeamMember[];
 }
-
-type TabFilter = 'All Members' | 'Active' | 'Planning' | 'Completed';
-
-// ─── Mock Data ────────────────────────────────────────────────────────────────
-
-const mockProjects: Project[] = [
-  {
-    id: 1,
-    name: 'Sanctuary Renovation',
-    category: 'Building & Maintenance',
-    lead: 'David Daniels',
-    leadInitials: 'DD',
-    status: 'On Track',
-    target: 100000,
-    raised: 35000,
-    startDate: 'Feb 01, 2026',
-    deadline: 'Nov 15, 2026',
-    description:
-      'Comprehensive renovation of the main sanctuary including new seating, upgraded acoustic panels, stage expansion, and fresh painting. This will increase our seating capacity by 35% and significantly improve the worship experience for all attendees.',
-    team: [
-      { id: 1, name: 'Sarah Martinez', role: 'Project Lead', initials: 'SM' },
-      { id: 2, name: 'David Okonjo', role: 'Design Consultant', initials: 'DO' },
-    ],
-  },
-  {
-    id: 2,
-    name: 'Community Outreach',
-    category: 'Outreach & Missions',
-    lead: 'John Doe',
-    leadInitials: 'JD',
-    status: 'Completed',
-    target: 44000,
-    raised: 44000,
-    startDate: 'Jan 10, 2026',
-    deadline: 'Apr 30, 2026',
-    description:
-      'A community outreach initiative aimed at distributing food packages, clothing, and essential items to over 500 families in the surrounding neighbourhoods.',
-    team: [
-      { id: 3, name: 'Abena Acheampong', role: 'Coordinator', initials: 'AA' },
-      { id: 4, name: 'James Kwarteng', role: 'Volunteer Lead', initials: 'JK' },
-    ],
-  },
-  {
-    id: 3,
-    name: 'Musical Instruments',
-    category: 'Worship & Arts',
-    lead: 'Sarah Jenkins',
-    leadInitials: 'SJ',
-    status: 'Off Track',
-    target: 30000,
-    raised: 10000,
-    startDate: 'Mar 01, 2026',
-    deadline: 'Aug 31, 2026',
-    description:
-      'Purchasing new musical instruments for the worship team: two electric guitars, a digital piano, a full drum kit, and upgraded microphones and in-ear monitors.',
-    team: [
-      { id: 5, name: 'Michael Asante', role: 'Music Director', initials: 'MA' },
-    ],
-  },
-  {
-    id: 4,
-    name: 'Youth Camp',
-    category: 'Youth Ministry',
-    lead: 'John Doe',
-    leadInitials: 'JD',
-    status: 'Planning',
-    target: 24400,
-    raised: 0,
-    startDate: 'Jun 01, 2026',
-    deadline: 'Jul 15, 2026',
-    description:
-      'Annual youth summer camp for teenagers aged 13–19. The camp will feature Bible studies, outdoor activities, leadership workshops, and team-building events.',
-    team: [
-      { id: 6, name: 'Esi Mensah', role: 'Youth Pastor', initials: 'EM' },
-      { id: 7, name: 'Kofi Antwi', role: 'Camp Counsellor', initials: 'KA' },
-    ],
-  },
-  {
-    id: 5,
-    name: 'Livestream Upgrade',
-    category: 'Technology & Media',
-    lead: 'Michelle Obama',
-    leadInitials: 'MO',
-    status: 'Off Track',
-    target: 100000,
-    raised: 19000,
-    startDate: 'Apr 01, 2026',
-    deadline: 'Sep 30, 2026',
-    description:
-      'Upgrading the church livestream infrastructure with 4K cameras, professional lighting rigs, broadcast-grade audio mixers, and a high-speed dedicated internet connection.',
-    team: [
-      { id: 8, name: 'Nana Boateng', role: 'AV Technician', initials: 'NB' },
-    ],
-  },
-  {
-    id: 6,
-    name: 'Choir Party',
-    category: 'Worship & Arts',
-    lead: 'Samuel Mensah',
-    leadInitials: 'SM',
-    status: 'Planning',
-    target: 5000,
-    raised: 800,
-    startDate: 'Aug 01, 2026',
-    deadline: 'Aug 31, 2026',
-    description:
-      'End-of-year celebration party for all choir members. Includes catering, awards, live music performances, and a slideshow of highlights from the year.',
-    team: [
-      { id: 9, name: 'Akosua Frimpong', role: 'Events Lead', initials: 'AF' },
-    ],
-  },
-];
-
-// ─── Categories for form ──────────────────────────────────────────────────────
-
-const PROJECT_CATEGORIES = [
-  'Building & Maintenance',
-  'Outreach & Missions',
-  'Worship & Arts',
-  'Youth Ministry',
-  'Technology & Media',
-  'Administration',
-  'Education',
-];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const formatCurrency = (amount: number) =>
-  `$ ${amount.toLocaleString('en-US')}`;
+  `$ ${amount.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
+
+const formatDate = (dateStr?: string | null) => {
+  if (!dateStr) return 'TBD';
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return dateStr;
+  return d.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
+};
 
 const getProgressPercent = (raised: number, target: number) =>
   target > 0 ? Math.min(Math.round((raised / target) * 100), 100) : 0;
 
-const statusColor = (status: ProjectStatus): string => {
+const getInitials = (name?: string) => {
+  if (!name) return '??';
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+};
+
+const getStatusBadgeLabel = (status: ProjectStatus): string => {
   switch (status) {
-    case 'On Track':  return 'status-on-track';
-    case 'Completed': return 'status-completed';
-    case 'Planning':  return 'status-planning';
-    case 'Off Track': return 'status-off-track';
+    case 'OnTrack':  return 'On Track';
+    case 'Complete': return 'Completed';
+    case 'Planning': return 'Planning';
+    case 'AtRisk':   return 'At Risk';
+    case 'Missed':   return 'Missed';
+    default:         return status;
   }
 };
 
-// ─── Empty form defaults ──────────────────────────────────────────────────────
+const statusColor = (status: ProjectStatus): string => {
+  switch (status) {
+    case 'OnTrack':  return 'status-on-track';
+    case 'Complete': return 'status-completed';
+    case 'Planning': return 'status-planning';
+    case 'AtRisk':
+    case 'Missed':   return 'status-off-track';
+    default:         return 'status-planning';
+  }
+};
 
-const emptyForm = () => ({
+const emptyForm = (): FormState => ({
   name: '',
-  category: '',
-  lead: '',
-  target: '',
-  deadline: '',
-  status: 'Planning' as ProjectStatus,
+  categoryId: '',
+  managerId: '',
+  targetAmount: '',
+  startDate: new Date().toISOString().split('T')[0],
+  endDate: '',
+  status: 'Planning',
   description: '',
 });
 
@@ -194,9 +96,19 @@ const emptyForm = () => ({
 const Projects: React.FC = () => {
   const { setTitle, setCtas } = useLayout();
 
-  // ── State ──────────────────────────────────────────────────────────────────
-  const [projects, setProjects] = useState<Project[]>(mockProjects);
-  const [activeTab, setActiveTab] = useState<TabFilter>('All Members');
+  // Queries
+  const { data: projectsData, isLoading: isLoadingProjects } = useProjects();
+  const { data: categories = [] } = useProjectCategories();
+  const { data: membersData } = useMembers({}, 100);
+  const { data: contributionsData } = useProjectContributions({}, 1000);
+
+  // Mutations
+  const createProjectMutation = useCreateProject();
+  const updateProjectMutation = useUpdateProject();
+  const deleteProjectMutation = useDeleteProject();
+
+  // UI State
+  const [activeTab, setActiveTab] = useState<TabFilter>('All Projects');
   const [searchQuery, setSearchQuery] = useState('');
 
   // Panels
@@ -205,101 +117,36 @@ const Projects: React.FC = () => {
   const [showCreatePanel, setShowCreatePanel] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deletingProject, setDeletingProject] = useState<Project | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
 
-  // Create / Edit form
-  const [form, setForm] = useState(emptyForm());
+  // Form
+  const [form, setForm] = useState<FormState>(emptyForm());
 
-  const nextId = useRef(mockProjects.length + 1);
+  const projectsList = projectsData?.data || [];
+  const membersList = membersData?.data || [];
+  const contributionsList = contributionsData?.data || [];
 
-  // ── Handlers ───────────────────────────────────────────────────────────────
+  // Map contributions raised per project
+  const raisedByProjectId = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const c of contributionsList) {
+      const current = map.get(c.projectId) || 0;
+      map.set(c.projectId, current + c.amount);
+    }
+    return map;
+  }, [contributionsList]);
+
+  // ── Layout Header ──────────────────────────────────────────────────────────
 
   const openCreatePanel = () => {
     setForm(emptyForm());
+    setFormError(null);
     setShowCreatePanel(true);
   };
-
-  const openEditPanel = (project: Project) => {
-    setViewingProject(null);
-    setEditingProject(project);
-    setForm({
-      name: project.name,
-      category: project.category,
-      lead: project.lead,
-      target: String(project.target),
-      deadline: project.deadline,
-      status: project.status,
-      description: project.description,
-    });
-  };
-
-  const handleSaveCreate = () => {
-    if (!form.name.trim()) return;
-    const id = nextId.current++;
-    const newProject: Project = {
-      id,
-      name: form.name,
-      category: form.category || 'Administration',
-      lead: form.lead || 'TBD',
-      leadInitials: form.lead ? form.lead.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() : 'TB',
-      status: form.status,
-      target: parseFloat(form.target.replace(/,/g, '')) || 0,
-      raised: 0,
-      startDate: new Date().toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' }),
-      deadline: form.deadline || 'TBD',
-      description: form.description,
-      team: [],
-    };
-    setProjects(prev => [...prev, newProject]);
-    setShowCreatePanel(false);
-  };
-
-  const handleSaveEdit = () => {
-    if (!editingProject) return;
-    setProjects(prev =>
-      prev.map(p =>
-        p.id === editingProject.id
-          ? {
-              ...p,
-              name: form.name,
-              category: form.category,
-              lead: form.lead,
-              leadInitials: form.lead.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase(),
-              status: form.status,
-              target: parseFloat(form.target.replace(/,/g, '')) || p.target,
-              deadline: form.deadline,
-              description: form.description,
-            }
-          : p
-      )
-    );
-    setEditingProject(null);
-  };
-
-  const openDeleteConfirm = (project: Project) => {
-    setViewingProject(null);
-    setDeletingProject(project);
-    setShowDeleteConfirm(true);
-  };
-
-  const confirmDelete = () => {
-    if (!deletingProject) return;
-    setProjects(prev => prev.filter(p => p.id !== deletingProject.id));
-    setShowDeleteConfirm(false);
-    setDeletingProject(null);
-  };
-
-  // ── Layout ─────────────────────────────────────────────────────────────────
 
   useEffect(() => {
     setTitle('Projects');
     setCtas([
-      {
-        type: 'button',
-        label: 'Filter',
-        icon: 'filter',
-        variant: 'secondary',
-        onClick: () => {},
-      },
       {
         type: 'button',
         label: 'Add Project',
@@ -310,30 +157,127 @@ const Projects: React.FC = () => {
     ]);
   }, [setTitle, setCtas]);
 
-  // ── Derived data ───────────────────────────────────────────────────────────
+  // ── Handlers ───────────────────────────────────────────────────────────────
 
-  const activeCount  = projects.filter(p => p.status === 'On Track').length;
-  const totalRaised  = projects.reduce((s, p) => s + p.raised, 0);
-  const totalTarget  = projects.reduce((s, p) => s + p.target, 0);
-  const completedCount = projects.filter(p => p.status === 'Completed').length;
+  const openEditPanel = (project: Project) => {
+    setViewingProject(null);
+    setEditingProject(project);
+    setFormError(null);
+    setForm({
+      name: project.name,
+      categoryId: project.categoryId,
+      managerId: project.managerId,
+      targetAmount: String(project.targetAmount),
+      startDate: project.startDate ? project.startDate.split('T')[0] : '',
+      endDate: project.endDate ? project.endDate.split('T')[0] : '',
+      status: project.status,
+      description: project.description || '',
+    });
+  };
 
-  const tabFiltered = projects.filter(p => {
-    if (activeTab === 'All Members') return true;
-    if (activeTab === 'Active')      return p.status === 'On Track';
+  const handleSaveCreate = async () => {
+    if (!form.name.trim()) {
+      setFormError('Project name is required.');
+      return;
+    }
+    if (!form.categoryId) {
+      setFormError('Please select a project category.');
+      return;
+    }
+    if (!form.managerId) {
+      setFormError('Please select a project lead / manager.');
+      return;
+    }
+    if (!form.targetAmount || parseFloat(form.targetAmount) <= 0) {
+      setFormError('Please enter a valid target amount.');
+      return;
+    }
+
+    try {
+      setFormError(null);
+      await createProjectMutation.mutateAsync({
+        name: form.name.trim(),
+        categoryId: Number(form.categoryId),
+        managerId: form.managerId,
+        targetAmount: parseFloat(form.targetAmount),
+        status: form.status,
+        startDate: form.startDate,
+        endDate: form.endDate || null,
+        description: form.description.trim() || null,
+      });
+      setShowCreatePanel(false);
+    } catch (err: any) {
+      setFormError(err.message || 'Failed to create project');
+    }
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingProject) return;
+    if (!form.name.trim()) {
+      setFormError('Project name is required.');
+      return;
+    }
+
+    try {
+      setFormError(null);
+      await updateProjectMutation.mutateAsync({
+        id: editingProject.id,
+        data: {
+          name: form.name.trim(),
+          categoryId: form.categoryId ? Number(form.categoryId) : undefined,
+          managerId: form.managerId || undefined,
+          targetAmount: form.targetAmount ? parseFloat(form.targetAmount) : undefined,
+          status: form.status,
+          startDate: form.startDate || undefined,
+          endDate: form.endDate || null,
+          description: form.description.trim() || null,
+        },
+      });
+      setEditingProject(null);
+    } catch (err: any) {
+      setFormError(err.message || 'Failed to update project');
+    }
+  };
+
+  const openDeleteConfirm = (project: Project) => {
+    setViewingProject(null);
+    setDeletingProject(project);
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!deletingProject) return;
+    try {
+      await deleteProjectMutation.mutateAsync(deletingProject.id);
+      setShowDeleteConfirm(false);
+      setDeletingProject(null);
+    } catch (err: any) {
+      console.error('Failed to delete project', err);
+    }
+  };
+
+  // ── Derived Data & Stats ───────────────────────────────────────────────────
+
+  const activeCount = projectsList.filter(p => p.status === 'OnTrack').length;
+  const totalRaised = Array.from(raisedByProjectId.values()).reduce((s, r) => s + r, 0);
+  const totalTarget = projectsList.reduce((s, p) => s + (p.targetAmount || 0), 0);
+  const completedCount = projectsList.filter(p => p.status === 'Complete').length;
+
+  const tabFiltered = projectsList.filter(p => {
+    if (activeTab === 'All Projects') return true;
+    if (activeTab === 'Active')      return p.status === 'OnTrack';
     if (activeTab === 'Planning')    return p.status === 'Planning';
-    if (activeTab === 'Completed')   return p.status === 'Completed';
+    if (activeTab === 'Completed')   return p.status === 'Complete';
     return true;
   });
 
   const filtered = tabFiltered.filter(p =>
     p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.lead.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.category.toLowerCase().includes(searchQuery.toLowerCase())
+    (p.managerName && p.managerName.toLowerCase().includes(searchQuery.toLowerCase())) ||
+    (p.categoryName && p.categoryName.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
-  // ── Render ─────────────────────────────────────────────────────────────────
-
-  const tabs: TabFilter[] = ['All Members', 'Active', 'Planning', 'Completed'];
+  const tabs: TabFilter[] = ['All Projects', 'Active', 'Planning', 'Completed'];
 
   return (
     <div className="projects-container">
@@ -353,7 +297,7 @@ const Projects: React.FC = () => {
           <div className="projects-card-value">{formatCurrency(totalTarget)}</div>
         </div>
         <div className="projects-summary-card">
-          <span className="projects-card-label">Completed This Quarter</span>
+          <span className="projects-card-label">Completed</span>
           <div className="projects-card-value">{completedCount}</div>
         </div>
       </div>
@@ -361,7 +305,7 @@ const Projects: React.FC = () => {
       {/* ─── Projects Card Section ────────────────────────────────────────── */}
       <div className="projects-list-card">
 
-        {/* Tabs + Search — mirrors attendees-card header */}
+        {/* Tabs + Search */}
         <div className="projects-card-header">
           <div className="projects-tabs">
             {tabs.map(tab => (
@@ -385,12 +329,15 @@ const Projects: React.FC = () => {
 
         {/* Card Grid Body */}
         <div className="projects-card-body">
-          {filtered.length === 0 ? (
+          {isLoadingProjects ? (
+            <div className="projects-empty-state">Loading projects...</div>
+          ) : filtered.length === 0 ? (
             <div className="projects-empty-state">No projects found.</div>
           ) : (
             <div className="projects-card-grid">
               {filtered.map(project => {
-                const pct = getProgressPercent(project.raised, project.target);
+                const raised = raisedByProjectId.get(project.id) || project.raisedAmount || 0;
+                const pct = getProgressPercent(raised, project.targetAmount);
                 return (
                   <div
                     key={project.id}
@@ -401,18 +348,18 @@ const Projects: React.FC = () => {
                     <div className="project-card-top">
                       <div className="project-card-title-group">
                         <span className="project-card-name">{project.name}</span>
-                        <span className="project-card-category">{project.category}</span>
+                        <span className="project-card-category">{project.categoryName || 'General'}</span>
                       </div>
                       <span className={`project-status-badge ${statusColor(project.status)}`}>
-                        {project.status}
+                        {getStatusBadgeLabel(project.status)}
                       </span>
                     </div>
 
                     {/* Funding progress */}
                     <div className="project-card-progress-section">
                       <div className="project-card-amounts">
-                        <span className="project-card-raised">{formatCurrency(project.raised)}</span>
-                        <span className="project-card-target">of {formatCurrency(project.target)}</span>
+                        <span className="project-card-raised">{formatCurrency(raised)}</span>
+                        <span className="project-card-target">of {formatCurrency(project.targetAmount)}</span>
                       </div>
                       <div className="project-card-bar-track">
                         <div
@@ -426,12 +373,12 @@ const Projects: React.FC = () => {
                     {/* Meta row: lead + deadline */}
                     <div className="project-card-meta">
                       <div className="project-card-lead">
-                        <div className="project-lead-avatar">{project.leadInitials}</div>
-                        <span className="project-card-lead-name">{project.lead}</span>
+                        <div className="project-lead-avatar">{getInitials(project.managerName)}</div>
+                        <span className="project-card-lead-name">{project.managerName || 'Unassigned'}</span>
                       </div>
                       <div className="project-card-deadline">
                         <CalendarIcon size={13} className="project-card-deadline-icon" />
-                        <span>{project.deadline}</span>
+                        <span>{formatDate(project.endDate || project.startDate)}</span>
                       </div>
                     </div>
 
@@ -467,7 +414,7 @@ const Projects: React.FC = () => {
             <div className="projects-panel-header">
               <div>
                 <h2 className="projects-panel-title">{viewingProject.name}</h2>
-                <p className="projects-panel-subtitle">{viewingProject.category}</p>
+                <p className="projects-panel-subtitle">{viewingProject.categoryName || 'General'}</p>
               </div>
               <button
                 className="projects-panel-close"
@@ -479,24 +426,30 @@ const Projects: React.FC = () => {
 
             <div className="projects-panel-body">
               {/* Funding Progress */}
-              <section className="detail-section">
-                <h3 className="detail-section-title">FUNDING PROGRESS</h3>
-                <div className="detail-funding-amount">
-                  {formatCurrency(viewingProject.raised)}
-                  <span className="detail-funding-total">
-                    &nbsp;&nbsp;Target: {formatCurrency(viewingProject.target)}
-                  </span>
-                </div>
-                <div className="detail-progress-track">
-                  <div
-                    className={`detail-progress-fill ${statusColor(viewingProject.status)}`}
-                    style={{ width: `${getProgressPercent(viewingProject.raised, viewingProject.target)}%` }}
-                  />
-                </div>
-                <div className="detail-progress-label">
-                  {getProgressPercent(viewingProject.raised, viewingProject.target)}% Funded
-                </div>
-              </section>
+              {(() => {
+                const raised = raisedByProjectId.get(viewingProject.id) || viewingProject.raisedAmount || 0;
+                const pct = getProgressPercent(raised, viewingProject.targetAmount);
+                return (
+                  <section className="detail-section">
+                    <h3 className="detail-section-title">FUNDING PROGRESS</h3>
+                    <div className="detail-funding-amount">
+                      {formatCurrency(raised)}
+                      <span className="detail-funding-total">
+                        &nbsp;&nbsp;Target: {formatCurrency(viewingProject.targetAmount)}
+                      </span>
+                    </div>
+                    <div className="detail-progress-track">
+                      <div
+                        className={`detail-progress-fill ${statusColor(viewingProject.status)}`}
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                    <div className="detail-progress-label">
+                      {pct}% Funded
+                    </div>
+                  </section>
+                );
+              })()}
 
               {/* Status & Dates */}
               <section className="detail-section">
@@ -504,21 +457,21 @@ const Projects: React.FC = () => {
                   <div className="detail-meta-item">
                     <span className="detail-meta-label">Status</span>
                     <span className={`project-status-badge ${statusColor(viewingProject.status)}`}>
-                      {viewingProject.status}
+                      {getStatusBadgeLabel(viewingProject.status)}
                     </span>
                   </div>
                   <div className="detail-meta-item">
                     <span className="detail-meta-label">Start Date</span>
-                    <span className="detail-meta-value">{viewingProject.startDate}</span>
+                    <span className="detail-meta-value">{formatDate(viewingProject.startDate)}</span>
                   </div>
                   <div className="detail-meta-item">
-                    <span className="detail-meta-label">Deadline</span>
-                    <span className="detail-meta-value">{viewingProject.deadline}</span>
+                    <span className="detail-meta-label">End Date</span>
+                    <span className="detail-meta-value">{formatDate(viewingProject.endDate)}</span>
                   </div>
                   <div className="detail-meta-item">
                     <span className="detail-meta-label">Remaining Funds Needed</span>
                     <span className="detail-meta-value detail-meta-highlight">
-                      {formatCurrency(Math.max(viewingProject.target - viewingProject.raised, 0))}
+                      {formatCurrency(Math.max(viewingProject.targetAmount - (raisedByProjectId.get(viewingProject.id) || 0), 0))}
                     </span>
                   </div>
                 </div>
@@ -527,25 +480,20 @@ const Projects: React.FC = () => {
               {/* Description */}
               <section className="detail-section">
                 <h3 className="detail-section-title">ABOUT THIS PROJECT</h3>
-                <p className="detail-description">{viewingProject.description}</p>
+                <p className="detail-description">{viewingProject.description || 'No description provided.'}</p>
               </section>
 
-              {/* Team */}
+              {/* Project Lead */}
               <section className="detail-section">
-                <h3 className="detail-section-title">ASSIGNED TEAM</h3>
+                <h3 className="detail-section-title">PROJECT LEAD</h3>
                 <div className="detail-team-list">
-                  {viewingProject.team.map(member => (
-                    <div key={member.id} className="detail-team-member">
-                      <div className="detail-member-avatar">{member.initials}</div>
-                      <div>
-                        <div className="detail-member-name">{member.name}</div>
-                        <div className="detail-member-role">{member.role}</div>
-                      </div>
+                  <div className="detail-team-member">
+                    <div className="detail-member-avatar">{getInitials(viewingProject.managerName)}</div>
+                    <div>
+                      <div className="detail-member-name">{viewingProject.managerName || 'Unassigned'}</div>
+                      <div className="detail-member-role">Project Manager</div>
                     </div>
-                  ))}
-                  {viewingProject.team.length === 0 && (
-                    <p className="detail-empty-team">No team members assigned yet.</p>
-                  )}
+                  </div>
                 </div>
               </section>
             </div>
@@ -577,7 +525,7 @@ const Projects: React.FC = () => {
             <div className="projects-panel-header">
               <div>
                 <h2 className="projects-panel-title">Edit Project</h2>
-                <p className="projects-panel-subtitle">Update details for Project</p>
+                <p className="projects-panel-subtitle">Update details for {editingProject.name}</p>
               </div>
               <button
                 className="projects-panel-close"
@@ -588,21 +536,29 @@ const Projects: React.FC = () => {
             </div>
 
             <div className="projects-panel-body">
-              <ProjectFormFields form={form} setForm={setForm} />
+              {formError && <div style={{ color: '#ef4444', marginBottom: '12px', fontSize: '13px' }}>{formError}</div>}
+              <ProjectFormFields
+                form={form}
+                setForm={setForm}
+                categories={categories}
+                members={membersList}
+              />
             </div>
 
             <div className="projects-panel-footer">
               <button
                 className="projects-btn projects-btn-secondary"
                 onClick={() => setEditingProject(null)}
+                disabled={updateProjectMutation.isPending}
               >
                 Cancel
               </button>
               <button
                 className="projects-btn projects-btn-primary"
                 onClick={handleSaveEdit}
+                disabled={updateProjectMutation.isPending}
               >
-                Save Changes
+                {updateProjectMutation.isPending ? 'Saving...' : 'Save Changes'}
               </button>
             </div>
           </div>
@@ -618,7 +574,7 @@ const Projects: React.FC = () => {
             <div className="projects-panel-header">
               <div>
                 <h2 className="projects-panel-title">Create Project</h2>
-                <p className="projects-panel-subtitle">Update details for Project</p>
+                <p className="projects-panel-subtitle">Add a new church project or campaign</p>
               </div>
               <button
                 className="projects-panel-close"
@@ -629,21 +585,29 @@ const Projects: React.FC = () => {
             </div>
 
             <div className="projects-panel-body">
-              <ProjectFormFields form={form} setForm={setForm} />
+              {formError && <div style={{ color: '#ef4444', marginBottom: '12px', fontSize: '13px' }}>{formError}</div>}
+              <ProjectFormFields
+                form={form}
+                setForm={setForm}
+                categories={categories}
+                members={membersList}
+              />
             </div>
 
             <div className="projects-panel-footer">
               <button
                 className="projects-btn projects-btn-secondary"
                 onClick={() => setShowCreatePanel(false)}
+                disabled={createProjectMutation.isPending}
               >
                 Cancel
               </button>
               <button
                 className="projects-btn projects-btn-primary"
                 onClick={handleSaveCreate}
+                disabled={createProjectMutation.isPending}
               >
-                Save Changes
+                {createProjectMutation.isPending ? 'Creating...' : 'Create Project'}
               </button>
             </div>
           </div>
@@ -667,32 +631,52 @@ const Projects: React.FC = () => {
 
 // ─── Shared Form Fields ───────────────────────────────────────────────────────
 
-interface FormState {
-  name: string;
-  category: string;
-  lead: string;
-  target: string;
-  deadline: string;
-  status: ProjectStatus;
-  description: string;
-}
-
-const ProjectFormFields: React.FC<{
+interface ProjectFormFieldsProps {
   form: FormState;
   setForm: React.Dispatch<React.SetStateAction<FormState>>;
-}> = ({ form, setForm }) => {
-  const set = (key: keyof FormState, value: string) =>
+  categories: Array<{ id: number; name: string }>;
+  members: Array<{ id: string; firstName: string; lastName: string }>;
+}
+
+const ProjectFormFields: React.FC<ProjectFormFieldsProps> = ({
+  form,
+  setForm,
+  categories,
+  members,
+}) => {
+  const [isAddingCategory, setIsAddingCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [categoryError, setCategoryError] = useState<string | null>(null);
+  const createCategoryMutation = useCreateProjectCategory();
+
+  const handleAddCategory = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCategoryName.trim()) return;
+    try {
+      setCategoryError(null);
+      const res = await createCategoryMutation.mutateAsync({ name: newCategoryName.trim() });
+      if (res && res.id) {
+        set('categoryId', res.id);
+      }
+      setNewCategoryName('');
+      setIsAddingCategory(false);
+    } catch (err: any) {
+      setCategoryError(err.message || 'Failed to create category');
+    }
+  };
+
+  const set = (key: keyof FormState, value: any) =>
     setForm(prev => ({ ...prev, [key]: value }));
 
   return (
     <>
       {/* Project Name */}
       <div className="projects-form-group">
-        <label className="projects-form-label">Project Name</label>
+        <label className="projects-form-label">Project Name *</label>
         <input
           type="text"
           className="projects-form-input"
-          placeholder="e.g. Youth Camp 2025"
+          placeholder="e.g. Sanctuary Renovation"
           value={form.name}
           onChange={e => set('name', e.target.value)}
         />
@@ -700,74 +684,146 @@ const ProjectFormFields: React.FC<{
 
       {/* Category */}
       <div className="projects-form-group">
-        <label className="projects-form-label">Category</label>
-        <select
-          className="projects-form-select"
-          value={form.category}
-          onChange={e => set('category', e.target.value)}
-        >
-          <option value="">Select Category</option>
-          {PROJECT_CATEGORIES.map(cat => (
-            <option key={cat} value={cat}>{cat}</option>
-          ))}
-        </select>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+          <label className="projects-form-label" style={{ marginBottom: 0 }}>Category *</label>
+          {!isAddingCategory && (
+            <button
+              type="button"
+              onClick={() => { setIsAddingCategory(true); setCategoryError(null); }}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: 'var(--primary, #4361ee)',
+                fontSize: '12px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                padding: '0 4px',
+              }}
+            >
+              + New Category
+            </button>
+          )}
+        </div>
+
+        {isAddingCategory ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <input
+                type="text"
+                className="projects-form-input"
+                placeholder="Category name (e.g. Building)"
+                value={newCategoryName}
+                onChange={e => setNewCategoryName(e.target.value)}
+                autoFocus
+                onKeyDown={e => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleAddCategory(e);
+                  }
+                }}
+              />
+              <button
+                type="button"
+                className="projects-btn projects-btn-primary"
+                style={{ padding: '0 14px', whiteSpace: 'nowrap', fontSize: '13px' }}
+                onClick={handleAddCategory}
+                disabled={createCategoryMutation.isPending || !newCategoryName.trim()}
+              >
+                {createCategoryMutation.isPending ? 'Adding...' : 'Add'}
+              </button>
+              <button
+                type="button"
+                className="projects-btn projects-btn-secondary"
+                style={{ padding: '0 10px', fontSize: '13px' }}
+                onClick={() => { setIsAddingCategory(false); setNewCategoryName(''); setCategoryError(null); }}
+              >
+                Cancel
+              </button>
+            </div>
+            {categoryError && (
+              <span style={{ color: '#ef4444', fontSize: '12px' }}>{categoryError}</span>
+            )}
+          </div>
+        ) : (
+          <select
+            className="projects-form-select"
+            value={form.categoryId}
+            onChange={e => set('categoryId', e.target.value ? Number(e.target.value) : '')}
+          >
+            <option value="">Select Category</option>
+            {categories.map(cat => (
+              <option key={cat.id} value={cat.id}>{cat.name}</option>
+            ))}
+          </select>
+        )}
       </div>
 
-      {/* Project Lead */}
+      {/* Project Lead / Manager */}
       <div className="projects-form-group">
-        <label className="projects-form-label">Project Lead</label>
+        <label className="projects-form-label">Project Lead *</label>
         <div className="projects-form-input-icon-wrap">
-          <input
-            type="text"
-            className="projects-form-input with-icon"
-            placeholder="Select Project Lead..."
-            value={form.lead}
-            onChange={e => set('lead', e.target.value)}
-          />
+          <select
+            className="projects-form-select with-icon"
+            value={form.managerId}
+            onChange={e => set('managerId', e.target.value)}
+          >
+            <option value="">Select Project Lead</option>
+            {members.map(m => (
+              <option key={m.id} value={m.id}>{m.firstName} {m.lastName}</option>
+            ))}
+          </select>
           <MembersIcon size={16} className="projects-form-input-icon" />
         </div>
       </div>
 
-      {/* Target + Deadline row */}
+      {/* Target + Start Date row */}
       <div className="projects-form-row">
         <div className="projects-form-group">
-          <label className="projects-form-label">Target Amount</label>
+          <label className="projects-form-label">Target Amount ($) *</label>
           <input
             type="text"
             className="projects-form-input"
-            placeholder="$ 0.00"
-            value={form.target}
-            onChange={e => set('target', e.target.value.replace(/[^0-9.]/g, ''))}
+            placeholder="0.00"
+            value={form.targetAmount}
+            onChange={e => set('targetAmount', e.target.value.replace(/[^0-9.]/g, ''))}
           />
         </div>
         <div className="projects-form-group">
-          <label className="projects-form-label">Deadline</label>
-          <div className="projects-form-input-icon-wrap">
-            <input
-              type="text"
-              className="projects-form-input with-icon"
-              placeholder="Select date"
-              value={form.deadline}
-              onChange={e => set('deadline', e.target.value)}
-            />
-            <CalendarIcon size={16} className="projects-form-input-icon" />
-          </div>
+          <label className="projects-form-label">Start Date *</label>
+          <input
+            type="date"
+            className="projects-form-input"
+            value={form.startDate}
+            onChange={e => set('startDate', e.target.value)}
+          />
         </div>
       </div>
 
-      {/* Status */}
-      <div className="projects-form-group">
-        <label className="projects-form-label">Initial Status</label>
-        <select
-          className="projects-form-select"
-          value={form.status}
-          onChange={e => set('status', e.target.value as ProjectStatus)}
-        >
-          <option value="Planning">Planning</option>
-          <option value="On Track">On Track</option>
-          <option value="Off Track">Off Track</option>
-          <option value="Completed">Completed</option>
-        </select>
+      {/* End Date + Status row */}
+      <div className="projects-form-row">
+        <div className="projects-form-group">
+          <label className="projects-form-label">End Date (Optional)</label>
+          <input
+            type="date"
+            className="projects-form-input"
+            value={form.endDate}
+            onChange={e => set('endDate', e.target.value)}
+          />
+        </div>
+        <div className="projects-form-group">
+          <label className="projects-form-label">Status</label>
+          <select
+            className="projects-form-select"
+            value={form.status}
+            onChange={e => set('status', e.target.value as ProjectStatus)}
+          >
+            <option value="Planning">Planning</option>
+            <option value="OnTrack">On Track</option>
+            <option value="AtRisk">At Risk</option>
+            <option value="Complete">Completed</option>
+            <option value="Missed">Missed</option>
+          </select>
+        </div>
       </div>
 
       {/* Description */}

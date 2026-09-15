@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import type { TopBarCTA } from './LayoutContext';
 import { LayoutContext } from './LayoutContext';
 
@@ -16,9 +16,13 @@ export const LayoutProvider: React.FC<{ children: ReactNode }> = ({ children }) 
     }
   }, [title]);
 
+  const value = useMemo(
+    () => ({ title, setTitle, ctas, setCtas, searchQuery, setSearchQuery }),
+    [title, ctas, searchQuery]
+  );
 
   return (
-    <LayoutContext.Provider value={{ title, setTitle, ctas, setCtas, searchQuery, setSearchQuery }}>
+    <LayoutContext.Provider value={value}>
       {children}
     </LayoutContext.Provider>
   );
