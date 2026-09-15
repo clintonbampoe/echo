@@ -140,15 +140,7 @@ const Members: React.FC = () => {
 
   
 
-  
-    return (
-      m.firstName.toLowerCase().includes(q) ||
-      m.lastName.toLowerCase().includes(q) ||
-      m.memberId.toLowerCase().includes(q) ||
-      m.ministryGroup.toLowerCase().includes(q) ||
-      m.phone.includes(q)
-    );
-  });
+
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 
@@ -157,7 +149,7 @@ const Members: React.FC = () => {
     setForm({
       firstName: member.firstName,
       lastName: member.lastName,
-      phoneNumber: member.phoneNumberNumber,
+      phoneNumber: member.phoneNumber,
       emailAddress: member.emailAddress,
       dateOfBirth: member.dateOfBirth,
       gender: member.gender,
