@@ -60,7 +60,9 @@ API base URL is read from `VITE_API_URL` env var, defaulting to `http://localhos
 
 ### Env / Secrets
 
-`.env` lives at the repo root. The API's `EnvLoader` walks up from the running assembly to find it — **if `.env` is missing at the repo root, the app throws and exits**. The `DefaultConnection` template in `appsettings.json` uses `__DB_USER__` / `__DB_PASSWORD__` placeholders substituted from `.env` at startup.
+`.env` lives at the repo root. The API uses the standard .NET configuration provider to merge `.env` variables into `appsettings.json`. 
+
+To override a nested JSON setting (e.g., `Database:Name`), use a double underscore in the `.env` file (e.g., `Database__Name`). **If `.env` is missing at the repo root, the app throws and exits**.
 
 ## Backend Architecture (Modular Monolith + Clean Architecture)
 

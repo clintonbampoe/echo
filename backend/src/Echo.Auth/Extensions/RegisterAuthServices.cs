@@ -1,5 +1,5 @@
-using Echo.Application.Configuration;
-using Echo.Application.Options;
+using Echo.Application.Options.Frontend;
+using Echo.Application.Options.Jwt;
 using Echo.Application.Services.Email;
 using Echo.Auth.Controllers;
 using Echo.Auth.Repositories;
@@ -32,7 +32,7 @@ public static class RegisterAuthServices
         services.AddScoped<PasswordResetService>();
         services.AddScoped<PasswordController>();
 
-        services.Configure<FrontendClientOptions>(configuration.GetSection("FrontendClient"));
+        services.Configure<FrontendOptions>(configuration.GetSection("FrontendClient"));
         services.AddScoped<AuthLinkBuilder>();
 
         services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));

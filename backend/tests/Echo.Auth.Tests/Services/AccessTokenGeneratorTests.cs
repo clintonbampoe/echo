@@ -1,6 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
-using Echo.Application.Options;
+using Echo.Application.Options.Jwt;
 using Echo.Auth.Services;
 using Echo.Core.Dtos;
 using Echo.Domain.Enums;

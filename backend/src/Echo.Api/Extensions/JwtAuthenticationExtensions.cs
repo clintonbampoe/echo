@@ -1,6 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
-using Echo.Application.Options;
+using Echo.Application.Options.Jwt;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.IdentityModel.Tokens;
