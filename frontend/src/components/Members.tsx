@@ -1,38 +1,11 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLayout } from '../hooks/useLayout';
+import { useMembers, useCreateMember, useUpdateMember, useDeleteMember } from '../hooks/useMembers';
+import { Member } from '../types/member';
 import { CloseIcon, MembersIcon, CalendarIcon } from './Icons';
 import DeleteConfirmModal from './common/DeleteConfirmModal';
 import ExportPanel from './ExportPanel';
 import '../styles/Members.css';
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-type MemberStatus = 'Active' | 'Inactive' | 'New Visitor';
-
-interface ChurchMember {
-  id: number;
-  memberId: string;         // e.g. WF-101
-  firstName: string;
-  lastName: string;
-  phone: string;
-  email: string;
-  joinedDate: string;       // display string e.g. "Oct 31, 2023"
-  joinedDateISO: string;    // for input field
-  dateOfBirth: string;      // display
-  dateOfBirthISO: string;
-  gender: 'Male' | 'Female' | 'Other';
-  ministryGroup: string;
-  status: MemberStatus;
-  address: string;
-  hometown: string;
-  region: string;
-  ghanaPost: string;
-  nextOfKin: string;
-  emergencyContact: string;
-  emergencyPhone: string;
-}
-
-type TabFilter = 'All Members' | 'Active' | 'New Visitors' | 'Archived';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -67,143 +40,6 @@ const GHANA_REGIONS = [
   'Western North Region',
 ];
 
-// ─── Mock Data ────────────────────────────────────────────────────────────────
-
-const mockMembers: ChurchMember[] = [
-  {
-    id: 1,
-    memberId: 'WF-101',
-    firstName: 'Sarah',
-    lastName: 'Martinez',
-    phone: '+233 54 202 8520',
-    email: 'sarah.martinez@example.com',
-    joinedDate: 'Oct 31, 2023',
-    joinedDateISO: '2023-10-31',
-    dateOfBirth: 'Mar 14, 1990',
-    dateOfBirthISO: '1990-03-14',
-    gender: 'Female',
-    ministryGroup: "Women's Fellowship",
-    status: 'Active',
-    address: 'Hebron, Soldier Lane',
-    hometown: 'Aburi',
-    region: 'Eastern Region',
-    ghanaPost: 'GPS-282-282',
-    nextOfKin: 'James Martinez',
-    emergencyContact: 'James Martinez',
-    emergencyPhone: '+233 00 000 0000',
-  },
-  {
-    id: 2,
-    memberId: 'MF-028',
-    firstName: 'John',
-    lastName: 'Doe',
-    phone: '+233 53 232 8520',
-    email: 'john.doe@example.com',
-    joinedDate: 'Sept 01, 2023',
-    joinedDateISO: '2023-09-01',
-    dateOfBirth: 'Jun 22, 1985',
-    dateOfBirthISO: '1985-06-22',
-    gender: 'Male',
-    ministryGroup: "Men's Fellowship",
-    status: 'Inactive',
-    address: '14 Cantonments Road',
-    hometown: 'Kumasi',
-    region: 'Ashanti Region',
-    ghanaPost: 'AK-039-5028',
-    nextOfKin: 'Mary Doe',
-    emergencyContact: 'Mary Doe',
-    emergencyPhone: '+233 24 111 2233',
-  },
-  {
-    id: 3,
-    memberId: 'CH-057',
-    firstName: 'Ruth',
-    lastName: 'Acheampong',
-    phone: '+233 54 202 3238',
-    email: 'ruth.acheampong@example.com',
-    joinedDate: 'Jan 31, 2023',
-    joinedDateISO: '2023-01-31',
-    dateOfBirth: 'Nov 03, 1995',
-    dateOfBirthISO: '1995-11-03',
-    gender: 'Female',
-    ministryGroup: 'Choir',
-    status: 'Active',
-    address: '7 Osu Badu Street',
-    hometown: 'Cape Coast',
-    region: 'Central Region',
-    ghanaPost: 'CC-005-1234',
-    nextOfKin: 'Kwame Acheampong',
-    emergencyContact: 'Kwame Acheampong',
-    emergencyPhone: '+233 27 455 6677',
-  },
-  {
-    id: 4,
-    memberId: 'YT-003',
-    firstName: 'Kofi',
-    lastName: 'Mensah',
-    phone: '+233 50 111 4422',
-    email: 'kofi.mensah@example.com',
-    joinedDate: 'Feb 14, 2024',
-    joinedDateISO: '2024-02-14',
-    dateOfBirth: 'Apr 18, 2002',
-    dateOfBirthISO: '2002-04-18',
-    gender: 'Male',
-    ministryGroup: 'Youth',
-    status: 'New Visitor',
-    address: 'North Legon, Accra',
-    hometown: 'Tamale',
-    region: 'Northern Region',
-    ghanaPost: 'NR-011-9090',
-    nextOfKin: 'Abena Mensah',
-    emergencyContact: 'Abena Mensah',
-    emergencyPhone: '+233 26 777 8899',
-  },
-  {
-    id: 5,
-    memberId: 'US-019',
-    firstName: 'Akosua',
-    lastName: 'Frimpong',
-    phone: '+233 55 333 7788',
-    email: 'akosua.frimpong@example.com',
-    joinedDate: 'Mar 05, 2022',
-    joinedDateISO: '2022-03-05',
-    dateOfBirth: 'Jul 29, 1988',
-    dateOfBirthISO: '1988-07-29',
-    gender: 'Female',
-    ministryGroup: 'Ushers',
-    status: 'Active',
-    address: 'Spintex Road, Accra',
-    hometown: 'Takoradi',
-    region: 'Western Region',
-    ghanaPost: 'WR-200-4567',
-    nextOfKin: 'Emmanuel Frimpong',
-    emergencyContact: 'Emmanuel Frimpong',
-    emergencyPhone: '+233 20 999 1122',
-  },
-  {
-    id: 6,
-    memberId: 'MT-011',
-    firstName: 'Nana',
-    lastName: 'Boateng',
-    phone: '+233 24 888 5566',
-    email: 'nana.boateng@example.com',
-    joinedDate: 'Nov 18, 2021',
-    joinedDateISO: '2021-11-18',
-    dateOfBirth: 'Dec 11, 1993',
-    dateOfBirthISO: '1993-12-11',
-    gender: 'Male',
-    ministryGroup: 'Media Team',
-    status: 'Active',
-    address: 'Madina, Accra',
-    hometown: 'Ho',
-    region: 'Volta Region',
-    ghanaPost: 'VR-088-3344',
-    nextOfKin: 'Ama Boateng',
-    emergencyContact: 'Ama Boateng',
-    emergencyPhone: '+233 54 222 3344',
-  },
-];
-
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const getInitials = (firstName: string, lastName: string) =>
@@ -215,23 +51,23 @@ const statusClass = (s: MemberStatus) => {
   return 'status-visitor';
 };
 
-const emptyForm = (): Omit<ChurchMember, 'id' | 'memberId' | 'joinedDate' | 'dateOfBirth'> => ({
+const emptyForm = (): Partial<Member> => ({
   firstName: '',
   lastName: '',
-  phone: '',
-  email: '',
-  joinedDateISO: '',
-  dateOfBirthISO: '',
+  phoneNumber: '',
+  emailAddress: '',
+  dateOfBirth: '',
   gender: 'Male',
-  ministryGroup: '',
   status: 'Active',
-  address: '',
+  residentialAddress: '',
   hometown: '',
   region: '',
-  ghanaPost: '',
+  gpsAddress: '',
   nextOfKin: '',
-  emergencyContact: '',
-  emergencyPhone: '',
+  emergencyContactName: '',
+  emergencyContactPhoneNumber: '',
+  maritalStatus: 'Single',
+  city: 'Accra'
 });
 
 // ─── Members Component ────────────────────────────────────────────────────────
@@ -239,16 +75,31 @@ const emptyForm = (): Omit<ChurchMember, 'id' | 'memberId' | 'joinedDate' | 'dat
 const Members: React.FC = () => {
   const { setTitle, setCtas } = useLayout();
 
-  const [members, setMembers] = useState<ChurchMember[]>(mockMembers);
-  const [activeTab, setActiveTab] = useState<TabFilter>('All Members');
+  const [activeTab, setActiveTab] = useState<string>('All Members');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Map ActiveTab to backend status
+  let backendStatus = '';
+  if (activeTab === 'Active') backendStatus = 'Active';
+  if (activeTab === 'New Visitors') backendStatus = 'NewVisitor';
+  if (activeTab === 'Archived') backendStatus = 'Inactive';
+
+  const { data: pagedResponse, isLoading } = useMembers({ 
+    name: searchQuery || undefined,
+    status: backendStatus || undefined
+  });
+  
+  const members = pagedResponse?.data || [];
+
+  const createMember = useCreateMember();
+  const updateMember = useUpdateMember();
+  const deleteMember = useDeleteMember();
 
   const [showAddPanel, setShowAddPanel] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
-  const [editingMember, setEditingMember] = useState<ChurchMember | null>(null);
+  const [editingMember, setEditingMember] = useState<Member | null>(null);
 
   const [form, setForm] = useState(emptyForm());
-  const nextId = useRef(mockMembers.length + 1);
 
   // ── Layout header ─────────────────────────────────────────────────────────
 
@@ -287,16 +138,9 @@ const Members: React.FC = () => {
 
   // ── Filtering ─────────────────────────────────────────────────────────────
 
-  const tabFiltered = members.filter(m => {
-    if (activeTab === 'All Members') return true;
-    if (activeTab === 'Active') return m.status === 'Active';
-    if (activeTab === 'New Visitors') return m.status === 'New Visitor';
-    if (activeTab === 'Archived') return m.status === 'Inactive';
-    return true;
-  });
+  
 
-  const filtered = tabFiltered.filter(m => {
-    const q = searchQuery.toLowerCase();
+  
     return (
       m.firstName.toLowerCase().includes(q) ||
       m.lastName.toLowerCase().includes(q) ||
@@ -308,91 +152,57 @@ const Members: React.FC = () => {
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 
-  const openEditPanel = (member: ChurchMember) => {
+  const openEditPanel = (member: Member) => {
     setEditingMember(member);
     setForm({
       firstName: member.firstName,
       lastName: member.lastName,
-      phone: member.phone,
-      email: member.email,
-      joinedDateISO: member.joinedDateISO,
-      dateOfBirthISO: member.dateOfBirthISO,
+      phoneNumber: member.phoneNumberNumber,
+      emailAddress: member.emailAddress,
+      dateOfBirth: member.dateOfBirth,
       gender: member.gender,
-      ministryGroup: member.ministryGroup,
       status: member.status,
-      address: member.address,
+      residentialAddress: member.residentialAddress,
       hometown: member.hometown,
       region: member.region,
-      ghanaPost: member.ghanaPost,
+      gpsAddress: member.gpsAddress,
       nextOfKin: member.nextOfKin,
-      emergencyContact: member.emergencyContact,
-      emergencyPhone: member.emergencyPhone,
+      emergencyContactName: member.emergencyContactName,
+      emergencyContactPhoneNumber: member.emergencyContactPhoneNumber,
+      maritalStatus: member.maritalStatus,
+      city: member.city,
     });
   };
 
-  const formatDateDisplay = (iso: string) => {
+  const formatDateDisplay = (iso?: string) => {
     if (!iso) return '';
     const d = new Date(iso);
     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   };
 
-  const handleSaveAdd = () => {
-    if (!form.firstName.trim() || !form.lastName.trim()) return;
-    const id = nextId.current++;
-    const newMember: ChurchMember = {
-      id,
-      memberId: `MB-${String(id).padStart(3, '0')}`,
-      firstName: form.firstName,
-      lastName: form.lastName,
-      phone: form.phone,
-      email: form.email,
-      joinedDate: formatDateDisplay(form.joinedDateISO),
-      joinedDateISO: form.joinedDateISO,
-      dateOfBirth: formatDateDisplay(form.dateOfBirthISO),
-      dateOfBirthISO: form.dateOfBirthISO,
-      gender: form.gender,
-      ministryGroup: form.ministryGroup,
-      status: form.status,
-      address: form.address,
-      hometown: form.hometown,
-      region: form.region,
-      ghanaPost: form.ghanaPost,
-      nextOfKin: form.nextOfKin,
-      emergencyContact: form.emergencyContact,
-      emergencyPhone: form.emergencyPhone,
-    };
-    setMembers(prev => [newMember, ...prev]);
+  const handleSaveAdd = async () => {
+    if (!form.firstName?.trim() || !form.lastName?.trim()) return;
+    await createMember.mutateAsync(form);
     setShowAddPanel(false);
   };
 
-  const handleSaveEdit = () => {
+  const handleSaveEdit = async () => {
     if (!editingMember) return;
-    setMembers(prev =>
-      prev.map(m =>
-        m.id === editingMember.id
-          ? {
-              ...m,
-              ...form,
-              joinedDate: formatDateDisplay(form.joinedDateISO) || m.joinedDate,
-              dateOfBirth: formatDateDisplay(form.dateOfBirthISO) || m.dateOfBirth,
-            }
-          : m
-      )
-    );
+    await updateMember.mutateAsync({ id: editingMember.id, data: form });
     setEditingMember(null);
   };
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [deletingMember, setDeletingMember] = useState<ChurchMember | null>(null);
+  const [deletingMember, setDeletingMember] = useState<Member | null>(null);
 
-  const handleDelete = (member: ChurchMember) => {
+  const handleDelete = (member: Member) => {
     setDeletingMember(member);
     setShowDeleteConfirm(true);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (!deletingMember) return;
-    setMembers(prev => prev.filter(m => m.id !== deletingMember.id));
+    await deleteMember.mutateAsync(deletingMember.id);
     setShowDeleteConfirm(false);
     setDeletingMember(null);
   };
@@ -402,7 +212,7 @@ const Members: React.FC = () => {
     setEditingMember(null);
   };
 
-  const tabs: TabFilter[] = ['All Members', 'Active', 'New Visitors', 'Archived'];
+  const tabs = ['All Members', 'Active', 'New Visitors', 'Archived'];
   const panelOpen = showAddPanel || !!editingMember;
 
   // ── Render ────────────────────────────────────────────────────────────────
@@ -457,11 +267,11 @@ const Members: React.FC = () => {
 
         {/* Card grid body */}
         <div className="members-card-body">
-          {filtered.length === 0 ? (
+          {isLoading ? <div className="members-empty-state">Loading...</div> : members.length === 0 ? (
             <div className="members-empty-state">No members found.</div>
           ) : (
             <div className="members-card-grid">
-              {filtered.map(member => (
+              {members.map(member => (
                 <div key={member.id} className="member-card">
 
                   {/* Name row + status badge */}
@@ -486,22 +296,22 @@ const Members: React.FC = () => {
                       <svg className="member-meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.9 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.81 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 8.91a16 16 0 0 0 6 6l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
                       </svg>
-                      <span>{member.phone}</span>
+                      <span>{member.phoneNumber}</span>
                     </div>
                     <div className="member-meta-row">
                       <CalendarIcon size={14} className="member-meta-icon" />
-                      <span>Joined {member.joinedDate}</span>
+                      <span>Joined {formatDateDisplay(member.joinedDate)}</span>
                     </div>
                     <div className="member-meta-row">
                       <MembersIcon size={14} className="member-meta-icon" />
-                      <span>{member.ministryGroup}</span>
+                      <span>{member.maritalStatus}</span>
                     </div>
                   </div>
 
                   {/* Member ID */}
                   <div className="member-card-id-row">
                     <span className="member-card-id-label">MEMBER ID</span>
-                    <span className="member-card-id-value">{member.memberId}</span>
+                    <span className="member-card-id-value">{member.id.split('-')[0]}</span>
                   </div>
 
                   {/* Actions */}
@@ -623,79 +433,67 @@ const Members: React.FC = () => {
 
 // ─── Shared Form ──────────────────────────────────────────────────────────────
 
-type FormState = ReturnType<typeof emptyForm>;
-
 const MemberFormFields: React.FC<{
-  form: FormState;
-  setForm: React.Dispatch<React.SetStateAction<FormState>>;
+  form: Partial<Member>;
+  setForm: React.Dispatch<React.SetStateAction<Partial<Member>>>;
 }> = ({ form, setForm }) => {
-  const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
+  const set = <K extends keyof Member>(key: K, value: Member[K]) =>
     setForm(prev => ({ ...prev, [key]: value }));
 
   return (
     <>
-      {/* First + Last name */}
       <div className="mf-row">
         <div className="mf-group">
           <label className="mf-label">First Name</label>
-          <input className="mf-input" placeholder="e.g., John" value={form.firstName}
+          <input className="mf-input" placeholder="e.g., John" value={form.firstName || ''}
             onChange={e => set('firstName', e.target.value)} />
         </div>
         <div className="mf-group">
           <label className="mf-label">Last Name</label>
-          <input className="mf-input" placeholder="e.g., Doe" value={form.lastName}
+          <input className="mf-input" placeholder="e.g., Doe" value={form.lastName || ''}
             onChange={e => set('lastName', e.target.value)} />
         </div>
       </div>
 
-      {/* Email */}
       <div className="mf-group">
         <label className="mf-label">Email Address</label>
         <input className="mf-input" type="email" placeholder="member@example.com"
-          value={form.email} onChange={e => set('email', e.target.value)} />
+          value={form.emailAddress || ''} onChange={e => set('emailAddress', e.target.value)} />
       </div>
 
-      {/* Phone */}
       <div className="mf-group">
         <label className="mf-label">Phone Number</label>
         <input className="mf-input" placeholder="+ 233 00 000 0000"
-          value={form.phone} onChange={e => set('phone', e.target.value)} />
+          value={form.phoneNumber || ''} onChange={e => set('phoneNumber', e.target.value)} />
       </div>
 
-      {/* Ministry + Status */}
       <div className="mf-row">
         <div className="mf-group">
-          <label className="mf-label">Ministry Group</label>
-          <select className="mf-select" value={form.ministryGroup}
-            onChange={e => set('ministryGroup', e.target.value)}>
-            <option value="">Select group</option>
-            {MINISTRY_GROUPS.map(g => <option key={g} value={g}>{g}</option>)}
+          <label className="mf-label">Marital Status</label>
+          <select className="mf-select" value={form.maritalStatus || 'Single'}
+            onChange={e => set('maritalStatus', e.target.value as any)}>
+            <option value="Single">Single</option>
+            <option value="Married">Married</option>
+            <option value="Divorced">Divorced</option>
+            <option value="Widowed">Widowed</option>
           </select>
         </div>
         <div className="mf-group">
           <label className="mf-label">Status</label>
-          <select className="mf-select" value={form.status}
-            onChange={e => set('status', e.target.value as MemberStatus)}>
+          <select className="mf-select" value={form.status || 'Active'}
+            onChange={e => set('status', e.target.value as any)}>
             <option value="Active">Active</option>
             <option value="Inactive">Inactive</option>
-            <option value="New Visitor">New Visitor</option>
+            <option value="NewVisitor">New Visitor</option>
           </select>
         </div>
       </div>
 
-      {/* Joined date */}
-      <div className="mf-group">
-        <label className="mf-label">Joined Date</label>
-        <input className="mf-input" type="date" placeholder="DD / MM / YY"
-          value={form.joinedDateISO} onChange={e => set('joinedDateISO', e.target.value)} />
-      </div>
-
-      {/* Gender + DOB */}
       <div className="mf-row">
         <div className="mf-group">
           <label className="mf-label">Gender</label>
-          <select className="mf-select" value={form.gender}
-            onChange={e => set('gender', e.target.value as FormState['gender'])}>
+          <select className="mf-select" value={form.gender || 'Male'}
+            onChange={e => set('gender', e.target.value as any)}>
             <option value="Male">Male</option>
             <option value="Female">Female</option>
             <option value="Other">Other</option>
@@ -703,68 +501,68 @@ const MemberFormFields: React.FC<{
         </div>
         <div className="mf-group">
           <label className="mf-label">Date of Birth</label>
-          <input className="mf-input" type="date" placeholder="DD / MM / YY"
-            value={form.dateOfBirthISO} onChange={e => set('dateOfBirthISO', e.target.value)} />
+          <input className="mf-input" type="date"
+            value={form.dateOfBirth || ''} onChange={e => set('dateOfBirth', e.target.value)} />
         </div>
       </div>
 
       <div className="mf-divider" />
 
-      {/* Residential address */}
       <div className="mf-group">
         <label className="mf-label">Residential Address</label>
         <input className="mf-input" placeholder="Hebron, Soldier Lane"
-          value={form.address} onChange={e => set('address', e.target.value)} />
+          value={form.residentialAddress || ''} onChange={e => set('residentialAddress', e.target.value)} />
       </div>
 
-      {/* Hometown */}
+      <div className="mf-group">
+        <label className="mf-label">City</label>
+        <input className="mf-input" placeholder="Accra"
+          value={form.city || ''} onChange={e => set('city', e.target.value)} />
+      </div>
+
       <div className="mf-group">
         <label className="mf-label">Hometown</label>
         <input className="mf-input" placeholder="Aburi"
-          value={form.hometown} onChange={e => set('hometown', e.target.value)} />
+          value={form.hometown || ''} onChange={e => set('hometown', e.target.value)} />
       </div>
 
-      {/* Region */}
       <div className="mf-group">
         <label className="mf-label">Region</label>
-        <select className="mf-select" value={form.region}
+        <select className="mf-select" value={form.region || ''}
           onChange={e => set('region', e.target.value)}>
           <option value="">Select region</option>
           {GHANA_REGIONS.map(r => <option key={r} value={r}>{r}</option>)}
         </select>
       </div>
 
-      {/* Ghana Post */}
       <div className="mf-group">
         <label className="mf-label">Ghana Post Address</label>
         <input className="mf-input" placeholder="GPS-282-282"
-          value={form.ghanaPost} onChange={e => set('ghanaPost', e.target.value)} />
+          value={form.gpsAddress || ''} onChange={e => set('gpsAddress', e.target.value)} />
       </div>
 
       <div className="mf-divider" />
 
-      {/* Next of Kin */}
       <div className="mf-group">
         <label className="mf-label">Next of Kin</label>
         <input className="mf-input" placeholder="Enter name here..."
-          value={form.nextOfKin} onChange={e => set('nextOfKin', e.target.value)} />
+          value={form.nextOfKin || ''} onChange={e => set('nextOfKin', e.target.value)} />
       </div>
 
-      {/* Emergency Contact Name */}
       <div className="mf-group">
         <label className="mf-label">Emergency Contact Name</label>
         <input className="mf-input" placeholder="Enter name here..."
-          value={form.emergencyContact} onChange={e => set('emergencyContact', e.target.value)} />
+          value={form.emergencyContactName || ''} onChange={e => set('emergencyContactName', e.target.value)} />
       </div>
 
-      {/* Emergency Contact Phone */}
       <div className="mf-group">
-        <label className="mf-label">Emergency Contact Phone Number</label>
+        <label className="mf-label">Emergency Contact Phone</label>
         <input className="mf-input" placeholder="+ 233 00 000 0000"
-          value={form.emergencyPhone} onChange={e => set('emergencyPhone', e.target.value)} />
+          value={form.emergencyContactPhoneNumber || ''} onChange={e => set('emergencyContactPhoneNumber', e.target.value)} />
       </div>
     </>
   );
 };
 
 export default Members;
+

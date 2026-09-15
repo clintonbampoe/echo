@@ -6,8 +6,9 @@ const BASE_PATH = '/v1/Members';
 export const membersService = {
   list: async (filters: MemberFilters = {}, pageSize: number = 24, cursor?: string): Promise<PagedResponse<Member>> => {
     const params = new URLSearchParams();
-    if (filters.searchTerm) params.append('SearchTerm', filters.searchTerm);
+    if (filters.name) params.append('Name', filters.name);
     if (filters.status) params.append('Status', filters.status);
+    if (filters.gender) params.append('Gender', filters.gender);
     params.append('PageSize', pageSize.toString());
     if (cursor) params.append('Cursor', cursor);
     

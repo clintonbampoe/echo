@@ -1,12 +1,25 @@
 export interface Member {
   id: string;
+  name: string;
   firstName: string;
   lastName: string;
-  email?: string;
-  phoneNumber?: string;
-  gender?: string;
-  dateOfBirth?: string;
-  status: string;
+  otherNames?: string;
+  emailAddress?: string;
+  phoneNumber: string;
+  dateOfBirth: string; // ISO format YYYY-MM-DD
+  joinedDate?: string;
+  gender: 'Male' | 'Female' | 'Other';
+  residentialAddress: string;
+  city: string;
+  hometown: string;
+  region: string;
+  gpsAddress?: string;
+  maritalStatus: 'Single' | 'Married' | 'Divorced' | 'Widowed';
+  nextOfKin: string;
+  emergencyContactName: string;
+  emergencyContactPhoneNumber: string;
+  status: 'Active' | 'Inactive' | 'NewVisitor';
+  createdAt: string;
 }
 
 export interface PagedResponse<T> {
@@ -16,6 +29,8 @@ export interface PagedResponse<T> {
 }
 
 export interface MemberFilters {
-  searchTerm?: string;
+  name?: string;
   status?: string;
+  gender?: string;
+  joinedDate?: string;
 }
