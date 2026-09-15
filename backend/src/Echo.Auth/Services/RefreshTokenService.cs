@@ -1,4 +1,4 @@
-using Echo.Application.Options;
+using Echo.Application.Options.Jwt;
 using Echo.Application.Services.Generators;
 using Echo.Application.Services.Hashing;
 using Echo.Auth.Dtos;

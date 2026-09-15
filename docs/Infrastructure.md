@@ -1,7 +1,7 @@
 # Infrastructure
 
 **Written by:** @clintonbampoe
-**Last updated:** 2026-09-13 by @clintonbampoe
+**Last updated:** 2026-09-15 by @clintonbampoe
 
 ---
 
@@ -100,7 +100,7 @@ Supercronic is used to schedule database backups.
 
 The database schema is updated through two primary paths:
 
-- **Automatic**: When `RUN_DATABASE_MIGRATIONS_ON_STARTUP` is set to `true`, the API applies pending migrations automatically during startup.
+- **Automatic**: When `RunMigrationsOnStartup` is set to `true`, the API applies pending migrations automatically during startup.
 - **Manual**: The `migrator` container can be run independently to apply migrations:
   ```bash
   docker compose run --rm migrator
@@ -111,24 +111,45 @@ The database schema is updated through two primary paths:
   dotnet ef database update --project backend/src/Echo.Infrastructure --startup-project backend/src/Echo.Api
   ```
 
-## Environment variables
+## Configuration
 
-Checked against `.env.example` and the actual code as of 2026-07-31.
-If you add or change a variable or the structure of the `.env` file, update this table in the same change — the code is what's actually true, this table just describes it.
+Echo uses a hierarchical configuration system designed to be explicit and predictable. The application reads settings in a specific order of priority: **Environment Variables (`.env`)** override **`appsettings.json`** defaults.
 
-| Variable                             | Required | Used by | What it's for                                                                                                                                                            |
-| ------------------------------------ | -------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `DB_NAME`                            | YES      | db, api | Name of the Postgres database                                                                                                                                            |
-| `DB_USERNAME`                        | YES      | db, api | Postgres login username                                                                                                                                                  |
-| `DB_PASSWORD`                        | YES      | db, api | Postgres login password                                                                                                                                                  |
-| `RESEND_API_KEY`                     | YES      | api     | Sends emails through Resend                                                                                                                                              |
-| `FRONTEND_BASE_URL`                  | YES      | api     | Builds links in outgoing emails (password reset, email verification). This is not CORS config — it doesn't control which origins can call the API. Must be an absolute URL; `https` outside development. The `.env.example` value is intentionally blank — a fresh deploy must set the real public URL or the API refuses to start. |
-| `MAIL_CLIENT_ADDRESS`                | YES      | api     | The "from" address on outgoing emails                                                                                                                                    |
-| `RUN_DATABASE_MIGRATIONS_ON_STARTUP` | NO       | api     | `true` by default — applies migrations automatically when the API starts. Set to `false` if you'd rather run them yourself with `docker-compose run --rm migrator`.      |
-| `JWT_PRIVATE_KEY`                    | YES      | api     | Signs login tokens. Stored base64-encoded, not raw PEM — raw PEM has line breaks that don't survive `.env`'s format. See [setup.md](GettingStarted.md).                         |
-| `JWT_PUBLIC_KEY`                     | YES      | api     | Checks that login tokens are genuine. Same base64 encoding as above.                                                                                                     |
-| `JWT_ISSUER`                         | YES      | api     | Stamped onto every token when it's created. Must exactly match the value the API checks tokens against — if it doesn't, logins fail with no clear error telling you why. |
-| `JWT_AUDIENCE`                       | YES      | api     | Same rule as `JWT_ISSUER` — created and checked with the same value, or you get a silent, confusing failure.                                                             |
+### The Configuration System
+
+To keep settings organized, the application groups them into categories. To override a nested JSON setting via the `.env` file, we use a **double underscore (`__`)** naming convention. For example, a setting located at `Database:Name` in the JSON is overridden by `Database__Name` in the environment.
+
+This approach allows the API to map flat environment variables directly into structured C# Options classes. To ensure stability, the API employs a **Fail-Fast** principle: using `.ValidateOnStart()`, the app will refuse to boot if a required configuration is missing or invalid (e.g., using HTTP in production). This ensures configuration errors are caught during deployment rather than as runtime failures.
+
+### Variable Manifest
+
+The following table lists all available configuration variables. If you add a new variable to the code, update this table to maintain the source of truth.
+
+| Variable                 | Required | Used by | Purpose                                                                            |
+| ------------------------ | -------- | ------- | ---------------------------------------------------------------------------------- |
+| `Database__Name`         | YES      | db, api | Name of the Postgres database.                                                     |
+| `Database__Username`     | YES      | db, api | Postgres login username.                                                           |
+| `Database__Password`     | YES      | db, api | Postgres login password.                                                           |
+| `Frontend__BaseUrl`    | YES      | api     | **Identity**: The public URL of the app. Used to build links in outbound emails.   |
+| `Cors__AllowedOrigins`   | YES      | api     | **Security**: Comma-separated list of domains allowed to make requests to the API. |
+| `Jwt__PrivateKey`        | YES      | api     | Signs login tokens (Base64 encoded).                                               |
+| `Jwt__PublicKey`         | YES      | api     | Verifies login tokens (Base64 encoded).                                            |
+| `Jwt__Issuer`            | YES      | api     | Token issuer identity.                                                             |
+| `Jwt__Audience`          | YES      | api     | Token intended audience.                                                           |
+| `MailClient__Address`    | YES      | api     | The "from" address for outbound emails.                                            |
+| `MailClient__ApiKey`     | YES      | api     | API key for the Resend email service.                                              |
+| `RunMigrationsOnStartup` | NO       | api     | `true` by default. Applies DB updates on boot.                                     |                                                                                  |
+| `License__LuckyPennyKey` | NO       | api     | License key for LuckyPenny integration.                                            |
+
+### CORS & Frontend Identity
+
+Because the frontend interacts with the API in two fundamentally different ways, we use two distinct configuration paths. **It is critical not to confuse the two.**
+
+**1. Frontend Identity (`Frontend__PublicUrl`)**
+This is the "Public Face" of the application—a single, absolute URL (e.g., `https://app.echo.church`). The API uses this value to generate absolute links for password resets, email verifications, and invitation links. For security, this must be an HTTPS URL in all environments except Development.
+
+**2. CORS Security (`Cors__AllowedOrigins`)**
+This is a security barrier—a comma-separated list of trusted origins (e.g., `http://localhost:5173,https://app.echo.church`). It tells the browser which domains are authorized to make requests to the API. If a request comes from an origin not in this list, the API rejects the request and the browser blocks the response. To add a new environment (such as a staging site), simply append the URL to this list.
 
 ---
 
@@ -141,7 +162,7 @@ It's main purpose is to document the steps we took to fix a problem, so that we 
 ### How to write an entry
 
 | Column      | What to write                                                                                   |
-| ----------- | ----------------------------------------------------------------------------------------------- |
+| ----------- | --------------------------------------------------------------------------------------------------------------- |
 | Symptom     | What you saw, in plain words — specific enough that someone else hitting it would recognize it. |
 | First check | The fastest way to confirm it's this problem — usually a `docker-compose logs` command.         |
 | Root cause  | One sentence: what was actually wrong.                                                          |
@@ -166,7 +187,7 @@ See [Conventions in README](./README.md#conventions) for the full ruleset on who
 | Root cause  | `JWT_PRIVATE_KEY` in `.env` was raw PEM, not base64. Raw PEM doesn't survive `.env`'s format properly. |
 | Fix         | Run `sh backend/tools/jwt-key-setup/setup-jwt-keys.sh env` to regenerate the keys correctly.           |
 | Date        | 2026-07-31                                                                                             |
-| Added by    | @clintonbampoe                                                                                         |
+| Added by    | @clintonbampoe                                                                                                                        |
 
 ---
 
@@ -189,8 +210,7 @@ See [Conventions in README](./README.md#conventions) for the full ruleset on who
 | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Symptom     | Docker compose fails to start the stack with error: `dependency failed to start: container echo-api-1 is unhealthy`. API logs show it has started and is listening properly.                                                                                            |
 | First check | Inspect the docker network to make sure the api was properly bound to the network. Confirm that the api was reachable from outside through the `echo-network` IP gateway. This proved that the root cause wasn't from the api but a configuration in our docker compose |
-| Root cause  | Since api takes about 10-15 seconds on average to startup, all the healthchecks hit the api while it was building. Hence, all the checks failed prematurely and marked the api as unhealthy but the api was completely fine.                                            |
+| Root cause  | Since api takes about 10-15 seconds on average to startup, all the healthchecks hit the api while it was building. Hence, all the checks failed prematurely and marked the api as unhealthy but the api was completely fine.                                            P|
 | Fix         | Added a `start_period: 10s` tag to the yaml config to delay the health checks until the api had completed its build.                                                                                                                                                    |
-| Date        | 2026-08-25                                                                                                                                                                                                                                                              |
+| Date        | 2026-08-25                                                                                                                                                                                                                                                          |
 | Added by    | @clintonbampoe                                                                                                                                                                                                                                                          |
-

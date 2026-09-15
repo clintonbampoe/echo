@@ -2,7 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using Echo.Application.Options;
+using Echo.Application.Options.Jwt;
 using Echo.Core.Dtos;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -33,7 +33,9 @@ public class AccessTokenGenerator
 
     public (string Token, DateTime ExpiresAt) Generate(UserAuthDto user)
     {
-        var expiresAt = _timeProvider.GetUtcNow().UtcDateTime.AddMinutes(_jwtOptions.AccessTokenLifetimeMinutes);
+        var expiresAt = _timeProvider
+            .GetUtcNow()
+            .UtcDateTime.AddMinutes(_jwtOptions.AccessTokenLifetimeMinutes);
 
         var claims = new[]
         {
