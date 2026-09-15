@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { AuthContext } from './AuthContext';
 import type { User } from './AuthContext';
 import { authService } from '../services/authService';
+import { apiFetch } from '../services/api';
 
 function parseJwt(token: string) {
   try {
@@ -42,6 +43,23 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
   }, []);
 
+  // Fetch full user name if only email username is set
+  useEffect(() => {
+    if (user?.id && user?.token && (!user.name || user.name === user.email.split('@')[0])) {
+      apiFetch(`/v1/Users/${user.id}`)
+        .then(profile => {
+          if (profile?.name && profile.name !== user.name) {
+            const updatedUser = { ...user, name: profile.name };
+            setUser(updatedUser);
+            localStorage.setItem('user', JSON.stringify(updatedUser));
+          }
+        })
+        .catch(() => {
+          // Ignore if profile fetch fails
+        });
+    }
+  }, [user?.id, user?.token]);
+
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
@@ -49,11 +67,26 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const token = tokenPair?.accessToken || (tokenPair as any)?.data?.accessToken || '';
       const refreshToken = tokenPair?.refreshToken || (tokenPair as any)?.data?.refreshToken || '';
       const claims = token ? parseJwt(token) : null;
+      const userId = claims?.sub || claims?.nameid || '';
+
+      let fullName = email.split('@')[0];
+      if (userId && token) {
+        try {
+          const profile = await apiFetch(`/v1/Users/${userId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (profile?.name) {
+            fullName = profile.name;
+          }
+        } catch {
+          // Fallback to email username
+        }
+      }
 
       const loggedInUser: User = {
-        id: claims?.sub || claims?.nameid || '',
+        id: userId,
         email,
-        name: email.split('@')[0],
+        name: fullName,
         token,
         refreshToken,
         role: claims?.role || '',
