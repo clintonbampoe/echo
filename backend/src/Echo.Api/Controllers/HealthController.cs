@@ -10,8 +10,6 @@ namespace Echo.Api.Controllers;
 [Route("api/health")]
 public sealed class HealthController(HealthCheckService healthCheckService) : ControllerBase
 {
-    private readonly HealthCheckService _healthCheckService = healthCheckService;
-
     /// <summary>
     /// Liveness probe - answers the question "Is this process up?".
     /// SHOULD NOT depend on external services. Failure here means restart.
@@ -19,7 +17,7 @@ public sealed class HealthController(HealthCheckService healthCheckService) : Co
     [HttpGet("live")]
     public async Task<IActionResult> Live(CancellationToken ct)
     {
-        var report = await _healthCheckService.CheckHealthAsync(
+        var report = await healthCheckService.CheckHealthAsync(
             predicate: reg => reg.Tags.Contains(HealthCheckTags.Liveness),
             ct
         );
@@ -34,7 +32,7 @@ public sealed class HealthController(HealthCheckService healthCheckService) : Co
     [HttpGet("ready")]
     public async Task<IActionResult> Readiness(CancellationToken ct)
     {
-        var report = await _healthCheckService.CheckHealthAsync(predicate: _ => true, ct);
+        var report = await healthCheckService.CheckHealthAsync(predicate: _ => true, ct);
 
         return BuildResponse(report);
     }
