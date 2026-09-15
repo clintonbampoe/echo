@@ -63,7 +63,7 @@ public class ProjectService(
         CancellationToken ct
     )
     {
-        var projectManager = await memberRepository.GetById(congregationId, dto.ManagerId, ct);
+        var projectManager = await memberRepository.GetById(dto.ManagerId, congregationId, ct);
         if (projectManager is null)
             return new ForeignKeyEntityNotFound(nameof(projectManager));
 

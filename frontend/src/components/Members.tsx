@@ -1,24 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useLayout } from '../hooks/useLayout';
 import { useMembers, useCreateMember, useUpdateMember, useDeleteMember } from '../hooks/useMembers';
-import type { Member } from '../types/member';
+import type { Member, MemberStatus } from '../types/member';
 import { CloseIcon, MembersIcon, CalendarIcon } from './Icons';
 import DeleteConfirmModal from './common/DeleteConfirmModal';
 import ExportPanel from './ExportPanel';
 import '../styles/Members.css';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-
-const MINISTRY_GROUPS = [
-  "Women's Fellowship",
-  "Men's Fellowship",
-  'Youth',
-  'Choir',
-  'Ushers',
-  'Children Ministry',
-  'Prayer Band',
-  'Media Team',
-];
 
 const GHANA_REGIONS = [
   { value: 'GreaterAccra', label: 'Greater Accra Region' },
@@ -80,15 +69,15 @@ const Members: React.FC = () => {
   // Map ActiveTab to backend status
   let backendStatus = '';
   if (activeTab === 'Active') backendStatus = 'Active';
-  
+
   if (activeTab === 'Inactive') backendStatus = 'Inactive';
   if (activeTab === 'Archived') backendStatus = 'Archived';
 
-  const { data: pagedResponse, isLoading } = useMembers({ 
+  const { data: pagedResponse, isLoading } = useMembers({
     name: searchQuery || undefined,
     status: backendStatus || undefined
   });
-  
+
   const members = pagedResponse?.data || [];
 
   const createMember = useCreateMember();
@@ -487,7 +476,7 @@ const MemberFormFields: React.FC<{
             onChange={e => set('maritalStatus', e.target.value as any)}>
             <option value="Single">Single</option>
             <option value="Married">Married</option>
-            
+
             <option value="Widowed">Widowed</option>
           </select>
         </div>

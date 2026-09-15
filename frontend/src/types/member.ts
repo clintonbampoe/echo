@@ -1,3 +1,5 @@
+export type MemberStatus = 'Active' | 'Inactive' | 'Archived' | 'Transferred' | 'Visitor';
+
 export interface Member {
   id: string;
   name: string;
@@ -18,7 +20,7 @@ export interface Member {
   nextOfKin: string;
   emergencyContactName: string;
   emergencyContactPhoneNumber: string;
-  status: 'Active' | 'Inactive' | 'Archived' | 'Transferred';
+  status: MemberStatus;
   createdAt: string;
 }
 
