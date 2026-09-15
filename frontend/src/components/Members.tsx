@@ -101,9 +101,12 @@ const Members: React.FC = () => {
 
   const [form, setForm] = useState(emptyForm());
 
+  const [panelError, setPanelError] = useState<string | null>(null);
+
   // ── Layout header ─────────────────────────────────────────────────────────
 
   const openAddPanel = () => {
+    setPanelError(null);
     setForm(emptyForm());
     setShowAddPanel(true);
   };
@@ -136,28 +139,23 @@ const Members: React.FC = () => {
   const activeFamilies = new Set(members.filter(m => m.status === 'Active').map(m => m.lastName)).size;
   const retentionRate = totalMembership === 0 ? 0 : Math.round((members.filter(m => m.status === 'Active').length / totalMembership) * 100);
 
-  // ── Filtering ─────────────────────────────────────────────────────────────
-
-  
-
-
-
   // ── Handlers ──────────────────────────────────────────────────────────────
 
   const openEditPanel = (member: Member) => {
+    setPanelError(null);
     setEditingMember(member);
     setForm({
       firstName: member.firstName,
       lastName: member.lastName,
       phoneNumber: member.phoneNumber,
-      emailAddress: member.emailAddress,
-      dateOfBirth: member.dateOfBirth,
+      emailAddress: member.emailAddress || '',
+      dateOfBirth: member.dateOfBirth || '',
       gender: member.gender,
       status: member.status,
       residentialAddress: member.residentialAddress,
       hometown: member.hometown,
       region: member.region,
-      gpsAddress: member.gpsAddress,
+      gpsAddress: member.gpsAddress || '',
       nextOfKin: member.nextOfKin,
       emergencyContactName: member.emergencyContactName,
       emergencyContactPhoneNumber: member.emergencyContactPhoneNumber,
@@ -173,15 +171,28 @@ const Members: React.FC = () => {
   };
 
   const handleSaveAdd = async () => {
-    if (!form.firstName?.trim() || !form.lastName?.trim()) return;
-    await createMember.mutateAsync(form);
-    setShowAddPanel(false);
+    setPanelError(null);
+    if (!form.firstName?.trim() || !form.lastName?.trim()) {
+      setPanelError('First name and last name are required.');
+      return;
+    }
+    try {
+      await createMember.mutateAsync(form);
+      setShowAddPanel(false);
+    } catch (err: any) {
+      setPanelError(err?.message || 'Failed to create member.');
+    }
   };
 
   const handleSaveEdit = async () => {
     if (!editingMember) return;
-    await updateMember.mutateAsync({ id: editingMember.id, data: form });
-    setEditingMember(null);
+    setPanelError(null);
+    try {
+      await updateMember.mutateAsync({ id: editingMember.id, data: form });
+      setEditingMember(null);
+    } catch (err: any) {
+      setPanelError(err?.message || 'Failed to update member.');
+    }
   };
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -194,12 +205,17 @@ const Members: React.FC = () => {
 
   const confirmDelete = async () => {
     if (!deletingMember) return;
-    await deleteMember.mutateAsync(deletingMember.id);
-    setShowDeleteConfirm(false);
-    setDeletingMember(null);
+    try {
+      await deleteMember.mutateAsync(deletingMember.id);
+      setShowDeleteConfirm(false);
+      setDeletingMember(null);
+    } catch (err: any) {
+      alert(err?.message || 'Failed to delete member.');
+    }
   };
 
   const closePanel = () => {
+    setPanelError(null);
     setShowAddPanel(false);
     setEditingMember(null);
   };
@@ -345,6 +361,11 @@ const Members: React.FC = () => {
                 <p className="members-panel-subtitle">
                   {showAddPanel ? 'Fill in details to add a new member' : 'Update member profile details'}
                 </p>
+                {panelError && (
+                  <div style={{ color: '#ef4444', fontSize: '0.875rem', marginTop: '0.5rem', fontWeight: 500 }}>
+                    {panelError}
+                  </div>
+                )}
               </div>
               <button className="members-panel-close" onClick={closePanel}>
                 <CloseIcon />
