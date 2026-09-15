@@ -90,13 +90,19 @@ const AppContent: React.FC = () => {
     );
 };
 
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+const queryClient = new QueryClient();
+
 function App() {
     return (
-        <Router>
-            <AuthProvider>
-                <AppContent />
-            </AuthProvider>
-        </Router>
+        <QueryClientProvider client={queryClient}>
+            <Router>
+                <AuthProvider>
+                    <AppContent />
+                </AuthProvider>
+            </Router>
+        </QueryClientProvider>
     );
 }
 
