@@ -1,9 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { AuthContext } from './AuthContext';
 import type { User } from './AuthContext';
-// Prepared for actual API integration
-// import { apiFetch } from '../services/api';
+import { authService } from '../services/authService';
+
+function parseJwt(token: string) {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    return JSON.parse(jsonPayload);
+  } catch {
+    return null;
+  }
+}
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(() => {
@@ -19,7 +34,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const [isLoading, setIsLoading] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const handleUnauthorized = () => {
       setUser(null);
     };
@@ -27,30 +42,24 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
   }, []);
 
-  const login = async (email: string, _password: string) => {
+  const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      // Prepared for actual API call
-      // const response = await apiFetch('/auth/login', {
-      //   method: 'POST',
-      //   body: JSON.stringify({ email, password }),
-      // });
-      // setUser(response.user);
-      // localStorage.setItem('user', JSON.stringify(response.user));
+      const tokenPair = await authService.login(email, password);
+      const claims = parseJwt(tokenPair.accessToken);
 
-      // Simulating API delay for now
-      console.log('Attempting login for:', email);
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      const mockUser: User = {
-        id: '1',
+      const loggedInUser: User = {
+        id: claims?.sub || claims?.nameid || '',
         email,
         name: email.split('@')[0],
-        token: 'mock-jwt-token',
+        token: tokenPair.accessToken,
+        refreshToken: tokenPair.refreshToken,
+        role: claims?.role || '',
+        congregationId: claims?.congregationId || '',
       };
 
-      setUser(mockUser);
-      localStorage.setItem('user', JSON.stringify(mockUser));
+      setUser(loggedInUser);
+      localStorage.setItem('user', JSON.stringify(loggedInUser));
     } catch (error) {
       console.error('Login failed:', error);
       throw error;
@@ -60,6 +69,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const logout = () => {
+    if (user?.refreshToken) {
+      authService.logout(user.refreshToken);
+    }
     setUser(null);
     localStorage.removeItem('user');
   };
