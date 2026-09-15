@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLayout } from '../hooks/useLayout';
 import { useMembers, useCreateMember, useUpdateMember, useDeleteMember } from '../hooks/useMembers';
-import { Member } from '../types/member';
+import type { Member } from '../types/member';
 import { CloseIcon, MembersIcon, CalendarIcon } from './Icons';
 import DeleteConfirmModal from './common/DeleteConfirmModal';
 import ExportPanel from './ExportPanel';

@@ -1,5 +1,5 @@
 import { apiFetch } from './api';
-import { Member, PagedResponse, MemberFilters } from '../types/member';
+import type { Member, PagedResponse, MemberFilters } from '../types/member';
 
 const BASE_PATH = '/v1/Members';
 

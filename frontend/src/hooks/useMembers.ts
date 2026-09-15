@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { membersService } from '../services/membersService';
-import { Member, MemberFilters } from '../types/member';
+import type { Member, MemberFilters } from '../types/member';
 
 export const useMembers = (filters: MemberFilters = {}, pageSize: number = 24, cursor?: string) => {
   return useQuery({

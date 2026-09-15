@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { organizationsService } from '../services/organizationsService';
-import { Organization } from '../types/organization';
+import type { Organization } from '../types/organization';
 
 export const useOrganizations = (pageSize: number = 24, cursor?: string) => {
   return useQuery({

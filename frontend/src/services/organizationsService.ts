@@ -1,6 +1,6 @@
 import { apiFetch } from './api';
-import { Organization } from '../types/organization';
-import { PagedResponse } from '../types/member';
+import type { Organization } from '../types/organization';
+import type { PagedResponse } from '../types/member';
 
 const BASE_PATH = '/v1/Organizations';
 

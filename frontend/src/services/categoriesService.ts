@@ -1,5 +1,5 @@
 import { apiFetch } from './api';
-import { Category } from '../types/category';
+import type { Category } from '../types/category';
 
 export type CategoryType = 'Asset' | 'Project' | 'Transaction';
 
