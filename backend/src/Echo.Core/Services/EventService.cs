@@ -96,7 +96,7 @@ public class EventService(
         CancellationToken ct
     )
     {
-        var entity = await repository.GetById(congregationId, id, ct);
+        var entity = await repository.GetById(id, congregationId, ct);
 
         if (entity is null)
             return new NotFoundResult(id.ToString());
@@ -110,7 +110,7 @@ public class EventService(
 
     public async Task<IOperationResult> Delete(Guid congregationId, Guid id, CancellationToken ct)
     {
-        var entity = await repository.GetById(congregationId, id, ct);
+        var entity = await repository.GetById(id, congregationId, ct);
 
         if (entity is null)
             return new NotFoundResult(id.ToString());
