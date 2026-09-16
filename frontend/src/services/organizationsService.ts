@@ -1,15 +1,14 @@
 import { apiFetch } from './api';
-import type { Organization } from '../types/organization';
-import type { PagedResponse } from '../types/member';
+import type { Organization, PagedResponse } from '../types/event';
 
 const BASE_PATH = '/v1/Organizations';
 
 export const organizationsService = {
-  list: async (pageSize: number = 24, cursor?: string): Promise<PagedResponse<Organization>> => {
+  list: async (pageSize: number = 50, cursor?: string): Promise<PagedResponse<Organization>> => {
     const params = new URLSearchParams();
     params.append('PageSize', pageSize.toString());
     if (cursor) params.append('Cursor', cursor);
-    
+
     return apiFetch(`${BASE_PATH}?${params.toString()}`);
   },
 
@@ -17,14 +16,14 @@ export const organizationsService = {
     return apiFetch(`${BASE_PATH}/${id}`);
   },
 
-  create: async (data: Partial<Organization>): Promise<Organization> => {
+  create: async (data: { name: string; description?: string }): Promise<Organization> => {
     return apiFetch(BASE_PATH, {
       method: 'POST',
       body: JSON.stringify(data),
     });
   },
 
-  update: async (id: string, data: Partial<Organization>): Promise<Organization> => {
+  update: async (id: string, data: { name?: string; description?: string }): Promise<Organization> => {
     return apiFetch(`${BASE_PATH}/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
@@ -35,5 +34,9 @@ export const organizationsService = {
     return apiFetch(`${BASE_PATH}/${id}`, {
       method: 'DELETE',
     });
+  },
+
+  search: async (name: string): Promise<Organization[]> => {
+    return apiFetch(`${BASE_PATH}/search?name=${encodeURIComponent(name)}`);
   },
 };
