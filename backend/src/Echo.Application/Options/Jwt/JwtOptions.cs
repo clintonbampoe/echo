@@ -1,4 +1,4 @@
-namespace Echo.Application.Options;
+namespace Echo.Application.Options.Jwt;
 
 public class JwtOptions
 {

@@ -1,20 +1,22 @@
-using Echo.Application.Configuration;
+using Echo.Application.Options.Frontend;
 using Echo.Application.Services;
 using Microsoft.Extensions.Options;
 
 namespace Echo.Auth.Services;
 
-public class AuthLinkBuilder(IOptions<FrontendClientOptions> options) : LinkBuilder(options)
+public class AuthLinkBuilder(IOptions<FrontendOptions> options) : LinkBuilder
 {
-    public string BuildEmailVerificationLink(string rawToken)
+    private readonly string _baseUrl = options.Value.BaseUrl;
+
+    public string BuildEmailVerificationLink(string token)
     {
-        var link = $"{BaseUrl}/verify-email?token={Uri.EscapeDataString(rawToken)}";
+        var link = $"{_baseUrl}/verify-email?token={Uri.EscapeDataString(token)}";
         return link;
     }
 
-    public string BuildPasswordResetLink(string rawToken)
+    public string BuildPasswordResetLink(string token)
     {
-        var link = $"{BaseUrl}/reset-password?token={Uri.EscapeDataString(rawToken)}";
+        var link = $"{_baseUrl}/reset-password?token={Uri.EscapeDataString(token)}";
         return link;
     }
 }

@@ -6,18 +6,19 @@ services:
       dockerfile: backend/src/Echo.Api/Dockerfile
     environment:
       Database__Host: db
-      Database__Port: ${DB_PORT}
-      Database__Name: ${DB_NAME}
-      Database__Username: ${DB_USERNAME}
-      Database__Password: ${DB_PASSWORD}
-      Jwt__PrivateKey: ${JWT_PRIVATE_KEY}
-      Jwt__PublicKey: ${JWT_PUBLIC_KEY}
-      Jwt__Issuer: ${JWT_ISSUER}
-      Jwt__Audience: ${JWT_AUDIENCE}
-      FrontendClient__BaseUrl: ${FRONTEND_BASE_URL}
-      MailClient__Address: ${MAIL_CLIENT_ADDRESS}
-      Resend__ApiKey: ${RESEND_API_KEY}
-      RunMigrationsOnStartup: ${RUN_DATABASE_MIGRATIONS_ON_STARTUP}
+      Database__Port: ${Database__Port}
+      Database__Name: ${Database__Name}
+      Database__Username: ${Database__Username}
+      Database__Password: ${Database__Password}
+      Jwt__PrivateKey: ${Jwt__PrivateKey}
+      Jwt__PublicKey: ${Jwt__PublicKey}
+      Jwt__Issuer: ${Jwt__Issuer}
+      Jwt__Audience: ${Jwt__Audience}
+      Cors__AllowedOrigins: ${Cors__AllowedOrigins}
+      Frontend__BaseUrl: ${Frontend__BaseUrl}
+      MailClient__Address: ${MailClient__Address}
+      Resend__ApiKey: ${Resend__ApiKey}
+      RunMigrationsOnStartup: ${RunMigrationsOnStartup}
     healthcheck:
       test: [CMD, curl, -f, http://localhost:8080/api/health/live]
       interval: 5s
@@ -31,15 +32,15 @@ services:
   db:
     image: postgres:18
     environment:
-      POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: ${DB_USERNAME}
-      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${Database__Name}
+      POSTGRES_USER: ${Database__Username}
+      POSTGRES_PASSWORD: ${Database__Password}
     volumes:
       - postgres-data:/var/lib/postgresql
       - ./infra/postgres/init/extensions.sql:/docker-entrypoint-initdb.d/extensions.sql
       - ./infra/postgres/backup/db_dumps:/db_dumps:ro
     healthcheck:
-      test: [CMD-SHELL, 'pg_isready -U ${DB_USERNAME} -d ${DB_NAME}']
+      test: [CMD-SHELL, 'pg_isready -U ${Database__Username} -d ${Database__Name}']
       interval: 5s
       timeout: 5s
       retries: 5
@@ -64,9 +65,9 @@ services:
       context: .
       dockerfile: infra/postgres/backup/Dockerfile
     environment:
-      DB_NAME: ${DB_NAME}
-      DB_USERNAME: ${DB_USERNAME}
-      PGPASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${Database__Name}
+      DB_USERNAME: ${Database__Username}
+      PGPASSWORD: ${Database__Password}
     volumes:
       - ./infra/postgres/backup/backup.sh:/app/backup.sh:ro
       - ./infra/postgres/backup/restore.sh:/app/restore.sh:ro
@@ -87,9 +88,9 @@ services:
     environment:
       Database__Host: db
       Database__Port: 5432
-      Database__Name: ${DB_NAME}
-      Database__Username: ${DB_USERNAME}
-      Database__Password: ${DB_PASSWORD}
+      Database__Name: ${Database__Name}
+      Database__Username: ${Database__Username}
+      Database__Password: ${Database__Password}
       ASPNETCORE_ENVIRONMENT: Development
     entrypoint:
       - sh

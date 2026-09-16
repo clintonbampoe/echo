@@ -10,30 +10,18 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddEnvironmentVariables();
 
-builder.Configuration.ValidateFrontendClientBaseUrl(builder.Environment);
-
 builder.Services.AddDbContext(builder.Configuration);
 builder.Services.AddSwaggerDocumentation();
 builder.Services.AddOpenApi();
 builder.Services.AddApiVersioningSetup();
-builder.Services.AddJwtAuthentication(builder.Configuration);
 builder.Services.AddRateLimitingToEndpoints();
 builder.Services.AddHealthCheckServices();
+builder.Services.AddJwtAuthentication(builder.Configuration);
+builder.Services.AddFrontendCors(builder.Configuration);
 builder.Services.AddRouting(options =>
 {
     options.LowercaseUrls = true;
     options.LowercaseQueryStrings = true;
-});
-builder.Services.AddCors(options =>
-{
-    options.AddDefaultPolicy(policy =>
-    {
-        var frontendBaseUrl =
-            builder.Configuration["FrontendClient:BaseUrl"]
-            ?? throw new InvalidOperationException("Missing 'FrontendClient:BaseUrl'.");
-
-        policy.WithOrigins(frontendBaseUrl).AllowAnyHeader().AllowAnyMethod().AllowCredentials();
-    });
 });
 
 builder
@@ -63,6 +51,7 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi().AllowAnonymous();
 }
 
+app.UseRouting();
 app.UseCors();
 app.UseRateLimiter();
 app.UseAuthentication();
