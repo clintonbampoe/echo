@@ -1,22 +1,27 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLayout } from '../hooks/useLayout';
 import {
-    deleteAttendanceRecord,
-    getAttendanceRecords,
-    getMembers,
-    isChild,
-    saveAttendanceRecord,
-} from '../services/attendanceService';
+  useAttendance,
+  useAttendanceTypes,
+  useAttendanceContexts,
+  useCreateAttendance,
+  useUpdateAttendance,
+  useDeleteAttendance,
+  useCreateAttendanceContext,
+  useCreateAttendanceType,
+} from '../hooks/useAttendance';
+import { useMembers } from '../hooks/useMembers';
 import '../styles/Attendance.css';
-import type { AttendanceRecord, ChurchServiceType, MarkAttendanceForm, Member } from '../types/attendance';
+import type { AttendanceRecord, AttendeeType } from '../types/attendance';
+import type { Member } from '../types/member';
 import {
-    CalendarIcon,
-    ChevronLeftIcon,
-    ChevronRightIcon,
-    ClockIcon,
-    CloseIcon,
-    FilterIcon,
-    SearchIcon,
+  CalendarIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  ClockIcon,
+  CloseIcon,
+  FilterIcon,
+  SearchIcon,
 } from './Icons';
 import DeleteConfirmModal from './common/DeleteConfirmModal';
 
@@ -44,45 +49,88 @@ const addDays = (dateStr: string, days: number): string => {
   return d.toISOString().split('T')[0];
 };
 
-const getContextsForType = (type: string) => {
-  if (type === 'Practice') {
-    return [{ value: 'ChoirPractice' as ChurchServiceType, label: 'Choir Practice' }];
-  }
-  if (type === 'Meeting') {
-    return [{ value: 'General' as ChurchServiceType, label: 'Committee Meeting' }];
-  }
-  return [
-    { value: 'Evening' as ChurchServiceType, label: 'Evening Service' },
-    { value: 'General' as ChurchServiceType, label: 'General Service' },
-  ];
+const getTodayDate = (): string => {
+  return new Date().toISOString().split('T')[0];
 };
+
+interface FormState {
+  memberId: string;
+  attendanceContextId: number | '';
+  status: 'Present' | 'Absent';
+  roleOverride: AttendeeType;
+  timeRecorded: string;
+  notes: string;
+}
 
 const Attendance: React.FC = () => {
   const { setTitle, setCtas, searchQuery, setSearchQuery } = useLayout();
 
-  // ── States ─────────────────────────────────────────────────────────────────
+  // ── Queries & Mutations ─────────────────────────────────────────────────────
+  const { data: attendanceTypes = [] } = useAttendanceTypes();
+  const { data: attendanceContexts = [] } = useAttendanceContexts();
+  const { data: membersResponse } = useMembers({}, 100);
+  const members = useMemo(() => membersResponse?.data || [], [membersResponse?.data]);
 
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [deletingAttendance, setDeletingAttendance] = useState<(AttendanceRecord & { memberName?: string }) | null>(null);
+  const [date, setDate] = useState<string>(getTodayDate);
+  const [selectedTypeId, setSelectedTypeId] = useState<number | ''>('');
+  const [selectedContextId, setSelectedContextId] = useState<number | ''>('');
 
-  const [date, setDate] = useState('2026-10-23'); // Initialize to seeded date matching wireframe
-  const [eventType, setEventType] = useState<'Service' | 'Practice' | 'Meeting'>('Service');
-  const [serviceContext, setServiceContext] = useState<ChurchServiceType>('Evening');
+  // Auto-select initial Type and Context if not selected
+  useEffect(() => {
+    if (attendanceTypes.length > 0 && selectedTypeId === '') {
+      setSelectedTypeId(attendanceTypes[0].id);
+    }
+  }, [attendanceTypes, selectedTypeId]);
 
-  const [members, setMembers] = useState<Member[]>([]);
-  const [attendees, setAttendees] = useState<AttendanceRecord[]>([]);
+  // Contexts matching selected type
+  const availableContexts = useMemo(() => {
+    if (!selectedTypeId) return attendanceContexts;
+    const selectedType = attendanceTypes.find((t) => t.id === selectedTypeId);
+    return attendanceContexts.filter(
+      (c) => c.attendanceTypeId === selectedTypeId || (selectedType && c.attendanceTypeName === selectedType.name)
+    );
+  }, [attendanceContexts, attendanceTypes, selectedTypeId]);
 
+  useEffect(() => {
+    if (availableContexts.length > 0) {
+      const exists = availableContexts.some((c) => c.id === selectedContextId);
+      if (!exists) {
+        setSelectedContextId(availableContexts[0].id);
+      }
+    } else {
+      setSelectedContextId('');
+    }
+  }, [availableContexts, selectedContextId]);
+
+  // Attendance Records Query
+  const filters = useMemo(() => ({
+    forDate: date,
+    attendanceContextId: selectedContextId !== '' ? Number(selectedContextId) : undefined,
+  }), [date, selectedContextId]);
+
+  const { data: attendanceData, isLoading: isLoadingAttendance } = useAttendance(filters);
+  const attendees = useMemo(() => attendanceData?.data || [], [attendanceData?.data]);
+
+  const createAttendance = useCreateAttendance();
+  const updateAttendance = useUpdateAttendance();
+  const deleteAttendance = useDeleteAttendance();
+  const createContextMutation = useCreateAttendanceContext();
+  const createTypeMutation = useCreateAttendanceType();
+
+  // ── UI States ───────────────────────────────────────────────────────────────
   const [selectedTab, setSelectedTab] = useState<'All' | 'Members' | 'Visitors'>('All');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deletingAttendance, setDeletingAttendance] = useState<AttendanceRecord | null>(null);
 
   // Modal / Side Panel State
   const [showMarkPanel, setShowMarkPanel] = useState(false);
   const [editingRecord, setEditingRecord] = useState<AttendanceRecord | null>(null);
-
-  const [formData, setFormData] = useState<MarkAttendanceForm>({
+  const [formData, setFormData] = useState<FormState>({
     memberId: '',
+    attendanceContextId: '',
     status: 'Present',
     roleOverride: 'Member',
-    timeRecorded: '15:00',
+    timeRecorded: '12:00',
     notes: '',
   });
 
@@ -90,29 +138,12 @@ const Attendance: React.FC = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const suggestionsRef = useRef<HTMLDivElement>(null);
 
-  // ── Data Fetching ──────────────────────────────────────────────────────────
+  // New Context Modal State
+  const [showNewContextModal, setShowNewContextModal] = useState(false);
+  const [newContextName, setNewContextName] = useState('');
+  const [newContextTypeId, setNewContextTypeId] = useState<number | ''>('');
 
-  const fetchData = useCallback(async () => {
-    try {
-      const allMembers = await getMembers();
-      setMembers(allMembers);
-      const records = await getAttendanceRecords(date, serviceContext);
-      setAttendees(records);
-    } catch (err) {
-      console.error('Failed to load data:', err);
-    }
-  }, [date, serviceContext]);
-
-  // Adjust serviceContext when eventType changes
-  const handleEventTypeChange = (newType: 'Service' | 'Practice' | 'Meeting') => {
-    setEventType(newType);
-    const available = getContextsForType(newType);
-    if (available.length > 0) {
-      setServiceContext(available[0].value);
-    }
-  };
-
-  // Date Navigation handlers
+  // ── Date Navigation Handlers ────────────────────────────────────────────────
   const handlePrevDay = () => setDate((d) => addDays(d, -1));
   const handleNextDay = () => setDate((d) => addDays(d, 1));
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -121,32 +152,28 @@ const Attendance: React.FC = () => {
     }
   };
 
-  // ── Handlers ───────────────────────────────────────────────────────────────
-
+  // ── Mark Attendance Handlers ────────────────────────────────────────────────
   const handleOpenMarkPanel = useCallback((record?: AttendanceRecord) => {
     if (record) {
-      // Edit mode
       setEditingRecord(record);
-      const member = members.find((m) => m.memberId === record.memberId);
       setFormData({
-        memberId: String(record.memberId),
-        status: 'Present', // backend AttendanceRecord tracks only present attendees
+        memberId: record.memberId,
+        attendanceContextId: record.attendanceContextId,
+        status: 'Present',
         roleOverride: record.attendeeType,
-        timeRecorded: record.checkInTime,
+        timeRecorded: record.checkInTime.slice(0, 5),
         notes: record.description || '',
       });
-      setMemberSearchQuery(member ? `${member.firstName} ${member.lastName}` : '');
+      setMemberSearchQuery(record.memberName || '');
     } else {
-      // Create mode
       setEditingRecord(null);
-
-      // Get current local time in HH:mm
       const now = new Date();
       const currentHours = String(now.getHours()).padStart(2, '0');
       const currentMinutes = String(now.getMinutes()).padStart(2, '0');
 
       setFormData({
         memberId: '',
+        attendanceContextId: selectedContextId,
         status: 'Present',
         roleOverride: 'Member',
         timeRecorded: `${currentHours}:${currentMinutes}`,
@@ -156,7 +183,7 @@ const Attendance: React.FC = () => {
     }
     setShowSuggestions(false);
     setShowMarkPanel(true);
-  }, [members]);
+  }, [selectedContextId]);
 
   const handleCloseMarkPanel = useCallback(() => {
     setShowMarkPanel(false);
@@ -170,31 +197,62 @@ const Attendance: React.FC = () => {
       return;
     }
 
+    const contextId = formData.attendanceContextId || selectedContextId;
+    if (!contextId) {
+      alert('Please select or create an attendance context first.');
+      return;
+    }
+
     try {
       if (formData.status === 'Absent' && editingRecord) {
-        // If status marked as absent, remove the record
-        await deleteAttendanceRecord(editingRecord.attendanceId);
-      } else if (formData.status === 'Present') {
-        await saveAttendanceRecord({
-          attendanceId: editingRecord?.attendanceId,
-          memberId: parseInt(formData.memberId),
-          forDate: date,
-          churchServiceType: serviceContext,
+        await deleteAttendance.mutateAsync(editingRecord.id);
+      } else if (editingRecord) {
+        await updateAttendance.mutateAsync({
+          id: editingRecord.id,
+          data: {
+            memberId: formData.memberId,
+            attendanceContextId: Number(contextId),
+            attendeeType: formData.roleOverride,
+            forDate: date,
+            checkInTime: formData.timeRecorded ? `${formData.timeRecorded}:00` : '12:00:00',
+            description: formData.notes.trim() || undefined,
+          },
+        });
+      } else {
+        await createAttendance.mutateAsync({
+          memberId: formData.memberId,
+          attendanceContextId: Number(contextId),
           attendeeType: formData.roleOverride,
-          checkInTime: formData.timeRecorded,
-          description: formData.notes,
+          forDate: date,
+          checkInTime: formData.timeRecorded ? `${formData.timeRecorded}:00` : '12:00:00',
+          description: formData.notes.trim() || undefined,
         });
       }
 
       handleCloseMarkPanel();
-      fetchData(); // Refresh list and stats
     } catch (err) {
       console.error('Failed to save attendance record:', err);
+      alert('Failed to save attendance record.');
+    }
+  };
+
+  const handleDeleteAttendance = (att: AttendanceRecord) => {
+    setDeletingAttendance(att);
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDeleteAttendance = async () => {
+    if (!deletingAttendance) return;
+    try {
+      await deleteAttendance.mutateAsync(deletingAttendance.id);
+      setShowDeleteConfirm(false);
+      setDeletingAttendance(null);
+    } catch (err) {
+      console.error('Failed to delete attendance record:', err);
     }
   };
 
   // ── Layout Header & Effects ────────────────────────────────────────────────
-
   useEffect(() => {
     setTitle('Attendance');
     setCtas([
@@ -211,7 +269,6 @@ const Attendance: React.FC = () => {
       },
     ]);
 
-    // Clear search on mount
     setSearchQuery('');
   }, [setTitle, setCtas, setSearchQuery, handleOpenMarkPanel]);
 
@@ -226,87 +283,97 @@ const Attendance: React.FC = () => {
     return () => document.removeEventListener('mousedown', handleOutsideClick);
   }, []);
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      fetchData();
-    }, 0);
-    return () => clearTimeout(timer);
-  }, [fetchData]);
-
-  const handleDeleteAttendance = (att: AttendanceRecord) => {
-    setDeletingAttendance(att);
-    setShowDeleteConfirm(true);
-  };
-
-  const confirmDeleteAttendance = async () => {
-    if (!deletingAttendance) return;
-    try {
-      await deleteAttendanceRecord(deletingAttendance.attendanceId);
-      setShowDeleteConfirm(false);
-      setDeletingAttendance(null);
-      fetchData();
-    } catch (err) {
-      console.error('Failed to delete attendance record:', err);
-    }
-  };
-
   // Autocomplete suggest selection
   const handleSelectMemberSuggestion = (member: Member) => {
+    const displayName = member.name || `${member.firstName} ${member.lastName}`;
     setFormData((prev) => ({
       ...prev,
-      memberId: String(member.memberId),
-      // Set the default role based on their activity status/profile
-      roleOverride: member.firstName === 'John' && member.lastName === 'Doe' ? 'Guest' :
-                    member.firstName === 'Baba' && member.lastName === 'Tundey' ? 'Visitor' : 'Member',
+      memberId: member.id,
+      roleOverride: member.status === 'Visitor' ? 'Visitor' : 'Member',
     }));
-    setMemberSearchQuery(`${member.firstName} ${member.lastName}`);
+    setMemberSearchQuery(displayName);
     setShowSuggestions(false);
   };
 
-  // ── Calculations & Filtering ───────────────────────────────────────────────
+  // ── Create New Context Modal ────────────────────────────────────────────────
+  const handleOpenNewContext = () => {
+    setNewContextName('');
+    setNewContextTypeId(selectedTypeId || (attendanceTypes[0]?.id ?? ''));
+    setShowNewContextModal(true);
+  };
 
-  // Stats computation
+  const handleCreateContext = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newContextName.trim()) return;
+
+    let typeId = newContextTypeId;
+    // If no type exists, create a default 'Service' type first
+    if (!typeId) {
+      try {
+        const createdType = await createTypeMutation.mutateAsync({ name: 'Service' });
+        typeId = createdType.id;
+        setSelectedTypeId(createdType.id);
+      } catch (err) {
+        console.error('Failed to create default attendance type:', err);
+        return;
+      }
+    }
+
+    try {
+      const created = await createContextMutation.mutateAsync({
+        name: newContextName.trim(),
+        attendanceTypeId: Number(typeId),
+      });
+      setSelectedContextId(created.id);
+      setShowNewContextModal(false);
+    } catch (err) {
+      console.error('Failed to create attendance context:', err);
+      alert('Failed to create attendance context.');
+    }
+  };
+
+  // ── Calculations & Filtering ───────────────────────────────────────────────
   const totalPresent = attendees.length;
   const membersPresent = attendees.filter((a) => a.attendeeType === 'Member').length;
-  const firstTimeVisitors = attendees.filter((a) => a.attendeeType === 'Visitor').length;
-  const childrenPresent = attendees.filter((a) => {
-    const mem = members.find((m) => m.memberId === a.memberId);
-    return mem ? isChild(mem, date) : false;
-  }).length;
+  const firstTimeVisitors = attendees.filter(
+    (a) => a.attendeeType === 'Visitor' || a.attendeeType === 'Guest'
+  ).length;
+  const childrenPresent = attendees.filter((a) => a.attendeeType === 'Child').length;
 
   // Filter attendees list for table display
-  const displayAttendees = attendees
-    .map((record) => {
-      const member = members.find((m) => m.memberId === record.memberId);
-      return {
-        ...record,
-        memberName: member ? `${member.firstName} ${member.lastName}` : `Unknown Member #${record.memberId}`,
-      };
-    })
-    .filter((a) => {
-      // Tab selection filter
-      if (selectedTab === 'Members' && a.attendeeType !== 'Member') return false;
-      if (selectedTab === 'Visitors' && a.attendeeType === 'Member') return false;
+  const displayAttendees = useMemo(() => {
+    return attendees
+      .filter((a) => {
+        if (selectedTab === 'Members' && a.attendeeType !== 'Member') return false;
+        if (selectedTab === 'Visitors' && a.attendeeType === 'Member') return false;
 
-      // Header search bar filter
-      if (searchQuery.trim() !== '') {
-        return a.memberName.toLowerCase().includes(searchQuery.toLowerCase());
-      }
-      return true;
-    });
+        if (searchQuery.trim() !== '') {
+          return a.memberName?.toLowerCase().includes(searchQuery.toLowerCase());
+        }
+        return true;
+      });
+  }, [attendees, selectedTab, searchQuery]);
 
   // Filter suggestions list for auto-suggest
-  const activeSuggestions = members.filter((m) => {
-    const fullName = `${m.firstName} ${m.lastName}`.toLowerCase();
-    const query = memberSearchQuery.toLowerCase();
+  const activeSuggestions = useMemo(() => {
+    const query = memberSearchQuery.toLowerCase().trim();
+    if (!query) return members.slice(0, 10);
 
-    // Don't show members already present, unless we are editing their record
-    const isAlreadyPresent = attendees.some(
-      (a) => a.memberId === m.memberId && (!editingRecord || editingRecord.memberId !== m.memberId)
-    );
+    return members
+      .filter((m) => {
+        const fullName = (m.name || `${m.firstName} ${m.lastName}`).toLowerCase();
+        const isAlreadyPresent = attendees.some(
+          (a) => a.memberId === m.id && (!editingRecord || editingRecord.memberId !== m.id)
+        );
+        return fullName.includes(query) && !isAlreadyPresent;
+      })
+      .slice(0, 10);
+  }, [members, memberSearchQuery, attendees, editingRecord]);
 
-    return fullName.includes(query) && !isAlreadyPresent;
-  });
+  const currentContextName = useMemo(() => {
+    const ctx = attendanceContexts.find((c) => c.id === selectedContextId);
+    return ctx?.name || 'General Service';
+  }, [attendanceContexts, selectedContextId]);
 
   return (
     <div className="attendance-container">
@@ -316,14 +383,14 @@ const Attendance: React.FC = () => {
         <div className="filter-group">
           <span className="filter-label">Select Date</span>
           <div className="date-picker-control">
-            <button className="date-nav-btn" onClick={handlePrevDay}>
+            <button type="button" className="date-nav-btn" onClick={handlePrevDay} aria-label="Previous day">
               <ChevronLeftIcon size={16} />
             </button>
             <span className="date-display">{formatDateDisplay(date)}</span>
-            <button className="date-nav-btn" onClick={handleNextDay}>
+            <button type="button" className="date-nav-btn" onClick={handleNextDay} aria-label="Next day">
               <ChevronRightIcon size={16} />
             </button>
-            <button className="date-calendar-btn">
+            <label className="date-calendar-btn" aria-label="Choose date">
               <CalendarIcon size={16} />
               <input
                 type="date"
@@ -331,7 +398,7 @@ const Attendance: React.FC = () => {
                 value={date}
                 onChange={handleDateChange}
               />
-            </button>
+            </label>
           </div>
         </div>
 
@@ -340,28 +407,61 @@ const Attendance: React.FC = () => {
           <span className="filter-label">Type</span>
           <select
             className="attendance-select"
-            value={eventType}
-            onChange={(e) => handleEventTypeChange(e.target.value as 'Service' | 'Practice' | 'Meeting')}
+            value={selectedTypeId}
+            onChange={(e) => {
+              const val = e.target.value ? Number(e.target.value) : '';
+              setSelectedTypeId(val);
+            }}
           >
-            <option value="Service">Service</option>
-            <option value="Practice">Practice</option>
-            <option value="Meeting">Meeting</option>
+            {attendanceTypes.length === 0 ? (
+              <option value="">Service</option>
+            ) : (
+              attendanceTypes.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.name}
+                </option>
+              ))
+            )}
           </select>
         </div>
 
         {/* ATTENDANCE CONTEXT */}
         <div className="filter-group">
-          <span className="filter-label">Attendance Context</span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span className="filter-label">Attendance Context</span>
+            <button
+              type="button"
+              onClick={handleOpenNewContext}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: 'var(--primary, #007aff)',
+                fontSize: '11px',
+                fontWeight: 600,
+                cursor: 'pointer',
+                padding: '0 4px',
+              }}
+            >
+              + New Context
+            </button>
+          </div>
           <select
             className="attendance-select"
-            value={serviceContext}
-            onChange={(e) => setServiceContext(e.target.value as ChurchServiceType)}
+            value={selectedContextId}
+            onChange={(e) => {
+              const val = e.target.value ? Number(e.target.value) : '';
+              setSelectedContextId(val);
+            }}
           >
-            {getContextsForType(eventType).map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
+            {availableContexts.length === 0 ? (
+              <option value="">No contexts available</option>
+            ) : (
+              availableContexts.map((opt) => (
+                <option key={opt.id} value={opt.id}>
+                  {opt.name}
+                </option>
+              ))
+            )}
           </select>
         </div>
       </div>
@@ -398,6 +498,7 @@ const Attendance: React.FC = () => {
               return (
                 <button
                   key={tab}
+                  type="button"
                   className={`tab-btn ${selectedTab === tabId ? 'active' : ''}`}
                   onClick={() => setSelectedTab(tabId)}
                 >
@@ -407,13 +508,15 @@ const Attendance: React.FC = () => {
             })}
           </div>
 
-          <button className="table-filter-btn">
+          <button type="button" className="table-filter-btn">
             <FilterIcon size={14} /> Filter
           </button>
         </div>
 
         <div className="table-container">
-          {displayAttendees.length === 0 ? (
+          {isLoadingAttendance ? (
+            <div className="table-empty">Loading attendance records...</div>
+          ) : displayAttendees.length === 0 ? (
             <div className="table-empty">No attendees recorded for this selection.</div>
           ) : (
             <table className="attendees-table">
@@ -427,34 +530,38 @@ const Attendance: React.FC = () => {
               </thead>
               <tbody>
                 {displayAttendees.map((att) => {
-                  // Format time (e.g. 15:00 -> 3:00 PM)
                   let checkInDisplay = att.checkInTime;
                   try {
                     const timeParts = att.checkInTime.split(':');
-                    const hr = parseInt(timeParts[0]);
+                    const hr = parseInt(timeParts[0], 10);
                     const min = timeParts[1];
                     const suffix = hr >= 12 ? 'PM' : 'AM';
                     const displayHr = hr % 12 === 0 ? 12 : hr % 12;
                     checkInDisplay = `${displayHr}:${min} ${suffix}`;
                   } catch {
-                    // fall back
+                    // fall back to raw string
                   }
 
                   return (
-                    <tr key={att.attendanceId}>
+                    <tr key={att.id}>
                       <td className="attendee-name">{att.memberName}</td>
                       <td>
-                        <span className={`type-badge ${att.attendeeType.toLowerCase()}`}>
+                        <span className={`type-badge ${(att.attendeeType || 'member').toLowerCase()}`}>
                           {att.attendeeType}
                         </span>
                       </td>
                       <td>{checkInDisplay}</td>
                       <td>
                         <div className="table-actions">
-                          <button className="action-btn" onClick={() => handleOpenMarkPanel(att)}>
+                          <button
+                            type="button"
+                            className="action-btn"
+                            onClick={() => handleOpenMarkPanel(att)}
+                          >
                             Edit
                           </button>
                           <button
+                            type="button"
                             className="action-btn delete"
                             onClick={() => handleDeleteAttendance(att)}
                           >
@@ -488,6 +595,7 @@ const Attendance: React.FC = () => {
                 type="button"
                 className="panel-close-btn"
                 onClick={handleCloseMarkPanel}
+                aria-label="Close panel"
               >
                 <CloseIcon size={20} />
               </button>
@@ -501,9 +609,7 @@ const Attendance: React.FC = () => {
                   <CalendarIcon size={20} />
                 </div>
                 <div className="context-info">
-                  <span className="context-title">
-                    {getContextsForType(eventType).find((c) => c.value === serviceContext)?.label || serviceContext}
-                  </span>
+                  <span className="context-title">{currentContextName}</span>
                   <span className="context-date">{formatDateVerbose(date)}</span>
                 </div>
               </div>
@@ -520,13 +626,12 @@ const Attendance: React.FC = () => {
                     onChange={(e) => {
                       setMemberSearchQuery(e.target.value);
                       setShowSuggestions(true);
-                      // Clear id if user edits the text
                       if (formData.memberId) {
                         setFormData((prev) => ({ ...prev, memberId: '' }));
                       }
                     }}
                     onFocus={() => setShowSuggestions(true)}
-                    disabled={!!editingRecord} // Don't allow changing member on edit
+                    disabled={!!editingRecord}
                   />
                   <div className="panel-search-icon">
                     <SearchIcon size={16} />
@@ -542,19 +647,15 @@ const Attendance: React.FC = () => {
                       </div>
                     ) : (
                       activeSuggestions.map((m) => {
-                        // Guess role based on mock rules for tag visual representation
-                        let roleLabel = 'Member';
-                        if (m.firstName === 'John' && m.lastName === 'Doe') roleLabel = 'Guest';
-                        if (m.firstName === 'Baba' && m.lastName === 'Tundey') roleLabel = 'Visitor';
-
+                        const displayName = m.name || `${m.firstName} ${m.lastName}`;
                         return (
                           <div
-                            key={m.memberId}
+                            key={m.id}
                             className="autocomplete-item"
                             onClick={() => handleSelectMemberSuggestion(m)}
                           >
-                            <span>{m.firstName} {m.lastName}</span>
-                            <span className="autocomplete-item-role">{roleLabel}</span>
+                            <span>{displayName}</span>
+                            <span className="autocomplete-item-role">{m.status || 'Member'}</span>
                           </div>
                         );
                       })
@@ -583,9 +684,9 @@ const Attendance: React.FC = () => {
 
               {/* ROLE (OPTIONAL OVERRIDE) */}
               <div className="panel-form-group">
-                <label className="panel-label">Role (Optional Override)</label>
+                <label className="panel-label">Role</label>
                 <div className="radio-group">
-                  {(['Member', 'Visitor'] as const).map((opt) => (
+                  {(['Member', 'Visitor', 'Guest', 'Child'] as const).map((opt) => (
                     <label key={opt} className="radio-option">
                       <div
                         className={`radio-input-styled ${formData.roleOverride === opt ? 'checked' : ''}`}
@@ -636,11 +737,98 @@ const Attendance: React.FC = () => {
               >
                 Cancel
               </button>
-              <button type="submit" className="panel-btn panel-btn-save">
-                Save Changes
+              <button
+                type="submit"
+                className="panel-btn panel-btn-save"
+                disabled={createAttendance.isPending || updateAttendance.isPending || deleteAttendance.isPending}
+              >
+                {createAttendance.isPending || updateAttendance.isPending || deleteAttendance.isPending
+                  ? 'Saving...'
+                  : 'Save Changes'}
               </button>
             </div>
           </form>
+        </div>
+      )}
+
+      {/* ─── New Attendance Context Modal ────────────────────────────────────── */}
+      {showNewContextModal && (
+        <div
+          className="mark-panel-overlay"
+          onClick={() => setShowNewContextModal(false)}
+          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+        >
+          <div
+            className="modal-content"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: 'white',
+              borderRadius: '16px',
+              padding: '24px',
+              width: '100%',
+              maxWidth: '440px',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+            }}
+          >
+            <h3 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '16px', color: 'var(--text-main)' }}>
+              Create Attendance Context
+            </h3>
+            <form onSubmit={handleCreateContext}>
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, marginBottom: '6px' }}>
+                  Context Name
+                </label>
+                <input
+                  type="text"
+                  className="panel-input"
+                  placeholder="e.g. Sunday Morning Service, Midweek Service"
+                  value={newContextName}
+                  onChange={(e) => setNewContextName(e.target.value)}
+                  required
+                  autoFocus
+                />
+              </div>
+
+              <div style={{ marginBottom: '24px' }}>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, marginBottom: '6px' }}>
+                  Attendance Type
+                </label>
+                <select
+                  className="attendance-select"
+                  style={{ width: '100%' }}
+                  value={newContextTypeId}
+                  onChange={(e) => setNewContextTypeId(Number(e.target.value))}
+                >
+                  {attendanceTypes.length === 0 ? (
+                    <option value="">Default Service</option>
+                  ) : (
+                    attendanceTypes.map((t) => (
+                      <option key={t.id} value={t.id}>
+                        {t.name}
+                      </option>
+                    ))
+                  )}
+                </select>
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+                <button
+                  type="button"
+                  className="panel-btn panel-btn-cancel"
+                  onClick={() => setShowNewContextModal(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="panel-btn panel-btn-save"
+                  disabled={createContextMutation.isPending}
+                >
+                  {createContextMutation.isPending ? 'Creating...' : 'Create Context'}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
 
