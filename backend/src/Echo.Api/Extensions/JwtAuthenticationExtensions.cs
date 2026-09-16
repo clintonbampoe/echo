@@ -1,9 +1,7 @@
-using System.Security.Cryptography;
-using System.Text;
 using Echo.Application.Options.Jwt;
+using Echo.Application.Services.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.IdentityModel.Tokens;
 
 namespace Echo.Api.Extensions;
 
@@ -18,9 +16,10 @@ public static class JwtAuthenticationExtensions
             configuration.GetSection(JwtOptions.SectionName).Get<JwtOptions>()
             ?? throw new InvalidOperationException("Missing 'Jwt' configuration section.");
 
-        // RSA KEYS are Base64 encoded
-        var rsa = RSA.Create();
-        rsa.ImportFromPem(Encoding.UTF8.GetString(Convert.FromBase64String(jwtOptions.PublicKey)));
+        // Built here rather than resolved from DI so misconfigured keys fail startup with a clear
+        // message instead of surfacing on the first request that needs a token.
+        var keyRing = new JwtKeyRing(jwtOptions);
+        services.AddSingleton(keyRing);
 
         services
             .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -31,20 +30,10 @@ public static class JwtAuthenticationExtensions
                 // JsonWebTokenHandler.DefaultInboundClaimTypeMap.Clear(), which mutates global
                 // state for every JsonWebTokenHandler in the process.
                 options.MapInboundClaims = false;
-
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuer = true,
-                    ValidIssuer = jwtOptions.Issuer,
-                    ValidateAudience = true,
-                    ValidAudience = jwtOptions.Audience,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-                    IssuerSigningKey = new RsaSecurityKey(rsa),
-
-                    NameClaimType = "sub",
-                    RoleClaimType = "role",
-                };
+                options.TokenValidationParameters = JwtTokenValidation.CreateParameters(
+                    jwtOptions,
+                    keyRing
+                );
             });
 
         services.AddAuthorization(options =>

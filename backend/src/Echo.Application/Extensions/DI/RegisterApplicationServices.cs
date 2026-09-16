@@ -10,7 +10,7 @@ namespace Echo.Application.Extensions.DI;
 
 public static class RegisterApplicationServices
 {
-    public static IServiceCollection InjectApplicationServices(this IServiceCollection services)
+    public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
         services.AddSingleton(TimeProvider.System);
         services.AddSingleton<IIdGenerator, IdGenerator>();

@@ -21,6 +21,8 @@ services:
       Database__Password: ${Database__Password}
       Jwt__PrivateKey: ${Jwt__PrivateKey}
       Jwt__PublicKey: ${Jwt__PublicKey}
+      # Only set during a key rotation grace period; empty the rest of the time.
+      Jwt__PreviousPublicKey: ${Jwt__PreviousPublicKey:-}
       Jwt__Issuer: ${Jwt__Issuer}
       Jwt__Audience: ${Jwt__Audience}
       Cors__AllowedOrigins: ${Cors__AllowedOrigins}
