@@ -142,6 +142,20 @@ The API is organised by domain. Each domain has a dedicated controller. Below is
 
 ## Using the API
 
+### API Health Check
+```bash
+curl http://localhost:8080/api/health/ready
+```
+
+This endpoint is public and is available without authentication. It returns
+`200` only when the database is reachable and every migration has been applied;
+otherwise it returns `503` with the failing check. Use `/api/health/live` if you
+only want to know whether the process is up. See
+[Health endpoints](../Infrastructure.md#health-endpoints).
+curl -H "Authorization: Bearer <your-token>" \
+     "http://localhost:8080/api/v1/events?cursor=eyJpZ...&pageSize=20"
+```
+  
 ### 1. Get a token
 See [Authentication](#authentication) above.
 
@@ -160,10 +174,7 @@ curl -H "Authorization: Bearer <your-token>" \
 
 **Fetching Subsequent Pages**
 Take the `nextCursor` value from the previous response and pass it as the `cursor` parameter.
-```bash
-curl -H "Authorization: Bearer <your-token>" \
-     "http://localhost:8080/api/v1/events?cursor=eyJpZ...&pageSize=20"
-```
+
 
 **Constraints & Behavior**
 - **Page Size**: The `pageSize` is hard-clamped to a maximum of **24**. Requests for higher values will be automatically reduced to 24.

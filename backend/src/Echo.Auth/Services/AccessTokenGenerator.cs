@@ -1,39 +1,24 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
 using Echo.Application.Options.Jwt;
+using Echo.Application.Services.Security;
 using Echo.Core.Dtos;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using JwtRegisteredClaimNames = Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames;
 
 namespace Echo.Auth.Services;
 
-public class AccessTokenGenerator
+public class AccessTokenGenerator(
+    IOptions<JwtOptions> jwtOptions,
+    TimeProvider timeProvider,
+    JwtKeyRing keyRing
+)
 {
-    private readonly JwtOptions _jwtOptions;
-    private readonly TimeProvider _timeProvider;
-    private readonly SigningCredentials _signingCredentials;
-
-    public AccessTokenGenerator(IOptions<JwtOptions> jwtOptions, TimeProvider timeProvider)
-    {
-        _jwtOptions = jwtOptions.Value;
-        _timeProvider = timeProvider;
-        var rsa = RSA.Create();
-
-        rsa.ImportFromPem(
-            Encoding.UTF8.GetString(Convert.FromBase64String(_jwtOptions.PrivateKey))
-        );
-        _signingCredentials = new SigningCredentials(
-            new RsaSecurityKey(rsa),
-            SecurityAlgorithms.RsaSha256
-        );
-    }
+    private readonly JwtOptions _jwtOptions = jwtOptions.Value;
 
     public (string Token, DateTime ExpiresAt) Generate(UserAuthDto user)
     {
-        var expiresAt = _timeProvider
+        var expiresAt = timeProvider
             .GetUtcNow()
             .UtcDateTime.AddMinutes(_jwtOptions.AccessTokenLifetimeMinutes);
 
@@ -45,12 +30,14 @@ public class AccessTokenGenerator
             new Claim("congregationId", user.CongregationId.ToString()),
         };
 
+        // JwtSecurityToken copies the signing key's KeyId into the header as `kid`. That is what
+        // lets validation pick the right key out of the ring during a rotation grace period.
         var token = new JwtSecurityToken(
             issuer: _jwtOptions.Issuer,
             audience: _jwtOptions.Audience,
             claims: claims,
             expires: expiresAt,
-            signingCredentials: _signingCredentials
+            signingCredentials: keyRing.SigningCredentials
         );
 
         var jwtToken = new JwtSecurityTokenHandler().WriteToken(token);

@@ -1,9 +1,18 @@
 ---
+# Docker's default json-file driver never rotates. Every service below inherits
+# this anchor so no container can fill the host disk with logs (50 MiB ceiling
+# each: 10 MiB x 5 files).
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: 10m
+    max-file: '5'
 services:
   api:
     build:
       context: .
       dockerfile: backend/src/Echo.Api/Dockerfile
+    logging: *default-logging
     environment:
       Database__Host: db
       Database__Port: ${Database__Port}
@@ -12,6 +21,8 @@ services:
       Database__Password: ${Database__Password}
       Jwt__PrivateKey: ${Jwt__PrivateKey}
       Jwt__PublicKey: ${Jwt__PublicKey}
+      # Only set during a key rotation grace period; empty the rest of the time.
+      Jwt__PreviousPublicKey: ${Jwt__PreviousPublicKey:-}
       Jwt__Issuer: ${Jwt__Issuer}
       Jwt__Audience: ${Jwt__Audience}
       Cors__AllowedOrigins: ${Cors__AllowedOrigins}
@@ -31,6 +42,7 @@ services:
     networks: [echo-network]
   db:
     image: postgres:18
+    logging: *default-logging
     environment:
       POSTGRES_DB: ${Database__Name}
       POSTGRES_USER: ${Database__Username}
@@ -47,6 +59,7 @@ services:
     networks: [echo-network]
   nginx:
     image: nginx:latest
+    logging: *default-logging
     volumes: [./infra/nginx/nginx.conf:/etc/nginx/nginx.conf:ro]
     depends_on:
       api:
@@ -56,6 +69,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+    logging: *default-logging
     depends_on:
       api:
         condition: service_healthy
@@ -64,6 +78,7 @@ services:
     build:
       context: .
       dockerfile: infra/postgres/backup/Dockerfile
+    logging: *default-logging
     environment:
       DB_NAME: ${Database__Name}
       DB_USERNAME: ${Database__Username}
@@ -85,6 +100,7 @@ services:
       context: .
       target: build
       dockerfile: backend/src/Echo.Api/Dockerfile
+    logging: *default-logging
     environment:
       Database__Host: db
       Database__Port: 5432
