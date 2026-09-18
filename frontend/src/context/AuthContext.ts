@@ -1,11 +1,13 @@
 import { createContext } from 'react';
 
-// Interfaces decoupled here to keep the provider and components clean
 export interface User {
   id: string;
   email: string;
   name?: string;
-  token?: string;
+  token: string;
+  refreshToken?: string;
+  role?: string;
+  congregationId?: string;
 }
 
 export interface AuthContextType {

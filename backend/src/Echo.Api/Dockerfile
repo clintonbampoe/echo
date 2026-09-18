@@ -2,6 +2,8 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS restore
 WORKDIR /backend
 
+RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
+
 COPY ["backend/Echo.slnx", "."]
 COPY ["backend/Directory.Packages.props", "."]
 COPY ["backend/src/Echo.Api/Echo.Api.csproj", "./src/Echo.Api/"]

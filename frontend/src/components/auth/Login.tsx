@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import echoLogo from '../../assets/echo.svg';
 import { useAuth } from '../../hooks/useAuth';
+import { getErrorMessage } from '../../utils/errors';
 import '../../styles/Login.css';
 
 const Login: React.FC = () => {
@@ -18,8 +19,8 @@ const Login: React.FC = () => {
     try {
       await login(email, password);
       navigate('/dashboard');
-    } catch {
-      setError('Invalid email or password. Please try again.');
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, 'Invalid email or password. Please try again.'));
     }
   };
 

@@ -52,7 +52,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseRouting();
-app.UseCors();
+app.UseCors(CorsExtensions.FrontendPolicy);
 app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();

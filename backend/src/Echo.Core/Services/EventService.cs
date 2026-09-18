@@ -64,13 +64,13 @@ public class EventService(
         CancellationToken ct
     )
     {
-        var organizer = await memberRepository.GetById(congregationId, dto.OrganizerId, ct);
+        var organizer = await memberRepository.GetById(dto.OrganizerId, congregationId, ct);
         if (organizer is null)
             return new ForeignKeyEntityNotFound(nameof(organizer));
 
         var organization = await organizationRepository.GetById(
-            congregationId,
             dto.OrganizationId,
+            congregationId,
             ct
         );
         if (organization is null)
@@ -96,7 +96,7 @@ public class EventService(
         CancellationToken ct
     )
     {
-        var entity = await repository.GetById(congregationId, id, ct);
+        var entity = await repository.GetById(id, congregationId, ct);
 
         if (entity is null)
             return new NotFoundResult(id.ToString());
@@ -110,7 +110,7 @@ public class EventService(
 
     public async Task<IOperationResult> Delete(Guid congregationId, Guid id, CancellationToken ct)
     {
-        var entity = await repository.GetById(congregationId, id, ct);
+        var entity = await repository.GetById(id, congregationId, ct);
 
         if (entity is null)
             return new NotFoundResult(id.ToString());

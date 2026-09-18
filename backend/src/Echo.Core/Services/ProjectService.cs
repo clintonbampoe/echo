@@ -49,7 +49,7 @@ public class ProjectService(
 
     public async Task<IOperationResult> GetById(Guid id, Guid congregationId, CancellationToken ct)
     {
-        var entity = await repository.GetById(congregationId, id, ct);
+        var entity = await repository.GetById(id, congregationId, ct);
         if (entity is null)
             return new NotFoundResult(id.ToString());
 
@@ -63,7 +63,7 @@ public class ProjectService(
         CancellationToken ct
     )
     {
-        var projectManager = await memberRepository.GetById(congregationId, dto.ManagerId, ct);
+        var projectManager = await memberRepository.GetById(dto.ManagerId, congregationId, ct);
         if (projectManager is null)
             return new ForeignKeyEntityNotFound(nameof(projectManager));
 
@@ -91,7 +91,7 @@ public class ProjectService(
         CancellationToken ct
     )
     {
-        var entity = await repository.GetById(congregationId, id, ct);
+        var entity = await repository.GetById(id, congregationId, ct);
 
         if (entity is null)
             return new NotFoundResult(id.ToString());
@@ -105,7 +105,7 @@ public class ProjectService(
 
     public async Task<IOperationResult> Delete(Guid congregationId, Guid id, CancellationToken ct)
     {
-        var entity = await repository.GetById(congregationId, id, ct);
+        var entity = await repository.GetById(id, congregationId, ct);
 
         if (entity is null)
             return new NotFoundResult(id.ToString());
