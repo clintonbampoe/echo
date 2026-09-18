@@ -124,6 +124,11 @@ To confirm it's working, you can test the health endpoint by using:
 
 - Or you can type this in the browser url bar `http://localhost:8080/api/health/ready`
 
+`/ready` only returns `200` once the database is reachable **and** fully
+migrated. If you get a `503` saying `Database has N pending migration(s)`, the
+stack is fine — you just haven't run the migrations yet, so run the `migrator`
+container above. See [Health endpoints](Infrastructure.md#health-endpoints).
+
 ---
 
 ## Related Documentation

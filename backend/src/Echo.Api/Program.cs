@@ -32,7 +32,7 @@ builder
 
 builder.Services.AddCoreServices(builder.Configuration);
 builder.Services.AddAuthServices(builder.Configuration);
-builder.Services.InjectApplicationServices();
+builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices();
 
 var app = builder.Build();

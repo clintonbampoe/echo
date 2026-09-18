@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using Echo.Application.Options.Jwt;
+using Echo.Application.Services.Security;
 using Echo.Auth.Services;
 using Echo.Core.Dtos;
 using Echo.Domain.Enums;
@@ -48,18 +49,26 @@ public class AccessTokenGeneratorTests
         var privateKeyPem = rsa.ExportPkcs8PrivateKeyPem();
         var privateKeyBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(privateKeyPem));
 
-        var options = Options.Create(
-            new JwtOptions
-            {
-                PrivateKey = privateKeyBase64,
-                PublicKey = "unused-in-generate",
-                Issuer = "echo-api-test",
-                Audience = "echo-clients-test",
-                AccessTokenLifetimeMinutes = accessTokenLifetimeMinutes,
-                RefreshTokenLifetimeDays = 30,
-            }
-        );
+        // The public half is no longer "unused": JwtKeyRing checks it really is the other half
+        // of the private key, so a half-finished rotation fails at startup rather than silently
+        // rejecting every token.
+        var publicKeyPem = rsa.ExportSubjectPublicKeyInfoPem();
+        var publicKeyBase64 = Convert.ToBase64String(Encoding.UTF8.GetBytes(publicKeyPem));
 
-        return new AccessTokenGenerator(options, timeProvider);
+        var jwtOptions = new JwtOptions
+        {
+            PrivateKey = privateKeyBase64,
+            PublicKey = publicKeyBase64,
+            Issuer = "echo-api-test",
+            Audience = "echo-clients-test",
+            AccessTokenLifetimeMinutes = accessTokenLifetimeMinutes,
+            RefreshTokenLifetimeDays = 30,
+        };
+
+        return new AccessTokenGenerator(
+            Options.Create(jwtOptions),
+            timeProvider,
+            new JwtKeyRing(jwtOptions)
+        );
     }
 }

@@ -30,11 +30,34 @@ container serving static files, which the edge Nginx proxies to.
 **`db`** — Postgres 18. Data is stored in a volume so it survives restarts. In
 prod, only `api` can reach it — it's not open to the outside world.
 
-**`nginx`** — sits in front as the edge proxy. In prod, it routes `/api`, `/health`, and `/swagger` to the `api` container, and all other traffic `/` to the `client` container. In dev, it only routes API traffic.
+**`nginx`** — sits in front as the edge proxy. In prod, it routes `/api` (which covers the health endpoints at `/api/health/*`), `/scalar`, and `/swagger` to the `api` container, and all other traffic `/` to the `client` container. In dev, it only routes API traffic.
 
 **`migrator`** — runs database migrations. This is used for controlled updates in CI/CD or when the API is not yet online.
 
 **`backup`** — handles scheduled database dumps. It uses Supercronic instead of standard cron to ensure that environment variables are passed correctly to the backup scripts.
+
+### Health endpoints
+
+Both endpoints are public and unauthenticated.
+
+**`/api/health/live`** — "is this process up?". Deliberately has no external
+dependencies, so a database outage never trips it. This is what the compose
+healthcheck polls, because a failure here means *restart the container*.
+
+**`/api/health/ready`** — "should traffic be routed here?". Runs the `database`
+check, which asserts two things:
+
+1. The database is reachable.
+2. Every migration compiled into this build has been applied — it compares them
+   against `__EFMigrationsHistory`.
+
+A half-migrated database fails this check with the names of the pending
+migrations, which is the point: the API can open a connection but any endpoint
+touching a missing table would return 500. Failure means *take this instance out
+of rotation*, not restart it.
+
+So if `/ready` returns 503 with `Database has N pending migration(s)`, run the
+`migrator` container — the database is up, it's just behind the code.
 
 ### Why there are three compose files
 
@@ -121,7 +144,51 @@ To keep settings organized, the application groups them into categories. To over
 
 This approach allows the API to map flat environment variables directly into structured C# Options classes. To ensure stability, the API employs a **Fail-Fast** principle: using `.ValidateOnStart()`, the app will refuse to boot if a required configuration is missing or invalid (e.g., using HTTP in production). This ensures configuration errors are caught during deployment rather than as runtime failures.
 
-### Variable Manifest
+## Logs
+
+Every service writes to stdout, and Docker stores that on the host as JSON under
+`/var/lib/docker/containers/<id>/`. Left alone, that file only ever grows — a
+service stuck in an exception loop can fill the disk in hours, and once the disk
+is full Postgres can't write and the API starts returning 500s.
+
+So the base compose file defines the log driver once, as a YAML anchor, and every
+service inherits it:
+
+```yaml
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: 10m
+    max-file: '5'
+```
+
+That caps each container at **50 MiB** (5 files × 10 MiB) and rotates the oldest
+one out. It applies in dev and prod alike, because it lives in the base file.
+
+Two things to know:
+
+- **Rotation means old logs are gone.** `docker compose logs` only shows what's
+  still inside that window. If you need history that survives rotation, the logs
+  have to be shipped somewhere (Loki, Better Stack, and so on) — that isn't set
+  up yet.
+- **Existing containers keep their old settings.** Log config is fixed when a
+  container is created, so anything started before this change still has no cap.
+  Recreate to pick it up:
+
+  ```bash
+  docker compose up -d --force-recreate
+  ```
+
+  To check what a container actually got:
+
+  ```bash
+  docker inspect echo-api-1 --format '{{json .HostConfig.LogConfig}}'
+  ```
+
+If you add a new service, give it `logging: *default-logging`. Nothing enforces
+this — a service without it silently falls back to uncapped logs.
+
+## Environment variables
 
 The following table lists all available configuration variables. If you add a new variable to the code, update this table to maintain the source of truth.
 
@@ -133,7 +200,8 @@ The following table lists all available configuration variables. If you add a ne
 | `Frontend__BaseUrl`    | YES      | api     | **Identity**: The public URL of the app. Used to build links in outbound emails.   |
 | `Cors__AllowedOrigins`   | YES      | api     | **Security**: Comma-separated list of domains allowed to make requests to the API. |
 | `Jwt__PrivateKey`        | YES      | api     | Signs login tokens (Base64 encoded).                                               |
-| `Jwt__PublicKey`         | YES      | api     | Verifies login tokens (Base64 encoded).                                            |
+| `Jwt__PublicKey`         | YES      | api     | Verifies login tokens (Base64 encoded). Must be the public half of `Jwt__PrivateKey` — the API refuses to start if it isn't. |
+| `Jwt__PreviousPublicKey` | NO       | api     | The public key active before the last rotation. Set only during a rotation grace period, so tokens signed with the old key keep working. See [Rotating the JWT signing key](#rotating-the-jwt-signing-key). |
 | `Jwt__Issuer`            | YES      | api     | Token issuer identity.                                                             |
 | `Jwt__Audience`          | YES      | api     | Token intended audience.                                                           |
 | `MailClient__Address`    | YES      | api     | The "from" address for outbound emails.                                            |
@@ -150,6 +218,68 @@ This is the "Public Face" of the application—a single, absolute URL (e.g., `ht
 
 **2. CORS Security (`Cors__AllowedOrigins`)**
 This is a security barrier—a comma-separated list of trusted origins (e.g., `http://localhost:5173,https://app.echo.church`). It tells the browser which domains are authorized to make requests to the API. If a request comes from an origin not in this list, the API rejects the request and the browser blocks the response. To add a new environment (such as a staging site), simply append the URL to this list.
+
+---
+
+## Rotating the JWT signing key
+
+The API signs access tokens with one RSA key but **validates against two**: the active key and,
+optionally, the key that was active before the last rotation. Every token carries a `kid` in its
+header — a short fingerprint of the key that signed it — so the API knows which one to check
+against. Nobody has to name or track key versions by hand; the `kid` falls out of the key itself.
+
+That second slot is what makes a planned rotation graceful. Deploy a new key with the old one still on the ring and nobody is logged out; drop the old key later, once every token it signed has
+expired on its own.
+
+### Planned rotation
+
+Access tokens live 15 minutes (`AccessTokenLifetimeMinutes`), so a grace period of a few hours is
+already generous. A day is comfortable.
+
+1. **Generate a new pair, keeping the old public key.**
+
+   ```bash
+   sh backend/tools/jwt-key-setup/SetupJwtKeys.sh env --rotate
+   ```
+
+   This moves the current `Jwt__PublicKey` into `Jwt__PreviousPublicKey` and writes a fresh pair into `Jwt__PrivateKey` / `Jwt__PublicKey`. For local dev, swap `env` for `user-secrets`.
+
+2. **Deploy.** New logins get tokens signed by the new key. Tokens already in users' hands were
+   signed by the old key, which is still on the ring, so they keep working. No forced logout.
+
+3. **Wait out the grace period** — anything longer than `AccessTokenLifetimeMinutes`. After that, no valid token signed by the old key exists.
+
+4. **Clear `Jwt__PreviousPublicKey` and deploy again.** The old key is now out of circulation.
+
+Don't skip step 4. A retired key left on the ring indefinitely is a key that still validates
+tokens, which defeats the point of having rotated.
+
+### Emergency rotation (suspected key compromise)
+
+Skip the grace period entirely — that's the one case where a forced logout is the correct outcome.
+
+1. Generate a new pair **without** keeping the old public key:
+
+   ```bash
+   sh backend/tools/jwt-key-setup/SetupJwtKeys.sh env
+   ```
+
+   Confirm `Jwt__PreviousPublicKey` is empty.
+
+2. Deploy. Every token signed by the old key is rejected immediately.
+
+3. Refresh tokens are **not** signed by the JWT key — they're random values hashed in the database
+   — so rotating does not revoke them. A compromised signing key doesn't expose them, but if you want everyone genuinely logged out, revoke the refresh tokens too.
+
+### Verifying a rotation
+
+- Startup fails fast and says so if `Jwt__PublicKey` isn't the public half of `Jwt__PrivateKey`,
+  or if `Jwt__PreviousPublicKey` is set to the key that's already active.
+- `backend/tests/Echo.Auth.Tests/Services/AccessTokenRotationTests.cs` covers the transitions: a token
+  signed by the old key validates during the grace period and is rejected once the key leaves the
+  ring.
+- To check by hand, log in before and after the deploy and decode both access tokens. The header
+  `kid` should differ, and the pre-deploy token should still be accepted until step 4.
 
 ---
 
@@ -184,7 +314,7 @@ See [Conventions in README](./README.md#conventions) for the full ruleset on who
 | ----------- | ------------------------------------------------------------------------------------------------------ |
 | Symptom     | API keeps restarting right after `docker-compose up`. Logs say `No supported key formats were found`.  |
 | First check | `docker-compose logs api \| grep -i jwt`                                                               |
-| Root cause  | `JWT_PRIVATE_KEY` in `.env` was raw PEM, not base64. Raw PEM doesn't survive `.env`'s format properly. |
+| Root cause  | `Jwt__PrivateKey` in `.env` was raw PEM, not base64. Raw PEM doesn't survive `.env`'s format properly. |
 | Fix         | Run `sh backend/tools/jwt-key-setup/setup-jwt-keys.sh env` to regenerate the keys correctly.           |
 | Date        | 2026-07-31                                                                                             |
 | Added by    | @clintonbampoe                                                                                                                        |
