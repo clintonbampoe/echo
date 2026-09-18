@@ -23,27 +23,6 @@ builder.Services.AddRouting(options =>
     options.LowercaseUrls = true;
     options.LowercaseQueryStrings = true;
 });
-builder.Services.AddCors(options =>
-{
-    options.AddDefaultPolicy(policy =>
-    {
-        var frontendBaseUrl =
-            builder.Configuration["FrontendClient:BaseUrl"]
-            ?? throw new InvalidOperationException("Missing 'FrontendClient:BaseUrl'.");
-
-        if (builder.Environment.IsDevelopment())
-        {
-            policy.SetIsOriginAllowed(origin => new Uri(origin).Host == "localhost")
-                .AllowAnyHeader()
-                .AllowAnyMethod()
-                .AllowCredentials();
-        }
-        else
-        {
-            policy.WithOrigins(frontendBaseUrl).AllowAnyHeader().AllowAnyMethod().AllowCredentials();
-        }
-    });
-});
 
 builder
     .Services.AddControllers()
@@ -73,7 +52,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseRouting();
-app.UseCors();
+app.UseCors(CorsExtensions.FrontendPolicy);
 app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
