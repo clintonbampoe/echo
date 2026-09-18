@@ -17,7 +17,7 @@ const processQueue = (error: unknown) => {
   failedQueue = [];
 };
 
-export const apiFetch = async (endpoint: string, options: RequestInit = {}): Promise<any> => {
+export const apiFetch = async <T = unknown>(endpoint: string, options: RequestInit = {}): Promise<T> => {
   const userStr = localStorage.getItem('user');
   let token = '';
   let refreshToken = '';
@@ -115,12 +115,12 @@ export const apiFetch = async (endpoint: string, options: RequestInit = {}): Pro
   if (contentType && contentType.includes('application/json')) {
     const json = await response.json();
     if (json && typeof json === 'object') {
-      if ('data' in json) return json.data;
-      if ('resource' in json) return json.resource;
+      if ('data' in json) return json.data as T;
+      if ('resource' in json) return json.resource as T;
     }
-    return json;
+    return json as T;
   }
 
   const text = await response.text();
-  return text ? { message: text } : null;
+  return (text ? { message: text } : null) as T;
 };

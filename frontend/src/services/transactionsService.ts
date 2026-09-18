@@ -4,7 +4,7 @@ import type { Transaction, PagedResponse, TransactionFilters } from '../types/fi
 const BASE_PATH = '/v1/Transactions';
 
 function cleanTransactionPayload(data: Partial<Transaction>) {
-  const payload: Record<string, any> = { ...data };
+  const payload: Record<string, unknown> = { ...data };
 
   delete payload.id;
   delete payload.categoryName;
@@ -22,7 +22,7 @@ function cleanTransactionPayload(data: Partial<Transaction>) {
     payload.transactionDate = payload.transactionDate.split('T')[0];
   }
 
-  if (!payload.description || payload.description.trim() === '') {
+  if (!payload.description || (typeof payload.description === 'string' && payload.description.trim() === '')) {
     delete payload.description;
   }
 
@@ -42,16 +42,16 @@ export const transactionsService = {
     params.append('PageSize', pageSize.toString());
     if (cursor) params.append('Cursor', cursor);
 
-    return apiFetch(`${BASE_PATH}?${params.toString()}`);
+    return apiFetch<PagedResponse<Transaction>>(`${BASE_PATH}?${params.toString()}`);
   },
 
   getById: async (id: string): Promise<Transaction> => {
-    return apiFetch(`${BASE_PATH}/${id}`);
+    return apiFetch<Transaction>(`${BASE_PATH}/${id}`);
   },
 
   create: async (data: Partial<Transaction>): Promise<Transaction> => {
     const payload = cleanTransactionPayload(data);
-    return apiFetch(BASE_PATH, {
+    return apiFetch<Transaction>(BASE_PATH, {
       method: 'POST',
       body: JSON.stringify(payload),
     });
@@ -59,14 +59,14 @@ export const transactionsService = {
 
   update: async (id: string, data: Partial<Transaction>): Promise<Transaction> => {
     const payload = cleanTransactionPayload(data);
-    return apiFetch(`${BASE_PATH}/${id}`, {
+    return apiFetch<Transaction>(`${BASE_PATH}/${id}`, {
       method: 'PUT',
       body: JSON.stringify(payload),
     });
   },
 
   delete: async (id: string): Promise<void> => {
-    return apiFetch(`${BASE_PATH}/${id}`, {
+    return apiFetch<void>(`${BASE_PATH}/${id}`, {
       method: 'DELETE',
     });
   },

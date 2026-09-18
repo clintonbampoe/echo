@@ -4,7 +4,7 @@ import type { Tithe, PagedResponse, TitheFilters } from '../types/finance';
 const BASE_PATH = '/v1/Tithes';
 
 function cleanTithePayload(data: Partial<Tithe>) {
-  const payload: Record<string, any> = { ...data };
+  const payload: Record<string, unknown> = { ...data };
 
   delete payload.id;
   delete payload.memberName;
@@ -22,7 +22,7 @@ function cleanTithePayload(data: Partial<Tithe>) {
     payload.collectionDate = payload.collectionDate.split('T')[0];
   }
 
-  if (!payload.description || payload.description.trim() === '') {
+  if (!payload.description || (typeof payload.description === 'string' && payload.description.trim() === '')) {
     delete payload.description;
   }
 
@@ -43,16 +43,16 @@ export const tithesService = {
     params.append('PageSize', pageSize.toString());
     if (cursor) params.append('Cursor', cursor);
 
-    return apiFetch(`${BASE_PATH}?${params.toString()}`);
+    return apiFetch<PagedResponse<Tithe>>(`${BASE_PATH}?${params.toString()}`);
   },
 
   getById: async (id: string): Promise<Tithe> => {
-    return apiFetch(`${BASE_PATH}/${id}`);
+    return apiFetch<Tithe>(`${BASE_PATH}/${id}`);
   },
 
   create: async (data: Partial<Tithe>): Promise<Tithe> => {
     const payload = cleanTithePayload(data);
-    return apiFetch(BASE_PATH, {
+    return apiFetch<Tithe>(BASE_PATH, {
       method: 'POST',
       body: JSON.stringify(payload),
     });
@@ -60,14 +60,14 @@ export const tithesService = {
 
   update: async (id: string, data: Partial<Tithe>): Promise<Tithe> => {
     const payload = cleanTithePayload(data);
-    return apiFetch(`${BASE_PATH}/${id}`, {
+    return apiFetch<Tithe>(`${BASE_PATH}/${id}`, {
       method: 'PUT',
       body: JSON.stringify(payload),
     });
   },
 
   delete: async (id: string): Promise<void> => {
-    return apiFetch(`${BASE_PATH}/${id}`, {
+    return apiFetch<void>(`${BASE_PATH}/${id}`, {
       method: 'DELETE',
     });
   },

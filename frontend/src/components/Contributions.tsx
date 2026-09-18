@@ -1,8 +1,9 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLayout } from '../hooks/useLayout';
 import { CloseIcon, SearchIcon, MembersIcon, ClockIcon, ChevronLeftIcon } from './Icons';
 import ExportPanel from './ExportPanel';
 import DeleteConfirmModal from './common/DeleteConfirmModal';
+import { getErrorMessage } from '../utils/errors';
 import '../styles/Contributions.css';
 import { useProjects } from '../hooks/useProjects';
 import {
@@ -139,11 +140,13 @@ const Contributions: React.FC = () => {
 
   // ── Layout Setup ──────────────────────────────────────────────────────────
 
-  const handleOpenAdd = (projectId?: string) => {
+  // ── Layout Setup ──────────────────────────────────────────────────────────
+
+  const handleOpenAdd = useCallback((projectId?: string) => {
     setForm(emptyContribution(projectId || viewingProjectId || (projectsList[0]?.id ?? '')));
     setFormError(null);
     setShowAddPanel(true);
-  };
+  }, [viewingProjectId, projectsList]);
 
   useEffect(() => {
     if (viewingProjectId && viewingProject) {
@@ -164,7 +167,7 @@ const Contributions: React.FC = () => {
         { type: 'button', label: 'Add Entry', icon: 'plus', variant: 'primary', onClick: () => handleOpenAdd() },
       ]);
     }
-  }, [viewingProjectId, viewingProject?.name, setTitle, setCtas, projectsList]);
+  }, [viewingProjectId, viewingProject, handleOpenAdd, setTitle, setCtas]);
 
   // ── Stats (List View) ──────────────────────────────────────────────────────
 
@@ -209,8 +212,8 @@ const Contributions: React.FC = () => {
         description: form.description.trim() || null,
       });
       handleClosePanel();
-    } catch (err: any) {
-      setFormError(err.message || 'Failed to save contribution');
+    } catch (err: unknown) {
+      setFormError(getErrorMessage(err, 'Failed to save contribution'));
     }
   };
 
@@ -219,7 +222,7 @@ const Contributions: React.FC = () => {
     try {
       await deleteContributionMutation.mutateAsync(deletingContribution.id);
       setDeletingContribution(null);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to delete contribution', err);
     }
   };

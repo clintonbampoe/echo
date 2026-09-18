@@ -4,7 +4,7 @@ import type { Project, PagedResponse, ProjectFilters } from '../types/project';
 const BASE_PATH = '/v1/Projects';
 
 function cleanProjectPayload(data: Partial<Project>) {
-  const payload: Record<string, any> = { ...data };
+  const payload: Record<string, unknown> = { ...data };
 
   delete payload.id;
   delete payload.categoryName;
@@ -19,8 +19,8 @@ function cleanProjectPayload(data: Partial<Project>) {
     payload.categoryId = Number(payload.categoryId);
   }
 
-  if (!payload.endDate || payload.endDate.trim() === '') delete payload.endDate;
-  if (!payload.description || payload.description.trim() === '') delete payload.description;
+  if (!payload.endDate || (typeof payload.endDate === 'string' && payload.endDate.trim() === '')) delete payload.endDate;
+  if (!payload.description || (typeof payload.description === 'string' && payload.description.trim() === '')) delete payload.description;
 
   return payload;
 }
@@ -35,16 +35,16 @@ export const projectsService = {
     params.append('PageSize', pageSize.toString());
     if (cursor) params.append('Cursor', cursor);
 
-    return apiFetch(`${BASE_PATH}?${params.toString()}`);
+    return apiFetch<PagedResponse<Project>>(`${BASE_PATH}?${params.toString()}`);
   },
 
   getById: async (id: string): Promise<Project> => {
-    return apiFetch(`${BASE_PATH}/${id}`);
+    return apiFetch<Project>(`${BASE_PATH}/${id}`);
   },
 
   create: async (data: Partial<Project>): Promise<Project> => {
     const payload = cleanProjectPayload(data);
-    return apiFetch(BASE_PATH, {
+    return apiFetch<Project>(BASE_PATH, {
       method: 'POST',
       body: JSON.stringify(payload),
     });
@@ -52,19 +52,19 @@ export const projectsService = {
 
   update: async (id: string, data: Partial<Project>): Promise<Project> => {
     const payload = cleanProjectPayload(data);
-    return apiFetch(`${BASE_PATH}/${id}`, {
+    return apiFetch<Project>(`${BASE_PATH}/${id}`, {
       method: 'PUT',
       body: JSON.stringify(payload),
     });
   },
 
   delete: async (id: string): Promise<void> => {
-    return apiFetch(`${BASE_PATH}/${id}`, {
+    return apiFetch<void>(`${BASE_PATH}/${id}`, {
       method: 'DELETE',
     });
   },
 
   search: async (query: string): Promise<Array<{ id: string; name: string }>> => {
-    return apiFetch(`${BASE_PATH}/search?q=${encodeURIComponent(query)}`);
+    return apiFetch<Array<{ id: string; name: string }>>(`${BASE_PATH}/search?q=${encodeURIComponent(query)}`);
   },
 };

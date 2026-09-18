@@ -4,7 +4,7 @@ import type { ProjectContribution, PagedResponse, ProjectContributionFilters } f
 const BASE_PATH = '/v1/ProjectContributions';
 
 function cleanContributionPayload(data: Partial<ProjectContribution>) {
-  const payload: Record<string, any> = { ...data };
+  const payload: Record<string, unknown> = { ...data };
 
   delete payload.id;
   delete payload.projectName;
@@ -13,7 +13,7 @@ function cleanContributionPayload(data: Partial<ProjectContribution>) {
   if (payload.amount) {
     payload.amount = Number(payload.amount);
   }
-  if (!payload.description || payload.description.trim() === '') {
+  if (!payload.description || (typeof payload.description === 'string' && payload.description.trim() === '')) {
     delete payload.description;
   }
 
@@ -33,16 +33,16 @@ export const projectContributionsService = {
     params.append('PageSize', pageSize.toString());
     if (cursor) params.append('Cursor', cursor);
 
-    return apiFetch(`${BASE_PATH}?${params.toString()}`);
+    return apiFetch<PagedResponse<ProjectContribution>>(`${BASE_PATH}?${params.toString()}`);
   },
 
   getById: async (id: string): Promise<ProjectContribution> => {
-    return apiFetch(`${BASE_PATH}/${id}`);
+    return apiFetch<ProjectContribution>(`${BASE_PATH}/${id}`);
   },
 
   create: async (data: Partial<ProjectContribution>): Promise<ProjectContribution> => {
     const payload = cleanContributionPayload(data);
-    return apiFetch(BASE_PATH, {
+    return apiFetch<ProjectContribution>(BASE_PATH, {
       method: 'POST',
       body: JSON.stringify(payload),
     });
@@ -50,14 +50,14 @@ export const projectContributionsService = {
 
   update: async (id: string, data: Partial<ProjectContribution>): Promise<ProjectContribution> => {
     const payload = cleanContributionPayload(data);
-    return apiFetch(`${BASE_PATH}/${id}`, {
+    return apiFetch<ProjectContribution>(`${BASE_PATH}/${id}`, {
       method: 'PUT',
       body: JSON.stringify(payload),
     });
   },
 
   delete: async (id: string): Promise<void> => {
-    return apiFetch(`${BASE_PATH}/${id}`, {
+    return apiFetch<void>(`${BASE_PATH}/${id}`, {
       method: 'DELETE',
     });
   },

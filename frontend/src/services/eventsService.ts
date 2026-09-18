@@ -4,7 +4,7 @@ import type { Event, PagedResponse, EventFilters } from '../types/event';
 const BASE_PATH = '/v1/Events';
 
 function cleanEventPayload(data: Partial<Event>) {
-  const payload: Record<string, any> = { ...data };
+  const payload: Record<string, unknown> = { ...data };
 
   // Remove read-only or response properties
   delete payload.id;
@@ -24,10 +24,10 @@ function cleanEventPayload(data: Partial<Event>) {
   }
 
   // Ensure empty strings are stripped
-  if (!payload.description || payload.description.trim() === '') {
+  if (!payload.description || (typeof payload.description === 'string' && payload.description.trim() === '')) {
     delete payload.description;
   }
-  if (!payload.bannerUrl || payload.bannerUrl.trim() === '') {
+  if (!payload.bannerUrl || (typeof payload.bannerUrl === 'string' && payload.bannerUrl.trim() === '')) {
     delete payload.bannerUrl;
   }
 
@@ -44,16 +44,16 @@ export const eventsService = {
     params.append('PageSize', pageSize.toString());
     if (cursor) params.append('Cursor', cursor);
 
-    return apiFetch(`${BASE_PATH}?${params.toString()}`);
+    return apiFetch<PagedResponse<Event>>(`${BASE_PATH}?${params.toString()}`);
   },
 
   getById: async (id: string): Promise<Event> => {
-    return apiFetch(`${BASE_PATH}/${id}`);
+    return apiFetch<Event>(`${BASE_PATH}/${id}`);
   },
 
   create: async (data: Partial<Event>): Promise<Event> => {
     const payload = cleanEventPayload(data);
-    return apiFetch(BASE_PATH, {
+    return apiFetch<Event>(BASE_PATH, {
       method: 'POST',
       body: JSON.stringify(payload),
     });
@@ -61,19 +61,19 @@ export const eventsService = {
 
   update: async (id: string, data: Partial<Event>): Promise<Event> => {
     const payload = cleanEventPayload(data);
-    return apiFetch(`${BASE_PATH}/${id}`, {
+    return apiFetch<Event>(`${BASE_PATH}/${id}`, {
       method: 'PUT',
       body: JSON.stringify(payload),
     });
   },
 
   delete: async (id: string): Promise<void> => {
-    return apiFetch(`${BASE_PATH}/${id}`, {
+    return apiFetch<void>(`${BASE_PATH}/${id}`, {
       method: 'DELETE',
     });
   },
 
   search: async (name: string): Promise<Event[]> => {
-    return apiFetch(`${BASE_PATH}/search?name=${encodeURIComponent(name)}`);
+    return apiFetch<Event[]>(`${BASE_PATH}/search?name=${encodeURIComponent(name)}`);
   },
 };

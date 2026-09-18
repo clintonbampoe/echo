@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useLayout } from '../hooks/useLayout';
 import { useMembers, useCreateMember, useUpdateMember, useDeleteMember } from '../hooks/useMembers';
 import type { Member, MemberStatus } from '../types/member';
 import { CloseIcon, MembersIcon, CalendarIcon } from './Icons';
 import DeleteConfirmModal from './common/DeleteConfirmModal';
 import ExportPanel from './ExportPanel';
+import { getErrorMessage } from '../utils/errors';
 import '../styles/Members.css';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -94,11 +95,11 @@ const Members: React.FC = () => {
 
   // ── Layout header ─────────────────────────────────────────────────────────
 
-  const openAddPanel = () => {
+  const openAddPanel = useCallback(() => {
     setPanelError(null);
     setForm(emptyForm());
     setShowAddPanel(true);
-  };
+  }, []);
 
   useEffect(() => {
     setTitle('Members');
@@ -118,7 +119,7 @@ const Members: React.FC = () => {
         onClick: openAddPanel,
       },
     ]);
-  }, [setTitle, setCtas]);
+  }, [setTitle, setCtas, openAddPanel]);
 
   // ── Derived stats ─────────────────────────────────────────────────────────
 
@@ -168,8 +169,8 @@ const Members: React.FC = () => {
     try {
       await createMember.mutateAsync(form);
       setShowAddPanel(false);
-    } catch (err: any) {
-      setPanelError(err?.message || 'Failed to create member.');
+    } catch (err: unknown) {
+      setPanelError(getErrorMessage(err, 'Failed to create member.'));
     }
   };
 
@@ -179,8 +180,8 @@ const Members: React.FC = () => {
     try {
       await updateMember.mutateAsync({ id: editingMember.id, data: form });
       setEditingMember(null);
-    } catch (err: any) {
-      setPanelError(err?.message || 'Failed to update member.');
+    } catch (err: unknown) {
+      setPanelError(getErrorMessage(err, 'Failed to update member.'));
     }
   };
 
@@ -198,8 +199,8 @@ const Members: React.FC = () => {
       await deleteMember.mutateAsync(deletingMember.id);
       setShowDeleteConfirm(false);
       setDeletingMember(null);
-    } catch (err: any) {
-      alert(err?.message || 'Failed to delete member.');
+    } catch (err: unknown) {
+      alert(getErrorMessage(err, 'Failed to delete member.'));
     }
   };
 
@@ -412,7 +413,7 @@ const Members: React.FC = () => {
             ],
             // Use the filtered members list or all members based on preference.
             // Using all members for the full roster is usually safer.
-            rows: members,
+            rows: members as unknown as Record<string, unknown>[],
           }}
           onClose={() => setShowExportModal(false)}
         />
@@ -473,7 +474,7 @@ const MemberFormFields: React.FC<{
         <div className="mf-group">
           <label className="mf-label">Marital Status</label>
           <select className="mf-select" value={form.maritalStatus || 'Single'}
-            onChange={e => set('maritalStatus', e.target.value as any)}>
+            onChange={e => set('maritalStatus', e.target.value as Member['maritalStatus'])}>
             <option value="Single">Single</option>
             <option value="Married">Married</option>
 
@@ -483,7 +484,7 @@ const MemberFormFields: React.FC<{
         <div className="mf-group">
           <label className="mf-label">Status</label>
           <select className="mf-select" value={form.status || 'Active'}
-            onChange={e => set('status', e.target.value as any)}>
+            onChange={e => set('status', e.target.value as Member['status'])}>
             <option value="Active">Active</option>
             <option value="Inactive">Inactive</option>
             <option value="Archived">Archived</option>
@@ -495,7 +496,7 @@ const MemberFormFields: React.FC<{
         <div className="mf-group">
           <label className="mf-label">Gender</label>
           <select className="mf-select" value={form.gender || 'Male'}
-            onChange={e => set('gender', e.target.value as any)}>
+            onChange={e => set('gender', e.target.value as Member['gender'])}>
             <option value="Male">Male</option>
             <option value="Female">Female</option>
             <option value="Other">Other</option>

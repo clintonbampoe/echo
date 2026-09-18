@@ -1,8 +1,9 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLayout } from '../hooks/useLayout';
 import '../styles/Events.css';
 import DeleteConfirmModal from './common/DeleteConfirmModal';
 import ExportPanel from './ExportPanel';
+import { getErrorMessage } from '../utils/errors';
 import {
   CalendarIcon,
   ChevronLeftIcon,
@@ -165,7 +166,7 @@ const Events: React.FC = () => {
     setShowEventDetailPanel(true);
   };
 
-  const handleOpenCreate = () => {
+  const handleOpenCreate = useCallback(() => {
     setForm({
       ...emptyEventForm(),
       organizationId: organizationsList[0]?.id || '',
@@ -173,7 +174,7 @@ const Events: React.FC = () => {
     });
     setFormError(null);
     setShowCreatePanel(true);
-  };
+  }, [organizationsList, membersList]);
 
   const handleOpenEdit = () => {
     if (!viewingEvent) return;
@@ -205,8 +206,8 @@ const Events: React.FC = () => {
       }
       setNewOrgName('');
       setIsAddingOrg(false);
-    } catch (err: any) {
-      setOrgError(err.message || 'Failed to create organization');
+    } catch (err: unknown) {
+      setOrgError(getErrorMessage(err, 'Failed to create organization'));
     }
   };
 
@@ -243,8 +244,8 @@ const Events: React.FC = () => {
         description: form.description.trim() || null,
       });
       setShowCreatePanel(false);
-    } catch (err: any) {
-      setFormError(err.message || 'Failed to create event');
+    } catch (err: unknown) {
+      setFormError(getErrorMessage(err, 'Failed to create event'));
     }
   };
 
@@ -273,8 +274,8 @@ const Events: React.FC = () => {
         },
       });
       setShowEditPanel(false);
-    } catch (err: any) {
-      setFormError(err.message || 'Failed to update event');
+    } catch (err: unknown) {
+      setFormError(getErrorMessage(err, 'Failed to update event'));
     }
   };
 
@@ -287,7 +288,7 @@ const Events: React.FC = () => {
         registrationDate: regForm.registrationDate,
       });
       setShowRegForm(false);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to register member', err);
     }
   };
@@ -301,7 +302,7 @@ const Events: React.FC = () => {
         checkInTime: `${attForm.checkInTime}:00`,
       });
       setShowAttForm(false);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to check-in member', err);
     }
   };
@@ -341,7 +342,7 @@ const Events: React.FC = () => {
       }
       setShowDeleteConfirm(false);
       setDeletingId(null);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to delete', err);
     }
   };
@@ -403,7 +404,7 @@ const Events: React.FC = () => {
         { type: 'button', label: 'Add Event', icon: 'plus', variant: 'primary', onClick: handleOpenCreate },
       ]);
     }
-  }, [viewMode, viewingEventId, viewingEvent?.name, setTitle, setCtas, membersList]);
+  }, [viewMode, viewingEvent, handleOpenCreate, setTitle, setCtas, membersList]);
 
   // ─── Filtered Data & Stats ──────────────────────────────────────────────────
 
@@ -1087,7 +1088,7 @@ const Events: React.FC = () => {
                 : [{ key: 'checkInTime', label: 'Check-in Time' }]
               ),
             ],
-            rows: (viewMode === 'registrations' ? registrationsList : attendanceList) as any[],
+            rows: (viewMode === 'registrations' ? registrationsList : attendanceList) as unknown as Record<string, unknown>[],
           }}
           onClose={() => setShowExportModal(false)}
         />

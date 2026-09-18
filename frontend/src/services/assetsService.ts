@@ -4,7 +4,7 @@ import type { Asset, PagedResponse, AssetFilters } from '../types/asset';
 const BASE_PATH = '/v1/Assets';
 
 function cleanAssetPayload(data: Partial<Asset>) {
-  const payload: Record<string, any> = { ...data };
+  const payload: Record<string, unknown> = { ...data };
 
   delete payload.id;
   delete payload.categoryName;
@@ -26,11 +26,11 @@ function cleanAssetPayload(data: Partial<Asset>) {
     payload.purchaseDate = payload.purchaseDate.split('T')[0];
   }
 
-  if (!payload.serialNumber || payload.serialNumber.trim() === '') {
+  if (!payload.serialNumber || (typeof payload.serialNumber === 'string' && payload.serialNumber.trim() === '')) {
     delete payload.serialNumber;
   }
 
-  if (!payload.description || payload.description.trim() === '') {
+  if (!payload.description || (typeof payload.description === 'string' && payload.description.trim() === '')) {
     delete payload.description;
   }
 
@@ -50,16 +50,16 @@ export const assetsService = {
     params.append('PageSize', pageSize.toString());
     if (cursor) params.append('Cursor', cursor);
 
-    return apiFetch(`${BASE_PATH}?${params.toString()}`);
+    return apiFetch<PagedResponse<Asset>>(`${BASE_PATH}?${params.toString()}`);
   },
 
   getById: async (id: string): Promise<Asset> => {
-    return apiFetch(`${BASE_PATH}/${id}`);
+    return apiFetch<Asset>(`${BASE_PATH}/${id}`);
   },
 
   create: async (data: Partial<Asset>): Promise<Asset> => {
     const payload = cleanAssetPayload(data);
-    return apiFetch(BASE_PATH, {
+    return apiFetch<Asset>(BASE_PATH, {
       method: 'POST',
       body: JSON.stringify(payload),
     });
@@ -67,19 +67,19 @@ export const assetsService = {
 
   update: async (id: string, data: Partial<Asset>): Promise<Asset> => {
     const payload = cleanAssetPayload(data);
-    return apiFetch(`${BASE_PATH}/${id}`, {
+    return apiFetch<Asset>(`${BASE_PATH}/${id}`, {
       method: 'PUT',
       body: JSON.stringify(payload),
     });
   },
 
   delete: async (id: string): Promise<void> => {
-    return apiFetch(`${BASE_PATH}/${id}`, {
+    return apiFetch<void>(`${BASE_PATH}/${id}`, {
       method: 'DELETE',
     });
   },
 
   search: async (name: string): Promise<Asset[]> => {
-    return apiFetch(`${BASE_PATH}/search?name=${encodeURIComponent(name)}`);
+    return apiFetch<Asset[]>(`${BASE_PATH}/search?name=${encodeURIComponent(name)}`);
   },
 };

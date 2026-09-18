@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import echoLogo from '../../assets/echo.svg';
 import { authService } from '../../services/authService';
+import { getErrorMessage } from '../../utils/errors';
 import '../../styles/Login.css';
 
 const SignUp: React.FC = () => {
@@ -52,8 +53,8 @@ const SignUp: React.FC = () => {
         },
       });
       setSuccess(true);
-    } catch (err: any) {
-      setError(err?.message || 'An error occurred during sign up.');
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, 'An error occurred during sign up.'));
     } finally {
       setLoading(false);
     }

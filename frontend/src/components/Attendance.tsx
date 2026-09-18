@@ -75,38 +75,27 @@ const Attendance: React.FC = () => {
   const [selectedTypeId, setSelectedTypeId] = useState<number | ''>('');
   const [selectedContextId, setSelectedContextId] = useState<number | ''>('');
 
-  // Auto-select initial Type and Context if not selected
-  useEffect(() => {
-    if (attendanceTypes.length > 0 && selectedTypeId === '') {
-      setSelectedTypeId(attendanceTypes[0].id);
-    }
-  }, [attendanceTypes, selectedTypeId]);
+  const effectiveTypeId = selectedTypeId === '' ? attendanceTypes[0]?.id ?? '' : selectedTypeId;
 
   // Contexts matching selected type
   const availableContexts = useMemo(() => {
-    if (!selectedTypeId) return attendanceContexts;
-    const selectedType = attendanceTypes.find((t) => t.id === selectedTypeId);
+    if (!effectiveTypeId) return attendanceContexts;
+    const selectedType = attendanceTypes.find((t) => t.id === effectiveTypeId);
     return attendanceContexts.filter(
-      (c) => c.attendanceTypeId === selectedTypeId || (selectedType && c.attendanceTypeName === selectedType.name)
+      (c) => c.attendanceTypeId === effectiveTypeId || (selectedType && c.attendanceTypeName === selectedType.name)
     );
-  }, [attendanceContexts, attendanceTypes, selectedTypeId]);
+  }, [attendanceContexts, attendanceTypes, effectiveTypeId]);
 
-  useEffect(() => {
-    if (availableContexts.length > 0) {
-      const exists = availableContexts.some((c) => c.id === selectedContextId);
-      if (!exists) {
-        setSelectedContextId(availableContexts[0].id);
-      }
-    } else {
-      setSelectedContextId('');
-    }
-  }, [availableContexts, selectedContextId]);
+  const effectiveContextId =
+    selectedContextId !== '' && availableContexts.some((c) => c.id === selectedContextId)
+      ? selectedContextId
+      : (availableContexts[0]?.id ?? '');
 
   // Attendance Records Query
   const filters = useMemo(() => ({
     forDate: date,
-    attendanceContextId: selectedContextId !== '' ? Number(selectedContextId) : undefined,
-  }), [date, selectedContextId]);
+    attendanceContextId: typeof effectiveContextId === 'number' ? effectiveContextId : undefined,
+  }), [date, effectiveContextId]);
 
   const { data: attendanceData, isLoading: isLoadingAttendance } = useAttendance(filters);
   const attendees = useMemo(() => attendanceData?.data || [], [attendanceData?.data]);
@@ -173,7 +162,7 @@ const Attendance: React.FC = () => {
 
       setFormData({
         memberId: '',
-        attendanceContextId: selectedContextId,
+        attendanceContextId: effectiveContextId,
         status: 'Present',
         roleOverride: 'Member',
         timeRecorded: `${currentHours}:${currentMinutes}`,
@@ -183,7 +172,7 @@ const Attendance: React.FC = () => {
     }
     setShowSuggestions(false);
     setShowMarkPanel(true);
-  }, [selectedContextId]);
+  }, [effectiveContextId]);
 
   const handleCloseMarkPanel = useCallback(() => {
     setShowMarkPanel(false);
@@ -197,7 +186,7 @@ const Attendance: React.FC = () => {
       return;
     }
 
-    const contextId = formData.attendanceContextId || selectedContextId;
+    const contextId = formData.attendanceContextId || effectiveContextId;
     if (!contextId) {
       alert('Please select or create an attendance context first.');
       return;
@@ -298,7 +287,7 @@ const Attendance: React.FC = () => {
   // ── Create New Context Modal ────────────────────────────────────────────────
   const handleOpenNewContext = () => {
     setNewContextName('');
-    setNewContextTypeId(selectedTypeId || (attendanceTypes[0]?.id ?? ''));
+    setNewContextTypeId(effectiveTypeId);
     setShowNewContextModal(true);
   };
 
@@ -371,9 +360,9 @@ const Attendance: React.FC = () => {
   }, [members, memberSearchQuery, attendees, editingRecord]);
 
   const currentContextName = useMemo(() => {
-    const ctx = attendanceContexts.find((c) => c.id === selectedContextId);
+    const ctx = attendanceContexts.find((c) => c.id === effectiveContextId);
     return ctx?.name || 'General Service';
-  }, [attendanceContexts, selectedContextId]);
+  }, [attendanceContexts, effectiveContextId]);
 
   return (
     <div className="attendance-container">
@@ -407,7 +396,7 @@ const Attendance: React.FC = () => {
           <span className="filter-label">Type</span>
           <select
             className="attendance-select"
-            value={selectedTypeId}
+            value={effectiveTypeId}
             onChange={(e) => {
               const val = e.target.value ? Number(e.target.value) : '';
               setSelectedTypeId(val);
@@ -447,7 +436,7 @@ const Attendance: React.FC = () => {
           </div>
           <select
             className="attendance-select"
-            value={selectedContextId}
+            value={effectiveContextId}
             onChange={(e) => {
               const val = e.target.value ? Number(e.target.value) : '';
               setSelectedContextId(val);

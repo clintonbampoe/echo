@@ -31,14 +31,14 @@ export interface RegisterCongregationPayload {
 
 export const authService = {
   login: async (email: string, password: string): Promise<TokenPair> => {
-    return apiFetch('/auth/v1/sessions/login', {
+    return apiFetch<TokenPair>('/auth/v1/sessions/login', {
       method: 'POST',
       body: JSON.stringify({ email, password }),
     });
   },
 
   refresh: async (refreshToken: string): Promise<TokenPair> => {
-    return apiFetch('/auth/v1/sessions/refresh', {
+    return apiFetch<TokenPair>('/auth/v1/sessions/refresh', {
       method: 'POST',
       body: JSON.stringify({ refreshToken }),
     });
@@ -47,7 +47,7 @@ export const authService = {
   logout: async (refreshToken?: string): Promise<void> => {
     if (!refreshToken) return;
     try {
-      await apiFetch('/auth/v1/sessions/revoke', {
+      await apiFetch<void>('/auth/v1/sessions/revoke', {
         method: 'POST',
         body: JSON.stringify({ refreshToken }),
       });
@@ -57,7 +57,7 @@ export const authService = {
   },
 
   registerCongregation: async (data: RegisterCongregationPayload): Promise<void> => {
-    return apiFetch('/auth/v1/register/congregation', {
+    return apiFetch<void>('/auth/v1/register/congregation', {
       method: 'POST',
       body: JSON.stringify(data),
     });

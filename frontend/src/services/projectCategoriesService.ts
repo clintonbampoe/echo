@@ -5,8 +5,7 @@ const BASE_PATH = '/v1/ProjectCategories';
 
 export const projectCategoriesService = {
   getAll: async (): Promise<ProjectCategory[]> => {
-    const res = await apiFetch(BASE_PATH);
-    return Array.isArray(res) ? res : res?.data || [];
+    return apiFetch<ProjectCategory[]>(BASE_PATH);
   },
 
   getById: async (id: number): Promise<ProjectCategory> => {

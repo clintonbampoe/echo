@@ -4,7 +4,7 @@ import type { AttendanceRecord, PagedResponse, AttendanceFilters } from '../type
 const BASE_PATH = '/v1/Attendance';
 
 function cleanAttendancePayload(data: Partial<AttendanceRecord>) {
-  const payload: Record<string, any> = { ...data };
+  const payload: Record<string, unknown> = { ...data };
 
   delete payload.id;
   delete payload.attendanceContextName;
@@ -16,7 +16,7 @@ function cleanAttendancePayload(data: Partial<AttendanceRecord>) {
     payload.attendanceContextId = Number(payload.attendanceContextId);
   }
 
-  if (!payload.description || payload.description.trim() === '') {
+  if (!payload.description || (typeof payload.description === 'string' && payload.description.trim() === '')) {
     delete payload.description;
   }
 
@@ -37,16 +37,16 @@ export const attendanceService = {
     params.append('PageSize', pageSize.toString());
     if (cursor) params.append('Cursor', cursor);
 
-    return apiFetch(`${BASE_PATH}?${params.toString()}`);
+    return apiFetch<PagedResponse<AttendanceRecord>>(`${BASE_PATH}?${params.toString()}`);
   },
 
   getById: async (id: string): Promise<AttendanceRecord> => {
-    return apiFetch(`${BASE_PATH}/${id}`);
+    return apiFetch<AttendanceRecord>(`${BASE_PATH}/${id}`);
   },
 
   create: async (data: Partial<AttendanceRecord>): Promise<AttendanceRecord> => {
     const payload = cleanAttendancePayload(data);
-    return apiFetch(BASE_PATH, {
+    return apiFetch<AttendanceRecord>(BASE_PATH, {
       method: 'POST',
       body: JSON.stringify(payload),
     });
@@ -54,14 +54,14 @@ export const attendanceService = {
 
   update: async (id: string, data: Partial<AttendanceRecord>): Promise<AttendanceRecord> => {
     const payload = cleanAttendancePayload(data);
-    return apiFetch(`${BASE_PATH}/${id}`, {
+    return apiFetch<AttendanceRecord>(`${BASE_PATH}/${id}`, {
       method: 'PUT',
       body: JSON.stringify(payload),
     });
   },
 
   delete: async (id: string): Promise<void> => {
-    return apiFetch(`${BASE_PATH}/${id}`, {
+    return apiFetch<void>(`${BASE_PATH}/${id}`, {
       method: 'DELETE',
     });
   },

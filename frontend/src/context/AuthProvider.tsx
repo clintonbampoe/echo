@@ -46,7 +46,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   // Fetch full user name if only email username is set
   useEffect(() => {
     if (user?.id && user?.token && (!user.name || user.name === user.email.split('@')[0])) {
-      apiFetch(`/v1/Users/${user.id}`)
+      apiFetch<{ name?: string }>(`/v1/Users/${user.id}`)
         .then(profile => {
           if (profile?.name && profile.name !== user.name) {
             const updatedUser = { ...user, name: profile.name };
@@ -58,21 +58,21 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           // Ignore if profile fetch fails
         });
     }
-  }, [user?.id, user?.token]);
+  }, [user]);
 
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
       const tokenPair = await authService.login(email, password);
-      const token = tokenPair?.accessToken || (tokenPair as any)?.data?.accessToken || '';
-      const refreshToken = tokenPair?.refreshToken || (tokenPair as any)?.data?.refreshToken || '';
+      const token = tokenPair?.accessToken || '';
+      const refreshToken = tokenPair?.refreshToken || '';
       const claims = token ? parseJwt(token) : null;
       const userId = claims?.sub || claims?.nameid || '';
 
       let fullName = email.split('@')[0];
       if (userId && token) {
         try {
-          const profile = await apiFetch(`/v1/Users/${userId}`, {
+          const profile = await apiFetch<{ name?: string }>(`/v1/Users/${userId}`, {
             headers: { Authorization: `Bearer ${token}` },
           });
           if (profile?.name) {

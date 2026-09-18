@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLayout } from '../hooks/useLayout';
 import { useMembers } from '../hooks/useMembers';
 import { useProjectContributions } from '../hooks/useProjectContributions';
@@ -20,6 +20,7 @@ import {
   TrashIcon,
 } from './Icons';
 import DeleteConfirmModal from './common/DeleteConfirmModal';
+import { getErrorMessage } from '../utils/errors';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -124,25 +125,25 @@ const Projects: React.FC = () => {
 
   const projectsList = projectsData?.data || [];
   const membersList = membersData?.data || [];
-  const contributionsList = contributionsData?.data || [];
 
   // Map contributions raised per project
   const raisedByProjectId = useMemo(() => {
+    const contributionsList = contributionsData?.data || [];
     const map = new Map<string, number>();
     for (const c of contributionsList) {
       const current = map.get(c.projectId) || 0;
       map.set(c.projectId, current + c.amount);
     }
     return map;
-  }, [contributionsList]);
+  }, [contributionsData?.data]);
 
   // ── Layout Header ──────────────────────────────────────────────────────────
 
-  const openCreatePanel = () => {
+  const openCreatePanel = useCallback(() => {
     setForm(emptyForm());
     setFormError(null);
     setShowCreatePanel(true);
-  };
+  }, []);
 
   useEffect(() => {
     setTitle('Projects');
@@ -155,24 +156,24 @@ const Projects: React.FC = () => {
         onClick: openCreatePanel,
       },
     ]);
-  }, [setTitle, setCtas]);
+  }, [setTitle, setCtas, openCreatePanel]);
 
   // ── Handlers ───────────────────────────────────────────────────────────────
 
   const openEditPanel = (project: Project) => {
     setViewingProject(null);
     setEditingProject(project);
-    setFormError(null);
     setForm({
       name: project.name,
-      categoryId: project.categoryId,
-      managerId: project.managerId,
-      targetAmount: String(project.targetAmount),
+      categoryId: project.categoryId || '',
+      managerId: project.managerId || '',
+      targetAmount: project.targetAmount ? String(project.targetAmount) : '',
       startDate: project.startDate ? project.startDate.split('T')[0] : '',
       endDate: project.endDate ? project.endDate.split('T')[0] : '',
       status: project.status,
       description: project.description || '',
     });
+    setFormError(null);
   };
 
   const handleSaveCreate = async () => {
@@ -181,15 +182,19 @@ const Projects: React.FC = () => {
       return;
     }
     if (!form.categoryId) {
-      setFormError('Please select a project category.');
+      setFormError('Project category is required.');
       return;
     }
     if (!form.managerId) {
-      setFormError('Please select a project lead / manager.');
+      setFormError('Project manager is required.');
       return;
     }
-    if (!form.targetAmount || parseFloat(form.targetAmount) <= 0) {
-      setFormError('Please enter a valid target amount.');
+    if (!form.targetAmount || isNaN(parseFloat(form.targetAmount))) {
+      setFormError('A valid target amount is required.');
+      return;
+    }
+    if (!form.startDate) {
+      setFormError('Start date is required.');
       return;
     }
 
@@ -206,8 +211,8 @@ const Projects: React.FC = () => {
         description: form.description.trim() || null,
       });
       setShowCreatePanel(false);
-    } catch (err: any) {
-      setFormError(err.message || 'Failed to create project');
+    } catch (err: unknown) {
+      setFormError(getErrorMessage(err, 'Failed to create project'));
     }
   };
 
@@ -234,8 +239,8 @@ const Projects: React.FC = () => {
         },
       });
       setEditingProject(null);
-    } catch (err: any) {
-      setFormError(err.message || 'Failed to update project');
+    } catch (err: unknown) {
+      setFormError(getErrorMessage(err, 'Failed to update project'));
     }
   };
 
@@ -251,7 +256,7 @@ const Projects: React.FC = () => {
       await deleteProjectMutation.mutateAsync(deletingProject.id);
       setShowDeleteConfirm(false);
       setDeletingProject(null);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to delete project', err);
     }
   };
@@ -660,12 +665,12 @@ const ProjectFormFields: React.FC<ProjectFormFieldsProps> = ({
       }
       setNewCategoryName('');
       setIsAddingCategory(false);
-    } catch (err: any) {
-      setCategoryError(err.message || 'Failed to create category');
+    } catch (err: unknown) {
+      setCategoryError(getErrorMessage(err, 'Failed to create category'));
     }
   };
 
-  const set = (key: keyof FormState, value: any) =>
+  const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm(prev => ({ ...prev, [key]: value }));
 
   return (

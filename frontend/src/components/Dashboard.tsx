@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useLayout } from '../hooks/useLayout';
 import { useMembers } from '../hooks/useMembers';
 import { useAttendance } from '../hooks/useAttendance';
@@ -42,6 +42,7 @@ const formatCurrency = (amount: number): string => {
 
 const Dashboard: React.FC = () => {
   const { setTitle, setCtas } = useLayout();
+  const [initialTimestamp] = useState(() => Date.now());
 
   // ── Real Queries ──────────────────────────────────────────────────────────
   const { data: membersResponse } = useMembers({}, 500);
@@ -157,7 +158,7 @@ const Dashboard: React.FC = () => {
         user: name,
         action: 'joined as a member',
         time: m.joinedDate ? new Date(m.joinedDate).toLocaleDateString() : 'Recently',
-        date: new Date(m.createdAt || m.joinedDate || Date.now()),
+        date: new Date(m.createdAt || m.joinedDate || initialTimestamp),
       });
     });
 
@@ -168,7 +169,7 @@ const Dashboard: React.FC = () => {
         user: t.memberName || 'Member',
         action: `recorded tithe payment of ${formatCurrency(t.amount)}`,
         time: new Date(t.collectionDate).toLocaleDateString(),
-        date: new Date(t.createdAt || t.collectionDate || Date.now()),
+        date: new Date(t.createdAt || t.collectionDate || initialTimestamp),
       });
     });
 
@@ -179,7 +180,18 @@ const Dashboard: React.FC = () => {
         user: ev.organizerName || 'Admin',
         action: `created event "${ev.name}"`,
         time: new Date(ev.startDate).toLocaleDateString(),
-        date: new Date(ev.createdAt || ev.startDate || Date.now()),
+        date: new Date(ev.createdAt || ev.startDate || initialTimestamp),
+      });
+    });
+
+    // Recent Transactions
+    transactions.slice(0, 4).forEach((tr) => {
+      activities.push({
+        id: `tx-${tr.id}`,
+        user: tr.categoryName || 'Finance',
+        action: `recorded ${tr.transactionType?.toLowerCase() || 'transaction'} of ${formatCurrency(tr.amount)}`,
+        time: new Date(tr.transactionDate).toLocaleDateString(),
+        date: new Date(tr.createdAt || tr.transactionDate || initialTimestamp),
       });
     });
 
@@ -187,7 +199,7 @@ const Dashboard: React.FC = () => {
     activities.sort((a, b) => b.date.getTime() - a.date.getTime());
 
     return activities.slice(0, 6);
-  }, [members, tithes, events]);
+  }, [members, tithes, events, transactions, initialTimestamp]);
 
   return (
     <div className="dashboard-container">

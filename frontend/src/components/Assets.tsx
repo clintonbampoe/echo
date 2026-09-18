@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLayout } from '../hooks/useLayout';
 import {
   useAssets,
@@ -82,7 +82,7 @@ const Assets: React.FC = () => {
   const [newCategoryName, setNewCategoryName] = useState('');
 
   // ── Layout Header ─────────────────────────────────────────────────────────
-  const handleOpenAddModal = () => {
+  const handleOpenAddModal = useCallback(() => {
     setEditingAsset(null);
     setFormData({
       name: '',
@@ -95,7 +95,7 @@ const Assets: React.FC = () => {
       description: '',
     });
     setShowModal(true);
-  };
+  }, [categories]);
 
   useEffect(() => {
     setTitle('Assets');
@@ -110,7 +110,7 @@ const Assets: React.FC = () => {
       },
     ]);
     setSearchQuery('');
-  }, [setTitle, setCtas, setSearchQuery, categories]);
+  }, [setTitle, setCtas, setSearchQuery, handleOpenAddModal]);
 
   // ── Calculations & Filtering ───────────────────────────────────────────────
   const totalAssetsCount = assets.length;

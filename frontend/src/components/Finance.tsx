@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useMemo } from 'react';
+import React, { useEffect, useState, useRef, useMemo, useCallback } from 'react';
 import { useLayout } from '../hooks/useLayout';
 import {
   CloseIcon,
@@ -191,7 +191,7 @@ const Finance: React.FC = () => {
   const incomeCount = transactions.filter((t) => t.transactionType === 'Income').length + titheCount;
   const expenditureCount = transactions.filter((t) => t.transactionType === 'Expense').length;
 
-  const getCategoryStreams = (type: TransactionType): CategoryStream[] => {
+  const getCategoryStreams = useCallback((type: TransactionType): CategoryStream[] => {
     const typeCats = categories.filter((c) => c.categoryType === type);
     const typeTransactions = transactions.filter((t) => t.transactionType === type);
     const totalForType = type === 'Income' ? displayTotalIncome : totalExpenditure;
@@ -224,10 +224,10 @@ const Finance: React.FC = () => {
     }
 
     return streams;
-  };
+  }, [categories, transactions, displayTotalIncome, totalExpenditure, titheCount, titheTotal]);
 
-  const incomeStreams = useMemo(() => getCategoryStreams('Income'), [categories, transactions, displayTotalIncome, titheTotal, titheCount]);
-  const expenditureStreams = useMemo(() => getCategoryStreams('Expense'), [categories, transactions, totalExpenditure]);
+  const incomeStreams = useMemo(() => getCategoryStreams('Income'), [getCategoryStreams]);
+  const expenditureStreams = useMemo(() => getCategoryStreams('Expense'), [getCategoryStreams]);
 
   // ── Handlers ───────────────────────────────────────────────────────────────
   const handleAddCategory = (type: TransactionType) => {
