@@ -10,7 +10,7 @@
     <Project Path="src/Echo.Auth/Echo.Auth.csproj" />
     <Project Path="src/Echo.Core/Echo.Core.csproj" />
     <Project Path="src/Echo.Domain/Echo.Domain.csproj" />
-    <Project Path="src/Echo.Infrastructure/Echo.Infrastructure.csproj" />
     <Project Path="src\Echo.Application\Echo.Application.csproj" />
+    <Project Path="src\Echo.Data\Echo.Data.csproj" />
   </Folder>
 </Solution>

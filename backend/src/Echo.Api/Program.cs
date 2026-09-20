@@ -4,7 +4,7 @@ using Echo.Application.Extensions.DI;
 using Echo.Auth.Extensions;
 using Echo.Core.Extensions;
 using Echo.Domain.Data;
-using Echo.Infrastructure.Extensions;
+using Echo.Data.Extensions;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);

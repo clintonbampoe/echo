@@ -18,7 +18,7 @@ public static class DbContextExtensions
                 npgsqlOptions =>
                 {
                     npgsqlOptions.SetPostgresVersion(18, 0);
-                    npgsqlOptions.MigrationsAssembly("Echo.Infrastructure");
+                    npgsqlOptions.MigrationsAssembly("Echo.Data");
                 }
             )
         );

@@ -1,4 +1,4 @@
-using Echo.Infrastructure.Health;
+using Echo.Data.Health;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace Echo.Api.Extensions;
