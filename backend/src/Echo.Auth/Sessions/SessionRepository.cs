@@ -1,0 +1,68 @@
+using Echo.Application.Query;
+using Echo.Data;
+using Echo.Domain.Auth;
+using Microsoft.EntityFrameworkCore;
+
+namespace Echo.Auth.Sessions;
+
+public class SessionRepository(AppDbContext context, TimeProvider timeProvider)
+{
+    private readonly DbSet<RefreshToken> _tokens = context.Set<RefreshToken>();
+
+    public async Task<RefreshToken?> GetTokenRecordByHashWithUser(
+        string hashedInput,
+        CancellationToken ct = default
+    )
+    {
+        var tokenObject = await _tokens
+            .FilterDeleted()
+            .Include(x => x.User)
+            .FirstOrDefaultAsync(x => x.TokenHash == hashedInput, ct);
+
+        return tokenObject;
+    }
+
+    public async Task<bool> CreateNewToken(RefreshToken token, CancellationToken ct = default)
+    {
+        await _tokens.AddAsync(token, ct);
+        return true;
+    }
+
+    public async Task<bool> Revoke(
+        Guid tokenId,
+        Guid? replacedByTokenId = null,
+        CancellationToken ct = default
+    )
+    {
+        var existing = await _tokens.FilterDeleted().FirstOrDefaultAsync(x => x.Id == tokenId, ct);
+
+        if (existing is null)
+            return false;
+
+        existing.RevokedAt = timeProvider.GetUtcNow().UtcDateTime;
+        existing.ReplacedByTokenId = replacedByTokenId;
+
+        return true;
+    }
+
+    public async Task<bool> RevokeAllActiveSessionsForUser(
+        Guid userId,
+        CancellationToken ct = default
+    )
+    {
+        var activeTokens = await _tokens
+            .FilterDeleted()
+            .Where(u => u.UserId == userId && u.RevokedAt == null)
+            .ToListAsync(ct);
+
+        foreach (var token in activeTokens)
+            token.RevokedAt = timeProvider.GetUtcNow().UtcDateTime;
+
+        return true;
+    }
+
+    public async Task RevokeActiveSessionsForUser(string email, CancellationToken ct = default)
+    {
+        throw new NotImplementedException();
+    }
+}

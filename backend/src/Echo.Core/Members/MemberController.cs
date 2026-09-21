@@ -1,0 +1,55 @@
+using Echo.Application.Pagination;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
+
+namespace Echo.Core.Members;
+
+public class MemberController(MemberService service) : BaseController
+{
+    [HttpGet]
+    public async Task<ActionResult> List(
+        [FromQuery] MemberFilters filters,
+        [FromQuery] PaginationRequest pagination,
+        CancellationToken ct
+    )
+    {
+        var response = await service.List(GetCongregationId(), filters, pagination, ct);
+        return response.ToActionResult();
+    }
+
+    [HttpGet("{id}")]
+    public async Task<ActionResult> GetById(Guid id, CancellationToken ct)
+    {
+        var response = await service.GetById(id, GetCongregationId(), ct);
+        return response.ToActionResult();
+    }
+
+    [HttpPost]
+    public async Task<ActionResult> Create(MemberCreateDto dto, CancellationToken ct)
+    {
+        var response = await service.Create(GetCongregationId(), dto, ct);
+        return response.ToActionResult();
+    }
+
+    [HttpPut("{id}")]
+    public async Task<ActionResult> Update(Guid id, MemberUpdateDto dto, CancellationToken ct)
+    {
+        var response = await service.Update(GetCongregationId(), id, dto, ct);
+        return response.ToActionResult();
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<ActionResult> Delete(Guid id, CancellationToken ct)
+    {
+        var response = await service.Delete(id, GetCongregationId(), ct);
+        return response.ToActionResult();
+    }
+
+    [HttpGet("search")]
+    [EnableRateLimiting("search")]
+    public async Task<ActionResult> Search([FromQuery] string q, CancellationToken ct)
+    {
+        var res = await service.Search(GetCongregationId(), q, ct);
+        return res.ToActionResult();
+    }
+}

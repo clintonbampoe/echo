@@ -2,9 +2,9 @@ using System.Security.Cryptography;
 using System.Text;
 using Echo.Application.Options.Jwt;
 using Echo.Application.Services.Security;
-using Echo.Auth.Services;
-using Echo.Core.Dtos;
-using Echo.Domain.Enums;
+using Echo.Auth.Sessions;
+using Echo.Core.Users;
+using Echo.Domain.Users;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Time.Testing;
 
@@ -40,7 +40,7 @@ public class AccessTokenGeneratorTests
         Assert.Equal(new DateTime(2026, 1, 1, 12, 35, 0, DateTimeKind.Utc), laterExpiresAt);
     }
 
-    private static AccessTokenGenerator CreateGenerator(
+    private static JwtTokenGenerator CreateGenerator(
         TimeProvider timeProvider,
         int accessTokenLifetimeMinutes
     )
@@ -65,7 +65,7 @@ public class AccessTokenGeneratorTests
             RefreshTokenLifetimeDays = 30,
         };
 
-        return new AccessTokenGenerator(
+        return new JwtTokenGenerator(
             Options.Create(jwtOptions),
             timeProvider,
             new JwtKeyRing(jwtOptions)

@@ -1,5 +1,4 @@
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -23,9 +22,4 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Echo.Core\Echo.Core.csproj" />
   </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Mapping\CongregationMapping\" />
-  </ItemGroup>
-
 </Project>

@@ -1,0 +1,103 @@
+using Echo.Application.Options.Jwt;
+using Echo.Application.Services.Generators;
+using Echo.Application.Services.Hashing;
+using Echo.Domain.Auth;
+using Microsoft.Extensions.Options;
+
+namespace Echo.Auth.Sessions;
+
+public class JwtTokenService(
+    SessionRepository refreshTokenRepository,
+    ITokenGenerator tokenGenerator,
+    ITokenHasher tokenHashService,
+    IOptions<JwtOptions> jwtOptions,
+    TimeProvider timeProvider
+)
+{
+    private readonly JwtOptions _jwtOptions = jwtOptions.Value;
+
+    public async Task<(RefreshToken TokenEntity, string PlainToken)> IssueToken(
+        Guid userId,
+        CancellationToken ct = default
+    )
+    {
+        var plainToken = tokenGenerator.GenerateToken(32);
+
+        var tokenEntity = new RefreshToken(userId)
+        {
+            TokenHash = tokenHashService.Hash(plainToken),
+            ExpiresAt = timeProvider
+                .GetUtcNow()
+                .UtcDateTime.AddDays(_jwtOptions.RefreshTokenLifetimeDays),
+        };
+
+        await refreshTokenRepository.CreateNewToken(tokenEntity, ct);
+
+        return (tokenEntity, plainToken);
+    }
+
+    public async Task<RefreshTokenValidationResult> ValidateAndRotateAsync(
+        string presentedToken,
+        CancellationToken ct = default
+    )
+    {
+        var hashedInput = tokenHashService.Hash(presentedToken);
+        var existing = await refreshTokenRepository.GetTokenRecordByHashWithUser(hashedInput, ct);
+
+        if (existing is null)
+            return Failure(RefreshSessionFailure.NotFound);
+        if (existing.RevokedAt is not null)
+        {
+            // Already-rotated token presented again — treat as a stolen/reused token,
+            // kill every active session for this user, not just this one.
+            await refreshTokenRepository.RevokeAllActiveSessionsForUser(existing.UserId, ct);
+            return Failure(RefreshSessionFailure.Reused);
+        }
+
+        if (existing.ExpiresAt <= timeProvider.GetUtcNow().UtcDateTime)
+            return Failure(RefreshSessionFailure.Expired);
+
+        if (existing.User.DeletedAt is not null)
+            return Failure(RefreshSessionFailure.UserInactive);
+
+        var (newTokenEntity, newPlainToken) = await IssueToken(existing.UserId, ct);
+
+        await refreshTokenRepository.Revoke(existing.Id, newTokenEntity.Id, ct);
+
+        return new RefreshTokenValidationResult()
+        {
+            Success = true,
+            FailureReason = null,
+            UserId = existing.UserId,
+            NewRefreshToken = newPlainToken,
+            NewRefreshTokenExpiresAt = newTokenEntity.ExpiresAt,
+        };
+    }
+
+    public async Task RevokeToken(string presentedToken, CancellationToken ct = default)
+    {
+        var hashedInput = tokenHashService.Hash(presentedToken);
+        var existing = await refreshTokenRepository.GetTokenRecordByHashWithUser(hashedInput, ct);
+
+        if (existing is not null)
+            await refreshTokenRepository.Revoke(existing.Id, null, ct);
+    }
+
+    public async Task RevokeAllActiveSessionsForUserByUserId(
+        Guid userId,
+        CancellationToken ct = default
+    )
+    {
+        await refreshTokenRepository.RevokeAllActiveSessionsForUser(userId, ct);
+    }
+
+    private static RefreshTokenValidationResult Failure(RefreshSessionFailure reason)
+    {
+        return new RefreshTokenValidationResult()
+        {
+            Success = false,
+            FailureReason = reason,
+            UserId = Guid.Empty,
+        };
+    }
+}

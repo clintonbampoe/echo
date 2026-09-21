@@ -1,5 +1,4 @@
 using Echo.Application.Utilities;
-using Xunit;
 
 namespace Echo.Application.Tests.Utilities;
 

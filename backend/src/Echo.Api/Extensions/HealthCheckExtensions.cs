@@ -12,12 +12,14 @@ public static class HealthCheckExtensions
     /// </summary>
     public static IServiceCollection AddHealthCheckServices(this IServiceCollection services)
     {
-        services.AddHealthChecks()
-            .AddCheck<DatabaseHealthCheck>(
+        services
+            .AddHealthChecks()
+            .AddCheck<DbHealthCheck>(
                 name: "database",
                 failureStatus: HealthStatus.Unhealthy,
                 tags: new[] { HealthCheckTags.Readiness },
-                timeout: TimeSpan.FromSeconds(2));
+                timeout: TimeSpan.FromSeconds(2)
+            );
 
         return services;
     }

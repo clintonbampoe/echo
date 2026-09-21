@@ -12,5 +12,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Echo.Application\Echo.Application.csproj" />
+    <ProjectReference Include="..\Echo.Data\Echo.Data.csproj" />
   </ItemGroup>
 </Project>

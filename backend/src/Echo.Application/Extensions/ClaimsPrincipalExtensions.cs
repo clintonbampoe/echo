@@ -1,6 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using Echo.Domain.Enums;
+using Echo.Domain.Users;
 
 namespace Echo.Application.Extensions;
 
