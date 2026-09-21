@@ -2,7 +2,7 @@ using Echo.Domain.Members;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Echo.Data.Configurations.Core;
+namespace Echo.Data.Configurations.Members;
 
 public class MemberConfiguration : IEntityTypeConfiguration<Member>
 {

@@ -1,12 +1,12 @@
-using Echo.Domain.Attendances;
+using Echo.Domain.Transactions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Echo.Data.Configurations.Core;
+namespace Echo.Data.Configurations.Transactions;
 
-public class AttendanceTypeConfiguration : IEntityTypeConfiguration<AttendanceType>
+public class TransactionCategoryConfiguration : IEntityTypeConfiguration<TransactionCategory>
 {
-    public void Configure(EntityTypeBuilder<AttendanceType> builder)
+    public void Configure(EntityTypeBuilder<TransactionCategory> builder)
     {
         builder.HasKey(e => e.Id);
 
@@ -21,8 +21,8 @@ public class AttendanceTypeConfiguration : IEntityTypeConfiguration<AttendanceTy
             .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasIndex(e => e.CongregationId);
-        builder.HasIndex(t => new { t.CongregationId, t.Name }).IsUnique();
+        builder.HasIndex(c => new { c.CongregationId, c.Name }).IsUnique();
 
-        builder.HasIndex(m => m.Name).HasMethod("GIN").HasOperators("gin_trgm_ops");
+        builder.HasIndex(c => c.Name).HasMethod("GIN").HasOperators("gin_trgm_ops");
     }
 }

@@ -2,7 +2,7 @@ using Echo.Domain.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Echo.Data.Configurations.Core;
+namespace Echo.Data.Configurations.Users;
 
 public class UserConfiguration : IEntityTypeConfiguration<User>
 {

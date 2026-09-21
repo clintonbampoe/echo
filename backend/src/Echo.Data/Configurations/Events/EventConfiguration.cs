@@ -1,13 +1,12 @@
-using Echo.Domain.Organizations;
-using Echo.Domain.Projects;
+using Echo.Domain.Events;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Echo.Data.Configurations.Core;
+namespace Echo.Data.Configurations.Events;
 
-public class OrganizationMemberConfiguration : IEntityTypeConfiguration<OrganizationMember>
+public class EventConfiguration : IEntityTypeConfiguration<Event>
 {
-    public void Configure(EntityTypeBuilder<OrganizationMember> builder)
+    public void Configure(EntityTypeBuilder<Event> builder)
     {
         builder.HasKey(e => e.Id);
 
@@ -21,22 +20,24 @@ public class OrganizationMemberConfiguration : IEntityTypeConfiguration<Organiza
 
         builder.HasIndex(e => e.CongregationId);
 
+        builder.HasIndex(e => new { e.CongregationId, e.Name }).IsUnique();
+
         builder
-            .HasOne(om => om.Member)
+            .HasOne(e => e.Organization)
             .WithMany()
-            .HasForeignKey(om => om.MemberId)
+            .HasForeignKey(e => e.OrganizationId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder
-            .HasOne(om => om.Organization)
+            .HasOne(e => e.Organizer)
             .WithMany()
-            .HasForeignKey(om => om.OrganizationId)
+            .HasForeignKey(e => e.OrganizerId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasIndex(om => new { om.MemberId, om.OrganizationId }).IsUnique();
+        builder.HasIndex(e => e.Name).HasMethod("GIN").HasOperators("gin_trgm_ops");
 
         builder
-            .HasIndex(om => new { om.CreatedAt, om.Id })
-            .HasFilter($"\"{nameof(Project.DeletedAt)}\" IS NULL");
+            .HasIndex(e => new { e.StartDate, e.Id })
+            .HasFilter($"\"{nameof(Event.DeletedAt)}\" IS NULL");
     }
 }

@@ -1,12 +1,12 @@
-using Echo.Domain.Tithes;
+using Echo.Domain.Transactions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Echo.Data.Configurations.Core;
+namespace Echo.Data.Configurations.Transactions;
 
-public class TitheConfiguration : IEntityTypeConfiguration<Tithe>
+public class TransactionConfiguration : IEntityTypeConfiguration<Transaction>
 {
-    public void Configure(EntityTypeBuilder<Tithe> builder)
+    public void Configure(EntityTypeBuilder<Transaction> builder)
     {
         builder.HasKey(e => e.Id);
 
@@ -21,15 +21,15 @@ public class TitheConfiguration : IEntityTypeConfiguration<Tithe>
         builder.HasIndex(e => e.CongregationId);
 
         builder
-            .HasOne(t => t.Member)
+            .HasOne(t => t.Category)
             .WithMany()
-            .HasForeignKey(t => t.MemberId)
+            .HasForeignKey(t => t.CategoryId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasIndex(t => t.MemberId);
+        builder.HasIndex(t => t.CategoryId);
 
         builder
-            .HasIndex(t => new { t.CollectionDate, t.Id })
-            .HasFilter($"\"{nameof(Tithe.DeletedAt)}\" IS NULL");
+            .HasIndex(t => new { t.TransactionDate, t.Id })
+            .HasFilter($"\"{nameof(Transaction.DeletedAt)}\" IS NULL");
     }
 }

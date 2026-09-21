@@ -2,9 +2,9 @@ using Echo.Data.Health;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
-namespace Echo.Data.Extensions;
+namespace Echo.Data;
 
-public static class RegisterServices
+public static class Extensions
 {
     public static IServiceCollection AddInfrastructureServices(this IServiceCollection services)
     {

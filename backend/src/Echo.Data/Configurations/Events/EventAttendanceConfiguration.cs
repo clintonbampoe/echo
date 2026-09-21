@@ -2,15 +2,21 @@ using Echo.Domain.Events;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Echo.Data.Configurations.Core;
+namespace Echo.Data.Configurations.Events;
 
-public class EventRegistrationConfiguration : IEntityTypeConfiguration<EventRegistration>
+public class EventAttendanceConfiguration : IEntityTypeConfiguration<EventAttendance>
 {
-    public void Configure(EntityTypeBuilder<EventRegistration> builder)
+    public void Configure(EntityTypeBuilder<EventAttendance> builder)
     {
         builder.HasKey(e => e.Id);
 
         builder.Property(e => e.CreatedAt).HasDefaultValueSql("now()").ValueGeneratedOnAdd();
+
+        builder.HasIndex(ea => new { ea.EventId, ea.MemberId }).IsUnique();
+
+        builder
+            .HasIndex(ea => new { ea.CheckInTime, ea.Id })
+            .HasFilter($"\"{nameof(EventAttendance.DeletedAt)}\" IS NULL");
 
         builder
             .HasOne(e => e.Congregation)
@@ -21,21 +27,15 @@ public class EventRegistrationConfiguration : IEntityTypeConfiguration<EventRegi
         builder.HasIndex(e => e.CongregationId);
 
         builder
-            .HasOne(er => er.Member)
+            .HasOne(ea => ea.Member)
             .WithMany()
-            .HasForeignKey(er => er.MemberId)
+            .HasForeignKey(ea => ea.MemberId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder
-            .HasOne(er => er.Event)
+            .HasOne(ea => ea.Event)
             .WithMany()
-            .HasForeignKey(er => er.EventId)
+            .HasForeignKey(ea => ea.EventId)
             .OnDelete(DeleteBehavior.Restrict);
-
-        builder.HasIndex(er => new { er.EventId, er.MemberId }).IsUnique();
-
-        builder
-            .HasIndex(er => new { er.RegistrationDate, er.Id })
-            .HasFilter($"\"{nameof(EventRegistration.DeletedAt)}\" IS NULL");
     }
 }

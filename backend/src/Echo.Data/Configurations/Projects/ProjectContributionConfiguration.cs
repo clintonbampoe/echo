@@ -1,16 +1,14 @@
-using Echo.Domain.Attendances;
+using Echo.Domain.Projects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Echo.Data.Configurations.Core;
+namespace Echo.Data.Configurations.Projects;
 
-public class AttendanceContextConfiguration : IEntityTypeConfiguration<AttendanceContext>
+public class ProjectContributionConfiguration : IEntityTypeConfiguration<ProjectContribution>
 {
-    public void Configure(EntityTypeBuilder<AttendanceContext> builder)
+    public void Configure(EntityTypeBuilder<ProjectContribution> builder)
     {
         builder.HasKey(e => e.Id);
-
-        builder.Property(e => e.Id).ValueGeneratedOnAdd();
 
         builder.Property(e => e.CreatedAt).HasDefaultValueSql("now()").ValueGeneratedOnAdd();
 
@@ -23,12 +21,15 @@ public class AttendanceContextConfiguration : IEntityTypeConfiguration<Attendanc
         builder.HasIndex(e => e.CongregationId);
 
         builder
-            .HasOne(c => c.AttendanceType)
+            .HasOne(pc => pc.Project)
             .WithMany()
-            .HasForeignKey(c => c.AttendanceTypeId)
+            .HasForeignKey(pc => pc.ProjectId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasIndex(c => new { c.AttendanceTypeId, c.Name }).IsUnique();
-        builder.HasIndex(m => m.Name).HasMethod("GIN").HasOperators("gin_trgm_ops");
+        builder.HasIndex(pc => pc.ProjectId);
+
+        builder
+            .HasIndex(pc => new { pc.DateContributed, pc.Id })
+            .HasFilter($"\"{nameof(ProjectContribution.DeletedAt)}\" IS NULL");
     }
 }

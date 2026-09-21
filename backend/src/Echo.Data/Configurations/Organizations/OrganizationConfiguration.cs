@@ -2,7 +2,7 @@ using Echo.Domain.Organizations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Echo.Data.Configurations.Core;
+namespace Echo.Data.Configurations.Organizations;
 
 public class OrganizationConfiguration : IEntityTypeConfiguration<Organization>
 {

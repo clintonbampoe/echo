@@ -2,7 +2,7 @@ using Echo.Domain.Congregations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Echo.Data.Configurations.Core;
+namespace Echo.Data.Configurations.Congregations;
 
 public class CongregationConfiguration : IEntityTypeConfiguration<Congregation>
 {

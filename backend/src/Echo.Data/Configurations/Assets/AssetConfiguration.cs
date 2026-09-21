@@ -2,7 +2,7 @@ using Echo.Domain.Assets;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Echo.Data.Configurations.Core;
+namespace Echo.Data.Configurations.Assets;
 
 public class AssetConfiguration : IEntityTypeConfiguration<Asset>
 {

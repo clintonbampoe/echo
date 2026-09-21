@@ -3,7 +3,6 @@ using Echo.Api.Extensions;
 using Echo.Application;
 using Echo.Auth;
 using Echo.Data;
-using Echo.Data.Extensions;
 using Echo.Shared.Extensions.DI;
 using Microsoft.EntityFrameworkCore;
 

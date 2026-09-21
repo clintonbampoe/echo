@@ -2,7 +2,7 @@ using Echo.Domain.Attendances;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Echo.Data.Configurations.Core;
+namespace Echo.Data.Configurations.Attendances;
 
 public class AttendanceConfiguration : IEntityTypeConfiguration<Attendance>
 {

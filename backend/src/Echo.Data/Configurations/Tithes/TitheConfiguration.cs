@@ -1,12 +1,12 @@
-using Echo.Domain.Projects;
+using Echo.Domain.Tithes;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Echo.Data.Configurations.Core;
+namespace Echo.Data.Configurations.Tithes;
 
-public class ProjectContributionConfiguration : IEntityTypeConfiguration<ProjectContribution>
+public class TitheConfiguration : IEntityTypeConfiguration<Tithe>
 {
-    public void Configure(EntityTypeBuilder<ProjectContribution> builder)
+    public void Configure(EntityTypeBuilder<Tithe> builder)
     {
         builder.HasKey(e => e.Id);
 
@@ -21,15 +21,15 @@ public class ProjectContributionConfiguration : IEntityTypeConfiguration<Project
         builder.HasIndex(e => e.CongregationId);
 
         builder
-            .HasOne(pc => pc.Project)
+            .HasOne(t => t.Member)
             .WithMany()
-            .HasForeignKey(pc => pc.ProjectId)
+            .HasForeignKey(t => t.MemberId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasIndex(pc => pc.ProjectId);
+        builder.HasIndex(t => t.MemberId);
 
         builder
-            .HasIndex(pc => new { pc.DateContributed, pc.Id })
-            .HasFilter($"\"{nameof(ProjectContribution.DeletedAt)}\" IS NULL");
+            .HasIndex(t => new { t.CollectionDate, t.Id })
+            .HasFilter($"\"{nameof(Tithe.DeletedAt)}\" IS NULL");
     }
 }

@@ -1,14 +1,16 @@
-using Echo.Domain.Transactions;
+using Echo.Domain.Attendances;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Echo.Data.Configurations.Core;
+namespace Echo.Data.Configurations.Attendances;
 
-public class TransactionConfiguration : IEntityTypeConfiguration<Transaction>
+public class AttendanceContextConfiguration : IEntityTypeConfiguration<AttendanceContext>
 {
-    public void Configure(EntityTypeBuilder<Transaction> builder)
+    public void Configure(EntityTypeBuilder<AttendanceContext> builder)
     {
         builder.HasKey(e => e.Id);
+
+        builder.Property(e => e.Id).ValueGeneratedOnAdd();
 
         builder.Property(e => e.CreatedAt).HasDefaultValueSql("now()").ValueGeneratedOnAdd();
 
@@ -21,15 +23,12 @@ public class TransactionConfiguration : IEntityTypeConfiguration<Transaction>
         builder.HasIndex(e => e.CongregationId);
 
         builder
-            .HasOne(t => t.Category)
+            .HasOne(c => c.AttendanceType)
             .WithMany()
-            .HasForeignKey(t => t.CategoryId)
+            .HasForeignKey(c => c.AttendanceTypeId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasIndex(t => t.CategoryId);
-
-        builder
-            .HasIndex(t => new { t.TransactionDate, t.Id })
-            .HasFilter($"\"{nameof(Transaction.DeletedAt)}\" IS NULL");
+        builder.HasIndex(c => new { c.AttendanceTypeId, c.Name }).IsUnique();
+        builder.HasIndex(m => m.Name).HasMethod("GIN").HasOperators("gin_trgm_ops");
     }
 }

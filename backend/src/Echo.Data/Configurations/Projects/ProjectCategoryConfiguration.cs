@@ -2,7 +2,7 @@ using Echo.Domain.Projects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Echo.Data.Configurations.Core;
+namespace Echo.Data.Configurations.Projects;
 
 public class ProjectCategoryConfiguration : IEntityTypeConfiguration<ProjectCategory>
 {
