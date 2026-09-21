@@ -1,9 +1,9 @@
+using Echo.Data;
+using Echo.Domain.Members;
 using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
-using Echo.Data;
-using Echo.Domain.Members;
 
 namespace Echo.Application.Members;
 
@@ -118,7 +118,7 @@ public class MemberService(
         throw new NotImplementedException();
     }
 
-    private MemberCursor BuildCursor(Member last)
+    private static MemberCursor BuildCursor(Member last)
     {
         return new MemberCursor { Name = last.Name, Id = last.Id };
     }

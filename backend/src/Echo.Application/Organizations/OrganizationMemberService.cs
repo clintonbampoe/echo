@@ -1,10 +1,10 @@
 using Echo.Application.Members;
+using Echo.Data;
+using Echo.Domain.Organizations;
 using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
-using Echo.Data;
-using Echo.Domain.Organizations;
 
 namespace Echo.Application.Organizations;
 
@@ -176,7 +176,7 @@ public class OrganizationMemberService(
         return new NoContentResult();
     }
 
-    private OrganizationMemberCursor BuildCursor(OrganizationMember last)
+    private static OrganizationMemberCursor BuildCursor(OrganizationMember last)
     {
         return new OrganizationMemberCursor { CreatedAt = last.CreatedAt, Id = last.Id };
     }

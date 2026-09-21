@@ -1,9 +1,9 @@
+using Echo.Data;
+using Echo.Domain.Transactions;
 using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
-using Echo.Data;
-using Echo.Domain.Transactions;
 
 namespace Echo.Application.Transactions;
 
@@ -109,7 +109,7 @@ public class TransactionService(
         return new NoContentResult();
     }
 
-    private TransactionCursor BuildCursor(Transaction last)
+    private static TransactionCursor BuildCursor(Transaction last)
     {
         return new TransactionCursor { TransactionDate = last.TransactionDate, Id = last.Id };
     }

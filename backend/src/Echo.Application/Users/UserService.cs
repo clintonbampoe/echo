@@ -1,9 +1,9 @@
+using Echo.Data;
+using Echo.Domain.Users;
 using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
-using Echo.Data;
-using Echo.Domain.Users;
 
 namespace Echo.Application.Users;
 
@@ -112,7 +112,7 @@ public class UserService(
         return await repository.IsEmailAddressTaken(emailAddress, ct);
     }
 
-    private UserCursor BuildCursor(User last)
+    private static UserCursor BuildCursor(User last)
     {
         return new UserCursor { Name = last.Name, Id = last.Id };
     }

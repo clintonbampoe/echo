@@ -1,9 +1,9 @@
+using Echo.Data;
+using Echo.Domain.Assets;
 using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
-using Echo.Data;
-using Echo.Domain.Assets;
 
 namespace Echo.Application.Assets;
 
@@ -119,7 +119,7 @@ public class AssetService(
         return new SuccessResult<List<AssetSearchResultDto>>(res);
     }
 
-    private AssetCursor BuildCursor(Asset last)
+    private static AssetCursor BuildCursor(Asset last)
     {
         return new AssetCursor { Name = last.Name, Id = last.Id };
     }

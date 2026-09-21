@@ -10,7 +10,7 @@ public static class DbContextExtensions
         IConfiguration configuration
     )
     {
-        var connectionString = ConnectionStringBuilder.Build(configuration);
+        var connectionString = configuration.GetConnectionString("Default");
 
         services.AddDbContext<AppDbContext>(options =>
             options.UseNpgsql(

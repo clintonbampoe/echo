@@ -1,10 +1,10 @@
 using System.Text.Json.Serialization;
 using Echo.Api.Extensions;
-using Echo.Shared.Extensions.DI;
-using Echo.Auth;
 using Echo.Application;
+using Echo.Auth;
 using Echo.Data;
 using Echo.Data.Extensions;
+using Echo.Shared.Extensions.DI;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -30,7 +30,7 @@ builder
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter())
     );
 
-builder.Services.AddCoreServices(builder.Configuration);
+builder.Services.AddCoreServices();
 builder.Services.AddAuthServices(builder.Configuration);
 builder.Services.AddApplicationServices();
 builder.Services.AddInfrastructureServices();

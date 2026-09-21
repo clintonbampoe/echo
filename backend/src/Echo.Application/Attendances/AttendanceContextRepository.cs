@@ -1,14 +1,13 @@
-using Echo.Shared.Query;
 using Echo.Data;
 using Echo.Domain.Attendances;
+using Echo.Shared.Query;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Application.Attendances;
 
 public class AttendanceContextRepository(AppDbContext context)
 {
-    private readonly DbSet<AttendanceContext> _dbSet =
-        context.Set<AttendanceContext>();
+    private readonly DbSet<AttendanceContext> _dbSet = context.Set<AttendanceContext>();
 
     public async Task<List<AttendanceContext>> GetAll(
         Guid congregationId,

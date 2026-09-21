@@ -1,7 +1,7 @@
-using Echo.Shared.Query;
-using Echo.Shared.Utilities;
 using Echo.Data;
 using Echo.Domain.Attendances;
+using Echo.Shared.Query;
+using Echo.Shared.Utilities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Application.Attendances;

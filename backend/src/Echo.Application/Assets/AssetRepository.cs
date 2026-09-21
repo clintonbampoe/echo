@@ -1,14 +1,13 @@
-using Echo.Shared.Query;
 using Echo.Data;
 using Echo.Domain.Assets;
+using Echo.Shared.Query;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Application.Assets;
 
 public class AssetRepository(AppDbContext context)
 {
-    private readonly DbSet<Asset> _dbSet =
-        context.Set<Asset>();
+    private readonly DbSet<Asset> _dbSet = context.Set<Asset>();
 
     public async Task<List<Asset>> List(
         Guid congregationId,
@@ -30,11 +29,7 @@ public class AssetRepository(AppDbContext context)
             .ToListAsync(ct);
     }
 
-    public async Task<Asset?> GetById(
-        Guid id,
-        Guid congregationId,
-        CancellationToken ct = default
-    )
+    public async Task<Asset?> GetById(Guid id, Guid congregationId, CancellationToken ct = default)
     {
         return await _dbSet
             .FilterDeleted()
@@ -43,11 +38,7 @@ public class AssetRepository(AppDbContext context)
             .FirstOrDefaultAsync(ct);
     }
 
-    public async Task<List<Asset>> Search(
-        Guid congregationId,
-        string name,
-        CancellationToken ct
-    )
+    public async Task<List<Asset>> Search(Guid congregationId, string name, CancellationToken ct)
     {
         return await _dbSet
             .AsNoTracking()
@@ -70,10 +61,7 @@ public class AssetRepository(AppDbContext context)
 
 internal static class AssetQueryExtensions
 {
-    internal static IQueryable<Asset> Filter(
-        this IQueryable<Asset> query,
-        AssetFilters filters
-    )
+    internal static IQueryable<Asset> Filter(this IQueryable<Asset> query, AssetFilters filters)
     {
         if (filters.Name is not null)
             query = query.Where(a => EF.Functions.ILike(a.Name, $"%{filters.Name}%"));

@@ -1,10 +1,10 @@
 using Echo.Application.Members;
+using Echo.Data;
+using Echo.Domain.Events;
 using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
-using Echo.Data;
-using Echo.Domain.Events;
 
 namespace Echo.Application.Events;
 
@@ -162,7 +162,7 @@ public class EventAttendanceService(
         return new NoContentResult();
     }
 
-    private EventAttendanceCursor BuildCursor(EventAttendance last)
+    private static EventAttendanceCursor BuildCursor(EventAttendance last)
     {
         return new EventAttendanceCursor { CheckInTime = last.CheckInTime, Id = last.Id };
     }

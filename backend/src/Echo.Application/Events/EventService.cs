@@ -1,11 +1,11 @@
 using Echo.Application.Members;
 using Echo.Application.Organizations;
+using Echo.Data;
+using Echo.Domain.Events;
 using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
-using Echo.Data;
-using Echo.Domain.Events;
 
 namespace Echo.Application.Events;
 
@@ -131,7 +131,7 @@ public class EventService(
         return new SuccessResult<List<EventSearchResultDto>>(res);
     }
 
-    private EventCursor BuildCursor(Event last)
+    private static EventCursor BuildCursor(Event last)
     {
         return new EventCursor { StartDate = last.StartDate, Id = last.Id };
     }

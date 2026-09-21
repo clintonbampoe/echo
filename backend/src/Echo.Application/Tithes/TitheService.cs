@@ -1,10 +1,10 @@
 using Echo.Application.Members;
+using Echo.Data;
+using Echo.Domain.Tithes;
 using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
-using Echo.Data;
-using Echo.Domain.Tithes;
 
 namespace Echo.Application.Tithes;
 
@@ -105,7 +105,7 @@ public class TitheService(
         return new NoContentResult();
     }
 
-    private TitheCursor BuildCursor(Tithe last)
+    private static TitheCursor BuildCursor(Tithe last)
     {
         return new TitheCursor { CollectionDate = last.CollectionDate, Id = last.Id };
     }

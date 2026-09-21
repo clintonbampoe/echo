@@ -1,10 +1,10 @@
 using Echo.Application.Members;
+using Echo.Data;
+using Echo.Domain.Projects;
 using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
-using Echo.Data;
-using Echo.Domain.Projects;
 
 namespace Echo.Application.Projects;
 
@@ -125,7 +125,7 @@ public class ProjectService(
         return new SuccessResult<List<ProjectSearchResultDto>>(res);
     }
 
-    private ProjectCursor BuildCursor(Project last)
+    private static ProjectCursor BuildCursor(Project last)
     {
         return new ProjectCursor { StartDate = last.StartDate, Id = last.Id };
     }

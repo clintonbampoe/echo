@@ -1,6 +1,6 @@
-using Echo.Shared.Query;
 using Echo.Data;
 using Echo.Domain.Congregations;
+using Echo.Shared.Query;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Application.Congregations;
@@ -19,7 +19,7 @@ public class CongregationRepository(AppDbContext context)
         _dbSet.Add(entity);
     }
 
-    public void Delete(Congregation entity)
+    public void SoftDelete(Congregation entity)
     {
         entity.DeletedAt = DateTime.UtcNow;
     }

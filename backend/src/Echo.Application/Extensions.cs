@@ -1,4 +1,3 @@
-
 using Echo.Application.Assets;
 using Echo.Application.Attendances;
 using Echo.Application.Congregations;
@@ -9,17 +8,13 @@ using Echo.Application.Projects;
 using Echo.Application.Tithes;
 using Echo.Application.Transactions;
 using Echo.Application.Users;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Echo.Application;
 
 public static class Extensions
 {
-    public static IServiceCollection AddCoreServices(
-        this IServiceCollection services,
-        IConfiguration configuration
-    )
+    public static IServiceCollection AddCoreServices(this IServiceCollection services)
     {
         // Members
         services.AddScoped<MemberRepository>();

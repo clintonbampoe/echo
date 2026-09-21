@@ -8,8 +8,6 @@ public interface IAssetCategoryMapper
     AssetCategory ToEntity(AssetCategoryCreateDto dto);
     List<AssetCategoryResponseDto> ToListDto(List<AssetCategory> entities);
 
-    List<AssetCategorySearchResultDto> ToSearchDto(
-        List<AssetCategory> entities
-    );
+    List<AssetCategorySearchResultDto> ToSearchDto(List<AssetCategory> entities);
     void Patch(AssetCategoryUpdateDto dto, AssetCategory entity);
 }

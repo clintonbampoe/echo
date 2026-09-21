@@ -1,10 +1,10 @@
 using Echo.Application.Members;
+using Echo.Data;
+using Echo.Domain.Events;
 using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
-using Echo.Data;
-using Echo.Domain.Events;
 
 namespace Echo.Application.Events;
 
@@ -162,7 +162,7 @@ public class EventRegistrationService(
         return new NoContentResult();
     }
 
-    private EventRegistrationCursor BuildCursor(EventRegistration last)
+    private static EventRegistrationCursor BuildCursor(EventRegistration last)
     {
         return new EventRegistrationCursor
         {

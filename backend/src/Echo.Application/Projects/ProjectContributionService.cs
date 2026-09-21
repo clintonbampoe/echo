@@ -1,9 +1,9 @@
+using Echo.Data;
+using Echo.Domain.Projects;
 using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
-using Echo.Data;
-using Echo.Domain.Projects;
 
 namespace Echo.Application.Projects;
 
@@ -105,7 +105,7 @@ public class ProjectContributionService(
         return new NoContentResult();
     }
 
-    private ProjectContributionCursor BuildCursor(ProjectContribution last)
+    private static ProjectContributionCursor BuildCursor(ProjectContribution last)
     {
         return new ProjectContributionCursor
         {

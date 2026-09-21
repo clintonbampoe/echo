@@ -1,9 +1,9 @@
+using Echo.Data;
+using Echo.Domain.Organizations;
 using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
-using Echo.Data;
-using Echo.Domain.Organizations;
 
 namespace Echo.Application.Organizations;
 
@@ -104,7 +104,7 @@ public class OrganizationService(
         return new SuccessResult<List<OrganizationSearchResultDto>>(res);
     }
 
-    private OrganizationCursor BuildCursor(Organization last)
+    private static OrganizationCursor BuildCursor(Organization last)
     {
         return new OrganizationCursor { Name = last.Name, Id = last.Id };
     }

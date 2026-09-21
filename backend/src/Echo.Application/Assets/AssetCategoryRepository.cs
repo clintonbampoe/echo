@@ -1,19 +1,15 @@
-using Echo.Shared.Query;
 using Echo.Data;
 using Echo.Domain.Assets;
+using Echo.Shared.Query;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Application.Assets;
 
 public class AssetCategoryRepository(AppDbContext context)
 {
-    private readonly DbSet<AssetCategory> _dbSet =
-        context.Set<AssetCategory>();
+    private readonly DbSet<AssetCategory> _dbSet = context.Set<AssetCategory>();
 
-    public async Task<List<AssetCategory>> GetAll(
-        Guid congregationId,
-        CancellationToken ct
-    )
+    public async Task<List<AssetCategory>> GetAll(Guid congregationId, CancellationToken ct)
     {
         return await _dbSet
             .AsNoTracking()
@@ -22,11 +18,7 @@ public class AssetCategoryRepository(AppDbContext context)
             .ToListAsync(ct);
     }
 
-    public async Task<AssetCategory?> GetById(
-        Guid congregationId,
-        int id,
-        CancellationToken ct
-    )
+    public async Task<AssetCategory?> GetById(Guid congregationId, int id, CancellationToken ct)
     {
         return await _dbSet
             .FilterDeleted()

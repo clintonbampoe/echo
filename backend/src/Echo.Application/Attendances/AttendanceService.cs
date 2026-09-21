@@ -1,9 +1,9 @@
+using Echo.Data;
+using Echo.Domain.Attendances;
 using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
-using Echo.Data;
-using Echo.Domain.Attendances;
 
 namespace Echo.Application.Attendances;
 
@@ -109,7 +109,7 @@ public class AttendanceService(
         return new NoContentResult();
     }
 
-    private AttendanceCursor BuildCursor(Attendance last)
+    private static AttendanceCursor BuildCursor(Attendance last)
     {
         return new AttendanceCursor { ForDate = last.ForDate, Id = last.Id };
     }
