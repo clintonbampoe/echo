@@ -7,9 +7,9 @@ COPY ["backend/Directory.Packages.props", "."]
 COPY ["backend/src/Echo.Api/Echo.Api.csproj", "./src/Echo.Api/"]
 COPY ["backend/src/Echo.Application/Echo.Application.csproj", "./src/Echo.Application/"]
 COPY ["backend/src/Echo.Auth/Echo.Auth.csproj", "./src/Echo.Auth/"]
-COPY ["backend/src/Echo.Core/Echo.Core.csproj", "./src/Echo.Core/"]
+COPY ["backend/src/Echo.Shared/Echo.Shared.csproj", "./src/Echo.Shared/"]
 COPY ["backend/src/Echo.Domain/Echo.Domain.csproj", "./src/Echo.Domain/"]
-COPY ["backend/src/Echo.Infrastructure/Echo.Infrastructure.csproj", "./src/Echo.Infrastructure/"]
+COPY ["backend/src/Echo.Data/Echo.Data.csproj", "./src/Echo.Data/"]
 COPY "backend/.config/dotnet-tools.json" "/backend/.config/"
 
 RUN dotnet restore src/Echo.Api/Echo.Api.csproj

@@ -41,14 +41,14 @@ services:
     logging: *default-logging
     environment:
       POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_USERNAME: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - postgres-data:/var/lib/postgresql
       - ./infra/postgres/init/extensions.sql:/docker-entrypoint-initdb.d/extensions.sql
       - ./infra/postgres/backup/db_dumps:/db_dumps:ro
     healthcheck:
-      test: [CMD-SHELL, 'pg_isready -U ${Database__Username} -d ${Database__Name}']
+      test: [CMD-SHELL, 'pg_isready -U ${DB_USERNAME} -d ${DB_NAME}']
       interval: 5s
       timeout: 5s
       retries: 5
@@ -98,16 +98,12 @@ services:
       dockerfile: backend/src/Echo.Api/Dockerfile
     logging: *default-logging
     environment:
-      Database__Host: ${DB_HOST}
-      Database__Port: 5432
-      Database__Name: ${DB_NAME}
-      Database__Username: ${DB_USERNAME}
-      Database__Password: ${DB_PASSWORD}
+      ConnectionStrings__Default: ${ConnectionStrings__Default}
       ASPNETCORE_ENVIRONMENT: Development
     entrypoint:
       - sh
       - -c
-      - dotnet tool restore && dotnet ef database update --project src/Echo.Infrastructure
+      - dotnet tool restore && dotnet ef database update --project src/Echo.Data
     depends_on:
       db:
         condition: service_healthy

@@ -1,10 +1,11 @@
 FROM node:20-alpine AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci --legacy-peer-deps
+RUN npm ci 
 
 FROM deps AS build
 COPY . .
+RUN npm run lint
 RUN npm run build
 
 FROM nginx:alpine AS runtime
