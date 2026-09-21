@@ -1,6 +1,6 @@
-using Echo.Application.HttpResults;
-using Echo.Application.Services.Hashing;
-using Echo.Core.Users;
+using Echo.Shared.HttpResults;
+using Echo.Shared.Services.Hashing;
+using Echo.Application.Users;
 using Echo.Data;
 
 namespace Echo.Auth.Sessions;

@@ -1,16 +1,16 @@
 <Solution>
   <Folder Name="/tests/">
     <Project Path="tests/Echo.Api.Tests/Echo.Api.Tests.csproj" />
-    <Project Path="tests/Echo.Application.Tests/Echo.Application.Tests.csproj" />
     <Project Path="tests/Echo.Auth.Tests/Echo.Auth.Tests.csproj" />
-    <Project Path="tests/Echo.Core.Tests/Echo.Core.Tests.csproj" />
+    <Project Path="tests\Echo.Application.Tests\Echo.Application.Tests.csproj" />
+    <Project Path="tests\Echo.Shared.Tests\Echo.Shared.Tests.csproj" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/Echo.Api/Echo.Api.csproj" />
     <Project Path="src/Echo.Auth/Echo.Auth.csproj" />
-    <Project Path="src/Echo.Core/Echo.Core.csproj" />
     <Project Path="src/Echo.Domain/Echo.Domain.csproj" />
     <Project Path="src\Echo.Application\Echo.Application.csproj" />
     <Project Path="src\Echo.Data\Echo.Data.csproj" />
+    <Project Path="src\Echo.Shared\Echo.Shared.csproj" />
   </Folder>
 </Solution>

@@ -1,6 +1,6 @@
-using Echo.Application.Options.Jwt;
-using Echo.Application.Services.Generators;
-using Echo.Application.Services.Hashing;
+using Echo.Shared.Options.Jwt;
+using Echo.Shared.Services.Generators;
+using Echo.Shared.Services.Hashing;
 using Echo.Domain.Auth;
 using Microsoft.Extensions.Options;
 

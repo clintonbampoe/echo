@@ -1,4 +1,4 @@
-using Echo.Application.Models;
+using Echo.Shared.Models;
 
 namespace Echo.Auth.EmailVerifications;
 

@@ -7,20 +7,11 @@
 
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Riok.Mapperly" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Echo.Domain\Echo.Domain.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Asp.Versioning.Mvc" />
-    <PackageReference Include="BCrypt.Net-Next" />
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" />
-    <PackageReference Include="Resend" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Configuration\" />
+    <ProjectReference Include="..\Echo.Shared\Echo.Shared.csproj" />
+    <ProjectReference Include="..\Echo.Data\Echo.Data.csproj" />
   </ItemGroup>
 </Project>

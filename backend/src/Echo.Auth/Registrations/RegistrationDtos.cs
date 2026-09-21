@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
-using Echo.Core.Congregations;
-using Echo.Core.Users;
+using Echo.Application.Congregations;
+using Echo.Application.Users;
 
 namespace Echo.Auth.Registrations;
 

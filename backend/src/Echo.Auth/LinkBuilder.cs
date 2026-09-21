@@ -1,4 +1,4 @@
-using Echo.Application.Options.Frontend;
+using Echo.Shared.Options.Frontend;
 using Microsoft.Extensions.Options;
 
 namespace Echo.Auth;

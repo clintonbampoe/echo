@@ -1,6 +1,6 @@
-using Echo.Application.HttpResults;
-using Echo.Application.Services.Generators;
-using Echo.Application.Services.Hashing;
+using Echo.Shared.HttpResults;
+using Echo.Shared.Services.Generators;
+using Echo.Shared.Services.Hashing;
 using Echo.Data;
 using Echo.Domain.Auth;
 using Echo.Domain.Users;

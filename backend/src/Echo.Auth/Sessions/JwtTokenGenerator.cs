@@ -1,8 +1,8 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using Echo.Application.Options.Jwt;
-using Echo.Application.Services.Security;
-using Echo.Core.Users;
+using Echo.Shared.Options.Jwt;
+using Echo.Shared.Services.Security;
+using Echo.Application.Users;
 using Microsoft.Extensions.Options;
 
 namespace Echo.Auth.Sessions;

@@ -1,10 +1,10 @@
-using Echo.Application.HttpResults;
-using Echo.Application.Services.Generators;
-using Echo.Application.Services.Hashing;
+using Echo.Shared.HttpResults;
+using Echo.Shared.Services.Generators;
+using Echo.Shared.Services.Hashing;
 using Echo.Auth.EmailVerifications;
 using Echo.Auth.Invitations;
-using Echo.Core.Congregations;
-using Echo.Core.Users;
+using Echo.Application.Congregations;
+using Echo.Application.Users;
 using Echo.Data;
 using Echo.Domain.Users;
 

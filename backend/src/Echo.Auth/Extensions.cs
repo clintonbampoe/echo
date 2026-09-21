@@ -1,6 +1,6 @@
-using Echo.Application.Options.Frontend;
-using Echo.Application.Options.Jwt;
-using Echo.Application.Services.Email;
+using Echo.Shared.Options.Frontend;
+using Echo.Shared.Options.Jwt;
+using Echo.Shared.Services.Email;
 using Echo.Auth.EmailVerifications;
 using Echo.Auth.Invitations;
 using Echo.Auth.Passwords;

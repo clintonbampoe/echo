@@ -1,4 +1,4 @@
-using Echo.Application.Query;
+using Echo.Shared.Query;
 using Echo.Data;
 using Echo.Domain.Auth;
 using Microsoft.EntityFrameworkCore;

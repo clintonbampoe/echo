@@ -1,9 +1,9 @@
-using Echo.Application.HttpResults;
-using Echo.Application.Services.Email;
-using Echo.Application.Services.Generators;
-using Echo.Application.Services.Hashing;
+using Echo.Shared.HttpResults;
+using Echo.Shared.Services.Email;
+using Echo.Shared.Services.Generators;
+using Echo.Shared.Services.Hashing;
 using Echo.Auth.Sessions;
-using Echo.Core.Users;
+using Echo.Application.Users;
 using Echo.Data;
 using Echo.Domain.Auth;
 using Microsoft.Extensions.DependencyInjection;

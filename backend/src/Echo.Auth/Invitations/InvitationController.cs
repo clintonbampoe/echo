@@ -1,4 +1,4 @@
-using Echo.Application.Extensions;
+using Echo.Shared.Extensions;
 using Echo.Domain.Users;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;

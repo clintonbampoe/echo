@@ -1,10 +1,10 @@
 using System.Security.Cryptography;
 using System.Text;
-using Echo.Application.Options.Jwt;
-using Echo.Application.Services.Security;
+using Echo.Application.Users;
 using Echo.Auth.Sessions;
-using Echo.Core.Users;
 using Echo.Domain.Users;
+using Echo.Shared.Options.Jwt;
+using Echo.Shared.Services.Security;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Time.Testing;
 

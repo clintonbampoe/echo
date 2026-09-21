@@ -1,8 +1,8 @@
 using System.Text.Json.Serialization;
 using Echo.Api.Extensions;
-using Echo.Application.Extensions.DI;
+using Echo.Shared.Extensions.DI;
 using Echo.Auth;
-using Echo.Core;
+using Echo.Application;
 using Echo.Data;
 using Echo.Data.Extensions;
 using Microsoft.EntityFrameworkCore;
