@@ -1,0 +1,48 @@
+using Echo.Domain.Transactions;
+using Riok.Mapperly.Abstractions;
+
+namespace Echo.Application.Transactions;
+
+[Mapper]
+public partial class TransactionCategoryMapper : ITransactionCategoryMapper
+{
+    [MapperIgnoreSource(nameof(entity.Congregation))]
+    [MapperIgnoreSource(nameof(entity.CongregationId))]
+    [MapperIgnoreSource(nameof(entity.CreatedAt))]
+    [MapperIgnoreSource(nameof(entity.DeletedAt))]
+    public partial TransactionCategoryResponseDto ToDto(TransactionCategory entity);
+
+    [MapperIgnoreTarget(nameof(TransactionCategory.Congregation))]
+    [MapperIgnoreTarget(nameof(TransactionCategory.CongregationId))]
+    [MapperIgnoreTarget(nameof(TransactionCategory.Id))]
+    [MapperIgnoreTarget(nameof(TransactionCategory.CreatedAt))]
+    [MapperIgnoreTarget(nameof(TransactionCategory.DeletedAt))]
+    public partial TransactionCategory ToEntity(TransactionCategoryCreateDto dto);
+
+    public partial List<TransactionCategoryResponseDto> ToListDto(
+        List<TransactionCategory> entities
+    );
+
+    public List<TransactionCategorySearchResponseDto> ToSearchDto(
+        List<TransactionCategory> entities
+    )
+    {
+        var res = entities
+            .Select(x => new TransactionCategorySearchResponseDto
+            {
+                Id = x.Id,
+                Name = x.Name,
+                Type = x.CategoryType,
+            })
+            .ToList();
+        return res;
+    }
+
+    public void Patch(TransactionCategoryUpdateDto dto, TransactionCategory entity)
+    {
+        if (dto.Name != null)
+            entity.Name = dto.Name;
+        if (dto.CategoryType.HasValue)
+            entity.CategoryType = dto.CategoryType.Value;
+    }
+}

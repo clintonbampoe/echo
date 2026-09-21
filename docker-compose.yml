@@ -14,11 +14,7 @@ services:
       dockerfile: backend/src/Echo.Api/Dockerfile
     logging: *default-logging
     environment:
-      Database__Host: db
-      Database__Port: ${Database__Port}
-      Database__Name: ${Database__Name}
-      Database__Username: ${Database__Username}
-      Database__Password: ${Database__Password}
+      ConnectionStrings__Default: ${ConnectionStrings__Default}
       Jwt__PrivateKey: ${Jwt__PrivateKey}
       Jwt__PublicKey: ${Jwt__PublicKey}
       # Only set during a key rotation grace period; empty the rest of the time.
@@ -44,15 +40,15 @@ services:
     image: postgres:18
     logging: *default-logging
     environment:
-      POSTGRES_DB: ${Database__Name}
-      POSTGRES_USER: ${Database__Username}
-      POSTGRES_PASSWORD: ${Database__Password}
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USERNAME: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - postgres-data:/var/lib/postgresql
       - ./infra/postgres/init/extensions.sql:/docker-entrypoint-initdb.d/extensions.sql
       - ./infra/postgres/backup/db_dumps:/db_dumps:ro
     healthcheck:
-      test: [CMD-SHELL, 'pg_isready -U ${Database__Username} -d ${Database__Name}']
+      test: [CMD-SHELL, 'pg_isready -U ${DB_USERNAME} -d ${DB_NAME}']
       interval: 5s
       timeout: 5s
       retries: 5
@@ -80,9 +76,9 @@ services:
       dockerfile: infra/postgres/backup/Dockerfile
     logging: *default-logging
     environment:
-      DB_NAME: ${Database__Name}
-      DB_USERNAME: ${Database__Username}
-      PGPASSWORD: ${Database__Password}
+      DB_NAME: ${DB_NAME}
+      DB_USERNAME: ${DB_USERNAME}
+      PGPASSWORD: ${DB_PASSWORD}
     volumes:
       - ./infra/postgres/backup/backup.sh:/app/backup.sh:ro
       - ./infra/postgres/backup/restore.sh:/app/restore.sh:ro
@@ -102,16 +98,13 @@ services:
       dockerfile: backend/src/Echo.Api/Dockerfile
     logging: *default-logging
     environment:
-      Database__Host: db
-      Database__Port: 5432
-      Database__Name: ${Database__Name}
-      Database__Username: ${Database__Username}
-      Database__Password: ${Database__Password}
+      ConnectionStrings__Default: ${ConnectionStrings__Default}
       ASPNETCORE_ENVIRONMENT: Development
     entrypoint:
       - sh
       - -c
-      - dotnet tool restore && dotnet ef database update --project src/Echo.Infrastructure
+      - dotnet tool restore && dotnet ef database update --project src/Echo.Data --startup-project
+        src/Echo.Api
     depends_on:
       db:
         condition: service_healthy
