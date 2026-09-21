@@ -61,6 +61,5 @@ Thumbs.db
 dumps/
 
 # configuration files (.NET)
-appsettings.*.json
 appsettings.Development.json
 appsettings.Production.json

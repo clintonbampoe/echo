@@ -103,7 +103,8 @@ services:
     entrypoint:
       - sh
       - -c
-      - dotnet tool restore && dotnet ef database update --project src/Echo.Data
+      - dotnet tool restore && dotnet ef database update --project src/Echo.Data --startup-project
+        src/Echo.Api
     depends_on:
       db:
         condition: service_healthy
