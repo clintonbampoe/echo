@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Echo.Shared\Echo.Shared.csproj" />
     <ProjectReference Include="..\Echo.Application\Echo.Application.csproj" />
-    <ProjectReference Include="..\Echo.Core\Echo.Core.csproj" />
   </ItemGroup>
 </Project>

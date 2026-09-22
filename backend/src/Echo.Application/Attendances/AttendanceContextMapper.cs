@@ -1,0 +1,43 @@
+using Echo.Domain.Attendances;
+using Riok.Mapperly.Abstractions;
+
+namespace Echo.Application.Attendances;
+
+[Mapper]
+public partial class AttendanceContextMapper : IAttendanceContextMapper
+{
+    [MapProperty(
+        nameof(AttendanceContext.AttendanceType.Name),
+        nameof(AttendanceContextResponseDto.AttendanceTypeName)
+    )]
+    [MapperIgnoreSource(nameof(entity.Congregation))]
+    [MapperIgnoreSource(nameof(entity.CongregationId))]
+    [MapperIgnoreSource(nameof(entity.AttendanceTypeId))]
+    [MapperIgnoreSource(nameof(entity.DeletedAt))]
+    [MapperIgnoreSource(nameof(entity.CreatedAt))]
+    public partial AttendanceContextResponseDto ToDto(AttendanceContext entity);
+
+    [MapperIgnoreTarget(nameof(AttendanceContext.Congregation))]
+    [MapperIgnoreTarget(nameof(AttendanceContext.CongregationId))]
+    [MapperIgnoreTarget(nameof(AttendanceContext.Id))]
+    [MapperIgnoreTarget(nameof(AttendanceType))]
+    [MapperIgnoreTarget(nameof(AttendanceContext.CreatedAt))]
+    [MapperIgnoreTarget(nameof(AttendanceContext.DeletedAt))]
+    public partial AttendanceContext ToEntity(AttendanceContextCreateDto dto);
+
+    public partial List<AttendanceContextResponseDto> ToListDto(List<AttendanceContext> entities);
+
+    public List<AttendanceContextSearchResultDto> ToSearchDto(List<AttendanceContext> entities)
+    {
+        var res = entities
+            .Select(e => new AttendanceContextSearchResultDto() { Id = e.Id, Name = e.Name })
+            .ToList();
+        return res;
+    }
+
+    public void Patch(AttendanceContextUpdateDto dto, AttendanceContext entity)
+    {
+        if (dto.Name != null)
+            entity.Name = dto.Name;
+    }
+}

@@ -1,5 +1,5 @@
-using Echo.Application.Options.Jwt;
-using Echo.Application.Services.Security;
+using Echo.Shared.Options.Jwt;
+using Echo.Shared.Services.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 

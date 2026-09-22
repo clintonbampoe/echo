@@ -2,11 +2,11 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
-using Echo.Application.Options.Jwt;
-using Echo.Application.Services.Security;
-using Echo.Auth.Services;
-using Echo.Core.Dtos;
-using Echo.Domain.Enums;
+using Echo.Application.Users;
+using Echo.Auth.Sessions;
+using Echo.Domain.Users;
+using Echo.Shared.Options.Jwt;
+using Echo.Shared.Services.Security;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
@@ -103,7 +103,7 @@ public class AccessTokenRotationTests
         Assert.True(result.IsValid, result.Exception?.Message);
     }
 
-    private static AccessTokenGenerator CreateGenerator(JwtOptions options, JwtKeyRing keyRing) =>
+    private static JwtTokenGenerator CreateGenerator(JwtOptions options, JwtKeyRing keyRing) =>
         new(Options.Create(options), TimeProvider.System, keyRing);
 
     private static string IssueToken(JwtOptions options)
