@@ -1,52 +1,38 @@
-using System.Text.Json.Serialization;
 using Echo.Api.Extensions;
 using Echo.Application;
 using Echo.Auth;
 using Echo.Data;
-using Echo.Shared.Extensions.DI;
-using Microsoft.EntityFrameworkCore;
+using Echo.ServiceDefaults;
+using Echo.Shared.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.AddServiceDefaults();
 builder.Configuration.AddEnvironmentVariables();
 
-builder.Services.AddDbContext(builder.Configuration);
-builder.Services.AddSwaggerDocumentation();
 builder.Services.AddOpenApi();
-builder.Services.AddApiVersioningSetup();
-builder.Services.AddRateLimitingToEndpoints();
-builder.Services.AddHealthCheckServices();
-builder.Services.AddJwtAuthentication(builder.Configuration);
-builder.Services.AddFrontendCors(builder.Configuration);
-builder.Services.AddRouting(options =>
-{
-    options.LowercaseUrls = true;
-    options.LowercaseQueryStrings = true;
-});
-
-builder
-    .Services.AddControllers()
-    .AddJsonOptions(options =>
-        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter())
-    );
-
-builder.Services.AddCoreServices();
-builder.Services.AddAuthServices(builder.Configuration);
 builder.Services.AddApplicationServices();
-builder.Services.AddInfrastructureServices();
+builder.Services.AddAuthServices(builder.Configuration);
+builder.Services.AddDataServices();
+builder.Services.AddSharedServices();
+
+builder.Services.ConfigureApiRouting();
+builder.Services.ConfigureControllerOptions();
+builder.Services.ConfigureSwaggerDocs();
+builder.Services.ConfigureDbContext(builder.Configuration);
+builder.Services.ConfigureApiVersioning();
+builder.Services.ConfigureRateLimits();
+builder.Services.ConfigureHealthChecks();
+builder.Services.ConfigureJwtAuthentication(builder.Configuration);
+builder.Services.ConfigureCors(builder.Configuration);
 
 var app = builder.Build();
-
-if (builder.Configuration.GetValue<bool>("RunMigrationsOnStartup"))
-{
-    using var scope = app.Services.CreateScope();
-    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    await dbContext.Database.MigrateAsync();
-}
+await Database.RunMigrationsOnStartup(app, builder.Configuration);
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwaggerDocumentation();
-    app.UseScalarDocumentation();
+    app.UseSwaggerUi();
+    app.UseScalarUi();
     app.MapOpenApi().AllowAnonymous();
 }
 

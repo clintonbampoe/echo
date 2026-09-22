@@ -1,11 +1,11 @@
-using Echo.Shared.Options.Frontend;
-using Echo.Shared.Options.Jwt;
-using Echo.Shared.Services.Email;
 using Echo.Auth.EmailVerifications;
 using Echo.Auth.Invitations;
 using Echo.Auth.Passwords;
 using Echo.Auth.Registrations;
 using Echo.Auth.Sessions;
+using Echo.Shared.Options.Frontend;
+using Echo.Shared.Options.Jwt;
+using Echo.Shared.Services.Email;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Resend;

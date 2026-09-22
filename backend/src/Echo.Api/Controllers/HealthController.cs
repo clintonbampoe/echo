@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using static Echo.Api.Extensions.HealthCheckExtensions;
+using static Echo.Api.Extensions.Health;
 
 namespace Echo.Api.Controllers;
 

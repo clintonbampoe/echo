@@ -14,7 +14,7 @@ services:
       dockerfile: backend/src/Echo.Api/Dockerfile
     logging: *default-logging
     environment:
-      ConnectionStrings__Default: ${ConnectionStrings__Default}
+      ConnectionStrings__echodb: ${ConnectionStrings__echodb}
       Jwt__PrivateKey: ${Jwt__PrivateKey}
       Jwt__PublicKey: ${Jwt__PublicKey}
       # Only set during a key rotation grace period; empty the rest of the time.
@@ -98,7 +98,7 @@ services:
       dockerfile: backend/src/Echo.Api/Dockerfile
     logging: *default-logging
     environment:
-      ConnectionStrings__Default: ${ConnectionStrings__Default}
+      ConnectionStrings__echodb: ${ConnectionStrings__echodb}
       ASPNETCORE_ENVIRONMENT: Development
     entrypoint:
       - sh
