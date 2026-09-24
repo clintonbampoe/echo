@@ -1,0 +1,5 @@
+{
+  "appHost": {
+    "path": "Echo.AppHost.csproj"
+  }
+}

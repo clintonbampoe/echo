@@ -1,29 +1,26 @@
 ---
 services:
   api:
-    build:
-      target: build
-    working_dir: /src
-    command: dotnet run --project backend/src/Echo.Api/Echo.Api.csproj --urls http://0.0.0.0:8080
     environment:
       ASPNETCORE_ENVIRONMENT: Development
       DOTNET_USE_POLLING_FILE_WATCHER: 'true'
     volumes:
-      - ./backend:/src/backend
-      - /src/backend/src/Echo.Api/bin
-      - /src/backend/src/Echo.Api/obj
-      - /src/backend/src/Echo.Application/bin
-      - /src/backend/src/Echo.Application/obj
-      - /src/backend/src/Echo.Auth/bin
-      - /src/backend/src/Echo.Auth/obj
-      - /src/backend/src/Echo.Core/bin
-      - /src/backend/src/Echo.Core/obj
-      - /src/backend/src/Echo.Domain/bin
-      - /src/backend/src/Echo.Domain/obj
-      - /src/backend/src/Echo.Infrastructure/bin
-      - /src/backend/src/Echo.Infrastructure/obj
+      - /build/src/Echo.Api/bin
+      - /build/src/Echo.Api/obj
+      - /build/src/Echo.Application/bin
+      - /build/src/Echo.Application/obj
+      - /build/src/Echo.Auth/bin
+      - /build/src/Echo.Auth/obj
+      - /build/src/Echo.Shared/bin
+      - /build/src/Echo.Shared/obj
+      - /build/src/Echo.Domain/bin
+      - /build/src/Echo.Domain/obj
+      - /build/src/Echo.Data/bin
+      - /build/src/Echo.Data/obj
+      - /build/src/Echo.ServiceDefaults/obj
+      - /build/src/Echo.ServiceDefaults/bin
       - nuget-cache:/root/.nuget/packages
-    ports: [5025:8080]
+    ports: [5025:5025]
   db:
     ports: [5432:5432]
   nginx:

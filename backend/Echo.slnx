@@ -7,8 +7,11 @@
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/Echo.Api/Echo.Api.csproj" />
+    <Project Path="src/Echo.AppHost/Echo.AppHost.csproj" />
     <Project Path="src/Echo.Auth/Echo.Auth.csproj" />
     <Project Path="src/Echo.Domain/Echo.Domain.csproj" />
+    <Project Path="src/Echo.MigrationService/Echo.MigrationService.csproj" />
+    <Project Path="src/Echo.ServiceDefaults/Echo.ServiceDefaults.csproj" />
     <Project Path="src\Echo.Application\Echo.Application.csproj" />
     <Project Path="src\Echo.Data\Echo.Data.csproj" />
     <Project Path="src\Echo.Shared\Echo.Shared.csproj" />

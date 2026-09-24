@@ -19,4 +19,8 @@
     <ProjectReference Include="..\Echo.Domain\Echo.Domain.csproj" />
     <ProjectReference Include="..\Echo.Shared\Echo.Shared.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Migrations\" />
+  </ItemGroup>
 </Project>
