@@ -1,6 +1,6 @@
 
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS restore
-WORKDIR /backend
+WORKDIR /build
 
 COPY ["backend/Echo.slnx", "."]
 COPY ["backend/Directory.Packages.props", "."]
@@ -10,41 +10,31 @@ COPY ["backend/src/Echo.Auth/Echo.Auth.csproj", "./src/Echo.Auth/"]
 COPY ["backend/src/Echo.Shared/Echo.Shared.csproj", "./src/Echo.Shared/"]
 COPY ["backend/src/Echo.Domain/Echo.Domain.csproj", "./src/Echo.Domain/"]
 COPY ["backend/src/Echo.Data/Echo.Data.csproj", "./src/Echo.Data/"]
+COPY ["backend/src/Echo.ServiceDefaults/Echo.ServiceDefaults.csproj", "./src/Echo.ServiceDefaults/"]
 COPY "backend/.config/dotnet-tools.json" "/backend/.config/"
 
 RUN dotnet restore src/Echo.Api/Echo.Api.csproj
 
 FROM restore AS build
-COPY backend/ .
+COPY backend/ /build
 
-RUN dotnet tool restore
 RUN dotnet build src/Echo.Api/Echo.Api.csproj -c Release --no-restore
-
-# curl is required by the api healthcheck in docker-compose.yml. The dev override
-# (docker-compose.override.yml) builds the api service from this stage, so it needs
-# curl too -- installing it only in the runtime stage would break the dev stack.
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends curl \
-    && rm -rf /var/lib/apt/lists/*
 
 FROM build AS publish
 RUN dotnet publish src/Echo.Api/Echo.Api.csproj \
-    -c Release \
-    --no-build \
-    -o /app/publish
+  -c Release \
+  --no-build \
+  -o /app/publish
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
 
-# The runtime image is a fresh aspnet base -- packages from the build stage are not
-# carried over, so curl must be installed again for the healthcheck to work in prod.
+# Curl is installed on runtime image to enable health checks
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends curl \
-    && rm -rf /var/lib/apt/lists/*
+  && apt-get install -y --no-install-recommends curl \
+  && rm -rf /var/lib/apt/lists/*
 
 COPY --from=publish /app/publish .
-
-EXPOSE 8080
-ENV ASPNETCORE_URLS=http://0.0.0.0:8080
+ENV ASPNETCORE_URLS=http://0.0.0.0:5025
 
 ENTRYPOINT [ "dotnet", "Echo.Api.dll" ]

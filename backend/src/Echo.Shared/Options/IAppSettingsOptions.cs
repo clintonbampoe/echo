@@ -1,4 +1,4 @@
-namespace Echo.Shared.Options.Frontend;
+namespace Echo.Shared.Options;
 
 public interface IAppSettingsOptions
 {

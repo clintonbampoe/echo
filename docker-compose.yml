@@ -27,11 +27,10 @@ services:
       Resend__ApiKey: ${Resend__ApiKey}
       RunMigrationsOnStartup: ${RunMigrationsOnStartup}
     healthcheck:
-      test: [CMD, curl, -f, http://localhost:8080/api/health/live]
+      test: [CMD, curl, -f, http://localhost:5025/api/health/live]
       interval: 5s
       timeout: 5s
       retries: 5
-      start_period: 60s
     depends_on:
       db:
         condition: service_healthy
@@ -94,17 +93,10 @@ services:
   migrator:
     build:
       context: .
-      target: build
-      dockerfile: backend/src/Echo.Api/Dockerfile
+      dockerfile: backend/src/Echo.MigrationService/Dockerfile
     logging: *default-logging
     environment:
       ConnectionStrings__echodb: ${ConnectionStrings__echodb}
-      ASPNETCORE_ENVIRONMENT: Development
-    entrypoint:
-      - sh
-      - -c
-      - dotnet tool restore && dotnet ef database update --project src/Echo.Data --startup-project
-        src/Echo.Api
     depends_on:
       db:
         condition: service_healthy
