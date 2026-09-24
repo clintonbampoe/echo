@@ -21,8 +21,7 @@ export interface ExportOptions {
   /** Column definitions: key = object property, label = header text */
   columns: Array<{ key: string; label: string }>;
   /** Row data — each object must have all keys listed in `columns` */
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  rows: Record<string, any>[];
+  rows: Record<string, unknown>[];
 }
 
 // ─── CSV ──────────────────────────────────────────────────────────────────────
@@ -32,8 +31,7 @@ export interface ExportOptions {
  */
 export function buildCsv(
   columns: ExportOptions['columns'],
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  rows: Record<string, any>[]
+  rows: Record<string, unknown>[]
 ): string {
   const escape = (val: unknown): string => {
     const str = val == null ? '' : String(val);

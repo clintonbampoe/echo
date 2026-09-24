@@ -1,33 +1,66 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useLayout } from '../hooks/useLayout';
-import { deleteTitheRecord, getTitheRecords, saveTitheRecord } from '../services/titheService';
-import { getMembers } from '../services/attendanceService';
-import type { TitheRecord } from '../types/tithe';
-import type { Member } from '../types/attendance';
+import {
+  useTithes,
+  useCreateTithe,
+  useUpdateTithe,
+  useDeleteTithe,
+} from '../hooks/useTithes';
+import { useMembers } from '../hooks/useMembers';
+import type { Tithe as TitheItem, MonthOfYear, PaymentMethod } from '../types/finance';
 import { RecordIcon, CloseIcon } from './Icons';
 import DeleteConfirmModal from './common/DeleteConfirmModal';
 import '../styles/Tithe.css';
 
-const ITEMS_PER_PAGE = 5;
+const ITEMS_PER_PAGE = 10;
 
-const MONTHS = [
+const MONTHS: MonthOfYear[] = [
   'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December'
 ];
 
-const Tithe: React.FC = () => {
-  const { setTitle, setCtas } = useLayout();
+interface FormState {
+  memberId: string;
+  amount: string;
+  paymentMethod: PaymentMethod;
+  forMonth: MonthOfYear;
+  forYear: number;
+  collectionDate: string;
+  description: string;
+}
 
-  const [records, setRecords] = useState<TitheRecord[]>([]);
+const Tithe: React.FC = () => {
+  const { setTitle, setCtas, searchQuery, setSearchQuery } = useLayout();
+
   const [selectedMonth, setSelectedMonth] = useState<string>('');
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const [currentPage, setCurrentPage] = useState<number>(1);
 
-  const [members, setMembers] = useState<Member[]>([]);
-  const [showModal, setShowModal] = useState(false);
-  const [editingRecord, setEditingRecord] = useState<TitheRecord | null>(null);
+  // ── Queries & Mutations ───────────────────────────────────────────────────
+  const filters = useMemo(() => ({
+    year: selectedYear,
+    month: (selectedMonth as MonthOfYear) || undefined,
+  }), [selectedYear, selectedMonth]);
 
-  const [formData, setFormData] = useState({
+  const { data: tithesData, isLoading: isLoadingTithes } = useTithes(filters);
+  const records = useMemo(() => tithesData?.data || [], [tithesData?.data]);
+
+  // Full year data for chart overview
+  const { data: allYearTithesData } = useTithes({ year: selectedYear }, 500);
+  const yearRecords = useMemo(() => allYearTithesData?.data || [], [allYearTithesData?.data]);
+
+  const { data: membersResponse } = useMembers({}, 100);
+  const members = useMemo(() => membersResponse?.data || [], [membersResponse?.data]);
+
+  const createTithe = useCreateTithe();
+  const updateTithe = useUpdateTithe();
+  const deleteTithe = useDeleteTithe();
+
+  // ── UI States ─────────────────────────────────────────────────────────────
+  const [showModal, setShowModal] = useState(false);
+  const [editingRecord, setEditingRecord] = useState<TitheItem | null>(null);
+
+  const [formData, setFormData] = useState<FormState>({
     memberId: '',
     amount: '',
     paymentMethod: 'Cash',
@@ -37,51 +70,34 @@ const Tithe: React.FC = () => {
     description: '',
   });
 
-  useEffect(() => {
-    let mounted = true;
-    const loadData = async () => {
-      try {
-        const data = await getTitheRecords(selectedMonth || undefined, selectedYear || undefined);
-        const membersData = await getMembers();
-        if (mounted) {
-          setRecords(data);
-          setMembers(membersData);
-          setCurrentPage(1); // reset pagination when filters change
-        }
-      } catch (err) {
-        console.error('Failed to load tithe records:', err);
-      }
-    };
-    loadData();
-    return () => { mounted = false; };
-  }, [selectedMonth, selectedYear]);
-
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [deletingRecord, setDeletingRecord] = useState<(TitheRecord & { memberName?: string }) | null>(null);
+  const [deletingRecord, setDeletingRecord] = useState<TitheItem | null>(null);
 
-  const handleDelete = (record: TitheRecord) => {
+  const handleDelete = (record: TitheItem) => {
     setDeletingRecord(record);
     setShowDeleteConfirm(true);
   };
 
   const confirmDelete = async () => {
     if (!deletingRecord) return;
-    await deleteTitheRecord(deletingRecord.titheId);
-    const data = await getTitheRecords(selectedMonth || undefined, selectedYear || undefined);
-    setRecords(data);
-    setShowDeleteConfirm(false);
-    setDeletingRecord(null);
+    try {
+      await deleteTithe.mutateAsync(deletingRecord.id);
+      setShowDeleteConfirm(false);
+      setDeletingRecord(null);
+    } catch (err) {
+      console.error('Failed to delete tithe record:', err);
+    }
   };
 
-  const handleEdit = (record: TitheRecord) => {
+  const handleEdit = (record: TitheItem) => {
     setEditingRecord(record);
     setFormData({
-      memberId: String(record.memberId),
+      memberId: record.memberId,
       amount: String(record.amount),
       paymentMethod: record.paymentMethod,
       forMonth: record.forMonth,
       forYear: record.forYear,
-      collectionDate: record.collectionDate,
+      collectionDate: record.collectionDate.split('T')[0],
       description: record.description || '',
     });
     setShowModal(true);
@@ -108,70 +124,76 @@ const Tithe: React.FC = () => {
       return;
     }
 
-    const member = members.find(m => m.memberId === parseInt(formData.memberId));
-
     try {
-      await saveTitheRecord({
-        titheId: editingRecord?.titheId,
-        memberId: parseInt(formData.memberId),
-        amount: parseFloat(formData.amount),
-        paymentMethod: formData.paymentMethod as TitheRecord["paymentMethod"],
-        forMonth: formData.forMonth as TitheRecord["forMonth"],
-        forYear: parseInt(String(formData.forYear)),
-        collectionDate: formData.collectionDate,
-        description: formData.description,
-        memberName: member ? `${member.firstName} ${member.lastName}` : undefined,
-      });
+      if (editingRecord) {
+        await updateTithe.mutateAsync({
+          id: editingRecord.id,
+          data: {
+            memberId: formData.memberId,
+            amount: parseFloat(formData.amount),
+            paymentMethod: formData.paymentMethod,
+            forMonth: formData.forMonth,
+            forYear: parseInt(String(formData.forYear), 10),
+            collectionDate: formData.collectionDate,
+            description: formData.description.trim() || undefined,
+          },
+        });
+      } else {
+        await createTithe.mutateAsync({
+          memberId: formData.memberId,
+          amount: parseFloat(formData.amount),
+          paymentMethod: formData.paymentMethod,
+          forMonth: formData.forMonth,
+          forYear: parseInt(String(formData.forYear), 10),
+          collectionDate: formData.collectionDate,
+          description: formData.description.trim() || undefined,
+        });
+      }
 
       setShowModal(false);
-      const data = await getTitheRecords(selectedMonth || undefined, selectedYear || undefined);
-      setRecords(data);
     } catch (err) {
       console.error('Failed to save tithe record:', err);
+      alert('Failed to save tithe record.');
     }
   };
 
+  // Filtered by layout search query
+  const filteredRecords = useMemo(() => {
+    if (!searchQuery.trim()) return records;
+    const query = searchQuery.toLowerCase();
+    return records.filter((r) => r.memberName?.toLowerCase().includes(query));
+  }, [records, searchQuery]);
+
   // Pagination logic
-  const totalPages = Math.ceil(records.length / ITEMS_PER_PAGE);
-  const currentRecords = records.slice(
-    (currentPage - 1) * ITEMS_PER_PAGE,
-    currentPage * ITEMS_PER_PAGE
-  );
+  const totalPages = Math.max(1, Math.ceil(filteredRecords.length / ITEMS_PER_PAGE));
+  const currentRecords = useMemo(() => {
+    return filteredRecords.slice(
+      (currentPage - 1) * ITEMS_PER_PAGE,
+      currentPage * ITEMS_PER_PAGE
+    );
+  }, [filteredRecords, currentPage]);
 
-  // Chart Logic (Mock data aggregation by month for the chart if no specific month is selected)
-  // Or just show daily aggregation if month is selected
-  // For simplicity of a beautiful bar chart, we'll aggregate by month for the given year
-  const [chartData, setChartData] = useState<{label: string, value: number, heightPercent: number}[]>([]);
+  // Chart Logic (Monthly aggregation)
+  const chartData = useMemo(() => {
+    const monthlyTotals = new Map<string, number>();
+    MONTHS.forEach((m) => monthlyTotals.set(m, 0));
 
-  useEffect(() => {
-    // We'll quickly fetch all data for the year to build the chart, bypassing month filter
-    const buildChart = async () => {
-      const yearData = await getTitheRecords(undefined, selectedYear);
+    yearRecords.forEach((r) => {
+      const current = monthlyTotals.get(r.forMonth) || 0;
+      monthlyTotals.set(r.forMonth, current + r.amount);
+    });
 
-      const monthlyTotals = new Map<string, number>();
-      MONTHS.forEach(m => monthlyTotals.set(m, 0));
+    const maxVal = Math.max(...Array.from(monthlyTotals.values()), 1);
 
-      yearData.forEach(r => {
-        const current = monthlyTotals.get(r.forMonth) || 0;
-        monthlyTotals.set(r.forMonth, current + r.amount);
-      });
-
-      const maxVal = Math.max(...Array.from(monthlyTotals.values()), 1); // avoid div by 0
-
-      const mapped = MONTHS.map(m => {
-        const val = monthlyTotals.get(m) || 0;
-        return {
-          label: m.substring(0, 3), // Jan, Feb
-          value: val,
-          heightPercent: (val / maxVal) * 100
-        };
-      });
-
-      setChartData(mapped);
-    };
-
-    buildChart();
-  }, [selectedYear, records]); // also update if records change (add/delete)
+    return MONTHS.map((m) => {
+      const val = monthlyTotals.get(m) || 0;
+      return {
+        label: m.substring(0, 3),
+        value: val,
+        heightPercent: (val / maxVal) * 100,
+      };
+    });
+  }, [yearRecords]);
 
   const formatCurrency = (amount: number): string => {
     return `₵ ${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -180,7 +202,7 @@ const Tithe: React.FC = () => {
   useEffect(() => {
     setTitle('Tithe');
     setCtas([
-      { type: 'search', placeholder: 'Search members...' },
+      { type: 'search', placeholder: 'Search tithes...' },
       {
         type: 'button',
         label: 'Record Tithe',
@@ -189,7 +211,8 @@ const Tithe: React.FC = () => {
         onClick: handleOpenAddModal,
       },
     ]);
-  }, [setTitle, setCtas]);
+    setSearchQuery('');
+  }, [setTitle, setCtas, setSearchQuery]);
 
   return (
     <div className="tithe-container">
@@ -200,9 +223,12 @@ const Tithe: React.FC = () => {
           <select
             className="tithe-select"
             value={selectedYear}
-            onChange={e => setSelectedYear(parseInt(e.target.value))}
+            onChange={(e) => {
+              setSelectedYear(parseInt(e.target.value, 10));
+              setCurrentPage(1);
+            }}
           >
-            {[2024, 2025, 2026, 2027].map(y => (
+            {[2024, 2025, 2026, 2027, 2028].map((y) => (
               <option key={y} value={y}>{y}</option>
             ))}
           </select>
@@ -213,10 +239,13 @@ const Tithe: React.FC = () => {
           <select
             className="tithe-select"
             value={selectedMonth}
-            onChange={e => setSelectedMonth(e.target.value)}
+            onChange={(e) => {
+              setSelectedMonth(e.target.value);
+              setCurrentPage(1);
+            }}
           >
             <option value="">All Months</option>
-            {MONTHS.map(m => (
+            {MONTHS.map((m) => (
               <option key={m} value={m}>{m}</option>
             ))}
           </select>
@@ -253,7 +282,9 @@ const Tithe: React.FC = () => {
         </div>
 
         <div className="tithe-table-container">
-          {currentRecords.length === 0 ? (
+          {isLoadingTithes ? (
+            <div className="tithe-table-empty">Loading tithe records...</div>
+          ) : currentRecords.length === 0 ? (
             <div className="tithe-table-empty">No tithe records found for the selected period.</div>
           ) : (
             <table className="tithe-table">
@@ -268,19 +299,27 @@ const Tithe: React.FC = () => {
                 </tr>
               </thead>
               <tbody>
-                {currentRecords.map(record => (
-                  <tr key={record.titheId}>
-                    <td className="tithe-member-name">{record.memberName || `Member #${record.memberId}`}</td>
+                {currentRecords.map((record) => (
+                  <tr key={record.id}>
+                    <td className="tithe-member-name">{record.memberName || 'Member'}</td>
                     <td className="tithe-amount-cell">{formatCurrency(record.amount)}</td>
                     <td>{record.forMonth} {record.forYear}</td>
                     <td>{new Date(record.collectionDate).toLocaleDateString()}</td>
                     <td>{record.paymentMethod}</td>
                     <td>
                       <div className="tithe-table-actions">
-                        <button className="action-btn" onClick={() => handleEdit(record)}>
+                        <button
+                          type="button"
+                          className="action-btn"
+                          onClick={() => handleEdit(record)}
+                        >
                           Edit
                         </button>
-                        <button className="action-btn delete" onClick={() => handleDelete(record)}>
+                        <button
+                          type="button"
+                          className="action-btn delete"
+                          onClick={() => handleDelete(record)}
+                        >
                           Delete
                         </button>
                       </div>
@@ -296,9 +335,10 @@ const Tithe: React.FC = () => {
         {totalPages > 1 && (
           <div className="tithe-pagination">
             <button
+              type="button"
               className="pagination-btn"
               disabled={currentPage === 1}
-              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
             >
               Previous
             </button>
@@ -306,9 +346,10 @@ const Tithe: React.FC = () => {
               Page {currentPage} of {totalPages}
             </span>
             <button
+              type="button"
               className="pagination-btn"
               disabled={currentPage === totalPages}
-              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
             >
               Next
             </button>
@@ -319,12 +360,21 @@ const Tithe: React.FC = () => {
       {/* ─── Add / Edit Modal ─────────────────────────────────────────────── */}
       {showModal && (
         <div className="tithe-panel-overlay" onClick={() => setShowModal(false)}>
-          <form className="tithe-side-panel" onClick={e => e.stopPropagation()} onSubmit={handleSaveTithe}>
+          <form
+            className="tithe-side-panel"
+            onClick={(e) => e.stopPropagation()}
+            onSubmit={handleSaveTithe}
+          >
             <div className="tithe-panel-header">
               <h2 className="tithe-panel-title">
                 {editingRecord ? 'Edit Tithe Record' : 'Record Tithe'}
               </h2>
-              <button type="button" className="tithe-panel-close" onClick={() => setShowModal(false)}>
+              <button
+                type="button"
+                className="tithe-panel-close"
+                onClick={() => setShowModal(false)}
+                aria-label="Close panel"
+              >
                 <CloseIcon />
               </button>
             </div>
@@ -336,15 +386,18 @@ const Tithe: React.FC = () => {
                 <select
                   className="tithe-form-select"
                   value={formData.memberId}
-                  onChange={e => setFormData(prev => ({ ...prev, memberId: e.target.value }))}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, memberId: e.target.value }))}
                   required
                 >
                   <option value="">Select Member...</option>
-                  {members.map(m => (
-                    <option key={m.memberId} value={m.memberId}>
-                      {m.firstName} {m.lastName}
-                    </option>
-                  ))}
+                  {members.map((m) => {
+                    const displayName = m.name || `${m.firstName} ${m.lastName}`;
+                    return (
+                      <option key={m.id} value={m.id}>
+                        {displayName}
+                      </option>
+                    );
+                  })}
                 </select>
               </div>
 
@@ -355,11 +408,11 @@ const Tithe: React.FC = () => {
                   <input
                     type="number"
                     step="0.01"
-                    min="0"
+                    min="0.01"
                     className="tithe-form-input"
                     placeholder="₵ 0.00"
                     value={formData.amount}
-                    onChange={e => setFormData(prev => ({ ...prev, amount: e.target.value }))}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, amount: e.target.value }))}
                     required
                   />
                 </div>
@@ -368,13 +421,14 @@ const Tithe: React.FC = () => {
                   <select
                     className="tithe-form-select"
                     value={formData.paymentMethod}
-                    onChange={e => setFormData(prev => ({ ...prev, paymentMethod: e.target.value }))}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, paymentMethod: e.target.value as PaymentMethod }))}
                     required
                   >
                     <option value="Cash">Cash</option>
                     <option value="Cheque">Cheque</option>
                     <option value="CreditCard">Credit Card</option>
                     <option value="MobileMoney">Mobile Money</option>
+                    <option value="BankTransfer">Bank Transfer</option>
                   </select>
                 </div>
               </div>
@@ -386,10 +440,10 @@ const Tithe: React.FC = () => {
                   <select
                     className="tithe-form-select"
                     value={formData.forMonth}
-                    onChange={e => setFormData(prev => ({ ...prev, forMonth: e.target.value }))}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, forMonth: e.target.value as MonthOfYear }))}
                     required
                   >
-                    {MONTHS.map(m => (
+                    {MONTHS.map((m) => (
                       <option key={m} value={m}>{m}</option>
                     ))}
                   </select>
@@ -400,7 +454,7 @@ const Tithe: React.FC = () => {
                     type="number"
                     className="tithe-form-input"
                     value={formData.forYear}
-                    onChange={e => setFormData(prev => ({ ...prev, forYear: parseInt(e.target.value) || new Date().getFullYear() }))}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, forYear: parseInt(e.target.value, 10) || new Date().getFullYear() }))}
                     required
                   />
                 </div>
@@ -413,7 +467,7 @@ const Tithe: React.FC = () => {
                   type="date"
                   className="tithe-form-input"
                   value={formData.collectionDate}
-                  onChange={e => setFormData(prev => ({ ...prev, collectionDate: e.target.value }))}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, collectionDate: e.target.value }))}
                   required
                 />
               </div>
@@ -425,17 +479,30 @@ const Tithe: React.FC = () => {
                   className="tithe-form-textarea"
                   placeholder="Additional details..."
                   value={formData.description}
-                  onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
                 />
               </div>
             </div>
 
             <div className="tithe-panel-footer">
-              <button type="button" className="tithe-btn tithe-btn-secondary" onClick={() => setShowModal(false)}>
+              <button
+                type="button"
+                className="tithe-btn tithe-btn-secondary"
+                onClick={() => setShowModal(false)}
+              >
                 Cancel
               </button>
-              <button type="submit" className="tithe-btn tithe-btn-primary">
-                <RecordIcon /> {editingRecord ? 'Save Changes' : 'Record Tithe'}
+              <button
+                type="submit"
+                className="tithe-btn tithe-btn-primary"
+                disabled={createTithe.isPending || updateTithe.isPending}
+              >
+                <RecordIcon />{' '}
+                {createTithe.isPending || updateTithe.isPending
+                  ? 'Saving...'
+                  : editingRecord
+                  ? 'Save Changes'
+                  : 'Record Tithe'}
               </button>
             </div>
           </form>

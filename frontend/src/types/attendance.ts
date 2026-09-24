@@ -1,46 +1,37 @@
-// ─── Enums / Union Types (matching backend) ─────────────────────────────────
-
-export type ChurchServiceType = 'General' | 'Evening' | 'ChoirPractice';
-
-export type AttendeeType = 'Member' | 'Guest' | 'Visitor';
-
-// ─── Entities (matching backend schemas) ─────────────────────────────────────
-
-export interface Member {
-  memberId: number;
-  uniqueId: string;
-  firstName: string;
-  lastName: string;
-  otherNames?: string;
-  emailAddress?: string;
-  phoneNumber: string;
-  dateOfBirth: string; // YYYY-MM-DD
-  joinedDate?: string | null;
-  gender: string; // 'Male' | 'Female' | etc.
-  residentialAddress?: string;
-  city?: string;
-  hometown?: string;
-  region?: string;
-  gpsAddress?: string;
-  maritalStatus?: string;
-  nextOfKin?: string;
-  emergencyContactName?: string;
-  emergencyContactPhoneNumber?: string;
-  memberActivityStatus: string; // 'Active' | 'Inactive' | etc.
-}
+export type AttendeeType = 'Member' | 'Guest' | 'Visitor' | 'Child';
 
 export interface AttendanceRecord {
-  attendanceId: number;
-  uniqueId: string;
-  memberId: number;
-  forDate: string; // YYYY-MM-DD
-  churchServiceType: ChurchServiceType;
+  id: string;
+  attendanceContextId: number;
+  attendanceContextName: string;
+  attendanceTypeName: string;
+  memberId: string;
+  memberName: string;
   attendeeType: AttendeeType;
+  forDate: string; // ISO format YYYY-MM-DD
   checkInTime: string; // HH:mm:ss or HH:mm
   description?: string | null;
+  createdAt: string;
 }
 
-// ─── Form & UI Types ─────────────────────────────────────────────────────────
+export interface AttendanceType {
+  id: number;
+  name: string;
+}
+
+export interface AttendanceContext {
+  id: number;
+  name: string;
+  attendanceTypeName?: string;
+  attendanceTypeId?: number;
+}
+
+export interface AttendanceFilters {
+  forDate?: string;
+  attendanceContextId?: number;
+  memberId?: string;
+  memberName?: string;
+}
 
 export interface AttendanceSummary {
   totalPresent: number;
@@ -50,9 +41,17 @@ export interface AttendanceSummary {
 }
 
 export interface MarkAttendanceForm {
-  memberId: string; // For selection autocomplete
-  status: 'Present' | 'Absent';
-  roleOverride: AttendeeType;
-  timeRecorded: string; // HH:mm (24h) or "hh:mm AM/PM"
-  notes: string;
+  memberId: string;
+  attendanceContextId: number | '';
+  attendeeType: AttendeeType;
+  forDate: string;
+  checkInTime: string;
+  description: string;
 }
+
+export interface PagedResponse<T> {
+  hasMore: boolean;
+  nextCursor: string | null;
+  data: T[];
+}
+
