@@ -1,14 +1,13 @@
 using Echo.Shared.Pagination;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.RateLimiting;
 
-namespace Echo.Application.Members;
+namespace Echo.Application.Projects;
 
-public class MemberController(MemberService service) : BaseController
+public class ProjectContributionsController(ProjectContributionService service) : BaseController
 {
     [HttpGet]
     public async Task<ActionResult> List(
-        [FromQuery] MemberFilters filters,
+        [FromQuery] ProjectContributionFilters filters,
         [FromQuery] PaginationRequest pagination,
         CancellationToken ct
     )
@@ -25,14 +24,18 @@ public class MemberController(MemberService service) : BaseController
     }
 
     [HttpPost]
-    public async Task<ActionResult> Create(MemberCreateDto dto, CancellationToken ct)
+    public async Task<ActionResult> Create(ProjectContributionCreateDto dto, CancellationToken ct)
     {
         var response = await service.Create(GetCongregationId(), dto, ct);
         return response.ToActionResult();
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult> Update(Guid id, MemberUpdateDto dto, CancellationToken ct)
+    public async Task<ActionResult> Update(
+        Guid id,
+        ProjectContributionUpdateDto dto,
+        CancellationToken ct
+    )
     {
         var response = await service.Update(GetCongregationId(), id, dto, ct);
         return response.ToActionResult();
@@ -43,13 +46,5 @@ public class MemberController(MemberService service) : BaseController
     {
         var response = await service.Delete(id, GetCongregationId(), ct);
         return response.ToActionResult();
-    }
-
-    [HttpGet("search")]
-    [EnableRateLimiting("search")]
-    public async Task<ActionResult> Search([FromQuery] string q, CancellationToken ct)
-    {
-        var res = await service.Search(GetCongregationId(), q, ct);
-        return res.ToActionResult();
     }
 }

@@ -1,18 +1,18 @@
 using Echo.Shared.Pagination;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
-namespace Echo.Application.Tithes;
+namespace Echo.Application.Organizations;
 
-public class TitheController(TitheService service) : BaseController
+public class OrganizationsController(OrganizationService service) : BaseController
 {
     [HttpGet]
     public async Task<ActionResult> List(
-        [FromQuery] TitheFilter filters,
         [FromQuery] PaginationRequest pagination,
         CancellationToken ct
     )
     {
-        var response = await service.List(GetCongregationId(), filters, pagination, ct);
+        var response = await service.List(GetCongregationId(), pagination, ct);
         return response.ToActionResult();
     }
 
@@ -24,14 +24,14 @@ public class TitheController(TitheService service) : BaseController
     }
 
     [HttpPost]
-    public async Task<ActionResult> Create(TitheCreateDto dto, CancellationToken ct)
+    public async Task<ActionResult> Create(OrganizationCreateDto dto, CancellationToken ct)
     {
         var response = await service.Create(GetCongregationId(), dto, ct);
         return response.ToActionResult();
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult> Update(Guid id, TitheUpdateDto dto, CancellationToken ct)
+    public async Task<ActionResult> Update(Guid id, OrganizationUpdateDto dto, CancellationToken ct)
     {
         var response = await service.Update(GetCongregationId(), id, dto, ct);
         return response.ToActionResult();
@@ -42,5 +42,13 @@ public class TitheController(TitheService service) : BaseController
     {
         var response = await service.Delete(id, GetCongregationId(), ct);
         return response.ToActionResult();
+    }
+
+    [HttpGet("search")]
+    [EnableRateLimiting("search")]
+    public async Task<ActionResult> Search([FromQuery] string q, CancellationToken ct)
+    {
+        var res = await service.Search(GetCongregationId(), q, ct);
+        return res.ToActionResult();
     }
 }

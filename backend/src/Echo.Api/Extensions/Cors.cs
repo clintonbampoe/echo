@@ -10,6 +10,7 @@ public static class Cors
     )
     {
         var allowedOrigins = GetAllowedOrigins(configuration);
+        Console.WriteLine($"AllowedOrigins: {string.Join(", ", allowedOrigins)}");
 
         services.AddCors(options =>
         {

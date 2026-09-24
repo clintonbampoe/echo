@@ -11,7 +11,7 @@ public static class Database
     )
     {
         var connectionString = configuration.GetConnectionString("echodb");
-        Console.WriteLine($"HERE {connectionString}");
+        Console.WriteLine($"ConnectionString: {connectionString}");
         services.AddDbContext<AppDbContext>(options => options.UseNpgsql(connectionString));
 
         return services;

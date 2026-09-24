@@ -8,7 +8,7 @@ namespace Echo.Auth.Sessions;
 [AllowAnonymous]
 [EnableRateLimiting("auth")]
 [Route("/api/auth/v{version:ApiVersion}/[controller]")]
-public class SessionController(SessionService authenticationService) : ControllerBase
+public class SessionsController(SessionService authenticationService) : ControllerBase
 {
     [HttpPost("login")]
     public async Task<ActionResult> Login(

@@ -1,10 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 
-namespace Echo.Application.Transactions;
+namespace Echo.Application.Projects;
 
-public class TransactionCategoryController(TransactionCategoryService service)
-    : BaseController
+public class ProjectCategoriesController(ProjectCategoryService service) : BaseController
 {
     [HttpGet]
     public async Task<ActionResult> List(CancellationToken ct)
@@ -21,7 +20,7 @@ public class TransactionCategoryController(TransactionCategoryService service)
     }
 
     [HttpPost]
-    public async Task<ActionResult> Create(TransactionCategoryCreateDto dto, CancellationToken ct)
+    public async Task<ActionResult> Create(ProjectCategoryCreateDto dto, CancellationToken ct)
     {
         var response = await service.Create(GetCongregationId(), dto, ct);
         return response.ToActionResult();
@@ -30,7 +29,7 @@ public class TransactionCategoryController(TransactionCategoryService service)
     [HttpPut("{id}")]
     public async Task<ActionResult> Update(
         int id,
-        TransactionCategoryUpdateDto dto,
+        ProjectCategoryUpdateDto dto,
         CancellationToken ct
     )
     {

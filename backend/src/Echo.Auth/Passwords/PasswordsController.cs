@@ -8,7 +8,7 @@ namespace Echo.Auth.Passwords;
 [AllowAnonymous]
 [EnableRateLimiting("auth")]
 [Route("/api/auth/v{version:ApiVersion}/[controller]")]
-public class PasswordController(PasswordResetService passwordResetService) : ControllerBase
+public class PasswordsController(PasswordResetService passwordResetService) : ControllerBase
 {
     [HttpPost("forgot")]
     public async Task<ActionResult> ForgotPassword(

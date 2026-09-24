@@ -1,18 +1,18 @@
 using Echo.Shared.Pagination;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.RateLimiting;
 
-namespace Echo.Application.Organizations;
+namespace Echo.Application.Tithes;
 
-public class OrganizationController(OrganizationService service) : BaseController
+public class TithesController(TitheService service) : BaseController
 {
     [HttpGet]
     public async Task<ActionResult> List(
+        [FromQuery] TitheFilter filters,
         [FromQuery] PaginationRequest pagination,
         CancellationToken ct
     )
     {
-        var response = await service.List(GetCongregationId(), pagination, ct);
+        var response = await service.List(GetCongregationId(), filters, pagination, ct);
         return response.ToActionResult();
     }
 
@@ -24,14 +24,14 @@ public class OrganizationController(OrganizationService service) : BaseControlle
     }
 
     [HttpPost]
-    public async Task<ActionResult> Create(OrganizationCreateDto dto, CancellationToken ct)
+    public async Task<ActionResult> Create(TitheCreateDto dto, CancellationToken ct)
     {
         var response = await service.Create(GetCongregationId(), dto, ct);
         return response.ToActionResult();
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult> Update(Guid id, OrganizationUpdateDto dto, CancellationToken ct)
+    public async Task<ActionResult> Update(Guid id, TitheUpdateDto dto, CancellationToken ct)
     {
         var response = await service.Update(GetCongregationId(), id, dto, ct);
         return response.ToActionResult();
@@ -42,13 +42,5 @@ public class OrganizationController(OrganizationService service) : BaseControlle
     {
         var response = await service.Delete(id, GetCongregationId(), ct);
         return response.ToActionResult();
-    }
-
-    [HttpGet("search")]
-    [EnableRateLimiting("search")]
-    public async Task<ActionResult> Search([FromQuery] string q, CancellationToken ct)
-    {
-        var res = await service.Search(GetCongregationId(), q, ct);
-        return res.ToActionResult();
     }
 }

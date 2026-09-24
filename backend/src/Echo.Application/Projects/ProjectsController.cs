@@ -1,46 +1,47 @@
+using Echo.Shared.Pagination;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 
 namespace Echo.Application.Projects;
 
-public class ProjectCategoryController(ProjectCategoryService service) : BaseController
+public class ProjectsController(ProjectService service) : BaseController
 {
     [HttpGet]
-    public async Task<ActionResult> List(CancellationToken ct)
+    public async Task<ActionResult> List(
+        [FromQuery] ProjectFilters filters,
+        [FromQuery] PaginationRequest pagination,
+        CancellationToken ct
+    )
     {
-        var response = await service.List(GetCongregationId(), ct);
+        var response = await service.List(GetCongregationId(), filters, pagination, ct);
         return response.ToActionResult();
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult> GetById(int id, CancellationToken ct)
+    public async Task<ActionResult> GetById(Guid id, CancellationToken ct)
     {
         var response = await service.GetById(id, GetCongregationId(), ct);
         return response.ToActionResult();
     }
 
     [HttpPost]
-    public async Task<ActionResult> Create(ProjectCategoryCreateDto dto, CancellationToken ct)
+    public async Task<ActionResult> Create(ProjectCreateDto dto, CancellationToken ct)
     {
         var response = await service.Create(GetCongregationId(), dto, ct);
         return response.ToActionResult();
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult> Update(
-        int id,
-        ProjectCategoryUpdateDto dto,
-        CancellationToken ct
-    )
+    public async Task<ActionResult> Update(Guid id, ProjectUpdateDto dto, CancellationToken ct)
     {
         var response = await service.Update(GetCongregationId(), id, dto, ct);
         return response.ToActionResult();
     }
 
     [HttpDelete("{id}")]
-    public async Task<ActionResult> Delete(int id, CancellationToken ct)
+    public async Task<ActionResult> Delete(Guid id, CancellationToken ct)
     {
-        var response = await service.Delete(GetCongregationId(), id, ct);
+        var response = await service.Delete(id, GetCongregationId(), ct);
         return response.ToActionResult();
     }
 

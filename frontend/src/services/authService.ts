@@ -57,7 +57,7 @@ export const authService = {
   },
 
   registerCongregation: async (data: RegisterCongregationPayload): Promise<void> => {
-    return apiFetch<void>('/auth/v1/register/congregation', {
+    return apiFetch<void>('/auth/v1/registrations/congregation', {
       method: 'POST',
       body: JSON.stringify(data),
     });

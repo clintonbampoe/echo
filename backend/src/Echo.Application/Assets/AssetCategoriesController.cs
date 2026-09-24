@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.RateLimiting;
 
 namespace Echo.Application.Assets;
 
-public class AssetCategoryController(AssetCategoryService service) : BaseController
+public class AssetCategoriesController(AssetCategoryService service) : BaseController
 {
     [HttpGet]
     public async Task<ActionResult> List(CancellationToken ct)

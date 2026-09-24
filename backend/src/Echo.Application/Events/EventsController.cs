@@ -1,13 +1,14 @@
 using Echo.Shared.Pagination;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
-namespace Echo.Application.Transactions;
+namespace Echo.Application.Events;
 
-public class TransactionController(TransactionService service) : BaseController
+public class EventsController(EventService service) : BaseController
 {
     [HttpGet]
     public async Task<ActionResult> List(
-        [FromQuery] TransactionFilters filters,
+        [FromQuery] EventFilters filters,
         [FromQuery] PaginationRequest pagination,
         CancellationToken ct
     )
@@ -24,14 +25,14 @@ public class TransactionController(TransactionService service) : BaseController
     }
 
     [HttpPost]
-    public async Task<ActionResult> Create(TransactionCreateDto dto, CancellationToken ct)
+    public async Task<ActionResult> Create(EventCreateDto dto, CancellationToken ct)
     {
         var response = await service.Create(GetCongregationId(), dto, ct);
         return response.ToActionResult();
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult> Update(Guid id, TransactionUpdateDto dto, CancellationToken ct)
+    public async Task<ActionResult> Update(Guid id, EventUpdateDto dto, CancellationToken ct)
     {
         var response = await service.Update(GetCongregationId(), id, dto, ct);
         return response.ToActionResult();
@@ -42,5 +43,13 @@ public class TransactionController(TransactionService service) : BaseController
     {
         var response = await service.Delete(id, GetCongregationId(), ct);
         return response.ToActionResult();
+    }
+
+    [HttpGet("search")]
+    [EnableRateLimiting("search")]
+    public async Task<ActionResult> Search([FromQuery] string q, CancellationToken ct)
+    {
+        var res = await service.Search(GetCongregationId(), q, ct);
+        return res.ToActionResult();
     }
 }
