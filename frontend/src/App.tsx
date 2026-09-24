@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { Navigate, Route, BrowserRouter as Router, Routes } from 'react-router-dom';
+import Assets from './components/Assets';
 import Attendance from './components/Attendance';
 import Contributions from './components/Contributions';
 import Dashboard from './components/Dashboard';
@@ -59,7 +60,7 @@ const ProtectedLayout: React.FC = () => {
                             <Route path="/events" element={<Events />} />
                             <Route path="/members" element={<Members />} />
                             <Route path="/reporting" element={<PlaceholderTab name="Reporting" />} />
-                            <Route path="/assets" element={<PlaceholderTab name="Assets" />} />
+                            <Route path="/assets" element={<Assets />} />
                             <Route path="*" element={<PlaceholderTab name="Not Found" />} />
                         </Routes>
                     </div>
@@ -90,13 +91,19 @@ const AppContent: React.FC = () => {
     );
 };
 
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+const queryClient = new QueryClient();
+
 function App() {
     return (
-        <Router>
-            <AuthProvider>
-                <AppContent />
-            </AuthProvider>
-        </Router>
+        <QueryClientProvider client={queryClient}>
+            <Router>
+                <AuthProvider>
+                    <AppContent />
+                </AuthProvider>
+            </Router>
+        </QueryClientProvider>
     );
 }
 

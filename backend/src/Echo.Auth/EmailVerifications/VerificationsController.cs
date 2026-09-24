@@ -8,7 +8,7 @@ namespace Echo.Auth.EmailVerifications;
 [AllowAnonymous]
 [EnableRateLimiting("auth")]
 [Route("/api/auth/v{version:ApiVersion}/[controller]")]
-public class EmailVerificationController(EmailVerificationService emailVerificationService)
+public class VerificationsController(EmailVerificationService emailVerificationService)
     : ControllerBase
 {
     [HttpPost("account")]

@@ -18,7 +18,24 @@ import {
 } from './Icons';
 
 const Sidebar: React.FC = () => {
-    const { logout } = useAuth();
+    const { logout, user } = useAuth();
+
+    const getInitials = (name?: string, email?: string) => {
+        if (name && name.trim().length > 0) {
+            const parts = name.trim().split(/\s+/);
+            if (parts.length >= 2) {
+                return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+            }
+            return parts[0].substring(0, 2).toUpperCase();
+        }
+        if (email && email.trim().length > 0) {
+            return email.substring(0, 2).toUpperCase();
+        }
+        return 'U';
+    };
+
+    const displayName = user?.name || (user?.email ? user.email.split('@')[0] : 'User');
+    const initials = getInitials(user?.name, user?.email);
 
     const menuItems = [
         { id: 'dashboard', label: 'Dashboard', icon: 'dashboard' },
@@ -75,9 +92,9 @@ const Sidebar: React.FC = () => {
             </nav>
 
             <div className="sidebar-footer">
-                <div className="footer-avatar">JD</div>
+                <div className="footer-avatar">{initials}</div>
                 <div className="footer-user-info" style={{ flex: 1 }}>
-                    <span className="footer-user-name">John Doe</span>
+                    <span className="footer-user-name">{displayName}</span>
                 </div>
                 <button
                   onClick={logout}

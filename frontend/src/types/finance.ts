@@ -1,81 +1,90 @@
-// ─── Enums (matching backend) ────────────────────────────────────────────────
+export type PaymentMethod = 'Cash' | 'Cheque' | 'CreditCard' | 'MobileMoney' | 'BankTransfer';
 
-export type TransactionType = 'Income' | 'Expenditure';
+export type TransactionType = 'Income' | 'Expense';
 
-export type PaymentMethod = 'Cash' | 'Cheque' | 'CreditCard' | 'MobileMoney';
-
-export type RecurrenceType =
-  | 'one_time'
-  | 'weekly'
-  | 'bi_weekly'
-  | 'monthly'
-  | 'quarterly'
-  | 'annually';
-
-// ─── Entities (matching backend schema) ──────────────────────────────────────
+export type MonthOfYear =
+  | 'January'
+  | 'February'
+  | 'March'
+  | 'April'
+  | 'May'
+  | 'June'
+  | 'July'
+  | 'August'
+  | 'September'
+  | 'October'
+  | 'November'
+  | 'December';
 
 export interface TransactionCategory {
-  categoryId: number;
-  uniqueId: string;
+  id: number;
   name: string;
   categoryType: TransactionType;
 }
 
-export interface FinancialTransaction {
-  transactionId: number;
-  uniqueId: string;
-  categoryId: number | null;
+export interface Transaction {
+  id: string;
+  categoryId: number;
+  categoryName: string;
   transactionType: TransactionType;
-  transactionDate: string; // ISO date string (YYYY-MM-DD)
+  transactionDate: string; // ISO format YYYY-MM-DD
   amount: number;
-  description: string | null;
-  // Frontend-only fields (not yet in backend entity):
-  paymentMethod?: PaymentMethod;
-  isRecurring?: boolean;
-  recurrenceType?: RecurrenceType;
+  description?: string | null;
+  createdAt: string;
 }
 
-// ─── Computed / Display types ────────────────────────────────────────────────
+export interface Tithe {
+  id: string;
+  memberId: string;
+  memberName: string;
+  amount: number;
+  forYear: number;
+  forMonth: MonthOfYear;
+  paymentMethod: PaymentMethod;
+  collectionDate: string; // ISO format YYYY-MM-DD
+  description?: string | null;
+  createdAt: string;
+}
 
 export interface CategoryStream {
-  category: TransactionCategory;
+  category: {
+    id: number;
+    name: string;
+    categoryType: TransactionType;
+  };
   totalAmount: number;
   percentOfTotal: number;
-  isRecurring: boolean;
-  recurrenceLabel: string;
   transactionCount: number;
 }
-
-export interface FinancialSummary {
-  totalMonthlyIncome: number;
-  totalExpenditure: number;
-  netBalance: number;
-  incomeTransactionCount: number;
-  expenditureTransactionCount: number;
-}
-
-// ─── Modal / Form types ──────────────────────────────────────────────────────
 
 export interface RecordTransactionForm {
   transactionType: TransactionType;
   amount: string;
-  categoryId: string;
+  categoryId: number | '';
   transactionDate: string;
-  paymentMethod: PaymentMethod;
   description: string;
-}
-
-export type DateRangeOption = 'last_30' | 'last_90' | 'this_year' | 'custom';
-export type ReportType = 'full' | 'income_only' | 'expenditure_only';
-export type ExportFormat = 'pdf' | 'excel' | 'csv';
-
-export interface ExportReportForm {
-  dateRange: DateRangeOption;
-  reportType: ReportType;
-  exportFormat: ExportFormat;
 }
 
 export interface CategoryForm {
   name: string;
   categoryType: TransactionType;
+}
+
+export interface TransactionFilters {
+  date?: string;
+  transactionType?: TransactionType;
+  categoryId?: number;
+}
+
+export interface TitheFilters {
+  year?: number;
+  month?: MonthOfYear;
+  paymentMethod?: PaymentMethod;
+  memberId?: string;
+}
+
+export interface PagedResponse<T> {
+  hasMore: boolean;
+  nextCursor: string | null;
+  data: T[];
 }

@@ -8,7 +8,7 @@ namespace Echo.Auth.Registrations;
 [EnableRateLimiting("auth")]
 [AllowAnonymous]
 [Route("/api/auth/v{version:ApiVersion}/[controller]")]
-public class RegistrationController(RegistrationService service) : ControllerBase
+public class RegistrationsController(RegistrationService service) : ControllerBase
 {
     [HttpPost("congregation")]
     public async Task<ActionResult> RegisterCongregation(

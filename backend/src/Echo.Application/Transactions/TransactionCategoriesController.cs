@@ -1,47 +1,46 @@
-using Echo.Shared.Pagination;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 
-namespace Echo.Application.Assets;
+namespace Echo.Application.Transactions;
 
-public class AssetController(AssetService service) : BaseController
+public class TransactionCategoriesController(TransactionCategoryService service) : BaseController
 {
     [HttpGet]
-    public async Task<ActionResult> List(
-        [FromQuery] AssetFilters filters,
-        [FromQuery] PaginationRequest pagination,
-        CancellationToken ct
-    )
+    public async Task<ActionResult> List(CancellationToken ct)
     {
-        var response = await service.List(GetCongregationId(), filters, pagination, ct);
+        var response = await service.List(GetCongregationId(), ct);
         return response.ToActionResult();
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult> GetById(Guid id, CancellationToken ct)
+    public async Task<ActionResult> GetById(int id, CancellationToken ct)
     {
         var response = await service.GetById(id, GetCongregationId(), ct);
         return response.ToActionResult();
     }
 
     [HttpPost]
-    public async Task<ActionResult> Create(AssetCreateDto dto, CancellationToken ct)
+    public async Task<ActionResult> Create(TransactionCategoryCreateDto dto, CancellationToken ct)
     {
         var response = await service.Create(GetCongregationId(), dto, ct);
         return response.ToActionResult();
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult> Update(Guid id, AssetUpdateDto dto, CancellationToken ct)
+    public async Task<ActionResult> Update(
+        int id,
+        TransactionCategoryUpdateDto dto,
+        CancellationToken ct
+    )
     {
         var response = await service.Update(GetCongregationId(), id, dto, ct);
         return response.ToActionResult();
     }
 
     [HttpDelete("{id}")]
-    public async Task<ActionResult> Delete(Guid id, CancellationToken ct)
+    public async Task<ActionResult> Delete(int id, CancellationToken ct)
     {
-        var response = await service.Delete(id, GetCongregationId(), ct);
+        var response = await service.Delete(GetCongregationId(), id, ct);
         return response.ToActionResult();
     }
 

@@ -1,9 +1,25 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { AuthContext } from './AuthContext';
 import type { User } from './AuthContext';
-// Prepared for actual API integration
-// import { apiFetch } from '../services/api';
+import { authService } from '../services/authService';
+import { apiFetch } from '../services/api';
+
+function parseJwt(token: string) {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    return JSON.parse(jsonPayload);
+  } catch {
+    return null;
+  }
+}
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(() => {
@@ -19,30 +35,66 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   const [isLoading, setIsLoading] = useState(false);
 
-  const login = async (email: string, _password: string) => {
+  useEffect(() => {
+    const handleUnauthorized = () => {
+      setUser(null);
+    };
+    window.addEventListener('auth:unauthorized', handleUnauthorized);
+    return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
+  }, []);
+
+  // Fetch full user name if only email username is set
+  useEffect(() => {
+    if (user?.id && user?.token && (!user.name || user.name === user.email.split('@')[0])) {
+      apiFetch<{ name?: string }>(`/v1/Users/${user.id}`)
+        .then(profile => {
+          if (profile?.name && profile.name !== user.name) {
+            const updatedUser = { ...user, name: profile.name };
+            setUser(updatedUser);
+            localStorage.setItem('user', JSON.stringify(updatedUser));
+          }
+        })
+        .catch(() => {
+          // Ignore if profile fetch fails
+        });
+    }
+  }, [user]);
+
+  const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      // Prepared for actual API call
-      // const response = await apiFetch('/auth/login', {
-      //   method: 'POST',
-      //   body: JSON.stringify({ email, password }),
-      // });
-      // setUser(response.user);
-      // localStorage.setItem('user', JSON.stringify(response.user));
+      const tokenPair = await authService.login(email, password);
+      const token = tokenPair?.accessToken || '';
+      const refreshToken = tokenPair?.refreshToken || '';
+      const claims = token ? parseJwt(token) : null;
+      const userId = claims?.sub || claims?.nameid || '';
 
-      // Simulating API delay for now
-      console.log('Attempting login for:', email);
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      let fullName = email.split('@')[0];
+      if (userId && token) {
+        try {
+          const profile = await apiFetch<{ name?: string }>(`/v1/Users/${userId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (profile?.name) {
+            fullName = profile.name;
+          }
+        } catch {
+          // Fallback to email username
+        }
+      }
 
-      const mockUser: User = {
-        id: '1',
+      const loggedInUser: User = {
+        id: userId,
         email,
-        name: email.split('@')[0],
-        token: 'mock-jwt-token',
+        name: fullName,
+        token,
+        refreshToken,
+        role: claims?.role || '',
+        congregationId: claims?.congregationId || '',
       };
 
-      setUser(mockUser);
-      localStorage.setItem('user', JSON.stringify(mockUser));
+      setUser(loggedInUser);
+      localStorage.setItem('user', JSON.stringify(loggedInUser));
     } catch (error) {
       console.error('Login failed:', error);
       throw error;
@@ -52,6 +104,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const logout = () => {
+    if (user?.refreshToken) {
+      authService.logout(user.refreshToken);
+    }
     setUser(null);
     localStorage.removeItem('user');
   };

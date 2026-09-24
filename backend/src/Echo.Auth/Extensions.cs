@@ -26,13 +26,13 @@ public static class Extensions
         services.AddScoped<IEmailService, ResendEmailService>();
 
         services.AddScoped<RegistrationService>();
-        services.AddScoped<RegistrationController>();
+        services.AddScoped<RegistrationsController>();
         services.AddScoped<EmailVerificationRepository>();
         services.AddScoped<EmailVerificationService>();
-        services.AddScoped<SessionController>();
+        services.AddScoped<SessionsController>();
         services.AddScoped<PasswordResetRepository>();
         services.AddScoped<PasswordResetService>();
-        services.AddScoped<PasswordController>();
+        services.AddScoped<PasswordsController>();
 
         services.Configure<FrontendOptions>(configuration.GetSection("FrontendClient"));
         services.AddScoped<LinkBuilder>();
@@ -47,7 +47,7 @@ public static class Extensions
         services.AddScoped<SessionRepository>();
         services.AddScoped<InvitationRepository>();
         services.AddScoped<InvitationService>();
-        services.AddScoped<InvitationController>();
+        services.AddScoped<InvitationsController>();
 
         return services;
     }

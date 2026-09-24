@@ -20,7 +20,7 @@ public static class Extensions
         // Members
         services.AddScoped<MemberRepository>();
         services.AddScoped<MemberService>();
-        services.AddScoped<MemberController>();
+        services.AddScoped<MembersController>();
         services.AddSingleton<IMemberMapper, MemberMapper>();
 
         // Users
@@ -35,13 +35,13 @@ public static class Extensions
         // Assets
         services.AddScoped<AssetRepository>();
         services.AddScoped<AssetService>();
-        services.AddScoped<AssetController>();
+        services.AddScoped<AssetsController>();
         services.AddSingleton<IAssetMapper, AssetMapper>();
 
         // Asset Categories
         services.AddScoped<AssetCategoryRepository>();
         services.AddScoped<AssetCategoryService>();
-        services.AddScoped<AssetCategoryController>();
+        services.AddScoped<AssetCategoriesController>();
         services.AddSingleton<IAssetCategoryMapper, AssetCategoryMapper>();
 
         // Attendance
@@ -65,7 +65,7 @@ public static class Extensions
         // Events
         services.AddScoped<EventRepository>();
         services.AddScoped<EventService>();
-        services.AddScoped<EventController>();
+        services.AddScoped<EventsController>();
         services.AddSingleton<IEventMapper, EventMapper>();
 
         // Event Attendance
@@ -83,7 +83,7 @@ public static class Extensions
         // Organizations
         services.AddScoped<OrganizationRepository>();
         services.AddScoped<OrganizationService>();
-        services.AddScoped<OrganizationController>();
+        services.AddScoped<OrganizationsController>();
         services.AddSingleton<IOrganizationMapper, OrganizationMapper>();
 
         // Organization Members
@@ -95,37 +95,37 @@ public static class Extensions
         // Projects
         services.AddScoped<ProjectRepository>();
         services.AddScoped<ProjectService>();
-        services.AddScoped<ProjectController>();
+        services.AddScoped<ProjectsController>();
         services.AddSingleton<IProjectMapper, ProjectMapper>();
 
         // Project Categories
         services.AddScoped<ProjectCategoryRepository>();
         services.AddScoped<ProjectCategoryService>();
-        services.AddScoped<ProjectCategoryController>();
+        services.AddScoped<ProjectCategoriesController>();
         services.AddSingleton<IProjectCategoryMapper, ProjectCategoryMapper>();
 
         // Project Contributions
         services.AddScoped<ProjectContributionRepository>();
         services.AddScoped<ProjectContributionService>();
-        services.AddScoped<ProjectContributionController>();
+        services.AddScoped<ProjectContributionsController>();
         services.AddSingleton<IProjectContributionMapper, ProjectContributionMapper>();
 
         // Tithes
         services.AddScoped<TitheRepository>();
         services.AddScoped<TitheService>();
-        services.AddScoped<TitheController>();
+        services.AddScoped<TithesController>();
         services.AddSingleton<ITitheMapper, TitheMapper>();
 
         // Transactions
         services.AddScoped<TransactionRepository>();
         services.AddScoped<TransactionService>();
-        services.AddScoped<TransactionController>();
+        services.AddScoped<TransactionsController>();
         services.AddSingleton<ITransactionMapper, TransactionMapper>();
 
         // Transaction Categories
         services.AddScoped<TransactionCategoryRepository>();
         services.AddScoped<TransactionCategoryService>();
-        services.AddScoped<TransactionCategoryController>();
+        services.AddScoped<TransactionCategoriesController>();
         services.AddSingleton<ITransactionCategoryMapper, TransactionCategoryMapper>();
 
         services.AddSingleton<InstrumentationSource>();

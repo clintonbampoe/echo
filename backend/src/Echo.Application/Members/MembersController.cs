@@ -2,13 +2,13 @@ using Echo.Shared.Pagination;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 
-namespace Echo.Application.Projects;
+namespace Echo.Application.Members;
 
-public class ProjectController(ProjectService service) : BaseController
+public class MembersController(MemberService service) : BaseController
 {
     [HttpGet]
     public async Task<ActionResult> List(
-        [FromQuery] ProjectFilters filters,
+        [FromQuery] MemberFilters filters,
         [FromQuery] PaginationRequest pagination,
         CancellationToken ct
     )
@@ -25,14 +25,14 @@ public class ProjectController(ProjectService service) : BaseController
     }
 
     [HttpPost]
-    public async Task<ActionResult> Create(ProjectCreateDto dto, CancellationToken ct)
+    public async Task<ActionResult> Create(MemberCreateDto dto, CancellationToken ct)
     {
         var response = await service.Create(GetCongregationId(), dto, ct);
         return response.ToActionResult();
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult> Update(Guid id, ProjectUpdateDto dto, CancellationToken ct)
+    public async Task<ActionResult> Update(Guid id, MemberUpdateDto dto, CancellationToken ct)
     {
         var response = await service.Update(GetCongregationId(), id, dto, ct);
         return response.ToActionResult();

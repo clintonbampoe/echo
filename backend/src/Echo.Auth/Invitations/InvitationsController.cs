@@ -1,5 +1,5 @@
-using Echo.Shared.Extensions;
 using Echo.Domain.Users;
+using Echo.Shared.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -10,7 +10,7 @@ namespace Echo.Auth.Invitations;
 [Authorize(Roles = nameof(UserRole.Admin))]
 [EnableRateLimiting("auth")]
 [Route("/api/v{version:apiVersion}/auth/[controller]")]
-public class InvitationController(InvitationService invitationService) : ControllerBase
+public class InvitationsController(InvitationService invitationService) : ControllerBase
 {
     [HttpPost]
     public async Task<ActionResult> CreateInvite(
