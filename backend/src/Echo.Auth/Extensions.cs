@@ -8,6 +8,7 @@ using Echo.Shared.Options.Jwt;
 using Echo.Shared.Services.Email;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Resend;
 
 namespace Echo.Auth;
@@ -49,6 +50,21 @@ public static class Extensions
         services.AddScoped<InvitationService>();
         services.AddScoped<InvitationsController>();
 
+        services.AddSingleton<AuthInstrumentation>();
         return services;
+    }
+
+    public static IHostApplicationBuilder ConfigureAuthObservability(
+        this IHostApplicationBuilder builder
+    )
+    {
+        builder
+            .Services.AddOpenTelemetry()
+            .WithTracing(tracing =>
+            {
+                AuthInstrumentation.ConfigureTracing(tracing);
+            })
+            .WithMetrics(metrics => AuthInstrumentation.ConfigureMetrics(metrics));
+        return builder;
     }
 }

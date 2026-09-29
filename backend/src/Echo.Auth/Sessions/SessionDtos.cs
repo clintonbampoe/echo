@@ -16,3 +16,9 @@ public record RefreshTokenRequest
     [Required, StringLength(512, MinimumLength = 1)]
     public string RefreshToken { get; init; } = string.Empty;
 }
+
+public record LogoutAllSessionsRequest
+{
+    [Required, EmailAddress, StringLength(255)]
+    public string Email { get; init; } = string.Empty;
+}

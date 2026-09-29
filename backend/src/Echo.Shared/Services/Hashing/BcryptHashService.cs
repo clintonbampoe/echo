@@ -4,13 +4,15 @@ using BCrypt.Net;
 
 public class BcryptHashService : IPasswordHasher
 {
-    public Task<string> HashAsync(string input)
+    private const int _costFactor = 10;
+
+    public async Task<string> HashAsync(string input)
     {
-        return Task.Run(() => BCrypt.HashPassword(input, 12));
+        return await Task.Run(() => BCrypt.HashPassword(input, _costFactor));
     }
 
-    public Task<bool> VerifyAsync(string input, string hash)
+    public async Task<bool> VerifyAsync(string input, string hash)
     {
-        return Task.Run(() => BCrypt.Verify(input, hash));
+        return await Task.Run(() => BCrypt.Verify(input, hash));
     }
 }

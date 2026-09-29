@@ -16,6 +16,8 @@ builder.Services.AddAuthServices(builder.Configuration);
 builder.Services.AddDataServices();
 builder.Services.AddSharedServices();
 
+builder.ConfigureAuthObservability();
+
 builder.Services.ConfigureApiRouting();
 builder.Services.ConfigureControllerOptions();
 builder.Services.ConfigureSwaggerDocs();

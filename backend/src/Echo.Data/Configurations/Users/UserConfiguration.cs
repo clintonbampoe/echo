@@ -19,10 +19,22 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             )
             .ValueGeneratedOnAddOrUpdate();
 
-        builder.HasIndex(m => m.Name).HasMethod("GIN").HasOperators("gin_trgm_ops");
+        builder
+            .HasOne(u => u.Congregation)
+            .WithMany()
+            .HasForeignKey(u => u.CongregationId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasIndex(u => u.CongregationId);
+
+        builder.HasIndex(u => u.Name).HasMethod("GIN").HasOperators("gin_trgm_ops");
 
         builder
             .HasIndex(u => new { u.Name, u.Id })
+            .HasFilter($"\"{nameof(User.DeletedAt)}\" IS NULL");
+
+        builder
+            .HasIndex(u => new { u.EmailAddress, u.Id })
             .HasFilter($"\"{nameof(User.DeletedAt)}\" IS NULL");
     }
 }
