@@ -13,7 +13,8 @@ public class AssetService(
     IUnitOfWork unitOfWork,
     IEncoder encoder,
     IAssetMapper mapper,
-    IIdGenerator idGenerator
+    IIdGenerator idGenerator,
+    ApplicationInstrumentation instrumentation
 )
 {
     public async Task<IOperationResult> List(
@@ -23,14 +24,21 @@ public class AssetService(
         CancellationToken ct
     )
     {
+        using var activity = instrumentation.ActivitySource.StartActivity("svc.asset.list");
+
         var cursor = encoder.Decode<AssetCursor>(pagination.Cursor);
-        var entities = await repository.List(
-            congregationId,
-            filters,
-            cursor,
-            pagination.PageSize + 1,
-            ct
-        );
+
+        List<Asset> entities;
+        using (instrumentation.ActivitySource.StartActivity("svc.asset.fetch.list"))
+        {
+            entities = await repository.List(
+                congregationId,
+                filters,
+                cursor,
+                pagination.PageSize + 1,
+                ct
+            );
+        }
 
         var hasMore = entities.Count > pagination.PageSize;
         if (hasMore)
@@ -38,16 +46,28 @@ public class AssetService(
         var nextCursor = hasMore ? encoder.Encode(BuildCursor(entities.Last())) : null;
 
         var data = mapper.ToListDto(entities);
+        activity?.SetTag("asset.count", data.Count);
+
         var res = new PagedResponse<AssetResponseDto>(hasMore, nextCursor, data);
         return new SuccessResult<PagedResponse<AssetResponseDto>>(res);
     }
 
     public async Task<IOperationResult> GetById(Guid id, Guid congregationId, CancellationToken ct)
     {
-        var entity = await repository.GetById(id, congregationId, ct);
+        using var activity = instrumentation.ActivitySource.StartActivity("svc.asset.get_by_id");
+        activity?.SetTag("asset.id", id);
+
+        Asset? entity;
+        using (instrumentation.ActivitySource.StartActivity("svc.asset.fetch.by_id"))
+        {
+            entity = await repository.GetById(id, congregationId, ct);
+        }
 
         if (entity is null)
+        {
+            activity?.SetTag("asset.found", false);
             return new NotFoundResult(id.ToString());
+        }
 
         var res = mapper.ToDto(entity);
         return new SuccessResult<AssetResponseDto>(res);
@@ -59,9 +79,15 @@ public class AssetService(
         CancellationToken ct
     )
     {
+        using var activity = instrumentation.ActivitySource.StartActivity("svc.asset.create");
         var entity = mapper.ToEntity(dto);
 
-        var category = await categoryRepository.GetById(congregationId, entity.CategoryId, ct);
+        AssetCategory? category;
+        using (instrumentation.ActivitySource.StartActivity("svc.asset.validate.category"))
+        {
+            category = await categoryRepository.GetById(congregationId, entity.CategoryId, ct);
+        }
+
         if (category is null)
             return new ForeignKeyEntityNotFound(nameof(category));
 
@@ -69,8 +95,13 @@ public class AssetService(
         entity.Id = idGenerator.Generate();
         entity.Category = category;
 
-        repository.Create(entity);
-        await unitOfWork.CommitAsync(ct);
+        using (instrumentation.ActivitySource.StartActivity("svc.asset.persist"))
+        {
+            repository.Create(entity);
+            await unitOfWork.CommitAsync(ct);
+        }
+
+        activity?.SetTag("asset.id", entity.Id);
 
         var res = mapper.ToDto(entity);
         return new SuccessResult<AssetResponseDto>(res);
@@ -83,13 +114,25 @@ public class AssetService(
         CancellationToken ct
     )
     {
-        var entity = await repository.GetById(congregationId, id, ct);
+        using var activity = instrumentation.ActivitySource.StartActivity("svc.asset.update");
+        activity?.SetTag("asset.id", id);
+
+        Asset? entity;
+        using (instrumentation.ActivitySource.StartActivity("svc.asset.fetch.by_id"))
+        {
+            entity = await repository.GetById(id, congregationId, ct);
+        }
 
         if (entity is null)
+        {
+            activity?.SetTag("asset.found", false);
             return new NotFoundResult(id.ToString());
-
-        mapper.Patch(dto, entity);
-        await unitOfWork.CommitAsync(ct);
+        }
+        using (instrumentation.ActivitySource.StartActivity("svc.asset.persist"))
+        {
+            mapper.Patch(dto, entity);
+            await unitOfWork.CommitAsync(ct);
+        }
 
         var res = mapper.ToDto(entity);
         return new SuccessResult<AssetResponseDto>(res);
@@ -97,13 +140,26 @@ public class AssetService(
 
     public async Task<IOperationResult> Delete(Guid congregationId, Guid id, CancellationToken ct)
     {
-        var entity = await repository.GetById(congregationId, id, ct);
+        using var activity = instrumentation.ActivitySource.StartActivity("svc.asset.delete");
+        activity?.SetTag("asset.id", id);
+
+        Asset? entity;
+        using (instrumentation.ActivitySource.StartActivity("svc.asset.fetch.by_id"))
+        {
+            entity = await repository.GetById(id, congregationId, ct);
+        }
 
         if (entity is null)
+        {
+            activity?.SetTag("asset.found", false);
             return new NotFoundResult(id.ToString());
+        }
 
-        repository.SoftDelete(entity);
-        await unitOfWork.CommitAsync(ct);
+        using (instrumentation.ActivitySource.StartActivity("svc.asset.persist"))
+        {
+            repository.SoftDelete(entity);
+            await unitOfWork.CommitAsync(ct);
+        }
 
         return new NoContentResult();
     }
@@ -114,8 +170,18 @@ public class AssetService(
         CancellationToken ct
     )
     {
-        var entities = await repository.Search(congregationId, name, ct);
+        using var activity = instrumentation.ActivitySource.StartActivity("svc.asset.search");
+        activity?.SetTag("asset.query", name);
+
+        List<Asset> entities;
+        using (instrumentation.ActivitySource.StartActivity("svc.asset.fetch.search"))
+        {
+            entities = await repository.Search(congregationId, name, ct);
+        }
+
         var res = mapper.ToSearchDto(entities);
+        activity?.SetTag("asset.count", res.Count);
+
         return new SuccessResult<List<AssetSearchResultDto>>(res);
     }
 

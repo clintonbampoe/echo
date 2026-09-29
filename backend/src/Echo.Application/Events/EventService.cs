@@ -2,6 +2,8 @@ using Echo.Application.Members;
 using Echo.Application.Organizations;
 using Echo.Data;
 using Echo.Domain.Events;
+using Echo.Domain.Members;
+using Echo.Domain.Organizations;
 using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
@@ -16,7 +18,8 @@ public class EventService(
     IUnitOfWork unitOfWork,
     IEncoder encoder,
     IEventMapper mapper,
-    IIdGenerator idGenerator
+    IIdGenerator idGenerator,
+    ApplicationInstrumentation instrumentation
 )
 {
     public async Task<IOperationResult> List(
@@ -26,14 +29,21 @@ public class EventService(
         CancellationToken ct
     )
     {
+        using var activity = instrumentation.ActivitySource.StartActivity("svc.event.list");
+
         var cursor = encoder.Decode<EventCursor>(pagination.Cursor);
-        var entities = await repository.List(
-            congregationId,
-            filters,
-            cursor,
-            pagination.PageSize + 1,
-            ct
-        );
+
+        List<Event> entities;
+        using (instrumentation.ActivitySource.StartActivity("svc.event.fetch.list"))
+        {
+            entities = await repository.List(
+                congregationId,
+                filters,
+                cursor,
+                pagination.PageSize + 1,
+                ct
+            );
+        }
 
         var hasMore = entities.Count > pagination.PageSize;
         if (hasMore)
@@ -42,16 +52,28 @@ public class EventService(
         var nextCursor = hasMore ? encoder.Encode(BuildCursor(entities.Last())) : null;
 
         var data = mapper.ToListDto(entities);
+        activity?.SetTag("event.count", data.Count);
+
         var res = new PagedResponse<EventResponseDto>(hasMore, nextCursor, data);
         return new SuccessResult<PagedResponse<EventResponseDto>>(res);
     }
 
     public async Task<IOperationResult> GetById(Guid id, Guid congregationId, CancellationToken ct)
     {
-        var entity = await repository.GetById(id, congregationId, ct);
+        using var activity = instrumentation.ActivitySource.StartActivity("svc.event.get_by_id");
+        activity?.SetTag("event.id", id);
+
+        Event? entity;
+        using (instrumentation.ActivitySource.StartActivity("svc.event.fetch.by_id"))
+        {
+            entity = await repository.GetById(id, congregationId, ct);
+        }
 
         if (entity is null)
+        {
+            activity?.SetTag("event.found", false);
             return new NotFoundResult(id.ToString());
+        }
 
         var res = mapper.ToDto(entity);
         return new SuccessResult<EventResponseDto>(res);
@@ -63,15 +85,25 @@ public class EventService(
         CancellationToken ct
     )
     {
-        var organizer = await memberRepository.GetById(congregationId, dto.OrganizerId, ct);
+        using var activity = instrumentation.ActivitySource.StartActivity("svc.event.create");
+
+        Member? organizer;
+        using (instrumentation.ActivitySource.StartActivity("svc.event.validate.organizer"))
+        {
+            organizer = await memberRepository.GetById(congregationId, dto.OrganizerId, ct);
+        }
         if (organizer is null)
             return new ForeignKeyEntityNotFound(nameof(organizer));
 
-        var organization = await organizationRepository.GetById(
-            congregationId,
-            dto.OrganizationId,
-            ct
-        );
+        Organization? organization;
+        using (instrumentation.ActivitySource.StartActivity("svc.event.validate.organization"))
+        {
+            organization = await organizationRepository.GetById(
+                congregationId,
+                dto.OrganizationId,
+                ct
+            );
+        }
         if (organization is null)
             return new ForeignKeyEntityNotFound(nameof(organization));
 
@@ -81,8 +113,13 @@ public class EventService(
         entity.Organization = organization;
         entity.Organizer = organizer;
 
-        repository.Create(entity);
-        await unitOfWork.CommitAsync(ct);
+        using (instrumentation.ActivitySource.StartActivity("svc.event.persist"))
+        {
+            repository.Create(entity);
+            await unitOfWork.CommitAsync(ct);
+        }
+
+        activity?.SetTag("event.id", entity.Id);
 
         var res = mapper.ToDto(entity);
         return new CreatedAtResult<EventResponseDto>(res);
@@ -95,13 +132,27 @@ public class EventService(
         CancellationToken ct
     )
     {
-        var entity = await repository.GetById(congregationId, id, ct);
+        using var activity = instrumentation.ActivitySource.StartActivity("svc.event.update");
+        activity?.SetTag("event.id", id);
+
+        Event? entity;
+        using (instrumentation.ActivitySource.StartActivity("svc.event.fetch.by_id"))
+        {
+            entity = await repository.GetById(congregationId, id, ct);
+        }
 
         if (entity is null)
+        {
+            activity?.SetTag("event.found", false);
             return new NotFoundResult(id.ToString());
+        }
 
         mapper.Patch(dto, entity);
-        await unitOfWork.CommitAsync(ct);
+
+        using (instrumentation.ActivitySource.StartActivity("svc.event.persist"))
+        {
+            await unitOfWork.CommitAsync(ct);
+        }
 
         var res = mapper.ToDto(entity);
         return new SuccessResult<EventResponseDto>(res);
@@ -109,13 +160,26 @@ public class EventService(
 
     public async Task<IOperationResult> Delete(Guid congregationId, Guid id, CancellationToken ct)
     {
-        var entity = await repository.GetById(congregationId, id, ct);
+        using var activity = instrumentation.ActivitySource.StartActivity("svc.event.delete");
+        activity?.SetTag("event.id", id);
+
+        Event? entity;
+        using (instrumentation.ActivitySource.StartActivity("svc.event.fetch.by_id"))
+        {
+            entity = await repository.GetById(id, congregationId, ct);
+        }
 
         if (entity is null)
+        {
+            activity?.SetTag("event.found", false);
             return new NotFoundResult(id.ToString());
+        }
 
-        repository.SoftDelete(entity);
-        await unitOfWork.CommitAsync(ct);
+        using (instrumentation.ActivitySource.StartActivity("svc.event.persist"))
+        {
+            repository.SoftDelete(entity);
+            await unitOfWork.CommitAsync(ct);
+        }
 
         return new NoContentResult();
     }
@@ -126,9 +190,20 @@ public class EventService(
         CancellationToken ct
     )
     {
-        var entities = await repository.Search(congregationId, name, ct);
-        var res = mapper.ToSearchDto(entities);
-        return new SuccessResult<List<EventSearchResultDto>>(res);
+        {
+            using var activity = instrumentation.ActivitySource.StartActivity("svc.event.search");
+            activity?.SetTag("event.query", name);
+
+            List<Event> entities;
+            using (instrumentation.ActivitySource.StartActivity("svc.event.fetch.search"))
+            {
+                entities = await repository.Search(congregationId, name, ct);
+            }
+
+            var res = mapper.ToSearchDto(entities);
+            activity?.SetTag("event.count", res.Count);
+            return new SuccessResult<List<EventSearchResultDto>>(res);
+        }
     }
 
     private static EventCursor BuildCursor(Event last)

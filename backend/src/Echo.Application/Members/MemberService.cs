@@ -12,7 +12,8 @@ public class MemberService(
     IUnitOfWork unitOfWork,
     IMemberMapper mapper,
     IEncoder encoder,
-    IIdGenerator idGenerator
+    IIdGenerator idGenerator,
+    ApplicationInstrumentation instrumentation
 )
 {
     public async Task<IOperationResult> List(
@@ -22,15 +23,21 @@ public class MemberService(
         CancellationToken ct
     )
     {
+        using var activity = instrumentation.ActivitySource.StartActivity("svc.member.list");
+
         var cursor = encoder.Decode<MemberCursor>(pagination.Cursor);
 
-        var entities = await repository.List(
-            congregationId,
-            filters,
-            cursor,
-            pagination.PageSize + 1,
-            ct
-        );
+        List<Member> entities;
+        using (instrumentation.ActivitySource.StartActivity("svc.member.fetch.list"))
+        {
+            entities = await repository.List(
+                congregationId,
+                filters,
+                cursor,
+                pagination.PageSize + 1,
+                ct
+            );
+        }
 
         var hasMore = entities.Count > pagination.PageSize;
         if (hasMore)
@@ -39,15 +46,28 @@ public class MemberService(
         var nextCursor = hasMore ? encoder.Encode(BuildCursor(entities.Last())) : null;
 
         var data = mapper.ToListDto(entities);
+        activity?.SetTag("member.count", data.Count);
+
         var res = new PagedResponse<MemberResponseDto>(hasMore, nextCursor, data);
         return new SuccessResult<PagedResponse<MemberResponseDto>>(res);
     }
 
     public async Task<IOperationResult> GetById(Guid id, Guid congregationId, CancellationToken ct)
     {
-        var entity = await repository.GetById(id, congregationId, ct);
+        using var activity = instrumentation.ActivitySource.StartActivity("svc.member.get_by_id");
+        activity?.SetTag("member.id", id);
+
+        Member? entity;
+        using (instrumentation.ActivitySource.StartActivity("svc.member.fetch.by_id"))
+        {
+            entity = await repository.GetById(id, congregationId, ct);
+        }
+
         if (entity is null)
-            return new NotFoundResult(nameof(entity));
+        {
+            activity?.SetTag("member.found", false);
+            return new NotFoundResult(id.ToString());
+        }
 
         var res = mapper.ToDto(entity);
         return new SuccessResult<MemberResponseDto>(res);
@@ -59,12 +79,19 @@ public class MemberService(
         CancellationToken ct
     )
     {
+        using var activity = instrumentation.ActivitySource.StartActivity("svc.member.create");
+
         var entity = mapper.ToEntity(dto);
         entity.CongregationId = congregationId;
         entity.Id = idGenerator.Generate();
 
-        repository.Create(entity);
-        await unitOfWork.CommitAsync(ct);
+        using (instrumentation.ActivitySource.StartActivity("svc.member.persist"))
+        {
+            repository.Create(entity);
+            await unitOfWork.CommitAsync(ct);
+        }
+
+        activity?.SetTag("member.id", entity.Id);
 
         var res = mapper.ToDto(entity);
         return new CreatedAtResult<MemberResponseDto>(res);
@@ -77,13 +104,27 @@ public class MemberService(
         CancellationToken ct
     )
     {
-        var entity = await repository.GetById(congregationId, id, ct);
+        using var activity = instrumentation.ActivitySource.StartActivity("svc.member.update");
+        activity?.SetTag("member.id", id);
+
+        Member? entity;
+        using (instrumentation.ActivitySource.StartActivity("svc.member.fetch.by_id"))
+        {
+            entity = await repository.GetById(congregationId, id, ct);
+        }
 
         if (entity is null)
+        {
+            activity?.SetTag("member.found", false);
             return new NotFoundResult(id.ToString());
+        }
 
         mapper.Patch(dto, entity);
-        await unitOfWork.CommitAsync(ct);
+
+        using (instrumentation.ActivitySource.StartActivity("svc.member.persist"))
+        {
+            await unitOfWork.CommitAsync(ct);
+        }
 
         var res = mapper.ToDto(entity);
         return new SuccessResult<MemberResponseDto>(res);
@@ -91,13 +132,26 @@ public class MemberService(
 
     public async Task<IOperationResult> Delete(Guid congregationId, Guid id, CancellationToken ct)
     {
-        var entity = await repository.GetById(congregationId, id, ct);
+        using var activity = instrumentation.ActivitySource.StartActivity("svc.member.delete");
+        activity?.SetTag("member.id", id);
+
+        Member? entity;
+        using (instrumentation.ActivitySource.StartActivity("svc.member.fetch.by_id"))
+        {
+            entity = await repository.GetById(id, congregationId, ct);
+        }
 
         if (entity is null)
+        {
+            activity?.SetTag("member.found", false);
             return new NotFoundResult(id.ToString());
+        }
 
-        repository.SoftDelete(entity);
-        await unitOfWork.CommitAsync(ct);
+        using (instrumentation.ActivitySource.StartActivity("svc.member.persist"))
+        {
+            repository.SoftDelete(entity);
+            await unitOfWork.CommitAsync(ct);
+        }
 
         return new NoContentResult();
     }
@@ -108,8 +162,17 @@ public class MemberService(
         CancellationToken ct
     )
     {
-        var entities = await repository.Search(congregationId, searchString, ct);
+        using var activity = instrumentation.ActivitySource.StartActivity("svc.member.search");
+        activity?.SetTag("member.query", searchString);
+
+        List<Member> entities;
+        using (instrumentation.ActivitySource.StartActivity("svc.member.fetch.search"))
+        {
+            entities = await repository.Search(congregationId, searchString, ct);
+        }
+
         var res = mapper.ToSearchDto(entities);
+        activity?.SetTag("member.count", res.Count);
         return new SuccessResult<List<MemberSearchResultDto>>(res);
     }
 

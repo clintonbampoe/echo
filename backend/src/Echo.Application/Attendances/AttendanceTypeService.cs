@@ -1,27 +1,52 @@
-using Echo.Shared.HttpResults;
 using Echo.Data;
+using Echo.Domain.Attendances;
+using Echo.Shared.HttpResults;
 
 namespace Echo.Application.Attendances;
 
 public class AttendanceTypeService(
     AttendanceTypeRepository repository,
     IUnitOfWork unitOfWork,
-    IAttendanceTypeMapper mapper
+    IAttendanceTypeMapper mapper,
+    ApplicationInstrumentation instrumentation
 )
 {
     public async Task<IOperationResult> List(Guid congregationId, CancellationToken ct)
     {
-        var entities = await repository.GetAll(congregationId, ct);
+        using var activity = instrumentation.ActivitySource.StartActivity(
+            "svc.attendance_type.list"
+        );
+
+        List<AttendanceType> entities;
+        using (instrumentation.ActivitySource.StartActivity("svc.attendance_type.fetch.all"))
+        {
+            entities = await repository.GetAll(congregationId, ct);
+        }
+
         var res = mapper.ToListDto(entities);
+        activity?.SetTag("attendance_type.count", res.Count);
+
         return new SuccessResult<List<AttendanceTypeResponseDto>>(res);
     }
 
     public async Task<IOperationResult> GetById(int id, Guid congregationId, CancellationToken ct)
     {
-        var entity = await repository.GetById(congregationId, id, ct);
+        using var activity = instrumentation.ActivitySource.StartActivity(
+            "svc.attendance_type.get_by_id"
+        );
+        activity?.SetTag("attendance_type.id", id);
+
+        AttendanceType? entity;
+        using (instrumentation.ActivitySource.StartActivity("svc.attendance_type.fetch.by_id"))
+        {
+            entity = await repository.GetById(congregationId, id, ct);
+        }
 
         if (entity is null)
+        {
+            activity?.SetTag("attendance_type.found", false);
             return new NotFoundResult(id.ToString());
+        }
 
         var res = mapper.ToDto(entity);
         return new SuccessResult<AttendanceTypeResponseDto>(res);
@@ -33,11 +58,20 @@ public class AttendanceTypeService(
         CancellationToken ct
     )
     {
+        using var activity = instrumentation.ActivitySource.StartActivity(
+            "svc.attendance_type.create"
+        );
+
         var entity = mapper.ToEntity(dto);
         entity.CongregationId = congregationId;
 
-        repository.Create(entity);
-        await unitOfWork.CommitAsync(ct);
+        using (instrumentation.ActivitySource.StartActivity("svc.attendance_type.persist"))
+        {
+            repository.Create(entity);
+            await unitOfWork.CommitAsync(ct);
+        }
+
+        activity?.SetTag("attendance_type.id", entity.Id);
 
         var res = mapper.ToDto(entity);
         return new CreatedAtResult<AttendanceTypeResponseDto>(res);
@@ -50,13 +84,29 @@ public class AttendanceTypeService(
         CancellationToken ct
     )
     {
-        var entity = await repository.GetById(congregationId, id, ct);
+        using var activity = instrumentation.ActivitySource.StartActivity(
+            "svc.attendance_type.update"
+        );
+        activity?.SetTag("attendance_type.id", id);
+
+        AttendanceType? entity;
+        using (instrumentation.ActivitySource.StartActivity("svc.attendance_type.fetch.by_id"))
+        {
+            entity = await repository.GetById(congregationId, id, ct);
+        }
 
         if (entity is null)
+        {
+            activity?.SetTag("attendance_type.found", false);
             return new NotFoundResult(id.ToString());
+        }
 
         mapper.Patch(dto, entity);
-        await unitOfWork.CommitAsync(ct);
+
+        using (instrumentation.ActivitySource.StartActivity("svc.attendance_type.persist"))
+        {
+            await unitOfWork.CommitAsync(ct);
+        }
 
         var res = mapper.ToDto(entity);
         return new SuccessResult<AttendanceTypeResponseDto>(res);
@@ -64,13 +114,28 @@ public class AttendanceTypeService(
 
     public async Task<IOperationResult> Delete(Guid congregationId, int id, CancellationToken ct)
     {
-        var entity = await repository.GetById(congregationId, id, ct);
+        using var activity = instrumentation.ActivitySource.StartActivity(
+            "svc.attendance_type.delete"
+        );
+        activity?.SetTag("attendance_type.id", id);
+
+        AttendanceType? entity;
+        using (instrumentation.ActivitySource.StartActivity("svc.attendance_type.fetch.by_id"))
+        {
+            entity = await repository.GetById(congregationId, id, ct);
+        }
 
         if (entity is null)
+        {
+            activity?.SetTag("attendance_type.found", false);
             return new NotFoundResult(id.ToString());
+        }
 
-        repository.SoftDelete(entity);
-        await unitOfWork.CommitAsync(ct);
+        using (instrumentation.ActivitySource.StartActivity("svc.attendance_type.persist"))
+        {
+            repository.SoftDelete(entity);
+            await unitOfWork.CommitAsync(ct);
+        }
 
         return new NoContentResult();
     }
@@ -81,8 +146,20 @@ public class AttendanceTypeService(
         CancellationToken ct
     )
     {
-        var entities = await repository.Search(congregationId, name, ct);
+        using var activity = instrumentation.ActivitySource.StartActivity(
+            "svc.attendance_type.search"
+        );
+        activity?.SetTag("attendance_type.query", name);
+
+        List<AttendanceType> entities;
+        using (instrumentation.ActivitySource.StartActivity("svc.attendance_type.fetch.search"))
+        {
+            entities = await repository.Search(congregationId, name, ct);
+        }
+
         var res = mapper.ToSearchDto(entities);
+        activity?.SetTag("attendance_type.count", res.Count);
+
         return new SuccessResult<List<AttendanceTypeSearchResultDto>>(res);
     }
 }

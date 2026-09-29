@@ -1,6 +1,7 @@
 using Echo.Application.Members;
 using Echo.Data;
 using Echo.Domain.Events;
+using Echo.Domain.Members;
 using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
@@ -15,7 +16,8 @@ public class EventAttendanceService(
     IEncoder encoder,
     IUnitOfWork unitOfWork,
     IEventAttendanceMapper mapper,
-    IIdGenerator idGenerator
+    IIdGenerator idGenerator,
+    ApplicationInstrumentation instrumentation
 )
 {
     public async Task<IOperationResult> List(
@@ -24,8 +26,17 @@ public class EventAttendanceService(
         CancellationToken ct
     )
     {
+        using var activity = instrumentation.ActivitySource.StartActivity(
+            "svc.event_attendance.list"
+        );
+
         var cursor = encoder.Decode<EventAttendanceCursor>(pagination.Cursor);
-        var entities = await repository.List(congregationId, cursor, pagination.PageSize + 1, ct);
+
+        List<EventAttendance> entities;
+        using (instrumentation.ActivitySource.StartActivity("svc.event_attendance.fetch.list"))
+        {
+            entities = await repository.List(congregationId, cursor, pagination.PageSize + 1, ct);
+        }
 
         var hasMore = entities.Count > pagination.PageSize;
         if (hasMore)
@@ -34,16 +45,30 @@ public class EventAttendanceService(
         var nextCursor = hasMore ? encoder.Encode(BuildCursor(entities.Last())) : null;
 
         var data = mapper.ToListDto(entities);
+        activity?.SetTag("event_attendance.count", data.Count);
+
         var res = new PagedResponse<EventAttendanceResponseDto>(hasMore, nextCursor, data);
         return new SuccessResult<PagedResponse<EventAttendanceResponseDto>>(res);
     }
 
     public async Task<IOperationResult> GetById(Guid id, Guid congregationId, CancellationToken ct)
     {
-        var entity = await repository.GetById(id, congregationId, ct);
+        using var activity = instrumentation.ActivitySource.StartActivity(
+            "svc.event_attendance.get_by_id"
+        );
+        activity?.SetTag("event_attendance.id", id);
+
+        EventAttendance? entity;
+        using (instrumentation.ActivitySource.StartActivity("svc.event_attendance.fetch.by_id"))
+        {
+            entity = await repository.GetById(id, congregationId, ct);
+        }
 
         if (entity is null)
+        {
+            activity?.SetTag("event_attendance.found", false);
             return new NotFoundResult(id.ToString());
+        }
 
         var res = mapper.ToDto(entity);
         return new SuccessResult<EventAttendanceResponseDto>(res);
@@ -56,14 +81,23 @@ public class EventAttendanceService(
         CancellationToken ct
     )
     {
-        var cursor = encoder.Decode<EventAttendanceCursor>(pagination.Cursor);
-        var entities = await repository.ListByEventId(
-            congregationId,
-            eventId,
-            cursor,
-            pagination.PageSize + 1,
-            ct
+        using var activity = instrumentation.ActivitySource.StartActivity(
+            "svc.event_attendance.list_by_event"
         );
+
+        var cursor = encoder.Decode<EventAttendanceCursor>(pagination.Cursor);
+
+        List<EventAttendance> entities;
+        using (instrumentation.ActivitySource.StartActivity("svc.event_attendance.fetch.by_event"))
+        {
+            entities = await repository.ListByEventId(
+                congregationId,
+                eventId,
+                cursor,
+                pagination.PageSize + 1,
+                ct
+            );
+        }
 
         var hasMore = entities.Count > pagination.PageSize;
         if (hasMore)
@@ -72,6 +106,8 @@ public class EventAttendanceService(
         var nextCursor = hasMore ? encoder.Encode(BuildCursor(entities.Last())) : null;
 
         var data = mapper.ToListDto(entities);
+        activity?.SetTag("event_attendance.count", data.Count);
+
         var res = new PagedResponse<EventAttendanceResponseDto>(hasMore, nextCursor, data);
         return new SuccessResult<PagedResponse<EventAttendanceResponseDto>>(res);
     }
@@ -83,14 +119,22 @@ public class EventAttendanceService(
         CancellationToken ct
     )
     {
-        var cursor = encoder.Decode<EventAttendanceCursor>(pagination.Cursor);
-        var entities = await repository.ListByMemberId(
-            congregationId,
-            memberId,
-            cursor,
-            pagination.PageSize + 1,
-            ct
+        using var activity = instrumentation.ActivitySource.StartActivity(
+            "svc.event_attendance.list_by_member"
         );
+        var cursor = encoder.Decode<EventAttendanceCursor>(pagination.Cursor);
+
+        List<EventAttendance> entities;
+        using (instrumentation.ActivitySource.StartActivity("svc.event_attendance.fetch.by_member"))
+        {
+            entities = await repository.ListByMemberId(
+                congregationId,
+                memberId,
+                cursor,
+                pagination.PageSize + 1,
+                ct
+            );
+        }
 
         var hasMore = entities.Count > pagination.PageSize;
         if (hasMore)
@@ -99,6 +143,8 @@ public class EventAttendanceService(
         var nextCursor = hasMore ? encoder.Encode(BuildCursor(entities.Last())) : null;
 
         var data = mapper.ToListDto(entities);
+        activity?.SetTag("event_attendance.count", data.Count);
+
         var res = new PagedResponse<EventAttendanceResponseDto>(hasMore, nextCursor, data);
         return new SuccessResult<PagedResponse<EventAttendanceResponseDto>>(res);
     }
@@ -109,11 +155,23 @@ public class EventAttendanceService(
         CancellationToken ct
     )
     {
-        var evnt = await eventRepository.GetById(congregationId, dto.EventId, ct);
+        using var activity = instrumentation.ActivitySource.StartActivity(
+            "svc.event_attendance.create"
+        );
+
+        Event? evnt;
+        using (instrumentation.ActivitySource.StartActivity("svc.event_attendance.validate.event"))
+        {
+            evnt = await eventRepository.GetById(congregationId, dto.EventId, ct);
+        }
         if (evnt is null)
             return new ForeignKeyEntityNotFound(nameof(evnt));
 
-        var member = await memberRepository.GetById(congregationId, dto.MemberId, ct);
+        Member? member;
+        using (instrumentation.ActivitySource.StartActivity("svc.event_attendance.validate.member"))
+        {
+            member = await memberRepository.GetById(congregationId, dto.MemberId, ct);
+        }
         if (member is null)
             return new ForeignKeyEntityNotFound(nameof(member));
 
@@ -123,8 +181,13 @@ public class EventAttendanceService(
         entity.Event = evnt;
         entity.Member = member;
 
-        repository.Create(entity);
-        await unitOfWork.CommitAsync(ct);
+        using (instrumentation.ActivitySource.StartActivity("svc.event_attendance.persist"))
+        {
+            repository.Create(entity);
+            await unitOfWork.CommitAsync(ct);
+        }
+
+        activity?.SetTag("event_attendance.id", entity.Id);
 
         var res = mapper.ToDto(entity);
         return new CreatedAtResult<EventAttendanceResponseDto>(res);
@@ -137,13 +200,29 @@ public class EventAttendanceService(
         CancellationToken ct
     )
     {
-        var entity = await repository.GetById(congregationId, id, ct);
+        using var activity = instrumentation.ActivitySource.StartActivity(
+            "svc.event_attendance.update"
+        );
+        activity?.SetTag("event_attendance.id", id);
+
+        EventAttendance? entity;
+        using (instrumentation.ActivitySource.StartActivity("svc.event_attendance.fetch.by_id"))
+        {
+            entity = await repository.GetById(id, congregationId, ct);
+        }
 
         if (entity is null)
+        {
+            activity?.SetTag("event_attendance.found", false);
             return new NotFoundResult(id.ToString());
+        }
 
         mapper.Patch(dto, entity);
-        await unitOfWork.CommitAsync(ct);
+
+        using (instrumentation.ActivitySource.StartActivity("svc.event_attendance.persist"))
+        {
+            await unitOfWork.CommitAsync(ct);
+        }
 
         var res = mapper.ToDto(entity);
         return new SuccessResult<EventAttendanceResponseDto>(res);
@@ -151,13 +230,28 @@ public class EventAttendanceService(
 
     public async Task<IOperationResult> Delete(Guid congregationId, Guid id, CancellationToken ct)
     {
-        var entity = await repository.GetById(congregationId, id, ct);
+        using var activity = instrumentation.ActivitySource.StartActivity(
+            "svc.event_attendance.delete"
+        );
+        activity?.SetTag("event_attendance.id", id);
+
+        EventAttendance? entity;
+        using (instrumentation.ActivitySource.StartActivity("svc.event_attendance.fetch.by_id"))
+        {
+            entity = await repository.GetById(id, congregationId, ct);
+        }
 
         if (entity is null)
+        {
+            activity?.SetTag("event_attendance.found", false);
             return new NotFoundResult(id.ToString());
+        }
 
-        repository.SoftDelete(entity);
-        await unitOfWork.CommitAsync(ct);
+        using (instrumentation.ActivitySource.StartActivity("svc.event_attendance.persist"))
+        {
+            repository.SoftDelete(entity);
+            await unitOfWork.CommitAsync(ct);
+        }
 
         return new NoContentResult();
     }
