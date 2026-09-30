@@ -3,7 +3,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Echo.Application.Projects;
 
-public class ProjectContributionsController(ProjectContributionService service) : BaseController
+public class ProjectContributionsController(
+    ProjectContributionService service,
+    ApplicationInstrumentation instrumentation
+) : BaseController
 {
     [HttpGet]
     public async Task<ActionResult> List(
@@ -12,6 +15,7 @@ public class ProjectContributionsController(ProjectContributionService service) 
         CancellationToken ct
     )
     {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.project_contribution.list");
         var response = await service.List(GetCongregationId(), filters, pagination, ct);
         return response.ToActionResult();
     }
@@ -19,6 +23,10 @@ public class ProjectContributionsController(ProjectContributionService service) 
     [HttpGet("{id}")]
     public async Task<ActionResult> GetById(Guid id, CancellationToken ct)
     {
+        using var span = StartEndpointSpan(
+            instrumentation,
+            "endpoint.project_contribution.fetch_by_id"
+        );
         var response = await service.GetById(id, GetCongregationId(), ct);
         return response.ToActionResult();
     }
@@ -26,6 +34,7 @@ public class ProjectContributionsController(ProjectContributionService service) 
     [HttpPost]
     public async Task<ActionResult> Create(ProjectContributionCreateDto dto, CancellationToken ct)
     {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.project_contribution.create");
         var response = await service.Create(GetCongregationId(), dto, ct);
         return response.ToActionResult();
     }
@@ -37,6 +46,7 @@ public class ProjectContributionsController(ProjectContributionService service) 
         CancellationToken ct
     )
     {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.project_contribution.update");
         var response = await service.Update(GetCongregationId(), id, dto, ct);
         return response.ToActionResult();
     }
@@ -44,6 +54,7 @@ public class ProjectContributionsController(ProjectContributionService service) 
     [HttpDelete("{id}")]
     public async Task<ActionResult> Delete(Guid id, CancellationToken ct)
     {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.project_contribution.delete");
         var response = await service.Delete(id, GetCongregationId(), ct);
         return response.ToActionResult();
     }

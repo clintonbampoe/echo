@@ -3,11 +3,15 @@ using Microsoft.AspNetCore.RateLimiting;
 
 namespace Echo.Application.Projects;
 
-public class ProjectCategoriesController(ProjectCategoryService service) : BaseController
+public class ProjectCategoriesController(
+    ProjectCategoryService service,
+    ApplicationInstrumentation instrumentation
+) : BaseController
 {
     [HttpGet]
     public async Task<ActionResult> List(CancellationToken ct)
     {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.project_category.list");
         var response = await service.List(GetCongregationId(), ct);
         return response.ToActionResult();
     }
@@ -15,6 +19,10 @@ public class ProjectCategoriesController(ProjectCategoryService service) : BaseC
     [HttpGet("{id}")]
     public async Task<ActionResult> GetById(int id, CancellationToken ct)
     {
+        using var span = StartEndpointSpan(
+            instrumentation,
+            "endpoint.project_category.fetch_by_id"
+        );
         var response = await service.GetById(id, GetCongregationId(), ct);
         return response.ToActionResult();
     }
@@ -22,6 +30,7 @@ public class ProjectCategoriesController(ProjectCategoryService service) : BaseC
     [HttpPost]
     public async Task<ActionResult> Create(ProjectCategoryCreateDto dto, CancellationToken ct)
     {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.project_category.create");
         var response = await service.Create(GetCongregationId(), dto, ct);
         return response.ToActionResult();
     }
@@ -33,6 +42,7 @@ public class ProjectCategoriesController(ProjectCategoryService service) : BaseC
         CancellationToken ct
     )
     {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.project_category.update");
         var response = await service.Update(GetCongregationId(), id, dto, ct);
         return response.ToActionResult();
     }
@@ -40,6 +50,7 @@ public class ProjectCategoriesController(ProjectCategoryService service) : BaseC
     [HttpDelete("{id}")]
     public async Task<ActionResult> Delete(int id, CancellationToken ct)
     {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.project_category.delete");
         var response = await service.Delete(GetCongregationId(), id, ct);
         return response.ToActionResult();
     }
@@ -48,6 +59,7 @@ public class ProjectCategoriesController(ProjectCategoryService service) : BaseC
     [EnableRateLimiting("search")]
     public async Task<ActionResult> Search([FromQuery] string q, CancellationToken ct)
     {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.project_category.search");
         var res = await service.Search(GetCongregationId(), q, ct);
         return res.ToActionResult();
     }

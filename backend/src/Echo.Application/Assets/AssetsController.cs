@@ -4,7 +4,8 @@ using Microsoft.AspNetCore.RateLimiting;
 
 namespace Echo.Application.Assets;
 
-public class AssetsController(AssetService service) : BaseController
+public class AssetsController(AssetService service, ApplicationInstrumentation instrumentation)
+    : BaseController
 {
     [HttpGet]
     public async Task<ActionResult> List(
@@ -13,6 +14,7 @@ public class AssetsController(AssetService service) : BaseController
         CancellationToken ct
     )
     {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.asset.list");
         var response = await service.List(GetCongregationId(), filters, pagination, ct);
         return response.ToActionResult();
     }
@@ -20,6 +22,7 @@ public class AssetsController(AssetService service) : BaseController
     [HttpGet("{id}")]
     public async Task<ActionResult> GetById(Guid id, CancellationToken ct)
     {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.asset.fetch_by_id");
         var response = await service.GetById(id, GetCongregationId(), ct);
         return response.ToActionResult();
     }
@@ -27,6 +30,7 @@ public class AssetsController(AssetService service) : BaseController
     [HttpPost]
     public async Task<ActionResult> Create(AssetCreateDto dto, CancellationToken ct)
     {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.asset.create");
         var response = await service.Create(GetCongregationId(), dto, ct);
         return response.ToActionResult();
     }
@@ -34,6 +38,7 @@ public class AssetsController(AssetService service) : BaseController
     [HttpPut("{id}")]
     public async Task<ActionResult> Update(Guid id, AssetUpdateDto dto, CancellationToken ct)
     {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.asset.update");
         var response = await service.Update(GetCongregationId(), id, dto, ct);
         return response.ToActionResult();
     }
@@ -41,6 +46,7 @@ public class AssetsController(AssetService service) : BaseController
     [HttpDelete("{id}")]
     public async Task<ActionResult> Delete(Guid id, CancellationToken ct)
     {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.asset.delete");
         var response = await service.Delete(id, GetCongregationId(), ct);
         return response.ToActionResult();
     }
@@ -49,6 +55,7 @@ public class AssetsController(AssetService service) : BaseController
     [EnableRateLimiting("search")]
     public async Task<ActionResult> Search([FromQuery] string q, CancellationToken ct)
     {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.asset.search");
         var res = await service.Search(GetCongregationId(), q, ct);
         return res.ToActionResult();
     }

@@ -1,6 +1,7 @@
+using System.Diagnostics;
 using Asp.Versioning;
-using Echo.Shared.Extensions;
 using Echo.Domain.Users;
+using Echo.Shared.Extensions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Echo.Application;
@@ -11,6 +12,22 @@ namespace Echo.Application;
 public abstract class BaseController : ControllerBase
 {
     protected Guid GetCongregationId() => User.GetCongregationId();
+
     protected Guid GetUserId() => User.GetUserId();
-    protected UserRole GetRole => User.GetUserRole();
+
+    protected UserRole GetRole() => User.GetUserRole();
+
+    protected Activity? StartEndpointSpan(
+        ApplicationInstrumentation instrumentation,
+        string spanName
+    )
+    {
+        var activity = instrumentation.ActivitySource.StartActivity(spanName);
+
+        activity?.SetTag("congregation.id", GetCongregationId());
+        activity?.SetTag("user.id", GetUserId());
+        activity?.SetTag("user.role", GetRole());
+
+        return activity;
+    }
 }

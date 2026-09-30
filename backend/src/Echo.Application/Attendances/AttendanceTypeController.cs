@@ -3,11 +3,15 @@ using Microsoft.AspNetCore.RateLimiting;
 
 namespace Echo.Application.Attendances;
 
-public class AttendanceTypeController(AttendanceTypeService service) : BaseController
+public class AttendanceTypeController(
+    AttendanceTypeService service,
+    ApplicationInstrumentation instrumentation
+) : BaseController
 {
     [HttpGet]
     public async Task<ActionResult> List(CancellationToken ct)
     {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.attendance_type.list");
         var response = await service.List(GetCongregationId(), ct);
         return response.ToActionResult();
     }
@@ -15,6 +19,7 @@ public class AttendanceTypeController(AttendanceTypeService service) : BaseContr
     [HttpGet("{id}")]
     public async Task<ActionResult> GetById(int id, CancellationToken ct)
     {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.attendance_type.fetch_by_id");
         var response = await service.GetById(id, GetCongregationId(), ct);
         return response.ToActionResult();
     }
@@ -22,6 +27,7 @@ public class AttendanceTypeController(AttendanceTypeService service) : BaseContr
     [HttpPost]
     public async Task<ActionResult> Create(AttendanceTypeCreateDto dto, CancellationToken ct)
     {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.attendance_type.create");
         var response = await service.Create(GetCongregationId(), dto, ct);
         return response.ToActionResult();
     }
@@ -33,6 +39,7 @@ public class AttendanceTypeController(AttendanceTypeService service) : BaseContr
         CancellationToken ct
     )
     {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.attendance_type.update");
         var response = await service.Update(GetCongregationId(), id, dto, ct);
         return response.ToActionResult();
     }
@@ -40,6 +47,7 @@ public class AttendanceTypeController(AttendanceTypeService service) : BaseContr
     [HttpDelete("{id}")]
     public async Task<ActionResult> Delete(int id, CancellationToken ct)
     {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.attendance_type.delete");
         var response = await service.Delete(GetCongregationId(), id, ct);
         return response.ToActionResult();
     }
@@ -48,6 +56,7 @@ public class AttendanceTypeController(AttendanceTypeService service) : BaseContr
     [EnableRateLimiting("search")]
     public async Task<ActionResult> Search([FromQuery] string q, CancellationToken ct)
     {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.attendance_type.search");
         var res = await service.Search(GetCongregationId(), q, ct);
         return res.ToActionResult();
     }

@@ -4,7 +4,8 @@ using Microsoft.AspNetCore.RateLimiting;
 
 namespace Echo.Application.Projects;
 
-public class ProjectsController(ProjectService service) : BaseController
+public class ProjectsController(ProjectService service, ApplicationInstrumentation instrumentation)
+    : BaseController
 {
     [HttpGet]
     public async Task<ActionResult> List(
@@ -13,6 +14,7 @@ public class ProjectsController(ProjectService service) : BaseController
         CancellationToken ct
     )
     {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.project.list");
         var response = await service.List(GetCongregationId(), filters, pagination, ct);
         return response.ToActionResult();
     }
@@ -20,6 +22,7 @@ public class ProjectsController(ProjectService service) : BaseController
     [HttpGet("{id}")]
     public async Task<ActionResult> GetById(Guid id, CancellationToken ct)
     {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.project.fetch_by_id");
         var response = await service.GetById(id, GetCongregationId(), ct);
         return response.ToActionResult();
     }
@@ -27,6 +30,7 @@ public class ProjectsController(ProjectService service) : BaseController
     [HttpPost]
     public async Task<ActionResult> Create(ProjectCreateDto dto, CancellationToken ct)
     {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.project.create");
         var response = await service.Create(GetCongregationId(), dto, ct);
         return response.ToActionResult();
     }
@@ -34,6 +38,7 @@ public class ProjectsController(ProjectService service) : BaseController
     [HttpPut("{id}")]
     public async Task<ActionResult> Update(Guid id, ProjectUpdateDto dto, CancellationToken ct)
     {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.project.update");
         var response = await service.Update(GetCongregationId(), id, dto, ct);
         return response.ToActionResult();
     }
@@ -41,6 +46,7 @@ public class ProjectsController(ProjectService service) : BaseController
     [HttpDelete("{id}")]
     public async Task<ActionResult> Delete(Guid id, CancellationToken ct)
     {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.project.delete");
         var response = await service.Delete(id, GetCongregationId(), ct);
         return response.ToActionResult();
     }
@@ -49,6 +55,7 @@ public class ProjectsController(ProjectService service) : BaseController
     [EnableRateLimiting("search")]
     public async Task<ActionResult> Search([FromQuery] string q, CancellationToken ct)
     {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.project.search");
         var res = await service.Search(GetCongregationId(), q, ct);
         return res.ToActionResult();
     }

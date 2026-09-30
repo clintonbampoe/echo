@@ -4,7 +4,10 @@ using Microsoft.AspNetCore.RateLimiting;
 
 namespace Echo.Application.Organizations;
 
-public class OrganizationsController(OrganizationService service) : BaseController
+public class OrganizationsController(
+    OrganizationService service,
+    ApplicationInstrumentation instrumentation
+) : BaseController
 {
     [HttpGet]
     public async Task<ActionResult> List(
@@ -12,6 +15,7 @@ public class OrganizationsController(OrganizationService service) : BaseControll
         CancellationToken ct
     )
     {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.organization.list");
         var response = await service.List(GetCongregationId(), pagination, ct);
         return response.ToActionResult();
     }
@@ -19,6 +23,7 @@ public class OrganizationsController(OrganizationService service) : BaseControll
     [HttpGet("{id}")]
     public async Task<ActionResult> GetById(Guid id, CancellationToken ct)
     {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.organization.fetch_by_id");
         var response = await service.GetById(id, GetCongregationId(), ct);
         return response.ToActionResult();
     }
@@ -26,6 +31,7 @@ public class OrganizationsController(OrganizationService service) : BaseControll
     [HttpPost]
     public async Task<ActionResult> Create(OrganizationCreateDto dto, CancellationToken ct)
     {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.organization.create");
         var response = await service.Create(GetCongregationId(), dto, ct);
         return response.ToActionResult();
     }
@@ -33,6 +39,7 @@ public class OrganizationsController(OrganizationService service) : BaseControll
     [HttpPut("{id}")]
     public async Task<ActionResult> Update(Guid id, OrganizationUpdateDto dto, CancellationToken ct)
     {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.organization.update");
         var response = await service.Update(GetCongregationId(), id, dto, ct);
         return response.ToActionResult();
     }
@@ -40,6 +47,7 @@ public class OrganizationsController(OrganizationService service) : BaseControll
     [HttpDelete("{id}")]
     public async Task<ActionResult> Delete(Guid id, CancellationToken ct)
     {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.organization.delete");
         var response = await service.Delete(id, GetCongregationId(), ct);
         return response.ToActionResult();
     }
@@ -48,6 +56,7 @@ public class OrganizationsController(OrganizationService service) : BaseControll
     [EnableRateLimiting("search")]
     public async Task<ActionResult> Search([FromQuery] string q, CancellationToken ct)
     {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.organization.search");
         var res = await service.Search(GetCongregationId(), q, ct);
         return res.ToActionResult();
     }
