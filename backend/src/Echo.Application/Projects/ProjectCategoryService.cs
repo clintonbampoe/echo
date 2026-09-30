@@ -1,6 +1,7 @@
 using Echo.Data;
 using Echo.Domain.Projects;
 using Echo.Shared.HttpResults;
+using Microsoft.Extensions.Logging;
 
 namespace Echo.Application.Projects;
 
@@ -8,7 +9,8 @@ public class ProjectCategoryService(
     ProjectCategoryRepository repository,
     IUnitOfWork unitOfWork,
     IProjectCategoryMapper mapper,
-    ApplicationInstrumentation instrumentation
+    ApplicationInstrumentation instrumentation,
+    ILogger<ProjectCategoryService> logger
 )
 {
     public async Task<IOperationResult> List(Guid congregationId, CancellationToken ct)
@@ -45,6 +47,7 @@ public class ProjectCategoryService(
         if (entity is null)
         {
             activity?.SetTag("project_category.found", false);
+            ProjectCategoryLog.NotFound(logger, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -72,6 +75,7 @@ public class ProjectCategoryService(
         }
 
         activity?.SetTag("project_category.id", entity.Id);
+        ProjectCategoryLog.Created(logger, entity.Id);
 
         var res = mapper.ToDto(entity);
         return new CreatedAtResult<ProjectCategoryResponseDto>(res);
@@ -98,6 +102,7 @@ public class ProjectCategoryService(
         if (entity is null)
         {
             activity?.SetTag("project_category.found", false);
+            ProjectCategoryLog.NotFound(logger, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -107,6 +112,8 @@ public class ProjectCategoryService(
         {
             await unitOfWork.CommitAsync(ct);
         }
+
+        ProjectCategoryLog.Updated(logger, id);
 
         var res = mapper.ToDto(entity);
         return new SuccessResult<ProjectCategoryResponseDto>(res);
@@ -128,6 +135,7 @@ public class ProjectCategoryService(
         if (entity is null)
         {
             activity?.SetTag("project_category.found", false);
+            ProjectCategoryLog.NotFound(logger, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -136,6 +144,8 @@ public class ProjectCategoryService(
             repository.SoftDelete(entity);
             await unitOfWork.CommitAsync(ct);
         }
+
+        ProjectCategoryLog.Deleted(logger, id);
 
         return new NoContentResult();
     }

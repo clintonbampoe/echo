@@ -4,6 +4,7 @@ using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
+using Microsoft.Extensions.Logging;
 
 namespace Echo.Application.Assets;
 
@@ -14,7 +15,8 @@ public class AssetService(
     IEncoder encoder,
     IAssetMapper mapper,
     IIdGenerator idGenerator,
-    ApplicationInstrumentation instrumentation
+    ApplicationInstrumentation instrumentation,
+    ILogger<AssetService> logger
 )
 {
     public async Task<IOperationResult> List(
@@ -66,6 +68,7 @@ public class AssetService(
         if (entity is null)
         {
             activity?.SetTag("asset.found", false);
+            AssetLog.NotFound(logger, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -80,6 +83,9 @@ public class AssetService(
     )
     {
         using var activity = instrumentation.ActivitySource.StartActivity("svc.asset.create");
+
+        AssetLog.Creating(logger, congregationId);
+
         var entity = mapper.ToEntity(dto);
 
         AssetCategory? category;
@@ -89,7 +95,10 @@ public class AssetService(
         }
 
         if (category is null)
+        {
+            AssetLog.CategoryNotFound(logger, entity.CategoryId);
             return new ForeignKeyEntityNotFound(nameof(category));
+        }
 
         entity.CongregationId = congregationId;
         entity.Id = idGenerator.Generate();
@@ -102,6 +111,7 @@ public class AssetService(
         }
 
         activity?.SetTag("asset.id", entity.Id);
+        AssetLog.Created(logger, entity.Id);
 
         var res = mapper.ToDto(entity);
         return new SuccessResult<AssetResponseDto>(res);
@@ -116,7 +126,6 @@ public class AssetService(
     {
         using var activity = instrumentation.ActivitySource.StartActivity("svc.asset.update");
         activity?.SetTag("asset.id", id);
-
         Asset? entity;
         using (instrumentation.ActivitySource.StartActivity("svc.asset.fetch.by_id"))
         {
@@ -126,13 +135,17 @@ public class AssetService(
         if (entity is null)
         {
             activity?.SetTag("asset.found", false);
+            AssetLog.NotFound(logger, id);
             return new NotFoundResult(id.ToString());
         }
+
         using (instrumentation.ActivitySource.StartActivity("svc.asset.persist"))
         {
             mapper.Patch(dto, entity);
             await unitOfWork.CommitAsync(ct);
         }
+
+        AssetLog.Updated(logger, id);
 
         var res = mapper.ToDto(entity);
         return new SuccessResult<AssetResponseDto>(res);
@@ -152,6 +165,7 @@ public class AssetService(
         if (entity is null)
         {
             activity?.SetTag("asset.found", false);
+            AssetLog.NotFound(logger, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -160,6 +174,8 @@ public class AssetService(
             repository.SoftDelete(entity);
             await unitOfWork.CommitAsync(ct);
         }
+
+        AssetLog.Deleted(logger, id);
 
         return new NoContentResult();
     }

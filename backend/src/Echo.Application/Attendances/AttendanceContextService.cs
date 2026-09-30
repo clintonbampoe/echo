@@ -1,6 +1,7 @@
 using Echo.Data;
 using Echo.Domain.Attendances;
 using Echo.Shared.HttpResults;
+using Microsoft.Extensions.Logging;
 
 namespace Echo.Application.Attendances;
 
@@ -8,7 +9,8 @@ public class AttendanceContextService(
     AttendanceContextRepository repository,
     IUnitOfWork unitOfWork,
     IAttendanceContextMapper mapper,
-    ApplicationInstrumentation instrumentation
+    ApplicationInstrumentation instrumentation,
+    ILogger<AttendanceContextService> logger
 )
 {
     public async Task<IOperationResult> List(Guid congregationId, CancellationToken ct)
@@ -45,6 +47,7 @@ public class AttendanceContextService(
         if (entity is null)
         {
             activity?.SetTag("attendance_context.found", false);
+            AttendanceContextLog.NotFound(logger, id);
             return new ForeignKeyEntityNotFound(nameof(entity.AttendanceType));
         }
 
@@ -72,6 +75,7 @@ public class AttendanceContextService(
         }
 
         activity?.SetTag("attendance_context.id", entity.Id);
+        AttendanceContextLog.Created(logger, entity.Id);
 
         var res = mapper.ToDto(entity);
         return new CreatedAtResult<AttendanceContextResponseDto>(res);
@@ -98,6 +102,7 @@ public class AttendanceContextService(
         if (entity is null)
         {
             activity?.SetTag("attendance_context.found", false);
+            AttendanceContextLog.NotFound(logger, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -107,6 +112,8 @@ public class AttendanceContextService(
         {
             await unitOfWork.CommitAsync(ct);
         }
+
+        AttendanceContextLog.Updated(logger, id);
 
         var res = mapper.ToDto(entity);
         return new SuccessResult<AttendanceContextResponseDto>(res);
@@ -128,14 +135,16 @@ public class AttendanceContextService(
         if (entity is null)
         {
             activity?.SetTag("attendance_context.found", false);
+            AttendanceContextLog.NotFound(logger, id);
             return new NotFoundResult(id.ToString());
         }
-
         using (instrumentation.ActivitySource.StartActivity("svc.attendance_context.persist"))
         {
             repository.SoftDelete(entity);
             await unitOfWork.CommitAsync(ct);
         }
+
+        AttendanceContextLog.Deleted(logger, id);
 
         return new NoContentResult();
     }

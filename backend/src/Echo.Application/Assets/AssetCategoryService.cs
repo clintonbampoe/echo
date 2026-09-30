@@ -1,6 +1,7 @@
 using Echo.Data;
 using Echo.Domain.Assets;
 using Echo.Shared.HttpResults;
+using Microsoft.Extensions.Logging;
 
 namespace Echo.Application.Assets;
 
@@ -8,7 +9,8 @@ public class AssetCategoryService(
     AssetCategoryRepository repository,
     IUnitOfWork unitOfWork,
     IAssetCategoryMapper mapper,
-    ApplicationInstrumentation instrumentation
+    ApplicationInstrumentation instrumentation,
+    ILogger<AssetCategoryService> logger
 )
 {
     public async Task<IOperationResult> List(Guid congregationId, CancellationToken ct)
@@ -45,6 +47,7 @@ public class AssetCategoryService(
         if (entity is null)
         {
             activity?.SetTag("asset_category.found", false);
+            AssetCategoryLog.NotFound(logger, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -72,6 +75,7 @@ public class AssetCategoryService(
         }
 
         activity?.SetTag("asset_category.id", entity.Id);
+        AssetCategoryLog.Created(logger, entity.Id);
 
         var res = mapper.ToDto(entity);
         return new CreatedAtResult<AssetCategoryResponseDto>(res);
@@ -98,6 +102,7 @@ public class AssetCategoryService(
         if (entity is null)
         {
             activity?.SetTag("asset_category.found", false);
+            AssetCategoryLog.NotFound(logger, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -107,6 +112,8 @@ public class AssetCategoryService(
         {
             await unitOfWork.CommitAsync(ct);
         }
+
+        AssetCategoryLog.Updated(logger, id);
 
         var res = mapper.ToDto(entity);
         return new SuccessResult<AssetCategoryResponseDto>(res);
@@ -128,6 +135,7 @@ public class AssetCategoryService(
         if (entity is null)
         {
             activity?.SetTag("asset_category.found", false);
+            AssetCategoryLog.NotFound(logger, id);
             return new NotFoundResult(id.ToString());
         }
         using (instrumentation.ActivitySource.StartActivity("svc.asset_category.persist"))
@@ -135,6 +143,8 @@ public class AssetCategoryService(
             repository.SoftDelete(entity);
             await unitOfWork.CommitAsync(ct);
         }
+
+        AssetCategoryLog.Deleted(logger, id);
 
         return new NoContentResult();
     }

@@ -6,6 +6,7 @@ using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
+using Microsoft.Extensions.Logging;
 
 namespace Echo.Application.Events;
 
@@ -17,7 +18,8 @@ public class EventAttendanceService(
     IUnitOfWork unitOfWork,
     IEventAttendanceMapper mapper,
     IIdGenerator idGenerator,
-    ApplicationInstrumentation instrumentation
+    ApplicationInstrumentation instrumentation,
+    ILogger<EventAttendanceService> logger
 )
 {
     public async Task<IOperationResult> List(
@@ -67,6 +69,7 @@ public class EventAttendanceService(
         if (entity is null)
         {
             activity?.SetTag("event_attendance.found", false);
+            EventAttendanceLog.NotFound(logger, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -122,6 +125,7 @@ public class EventAttendanceService(
         using var activity = instrumentation.ActivitySource.StartActivity(
             "svc.event_attendance.list_by_member"
         );
+
         var cursor = encoder.Decode<EventAttendanceCursor>(pagination.Cursor);
 
         List<EventAttendance> entities;
@@ -165,7 +169,10 @@ public class EventAttendanceService(
             evnt = await eventRepository.GetById(congregationId, dto.EventId, ct);
         }
         if (evnt is null)
+        {
+            EventAttendanceLog.EventNotFound(logger, dto.EventId);
             return new ForeignKeyEntityNotFound(nameof(evnt));
+        }
 
         Member? member;
         using (instrumentation.ActivitySource.StartActivity("svc.event_attendance.validate.member"))
@@ -173,7 +180,10 @@ public class EventAttendanceService(
             member = await memberRepository.GetById(congregationId, dto.MemberId, ct);
         }
         if (member is null)
+        {
+            EventAttendanceLog.MemberNotFound(logger, dto.MemberId);
             return new ForeignKeyEntityNotFound(nameof(member));
+        }
 
         var entity = mapper.ToEntity(dto);
         entity.CongregationId = congregationId;
@@ -188,6 +198,7 @@ public class EventAttendanceService(
         }
 
         activity?.SetTag("event_attendance.id", entity.Id);
+        EventAttendanceLog.Created(logger, entity.Id);
 
         var res = mapper.ToDto(entity);
         return new CreatedAtResult<EventAttendanceResponseDto>(res);
@@ -214,6 +225,7 @@ public class EventAttendanceService(
         if (entity is null)
         {
             activity?.SetTag("event_attendance.found", false);
+            EventAttendanceLog.NotFound(logger, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -223,6 +235,8 @@ public class EventAttendanceService(
         {
             await unitOfWork.CommitAsync(ct);
         }
+
+        EventAttendanceLog.Updated(logger, id);
 
         var res = mapper.ToDto(entity);
         return new SuccessResult<EventAttendanceResponseDto>(res);
@@ -244,6 +258,7 @@ public class EventAttendanceService(
         if (entity is null)
         {
             activity?.SetTag("event_attendance.found", false);
+            EventAttendanceLog.NotFound(logger, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -252,6 +267,8 @@ public class EventAttendanceService(
             repository.SoftDelete(entity);
             await unitOfWork.CommitAsync(ct);
         }
+
+        EventAttendanceLog.Deleted(logger, id);
 
         return new NoContentResult();
     }

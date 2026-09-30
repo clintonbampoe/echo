@@ -4,6 +4,7 @@ using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
+using Microsoft.Extensions.Logging;
 
 namespace Echo.Application.Transactions;
 
@@ -14,7 +15,8 @@ public class TransactionService(
     IEncoder encoder,
     ITransactionMapper mapper,
     IIdGenerator idGenerator,
-    ApplicationInstrumentation instrumentation
+    ApplicationInstrumentation instrumentation,
+    ILogger<TransactionService> logger
 )
 {
     public async Task<IOperationResult> List(
@@ -69,6 +71,7 @@ public class TransactionService(
         if (entity is null)
         {
             activity?.SetTag("transaction.found", false);
+            TransactionLog.NotFound(logger, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -94,7 +97,10 @@ public class TransactionService(
             );
         }
         if (transactionCategory is null)
+        {
+            TransactionLog.CategoryNotFound(logger, dto.CategoryId);
             return new ForeignKeyEntityNotFound(nameof(transactionCategory));
+        }
 
         var entity = mapper.ToEntity(dto);
         entity.CongregationId = congregationId;
@@ -108,6 +114,7 @@ public class TransactionService(
         }
 
         activity?.SetTag("transaction.id", entity.Id);
+        TransactionLog.Created(logger, entity.Id);
 
         var res = mapper.ToDto(entity);
         return new CreatedAtResult<TransactionResponseDto>(res);
@@ -132,6 +139,7 @@ public class TransactionService(
         if (entity is null)
         {
             activity?.SetTag("transaction.found", false);
+            TransactionLog.NotFound(logger, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -141,6 +149,8 @@ public class TransactionService(
         {
             await unitOfWork.CommitAsync(ct);
         }
+
+        TransactionLog.Updated(logger, id);
 
         var res = mapper.ToDto(entity);
         return new SuccessResult<TransactionResponseDto>(res);
@@ -160,6 +170,7 @@ public class TransactionService(
         if (entity is null)
         {
             activity?.SetTag("transaction.found", false);
+            TransactionLog.NotFound(logger, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -168,6 +179,8 @@ public class TransactionService(
             repository.SoftDelete(entity);
             await unitOfWork.CommitAsync(ct);
         }
+
+        TransactionLog.Deleted(logger, id);
 
         return new NoContentResult();
     }

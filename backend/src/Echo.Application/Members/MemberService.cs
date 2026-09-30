@@ -4,6 +4,7 @@ using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
+using Microsoft.Extensions.Logging;
 
 namespace Echo.Application.Members;
 
@@ -13,7 +14,8 @@ public class MemberService(
     IMemberMapper mapper,
     IEncoder encoder,
     IIdGenerator idGenerator,
-    ApplicationInstrumentation instrumentation
+    ApplicationInstrumentation instrumentation,
+    ILogger<MemberService> logger
 )
 {
     public async Task<IOperationResult> List(
@@ -66,6 +68,7 @@ public class MemberService(
         if (entity is null)
         {
             activity?.SetTag("member.found", false);
+            MemberLog.NotFound(logger, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -92,6 +95,7 @@ public class MemberService(
         }
 
         activity?.SetTag("member.id", entity.Id);
+        MemberLog.Created(logger, entity.Id);
 
         var res = mapper.ToDto(entity);
         return new CreatedAtResult<MemberResponseDto>(res);
@@ -110,21 +114,23 @@ public class MemberService(
         Member? entity;
         using (instrumentation.ActivitySource.StartActivity("svc.member.fetch.by_id"))
         {
-            entity = await repository.GetById(congregationId, id, ct);
+            entity = await repository.GetById(id, congregationId, ct);
         }
 
         if (entity is null)
         {
             activity?.SetTag("member.found", false);
+            MemberLog.NotFound(logger, id);
             return new NotFoundResult(id.ToString());
         }
 
         mapper.Patch(dto, entity);
-
         using (instrumentation.ActivitySource.StartActivity("svc.member.persist"))
         {
             await unitOfWork.CommitAsync(ct);
         }
+
+        MemberLog.Updated(logger, id);
 
         var res = mapper.ToDto(entity);
         return new SuccessResult<MemberResponseDto>(res);
@@ -144,6 +150,7 @@ public class MemberService(
         if (entity is null)
         {
             activity?.SetTag("member.found", false);
+            MemberLog.NotFound(logger, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -152,6 +159,8 @@ public class MemberService(
             repository.SoftDelete(entity);
             await unitOfWork.CommitAsync(ct);
         }
+
+        MemberLog.Deleted(logger, id);
 
         return new NoContentResult();
     }

@@ -4,6 +4,7 @@ using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
+using Microsoft.Extensions.Logging;
 
 namespace Echo.Application.Attendances;
 
@@ -14,7 +15,8 @@ public class AttendanceService(
     IEncoder encoder,
     IAttendanceMapper mapper,
     IIdGenerator idGenerator,
-    ApplicationInstrumentation instrumentation
+    ApplicationInstrumentation instrumentation,
+    ILogger<AttendanceService> logger
 )
 {
     public async Task<IOperationResult> List(
@@ -68,6 +70,7 @@ public class AttendanceService(
         if (entity is null)
         {
             activity?.SetTag("attendance.found", false);
+            AttendanceLog.NotFound(logger, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -90,7 +93,10 @@ public class AttendanceService(
         }
 
         if (context is null)
+        {
+            AttendanceLog.ContextNotFound(logger, dto.AttendanceContextId);
             return new ForeignKeyEntityNotFound(nameof(context));
+        }
 
         var entity = mapper.ToEntity(dto);
         entity.CongregationId = congregationId;
@@ -104,6 +110,7 @@ public class AttendanceService(
         }
 
         activity?.SetTag("attendance.id", entity.Id);
+        AttendanceLog.Created(logger, entity.Id);
 
         var res = mapper.ToDto(entity);
         return new CreatedAtResult<AttendanceResponseDto>(res);
@@ -128,6 +135,7 @@ public class AttendanceService(
         if (entity is null)
         {
             activity?.SetTag("attendance.found", false);
+            AttendanceLog.NotFound(logger, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -137,6 +145,8 @@ public class AttendanceService(
         {
             await unitOfWork.CommitAsync(ct);
         }
+
+        AttendanceLog.Updated(logger, id);
 
         var res = mapper.ToDto(entity);
         return new SuccessResult<AttendanceResponseDto>(res);
@@ -156,6 +166,7 @@ public class AttendanceService(
         if (entity is null)
         {
             activity?.SetTag("attendance.found", false);
+            AttendanceLog.NotFound(logger, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -164,6 +175,8 @@ public class AttendanceService(
             repository.SoftDelete(entity);
             await unitOfWork.CommitAsync(ct);
         }
+
+        AttendanceLog.Deleted(logger, id);
 
         return new NoContentResult();
     }

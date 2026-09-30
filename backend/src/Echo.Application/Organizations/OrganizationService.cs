@@ -4,6 +4,7 @@ using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
+using Microsoft.Extensions.Logging;
 
 namespace Echo.Application.Organizations;
 
@@ -13,7 +14,8 @@ public class OrganizationService(
     IEncoder encoder,
     IOrganizationMapper mapper,
     IIdGenerator idGenerator,
-    ApplicationInstrumentation instrumentation
+    ApplicationInstrumentation instrumentation,
+    ILogger<OrganizationService> logger
 )
 {
     public async Task<IOperationResult> List(
@@ -61,6 +63,7 @@ public class OrganizationService(
         if (entity is null)
         {
             activity?.SetTag("organization.found", false);
+            OrganizationLog.NotFound(logger, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -89,6 +92,7 @@ public class OrganizationService(
         }
 
         activity?.SetTag("organization.id", entity.Id);
+        OrganizationLog.Created(logger, entity.Id);
 
         var res = mapper.ToDto(entity);
         return new CreatedAtResult<OrganizationResponseDto>(res);
@@ -109,12 +113,13 @@ public class OrganizationService(
         Organization? entity;
         using (instrumentation.ActivitySource.StartActivity("svc.organization.fetch.by_id"))
         {
-            entity = await repository.GetById(id, congregationId, ct);
+            entity = await repository.GetById(congregationId, id, ct);
         }
 
         if (entity is null)
         {
             activity?.SetTag("organization.found", false);
+            OrganizationLog.NotFound(logger, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -124,6 +129,8 @@ public class OrganizationService(
         {
             await unitOfWork.CommitAsync(ct);
         }
+
+        OrganizationLog.Updated(logger, id);
 
         var res = mapper.ToDto(entity);
         return new SuccessResult<OrganizationResponseDto>(res);
@@ -145,6 +152,7 @@ public class OrganizationService(
         if (entity is null)
         {
             activity?.SetTag("organization.found", false);
+            OrganizationLog.NotFound(logger, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -153,6 +161,8 @@ public class OrganizationService(
             repository.SoftDelete(entity);
             await unitOfWork.CommitAsync(ct);
         }
+
+        OrganizationLog.Deleted(logger, id);
 
         return new NoContentResult();
     }

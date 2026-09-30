@@ -1,6 +1,7 @@
 using Echo.Data;
 using Echo.Domain.Attendances;
 using Echo.Shared.HttpResults;
+using Microsoft.Extensions.Logging;
 
 namespace Echo.Application.Attendances;
 
@@ -8,7 +9,8 @@ public class AttendanceTypeService(
     AttendanceTypeRepository repository,
     IUnitOfWork unitOfWork,
     IAttendanceTypeMapper mapper,
-    ApplicationInstrumentation instrumentation
+    ApplicationInstrumentation instrumentation,
+    ILogger<AttendanceTypeService> logger
 )
 {
     public async Task<IOperationResult> List(Guid congregationId, CancellationToken ct)
@@ -45,6 +47,7 @@ public class AttendanceTypeService(
         if (entity is null)
         {
             activity?.SetTag("attendance_type.found", false);
+            AttendanceTypeLog.NotFound(logger, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -72,6 +75,7 @@ public class AttendanceTypeService(
         }
 
         activity?.SetTag("attendance_type.id", entity.Id);
+        AttendanceTypeLog.Created(logger, entity.Id);
 
         var res = mapper.ToDto(entity);
         return new CreatedAtResult<AttendanceTypeResponseDto>(res);
@@ -98,6 +102,7 @@ public class AttendanceTypeService(
         if (entity is null)
         {
             activity?.SetTag("attendance_type.found", false);
+            AttendanceTypeLog.NotFound(logger, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -107,6 +112,8 @@ public class AttendanceTypeService(
         {
             await unitOfWork.CommitAsync(ct);
         }
+
+        AttendanceTypeLog.Updated(logger, id);
 
         var res = mapper.ToDto(entity);
         return new SuccessResult<AttendanceTypeResponseDto>(res);
@@ -128,6 +135,7 @@ public class AttendanceTypeService(
         if (entity is null)
         {
             activity?.SetTag("attendance_type.found", false);
+            AttendanceTypeLog.NotFound(logger, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -136,6 +144,8 @@ public class AttendanceTypeService(
             repository.SoftDelete(entity);
             await unitOfWork.CommitAsync(ct);
         }
+
+        AttendanceTypeLog.Deleted(logger, id);
 
         return new NoContentResult();
     }

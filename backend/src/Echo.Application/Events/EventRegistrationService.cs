@@ -6,6 +6,7 @@ using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
+using Microsoft.Extensions.Logging;
 
 namespace Echo.Application.Events;
 
@@ -17,7 +18,8 @@ public class EventRegistrationService(
     IEncoder encoder,
     IEventRegistrationMapper mapper,
     IIdGenerator idGenerator,
-    ApplicationInstrumentation instrumentation
+    ApplicationInstrumentation instrumentation,
+    ILogger<EventRegistrationService> logger
 )
 {
     public async Task<IOperationResult> List(
@@ -67,6 +69,7 @@ public class EventRegistrationService(
         if (entity is null)
         {
             activity?.SetTag("event_registration.found", false);
+            EventRegistrationLog.NotFound(logger, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -172,7 +175,10 @@ public class EventRegistrationService(
             evnt = await eventRepository.GetById(congregationId, dto.EventId, ct);
         }
         if (evnt is null)
+        {
+            EventRegistrationLog.EventNotFound(logger, dto.EventId);
             return new ForeignKeyEntityNotFound(nameof(evnt));
+        }
 
         Member? member;
         using (
@@ -182,7 +188,10 @@ public class EventRegistrationService(
             member = await memberRepository.GetById(congregationId, dto.MemberId, ct);
         }
         if (member is null)
+        {
+            EventRegistrationLog.MemberNotFound(logger, dto.MemberId);
             return new ForeignKeyEntityNotFound(nameof(member));
+        }
 
         var entity = mapper.ToEntity(dto);
         entity.CongregationId = congregationId;
@@ -197,6 +206,7 @@ public class EventRegistrationService(
         }
 
         activity?.SetTag("event_registration.id", entity.Id);
+        EventRegistrationLog.Created(logger, entity.Id);
 
         var res = mapper.ToDto(entity);
         return new CreatedAtResult<EventRegistrationResponseDto>(res);
@@ -223,6 +233,7 @@ public class EventRegistrationService(
         if (entity is null)
         {
             activity?.SetTag("event_registration.found", false);
+            EventRegistrationLog.NotFound(logger, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -233,6 +244,7 @@ public class EventRegistrationService(
             await unitOfWork.CommitAsync(ct);
         }
 
+        EventRegistrationLog.Updated(logger, id);
         var res = mapper.ToDto(entity);
         return new SuccessResult<EventRegistrationResponseDto>(res);
     }
@@ -253,6 +265,8 @@ public class EventRegistrationService(
         if (entity is null)
         {
             activity?.SetTag("event_registration.found", false);
+            EventRegistrationLog.NotFound(logger, id);
+            EventRegistrationLog.NotFound(logger, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -261,6 +275,8 @@ public class EventRegistrationService(
             repository.SoftDelete(entity);
             await unitOfWork.CommitAsync(ct);
         }
+
+        EventRegistrationLog.Deleted(logger, id);
 
         return new NoContentResult();
     }

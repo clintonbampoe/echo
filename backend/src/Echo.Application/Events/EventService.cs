@@ -8,6 +8,7 @@ using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
+using Microsoft.Extensions.Logging;
 
 namespace Echo.Application.Events;
 
@@ -19,7 +20,8 @@ public class EventService(
     IEncoder encoder,
     IEventMapper mapper,
     IIdGenerator idGenerator,
-    ApplicationInstrumentation instrumentation
+    ApplicationInstrumentation instrumentation,
+    ILogger<EventService> logger
 )
 {
     public async Task<IOperationResult> List(
@@ -72,6 +74,7 @@ public class EventService(
         if (entity is null)
         {
             activity?.SetTag("event.found", false);
+            EventLog.NotFound(logger, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -93,7 +96,10 @@ public class EventService(
             organizer = await memberRepository.GetById(congregationId, dto.OrganizerId, ct);
         }
         if (organizer is null)
+        {
+            EventLog.OrganizerNotFound(logger, dto.OrganizerId);
             return new ForeignKeyEntityNotFound(nameof(organizer));
+        }
 
         Organization? organization;
         using (instrumentation.ActivitySource.StartActivity("svc.event.validate.organization"))
@@ -105,7 +111,10 @@ public class EventService(
             );
         }
         if (organization is null)
+        {
+            EventLog.OrganizationNotFound(logger, dto.OrganizationId);
             return new ForeignKeyEntityNotFound(nameof(organization));
+        }
 
         var entity = mapper.ToEntity(dto);
         entity.CongregationId = congregationId;
@@ -120,6 +129,7 @@ public class EventService(
         }
 
         activity?.SetTag("event.id", entity.Id);
+        EventLog.Created(logger, entity.Id);
 
         var res = mapper.ToDto(entity);
         return new CreatedAtResult<EventResponseDto>(res);
@@ -144,6 +154,7 @@ public class EventService(
         if (entity is null)
         {
             activity?.SetTag("event.found", false);
+            EventLog.NotFound(logger, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -153,6 +164,8 @@ public class EventService(
         {
             await unitOfWork.CommitAsync(ct);
         }
+
+        EventLog.Updated(logger, id);
 
         var res = mapper.ToDto(entity);
         return new SuccessResult<EventResponseDto>(res);
@@ -172,6 +185,7 @@ public class EventService(
         if (entity is null)
         {
             activity?.SetTag("event.found", false);
+            EventLog.NotFound(logger, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -180,6 +194,8 @@ public class EventService(
             repository.SoftDelete(entity);
             await unitOfWork.CommitAsync(ct);
         }
+
+        EventLog.Deleted(logger, id);
 
         return new NoContentResult();
     }
@@ -190,20 +206,18 @@ public class EventService(
         CancellationToken ct
     )
     {
+        using var activity = instrumentation.ActivitySource.StartActivity("svc.event.search");
+        activity?.SetTag("event.query", name);
+
+        List<Event> entities;
+        using (instrumentation.ActivitySource.StartActivity("svc.event.fetch.search"))
         {
-            using var activity = instrumentation.ActivitySource.StartActivity("svc.event.search");
-            activity?.SetTag("event.query", name);
-
-            List<Event> entities;
-            using (instrumentation.ActivitySource.StartActivity("svc.event.fetch.search"))
-            {
-                entities = await repository.Search(congregationId, name, ct);
-            }
-
-            var res = mapper.ToSearchDto(entities);
-            activity?.SetTag("event.count", res.Count);
-            return new SuccessResult<List<EventSearchResultDto>>(res);
+            entities = await repository.Search(congregationId, name, ct);
         }
+
+        var res = mapper.ToSearchDto(entities);
+        activity?.SetTag("event.count", res.Count);
+        return new SuccessResult<List<EventSearchResultDto>>(res);
     }
 
     private static EventCursor BuildCursor(Event last)

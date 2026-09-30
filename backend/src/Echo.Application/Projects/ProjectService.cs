@@ -6,6 +6,7 @@ using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
+using Microsoft.Extensions.Logging;
 
 namespace Echo.Application.Projects;
 
@@ -17,7 +18,8 @@ public class ProjectService(
     IEncoder encoder,
     IProjectMapper mapper,
     IIdGenerator idGenerator,
-    ApplicationInstrumentation instrumentation
+    ApplicationInstrumentation instrumentation,
+    ILogger<ProjectService> logger
 )
 {
     public async Task<IOperationResult> List(
@@ -70,6 +72,7 @@ public class ProjectService(
         if (entity is null)
         {
             activity?.SetTag("project.found", false);
+            ProjectLog.NotFound(logger, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -91,7 +94,10 @@ public class ProjectService(
             projectManager = await memberRepository.GetById(congregationId, dto.ManagerId, ct);
         }
         if (projectManager is null)
+        {
+            ProjectLog.ManagerNotFound(logger, dto.ManagerId);
             return new ForeignKeyEntityNotFound(nameof(projectManager));
+        }
 
         ProjectCategory? projectCategory;
         using (instrumentation.ActivitySource.StartActivity("svc.project.validate.category"))
@@ -99,7 +105,10 @@ public class ProjectService(
             projectCategory = await categoryRepository.GetById(congregationId, dto.CategoryId, ct);
         }
         if (projectCategory is null)
+        {
+            ProjectLog.CategoryNotFound(logger, dto.CategoryId);
             return new ForeignKeyEntityNotFound(nameof(projectCategory));
+        }
 
         var entity = mapper.ToEntity(dto);
         entity.CongregationId = congregationId;
@@ -114,6 +123,7 @@ public class ProjectService(
         }
 
         activity?.SetTag("project.id", entity.Id);
+        ProjectLog.Created(logger, entity.Id);
 
         var res = mapper.ToDto(entity);
         return new CreatedAtResult<ProjectResponseDto>(res);
@@ -138,6 +148,7 @@ public class ProjectService(
         if (entity is null)
         {
             activity?.SetTag("project.found", false);
+            ProjectLog.NotFound(logger, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -147,6 +158,8 @@ public class ProjectService(
         {
             await unitOfWork.CommitAsync(ct);
         }
+
+        ProjectLog.Updated(logger, id);
 
         var res = mapper.ToDto(entity);
         return new SuccessResult<ProjectResponseDto>(res);
@@ -166,6 +179,7 @@ public class ProjectService(
         if (entity is null)
         {
             activity?.SetTag("project.found", false);
+            ProjectLog.NotFound(logger, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -174,6 +188,8 @@ public class ProjectService(
             repository.SoftDelete(entity);
             await unitOfWork.CommitAsync(ct);
         }
+
+        ProjectLog.Deleted(logger, id);
 
         return new NoContentResult();
     }

@@ -6,6 +6,7 @@ using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
+using Microsoft.Extensions.Logging;
 
 namespace Echo.Application.Organizations;
 
@@ -17,7 +18,8 @@ public class OrganizationMemberService(
     IEncoder encoder,
     IOrganizationMemberMapper mapper,
     IIdGenerator idGenerator,
-    ApplicationInstrumentation instrumentation
+    ApplicationInstrumentation instrumentation,
+    ILogger<OrganizationMemberService> logger
 )
 {
     public async Task<IOperationResult> List(
@@ -72,6 +74,7 @@ public class OrganizationMemberService(
         if (entity is null)
         {
             activity?.SetTag("org_member.found", false);
+            OrganizationMemberLog.NotFound(logger, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -114,7 +117,6 @@ public class OrganizationMemberService(
 
         var data = mapper.ToListDto(entities);
         activity?.SetTag("org_member.count", data.Count);
-
         var res = new PagedResponse<OrganizationMemberResponseDto>(hasMore, nextCursor, data);
         return new SuccessResult<PagedResponse<OrganizationMemberResponseDto>>(res);
     }
@@ -173,7 +175,10 @@ public class OrganizationMemberService(
             member = await memberRepository.GetById(congregationId, dto.MemberId, ct);
         }
         if (member is null)
+        {
+            OrganizationMemberLog.MemberNotFound(logger, dto.MemberId);
             return new ForeignKeyEntityNotFound(nameof(member));
+        }
 
         Organization? organization;
         using (instrumentation.ActivitySource.StartActivity("svc.org_member.validate.org"))
@@ -185,7 +190,10 @@ public class OrganizationMemberService(
             );
         }
         if (organization is null)
+        {
+            OrganizationMemberLog.OrganizationNotFound(logger, dto.OrganizationId);
             return new ForeignKeyEntityNotFound(nameof(organization));
+        }
 
         var entity = mapper.ToEntity(dto);
         entity.CongregationId = congregationId;
@@ -200,6 +208,7 @@ public class OrganizationMemberService(
         }
 
         activity?.SetTag("org_member.id", entity.Id);
+        OrganizationMemberLog.Created(logger, entity.Id);
 
         var res = mapper.ToDto(entity);
         return new CreatedAtResult<OrganizationMemberResponseDto>(res);
@@ -224,15 +233,17 @@ public class OrganizationMemberService(
         if (entity is null)
         {
             activity?.SetTag("org_member.found", false);
+            OrganizationMemberLog.NotFound(logger, id);
             return new NotFoundResult(id.ToString());
         }
 
         mapper.Patch(dto, entity);
-
         using (instrumentation.ActivitySource.StartActivity("svc.org_member.persist"))
         {
             await unitOfWork.CommitAsync(ct);
         }
+
+        OrganizationMemberLog.Updated(logger, id);
 
         var res = mapper.ToDto(entity);
         return new SuccessResult<OrganizationMemberResponseDto>(res);
@@ -252,6 +263,7 @@ public class OrganizationMemberService(
         if (entity is null)
         {
             activity?.SetTag("org_member.found", false);
+            OrganizationMemberLog.NotFound(logger, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -260,6 +272,8 @@ public class OrganizationMemberService(
             repository.SoftDelete(entity);
             await unitOfWork.CommitAsync(ct);
         }
+
+        OrganizationMemberLog.Deleted(logger, id);
 
         return new NoContentResult();
     }

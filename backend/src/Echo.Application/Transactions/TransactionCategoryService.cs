@@ -1,6 +1,7 @@
 using Echo.Data;
 using Echo.Domain.Transactions;
 using Echo.Shared.HttpResults;
+using Microsoft.Extensions.Logging;
 
 namespace Echo.Application.Transactions;
 
@@ -8,7 +9,8 @@ public class TransactionCategoryService(
     TransactionCategoryRepository repository,
     IUnitOfWork unitOfWork,
     ITransactionCategoryMapper mapper,
-    ApplicationInstrumentation instrumentation
+    ApplicationInstrumentation instrumentation,
+    ILogger<TransactionCategoryService> logger
 )
 {
     public async Task<IOperationResult> List(Guid congregationId, CancellationToken ct)
@@ -45,6 +47,7 @@ public class TransactionCategoryService(
         if (entity is null)
         {
             activity?.SetTag("transaction_category.found", false);
+            TransactionCategoryLog.NotFound(logger, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -72,6 +75,7 @@ public class TransactionCategoryService(
         }
 
         activity?.SetTag("transaction_category.id", entity.Id);
+        TransactionCategoryLog.Created(logger, entity.Id);
 
         var res = mapper.ToDto(entity);
         return new CreatedAtResult<TransactionCategoryResponseDto>(res);
@@ -98,6 +102,7 @@ public class TransactionCategoryService(
         if (entity is null)
         {
             activity?.SetTag("transaction_category.found", false);
+            TransactionCategoryLog.NotFound(logger, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -107,6 +112,8 @@ public class TransactionCategoryService(
         {
             await unitOfWork.CommitAsync(ct);
         }
+
+        TransactionCategoryLog.Updated(logger, id);
 
         var res = mapper.ToDto(entity);
         return new SuccessResult<TransactionCategoryResponseDto>(res);
@@ -128,6 +135,7 @@ public class TransactionCategoryService(
         if (entity is null)
         {
             activity?.SetTag("transaction_category.found", false);
+            TransactionCategoryLog.NotFound(logger, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -136,6 +144,8 @@ public class TransactionCategoryService(
             repository.SoftDelete(entity);
             await unitOfWork.CommitAsync(ct);
         }
+
+        TransactionCategoryLog.Deleted(logger, id);
 
         return new NoContentResult();
     }

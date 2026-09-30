@@ -4,6 +4,7 @@ using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
+using Microsoft.Extensions.Logging;
 
 namespace Echo.Application.Projects;
 
@@ -14,7 +15,8 @@ public class ProjectContributionService(
     IEncoder encoder,
     IProjectContributionMapper mapper,
     IIdGenerator idGenerator,
-    ApplicationInstrumentation instrumentation
+    ApplicationInstrumentation instrumentation,
+    ILogger<ProjectContributionService> logger
 )
 {
     public async Task<IOperationResult> List(
@@ -71,6 +73,7 @@ public class ProjectContributionService(
         if (entity is null)
         {
             activity?.SetTag("project_contribution.found", false);
+            ProjectContributionLog.NotFound(logger, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -98,7 +101,10 @@ public class ProjectContributionService(
             project = await projectRepository.GetById(congregationId, dto.ProjectId, ct);
         }
         if (project is null)
+        {
+            ProjectContributionLog.ProjectNotFound(logger, dto.ProjectId);
             return new ForeignKeyEntityNotFound(nameof(project));
+        }
 
         var entity = mapper.ToEntity(dto);
         entity.CongregationId = congregationId;
@@ -112,6 +118,7 @@ public class ProjectContributionService(
         }
 
         activity?.SetTag("project_contribution.id", entity.Id);
+        ProjectContributionLog.Created(logger, entity.Id);
 
         var res = mapper.ToDto(entity);
         return new CreatedAtResult<ProjectContributionResponseDto>(res);
@@ -138,6 +145,7 @@ public class ProjectContributionService(
         if (entity is null)
         {
             activity?.SetTag("project_contribution.found", false);
+            ProjectContributionLog.NotFound(logger, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -147,6 +155,8 @@ public class ProjectContributionService(
         {
             await unitOfWork.CommitAsync(ct);
         }
+
+        ProjectContributionLog.Updated(logger, id);
 
         var res = mapper.ToDto(entity);
         return new SuccessResult<ProjectContributionResponseDto>(res);
@@ -168,6 +178,7 @@ public class ProjectContributionService(
         if (entity is null)
         {
             activity?.SetTag("project_contribution.found", false);
+            ProjectContributionLog.NotFound(logger, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -176,6 +187,8 @@ public class ProjectContributionService(
             repository.SoftDelete(entity);
             await unitOfWork.CommitAsync(ct);
         }
+
+        ProjectContributionLog.Deleted(logger, id);
 
         return new NoContentResult();
     }

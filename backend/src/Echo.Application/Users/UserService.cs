@@ -4,6 +4,7 @@ using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
+using Microsoft.Extensions.Logging;
 
 namespace Echo.Application.Users;
 
@@ -13,7 +14,8 @@ public class UserService(
     IUserMapper mapper,
     IEncoder encoder,
     IIdGenerator idGenerator,
-    ApplicationInstrumentation instrumentation
+    ApplicationInstrumentation instrumentation,
+    ILogger<UserService> logger
 )
 {
     public async Task<IOperationResult> List(
@@ -59,6 +61,7 @@ public class UserService(
         if (entity is null)
         {
             activity?.SetTag("user.found", false);
+            UserLog.NotFound(logger, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -77,7 +80,10 @@ public class UserService(
         using (instrumentation.ActivitySource.StartActivity("svc.user.validate.email"))
         {
             if (await IsEmailTaken(dto.EmailAddress, ct))
+            {
+                UserLog.EmailTaken(logger, dto.EmailAddress);
                 return new BadRequestResult("Email already exists or is invalid.");
+            }
         }
 
         var entity = mapper.ToEntity(dto);
@@ -91,6 +97,7 @@ public class UserService(
         }
 
         activity?.SetTag("user.id", entity.Id);
+        UserLog.Created(logger, entity.Id);
 
         var res = mapper.ToDto(entity);
         return new CreatedAtResult<UserResponseDto>(res);
@@ -115,15 +122,17 @@ public class UserService(
         if (entity is null)
         {
             activity?.SetTag("user.found", false);
+            UserLog.NotFound(logger, id);
             return new NotFoundResult(id.ToString());
         }
 
         mapper.Patch(dto, entity);
-
         using (instrumentation.ActivitySource.StartActivity("svc.user.persist"))
         {
             await unitOfWork.CommitAsync(ct);
         }
+
+        UserLog.Updated(logger, id);
 
         var res = mapper.ToDto(entity);
         return new SuccessResult<UserResponseDto>(res);
@@ -143,6 +152,7 @@ public class UserService(
         if (entity is null)
         {
             activity?.SetTag("user.found", false);
+            UserLog.NotFound(logger, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -151,6 +161,8 @@ public class UserService(
             repository.SoftDelete(entity);
             await unitOfWork.CommitAsync(ct);
         }
+
+        UserLog.Deleted(logger, id);
 
         return new NoContentResult();
     }
@@ -161,18 +173,20 @@ public class UserService(
         CancellationToken ct
     )
     {
-        using var activity = instrumentation.ActivitySource.StartActivity("svc.user.search");
-        activity?.SetTag("user.query", name);
-
-        List<User> entities;
-        using (instrumentation.ActivitySource.StartActivity("svc.user.fetch.search"))
         {
-            entities = await repository.Search(congregationId, name, ct);
-        }
+            using var activity = instrumentation.ActivitySource.StartActivity("svc.user.search");
+            activity?.SetTag("user.query", name);
 
-        var res = mapper.ToSearchDto(entities);
-        activity?.SetTag("user.count", res.Count);
-        return new SuccessResult<List<UserSearchResultDto>>(res);
+            List<User> entities;
+            using (instrumentation.ActivitySource.StartActivity("svc.user.fetch.search"))
+            {
+                entities = await repository.Search(congregationId, name, ct);
+            }
+
+            var res = mapper.ToSearchDto(entities);
+            activity?.SetTag("user.count", res.Count);
+            return new SuccessResult<List<UserSearchResultDto>>(res);
+        }
     }
 
     private async Task<bool> IsEmailTaken(string emailAddress, CancellationToken ct)

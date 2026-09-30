@@ -6,6 +6,7 @@ using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
+using Microsoft.Extensions.Logging;
 
 namespace Echo.Application.Tithes;
 
@@ -16,7 +17,8 @@ public class TitheService(
     IEncoder encoder,
     ITitheMapper mapper,
     IIdGenerator idGenerator,
-    ApplicationInstrumentation instrumentation
+    ApplicationInstrumentation instrumentation,
+    ILogger<TitheService> logger
 )
 {
     public async Task<IOperationResult> List(
@@ -69,6 +71,7 @@ public class TitheService(
         if (entity is null)
         {
             activity?.SetTag("tithe.found", false);
+            TitheLog.NotFound(logger, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -90,7 +93,10 @@ public class TitheService(
             member = await memberRepository.GetById(congregationId, dto.MemberId, ct);
         }
         if (member is null)
+        {
+            TitheLog.MemberNotFound(logger, dto.MemberId);
             return new ForeignKeyEntityNotFound(nameof(member));
+        }
 
         var entity = mapper.ToEntity(dto);
         entity.CongregationId = congregationId;
@@ -104,6 +110,7 @@ public class TitheService(
         }
 
         activity?.SetTag("tithe.id", entity.Id);
+        TitheLog.Created(logger, entity.Id);
 
         var res = mapper.ToDto(entity);
         return new CreatedAtResult<TitheResponseDto>(res);
@@ -128,6 +135,7 @@ public class TitheService(
         if (entity is null)
         {
             activity?.SetTag("tithe.found", false);
+            TitheLog.NotFound(logger, id);
             return new NotFoundResult(id.ToString());
         }
         mapper.Patch(dto, entity);
@@ -136,6 +144,8 @@ public class TitheService(
         {
             await unitOfWork.CommitAsync(ct);
         }
+
+        TitheLog.Updated(logger, id);
 
         var res = mapper.ToDto(entity);
         return new SuccessResult<TitheResponseDto>(res);
@@ -155,6 +165,7 @@ public class TitheService(
         if (entity is null)
         {
             activity?.SetTag("tithe.found", false);
+            TitheLog.NotFound(logger, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -163,6 +174,8 @@ public class TitheService(
             repository.SoftDelete(entity);
             await unitOfWork.CommitAsync(ct);
         }
+
+        TitheLog.Deleted(logger, id);
 
         return new NoContentResult();
     }
