@@ -16,16 +16,22 @@ public sealed class ApplicationInstrumentation : IDisposable
     public ActivitySource ActivitySource { get; } = new(SourceName, _version);
     public Meter Meter { get; } = new(SourceName, _version);
 
-    // Extension method pattern for a cleaner, self-contained Program.cs configuration
-    public static TracerProviderBuilder ConfigureTracing(TracerProviderBuilder tracing)
+    public Counter<long> CongregationRequestVolume { get; }
+
+    public ApplicationInstrumentation()
     {
-        return tracing.AddSource(SourceName);
+        CongregationRequestVolume = Meter.CreateCounter<long>(
+            "echo.congregation.request_volume",
+            unit: "{request}",
+            description: "Total requests per congregation"
+        );
     }
 
-    public static MeterProviderBuilder ConfigureMetrics(MeterProviderBuilder metrics)
-    {
-        return metrics.AddMeter(SourceName);
-    }
+    public static TracerProviderBuilder ConfigureTracing(TracerProviderBuilder tracing) =>
+        tracing.AddSource(SourceName);
+
+    public static MeterProviderBuilder ConfigureMetrics(MeterProviderBuilder metrics) =>
+        metrics.AddMeter(SourceName);
 
     public void Dispose()
     {

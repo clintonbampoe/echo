@@ -28,6 +28,11 @@ public abstract class BaseController : ControllerBase
         activity?.SetTag("user.id", GetUserId());
         activity?.SetTag("user.role", GetRole());
 
+        instrumentation.CongregationRequestVolume.Add(
+            1,
+            new TagList { { "congregation.id", GetCongregationId() } }
+        );
+
         return activity;
     }
 }
