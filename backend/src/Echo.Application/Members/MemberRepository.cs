@@ -1,6 +1,6 @@
-using Echo.Shared.Query;
 using Echo.Data;
 using Echo.Domain.Members;
+using Echo.Shared.Query;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Application.Members;
@@ -28,7 +28,7 @@ public class MemberRepository(AppDbContext context)
             .ToListAsync(ct);
     }
 
-    public async Task<Member?> GetById(Guid id, Guid congregationId, CancellationToken ct)
+    public async Task<Member?> GetById(Guid congregationId, Guid id, CancellationToken ct)
     {
         return await _dbSet
             .FilterDeleted()

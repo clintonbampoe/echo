@@ -3,7 +3,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Echo.Application.Events;
 
-public class EventAttendanceController(EventAttendanceService service) : BaseController
+public class EventAttendanceController(
+    EventAttendanceService service,
+    ApplicationInstrumentation instrumentation
+) : BaseController
 {
     [HttpGet]
     public async Task<ActionResult> List(
@@ -11,6 +14,7 @@ public class EventAttendanceController(EventAttendanceService service) : BaseCon
         CancellationToken ct
     )
     {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.event_attendance.list");
         var response = await service.List(GetCongregationId(), pagination, ct);
         return response.ToActionResult();
     }
@@ -18,7 +22,11 @@ public class EventAttendanceController(EventAttendanceService service) : BaseCon
     [HttpGet("{id}")]
     public async Task<ActionResult> GetById(Guid id, CancellationToken ct)
     {
-        var response = await service.GetById(id, GetCongregationId(), ct);
+        using var span = StartEndpointSpan(
+            instrumentation,
+            "endpoint.event_attendance.fetch_by_id"
+        );
+        var response = await service.GetById(GetCongregationId(), id, ct);
         return response.ToActionResult();
     }
 
@@ -29,6 +37,10 @@ public class EventAttendanceController(EventAttendanceService service) : BaseCon
         CancellationToken ct
     )
     {
+        using var span = StartEndpointSpan(
+            instrumentation,
+            "endpoint.event_attendance.list_by_event"
+        );
         var response = await service.ListByEventId(GetCongregationId(), id, pagination, ct);
         return response.ToActionResult();
     }
@@ -40,6 +52,10 @@ public class EventAttendanceController(EventAttendanceService service) : BaseCon
         CancellationToken ct
     )
     {
+        using var span = StartEndpointSpan(
+            instrumentation,
+            "endpoint.event_attendance.list_by_member"
+        );
         var response = await service.ListByMemberId(GetCongregationId(), id, pagination, ct);
         return response.ToActionResult();
     }
@@ -47,6 +63,7 @@ public class EventAttendanceController(EventAttendanceService service) : BaseCon
     [HttpPost]
     public async Task<ActionResult> Create(EventAttendanceCreateDto dto, CancellationToken ct)
     {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.event_attendance.create");
         var response = await service.Create(GetCongregationId(), dto, ct);
         return response.ToActionResult();
     }
@@ -58,6 +75,7 @@ public class EventAttendanceController(EventAttendanceService service) : BaseCon
         CancellationToken ct
     )
     {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.event_attendance.update");
         var response = await service.Update(GetCongregationId(), id, dto, ct);
         return response.ToActionResult();
     }
@@ -65,7 +83,8 @@ public class EventAttendanceController(EventAttendanceService service) : BaseCon
     [HttpDelete("{id}")]
     public async Task<ActionResult> Delete(Guid id, CancellationToken ct)
     {
-        var response = await service.Delete(id, GetCongregationId(), ct);
+        using var span = StartEndpointSpan(instrumentation, "endpoint.event_attendance.delete");
+        var response = await service.Delete(GetCongregationId(), id, ct);
         return response.ToActionResult();
     }
 }

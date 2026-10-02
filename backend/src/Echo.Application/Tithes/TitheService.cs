@@ -1,10 +1,12 @@
 using Echo.Application.Members;
 using Echo.Data;
+using Echo.Domain.Members;
 using Echo.Domain.Tithes;
 using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
+using Microsoft.Extensions.Logging;
 
 namespace Echo.Application.Tithes;
 
@@ -14,7 +16,9 @@ public class TitheService(
     IUnitOfWork unitOfWork,
     IEncoder encoder,
     ITitheMapper mapper,
-    IIdGenerator idGenerator
+    IIdGenerator idGenerator,
+    ApplicationInstrumentation instrumentation,
+    ILogger<TitheService> logger
 )
 {
     public async Task<IOperationResult> List(
@@ -24,14 +28,22 @@ public class TitheService(
         CancellationToken ct
     )
     {
+        using var activity = instrumentation.ActivitySource.StartActivity("svc.tithe.list");
+
         var cursor = encoder.Decode<TitheCursor>(pagination.Cursor);
-        var entities = await repository.List(
-            congregationId,
-            filters,
-            cursor,
-            pagination.PageSize + 1,
-            ct
-        );
+
+        List<Tithe> entities;
+        using (instrumentation.ActivitySource.StartActivity("svc.tithe.fetch.list"))
+        {
+            entities = await repository.List(
+                congregationId,
+                filters,
+                cursor,
+                pagination.PageSize + 1,
+                ct
+            );
+        }
+
         var hasMore = entities.Count > pagination.PageSize;
         if (hasMore)
             entities.RemoveAt(entities.Count - 1);
@@ -39,16 +51,32 @@ public class TitheService(
         var nextCursor = hasMore ? encoder.Encode(BuildCursor(entities.Last())) : null;
 
         var data = mapper.ToListDto(entities);
+        activity?.SetTag("tithe.count", data.Count);
+        TitheLog.Listed(logger, congregationId, data.Count);
+
         var res = new PagedResponse<TitheResponseDto>(hasMore, nextCursor, data);
         return new SuccessResult<PagedResponse<TitheResponseDto>>(res);
     }
 
-    public async Task<IOperationResult> GetById(Guid id, Guid congregationId, CancellationToken ct)
+    public async Task<IOperationResult> GetById(Guid congregationId, Guid id, CancellationToken ct)
     {
-        var entity = await repository.GetById(congregationId, id, ct);
-        if (entity is null)
-            return new NotFoundResult(id.ToString());
+        using var activity = instrumentation.ActivitySource.StartActivity("svc.tithe.get_by_id");
+        activity?.SetTag("tithe.id", id);
 
+        Tithe? entity;
+        using (instrumentation.ActivitySource.StartActivity("svc.tithe.fetch.by_id"))
+        {
+            entity = await repository.GetById(congregationId, id, ct);
+        }
+
+        if (entity is null)
+        {
+            activity?.SetTag("tithe.found", false);
+            TitheLog.NotFound(logger, congregationId, id);
+            return new NotFoundResult(id.ToString());
+        }
+
+        TitheLog.Found(logger, congregationId, id);
         var res = mapper.ToDto(entity);
         return new SuccessResult<TitheResponseDto>(res);
     }
@@ -59,17 +87,33 @@ public class TitheService(
         CancellationToken ct
     )
     {
-        var member = await memberRepository.GetById(congregationId, dto.MemberId, ct);
+        using var activity = instrumentation.ActivitySource.StartActivity("svc.tithe.create");
+
+        Member? member;
+        using (instrumentation.ActivitySource.StartActivity("svc.tithe.validate.member"))
+        {
+            member = await memberRepository.GetById(congregationId, dto.MemberId, ct);
+        }
         if (member is null)
+        {
+            TitheLog.CreateMemberNotFound(logger, congregationId, dto.MemberId);
             return new ForeignKeyEntityNotFound(nameof(member));
+        }
+        TitheLog.CreateMemberFound(logger, congregationId, dto.MemberId);
 
         var entity = mapper.ToEntity(dto);
         entity.CongregationId = congregationId;
         entity.Id = idGenerator.Generate();
         entity.Member = member;
 
-        repository.Create(entity);
-        await unitOfWork.CommitAsync(ct);
+        using (instrumentation.ActivitySource.StartActivity("svc.tithe.persist"))
+        {
+            repository.Create(entity);
+            await unitOfWork.CommitAsync(ct);
+        }
+
+        activity?.SetTag("tithe.id", entity.Id);
+        TitheLog.Created(logger, congregationId, entity.Id);
 
         var res = mapper.ToDto(entity);
         return new CreatedAtResult<TitheResponseDto>(res);
@@ -82,12 +126,47 @@ public class TitheService(
         CancellationToken ct
     )
     {
-        var entity = await repository.GetById(congregationId, id, ct);
+        using var activity = instrumentation.ActivitySource.StartActivity("svc.tithe.update");
+        activity?.SetTag("tithe.id", id);
+
+        Tithe? entity;
+        using (instrumentation.ActivitySource.StartActivity("svc.tithe.fetch.by_id"))
+        {
+            entity = await repository.GetById(congregationId, id, ct);
+        }
+
         if (entity is null)
+        {
+            activity?.SetTag("tithe.found", false);
+            TitheLog.UpdateNotFound(logger, congregationId, id);
             return new NotFoundResult(id.ToString());
+        }
+
+        // Validate Member if it's being changed
+        if (dto.MemberId != entity.MemberId)
+        {
+            Member? member;
+            using (instrumentation.ActivitySource.StartActivity("svc.tithe.validate.member"))
+            {
+                member = await memberRepository.GetById(congregationId, entity.MemberId, ct);
+            }
+
+            if (member is null)
+            {
+                TitheLog.UpdateMemberNotFound(logger, congregationId, entity.MemberId);
+                return new ForeignKeyEntityNotFound(nameof(member));
+            }
+            TitheLog.UpdateMemberFound(logger, congregationId, entity.MemberId);
+        }
 
         mapper.Patch(dto, entity);
-        await unitOfWork.CommitAsync(ct);
+
+        using (instrumentation.ActivitySource.StartActivity("svc.tithe.persist"))
+        {
+            await unitOfWork.CommitAsync(ct);
+        }
+
+        TitheLog.Updated(logger, congregationId, id);
 
         var res = mapper.ToDto(entity);
         return new SuccessResult<TitheResponseDto>(res);
@@ -95,12 +174,29 @@ public class TitheService(
 
     public async Task<IOperationResult> Delete(Guid congregationId, Guid id, CancellationToken ct)
     {
-        var entity = await repository.GetById(congregationId, id, ct);
-        if (entity is null)
-            return new NotFoundResult(id.ToString());
+        using var activity = instrumentation.ActivitySource.StartActivity("svc.tithe.delete");
+        activity?.SetTag("tithe.id", id);
 
-        repository.SoftDelete(entity);
-        await unitOfWork.CommitAsync(ct);
+        Tithe? entity;
+        using (instrumentation.ActivitySource.StartActivity("svc.tithe.fetch.by_id"))
+        {
+            entity = await repository.GetById(congregationId, id, ct);
+        }
+
+        if (entity is null)
+        {
+            activity?.SetTag("tithe.found", false);
+            TitheLog.DeleteNotFound(logger, congregationId, id);
+            return new NotFoundResult(id.ToString());
+        }
+
+        using (instrumentation.ActivitySource.StartActivity("svc.tithe.persist"))
+        {
+            repository.SoftDelete(entity);
+            await unitOfWork.CommitAsync(ct);
+        }
+
+        TitheLog.Deleted(logger, congregationId, id);
 
         return new NoContentResult();
     }

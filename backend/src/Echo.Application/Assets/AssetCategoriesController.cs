@@ -3,11 +3,16 @@ using Microsoft.AspNetCore.RateLimiting;
 
 namespace Echo.Application.Assets;
 
-public class AssetCategoriesController(AssetCategoryService service) : BaseController
+public class AssetCategoriesController(
+    AssetCategoryService service,
+    ApplicationInstrumentation instrumentation
+) : BaseController
 {
     [HttpGet]
     public async Task<ActionResult> List(CancellationToken ct)
     {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.asset_category.fetch");
+
         var res = await service.List(GetCongregationId(), ct);
         return res.ToActionResult();
     }
@@ -15,13 +20,17 @@ public class AssetCategoriesController(AssetCategoryService service) : BaseContr
     [HttpGet("{id}")]
     public async Task<ActionResult> GetById(int id, CancellationToken ct)
     {
-        var res = await service.GetById(id, GetCongregationId(), ct);
+        using var span = StartEndpointSpan(instrumentation, "endpoint.asset_category.fetch_by_id");
+
+        var res = await service.GetById(GetCongregationId(), id, ct);
         return res.ToActionResult();
     }
 
     [HttpPost]
     public async Task<ActionResult> Create(AssetCategoryCreateDto dto, CancellationToken ct)
     {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.asset_category.create");
+
         var res = await service.Create(GetCongregationId(), dto, ct);
         return res.ToActionResult();
     }
@@ -29,6 +38,8 @@ public class AssetCategoriesController(AssetCategoryService service) : BaseContr
     [HttpPut("{id}")]
     public async Task<ActionResult> Update(int id, AssetCategoryUpdateDto dto, CancellationToken ct)
     {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.asset_category.update");
+
         var res = await service.Update(GetCongregationId(), id, dto, ct);
         return res.ToActionResult();
     }
@@ -36,6 +47,8 @@ public class AssetCategoriesController(AssetCategoryService service) : BaseContr
     [HttpDelete("{id}")]
     public async Task<ActionResult> Delete(int id, CancellationToken ct)
     {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.asset_category.delete");
+
         var res = await service.Delete(GetCongregationId(), id, ct);
         return res.ToActionResult();
     }
@@ -44,6 +57,8 @@ public class AssetCategoriesController(AssetCategoryService service) : BaseContr
     [EnableRateLimiting("search")]
     public async Task<ActionResult> Search([FromQuery] string q, CancellationToken ct)
     {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.asset_category.search");
+
         var res = await service.Search(GetCongregationId(), q, ct);
         return res.ToActionResult();
     }

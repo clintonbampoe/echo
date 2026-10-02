@@ -1,6 +1,6 @@
-using Echo.Shared.Query;
 using Echo.Data;
 using Echo.Domain.Organizations;
+using Echo.Shared.Query;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Application.Organizations;
@@ -27,8 +27,8 @@ public class OrganizationRepository(AppDbContext context)
     }
 
     public async Task<Organization?> GetById(
-        Guid id,
         Guid congregationId,
+        Guid id,
         CancellationToken ct = default
     )
     {

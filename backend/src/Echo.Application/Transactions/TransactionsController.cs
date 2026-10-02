@@ -3,7 +3,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Echo.Application.Transactions;
 
-public class TransactionsController(TransactionService service) : BaseController
+public class TransactionsController(
+    TransactionService service,
+    ApplicationInstrumentation instrumentation
+) : BaseController
 {
     [HttpGet]
     public async Task<ActionResult> List(
@@ -12,6 +15,7 @@ public class TransactionsController(TransactionService service) : BaseController
         CancellationToken ct
     )
     {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.transaction.list");
         var response = await service.List(GetCongregationId(), filters, pagination, ct);
         return response.ToActionResult();
     }
@@ -19,13 +23,15 @@ public class TransactionsController(TransactionService service) : BaseController
     [HttpGet("{id}")]
     public async Task<ActionResult> GetById(Guid id, CancellationToken ct)
     {
-        var response = await service.GetById(id, GetCongregationId(), ct);
+        using var span = StartEndpointSpan(instrumentation, "endpoint.transaction.fetch_by_id");
+        var response = await service.GetById(GetCongregationId(), id, ct);
         return response.ToActionResult();
     }
 
     [HttpPost]
     public async Task<ActionResult> Create(TransactionCreateDto dto, CancellationToken ct)
     {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.transaction.create");
         var response = await service.Create(GetCongregationId(), dto, ct);
         return response.ToActionResult();
     }
@@ -33,6 +39,7 @@ public class TransactionsController(TransactionService service) : BaseController
     [HttpPut("{id}")]
     public async Task<ActionResult> Update(Guid id, TransactionUpdateDto dto, CancellationToken ct)
     {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.transaction.update");
         var response = await service.Update(GetCongregationId(), id, dto, ct);
         return response.ToActionResult();
     }
@@ -40,7 +47,8 @@ public class TransactionsController(TransactionService service) : BaseController
     [HttpDelete("{id}")]
     public async Task<ActionResult> Delete(Guid id, CancellationToken ct)
     {
-        var response = await service.Delete(id, GetCongregationId(), ct);
+        using var span = StartEndpointSpan(instrumentation, "endpoint.transaction.delete");
+        var response = await service.Delete(GetCongregationId(), id, ct);
         return response.ToActionResult();
     }
 }

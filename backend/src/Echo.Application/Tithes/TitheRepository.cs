@@ -1,6 +1,6 @@
-using Echo.Shared.Query;
 using Echo.Data;
 using Echo.Domain.Tithes;
+using Echo.Shared.Query;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Application.Tithes;
@@ -31,7 +31,7 @@ public class TitheRepository(AppDbContext context)
         return res;
     }
 
-    public async Task<Tithe?> GetById(Guid id, Guid congregationId, CancellationToken ct)
+    public async Task<Tithe?> GetById(Guid congregationId, Guid id, CancellationToken ct)
     {
         return await _dbSet
             .FilterDeleted()
@@ -62,9 +62,12 @@ internal static class TitheQueryExtensions
             ? query.Where(t => t.ForYear == filters.Year)
             : query.Where(t => t.ForYear == currentYear);
 
-        query = filters.Month is not null
-            ? query.Where(t => t.ForMonth == filters.Month)
-            : query.Where(t => t.ForMonth == currentMonth);
+        if (filters.Month is not null)
+            query = query.Where(t => t.ForMonth == filters.Month);
+
+        // query = filters.Month is not null
+        //     ? query.Where(t => t.ForMonth == filters.Month)
+        //     : query.Where(t => t.ForMonth == currentMonth);
 
         if (filters.PaymentMethod is not null)
             query = query.Where(t => t.PaymentMethod == filters.PaymentMethod);

@@ -1,41 +1,7 @@
 import { apiFetch } from './api';
-import type { Asset, PagedResponse, AssetFilters } from '../types/asset';
+import type { Asset, PagedResponse, AssetFilters, AssetCreatePayload, AssetUpdatePayload } from '../types/asset';
 
 const BASE_PATH = '/v1/Assets';
-
-function cleanAssetPayload(data: Partial<Asset>) {
-  const payload: Record<string, unknown> = { ...data };
-
-  delete payload.id;
-  delete payload.categoryName;
-  delete payload.createdAt;
-
-  if (payload.categoryId) {
-    payload.categoryId = Number(payload.categoryId);
-  }
-
-  if (payload.purchaseCost !== undefined) {
-    payload.purchaseCost = Number(payload.purchaseCost);
-  }
-
-  if (payload.currentValue !== undefined) {
-    payload.currentValue = Number(payload.currentValue);
-  }
-
-  if (payload.purchaseDate && typeof payload.purchaseDate === 'string') {
-    payload.purchaseDate = payload.purchaseDate.split('T')[0];
-  }
-
-  if (!payload.serialNumber || (typeof payload.serialNumber === 'string' && payload.serialNumber.trim() === '')) {
-    delete payload.serialNumber;
-  }
-
-  if (!payload.description || (typeof payload.description === 'string' && payload.description.trim() === '')) {
-    delete payload.description;
-  }
-
-  return payload;
-}
 
 export const assetsService = {
   list: async (
@@ -57,19 +23,17 @@ export const assetsService = {
     return apiFetch<Asset>(`${BASE_PATH}/${id}`);
   },
 
-  create: async (data: Partial<Asset>): Promise<Asset> => {
-    const payload = cleanAssetPayload(data);
+  create: async (data: AssetCreatePayload): Promise<Asset> => {
     return apiFetch<Asset>(BASE_PATH, {
       method: 'POST',
-      body: JSON.stringify(payload),
+      body: JSON.stringify(data),
     });
   },
 
-  update: async (id: string, data: Partial<Asset>): Promise<Asset> => {
-    const payload = cleanAssetPayload(data);
+  update: async (id: string, data: AssetUpdatePayload): Promise<Asset> => {
     return apiFetch<Asset>(`${BASE_PATH}/${id}`, {
       method: 'PUT',
-      body: JSON.stringify(payload),
+      body: JSON.stringify(data),
     });
   },
 

@@ -8,7 +8,10 @@ namespace Echo.Auth.Registrations;
 [EnableRateLimiting("auth")]
 [AllowAnonymous]
 [Route("/api/auth/v{version:ApiVersion}/[controller]")]
-public class RegistrationsController(RegistrationService service) : ControllerBase
+public class RegistrationsController(
+    RegistrationService service,
+    AuthInstrumentation instrumentation
+) : ControllerBase
 {
     [HttpPost("congregation")]
     public async Task<ActionResult> RegisterCongregation(
@@ -16,6 +19,7 @@ public class RegistrationsController(RegistrationService service) : ControllerBa
         CancellationToken ct
     )
     {
+        using var span = instrumentation.ActivitySource.StartActivity("endpoint.registration.congregation");
         var res = await service.RegisterCongregation(request.CongregationDto, request.UserDto, ct);
         return res.ToActionResult();
     }
@@ -26,6 +30,7 @@ public class RegistrationsController(RegistrationService service) : ControllerBa
         CancellationToken ct
     )
     {
+        using var span = instrumentation.ActivitySource.StartActivity("endpoint.registration.member");
         var res = await service.RegisterUser(request, ct);
         return res.ToActionResult();
     }

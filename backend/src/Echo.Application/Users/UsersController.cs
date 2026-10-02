@@ -4,7 +4,8 @@ using Microsoft.AspNetCore.RateLimiting;
 
 namespace Echo.Application.Users;
 
-public class UsersController(UserService service) : BaseController
+public class UsersController(UserService service, ApplicationInstrumentation instrumentation)
+    : BaseController
 {
     [HttpGet]
     public async Task<ActionResult> GetPage(
@@ -12,6 +13,7 @@ public class UsersController(UserService service) : BaseController
         CancellationToken ct
     )
     {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.user.list");
         var response = await service.List(GetCongregationId(), pagination, ct);
         return response.ToActionResult();
     }
@@ -19,13 +21,15 @@ public class UsersController(UserService service) : BaseController
     [HttpGet("{id}")]
     public async Task<ActionResult> GetById(Guid id, CancellationToken ct)
     {
-        var response = await service.GetById(id, GetCongregationId(), ct);
+        using var span = StartEndpointSpan(instrumentation, "endpoint.user.fetch_by_id");
+        var response = await service.GetById(GetCongregationId(), id, ct);
         return response.ToActionResult();
     }
 
     [HttpPost]
     public async Task<ActionResult> Create(UserCreateDto dto, CancellationToken ct)
     {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.user.create");
         var response = await service.Create(GetCongregationId(), dto, ct);
         return response.ToActionResult();
     }
@@ -33,6 +37,7 @@ public class UsersController(UserService service) : BaseController
     [HttpPut("{id}")]
     public async Task<ActionResult> Update(Guid id, UserUpdateDto dto, CancellationToken ct)
     {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.user.update");
         var response = await service.Update(GetCongregationId(), id, dto, ct);
         return response.ToActionResult();
     }
@@ -40,7 +45,8 @@ public class UsersController(UserService service) : BaseController
     [HttpDelete("{id}")]
     public async Task<ActionResult> Delete(Guid id, CancellationToken ct)
     {
-        var response = await service.Delete(id, GetCongregationId(), ct);
+        using var span = StartEndpointSpan(instrumentation, "endpoint.user.delete");
+        var response = await service.Delete(GetCongregationId(), id, ct);
         return response.ToActionResult();
     }
 
@@ -48,6 +54,7 @@ public class UsersController(UserService service) : BaseController
     [EnableRateLimiting("search")]
     public async Task<ActionResult> Search([FromQuery] string q, CancellationToken ct)
     {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.user.search");
         var res = await service.Search(GetCongregationId(), q, ct);
         return res.ToActionResult();
     }

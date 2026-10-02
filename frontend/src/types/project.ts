@@ -2,6 +2,28 @@ export type ProjectStatus = 'Planning' | 'OnTrack' | 'AtRisk' | 'Complete' | 'Mi
 
 export type PaymentMethod = 'Cash' | 'Cheque' | 'CreditCard' | 'MobileMoney' | 'BankTransfer';
 
+export interface ProjectCreatePayload {
+  categoryId: number;
+  managerId: string;
+  name: string;
+  targetAmount: number;
+  status: ProjectStatus;
+  startDate: string; // YYYY-MM-DD
+  endDate?: string | null;
+  description?: string | null;
+}
+
+export interface ProjectUpdatePayload {
+  categoryId?: number;
+  managerId?: string;
+  name?: string;
+  targetAmount?: number;
+  status?: ProjectStatus;
+  startDate?: string;
+  endDate?: string | null;
+  description?: string | null;
+}
+
 export interface Project {
   id: string;
   categoryId: number;
@@ -15,8 +37,7 @@ export interface Project {
   endDate?: string | null;
   description?: string | null;
   createdAt: string;
-  // Computed on frontend or combined with contributions
-  raisedAmount?: number;
+  raisedAmount?:number
 }
 
 export interface ProjectCategory {

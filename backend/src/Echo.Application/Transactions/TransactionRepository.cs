@@ -1,7 +1,7 @@
-using Echo.Shared.Query;
-using Echo.Shared.Utilities;
 using Echo.Data;
 using Echo.Domain.Transactions;
+using Echo.Shared.Query;
+using Echo.Shared.Utilities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Application.Transactions;
@@ -12,6 +12,7 @@ public class TransactionRepository(AppDbContext context)
 
     public async Task<List<Transaction>> List(
         Guid congregationId,
+        TimeProvider timeProvider,
         TransactionFilters filters,
         TransactionCursor? cursor,
         int pageSize,
@@ -23,14 +24,14 @@ public class TransactionRepository(AppDbContext context)
             .FilterDeleted()
             .Where(t => t.CongregationId == congregationId)
             .Include(t => t.Category)
-            .Filter(filters)
+            .Filter(filters, timeProvider)
             .OrderByDescending(t => t.TransactionDate)
             .ThenBy(t => t.Id)
             .Paginate(cursor, pageSize)
             .ToListAsync(ct);
     }
 
-    public async Task<Transaction?> GetById(Guid id, Guid congregationId, CancellationToken ct)
+    public async Task<Transaction?> GetById(Guid congregationId, Guid id, CancellationToken ct)
     {
         return await _dbSet
             .FilterDeleted()
@@ -54,20 +55,28 @@ internal static class TransactionQueryExtensions
 {
     internal static IQueryable<Transaction> Filter(
         this IQueryable<Transaction> query,
-        TransactionFilters filters
+        TransactionFilters filters,
+        TimeProvider timeProvider
     )
     {
-        var firstDayOfWeek = DateUtils.GetFirstDayOfWeek(TimeProvider.System.GetUtcNow().DateTime);
+        var firstDayOfWeek = DateUtils.GetFirstDayOfWeek(timeProvider.GetUtcNow().DateTime);
 
-        query = filters.Date is not null
-            ? query.Where(t => t.TransactionDate == filters.Date)
-            : query.Where(t => t.TransactionDate == firstDayOfWeek);
+        if (filters.Date is not null)
+        {
+            query = query.Where(t => t.TransactionDate == filters.Date);
+        }
+        else
+        {
+            var weekEnd = firstDayOfWeek.AddDays(7);
+            var weekStart = firstDayOfWeek;
+            query = query.Where(t => t.TransactionDate >= weekStart && t.TransactionDate < weekEnd);
+        }
 
         if (filters.CategoryId is not null)
-            query = query.Where(a => a.CategoryId == filters.CategoryId);
+            query = query.Where(t => t.CategoryId == filters.CategoryId);
 
         if (filters.TransactionType is not null)
-            query = query.Where(a => a.TransactionType == filters.TransactionType);
+            query = query.Where(t => t.TransactionType == filters.TransactionType);
 
         return query;
     }

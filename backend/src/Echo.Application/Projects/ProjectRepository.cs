@@ -1,7 +1,7 @@
-using Echo.Shared.Query;
-using Echo.Shared.Utilities;
 using Echo.Data;
 using Echo.Domain.Projects;
+using Echo.Shared.Query;
+using Echo.Shared.Utilities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Application.Projects;
@@ -31,7 +31,7 @@ public class ProjectRepository(AppDbContext context)
             .ToListAsync(ct);
     }
 
-    public async Task<Project?> GetById(Guid id, Guid congregationId, CancellationToken ct)
+    public async Task<Project?> GetById(Guid congregationId, Guid id, CancellationToken ct)
     {
         return await _dbSet
             .FilterDeleted()

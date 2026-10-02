@@ -1230,6 +1230,9 @@ namespace Echo.Data.Migrations
                     NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("Name"), "GIN");
                     NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex("Name"), new[] { "gin_trgm_ops" });
 
+                    b.HasIndex("EmailAddress", "Id")
+                        .HasFilter("\"DeletedAt\" IS NULL");
+
                     b.HasIndex("Name", "Id")
                         .HasFilter("\"DeletedAt\" IS NULL");
 
@@ -1615,7 +1618,7 @@ namespace Echo.Data.Migrations
                     b.HasOne("Echo.Domain.Congregations.Congregation", "Congregation")
                         .WithMany()
                         .HasForeignKey("CongregationId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Congregation");

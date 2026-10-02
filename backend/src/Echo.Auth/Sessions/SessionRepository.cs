@@ -1,6 +1,6 @@
-using Echo.Shared.Query;
 using Echo.Data;
 using Echo.Domain.Auth;
+using Echo.Shared.Query;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Auth.Sessions;
@@ -59,10 +59,5 @@ public class SessionRepository(AppDbContext context, TimeProvider timeProvider)
             token.RevokedAt = timeProvider.GetUtcNow().UtcDateTime;
 
         return true;
-    }
-
-    public async Task RevokeActiveSessionsForUser(string email, CancellationToken ct = default)
-    {
-        throw new NotImplementedException();
     }
 }

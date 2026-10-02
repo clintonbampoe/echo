@@ -5,6 +5,28 @@ export interface AssetCategory {
   name: string;
 }
 
+export interface AssetCreatePayload {
+  categoryId: number;
+  name: string;
+  purchaseCost: number;
+  currentValue: number;
+  status: AssetStatus;
+  serialNumber?: string | null;
+  purchaseDate?: string | null; // ISO format YYYY-MM-DD
+  description?: string | null;
+}
+
+export interface AssetUpdatePayload {
+  categoryId?: number;
+  name?: string;
+  purchaseCost?: number;
+  currentValue?: number;
+  status?: AssetStatus;
+  serialNumber?: string | null;
+  purchaseDate?: string | null;
+  description?: string | null;
+}
+
 export interface Asset {
   id: string;
   categoryId: number;

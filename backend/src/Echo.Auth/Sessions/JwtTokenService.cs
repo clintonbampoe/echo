@@ -1,7 +1,7 @@
+using Echo.Domain.Auth;
 using Echo.Shared.Options.Jwt;
 using Echo.Shared.Services.Generators;
 using Echo.Shared.Services.Hashing;
-using Echo.Domain.Auth;
 using Microsoft.Extensions.Options;
 
 namespace Echo.Auth.Sessions;
@@ -83,7 +83,7 @@ public class JwtTokenService(
             await refreshTokenRepository.Revoke(existing.Id, null, ct);
     }
 
-    public async Task RevokeAllActiveSessionsForUserByUserId(
+    public async Task RevokeAllActiveSessionsForUserById(
         Guid userId,
         CancellationToken ct = default
     )

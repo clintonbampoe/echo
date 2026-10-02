@@ -128,15 +128,15 @@ public static class Extensions
         services.AddScoped<TransactionCategoriesController>();
         services.AddSingleton<ITransactionCategoryMapper, TransactionCategoryMapper>();
 
-        services.AddSingleton<InstrumentationSource>();
+        services.AddSingleton<ApplicationInstrumentation>();
         services
             .AddOpenTelemetry()
             .WithTracing(tracing =>
             {
-                InstrumentationSource.ConfigureTracing(tracing);
+                ApplicationInstrumentation.ConfigureTracing(tracing);
                 tracing.AddEntityFrameworkCoreInstrumentation();
             })
-            .WithMetrics(metrics => InstrumentationSource.ConfigureMetrics(metrics));
+            .WithMetrics(metrics => ApplicationInstrumentation.ConfigureMetrics(metrics));
 
         return services;
     }

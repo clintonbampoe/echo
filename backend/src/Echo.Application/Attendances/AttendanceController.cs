@@ -3,7 +3,10 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Echo.Application.Attendances;
 
-public class AttendanceController(AttendanceService service) : BaseController
+public class AttendanceController(
+    AttendanceService service,
+    ApplicationInstrumentation instrumentation
+) : BaseController
 {
     [HttpGet]
     public async Task<ActionResult> List(
@@ -12,6 +15,7 @@ public class AttendanceController(AttendanceService service) : BaseController
         CancellationToken ct
     )
     {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.attendance.list");
         var response = await service.List(GetCongregationId(), filters, pagination, ct);
         return response.ToActionResult();
     }
@@ -19,13 +23,15 @@ public class AttendanceController(AttendanceService service) : BaseController
     [HttpGet("{id}")]
     public async Task<ActionResult> GetById(Guid id, CancellationToken ct)
     {
-        var response = await service.GetById(id, GetCongregationId(), ct);
+        using var span = StartEndpointSpan(instrumentation, "endpoint.attendance.fetch_by_id");
+        var response = await service.GetById(GetCongregationId(), id, ct);
         return response.ToActionResult();
     }
 
     [HttpPost]
     public async Task<ActionResult> Create(AttendanceCreateDto dto, CancellationToken ct)
     {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.attendance.create");
         var response = await service.Create(GetCongregationId(), dto, ct);
         return response.ToActionResult();
     }
@@ -33,6 +39,7 @@ public class AttendanceController(AttendanceService service) : BaseController
     [HttpPut("{id}")]
     public async Task<ActionResult> Update(Guid id, AttendanceUpdateDto dto, CancellationToken ct)
     {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.attendance.update");
         var response = await service.Update(GetCongregationId(), id, dto, ct);
         return response.ToActionResult();
     }
@@ -40,7 +47,8 @@ public class AttendanceController(AttendanceService service) : BaseController
     [HttpDelete("{id}")]
     public async Task<ActionResult> Delete(Guid id, CancellationToken ct)
     {
-        var response = await service.Delete(id, GetCongregationId(), ct);
+        using var span = StartEndpointSpan(instrumentation, "endpoint.attendance.delete");
+        var response = await service.Delete(GetCongregationId(), id, ct);
         return response.ToActionResult();
     }
 }

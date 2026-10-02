@@ -32,8 +32,8 @@ public class AttendanceRepository(AppDbContext context)
     }
 
     public async Task<Attendance?> GetById(
-        Guid id,
         Guid congregationId,
+        Guid id,
         CancellationToken ct = default
     )
     {

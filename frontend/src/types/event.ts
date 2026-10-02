@@ -6,15 +6,43 @@ export interface Event {
   organizerName: string;
   name: string;
   startDate: string; // ISO date format YYYY-MM-DD
-  endDate: string;   // ISO date format YYYY-MM-DD
+  endDate: string; // ISO date format YYYY-MM-DD
   startTime?: string | null; // e.g. "09:00:00"
-  endTime?: string | null;   // e.g. "11:30:00"
+  endTime?: string | null; // e.g. "11:30:00"
   location?: string | null;
   capacity?: number | null;
   description?: string | null;
   createdAt: string;
   registeredCount?: number;
   attendedCount?: number;
+}
+
+export interface EventCreatePayload {
+  organizationId: string;
+  organizerId: string;
+  name: string;
+  startDate: string;
+  endDate: string;
+  startTime?: string | null;
+  endTime?: string | null;
+  location?: string | null;
+  capacity?: number | null;
+  description?: string | null;
+  bannerUrl?: string | null;
+}
+
+export interface EventUpdatePayload {
+  organizationId?: string;
+  organizerId?: string;
+  name?: string;
+  startDate?: string;
+  endDate?: string;
+  startTime?: string | null;
+  endTime?: string | null;
+  location?: string | null;
+  capacity?: number | null;
+  description?: string | null;
+  bannerUrl?: string | null;
 }
 
 export interface Organization {

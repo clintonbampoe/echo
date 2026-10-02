@@ -15,6 +15,7 @@ services:
     logging: *default-logging
     environment:
       ConnectionStrings__echodb: ${ConnectionStrings__echodb}
+      OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT}
       Jwt__PrivateKey: ${Jwt__PrivateKey}
       Jwt__PublicKey: ${Jwt__PublicKey}
       # Only set during a key rotation grace period; empty the rest of the time.
@@ -102,6 +103,15 @@ services:
         condition: service_healthy
     networks: [echo-network]
     profiles: [db-tools]
+  collector:
+    image: grafana/otel-lgtm:0.34.0
+    ports:
+      - 3000:3000  # UI
+      - 4317:4317  # OTLP over gRPC for logs, metrics and traces
+      - 4318:4318  # OTLP over HTTP for logs, metrics and traces
+      - 9090:9090  # Prometheus
+    networks: [echo-network]
+    profiles: [observability]
 networks:
   echo-network:
 volumes:

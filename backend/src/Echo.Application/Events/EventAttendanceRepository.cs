@@ -1,6 +1,6 @@
-using Echo.Shared.Query;
 using Echo.Data;
 using Echo.Domain.Events;
+using Echo.Shared.Query;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Application.Events;
@@ -29,8 +29,8 @@ public class EventAttendanceRepository(AppDbContext context)
     }
 
     public async Task<EventAttendance?> GetById(
-        Guid id,
         Guid congregationId,
+        Guid id,
         CancellationToken ct = default
     )
     {
