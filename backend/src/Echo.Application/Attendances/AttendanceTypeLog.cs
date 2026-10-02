@@ -24,6 +24,13 @@ public static partial class AttendanceTypeLog
     );
 
     // --- Get by id ---
+
+    [LoggerMessage(
+        Level = LogLevel.Information,
+        Message = "Attendance type found: {TypeId} in congregation {CongregationId}"
+    )]
+    public static partial void Found(ILogger logger, Guid congregationId, int typeId);
+
     [LoggerMessage(
         Level = LogLevel.Warning,
         Message = "Attendance type not found: {TypeId} in congregation {CongregationId}"

@@ -27,7 +27,7 @@ public class OrganizationMemberController(
             instrumentation,
             "endpoint.organization_member.fetch_by_id"
         );
-        var response = await service.GetById(id, GetCongregationId(), ct);
+        var response = await service.GetById(GetCongregationId(), id, ct);
         return response.ToActionResult();
     }
 
@@ -99,7 +99,7 @@ public class OrganizationMemberController(
     public async Task<ActionResult> Delete(Guid id, CancellationToken ct)
     {
         using var span = StartEndpointSpan(instrumentation, "endpoint.organization_member.delete");
-        var response = await service.Delete(id, GetCongregationId(), ct);
+        var response = await service.Delete(GetCongregationId(), id, ct);
         return response.ToActionResult();
     }
 }

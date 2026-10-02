@@ -29,7 +29,7 @@ public class AssetRepository(AppDbContext context)
             .ToListAsync(ct);
     }
 
-    public async Task<Asset?> GetById(Guid id, Guid congregationId, CancellationToken ct = default)
+    public async Task<Asset?> GetById(Guid congregationId, Guid id, CancellationToken ct = default)
     {
         return await _dbSet
             .FilterDeleted()

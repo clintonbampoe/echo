@@ -22,7 +22,7 @@ public class AssetCategoriesController(
     {
         using var span = StartEndpointSpan(instrumentation, "endpoint.asset_category.fetch_by_id");
 
-        var res = await service.GetById(id, GetCongregationId(), ct);
+        var res = await service.GetById(GetCongregationId(), id, ct);
         return res.ToActionResult();
     }
 

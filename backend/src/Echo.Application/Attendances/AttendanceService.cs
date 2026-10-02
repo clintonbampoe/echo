@@ -49,31 +49,33 @@ public class AttendanceService(
 
         var data = mapper.ToListDto(entities);
         activity?.SetTag("attendance.count", data.Count);
+        AttendanceLog.Listed(logger, congregationId, data.Count);
 
         var res = new PagedResponse<AttendanceResponseDto>(hasMore, nextCursor, data);
         return new SuccessResult<PagedResponse<AttendanceResponseDto>>(res);
     }
 
-    public async Task<IOperationResult> GetById(Guid id, Guid congregationId, CancellationToken ct)
+    public async Task<IOperationResult> GetById(Guid congregationId, Guid id, CancellationToken ct)
     {
         using var activity = instrumentation.ActivitySource.StartActivity(
             "svc.attendance.get_by_id"
         );
-        activity?.SetTag("attendance.id", id);
 
+        activity?.SetTag("attendance.id", id);
         Attendance? entity;
         using (instrumentation.ActivitySource.StartActivity("svc.attendance.fetch.by_id"))
         {
-            entity = await repository.GetById(id, congregationId, ct);
+            entity = await repository.GetById(congregationId, id, ct);
         }
 
         if (entity is null)
         {
             activity?.SetTag("attendance.found", false);
-            AttendanceLog.NotFound(logger, id);
+            AttendanceLog.NotFound(logger, congregationId, id);
             return new NotFoundResult(id.ToString());
         }
 
+        AttendanceLog.Found(logger, congregationId, id);
         var res = mapper.ToDto(entity);
         return new SuccessResult<AttendanceResponseDto>(res);
     }
@@ -94,9 +96,10 @@ public class AttendanceService(
 
         if (context is null)
         {
-            AttendanceLog.ContextNotFound(logger, dto.AttendanceContextId);
+            AttendanceLog.CreateContextNotFound(logger, congregationId, dto.AttendanceContextId);
             return new ForeignKeyEntityNotFound(nameof(context));
         }
+        AttendanceLog.CreateContextFound(logger, congregationId, dto.AttendanceContextId);
 
         var entity = mapper.ToEntity(dto);
         entity.CongregationId = congregationId;
@@ -110,7 +113,7 @@ public class AttendanceService(
         }
 
         activity?.SetTag("attendance.id", entity.Id);
-        AttendanceLog.Created(logger, entity.Id);
+        AttendanceLog.Created(logger, congregationId, entity.Id);
 
         var res = mapper.ToDto(entity);
         return new CreatedAtResult<AttendanceResponseDto>(res);
@@ -129,14 +132,39 @@ public class AttendanceService(
         Attendance? entity;
         using (instrumentation.ActivitySource.StartActivity("svc.attendance.fetch.by_id"))
         {
-            entity = await repository.GetById(id, congregationId, ct);
+            entity = await repository.GetById(congregationId, id, ct);
         }
 
         if (entity is null)
         {
             activity?.SetTag("attendance.found", false);
-            AttendanceLog.NotFound(logger, id);
+            AttendanceLog.UpdateNotFound(logger, congregationId, id);
             return new NotFoundResult(id.ToString());
+        }
+
+        // Validate Context if it's being changed
+        if (dto.AttendanceContextId != entity.AttendanceContextId)
+        {
+            AttendanceContext? context;
+            using (instrumentation.ActivitySource.StartActivity("svc.attendance.validate.context"))
+            {
+                context = await contextRepository.GetById(
+                    congregationId,
+                    entity.AttendanceContextId,
+                    ct
+                );
+            }
+
+            if (context is null)
+            {
+                AttendanceLog.UpdateContextNotFound(
+                    logger,
+                    congregationId,
+                    entity.AttendanceContextId
+                );
+                return new ForeignKeyEntityNotFound(nameof(context));
+            }
+            AttendanceLog.UpdateContextFound(logger, congregationId, entity.AttendanceContextId);
         }
 
         mapper.Patch(dto, entity);
@@ -146,7 +174,7 @@ public class AttendanceService(
             await unitOfWork.CommitAsync(ct);
         }
 
-        AttendanceLog.Updated(logger, id);
+        AttendanceLog.Updated(logger, congregationId, id);
 
         var res = mapper.ToDto(entity);
         return new SuccessResult<AttendanceResponseDto>(res);
@@ -160,13 +188,13 @@ public class AttendanceService(
         Attendance? entity;
         using (instrumentation.ActivitySource.StartActivity("svc.attendance.fetch.by_id"))
         {
-            entity = await repository.GetById(id, congregationId, ct);
+            entity = await repository.GetById(congregationId, id, ct);
         }
 
         if (entity is null)
         {
             activity?.SetTag("attendance.found", false);
-            AttendanceLog.NotFound(logger, id);
+            AttendanceLog.DeleteNotFound(logger, congregationId, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -176,7 +204,7 @@ public class AttendanceService(
             await unitOfWork.CommitAsync(ct);
         }
 
-        AttendanceLog.Deleted(logger, id);
+        AttendanceLog.Deleted(logger, congregationId, id);
 
         return new NoContentResult();
     }

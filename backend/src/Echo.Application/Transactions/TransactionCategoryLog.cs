@@ -25,6 +25,12 @@ public static partial class TransactionCategoryLog
 
     // --- Get by id ---
     [LoggerMessage(
+        Level = LogLevel.Information,
+        Message = "Transaction category found: {CategoryId} in congregation {CongregationId}"
+    )]
+    public static partial void Found(ILogger logger, Guid congregationId, int categoryId);
+
+    [LoggerMessage(
         Level = LogLevel.Warning,
         Message = "Transaction category not found: {CategoryId} in congregation {CongregationId}"
     )]

@@ -1,6 +1,6 @@
-using Echo.Shared.Query;
 using Echo.Data;
 using Echo.Domain.Events;
+using Echo.Shared.Query;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Application.Events;
@@ -30,7 +30,7 @@ public class EventRepository(AppDbContext context)
             .ToListAsync(ct);
     }
 
-    public async Task<Event?> GetById(Guid id, Guid congregationId, CancellationToken ct = default)
+    public async Task<Event?> GetById(Guid congregationId, Guid id, CancellationToken ct = default)
     {
         return await _dbSet
             .FilterDeleted()
@@ -69,7 +69,7 @@ internal static class EventQueryExtensions
 
         query = filters.StartDate is not null
             ? query.Where(e => e.StartDate == filters.StartDate)
-            : query.Where(e => e.StartDate > dateToday);
+            : query.Where(e => e.StartDate >= dateToday);
 
         if (filters.OrganizerId is not null)
             query = query.Where(e => e.OrganizerId == filters.OrganizerId);

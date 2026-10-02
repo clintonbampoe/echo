@@ -11,6 +11,7 @@ namespace Echo.Application.Transactions;
 public class TransactionService(
     TransactionRepository repository,
     TransactionCategoryRepository categoryRepository,
+    TimeProvider timeProvider,
     IUnitOfWork unitOfWork,
     IEncoder encoder,
     ITransactionMapper mapper,
@@ -35,6 +36,7 @@ public class TransactionService(
         {
             entities = await repository.List(
                 congregationId,
+                timeProvider,
                 filters,
                 cursor,
                 pagination.PageSize + 1,
@@ -50,12 +52,13 @@ public class TransactionService(
 
         var data = mapper.ToListDto(entities);
         activity?.SetTag("transaction.count", data.Count);
+        TransactionLog.Listed(logger, congregationId, data.Count);
 
         var res = new PagedResponse<TransactionResponseDto>(hasMore, nextCursor, data);
         return new SuccessResult<PagedResponse<TransactionResponseDto>>(res);
     }
 
-    public async Task<IOperationResult> GetById(Guid id, Guid congregationId, CancellationToken ct)
+    public async Task<IOperationResult> GetById(Guid congregationId, Guid id, CancellationToken ct)
     {
         using var activity = instrumentation.ActivitySource.StartActivity(
             "svc.transaction.get_by_id"
@@ -71,10 +74,11 @@ public class TransactionService(
         if (entity is null)
         {
             activity?.SetTag("transaction.found", false);
-            TransactionLog.NotFound(logger, id);
+            TransactionLog.NotFound(logger, congregationId, id);
             return new NotFoundResult(id.ToString());
         }
 
+        TransactionLog.Found(logger, congregationId, id);
         var res = mapper.ToDto(entity);
         return new SuccessResult<TransactionResponseDto>(res);
     }
@@ -98,9 +102,10 @@ public class TransactionService(
         }
         if (transactionCategory is null)
         {
-            TransactionLog.CategoryNotFound(logger, dto.CategoryId);
+            TransactionLog.CreateCategoryNotFound(logger, congregationId, dto.CategoryId);
             return new ForeignKeyEntityNotFound(nameof(transactionCategory));
         }
+        TransactionLog.CreateCategoryFound(logger, congregationId, dto.CategoryId);
 
         var entity = mapper.ToEntity(dto);
         entity.CongregationId = congregationId;
@@ -114,7 +119,7 @@ public class TransactionService(
         }
 
         activity?.SetTag("transaction.id", entity.Id);
-        TransactionLog.Created(logger, entity.Id);
+        TransactionLog.Created(logger, congregationId, entity.Id);
 
         var res = mapper.ToDto(entity);
         return new CreatedAtResult<TransactionResponseDto>(res);
@@ -139,8 +144,27 @@ public class TransactionService(
         if (entity is null)
         {
             activity?.SetTag("transaction.found", false);
-            TransactionLog.NotFound(logger, id);
+            TransactionLog.UpdateNotFound(logger, congregationId, id);
             return new NotFoundResult(id.ToString());
+        }
+
+        // Validate Category if it's being changed
+        if (dto.CategoryId != entity.CategoryId)
+        {
+            TransactionCategory? category;
+            using (
+                instrumentation.ActivitySource.StartActivity("svc.transaction.validate.category")
+            )
+            {
+                category = await categoryRepository.GetById(congregationId, entity.CategoryId, ct);
+            }
+
+            if (category is null)
+            {
+                TransactionLog.UpdateCategoryNotFound(logger, congregationId, entity.CategoryId);
+                return new ForeignKeyEntityNotFound(nameof(category));
+            }
+            TransactionLog.UpdateCategoryFound(logger, congregationId, entity.CategoryId);
         }
 
         mapper.Patch(dto, entity);
@@ -150,7 +174,7 @@ public class TransactionService(
             await unitOfWork.CommitAsync(ct);
         }
 
-        TransactionLog.Updated(logger, id);
+        TransactionLog.Updated(logger, congregationId, id);
 
         var res = mapper.ToDto(entity);
         return new SuccessResult<TransactionResponseDto>(res);
@@ -170,7 +194,7 @@ public class TransactionService(
         if (entity is null)
         {
             activity?.SetTag("transaction.found", false);
-            TransactionLog.NotFound(logger, id);
+            TransactionLog.DeleteNotFound(logger, congregationId, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -180,7 +204,7 @@ public class TransactionService(
             await unitOfWork.CommitAsync(ct);
         }
 
-        TransactionLog.Deleted(logger, id);
+        TransactionLog.Deleted(logger, congregationId, id);
 
         return new NoContentResult();
     }

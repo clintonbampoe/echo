@@ -26,12 +26,13 @@ public class TransactionCategoryService(
         }
 
         var res = mapper.ToListDto(entities);
+        TransactionCategoryLog.Listed(logger, congregationId, res.Count);
         activity?.SetTag("transaction_category.count", res.Count);
 
         return new SuccessResult<List<TransactionCategoryResponseDto>>(res);
     }
 
-    public async Task<IOperationResult> GetById(int id, Guid congregationId, CancellationToken ct)
+    public async Task<IOperationResult> GetById(Guid congregationId, int id, CancellationToken ct)
     {
         using var activity = instrumentation.ActivitySource.StartActivity(
             "svc.transaction_category.get_by_id"
@@ -47,10 +48,11 @@ public class TransactionCategoryService(
         if (entity is null)
         {
             activity?.SetTag("transaction_category.found", false);
-            TransactionCategoryLog.NotFound(logger, id);
+            TransactionCategoryLog.NotFound(logger, congregationId, id);
             return new NotFoundResult(id.ToString());
         }
 
+        TransactionCategoryLog.Found(logger, congregationId, id);
         var res = mapper.ToDto(entity);
         return new SuccessResult<TransactionCategoryResponseDto>(res);
     }
@@ -75,7 +77,7 @@ public class TransactionCategoryService(
         }
 
         activity?.SetTag("transaction_category.id", entity.Id);
-        TransactionCategoryLog.Created(logger, entity.Id);
+        TransactionCategoryLog.Created(logger, congregationId, entity.Id);
 
         var res = mapper.ToDto(entity);
         return new CreatedAtResult<TransactionCategoryResponseDto>(res);
@@ -102,7 +104,7 @@ public class TransactionCategoryService(
         if (entity is null)
         {
             activity?.SetTag("transaction_category.found", false);
-            TransactionCategoryLog.NotFound(logger, id);
+            TransactionCategoryLog.UpdateNotFound(logger, congregationId, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -113,7 +115,7 @@ public class TransactionCategoryService(
             await unitOfWork.CommitAsync(ct);
         }
 
-        TransactionCategoryLog.Updated(logger, id);
+        TransactionCategoryLog.Updated(logger, congregationId, id);
 
         var res = mapper.ToDto(entity);
         return new SuccessResult<TransactionCategoryResponseDto>(res);
@@ -135,7 +137,7 @@ public class TransactionCategoryService(
         if (entity is null)
         {
             activity?.SetTag("transaction_category.found", false);
-            TransactionCategoryLog.NotFound(logger, id);
+            TransactionCategoryLog.DeleteNotFound(logger, congregationId, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -145,7 +147,7 @@ public class TransactionCategoryService(
             await unitOfWork.CommitAsync(ct);
         }
 
-        TransactionCategoryLog.Deleted(logger, id);
+        TransactionCategoryLog.Deleted(logger, congregationId, id);
 
         return new NoContentResult();
     }
@@ -170,6 +172,7 @@ public class TransactionCategoryService(
         }
 
         var res = mapper.ToSearchDto(entities);
+        TransactionCategoryLog.Searched(logger, congregationId, name, res.Count);
         activity?.SetTag("transaction_category.count", res.Count);
         return new SuccessResult<List<TransactionCategorySearchResponseDto>>(res);
     }

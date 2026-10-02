@@ -49,6 +49,7 @@ public class MemberService(
 
         var data = mapper.ToListDto(entities);
         activity?.SetTag("member.count", data.Count);
+        MemberLog.Listed(logger, congregationId, data.Count);
 
         var res = new PagedResponse<MemberResponseDto>(hasMore, nextCursor, data);
         return new SuccessResult<PagedResponse<MemberResponseDto>>(res);
@@ -62,16 +63,17 @@ public class MemberService(
         Member? entity;
         using (instrumentation.ActivitySource.StartActivity("svc.member.fetch.by_id"))
         {
-            entity = await repository.GetById(id, congregationId, ct);
+            entity = await repository.GetById(congregationId, id, ct);
         }
 
         if (entity is null)
         {
             activity?.SetTag("member.found", false);
-            MemberLog.NotFound(logger, id);
+            MemberLog.NotFound(logger, congregationId, id);
             return new NotFoundResult(id.ToString());
         }
 
+        MemberLog.Found(logger, congregationId, id);
         var res = mapper.ToDto(entity);
         return new SuccessResult<MemberResponseDto>(res);
     }
@@ -95,7 +97,7 @@ public class MemberService(
         }
 
         activity?.SetTag("member.id", entity.Id);
-        MemberLog.Created(logger, entity.Id);
+        MemberLog.Created(logger, congregationId, entity.Id);
 
         var res = mapper.ToDto(entity);
         return new CreatedAtResult<MemberResponseDto>(res);
@@ -114,13 +116,13 @@ public class MemberService(
         Member? entity;
         using (instrumentation.ActivitySource.StartActivity("svc.member.fetch.by_id"))
         {
-            entity = await repository.GetById(id, congregationId, ct);
+            entity = await repository.GetById(congregationId, id, ct);
         }
 
         if (entity is null)
         {
             activity?.SetTag("member.found", false);
-            MemberLog.NotFound(logger, id);
+            MemberLog.UpdateNotFound(logger, congregationId, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -130,7 +132,7 @@ public class MemberService(
             await unitOfWork.CommitAsync(ct);
         }
 
-        MemberLog.Updated(logger, id);
+        MemberLog.Updated(logger, congregationId, id);
 
         var res = mapper.ToDto(entity);
         return new SuccessResult<MemberResponseDto>(res);
@@ -144,13 +146,13 @@ public class MemberService(
         Member? entity;
         using (instrumentation.ActivitySource.StartActivity("svc.member.fetch.by_id"))
         {
-            entity = await repository.GetById(id, congregationId, ct);
+            entity = await repository.GetById(congregationId, id, ct);
         }
 
         if (entity is null)
         {
             activity?.SetTag("member.found", false);
-            MemberLog.NotFound(logger, id);
+            MemberLog.DeleteNotFound(logger, congregationId, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -160,7 +162,7 @@ public class MemberService(
             await unitOfWork.CommitAsync(ct);
         }
 
-        MemberLog.Deleted(logger, id);
+        MemberLog.Deleted(logger, congregationId, id);
 
         return new NoContentResult();
     }
@@ -182,6 +184,7 @@ public class MemberService(
 
         var res = mapper.ToSearchDto(entities);
         activity?.SetTag("member.count", res.Count);
+        MemberLog.Searched(logger, congregationId, searchString, res.Count);
         return new SuccessResult<List<MemberSearchResultDto>>(res);
     }
 

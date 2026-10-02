@@ -55,12 +55,13 @@ public class EventService(
 
         var data = mapper.ToListDto(entities);
         activity?.SetTag("event.count", data.Count);
+        EventLog.Listed(logger, congregationId, data.Count);
 
         var res = new PagedResponse<EventResponseDto>(hasMore, nextCursor, data);
         return new SuccessResult<PagedResponse<EventResponseDto>>(res);
     }
 
-    public async Task<IOperationResult> GetById(Guid id, Guid congregationId, CancellationToken ct)
+    public async Task<IOperationResult> GetById(Guid congregationId, Guid id, CancellationToken ct)
     {
         using var activity = instrumentation.ActivitySource.StartActivity("svc.event.get_by_id");
         activity?.SetTag("event.id", id);
@@ -68,16 +69,17 @@ public class EventService(
         Event? entity;
         using (instrumentation.ActivitySource.StartActivity("svc.event.fetch.by_id"))
         {
-            entity = await repository.GetById(id, congregationId, ct);
+            entity = await repository.GetById(congregationId, id, ct);
         }
 
         if (entity is null)
         {
             activity?.SetTag("event.found", false);
-            EventLog.NotFound(logger, id);
+            EventLog.NotFound(logger, congregationId, id);
             return new NotFoundResult(id.ToString());
         }
 
+        EventLog.Found(logger, congregationId, id);
         var res = mapper.ToDto(entity);
         return new SuccessResult<EventResponseDto>(res);
     }
@@ -97,9 +99,10 @@ public class EventService(
         }
         if (organizer is null)
         {
-            EventLog.OrganizerNotFound(logger, dto.OrganizerId);
+            EventLog.CreateOrganizerNotFound(logger, congregationId, dto.OrganizerId);
             return new ForeignKeyEntityNotFound(nameof(organizer));
         }
+        EventLog.CreateOrganizerFound(logger, congregationId, dto.OrganizerId);
 
         Organization? organization;
         using (instrumentation.ActivitySource.StartActivity("svc.event.validate.organization"))
@@ -112,9 +115,10 @@ public class EventService(
         }
         if (organization is null)
         {
-            EventLog.OrganizationNotFound(logger, dto.OrganizationId);
+            EventLog.CreateOrganizationNotFound(logger, congregationId, dto.OrganizationId);
             return new ForeignKeyEntityNotFound(nameof(organization));
         }
+        EventLog.CreateOrganizationFound(logger, congregationId, dto.OrganizationId);
 
         var entity = mapper.ToEntity(dto);
         entity.CongregationId = congregationId;
@@ -129,7 +133,7 @@ public class EventService(
         }
 
         activity?.SetTag("event.id", entity.Id);
-        EventLog.Created(logger, entity.Id);
+        EventLog.Created(logger, congregationId, entity.Id);
 
         var res = mapper.ToDto(entity);
         return new CreatedAtResult<EventResponseDto>(res);
@@ -154,8 +158,46 @@ public class EventService(
         if (entity is null)
         {
             activity?.SetTag("event.found", false);
-            EventLog.NotFound(logger, id);
+            EventLog.UpdateNotFound(logger, congregationId, id);
             return new NotFoundResult(id.ToString());
+        }
+
+        // Validate Organizer if it's being changed
+        if (dto.OrganizerId != entity.OrganizerId)
+        {
+            Member? organizer;
+            using (instrumentation.ActivitySource.StartActivity("svc.event.validate.organizer"))
+            {
+                organizer = await memberRepository.GetById(congregationId, entity.OrganizerId, ct);
+            }
+
+            if (organizer is null)
+            {
+                EventLog.UpdateOrganizerNotFound(logger, congregationId, entity.OrganizerId);
+                return new ForeignKeyEntityNotFound(nameof(organizer));
+            }
+            EventLog.UpdateOrganizerFound(logger, congregationId, entity.OrganizerId);
+        }
+
+        // Validate Organization if it's being changed
+        if (dto.OrganizationId != entity.OrganizationId)
+        {
+            Organization? organization;
+            using (instrumentation.ActivitySource.StartActivity("svc.event.validate.organization"))
+            {
+                organization = await organizationRepository.GetById(
+                    congregationId,
+                    entity.OrganizationId,
+                    ct
+                );
+            }
+
+            if (organization is null)
+            {
+                EventLog.UpdateOrganizationNotFound(logger, congregationId, entity.OrganizationId);
+                return new ForeignKeyEntityNotFound(nameof(organization));
+            }
+            EventLog.UpdateOrganizationFound(logger, congregationId, entity.OrganizationId);
         }
 
         mapper.Patch(dto, entity);
@@ -165,8 +207,7 @@ public class EventService(
             await unitOfWork.CommitAsync(ct);
         }
 
-        EventLog.Updated(logger, id);
-
+        EventLog.Updated(logger, congregationId, id);
         var res = mapper.ToDto(entity);
         return new SuccessResult<EventResponseDto>(res);
     }
@@ -179,13 +220,13 @@ public class EventService(
         Event? entity;
         using (instrumentation.ActivitySource.StartActivity("svc.event.fetch.by_id"))
         {
-            entity = await repository.GetById(id, congregationId, ct);
+            entity = await repository.GetById(congregationId, id, ct);
         }
 
         if (entity is null)
         {
             activity?.SetTag("event.found", false);
-            EventLog.NotFound(logger, id);
+            EventLog.DeleteNotFound(logger, congregationId, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -195,7 +236,7 @@ public class EventService(
             await unitOfWork.CommitAsync(ct);
         }
 
-        EventLog.Deleted(logger, id);
+        EventLog.Deleted(logger, congregationId, id);
 
         return new NoContentResult();
     }
@@ -217,6 +258,7 @@ public class EventService(
 
         var res = mapper.ToSearchDto(entities);
         activity?.SetTag("event.count", res.Count);
+        EventLog.Searched(logger, congregationId, name, res.Count);
         return new SuccessResult<List<EventSearchResultDto>>(res);
     }
 

@@ -25,10 +25,10 @@ public class SessionService(
         CancellationToken ct = default
     )
     {
-        using var span = instrumentation.ActivitySource.StartActivity("session.login");
+        using var span = instrumentation.ActivitySource.StartActivity("svc.session.login");
 
         User? entity;
-        using (instrumentation.ActivitySource.StartActivity("user.lookup.by_email"))
+        using (instrumentation.ActivitySource.StartActivity("svc.session.fetch.user_by_email"))
         {
             entity = await userRepository.GetByEmail(email, ct);
         }
@@ -44,7 +44,7 @@ public class SessionService(
         span?.SetTag("congregation.id", entity.CongregationId);
         span?.SetTag("user.id", entity.Id);
 
-        using (instrumentation.ActivitySource.StartActivity("password.verify"))
+        using (instrumentation.ActivitySource.StartActivity("svc.session.validate.password"))
         {
             var isPasswordValid = await hashService.VerifyAsync(password, entity.PasswordHash);
             if (!isPasswordValid)
@@ -70,7 +70,7 @@ public class SessionService(
         {
             var (accessToken, accessExpiresAt) = accessTokenGenerator.Generate(user);
 
-            using (instrumentation.ActivitySource.StartActivity("session.issue_tokens"))
+            using (instrumentation.ActivitySource.StartActivity("svc.session.persist.tokens"))
             {
                 var (refreshTokenEntity, plainRefreshToken) = await jwtTokenService.IssueToken(
                     user.Id,
@@ -106,10 +106,10 @@ public class SessionService(
         CancellationToken ct = default
     )
     {
-        using var span = instrumentation.ActivitySource.StartActivity("session.logout.all");
+        using var span = instrumentation.ActivitySource.StartActivity("svc.session.logout_all");
 
         User? entity;
-        using (instrumentation.ActivitySource.StartActivity("user.lookup.by_email"))
+        using (instrumentation.ActivitySource.StartActivity("svc.session.fetch.user_by_email"))
         {
             entity = await userRepository.GetByEmail(email, ct);
         }
@@ -126,7 +126,7 @@ public class SessionService(
 
         try
         {
-            using (instrumentation.ActivitySource.StartActivity("sessions.revoke_all"))
+            using (instrumentation.ActivitySource.StartActivity("svc.session.persist.revoke_all"))
             {
                 await jwtTokenService.RevokeAllActiveSessionsForUserById(entity.Id, ct);
                 await unitOfWork.CommitAsync(ct);
@@ -150,10 +150,10 @@ public class SessionService(
         CancellationToken ct = default
     )
     {
-        using var span = instrumentation.ActivitySource.StartActivity("session.refresh");
+        using var span = instrumentation.ActivitySource.StartActivity("svc.session.refresh");
 
         RefreshTokenValidationResult result;
-        using (instrumentation.ActivitySource.StartActivity("refresh_token.validate"))
+        using (instrumentation.ActivitySource.StartActivity("svc.session.validate.refresh_token"))
         {
             result = await jwtTokenService.ValidateAndRotateAsync(refreshToken, ct);
         }
@@ -168,7 +168,7 @@ public class SessionService(
         }
 
         User? entity;
-        using (instrumentation.ActivitySource.StartActivity("user.lookup.by_id"))
+        using (instrumentation.ActivitySource.StartActivity("svc.session.fetch.user_by_id"))
         {
             entity = await userRepository.GetById(result.UserId, ct);
         }
@@ -186,7 +186,7 @@ public class SessionService(
 
         try
         {
-            using (instrumentation.ActivitySource.StartActivity("session.generate_token"))
+            using (instrumentation.ActivitySource.StartActivity("svc.session.persist.tokens"))
             {
                 var userDto = mapper.ToAuthDto(entity);
                 var (accessToken, accessExpiresAt) = accessTokenGenerator.Generate(userDto);
@@ -219,11 +219,11 @@ public class SessionService(
         CancellationToken ct = default
     )
     {
-        using var span = instrumentation.ActivitySource.StartActivity("session.revoke");
+        using var span = instrumentation.ActivitySource.StartActivity("svc.session.revoke");
 
         try
         {
-            using (instrumentation.ActivitySource.StartActivity("refresh_token.revoke"))
+            using (instrumentation.ActivitySource.StartActivity("svc.session.persist.revoke_token"))
             {
                 await jwtTokenService.RevokeToken(refreshToken, ct);
                 await unitOfWork.CommitAsync(ct);

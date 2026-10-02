@@ -33,10 +33,10 @@ public class PasswordResetService(
         CancellationToken ct
     )
     {
-        using var span = instrumentation.ActivitySource.StartActivity("password.reset.request");
+        using var span = instrumentation.ActivitySource.StartActivity("svc.password.forgot");
 
         User? user;
-        using (instrumentation.ActivitySource.StartActivity("user.lookup.by_email"))
+        using (instrumentation.ActivitySource.StartActivity("svc.password.fetch.user_by_email"))
         {
             user = await userRepository.GetByEmail(email, ct);
         }
@@ -62,13 +62,13 @@ public class PasswordResetService(
                 ExpiresAt = timeProvider.GetUtcNow().UtcDateTime.AddHours(1),
             };
 
-            using (instrumentation.ActivitySource.StartActivity("password_reset_token.create"))
+            using (instrumentation.ActivitySource.StartActivity("svc.password.persist.reset_token"))
             {
                 await passwordVerificationTokenRepository.CreateRecord(tokenEntity, ct);
                 await unitOfWork.CommitAsync(ct);
             }
 
-            using (instrumentation.ActivitySource.StartActivity("email.send"))
+            using (instrumentation.ActivitySource.StartActivity("svc.password.persist.email_send"))
             {
                 Activity.Current?.SetTag("email.provider", "resend");
                 Activity.Current?.SetTag("email.type", "password_reset");
@@ -97,7 +97,7 @@ public class PasswordResetService(
         CancellationToken ct
     )
     {
-        using var span = instrumentation.ActivitySource.StartActivity("password.reset");
+        using var span = instrumentation.ActivitySource.StartActivity("svc.password.reset");
 
         var passwordIsValid = PasswordPolicy.IsValid(newPassword, out var policyError);
         if (!passwordIsValid)
@@ -111,7 +111,7 @@ public class PasswordResetService(
         var hashedInput = tokenHashService.Hash(token);
 
         PasswordResetToken? tokenEntity;
-        using (instrumentation.ActivitySource.StartActivity("password_reset_token.lookup.by_hash"))
+        using (instrumentation.ActivitySource.StartActivity("svc.password.fetch.token_by_hash"))
         {
             tokenEntity = await passwordVerificationTokenRepository.GetTokenRecordByHashWithUser(
                 hashedInput,
@@ -156,14 +156,14 @@ public class PasswordResetService(
 
         try
         {
-            using (instrumentation.ActivitySource.StartActivity("password.hash"))
+            using (instrumentation.ActivitySource.StartActivity("svc.password.validate.password_hash"))
             {
                 tokenEntity.User.PasswordHash = await passwordHashService.HashAsync(newPassword);
             }
 
             tokenEntity.UsedAt = timeProvider.GetUtcNow().UtcDateTime;
 
-            using (instrumentation.ActivitySource.StartActivity("sessions.revoke_all"))
+            using (instrumentation.ActivitySource.StartActivity("svc.password.persist.revoke_sessions"))
             {
                 await refreshTokenService.RevokeAllActiveSessionsForUserById(
                     tokenEntity.UserId,

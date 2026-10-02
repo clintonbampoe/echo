@@ -25,6 +25,12 @@ public static partial class ProjectCategoryLog
 
     // --- Get by id ---
     [LoggerMessage(
+        Level = LogLevel.Information,
+        Message = "Project category found: {CategoryId} in congregation {CongregationId}"
+    )]
+    public static partial void Found(ILogger logger, Guid congregationId, int categoryId);
+
+    [LoggerMessage(
         Level = LogLevel.Warning,
         Message = "Project category not found: {CategoryId} in congregation {CongregationId}"
     )]

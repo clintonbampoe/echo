@@ -23,7 +23,7 @@ public class EventsController(EventService service, ApplicationInstrumentation i
     public async Task<ActionResult> GetById(Guid id, CancellationToken ct)
     {
         using var span = StartEndpointSpan(instrumentation, "endpoint.event.fetch_by_id");
-        var response = await service.GetById(id, GetCongregationId(), ct);
+        var response = await service.GetById(GetCongregationId(), id, ct);
         return response.ToActionResult();
     }
 
@@ -47,7 +47,7 @@ public class EventsController(EventService service, ApplicationInstrumentation i
     public async Task<ActionResult> Delete(Guid id, CancellationToken ct)
     {
         using var span = StartEndpointSpan(instrumentation, "endpoint.event.delete");
-        var response = await service.Delete(id, GetCongregationId(), ct);
+        var response = await service.Delete(GetCongregationId(), id, ct);
         return response.ToActionResult();
     }
 

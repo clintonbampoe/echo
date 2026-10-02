@@ -25,6 +25,12 @@ public static partial class AttendanceContextLog
 
     // --- Get by id ---
     [LoggerMessage(
+        Level = LogLevel.Information,
+        Message = "Attendance context found: {ContextId} in congregation {CongregationId}"
+    )]
+    public static partial void Found(ILogger logger, Guid congregationId, int contextId);
+
+    [LoggerMessage(
         Level = LogLevel.Warning,
         Message = "Attendance context not found: {ContextId} in congregation {CongregationId}"
     )]

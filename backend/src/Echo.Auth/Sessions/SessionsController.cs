@@ -8,7 +8,10 @@ namespace Echo.Auth.Sessions;
 [AllowAnonymous]
 [EnableRateLimiting("auth")]
 [Route("/api/auth/v{version:ApiVersion}/[controller]")]
-public class SessionsController(SessionService sessionService) : ControllerBase
+public class SessionsController(
+    SessionService sessionService,
+    AuthInstrumentation instrumentation
+) : ControllerBase
 {
     [HttpPost("login")]
     public async Task<ActionResult> Login(
@@ -16,6 +19,7 @@ public class SessionsController(SessionService sessionService) : ControllerBase
         CancellationToken ct = default
     )
     {
+        using var span = instrumentation.ActivitySource.StartActivity("endpoint.session.login");
         var response = await sessionService.Login(request.Email, request.Password, ct);
         return response.ToActionResult();
     }
@@ -26,6 +30,7 @@ public class SessionsController(SessionService sessionService) : ControllerBase
         CancellationToken ct = default
     )
     {
+        using var span = instrumentation.ActivitySource.StartActivity("endpoint.session.logout_all");
         var response = await sessionService.LogoutOfAllSessions(request.Email, ct);
         return response.ToActionResult();
     }
@@ -36,6 +41,7 @@ public class SessionsController(SessionService sessionService) : ControllerBase
         CancellationToken ct = default
     )
     {
+        using var span = instrumentation.ActivitySource.StartActivity("endpoint.session.refresh");
         var response = await sessionService.RefreshAccessToken(request.RefreshToken, ct);
         return response.ToActionResult();
     }
@@ -46,6 +52,7 @@ public class SessionsController(SessionService sessionService) : ControllerBase
         CancellationToken ct = default
     )
     {
+        using var span = instrumentation.ActivitySource.StartActivity("endpoint.session.revoke");
         var response = await sessionService.RevokeAccessToken(request.RefreshToken, ct);
         return response.ToActionResult();
     }

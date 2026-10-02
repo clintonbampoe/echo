@@ -8,7 +8,10 @@ namespace Echo.Auth.Passwords;
 [AllowAnonymous]
 [EnableRateLimiting("auth")]
 [Route("/api/auth/v{version:ApiVersion}/[controller]")]
-public class PasswordsController(PasswordResetService passwordResetService) : ControllerBase
+public class PasswordsController(
+    PasswordResetService passwordResetService,
+    AuthInstrumentation instrumentation
+) : ControllerBase
 {
     [HttpPost("forgot")]
     public async Task<ActionResult> ForgotPassword(
@@ -16,6 +19,7 @@ public class PasswordsController(PasswordResetService passwordResetService) : Co
         CancellationToken ct
     )
     {
+        using var span = instrumentation.ActivitySource.StartActivity("endpoint.password.forgot");
         var response = await passwordResetService.SendForgotPasswordLinkToEmail(request.Email, ct);
         return response.ToActionResult();
     }
@@ -26,6 +30,7 @@ public class PasswordsController(PasswordResetService passwordResetService) : Co
         CancellationToken ct
     )
     {
+        using var span = instrumentation.ActivitySource.StartActivity("endpoint.password.reset");
         var response = await passwordResetService.ResetPassword(
             request.Token,
             request.NewPassword,

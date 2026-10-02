@@ -23,7 +23,7 @@ public class ProjectCategoriesController(
             instrumentation,
             "endpoint.project_category.fetch_by_id"
         );
-        var response = await service.GetById(id, GetCongregationId(), ct);
+        var response = await service.GetById(GetCongregationId(), id, ct);
         return response.ToActionResult();
     }
 

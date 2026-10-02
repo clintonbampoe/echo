@@ -48,12 +48,13 @@ public class EventAttendanceService(
 
         var data = mapper.ToListDto(entities);
         activity?.SetTag("event_attendance.count", data.Count);
+        EventAttendanceLog.Listed(logger, congregationId, data.Count);
 
         var res = new PagedResponse<EventAttendanceResponseDto>(hasMore, nextCursor, data);
         return new SuccessResult<PagedResponse<EventAttendanceResponseDto>>(res);
     }
 
-    public async Task<IOperationResult> GetById(Guid id, Guid congregationId, CancellationToken ct)
+    public async Task<IOperationResult> GetById(Guid congregationId, Guid id, CancellationToken ct)
     {
         using var activity = instrumentation.ActivitySource.StartActivity(
             "svc.event_attendance.get_by_id"
@@ -63,13 +64,13 @@ public class EventAttendanceService(
         EventAttendance? entity;
         using (instrumentation.ActivitySource.StartActivity("svc.event_attendance.fetch.by_id"))
         {
-            entity = await repository.GetById(id, congregationId, ct);
+            entity = await repository.GetById(congregationId, id, ct);
         }
 
         if (entity is null)
         {
             activity?.SetTag("event_attendance.found", false);
-            EventAttendanceLog.NotFound(logger, id);
+            EventAttendanceLog.NotFound(logger, congregationId, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -89,7 +90,6 @@ public class EventAttendanceService(
         );
 
         var cursor = encoder.Decode<EventAttendanceCursor>(pagination.Cursor);
-
         List<EventAttendance> entities;
         using (instrumentation.ActivitySource.StartActivity("svc.event_attendance.fetch.by_event"))
         {
@@ -127,7 +127,6 @@ public class EventAttendanceService(
         );
 
         var cursor = encoder.Decode<EventAttendanceCursor>(pagination.Cursor);
-
         List<EventAttendance> entities;
         using (instrumentation.ActivitySource.StartActivity("svc.event_attendance.fetch.by_member"))
         {
@@ -170,9 +169,10 @@ public class EventAttendanceService(
         }
         if (evnt is null)
         {
-            EventAttendanceLog.EventNotFound(logger, dto.EventId);
+            EventAttendanceLog.CreateEventNotFound(logger, congregationId, dto.EventId);
             return new ForeignKeyEntityNotFound(nameof(evnt));
         }
+        EventAttendanceLog.CreateEventFound(logger, dto.EventId, congregationId);
 
         Member? member;
         using (instrumentation.ActivitySource.StartActivity("svc.event_attendance.validate.member"))
@@ -181,9 +181,10 @@ public class EventAttendanceService(
         }
         if (member is null)
         {
-            EventAttendanceLog.MemberNotFound(logger, dto.MemberId);
+            EventAttendanceLog.CreateMemberNotFound(logger, congregationId, dto.MemberId);
             return new ForeignKeyEntityNotFound(nameof(member));
         }
+        EventAttendanceLog.CreateMemberFound(logger, congregationId, dto.MemberId);
 
         var entity = mapper.ToEntity(dto);
         entity.CongregationId = congregationId;
@@ -198,8 +199,7 @@ public class EventAttendanceService(
         }
 
         activity?.SetTag("event_attendance.id", entity.Id);
-        EventAttendanceLog.Created(logger, entity.Id);
-
+        EventAttendanceLog.Created(logger, congregationId, entity.Id);
         var res = mapper.ToDto(entity);
         return new CreatedAtResult<EventAttendanceResponseDto>(res);
     }
@@ -219,16 +219,17 @@ public class EventAttendanceService(
         EventAttendance? entity;
         using (instrumentation.ActivitySource.StartActivity("svc.event_attendance.fetch.by_id"))
         {
-            entity = await repository.GetById(id, congregationId, ct);
+            entity = await repository.GetById(congregationId, id, ct);
         }
 
         if (entity is null)
         {
             activity?.SetTag("event_attendance.found", false);
-            EventAttendanceLog.NotFound(logger, id);
+            EventAttendanceLog.UpdateNotFound(logger, congregationId, id);
             return new NotFoundResult(id.ToString());
         }
 
+        EventAttendanceLog.Found(logger, congregationId, id);
         mapper.Patch(dto, entity);
 
         using (instrumentation.ActivitySource.StartActivity("svc.event_attendance.persist"))
@@ -236,8 +237,7 @@ public class EventAttendanceService(
             await unitOfWork.CommitAsync(ct);
         }
 
-        EventAttendanceLog.Updated(logger, id);
-
+        EventAttendanceLog.Updated(logger, congregationId, id);
         var res = mapper.ToDto(entity);
         return new SuccessResult<EventAttendanceResponseDto>(res);
     }
@@ -252,13 +252,13 @@ public class EventAttendanceService(
         EventAttendance? entity;
         using (instrumentation.ActivitySource.StartActivity("svc.event_attendance.fetch.by_id"))
         {
-            entity = await repository.GetById(id, congregationId, ct);
+            entity = await repository.GetById(congregationId, id, ct);
         }
 
         if (entity is null)
         {
             activity?.SetTag("event_attendance.found", false);
-            EventAttendanceLog.NotFound(logger, id);
+            EventAttendanceLog.DeleteNotFound(logger, congregationId, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -268,8 +268,7 @@ public class EventAttendanceService(
             await unitOfWork.CommitAsync(ct);
         }
 
-        EventAttendanceLog.Deleted(logger, id);
-
+        EventAttendanceLog.Deleted(logger, congregationId, id);
         return new NoContentResult();
     }
 

@@ -52,6 +52,7 @@ public class ProjectContributionService(
 
         var data = mapper.ToListDto(entities);
         activity?.SetTag("project_contribution.count", data.Count);
+        ProjectContributionLog.Listed(logger, congregationId, data.Count);
 
         var res = new PagedResponse<ProjectContributionResponseDto>(hasMore, nextCursor, data);
         return new SuccessResult<PagedResponse<ProjectContributionResponseDto>>(res);
@@ -73,10 +74,11 @@ public class ProjectContributionService(
         if (entity is null)
         {
             activity?.SetTag("project_contribution.found", false);
-            ProjectContributionLog.NotFound(logger, id);
+            ProjectContributionLog.NotFound(logger, congregationId, id);
             return new NotFoundResult(id.ToString());
         }
 
+        ProjectContributionLog.Found(logger, congregationId, id);
         var res = mapper.ToDto(entity);
         return new SuccessResult<ProjectContributionResponseDto>(res);
     }
@@ -102,9 +104,10 @@ public class ProjectContributionService(
         }
         if (project is null)
         {
-            ProjectContributionLog.ProjectNotFound(logger, dto.ProjectId);
+            ProjectContributionLog.CreateProjectNotFound(logger, congregationId, dto.ProjectId);
             return new ForeignKeyEntityNotFound(nameof(project));
         }
+        ProjectContributionLog.CreateProjectFound(logger, congregationId, dto.ProjectId);
 
         var entity = mapper.ToEntity(dto);
         entity.CongregationId = congregationId;
@@ -118,7 +121,7 @@ public class ProjectContributionService(
         }
 
         activity?.SetTag("project_contribution.id", entity.Id);
-        ProjectContributionLog.Created(logger, entity.Id);
+        ProjectContributionLog.Created(logger, congregationId, entity.Id);
 
         var res = mapper.ToDto(entity);
         return new CreatedAtResult<ProjectContributionResponseDto>(res);
@@ -145,9 +148,27 @@ public class ProjectContributionService(
         if (entity is null)
         {
             activity?.SetTag("project_contribution.found", false);
-            ProjectContributionLog.NotFound(logger, id);
+            ProjectContributionLog.UpdateNotFound(logger, congregationId, id);
             return new NotFoundResult(id.ToString());
         }
+
+        // Validate Project if it's being changed
+        Project? project;
+        using (
+            instrumentation.ActivitySource.StartActivity(
+                "svc.project_contribution.validate.project"
+            )
+        )
+        {
+            project = await projectRepository.GetById(congregationId, entity.ProjectId, ct);
+        }
+
+        if (project is null)
+        {
+            ProjectContributionLog.UpdateProjectNotFound(logger, congregationId, entity.ProjectId);
+            return new ForeignKeyEntityNotFound(nameof(project));
+        }
+        ProjectContributionLog.UpdateProjectFound(logger, congregationId, entity.ProjectId);
 
         mapper.Patch(dto, entity);
 
@@ -156,7 +177,7 @@ public class ProjectContributionService(
             await unitOfWork.CommitAsync(ct);
         }
 
-        ProjectContributionLog.Updated(logger, id);
+        ProjectContributionLog.Updated(logger, congregationId, id);
 
         var res = mapper.ToDto(entity);
         return new SuccessResult<ProjectContributionResponseDto>(res);
@@ -178,7 +199,7 @@ public class ProjectContributionService(
         if (entity is null)
         {
             activity?.SetTag("project_contribution.found", false);
-            ProjectContributionLog.NotFound(logger, id);
+            ProjectContributionLog.DeleteNotFound(logger, congregationId, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -188,7 +209,7 @@ public class ProjectContributionService(
             await unitOfWork.CommitAsync(ct);
         }
 
-        ProjectContributionLog.Deleted(logger, id);
+        ProjectContributionLog.Deleted(logger, congregationId, id);
 
         return new NoContentResult();
     }

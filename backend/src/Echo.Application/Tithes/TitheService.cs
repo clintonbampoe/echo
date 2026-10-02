@@ -52,12 +52,13 @@ public class TitheService(
 
         var data = mapper.ToListDto(entities);
         activity?.SetTag("tithe.count", data.Count);
+        TitheLog.Listed(logger, congregationId, data.Count);
 
         var res = new PagedResponse<TitheResponseDto>(hasMore, nextCursor, data);
         return new SuccessResult<PagedResponse<TitheResponseDto>>(res);
     }
 
-    public async Task<IOperationResult> GetById(Guid id, Guid congregationId, CancellationToken ct)
+    public async Task<IOperationResult> GetById(Guid congregationId, Guid id, CancellationToken ct)
     {
         using var activity = instrumentation.ActivitySource.StartActivity("svc.tithe.get_by_id");
         activity?.SetTag("tithe.id", id);
@@ -71,10 +72,11 @@ public class TitheService(
         if (entity is null)
         {
             activity?.SetTag("tithe.found", false);
-            TitheLog.NotFound(logger, id);
+            TitheLog.NotFound(logger, congregationId, id);
             return new NotFoundResult(id.ToString());
         }
 
+        TitheLog.Found(logger, congregationId, id);
         var res = mapper.ToDto(entity);
         return new SuccessResult<TitheResponseDto>(res);
     }
@@ -94,9 +96,10 @@ public class TitheService(
         }
         if (member is null)
         {
-            TitheLog.MemberNotFound(logger, dto.MemberId);
+            TitheLog.CreateMemberNotFound(logger, congregationId, dto.MemberId);
             return new ForeignKeyEntityNotFound(nameof(member));
         }
+        TitheLog.CreateMemberFound(logger, congregationId, dto.MemberId);
 
         var entity = mapper.ToEntity(dto);
         entity.CongregationId = congregationId;
@@ -110,7 +113,7 @@ public class TitheService(
         }
 
         activity?.SetTag("tithe.id", entity.Id);
-        TitheLog.Created(logger, entity.Id);
+        TitheLog.Created(logger, congregationId, entity.Id);
 
         var res = mapper.ToDto(entity);
         return new CreatedAtResult<TitheResponseDto>(res);
@@ -135,9 +138,27 @@ public class TitheService(
         if (entity is null)
         {
             activity?.SetTag("tithe.found", false);
-            TitheLog.NotFound(logger, id);
+            TitheLog.UpdateNotFound(logger, congregationId, id);
             return new NotFoundResult(id.ToString());
         }
+
+        // Validate Member if it's being changed
+        if (dto.MemberId != entity.MemberId)
+        {
+            Member? member;
+            using (instrumentation.ActivitySource.StartActivity("svc.tithe.validate.member"))
+            {
+                member = await memberRepository.GetById(congregationId, entity.MemberId, ct);
+            }
+
+            if (member is null)
+            {
+                TitheLog.UpdateMemberNotFound(logger, congregationId, entity.MemberId);
+                return new ForeignKeyEntityNotFound(nameof(member));
+            }
+            TitheLog.UpdateMemberFound(logger, congregationId, entity.MemberId);
+        }
+
         mapper.Patch(dto, entity);
 
         using (instrumentation.ActivitySource.StartActivity("svc.tithe.persist"))
@@ -145,7 +166,7 @@ public class TitheService(
             await unitOfWork.CommitAsync(ct);
         }
 
-        TitheLog.Updated(logger, id);
+        TitheLog.Updated(logger, congregationId, id);
 
         var res = mapper.ToDto(entity);
         return new SuccessResult<TitheResponseDto>(res);
@@ -165,7 +186,7 @@ public class TitheService(
         if (entity is null)
         {
             activity?.SetTag("tithe.found", false);
-            TitheLog.NotFound(logger, id);
+            TitheLog.DeleteNotFound(logger, congregationId, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -175,7 +196,7 @@ public class TitheService(
             await unitOfWork.CommitAsync(ct);
         }
 
-        TitheLog.Deleted(logger, id);
+        TitheLog.Deleted(logger, congregationId, id);
 
         return new NoContentResult();
     }

@@ -33,7 +33,7 @@ public class RegistrationService(
         CancellationToken ct
     )
     {
-        using var span = instrumentation.ActivitySource.StartActivity("registration.congregation");
+        using var span = instrumentation.ActivitySource.StartActivity("svc.registration.congregation");
 
         var congregation = congregationMapper.ToEntity(congregationDto);
         congregation.Id = idGenerator.Generate();
@@ -56,7 +56,7 @@ public class RegistrationService(
         }
 
         bool emailTaken;
-        using (instrumentation.ActivitySource.StartActivity("user.lookup.by_email"))
+        using (instrumentation.ActivitySource.StartActivity("svc.registration.fetch.user_by_email"))
         {
             emailTaken = await IsEmailTaken(user.EmailAddress, ct);
         }
@@ -71,13 +71,13 @@ public class RegistrationService(
 
         try
         {
-            using (instrumentation.ActivitySource.StartActivity("password.hash"))
+            using (instrumentation.ActivitySource.StartActivity("svc.registration.validate.password_hash"))
             {
                 user.PasswordHash = await passwordHashService.HashAsync(userDto.Password);
             }
 
             using (
-                var activity = instrumentation.ActivitySource.StartActivity("congregation.setup")
+                var activity = instrumentation.ActivitySource.StartActivity("svc.registration.persist.setup")
             )
             {
                 congregationRepository.Create(congregation);
@@ -109,10 +109,10 @@ public class RegistrationService(
         CancellationToken ct
     )
     {
-        using var span = instrumentation.ActivitySource.StartActivity("registration.user");
+        using var span = instrumentation.ActivitySource.StartActivity("svc.registration.user");
 
         InvitationToken? invitation;
-        using (instrumentation.ActivitySource.StartActivity("invitation.validate"))
+        using (instrumentation.ActivitySource.StartActivity("svc.registration.validate.invitation"))
         {
             invitation = await invitationService.Validate(request.Token, ct);
         }
@@ -143,7 +143,7 @@ public class RegistrationService(
         }
 
         bool emailTaken;
-        using (instrumentation.ActivitySource.StartActivity("user.lookup.by_email"))
+        using (instrumentation.ActivitySource.StartActivity("svc.registration.fetch.user_by_email"))
         {
             emailTaken = await IsEmailTaken(request.UserInfo.EmailAddress, ct);
         }
@@ -159,7 +159,7 @@ public class RegistrationService(
         try
         {
             string passwordHash;
-            using (instrumentation.ActivitySource.StartActivity("password.hash"))
+            using (instrumentation.ActivitySource.StartActivity("svc.registration.validate.password_hash"))
             {
                 passwordHash = await passwordHashService.HashAsync(request.UserInfo.Password);
             }
@@ -178,13 +178,13 @@ public class RegistrationService(
 
             span?.SetTag("user.id", user.Id);
 
-            using (instrumentation.ActivitySource.StartActivity("user.persist"))
+            using (instrumentation.ActivitySource.StartActivity("svc.registration.persist.user"))
             {
                 userRepository.Create(user);
                 await unitOfWork.CommitAsync(ct);
             }
 
-            using (instrumentation.ActivitySource.StartActivity("email.send"))
+            using (instrumentation.ActivitySource.StartActivity("svc.registration.persist.email_verification"))
             {
                 Activity.Current?.SetTag("email.provider", "resend");
                 Activity.Current?.SetTag("email.type", "email_verification");

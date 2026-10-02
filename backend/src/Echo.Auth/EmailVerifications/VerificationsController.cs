@@ -8,8 +8,10 @@ namespace Echo.Auth.EmailVerifications;
 [AllowAnonymous]
 [EnableRateLimiting("auth")]
 [Route("/api/auth/v{version:ApiVersion}/[controller]")]
-public class VerificationsController(EmailVerificationService emailVerificationService)
-    : ControllerBase
+public class VerificationsController(
+    EmailVerificationService emailVerificationService,
+    AuthInstrumentation instrumentation
+) : ControllerBase
 {
     [HttpPost("account")]
     public async Task<ActionResult> SendUserVerificationLink(
@@ -17,6 +19,7 @@ public class VerificationsController(EmailVerificationService emailVerificationS
         CancellationToken ct = default
     )
     {
+        using var span = instrumentation.ActivitySource.StartActivity("endpoint.verification.send");
         var response = await emailVerificationService.SendVerificationLinkToEmail(
             request.Email,
             ct
@@ -33,6 +36,7 @@ public class VerificationsController(EmailVerificationService emailVerificationS
         CancellationToken ct = default
     )
     {
+        using var span = instrumentation.ActivitySource.StartActivity("endpoint.verification.verify");
         var response = await emailVerificationService.VerifyEmail(token, ct);
         return response.ToActionResult();
     }

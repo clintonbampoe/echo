@@ -33,7 +33,6 @@ public class EventRegistrationService(
         );
 
         var cursor = encoder.Decode<EventRegistrationCursor>(pagination.Cursor);
-
         List<EventRegistration> entities;
         using (instrumentation.ActivitySource.StartActivity("svc.event_registration.fetch.list"))
         {
@@ -63,13 +62,13 @@ public class EventRegistrationService(
         EventRegistration? entity;
         using (instrumentation.ActivitySource.StartActivity("svc.event_registration.fetch.by_id"))
         {
-            entity = await repository.GetById(id, congregationId, ct);
+            entity = await repository.GetById(congregationId, id, ct);
         }
 
         if (entity is null)
         {
             activity?.SetTag("event_registration.found", false);
-            EventRegistrationLog.NotFound(logger, id);
+            EventRegistrationLog.NotFound(logger, congregationId, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -89,7 +88,6 @@ public class EventRegistrationService(
         );
 
         var cursor = encoder.Decode<EventRegistrationCursor>(pagination.Cursor);
-
         List<EventRegistration> entities;
         using (
             instrumentation.ActivitySource.StartActivity("svc.event_registration.fetch.by_event")
@@ -176,9 +174,10 @@ public class EventRegistrationService(
         }
         if (evnt is null)
         {
-            EventRegistrationLog.EventNotFound(logger, dto.EventId);
+            EventRegistrationLog.CreateEventNotFound(logger, congregationId, dto.EventId);
             return new ForeignKeyEntityNotFound(nameof(evnt));
         }
+        EventRegistrationLog.CreateEventFound(logger, congregationId, dto.EventId);
 
         Member? member;
         using (
@@ -189,9 +188,10 @@ public class EventRegistrationService(
         }
         if (member is null)
         {
-            EventRegistrationLog.MemberNotFound(logger, dto.MemberId);
+            EventRegistrationLog.CreateMemberNotFound(logger, congregationId, dto.MemberId);
             return new ForeignKeyEntityNotFound(nameof(member));
         }
+        EventRegistrationLog.CreateMemberFound(logger, congregationId, dto.MemberId);
 
         var entity = mapper.ToEntity(dto);
         entity.CongregationId = congregationId;
@@ -206,8 +206,7 @@ public class EventRegistrationService(
         }
 
         activity?.SetTag("event_registration.id", entity.Id);
-        EventRegistrationLog.Created(logger, entity.Id);
-
+        EventRegistrationLog.Created(logger, congregationId, entity.Id);
         var res = mapper.ToDto(entity);
         return new CreatedAtResult<EventRegistrationResponseDto>(res);
     }
@@ -222,29 +221,28 @@ public class EventRegistrationService(
         using var activity = instrumentation.ActivitySource.StartActivity(
             "svc.event_registration.update"
         );
-        activity?.SetTag("event_registration.id", id);
 
+        activity?.SetTag("event_registration.id", id);
         EventRegistration? entity;
         using (instrumentation.ActivitySource.StartActivity("svc.event_registration.fetch.by_id"))
         {
-            entity = await repository.GetById(id, congregationId, ct);
+            entity = await repository.GetById(congregationId, id, ct);
         }
 
         if (entity is null)
         {
             activity?.SetTag("event_registration.found", false);
-            EventRegistrationLog.NotFound(logger, id);
+            EventRegistrationLog.UpdateNotFound(logger, congregationId, id);
             return new NotFoundResult(id.ToString());
         }
 
         mapper.Patch(dto, entity);
-
         using (instrumentation.ActivitySource.StartActivity("svc.event_registration.persist"))
         {
             await unitOfWork.CommitAsync(ct);
         }
 
-        EventRegistrationLog.Updated(logger, id);
+        EventRegistrationLog.Updated(logger, congregationId, id);
         var res = mapper.ToDto(entity);
         return new SuccessResult<EventRegistrationResponseDto>(res);
     }
@@ -254,19 +252,18 @@ public class EventRegistrationService(
         using var activity = instrumentation.ActivitySource.StartActivity(
             "svc.event_registration.delete"
         );
-        activity?.SetTag("event_registration.id", id);
 
+        activity?.SetTag("event_registration.id", id);
         EventRegistration? entity;
         using (instrumentation.ActivitySource.StartActivity("svc.event_registration.fetch.by_id"))
         {
-            entity = await repository.GetById(id, congregationId, ct);
+            entity = await repository.GetById(congregationId, id, ct);
         }
 
         if (entity is null)
         {
             activity?.SetTag("event_registration.found", false);
-            EventRegistrationLog.NotFound(logger, id);
-            EventRegistrationLog.NotFound(logger, id);
+            EventRegistrationLog.DeleteNotFound(logger, congregationId, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -276,8 +273,7 @@ public class EventRegistrationService(
             await unitOfWork.CommitAsync(ct);
         }
 
-        EventRegistrationLog.Deleted(logger, id);
-
+        EventRegistrationLog.Deleted(logger, congregationId, id);
         return new NoContentResult();
     }
 

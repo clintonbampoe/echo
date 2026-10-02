@@ -42,6 +42,7 @@ public class OrganizationService(
 
         var data = mapper.ToListDto(entities);
         activity?.SetTag("organization.count", data.Count);
+        OrganizationLog.Listed(logger, congregationId, data.Count);
 
         var res = new PagedResponse<OrganizationResponseDto>(hasMore, nextCursor, data);
         return new SuccessResult<PagedResponse<OrganizationResponseDto>>(res);
@@ -57,16 +58,17 @@ public class OrganizationService(
         Organization? entity;
         using (instrumentation.ActivitySource.StartActivity("svc.organization.fetch.by_id"))
         {
-            entity = await repository.GetById(id, congregationId, ct);
+            entity = await repository.GetById(congregationId, id, ct);
         }
 
         if (entity is null)
         {
             activity?.SetTag("organization.found", false);
-            OrganizationLog.NotFound(logger, id);
+            OrganizationLog.NotFound(logger, congregationId, id);
             return new NotFoundResult(id.ToString());
         }
 
+        OrganizationLog.Found(logger, congregationId, id);
         var res = mapper.ToDto(entity);
         return new SuccessResult<OrganizationResponseDto>(res);
     }
@@ -92,7 +94,7 @@ public class OrganizationService(
         }
 
         activity?.SetTag("organization.id", entity.Id);
-        OrganizationLog.Created(logger, entity.Id);
+        OrganizationLog.Created(logger, congregationId, entity.Id);
 
         var res = mapper.ToDto(entity);
         return new CreatedAtResult<OrganizationResponseDto>(res);
@@ -119,7 +121,7 @@ public class OrganizationService(
         if (entity is null)
         {
             activity?.SetTag("organization.found", false);
-            OrganizationLog.NotFound(logger, id);
+            OrganizationLog.UpdateNotFound(logger, congregationId, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -130,7 +132,7 @@ public class OrganizationService(
             await unitOfWork.CommitAsync(ct);
         }
 
-        OrganizationLog.Updated(logger, id);
+        OrganizationLog.Updated(logger, congregationId, id);
 
         var res = mapper.ToDto(entity);
         return new SuccessResult<OrganizationResponseDto>(res);
@@ -146,13 +148,13 @@ public class OrganizationService(
         Organization? entity;
         using (instrumentation.ActivitySource.StartActivity("svc.organization.fetch.by_id"))
         {
-            entity = await repository.GetById(id, congregationId, ct);
+            entity = await repository.GetById(congregationId, id, ct);
         }
 
         if (entity is null)
         {
             activity?.SetTag("organization.found", false);
-            OrganizationLog.NotFound(logger, id);
+            OrganizationLog.DeleteNotFound(logger, congregationId, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -162,7 +164,7 @@ public class OrganizationService(
             await unitOfWork.CommitAsync(ct);
         }
 
-        OrganizationLog.Deleted(logger, id);
+        OrganizationLog.Deleted(logger, congregationId, id);
 
         return new NoContentResult();
     }
@@ -186,6 +188,7 @@ public class OrganizationService(
 
         var res = mapper.ToSearchDto(entities);
         activity?.SetTag("organization.count", res.Count);
+        OrganizationLog.Searched(logger, congregationId, name, res.Count);
         return new SuccessResult<List<OrganizationSearchResultDto>>(res);
     }
 

@@ -11,6 +11,12 @@ public static partial class AssetCategoryLog
     )]
     public static partial void Listed(ILogger logger, Guid congregationId, int count);
 
+    [LoggerMessage(
+        Level = LogLevel.Information,
+        Message = "Asset category found: {CategoryId} in congregation {CongregationId}"
+    )]
+    public static partial void Found(ILogger logger, Guid congregationId, int categoryId);
+
     // --- Search ---
     [LoggerMessage(
         Level = LogLevel.Information,

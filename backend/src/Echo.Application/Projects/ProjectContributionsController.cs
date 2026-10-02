@@ -27,7 +27,7 @@ public class ProjectContributionsController(
             instrumentation,
             "endpoint.project_contribution.fetch_by_id"
         );
-        var response = await service.GetById(id, GetCongregationId(), ct);
+        var response = await service.GetById(GetCongregationId(), id, ct);
         return response.ToActionResult();
     }
 
@@ -55,7 +55,7 @@ public class ProjectContributionsController(
     public async Task<ActionResult> Delete(Guid id, CancellationToken ct)
     {
         using var span = StartEndpointSpan(instrumentation, "endpoint.project_contribution.delete");
-        var response = await service.Delete(id, GetCongregationId(), ct);
+        var response = await service.Delete(GetCongregationId(), id, ct);
         return response.ToActionResult();
     }
 }

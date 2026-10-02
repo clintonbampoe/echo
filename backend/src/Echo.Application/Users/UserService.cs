@@ -36,18 +36,22 @@ public class UserService(
 
         var hasMore = entities.Count > pagination.PageSize;
 
+        string? nextCursor = null;
         if (hasMore)
+        {
             entities.RemoveAt(entities.Count - 1);
-        var nextCursor = encoder.Encode(BuildCursor(entities.Last()));
+            nextCursor = encoder.Encode(BuildCursor(entities.Last()));
+        }
 
         var data = mapper.ToListDto(entities);
         activity?.SetTag("user.count", data.Count);
+        UserLog.Listed(logger, congregationId, data.Count);
 
         var res = new PagedResponse<UserResponseDto>(hasMore, nextCursor, data);
         return new SuccessResult<PagedResponse<UserResponseDto>>(res);
     }
 
-    public async Task<IOperationResult> GetById(Guid id, Guid congregationId, CancellationToken ct)
+    public async Task<IOperationResult> GetById(Guid congregationId, Guid id, CancellationToken ct)
     {
         using var activity = instrumentation.ActivitySource.StartActivity("svc.user.get_by_id");
         activity?.SetTag("user.id", id);
@@ -61,10 +65,11 @@ public class UserService(
         if (entity is null)
         {
             activity?.SetTag("user.found", false);
-            UserLog.NotFound(logger, id);
+            UserLog.NotFound(logger, congregationId, id);
             return new NotFoundResult(id.ToString());
         }
 
+        UserLog.Found(logger, congregationId, id);
         var res = mapper.ToDto(entity);
         return new SuccessResult<UserResponseDto>(res);
     }
@@ -81,7 +86,7 @@ public class UserService(
         {
             if (await IsEmailTaken(dto.EmailAddress, ct))
             {
-                UserLog.EmailTaken(logger, dto.EmailAddress);
+                UserLog.CreateEmailTaken(logger, congregationId);
                 return new BadRequestResult("Email already exists or is invalid.");
             }
         }
@@ -97,7 +102,7 @@ public class UserService(
         }
 
         activity?.SetTag("user.id", entity.Id);
-        UserLog.Created(logger, entity.Id);
+        UserLog.Created(logger, congregationId, entity.Id);
 
         var res = mapper.ToDto(entity);
         return new CreatedAtResult<UserResponseDto>(res);
@@ -122,7 +127,7 @@ public class UserService(
         if (entity is null)
         {
             activity?.SetTag("user.found", false);
-            UserLog.NotFound(logger, id);
+            UserLog.UpdateNotFound(logger, congregationId, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -132,7 +137,7 @@ public class UserService(
             await unitOfWork.CommitAsync(ct);
         }
 
-        UserLog.Updated(logger, id);
+        UserLog.Updated(logger, congregationId, id);
 
         var res = mapper.ToDto(entity);
         return new SuccessResult<UserResponseDto>(res);
@@ -152,7 +157,7 @@ public class UserService(
         if (entity is null)
         {
             activity?.SetTag("user.found", false);
-            UserLog.NotFound(logger, id);
+            UserLog.DeleteNotFound(logger, congregationId, id);
             return new NotFoundResult(id.ToString());
         }
 
@@ -162,7 +167,7 @@ public class UserService(
             await unitOfWork.CommitAsync(ct);
         }
 
-        UserLog.Deleted(logger, id);
+        UserLog.Deleted(logger, congregationId, id);
 
         return new NoContentResult();
     }
@@ -173,20 +178,19 @@ public class UserService(
         CancellationToken ct
     )
     {
+        using var activity = instrumentation.ActivitySource.StartActivity("svc.user.search");
+        activity?.SetTag("user.query", name);
+
+        List<User> entities;
+        using (instrumentation.ActivitySource.StartActivity("svc.user.fetch.search"))
         {
-            using var activity = instrumentation.ActivitySource.StartActivity("svc.user.search");
-            activity?.SetTag("user.query", name);
-
-            List<User> entities;
-            using (instrumentation.ActivitySource.StartActivity("svc.user.fetch.search"))
-            {
-                entities = await repository.Search(congregationId, name, ct);
-            }
-
-            var res = mapper.ToSearchDto(entities);
-            activity?.SetTag("user.count", res.Count);
-            return new SuccessResult<List<UserSearchResultDto>>(res);
+            entities = await repository.Search(congregationId, name, ct);
         }
+
+        var res = mapper.ToSearchDto(entities);
+        activity?.SetTag("user.count", res.Count);
+        UserLog.Searched(logger, congregationId, name, res.Count);
+        return new SuccessResult<List<UserSearchResultDto>>(res);
     }
 
     private async Task<bool> IsEmailTaken(string emailAddress, CancellationToken ct)

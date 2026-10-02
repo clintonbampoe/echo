@@ -20,7 +20,7 @@ public class AttendanceTypeController(
     public async Task<ActionResult> GetById(int id, CancellationToken ct)
     {
         using var span = StartEndpointSpan(instrumentation, "endpoint.attendance_type.fetch_by_id");
-        var response = await service.GetById(id, GetCongregationId(), ct);
+        var response = await service.GetById(GetCongregationId(), id, ct);
         return response.ToActionResult();
     }
 

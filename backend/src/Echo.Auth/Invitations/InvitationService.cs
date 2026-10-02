@@ -29,7 +29,7 @@ public class InvitationService(
         CancellationToken ct = default
     )
     {
-        using var span = instrumentation.ActivitySource.StartActivity("invitation.create");
+        using var span = instrumentation.ActivitySource.StartActivity("svc.invitation.create");
 
         span?.SetTag("congregation.id", congregationId);
         span?.SetTag("created_by", createdByUserId);
@@ -50,8 +50,11 @@ public class InvitationService(
                     .UtcDateTime.AddDays(expiryDays ?? _defaultExpiryDays),
             };
 
-            await invitationTokenRepository.Create(tokenEntity, ct);
-            await unitOfWork.CommitAsync(ct);
+            using (instrumentation.ActivitySource.StartActivity("svc.invitation.persist.token"))
+            {
+                await invitationTokenRepository.Create(tokenEntity, ct);
+                await unitOfWork.CommitAsync(ct);
+            }
 
             span?.SetTag("auth.result", "success");
             RecordInvitationCreated(congregationId.ToString(), allowedRole.ToString());
@@ -83,7 +86,7 @@ public class InvitationService(
     {
         var hashedInput = hashService.Hash(token);
         InvitationToken? tokenRecord;
-        using (instrumentation.ActivitySource.StartActivity("invitation.lookup.byhash"))
+        using (instrumentation.ActivitySource.StartActivity("svc.invitation.fetch.token_by_hash"))
         {
             tokenRecord = await invitationTokenRepository.GetTokenRecordByHash(hashedInput, ct);
         }
