@@ -1,28 +1,5 @@
-export type ProjectStatus = 'Planning' | 'OnTrack' | 'AtRisk' | 'Complete' | 'Missed';
-
-export type PaymentMethod = 'Cash' | 'Cheque' | 'CreditCard' | 'MobileMoney' | 'BankTransfer';
-
-export interface ProjectCreatePayload {
-  categoryId: number;
-  managerId: string;
-  name: string;
-  targetAmount: number;
-  status: ProjectStatus;
-  startDate: string; // YYYY-MM-DD
-  endDate?: string | null;
-  description?: string | null;
-}
-
-export interface ProjectUpdatePayload {
-  categoryId?: number;
-  managerId?: string;
-  name?: string;
-  targetAmount?: number;
-  status?: ProjectStatus;
-  startDate?: string;
-  endDate?: string | null;
-  description?: string | null;
-}
+export type ProjectStatus =
+  "Planning" | "OnTrack" | "AtRisk" | "Complete" | "Missed";
 
 export interface Project {
   id: string;
@@ -37,23 +14,24 @@ export interface Project {
   endDate?: string | null;
   description?: string | null;
   createdAt: string;
-  raisedAmount?:number
 }
 
-export interface ProjectCategory {
-  id: number;
+export interface ProjectCreatePayload {
+  categoryId: number;
+  managerId: string;
   name: string;
+  targetAmount: number;
+  status: ProjectStatus;
+  startDate: string;
+  endDate?: string | null;
+  description?: string | null;
 }
 
-export interface ProjectContribution {
+export type ProjectUpdatePayload = Partial<ProjectCreatePayload>;
+
+export interface ProjectSearchResult {
   id: string;
-  projectId: string;
-  projectName: string;
-  amount: number;
-  dateContributed: string;
-  paymentMethod: PaymentMethod;
-  description: string | null;
-  createdAt: string;
+  name: string;
 }
 
 export interface ProjectFilters {
@@ -61,16 +39,4 @@ export interface ProjectFilters {
   status?: ProjectStatus;
   categoryId?: number;
   startDate?: string;
-}
-
-export interface ProjectContributionFilters {
-  amount?: number;
-  date?: string;
-  paymentMethod?: PaymentMethod;
-}
-
-export interface PagedResponse<T> {
-  hasMore: boolean;
-  nextCursor: string | null;
-  data: T[];
 }

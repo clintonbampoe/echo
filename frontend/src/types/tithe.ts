@@ -1,6 +1,9 @@
-export type TithePaymentMethod =
-  "Cash" | "Cheque" | "CreditCard" | "MobileMoney";
-export type TitheMonth =
+import type { PagedResponse } from "./pagination";
+
+export type PaymentMethod =
+  "Cash" | "Cheque" | "CreditCard" | "MobileMoney" | "BankTransfer";
+
+export type MonthOfYear =
   | "January"
   | "February"
   | "March"
@@ -15,54 +18,35 @@ export type TitheMonth =
   | "December";
 
 export interface TitheCreatePayload {
-  memberId: number;
+  memberId: string;
   amount: number;
-  paymentMethod: TithePaymentMethod;
-  collectionDate: string; // ISO format YYYY-MM-DD
-  forMonth: TitheMonth;
   forYear: number;
+  forMonth: MonthOfYear;
+  paymentMethod: PaymentMethod;
+  collectionDate: string; // YYYY-MM-DD
   description?: string | null;
 }
 
-export interface TitheUpdatePayload {
-  amount?: number;
-  paymentMethod?: TithePaymentMethod;
-  collectionDate?: string;
-  forMonth?: TitheMonth;
-  forYear?: number;
-  description?: string | null;
-}
+export type TitheUpdatePayload = Partial<TitheCreatePayload>;
 
 export interface Tithe {
   id: string;
-  uniqueId: string;
   memberId: string;
+  memberName: string;
   amount: number;
-  paymentMethod: TithePaymentMethod;
-  collectionDate: string;
-  forMonth: TitheMonth;
   forYear: number;
-  description: string | null;
+  forMonth: MonthOfYear;
+  paymentMethod: PaymentMethod;
+  collectionDate: string;
+  description?: string | null;
   createdAt: string;
-  // Joined member name for display
-  memberName?: string;
-}
-
-export interface TitheSummary {
-  totalAmount: number;
-  transactionCount: number;
-  lastUpdated: string;
 }
 
 export interface TitheFilters {
   year?: number;
-  month?: TitheMonth;
-  paymentMethod?: TithePaymentMethod;
+  month?: MonthOfYear;
+  paymentMethod?: PaymentMethod;
   memberId?: string;
 }
 
-export interface PagedResponse<T> {
-  hasMore: boolean;
-  nextCursor: string | null;
-  data: T[];
-}
+export type { PagedResponse };

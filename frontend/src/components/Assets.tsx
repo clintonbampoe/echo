@@ -1,33 +1,35 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useLayout } from '../hooks/useLayout';
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useLayout } from "../hooks/useLayout";
 import {
   useAssets,
-  useAssetCategories,
   useCreateAsset,
   useUpdateAsset,
   useDeleteAsset,
+} from "../hooks/useAssets";
+import type { Asset, AssetCreatePayload, AssetStatus } from "../types/asset";
+import { CloseIcon, RecordIcon } from "./Icons";
+import DeleteConfirmModal from "./common/DeleteConfirmModal";
+import "../styles/Assets.css";
+import {
+  useAssetCategories,
   useCreateAssetCategory,
-} from '../hooks/useAssets';
-import type { Asset, AssetStatus } from '../types/asset';
-import { CloseIcon, RecordIcon } from './Icons';
-import DeleteConfirmModal from './common/DeleteConfirmModal';
-import '../styles/Assets.css';
+} from "../hooks/useAssetCategories";
 
 const formatCurrency = (amount: number): string => {
-  return `₵ ${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return `₵ ${amount.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
 
 const STATUS_LABELS: Record<AssetStatus, string> = {
-  Active: 'Active',
-  InUse: 'In Use',
-  InStorage: 'In Storage',
-  UnderMaintenance: 'Under Maintenance',
-  Liquidated: 'Liquidated',
+  Active: "Active",
+  InUse: "In Use",
+  InStorage: "In Storage",
+  UnderMaintenance: "Under Maintenance",
+  Liquidated: "Liquidated",
 };
 
 interface FormState {
   name: string;
-  categoryId: number | '';
+  categoryId: number | "";
   serialNumber: string;
   purchaseDate: string;
   purchaseCost: string;
@@ -40,16 +42,23 @@ const Assets: React.FC = () => {
   const { setTitle, setCtas, searchQuery, setSearchQuery } = useLayout();
 
   // ── Filters & Query State ──────────────────────────────────────────────────
-  const [selectedStatus, setSelectedStatus] = useState<string>('');
-  const [selectedCategoryId, setSelectedCategoryId] = useState<number | ''>('');
+  const [selectedStatus, setSelectedStatus] = useState<string>("");
+  const [selectedCategoryId, setSelectedCategoryId] = useState<number | "">("");
 
-  const filters = useMemo(() => ({
-    status: (selectedStatus as AssetStatus) || undefined,
-    categoryId: selectedCategoryId !== '' ? Number(selectedCategoryId) : undefined,
-  }), [selectedStatus, selectedCategoryId]);
+  const filters = useMemo(
+    () => ({
+      status: (selectedStatus as AssetStatus) || undefined,
+      categoryId:
+        selectedCategoryId !== "" ? Number(selectedCategoryId) : undefined,
+    }),
+    [selectedStatus, selectedCategoryId],
+  );
 
   // ── Queries & Mutations ───────────────────────────────────────────────────
-  const { data: assetsData, isLoading: isLoadingAssets } = useAssets(filters, 100);
+  const { data: assetsData, isLoading: isLoadingAssets } = useAssets(
+    filters,
+    100,
+  );
   const assets = useMemo(() => assetsData?.data || [], [assetsData?.data]);
 
   const { data: categories = [] } = useAssetCategories();
@@ -64,14 +73,14 @@ const Assets: React.FC = () => {
   const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
 
   const [formData, setFormData] = useState<FormState>({
-    name: '',
-    categoryId: '',
-    serialNumber: '',
-    purchaseDate: new Date().toISOString().split('T')[0],
-    purchaseCost: '',
-    currentValue: '',
-    status: 'Active',
-    description: '',
+    name: "",
+    categoryId: "",
+    serialNumber: "",
+    purchaseDate: new Date().toISOString().split("T")[0],
+    purchaseCost: "",
+    currentValue: "",
+    status: "Active",
+    description: "",
   });
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -79,49 +88,54 @@ const Assets: React.FC = () => {
 
   // New Category Modal
   const [showNewCategoryModal, setShowNewCategoryModal] = useState(false);
-  const [newCategoryName, setNewCategoryName] = useState('');
+  const [newCategoryName, setNewCategoryName] = useState("");
 
   // ── Layout Header ─────────────────────────────────────────────────────────
   const handleOpenAddModal = useCallback(() => {
     setEditingAsset(null);
     setFormData({
-      name: '',
-      categoryId: categories[0]?.id || '',
-      serialNumber: '',
-      purchaseDate: new Date().toISOString().split('T')[0],
-      purchaseCost: '',
-      currentValue: '',
-      status: 'Active',
-      description: '',
+      name: "",
+      categoryId: categories[0]?.id || "",
+      serialNumber: "",
+      purchaseDate: new Date().toISOString().split("T")[0],
+      purchaseCost: "",
+      currentValue: "",
+      status: "Active",
+      description: "",
     });
     setShowModal(true);
   }, [categories]);
 
   useEffect(() => {
-    setTitle('Assets');
+    setTitle("Assets");
     setCtas([
-      { type: 'search', placeholder: 'Search assets...' },
+      { type: "search", placeholder: "Search assets..." },
       {
-        type: 'button',
-        label: 'Add Asset',
-        icon: 'plus',
-        variant: 'primary',
+        type: "button",
+        label: "Add Asset",
+        icon: "plus",
+        variant: "primary",
         onClick: handleOpenAddModal,
       },
     ]);
-    setSearchQuery('');
+    setSearchQuery("");
   }, [setTitle, setCtas, setSearchQuery, handleOpenAddModal]);
 
   // ── Calculations & Filtering ───────────────────────────────────────────────
   const totalAssetsCount = assets.length;
-  const totalCurrentValue = useMemo(() => assets.reduce((sum, a) => sum + (a.currentValue || 0), 0), [assets]);
+  const totalCurrentValue = useMemo(
+    () => assets.reduce((sum, a) => sum + (a.currentValue || 0), 0),
+    [assets],
+  );
   const activeInUseCount = useMemo(
-    () => assets.filter((a) => a.status === 'Active' || a.status === 'InUse').length,
-    [assets]
+    () =>
+      assets.filter((a) => a.status === "Active" || a.status === "InUse")
+        .length,
+    [assets],
   );
   const underMaintenanceCount = useMemo(
-    () => assets.filter((a) => a.status === 'UnderMaintenance').length,
-    [assets]
+    () => assets.filter((a) => a.status === "UnderMaintenance").length,
+    [assets],
   );
 
   const filteredAssets = useMemo(() => {
@@ -131,7 +145,7 @@ const Assets: React.FC = () => {
       (a) =>
         a.name.toLowerCase().includes(query) ||
         (a.serialNumber && a.serialNumber.toLowerCase().includes(query)) ||
-        (a.categoryName && a.categoryName.toLowerCase().includes(query))
+        (a.categoryName && a.categoryName.toLowerCase().includes(query)),
     );
   }, [assets, searchQuery]);
 
@@ -141,12 +155,12 @@ const Assets: React.FC = () => {
     setFormData({
       name: asset.name,
       categoryId: asset.categoryId,
-      serialNumber: asset.serialNumber || '',
-      purchaseDate: asset.purchaseDate ? asset.purchaseDate.split('T')[0] : '',
+      serialNumber: asset.serialNumber || "",
+      purchaseDate: asset.purchaseDate || "",
       purchaseCost: String(asset.purchaseCost || 0),
       currentValue: String(asset.currentValue || 0),
       status: asset.status,
-      description: asset.description || '',
+      description: asset.description || "",
     });
     setShowModal(true);
   };
@@ -163,39 +177,38 @@ const Assets: React.FC = () => {
       setShowDeleteConfirm(false);
       setDeletingAsset(null);
     } catch (err) {
-      console.error('Failed to delete asset:', err);
+      console.error("Failed to delete asset:", err);
     }
   };
 
   const handleSaveAsset = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name.trim() || !formData.categoryId) {
-      alert('Please fill in the asset name and select a category.');
+      alert("Please fill in the asset name and select a category.");
       return;
     }
 
-    try {
-      const payload: Partial<Asset> = {
-        name: formData.name.trim(),
-        categoryId: Number(formData.categoryId),
-        serialNumber: formData.serialNumber.trim() || undefined,
-        purchaseDate: formData.purchaseDate || undefined,
-        purchaseCost: parseFloat(formData.purchaseCost) || 0,
-        currentValue: parseFloat(formData.currentValue) || 0,
-        status: formData.status,
-        description: formData.description.trim() || undefined,
-      };
+    const payload: AssetCreatePayload = {
+      name: formData.name.trim(),
+      categoryId: Number(formData.categoryId),
+      purchaseCost: parseFloat(formData.purchaseCost) || 0,
+      currentValue: parseFloat(formData.currentValue) || 0,
+      status: formData.status,
+      serialNumber: formData.serialNumber.trim() || null,
+      purchaseDate: formData.purchaseDate || null,
+      description: formData.description.trim() || null,
+    };
 
+    try {
       if (editingAsset) {
         await updateAsset.mutateAsync({ id: editingAsset.id, data: payload });
       } else {
         await createAsset.mutateAsync(payload);
       }
-
       setShowModal(false);
     } catch (err) {
-      console.error('Failed to save asset:', err);
-      alert('Failed to save asset.');
+      console.error("Failed to save asset:", err);
+      alert("Failed to save asset.");
     }
   };
 
@@ -204,13 +217,15 @@ const Assets: React.FC = () => {
     if (!newCategoryName.trim()) return;
 
     try {
-      const created = await createCategory.mutateAsync({ name: newCategoryName.trim() });
+      const created = await createCategory.mutateAsync({
+        name: newCategoryName.trim(),
+      });
       setFormData((prev) => ({ ...prev, categoryId: created.id }));
-      setNewCategoryName('');
+      setNewCategoryName("");
       setShowNewCategoryModal(false);
     } catch (err) {
-      console.error('Failed to create category:', err);
-      alert('Failed to create category.');
+      console.error("Failed to create category:", err);
+      alert("Failed to create category.");
     }
   };
 
@@ -225,7 +240,9 @@ const Assets: React.FC = () => {
 
         <div className="assets-summary-card">
           <span className="assets-card-label">Total Current Value</span>
-          <div className="assets-card-value">{formatCurrency(totalCurrentValue)}</div>
+          <div className="assets-card-value">
+            {formatCurrency(totalCurrentValue)}
+          </div>
         </div>
 
         <div className="assets-summary-card">
@@ -258,7 +275,11 @@ const Assets: React.FC = () => {
           <select
             className="assets-select"
             value={selectedCategoryId}
-            onChange={(e) => setSelectedCategoryId(e.target.value ? Number(e.target.value) : '')}
+            onChange={(e) =>
+              setSelectedCategoryId(
+                e.target.value ? Number(e.target.value) : "",
+              )
+            }
           >
             <option value="">All Categories</option>
             {categories.map((c) => (
@@ -288,7 +309,9 @@ const Assets: React.FC = () => {
           {isLoadingAssets ? (
             <div className="assets-empty">Loading assets...</div>
           ) : filteredAssets.length === 0 ? (
-            <div className="assets-empty">No assets found matching the criteria.</div>
+            <div className="assets-empty">
+              No assets found matching the criteria.
+            </div>
           ) : (
             <table className="assets-table">
               <thead>
@@ -306,12 +329,18 @@ const Assets: React.FC = () => {
                 {filteredAssets.map((asset) => (
                   <tr key={asset.id}>
                     <td className="asset-name-cell">{asset.name}</td>
-                    <td>{asset.categoryName || 'General'}</td>
-                    <td className="asset-serial-cell">{asset.serialNumber || '—'}</td>
+                    <td>{asset.categoryName || "General"}</td>
+                    <td className="asset-serial-cell">
+                      {asset.serialNumber || "—"}
+                    </td>
                     <td>{formatCurrency(asset.purchaseCost)}</td>
-                    <td className="asset-cost-cell">{formatCurrency(asset.currentValue)}</td>
+                    <td className="asset-cost-cell">
+                      {formatCurrency(asset.currentValue)}
+                    </td>
                     <td>
-                      <span className={`asset-status-badge ${asset.status.toLowerCase()}`}>
+                      <span
+                        className={`asset-status-badge ${asset.status.toLowerCase()}`}
+                      >
                         {STATUS_LABELS[asset.status] || asset.status}
                       </span>
                     </td>
@@ -343,7 +372,10 @@ const Assets: React.FC = () => {
 
       {/* ─── Add / Edit Modal ───────────────────────────────────────────────── */}
       {showModal && (
-        <div className="assets-panel-overlay" onClick={() => setShowModal(false)}>
+        <div
+          className="assets-panel-overlay"
+          onClick={() => setShowModal(false)}
+        >
           <form
             className="assets-side-panel"
             onClick={(e) => e.stopPropagation()}
@@ -351,7 +383,7 @@ const Assets: React.FC = () => {
           >
             <div className="assets-panel-header">
               <h2 className="assets-panel-title">
-                {editingAsset ? 'Edit Asset' : 'Record Asset'}
+                {editingAsset ? "Edit Asset" : "Record Asset"}
               </h2>
               <button
                 type="button"
@@ -371,7 +403,9 @@ const Assets: React.FC = () => {
                   className="assets-form-input"
                   placeholder="e.g. Yamaha Audio Mixer, Projector"
                   value={formData.name}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, name: e.target.value }))
+                  }
                   required
                   autoFocus
                 />
@@ -383,7 +417,12 @@ const Assets: React.FC = () => {
                   <select
                     className="assets-form-select"
                     value={formData.categoryId}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, categoryId: Number(e.target.value) || '' }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        categoryId: Number(e.target.value) || "",
+                      }))
+                    }
                     required
                   >
                     <option value="">Select Category...</option>
@@ -400,7 +439,12 @@ const Assets: React.FC = () => {
                   <select
                     className="assets-form-select"
                     value={formData.status}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, status: e.target.value as AssetStatus }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        status: e.target.value as AssetStatus,
+                      }))
+                    }
                     required
                   >
                     {Object.keys(STATUS_LABELS).map((s) => (
@@ -422,7 +466,12 @@ const Assets: React.FC = () => {
                     className="assets-form-input"
                     placeholder="₵ 0.00"
                     value={formData.purchaseCost}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, purchaseCost: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        purchaseCost: e.target.value,
+                      }))
+                    }
                     required
                   />
                 </div>
@@ -436,7 +485,12 @@ const Assets: React.FC = () => {
                     className="assets-form-input"
                     placeholder="₵ 0.00"
                     value={formData.currentValue}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, currentValue: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        currentValue: e.target.value,
+                      }))
+                    }
                     required
                   />
                 </div>
@@ -444,34 +498,55 @@ const Assets: React.FC = () => {
 
               <div className="assets-form-row">
                 <div className="assets-form-group">
-                  <label className="assets-form-label">Serial / Tag Number <span>(Optional)</span></label>
+                  <label className="assets-form-label">
+                    Serial / Tag Number <span>(Optional)</span>
+                  </label>
                   <input
                     type="text"
                     className="assets-form-input"
                     placeholder="e.g. SN-89234"
                     value={formData.serialNumber}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, serialNumber: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        serialNumber: e.target.value,
+                      }))
+                    }
                   />
                 </div>
 
                 <div className="assets-form-group">
-                  <label className="assets-form-label">Purchase Date <span>(Optional)</span></label>
+                  <label className="assets-form-label">
+                    Purchase Date <span>(Optional)</span>
+                  </label>
                   <input
                     type="date"
                     className="assets-form-input"
                     value={formData.purchaseDate}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, purchaseDate: e.target.value }))}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        purchaseDate: e.target.value,
+                      }))
+                    }
                   />
                 </div>
               </div>
 
               <div className="assets-form-group">
-                <label className="assets-form-label">Description <span>(Optional)</span></label>
+                <label className="assets-form-label">
+                  Description <span>(Optional)</span>
+                </label>
                 <textarea
                   className="assets-form-textarea"
                   placeholder="Location details, condition notes..."
                   value={formData.description}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      description: e.target.value,
+                    }))
+                  }
                 />
               </div>
             </div>
@@ -489,12 +564,12 @@ const Assets: React.FC = () => {
                 className="assets-btn assets-btn-primary"
                 disabled={createAsset.isPending || updateAsset.isPending}
               >
-                <RecordIcon />{' '}
+                <RecordIcon />{" "}
                 {createAsset.isPending || updateAsset.isPending
-                  ? 'Saving...'
+                  ? "Saving..."
                   : editingAsset
-                  ? 'Save Changes'
-                  : 'Record Asset'}
+                    ? "Save Changes"
+                    : "Record Asset"}
               </button>
             </div>
           </form>
@@ -506,26 +581,43 @@ const Assets: React.FC = () => {
         <div
           className="assets-panel-overlay"
           onClick={() => setShowNewCategoryModal(false)}
-          style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+          }}
         >
           <div
             className="modal-content"
             onClick={(e) => e.stopPropagation()}
             style={{
-              background: 'white',
-              borderRadius: '16px',
-              padding: '24px',
-              width: '100%',
-              maxWidth: '440px',
-              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+              background: "white",
+              borderRadius: "16px",
+              padding: "24px",
+              width: "100%",
+              maxWidth: "440px",
+              boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1)",
             }}
           >
-            <h3 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '16px' }}>
+            <h3
+              style={{
+                fontSize: "18px",
+                fontWeight: 600,
+                marginBottom: "16px",
+              }}
+            >
               Create Asset Category
             </h3>
             <form onSubmit={handleCreateCategory}>
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, marginBottom: '6px' }}>
+              <div style={{ marginBottom: "20px" }}>
+                <label
+                  style={{
+                    display: "block",
+                    fontSize: "13px",
+                    fontWeight: 500,
+                    marginBottom: "6px",
+                  }}
+                >
                   Category Name
                 </label>
                 <input
@@ -538,7 +630,13 @@ const Assets: React.FC = () => {
                   autoFocus
                 />
               </div>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "flex-end",
+                  gap: "12px",
+                }}
+              >
                 <button
                   type="button"
                   className="assets-btn assets-btn-secondary"
@@ -551,7 +649,7 @@ const Assets: React.FC = () => {
                   className="assets-btn assets-btn-primary"
                   disabled={createCategory.isPending}
                 >
-                  {createCategory.isPending ? 'Creating...' : 'Create Category'}
+                  {createCategory.isPending ? "Creating..." : "Create Category"}
                 </button>
               </div>
             </form>
@@ -563,7 +661,7 @@ const Assets: React.FC = () => {
         isOpen={showDeleteConfirm}
         onClose={() => setShowDeleteConfirm(false)}
         onConfirm={confirmDelete}
-        itemName={deletingAsset?.name || 'Asset'}
+        itemName={deletingAsset?.name || "Asset"}
         title="Delete Asset"
         confirmText="Delete Asset"
       />

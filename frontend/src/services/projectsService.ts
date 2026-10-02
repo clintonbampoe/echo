@@ -1,11 +1,12 @@
 import { apiFetch } from "./api";
 import type {
   Project,
-  PagedResponse,
-  ProjectFilters,
   ProjectCreatePayload,
   ProjectUpdatePayload,
+  ProjectFilters,
+  ProjectSearchResult,
 } from "../types/project";
+import type { PagedResponse } from "../types/pagination";
 
 const BASE_PATH = "/v1/Projects";
 
@@ -23,7 +24,6 @@ export const projectsService = {
     if (filters.startDate) params.append("StartDate", filters.startDate);
     params.append("PageSize", pageSize.toString());
     if (cursor) params.append("Cursor", cursor);
-
     return apiFetch<PagedResponse<Project>>(
       `${BASE_PATH}?${params.toString()}`,
     );
@@ -48,16 +48,12 @@ export const projectsService = {
   },
 
   delete: async (id: string): Promise<void> => {
-    return apiFetch<void>(`${BASE_PATH}/${id}`, {
-      method: "DELETE",
-    });
+    return apiFetch<void>(`${BASE_PATH}/${id}`, { method: "DELETE" });
   },
 
-  search: async (
-    query: string,
-  ): Promise<Array<{ id: string; name: string }>> => {
-    return apiFetch<Array<{ id: string; name: string }>>(
-      `${BASE_PATH}/search?q=${encodeURIComponent(query)}`,
+  search: async (name: string): Promise<ProjectSearchResult[]> => {
+    return apiFetch<ProjectSearchResult[]>(
+      `${BASE_PATH}/search?name=${encodeURIComponent(name)}`,
     );
   },
 };

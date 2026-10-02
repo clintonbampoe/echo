@@ -1,64 +1,69 @@
-import { apiFetch } from './api';
-import type { ProjectContribution, PagedResponse, ProjectContributionFilters } from '../types/project';
+import { apiFetch } from "./api";
+import type {
+  ProjectContribution,
+  ProjectContributionCreatePayload,
+  ProjectContributionUpdatePayload,
+  ProjectContributionFilters,
+} from "../types/projectContribution";
+import type { PagedResponse } from "../types/pagination";
 
-const BASE_PATH = '/v1/ProjectContributions';
-
-function cleanContributionPayload(data: Partial<ProjectContribution>) {
-  const payload: Record<string, unknown> = { ...data };
-
-  delete payload.id;
-  delete payload.projectName;
-  delete payload.createdAt;
-
-  if (payload.amount) {
-    payload.amount = Number(payload.amount);
-  }
-  if (!payload.description || (typeof payload.description === 'string' && payload.description.trim() === '')) {
-    delete payload.description;
-  }
-
-  return payload;
-}
+const BASE_PATH = "/v1/ProjectContributions";
 
 export const projectContributionsService = {
   list: async (
     filters: ProjectContributionFilters = {},
     pageSize: number = 24,
-    cursor?: string
+    cursor?: string,
   ): Promise<PagedResponse<ProjectContribution>> => {
     const params = new URLSearchParams();
-    if (filters.amount) params.append('Amount', filters.amount.toString());
-    if (filters.date) params.append('Date', filters.date);
-    if (filters.paymentMethod) params.append('PaymentMethod', filters.paymentMethod);
-    params.append('PageSize', pageSize.toString());
-    if (cursor) params.append('Cursor', cursor);
+    if (filters.amount) params.append("Amount", filters.amount.toString());
+    if (filters.date) params.append("Date", filters.date);
+    if (filters.paymentMethod)
+      params.append("PaymentMethod", filters.paymentMethod);
+    params.append("PageSize", pageSize.toString());
+    if (cursor) params.append("Cursor", cursor);
+    return apiFetch<PagedResponse<ProjectContribution>>(
+      `${BASE_PATH}?${params.toString()}`,
+    );
+  },
 
-    return apiFetch<PagedResponse<ProjectContribution>>(`${BASE_PATH}?${params.toString()}`);
+  listByProjectId: async (
+    projectId: string,
+    pageSize: number = 50,
+    cursor?: string,
+  ): Promise<PagedResponse<ProjectContribution>> => {
+    const params = new URLSearchParams();
+    params.append("PageSize", pageSize.toString());
+    if (cursor) params.append("Cursor", cursor);
+    return apiFetch<PagedResponse<ProjectContribution>>(
+      `${BASE_PATH}/project/${projectId}?${params.toString()}`,
+    );
   },
 
   getById: async (id: string): Promise<ProjectContribution> => {
     return apiFetch<ProjectContribution>(`${BASE_PATH}/${id}`);
   },
 
-  create: async (data: Partial<ProjectContribution>): Promise<ProjectContribution> => {
-    const payload = cleanContributionPayload(data);
+  create: async (
+    data: ProjectContributionCreatePayload,
+  ): Promise<ProjectContribution> => {
     return apiFetch<ProjectContribution>(BASE_PATH, {
-      method: 'POST',
-      body: JSON.stringify(payload),
+      method: "POST",
+      body: JSON.stringify(data),
     });
   },
 
-  update: async (id: string, data: Partial<ProjectContribution>): Promise<ProjectContribution> => {
-    const payload = cleanContributionPayload(data);
+  update: async (
+    id: string,
+    data: ProjectContributionUpdatePayload,
+  ): Promise<ProjectContribution> => {
     return apiFetch<ProjectContribution>(`${BASE_PATH}/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(payload),
+      method: "PUT",
+      body: JSON.stringify(data),
     });
   },
 
   delete: async (id: string): Promise<void> => {
-    return apiFetch<void>(`${BASE_PATH}/${id}`, {
-      method: 'DELETE',
-    });
+    return apiFetch<void>(`${BASE_PATH}/${id}`, { method: "DELETE" });
   },
 };

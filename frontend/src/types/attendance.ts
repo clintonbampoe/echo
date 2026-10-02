@@ -1,4 +1,17 @@
-export type AttendeeType = 'Member' | 'Guest' | 'Visitor' | 'Child';
+import type { PagedResponse } from "./pagination";
+
+export type AttendeeType = "Member" | "Guest" | "Visitor" | "Child";
+
+export interface AttendanceCreatePayload {
+  attendanceContextId: number;
+  memberId: string;
+  attendeeType: AttendeeType;
+  forDate: string; // YYYY-MM-DD
+  checkInTime: string; // HH:mm:ss
+  description?: string | null;
+}
+
+export type AttendanceUpdatePayload = Partial<AttendanceCreatePayload>;
 
 export interface AttendanceRecord {
   id: string;
@@ -8,31 +21,20 @@ export interface AttendanceRecord {
   memberId: string;
   memberName: string;
   attendeeType: AttendeeType;
-  forDate: string; // ISO format YYYY-MM-DD
-  checkInTime: string; // HH:mm:ss or HH:mm
+  forDate: string; // YYYY-MM-DD
+  checkInTime: string; // HH:mm:ss
   description?: string | null;
   createdAt: string;
 }
 
-export interface AttendanceType {
-  id: number;
-  name: string;
-}
-
-export interface AttendanceContext {
-  id: number;
-  name: string;
-  attendanceTypeName?: string;
-  attendanceTypeId?: number;
-}
-
 export interface AttendanceFilters {
-  forDate?: string;
+  forDate?: string; // YYYY-MM-DD
   attendanceContextId?: number;
   memberId?: string;
   memberName?: string;
 }
 
+// UI types — move to component folder when components are refactored.
 export interface AttendanceSummary {
   totalPresent: number;
   firstTimeVisitors: number;
@@ -42,16 +44,11 @@ export interface AttendanceSummary {
 
 export interface MarkAttendanceForm {
   memberId: string;
-  attendanceContextId: number | '';
+  attendanceContextId: number | "";
   attendeeType: AttendeeType;
   forDate: string;
   checkInTime: string;
   description: string;
 }
 
-export interface PagedResponse<T> {
-  hasMore: boolean;
-  nextCursor: string | null;
-  data: T[];
-}
-
+export type { PagedResponse };
