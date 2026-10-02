@@ -1,42 +1,56 @@
-import { apiFetch } from './api';
-import type { Organization, PagedResponse } from '../types/event';
+import { apiFetch } from "./api";
+import type {
+  Organization,
+  OrganizationSearchResult,
+  OrganizationCreatePayload,
+  OrganizationUpdatePayload,
+} from "../types/organization";
+import type { PagedResponse } from "../types/pagination";
 
-const BASE_PATH = '/v1/Organizations';
+const BASE_PATH = "/v1/Organizations";
 
 export const organizationsService = {
-  list: async (pageSize: number = 50, cursor?: string): Promise<PagedResponse<Organization>> => {
+  list: async (
+    pageSize: number = 50,
+    cursor?: string,
+  ): Promise<PagedResponse<Organization>> => {
     const params = new URLSearchParams();
-    params.append('PageSize', pageSize.toString());
-    if (cursor) params.append('Cursor', cursor);
+    params.append("PageSize", pageSize.toString());
+    if (cursor) params.append("Cursor", cursor);
 
-    return apiFetch(`${BASE_PATH}?${params.toString()}`);
+    return apiFetch<PagedResponse<Organization>>(
+      `${BASE_PATH}?${params.toString()}`,
+    );
   },
 
   getById: async (id: string): Promise<Organization> => {
-    return apiFetch(`${BASE_PATH}/${id}`);
+    return apiFetch<Organization>(`${BASE_PATH}/${id}`);
   },
 
-  create: async (data: { name: string; description?: string }): Promise<Organization> => {
-    return apiFetch(BASE_PATH, {
-      method: 'POST',
+  create: async (data: OrganizationCreatePayload): Promise<Organization> => {
+    return apiFetch<Organization>(BASE_PATH, {
+      method: "POST",
       body: JSON.stringify(data),
     });
   },
 
-  update: async (id: string, data: { name?: string; description?: string }): Promise<Organization> => {
-    return apiFetch(`${BASE_PATH}/${id}`, {
-      method: 'PUT',
+  update: async (
+    id: string,
+    data: OrganizationUpdatePayload,
+  ): Promise<Organization> => {
+    return apiFetch<Organization>(`${BASE_PATH}/${id}`, {
+      method: "PUT",
       body: JSON.stringify(data),
     });
   },
 
   delete: async (id: string): Promise<void> => {
-    return apiFetch(`${BASE_PATH}/${id}`, {
-      method: 'DELETE',
-    });
+    return apiFetch<void>(`${BASE_PATH}/${id}`, { method: "DELETE" });
   },
 
-  search: async (name: string): Promise<Organization[]> => {
-    return apiFetch(`${BASE_PATH}/search?name=${encodeURIComponent(name)}`);
+  search: async (name: string): Promise<OrganizationSearchResult[]> => {
+    return apiFetch<OrganizationSearchResult[]>(
+      `${BASE_PATH}/search?name=${encodeURIComponent(name)}`,
+    );
   },
 };

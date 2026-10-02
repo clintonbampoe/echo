@@ -1,20 +1,26 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { attendanceService } from '../services/attendanceService';
-import { attendanceTypesService } from '../services/attendanceTypesService';
-import { attendanceContextsService } from '../services/attendanceContextsService';
-import type { AttendanceRecord, AttendanceFilters } from '../types/attendance';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { attendanceService } from "../services/attendanceService";
+import type {
+  AttendanceFilters,
+  AttendanceCreatePayload,
+  AttendanceUpdatePayload,
+} from "../types/attendance";
 
-export const useAttendance = (filters: AttendanceFilters = {}, pageSize: number = 50, cursor?: string) => {
+export const useAttendance = (
+  filters: AttendanceFilters = {},
+  pageSize: number = 50,
+  cursor?: string,
+) => {
   return useQuery({
-    queryKey: ['attendance', filters, pageSize, cursor],
+    queryKey: ["attendance", filters, pageSize, cursor],
     queryFn: () => attendanceService.list(filters, pageSize, cursor),
   });
 };
 
 export const useAttendanceRecord = (id?: string) => {
   return useQuery({
-    queryKey: ['attendance', id],
-    queryFn: () => (id ? attendanceService.getById(id) : null),
+    queryKey: ["attendance", id],
+    queryFn: () => attendanceService.getById(id!),
     enabled: !!id,
   });
 };
@@ -22,9 +28,11 @@ export const useAttendanceRecord = (id?: string) => {
 export const useCreateAttendance = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (data: Partial<AttendanceRecord>) => attendanceService.create(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['attendance'] });
+    mutationFn: (data: AttendanceCreatePayload) =>
+      attendanceService.create(data),
+    onSuccess: (created) => {
+      queryClient.setQueryData(["attendance", created.id], created);
+      queryClient.invalidateQueries({ queryKey: ["attendance"] });
     },
   });
 };
@@ -32,11 +40,11 @@ export const useCreateAttendance = () => {
 export const useUpdateAttendance = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Partial<AttendanceRecord> }) =>
+    mutationFn: ({ id, data }: { id: string; data: AttendanceUpdatePayload }) =>
       attendanceService.update(id, data),
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['attendance'] });
-      queryClient.invalidateQueries({ queryKey: ['attendance', variables.id] });
+    onSuccess: (updated) => {
+      queryClient.setQueryData(["attendance", updated.id], updated);
+      queryClient.invalidateQueries({ queryKey: ["attendance"] });
     },
   });
 };
@@ -45,45 +53,9 @@ export const useDeleteAttendance = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => attendanceService.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['attendance'] });
-    },
-  });
-};
-
-// Attendance Types
-export const useAttendanceTypes = () => {
-  return useQuery({
-    queryKey: ['attendanceTypes'],
-    queryFn: () => attendanceTypesService.getAll(),
-  });
-};
-
-export const useCreateAttendanceType = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (data: { name: string }) => attendanceTypesService.create(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['attendanceTypes'] });
-    },
-  });
-};
-
-// Attendance Contexts
-export const useAttendanceContexts = () => {
-  return useQuery({
-    queryKey: ['attendanceContexts'],
-    queryFn: () => attendanceContextsService.getAll(),
-  });
-};
-
-export const useCreateAttendanceContext = () => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: (data: { name: string; attendanceTypeId: number }) =>
-      attendanceContextsService.create(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['attendanceContexts'] });
+    onSuccess: (_, id) => {
+      queryClient.removeQueries({ queryKey: ["attendance", id] });
+      queryClient.invalidateQueries({ queryKey: ["attendance"] });
     },
   });
 };

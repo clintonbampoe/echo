@@ -1,7 +1,11 @@
-import { apiFetch } from './api';
-import type { AssetCategory } from '../types/asset';
+import { apiFetch } from "./api";
+import type {
+  AssetCategory,
+  AssetCategoryCreatePayload,
+  AssetCategoryUpdatePayload,
+} from "../types/assetCategory";
 
-const BASE_PATH = '/v1/AssetCategories';
+const BASE_PATH = "/v1/AssetCategories";
 
 export const assetCategoriesService = {
   list: async (): Promise<AssetCategory[]> => {
@@ -12,24 +16,25 @@ export const assetCategoriesService = {
     return apiFetch(`${BASE_PATH}/${id}`);
   },
 
-  create: async (data: { name: string }): Promise<AssetCategory> => {
+  create: async (data: AssetCategoryCreatePayload): Promise<AssetCategory> => {
     return apiFetch(BASE_PATH, {
-      method: 'POST',
+      method: "POST",
       body: JSON.stringify(data),
     });
   },
 
-  update: async (id: number, data: { name: string }): Promise<AssetCategory> => {
+  update: async (
+    id: number,
+    data: AssetCategoryUpdatePayload,
+  ): Promise<AssetCategory> => {
     return apiFetch(`${BASE_PATH}/${id}`, {
-      method: 'PUT',
+      method: "PUT",
       body: JSON.stringify(data),
     });
   },
 
   delete: async (id: number): Promise<void> => {
-    return apiFetch(`${BASE_PATH}/${id}`, {
-      method: 'DELETE',
-    });
+    return apiFetch(`${BASE_PATH}/${id}`, { method: "DELETE" });
   },
 
   search: async (name: string): Promise<AssetCategory[]> => {

@@ -1,11 +1,12 @@
 import { apiFetch } from "./api";
 import type {
   Event,
-  PagedResponse,
-  EventFilters,
   EventCreatePayload,
   EventUpdatePayload,
+  EventFilters,
+  EventSearchResult,
 } from "../types/event";
+import type { PagedResponse } from "../types/pagination";
 
 const BASE_PATH = "/v1/Events";
 
@@ -18,12 +19,11 @@ export const eventsService = {
     const params = new URLSearchParams();
     if (filters.name) params.append("Name", filters.name);
     if (filters.organizationId)
-      params.append("OrganizationId", filters.organizationId.toString());
+      params.append("OrganizationId", filters.organizationId);
+    if (filters.organizerId) params.append("OrganizerId", filters.organizerId);
     if (filters.startDate) params.append("StartDate", filters.startDate);
-    if (filters.endDate) params.append("EndDate", filters.endDate);
     params.append("PageSize", pageSize.toString());
     if (cursor) params.append("Cursor", cursor);
-
     return apiFetch<PagedResponse<Event>>(`${BASE_PATH}?${params.toString()}`);
   },
 
@@ -46,13 +46,11 @@ export const eventsService = {
   },
 
   delete: async (id: string): Promise<void> => {
-    return apiFetch<void>(`${BASE_PATH}/${id}`, {
-      method: "DELETE",
-    });
+    return apiFetch<void>(`${BASE_PATH}/${id}`, { method: "DELETE" });
   },
 
-  search: async (name: string): Promise<Event[]> => {
-    return apiFetch<Event[]>(
+  search: async (name: string): Promise<EventSearchResult[]> => {
+    return apiFetch<EventSearchResult[]>(
       `${BASE_PATH}/search?name=${encodeURIComponent(name)}`,
     );
   },

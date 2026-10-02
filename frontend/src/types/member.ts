@@ -1,4 +1,28 @@
-export type MemberStatus = 'Active' | 'Inactive' | 'Archived' | 'Transferred' | 'Visitor';
+import type { PagedResponse } from "./pagination";
+
+export type MemberGender = "Male" | "Female" | "Other";
+
+export type MemberMaritalStatus = "Single" | "Married" | "Widowed";
+
+export type MemberStatus = "Active" | "Inactive" | "Archived" | "Transferred";
+
+export type MemberRegion =
+  | "Ahafo"
+  | "Ashanti"
+  | "Bono"
+  | "BonoEast"
+  | "Central"
+  | "Eastern"
+  | "GreaterAccra"
+  | "NorthEast"
+  | "Northern"
+  | "Oti"
+  | "Savannah"
+  | "UpperEast"
+  | "UpperWest"
+  | "Volta"
+  | "Western"
+  | "WesternNorth";
 
 export interface MemberCreatePayload {
   firstName: string;
@@ -6,59 +30,40 @@ export interface MemberCreatePayload {
   otherNames?: string | null;
   emailAddress?: string | null;
   phoneNumber: string;
-  dateOfBirth: string; // ISO format YYYY-MM-DD
-  joinedDate?: string | null;
-  gender: 'Male' | 'Female' | 'Other';
+  dateOfBirth: string; // YYYY-MM-DD — required
+  joinedDate?: string | null; // YYYY-MM-DD
+  gender: MemberGender;
   residentialAddress: string;
   city: string;
   hometown: string;
-  region: string;
+  region: MemberRegion;
   gpsAddress?: string | null;
-  maritalStatus: 'Single' | 'Married' | 'Widowed';
+  maritalStatus: MemberMaritalStatus;
   nextOfKin: string;
   emergencyContactName: string;
   emergencyContactPhoneNumber: string;
   status: MemberStatus;
 }
 
-export interface MemberUpdatePayload {
-  firstName?: string;
-  lastName?: string;
-  otherNames?: string | null;
-  emailAddress?: string | null;
-  phoneNumber?: string;
-  dateOfBirth?: string;
-  joinedDate?: string | null;
-  gender?: 'Male' | 'Female' | 'Other';
-  residentialAddress?: string;
-  city?: string;
-  hometown?: string;
-  region?: string;
-  gpsAddress?: string | null;
-  maritalStatus?: 'Single' | 'Married' | 'Widowed';
-  nextOfKin?: string;
-  emergencyContactName?: string;
-  emergencyContactPhoneNumber?: string;
-  status?: MemberStatus;
-}
+export type MemberUpdatePayload = Partial<MemberCreatePayload>;
 
 export interface Member {
   id: string;
   name: string;
   firstName: string;
   lastName: string;
-  otherNames?: string;
-  emailAddress?: string;
+  otherNames?: string | null;
+  emailAddress?: string | null;
   phoneNumber: string;
-  dateOfBirth: string; // ISO format YYYY-MM-DD
-  joinedDate?: string;
-  gender: 'Male' | 'Female' | 'Other';
+  dateOfBirth: string;
+  joinedDate?: string | null;
+  gender: MemberGender;
   residentialAddress: string;
   city: string;
   hometown: string;
-  region: string;
-  gpsAddress?: string;
-  maritalStatus: 'Single' | 'Married' | 'Widowed';
+  region: MemberRegion;
+  gpsAddress?: string | null;
+  maritalStatus: MemberMaritalStatus;
   nextOfKin: string;
   emergencyContactName: string;
   emergencyContactPhoneNumber: string;
@@ -66,15 +71,17 @@ export interface Member {
   createdAt: string;
 }
 
-export interface PagedResponse<T> {
-  data: T[];
-  hasMore: boolean;
-  nextCursor: string | null;
+export interface MemberSearchResult {
+  id: string;
+  name: string;
+  phoneNumber: string;
 }
 
 export interface MemberFilters {
   name?: string;
-  status?: string;
-  gender?: string;
-  joinedDate?: string;
+  status?: MemberStatus;
+  gender?: MemberGender;
+  joinedDate?: string; // YYYY-MM-DD
 }
+
+export type { PagedResponse };
