@@ -130,8 +130,8 @@ internal static class OrganizationQueryExtensions
         if (filters.Name is not null)
             query = query.Where(o => EF.Functions.ILike(o.Name, $"%{filters.Name}%"));
 
-        var from = filters.From ?? DateUtils.GetFirstDayOfWeek(timeProvider);
-        var to = filters.To ?? DateUtils.GetDateToday(timeProvider);
+        var from = filters.From ?? DateUtils.GetFirstDayOfYear(timeProvider);
+        var to = filters.To ?? DateUtils.GetLastDayOfYear(timeProvider);
 
         query = query.Where(o =>
             DateOnly.FromDateTime(o.CreatedAt) >= from && DateOnly.FromDateTime(o.CreatedAt) <= to

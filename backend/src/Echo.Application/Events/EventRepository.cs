@@ -128,8 +128,8 @@ internal static class EventQueryExtensions
         if (filters.OrganizationId is not null)
             query = query.Where(e => e.OrganizationId == filters.OrganizationId);
 
-        var from = filters.From ?? DateUtils.GetFirstDayOfWeek(timeProvider);
-        var to = filters.To ?? DateUtils.GetDateToday(timeProvider);
+        var from = filters.From ?? DateUtils.GetFirstDayOfYear(timeProvider);
+        var to = filters.To ?? DateUtils.GetLastDayOfYear(timeProvider);
 
         query = query.Where(e => e.StartDate >= from && e.StartDate <= to);
 

@@ -127,8 +127,8 @@ internal static class MemberQueryExtensions
         if (filters.MaritalStatus.HasValue)
             query = query.Where(m => m.MaritalStatus == filters.MaritalStatus.Value);
 
-        var from = filters.From ?? DateUtils.GetFirstDayOfWeek(timeProvider);
-        var to = filters.To ?? DateUtils.GetDateToday(timeProvider);
+        var from = filters.From ?? DateUtils.GetFirstDayOfYear(timeProvider);
+        var to = filters.To ?? DateUtils.GetLastDayOfYear(timeProvider);
 
         query = query.Where(m => m.JoinedDate >= from && m.JoinedDate <= to);
 

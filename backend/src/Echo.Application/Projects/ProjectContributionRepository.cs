@@ -121,7 +121,7 @@ internal static class ProjectContributionQueryExtensions
         if (filters.PaymentMethod is not null)
             query = query.Where(p => p.PaymentMethod == filters.PaymentMethod);
 
-        var from = filters.From ?? DateUtils.GetFirstDayOfWeek(timeProvider);
+        var from = filters.From ?? DateUtils.GetFirstDayOfMonth(timeProvider);
         var to = filters.To ?? DateUtils.GetDateToday(timeProvider);
 
         query = query.Where(p => p.DateContributed >= from && p.DateContributed <= to);

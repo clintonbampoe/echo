@@ -125,8 +125,8 @@ internal static class AssetQueryExtensions
         if (filters.Status is not null)
             query = query.Where(a => a.Status == filters.Status);
 
-        var from = filters.From ?? DateUtils.GetFirstDayOfWeek(timeProvider);
-        var to = filters.To ?? DateUtils.GetDateToday(timeProvider);
+        var from = filters.From ?? DateUtils.GetFirstDayOfYear(timeProvider);
+        var to = filters.To ?? DateUtils.GetLastDayOfYear(timeProvider);
 
         query = query.Where(a => a.PurchaseDate >= from && a.PurchaseDate <= to);
 
