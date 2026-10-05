@@ -20,7 +20,22 @@ const Login: React.FC = () => {
       await login(email, password);
       navigate('/dashboard');
     } catch (err: unknown) {
-      setError(getErrorMessage(err, 'Invalid email or password. Please try again.'));
+      const errorMessage = getErrorMessage(err, 'Invalid email or password. Please try again.');
+
+      // Check if error is due to unverified email
+      if (err instanceof Response && err.status === 409) {
+        navigate('/verify-email', { state: { email } });
+        return;
+      }
+
+      // Check if error message indicates unverified account
+      if (errorMessage.toLowerCase().includes('not verified') ||
+          errorMessage.toLowerCase().includes('verify your email')) {
+        navigate('/verify-email', { state: { email } });
+        return;
+      }
+
+      setError(errorMessage);
     }
   };
 

@@ -14,7 +14,6 @@ const SignUp: React.FC = () => {
   const [organization, setOrganization] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -52,7 +51,7 @@ const SignUp: React.FC = () => {
           password,
         },
       });
-      setSuccess(true);
+      navigate('/verify-email');
     } catch (err: unknown) {
       setError(getErrorMessage(err, 'An error occurred during sign up.'));
     } finally {
@@ -77,24 +76,7 @@ const SignUp: React.FC = () => {
 
           {error && <div className="login-error-message" style={{ color: 'red', marginBottom: '1rem', fontSize: '0.875rem' }}>{error}</div>}
 
-          {success ? (
-            <div style={{ textAlign: 'center', padding: '1.5rem 0' }}>
-              <div style={{ color: '#16a34a', fontSize: '1.125rem', fontWeight: 600, marginBottom: '0.75rem' }}>
-                Registration Successful!
-              </div>
-              <p style={{ color: '#6b7280', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
-                Your congregation account has been created. Please check your email to verify your account, then sign in.
-              </p>
-              <button
-                type="button"
-                className="login-button"
-                onClick={() => navigate('/login')}
-              >
-                Go to Sign In
-              </button>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit}>
               <div className="form-row" style={{ display: 'flex', gap: '1rem' }}>
                 <div className="form-group" style={{ flex: 1 }}>
                   <label className="form-label">First Name</label>
@@ -191,7 +173,6 @@ const SignUp: React.FC = () => {
                 {loading ? 'Creating Account...' : 'Sign Up'}
               </button>
             </form>
-          )}
 
           <div className="create-account">
             Already have an account? <Link to="/login">Sign In</Link>
