@@ -22,6 +22,7 @@ public partial class EventMapper : IEventMapper
             Location = entity.Location,
             Capacity = entity.Capacity,
             Description = entity.Description,
+            CreatedAt = entity.CreatedAt,
         };
 
     [MapperIgnoreTarget(nameof(Event.Congregation))]

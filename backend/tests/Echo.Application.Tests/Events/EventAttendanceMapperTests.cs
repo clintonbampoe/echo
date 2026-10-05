@@ -4,7 +4,7 @@ namespace Echo.Application.Tests.Events;
 
 public class EventAttendanceMapperTests
 {
-    private readonly IEventAttendanceMapper _mapper = new EventAttendanceMapper();
+    private readonly EventAttendanceMapper _mapper = new();
 
     [Fact]
     public void ToEntity_ShouldMapAllFields_FromCreateDto()
