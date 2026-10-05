@@ -26,6 +26,7 @@ public class ProjectRepository(AppDbContext context, TimeProvider timeProvider)
             .Where(p => p.CongregationId == congregationId)
             .Include(p => p.Category)
             .Include(p => p.Manager)
+                .ThenInclude(m => m.Person)
             .Filter(filters, timeProvider)
             .OrderBy(p => p.StartDate)
             .ThenBy(p => p.Id)
@@ -40,6 +41,7 @@ public class ProjectRepository(AppDbContext context, TimeProvider timeProvider)
             .Where(p => p.Id == id && p.CongregationId == congregationId)
             .Include(p => p.Category)
             .Include(p => p.Manager)
+                .ThenInclude(m => m.Person)
             .FirstOrDefaultAsync(ct);
     }
 

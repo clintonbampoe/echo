@@ -24,6 +24,7 @@ public class TitheRepository(AppDbContext context, TimeProvider timeProvider)
             .FilterDeleted()
             .Where(t => t.CongregationId == congregationId)
             .Include(t => t.Member)
+                .ThenInclude(m => m.Person)
             .Filter(filters, timeProvider)
             .OrderByDescending(t => t.CollectionDate)
             .ThenBy(t => t.Id)
@@ -37,6 +38,7 @@ public class TitheRepository(AppDbContext context, TimeProvider timeProvider)
             .FilterDeleted()
             .Where(t => t.Id == id && t.CongregationId == congregationId)
             .Include(t => t.Member)
+                .ThenInclude(m => m.Person)
             .FirstOrDefaultAsync(ct);
     }
 
