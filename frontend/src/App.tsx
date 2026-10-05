@@ -14,6 +14,7 @@ import Topbar from './components/Topbar';
 import Login from './components/auth/Login';
 import ResetPassword from './components/auth/ResetPassword';
 import SignUp from './components/auth/SignUp';
+import VerifyEmail from './components/auth/VerifyEmail';
 import { AuthProvider } from './context/AuthProvider';
 import { LayoutProvider } from './context/LayoutProvider';
 import { useAuth } from './hooks/useAuth';
@@ -85,6 +86,7 @@ const AppContent: React.FC = () => {
         <Routes>
             <Route path="/login" element={<main><Login /></main>} />
             <Route path="/signup" element={<main><SignUp /></main>} />
+            <Route path="/verify-email" element={<main><VerifyEmail /></main>} />
             <Route path="/reset-password" element={<main><ResetPassword /></main>} />
             <Route path="/*" element={<ProtectedLayout />} />
         </Routes>
