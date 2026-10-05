@@ -50,8 +50,8 @@ public class SessionService(
             if (!isPasswordValid)
             {
                 span?.SetTag("auth.result", "invalid_credentials");
-                RecordLogin("invalid_credentials", entity.CongregationId.ToString());
-                SessionLog.LoginInvalidCredentials(logger, entity.CongregationId);
+                RecordLogin("invalid_credentials", entity.Id.ToString());
+                SessionLog.LoginInvalidCredentials(logger, entity.Id);
                 return new BadRequestResult("Email or password is invalid.");
             }
         }
@@ -59,9 +59,9 @@ public class SessionService(
         if (entity.EmailVerifiedAt is null)
         {
             span?.SetTag("auth.result", "email_not_verified");
-            RecordLogin("email_not_verified", entity.CongregationId.ToString());
-            SessionLog.LoginEmailNotVerified(logger, entity.CongregationId);
-            return new BadRequestResult("Verify your email before logging in.");
+            RecordLogin("email_not_verified", entity.Id.ToString());
+            SessionLog.LoginEmailNotVerified(logger, entity.Id);
+            return new UserNotVerifiedResult();
         }
 
         var user = mapper.ToAuthDto(entity);

@@ -17,6 +17,9 @@ public static class Extensions
 {
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
+        // Person
+        services.AddScoped<PersonRepository>();
+
         // Members
         services.AddScoped<MemberRepository>();
         services.AddScoped<MemberService>();
@@ -24,6 +27,9 @@ public static class Extensions
         services.AddSingleton<IMemberMapper, MemberMapper>();
 
         // Visitors
+        services.AddScoped<VisitorRepository>();
+        services.AddScoped<VisitorService>();
+        services.AddScoped<VisitorsController>();
         services.AddSingleton<IVisitorMapper, VisitorMapper>();
 
         // Users
@@ -54,6 +60,9 @@ public static class Extensions
         services.AddSingleton<IAttendanceMapper, AttendanceMapper>();
 
         // Attendance Types
+        services.AddScoped<AttendanceTypeRepository>();
+        services.AddScoped<AttendanceTypeService>();
+        services.AddScoped<AttendanceTypesController>();
         services.AddSingleton<IAttendanceTypeMapper, AttendanceTypeMapper>();
 
         // Events
