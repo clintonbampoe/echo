@@ -39,7 +39,7 @@ public class EventRegistrationMapperTests
 
         Assert.Equal(dto.MemberId, entity.MemberId);
         Assert.Equal(dto.EventId, entity.EventId);
-        Assert.Equal(dto.MemberName, entity.Member.Name);
+        Assert.Equal(dto.MemberName, entity.Member.Person.Name);
         Assert.Equal(dto.EventName, entity.Event.Name);
         Assert.Equal(dto.RegistrationDate, entity.RegistrationDate);
         Assert.Equal(dto.CreatedAt, entity.CreatedAt);

@@ -20,8 +20,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Asset> Assets { get; set; }
     public DbSet<AssetCategory> AssetCategories { get; set; }
     public DbSet<Attendance> AttendanceRecords { get; set; }
-    public DbSet<AttendanceType> AttendanceTypes { get; set; }
-    public DbSet<AttendanceContext> AttendanceContexts { get; set; }
     public DbSet<Event> Events { get; set; }
     public DbSet<EventAttendance> EventAttendances { get; set; }
     public DbSet<EventRegistration> EventRegistrations { get; set; }
@@ -35,6 +33,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Transaction> Transactions { get; set; }
     public DbSet<TransactionCategory> TransactionCategories { get; set; }
     public DbSet<User> Users { get; set; }
+    public DbSet<Person> People { get; set; }
+    public DbSet<Visitor> Visitors { get; set; }
+    public DbSet<Attendance> Attendances { get; set; }
+    public DbSet<AttendanceType> AttendanceTypes { get; set; }
     public DbSet<Congregation> Congregations { get; set; }
     public DbSet<InvitationToken> InvitationTokens { get; set; }
     public DbSet<EmailVerificationToken> EmailVerificationTokens { get; set; }

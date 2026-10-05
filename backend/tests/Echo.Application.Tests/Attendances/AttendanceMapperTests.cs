@@ -14,16 +14,15 @@ public class AttendanceMapperTests
 
         var entity = _mapper.ToEntity(dto);
 
-        Assert.Equal(dto.AttendanceContextId, entity.AttendanceContextId);
-        Assert.Equal(dto.MemberId, entity.MemberId);
-        Assert.Equal(dto.AttendeeType, entity.AttendeeType);
-        Assert.Equal(dto.ForDate, entity.ForDate);
+        Assert.Equal(dto.AttendanceTypeId, entity.AttendanceTypeId);
+        Assert.Equal(dto.PersonId, entity.PersonId);
+        Assert.Equal(dto.Date, entity.Date);
         Assert.Equal(dto.CheckInTime, entity.CheckInTime);
-        Assert.Equal(dto.Description, entity.Description);
+        Assert.Equal(dto.Notes, entity.Notes);
     }
 
     [Fact]
-    public void ToEntity_ShouldNotMap_Id_CongregationId_Congregation_AttendanceContext_Member_CreatedAt_DeletedAt_FromCreateDto()
+    public void ToEntity_ShouldNotMap_Id_CongregationId_Congregation_AttendanceType_Person_CreatedAt_DeletedAt_FromCreateDto()
     {
         var dto = AttendanceFactory.NewCreateDto();
 
@@ -32,8 +31,8 @@ public class AttendanceMapperTests
         Assert.Equal(Guid.Empty, entity.Id);
         Assert.Equal(Guid.Empty, entity.CongregationId);
         Assert.Null(entity.Congregation);
-        Assert.Null(entity.AttendanceContext);
-        Assert.Null(entity.Member);
+        Assert.Null(entity.AttendanceType);
+        Assert.Null(entity.Person);
         Assert.Equal(default, entity.CreatedAt);
         Assert.Null(entity.DeletedAt);
     }
@@ -46,14 +45,14 @@ public class AttendanceMapperTests
         var dto = _mapper.ToDto(entity);
 
         Assert.Equal(entity.Id, dto.Id);
-        Assert.Equal(entity.AttendanceContextId, dto.AttendanceContextId);
-        Assert.Equal(entity.AttendanceContext.Name, dto.AttendanceContextName);
-        Assert.Equal(entity.AttendanceContext.AttendanceType.Name, dto.AttendanceTypeName);
-        Assert.Equal(entity.MemberId, dto.MemberId);
-        Assert.Equal(entity.AttendeeType, dto.AttendeeType);
-        Assert.Equal(entity.ForDate, dto.ForDate);
+        Assert.Equal(entity.AttendanceTypeId, dto.AttendanceTypeId);
+        Assert.Equal(entity.AttendanceType.Name, dto.AttendanceTypeName);
+        Assert.Equal(entity.PersonId, dto.PersonId);
+        Assert.Equal(entity.Person.Name, dto.PersonName);
+        Assert.Equal(entity.Person.Kind, dto.PersonKind);
+        Assert.Equal(entity.Date, dto.Date);
         Assert.Equal(entity.CheckInTime, dto.CheckInTime);
-        Assert.Equal(entity.Description, dto.Description);
+        Assert.Equal(entity.Notes, dto.Notes);
         Assert.Equal(entity.CreatedAt, dto.CreatedAt);
     }
 
@@ -65,12 +64,8 @@ public class AttendanceMapperTests
 
         _mapper.Patch(dto, entity);
 
-        Assert.Equal(dto.AttendanceContextId, entity.AttendanceContextId);
-        Assert.Equal(dto.MemberId, entity.MemberId);
-        Assert.Equal(dto.AttendeeType, entity.AttendeeType);
-        Assert.Equal(dto.ForDate, entity.ForDate);
         Assert.Equal(dto.CheckInTime, entity.CheckInTime);
-        Assert.Equal(dto.Description, entity.Description);
+        Assert.Equal(dto.Notes, entity.Notes);
     }
 
     [Fact]
@@ -82,11 +77,7 @@ public class AttendanceMapperTests
 
         _mapper.Patch(nullDto, entity);
 
-        Assert.Equal(original.AttendanceContextId, entity.AttendanceContextId);
-        Assert.Equal(original.MemberId, entity.MemberId);
-        Assert.Equal(original.AttendeeType, entity.AttendeeType);
-        Assert.Equal(original.ForDate, entity.ForDate);
         Assert.Equal(original.CheckInTime, entity.CheckInTime);
-        Assert.Equal(original.Description, entity.Description);
+        Assert.Equal(original.Notes, entity.Notes);
     }
 }

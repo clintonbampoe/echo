@@ -60,10 +60,20 @@ public record TitheCursor
     public Guid Id { get; init; }
 }
 
-public record TitheFilter
+public record TitheFilters
 {
+    public Guid? MemberId { get; init; }
+    public PaymentMethod? PaymentMethod { get; init; }
     public int? Year { get; init; }
     public MonthOfYear? Month { get; init; }
-    public PaymentMethod? PaymentMethod { get; init; }
-    public Guid? MemberId { get; init; }
+    public DateOnly? From { get; init; }
+    public DateOnly? To { get; init; } // on CollectionDate
+}
+
+public record TitheSummaryDto
+{
+    public decimal TotalCollected { get; init; }
+    public int UniqueTithers { get; init; }
+    public string? MostUsedPaymentMethod { get; init; }
+    public decimal AveragePerMember { get; init; }
 }

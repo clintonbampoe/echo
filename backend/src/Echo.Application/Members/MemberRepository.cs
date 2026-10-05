@@ -1,11 +1,12 @@
 using Echo.Data;
 using Echo.Domain.Members;
 using Echo.Shared.Query;
+using Echo.Shared.Utilities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Application.Members;
 
-public class MemberRepository(AppDbContext context)
+public class MemberRepository(AppDbContext context, TimeProvider timeProvider)
 {
     private readonly DbSet<Member> _dbSet = context.Set<Member>();
 
@@ -21,9 +22,10 @@ public class MemberRepository(AppDbContext context)
             .AsNoTracking()
             .FilterDeleted()
             .Where(m => m.CongregationId == congregationId)
-            .Filter(filters)
-            .OrderBy(m => m.Name)
-            .ThenBy(m => m.Id)
+            .Include(m => m.Person)
+            .Filter(filters, timeProvider)
+            .OrderBy(m => m.Person.Name)
+            .ThenBy(m => m.PersonId)
             .Paginate(cursor, pageSize)
             .ToListAsync(ct);
     }
@@ -32,7 +34,8 @@ public class MemberRepository(AppDbContext context)
     {
         return await _dbSet
             .FilterDeleted()
-            .Where(m => m.Id == id && m.CongregationId == congregationId)
+            .Where(m => m.PersonId == id && m.CongregationId == congregationId)
+            .Include(m => m.Person)
             .FirstOrDefaultAsync(ct);
     }
 
@@ -42,36 +45,92 @@ public class MemberRepository(AppDbContext context)
             .AsNoTracking()
             .FilterDeleted()
             .Where(m => m.CongregationId == congregationId)
+            .Include(m => m.Person)
             .SearchName(name)
             .ToListAsync(ct);
     }
 
-    public void Create(Member entity)
-    {
-        _dbSet.Add(entity);
-    }
+    public Task<int> Count(
+        Guid congregationId,
+        MemberFilters filters,
+        CancellationToken ct = default
+    ) =>
+        _dbSet
+            .AsNoTracking()
+            .FilterDeleted()
+            .Where(m => m.CongregationId == congregationId)
+            .Filter(filters, timeProvider)
+            .CountAsync(ct);
 
-    public void SoftDelete(Member entity)
-    {
-        entity.DeletedAt = DateTime.UtcNow;
-    }
+    public Task<int> CountActive(
+        Guid congregationId,
+        MemberFilters filters,
+        CancellationToken ct = default
+    ) =>
+        _dbSet
+            .AsNoTracking()
+            .FilterDeleted()
+            .Where(m => m.CongregationId == congregationId && m.Status == MemberStatus.Active)
+            .Filter(filters, timeProvider)
+            .CountAsync(ct);
+
+    public Task<int> CountByGender(
+        Guid congregationId,
+        Gender gender,
+        MemberFilters filters,
+        CancellationToken ct = default
+    ) =>
+        _dbSet
+            .AsNoTracking()
+            .FilterDeleted()
+            .Where(m => m.CongregationId == congregationId && m.Gender == gender)
+            .Filter(filters, timeProvider)
+            .CountAsync(ct);
+
+    public Task<double> AverageAge(
+        Guid congregationId,
+        MemberFilters filters,
+        CancellationToken ct = default
+    ) =>
+        _dbSet
+            .AsNoTracking()
+            .FilterDeleted()
+            .Where(m => m.CongregationId == congregationId)
+            .Filter(filters, timeProvider)
+            .AverageAsync(m => DateUtils.GetDateToday(timeProvider).Year - m.DateOfBirth.Year, ct);
+
+    public void Create(Member entity) => _dbSet.Add(entity);
+
+    public void SoftDelete(Member entity) => entity.DeletedAt = DateTime.UtcNow;
 }
 
 internal static class MemberQueryExtensions
 {
-    internal static IQueryable<Member> Filter(this IQueryable<Member> query, MemberFilters filters)
+    internal static IQueryable<Member> Filter(
+        this IQueryable<Member> query,
+        MemberFilters filters,
+        TimeProvider timeProvider
+    )
     {
+        if (filters.Name is not null)
+            query = query.Where(m => EF.Functions.ILike(m.Person.Name, $"%{filters.Name}%"));
+
         if (filters.Status.HasValue)
             query = query.Where(m => m.Status == filters.Status.Value);
 
         if (filters.Gender.HasValue)
             query = query.Where(m => m.Gender == filters.Gender.Value);
 
-        if (filters.JoinedDate is not null)
-            query = query.Where(m => m.JoinedDate >= filters.JoinedDate);
+        if (filters.Region.HasValue)
+            query = query.Where(m => m.Region == filters.Region.Value);
 
-        if (filters.Name is not null)
-            query = query.Where(m => EF.Functions.ILike(m.Name, $"%{filters.Name}%"));
+        if (filters.MaritalStatus.HasValue)
+            query = query.Where(m => m.MaritalStatus == filters.MaritalStatus.Value);
+
+        var from = filters.From ?? DateUtils.GetFirstDayOfYear(timeProvider);
+        var to = filters.To ?? DateUtils.GetLastDayOfYear(timeProvider);
+
+        query = query.Where(m => m.JoinedDate >= from && m.JoinedDate <= to);
 
         return query;
     }
@@ -84,10 +143,18 @@ internal static class MemberQueryExtensions
     {
         if (cursor is not null)
             query = query.Where(m =>
-                string.Compare(m.Name, cursor.Name) > 0
-                || (m.Name == cursor.Name && m.Id > cursor.Id)
+                string.Compare(m.Person.Name, cursor.Name) > 0
+                || (m.Person.Name == cursor.Name && m.PersonId > cursor.Id)
             );
 
         return query.Take(pageSize);
+    }
+
+    internal static IQueryable<Member> SearchName(this IQueryable<Member> query, string name)
+    {
+        return query
+            .Where(x => EF.Functions.ILike(x.Person.Name, $"%{name}%"))
+            .OrderByDescending(x => EF.Functions.TrigramsSimilarity(x.Person.Name, name))
+            .Take(5);
     }
 }

@@ -149,6 +149,13 @@ public static partial class ProjectLog
     )]
     public static partial void DeleteNotFound(ILogger logger, Guid congregationId, Guid projectId);
 
+    // --- Summary ---
+    [LoggerMessage(
+        Level = LogLevel.Information,
+        Message = "Project summary: {TotalProjects} projects summarized for congregation {CongregationId}"
+    )]
+    public static partial void Summarized(ILogger logger, Guid congregationId, int totalProjects);
+
     // --- Unexpected ---
     [LoggerMessage(
         Level = LogLevel.Error,

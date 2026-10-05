@@ -51,4 +51,15 @@ public class TransactionsController(
         var response = await service.Delete(GetCongregationId(), id, ct);
         return response.ToActionResult();
     }
+
+    [HttpGet("summary")]
+    public async Task<ActionResult> Summary(
+        [FromQuery] TransactionFilters filters,
+        CancellationToken ct
+    )
+    {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.transaction.summary");
+        var response = await service.Summary(GetCongregationId(), filters, ct);
+        return response.ToActionResult();
+    }
 }

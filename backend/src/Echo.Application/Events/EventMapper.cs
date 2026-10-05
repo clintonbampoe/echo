@@ -6,12 +6,24 @@ namespace Echo.Application.Events;
 [Mapper]
 public partial class EventMapper : IEventMapper
 {
-    [MapperIgnoreSource(nameof(entity.Congregation))]
-    [MapperIgnoreSource(nameof(entity.CongregationId))]
-    [MapperIgnoreSource(nameof(entity.DeletedAt))]
-    [MapProperty(nameof(Event.Organization.Name), nameof(EventResponseDto.OrganizationName))]
-    [MapProperty(nameof(Event.Organizer.Name), nameof(EventResponseDto.OrganizerName))]
-    public partial EventResponseDto ToDto(Event entity);
+    public EventResponseDto ToDto(Event entity) =>
+        new EventResponseDto
+        {
+            Id = entity.Id,
+            OrganizationId = entity.OrganizationId,
+            OrganizationName = entity.Organization.Name,
+            OrganizerId = entity.OrganizerId,
+            OrganizerName = entity.Organizer.Person.Name,
+            Name = entity.Name,
+            StartDate = entity.StartDate,
+            EndDate = entity.EndDate,
+            StartTime = entity.StartTime,
+            EndTime = entity.EndTime,
+            Location = entity.Location,
+            Capacity = entity.Capacity,
+            Description = entity.Description,
+            CreatedAt = entity.CreatedAt,
+        };
 
     [MapperIgnoreTarget(nameof(Event.Congregation))]
     [MapperIgnoreTarget(nameof(Event.CongregationId))]

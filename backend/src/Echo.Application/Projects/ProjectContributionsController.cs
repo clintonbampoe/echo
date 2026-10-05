@@ -58,4 +58,18 @@ public class ProjectContributionsController(
         var response = await service.Delete(GetCongregationId(), id, ct);
         return response.ToActionResult();
     }
+
+    [HttpGet("summary")]
+    public async Task<ActionResult> Summary(
+        [FromQuery] ProjectContributionFilters filters,
+        CancellationToken ct
+    )
+    {
+        using var span = StartEndpointSpan(
+            instrumentation,
+            "endpoint.project_contribution.summary"
+        );
+        var response = await service.Summary(GetCongregationId(), filters, ct);
+        return response.ToActionResult();
+    }
 }

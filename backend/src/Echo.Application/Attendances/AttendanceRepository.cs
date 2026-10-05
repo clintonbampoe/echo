@@ -1,12 +1,13 @@
 using Echo.Data;
 using Echo.Domain.Attendances;
+using Echo.Domain.Members;
 using Echo.Shared.Query;
 using Echo.Shared.Utilities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Application.Attendances;
 
-public class AttendanceRepository(AppDbContext context)
+public class AttendanceRepository(AppDbContext context, TimeProvider timeProvider)
 {
     private readonly DbSet<Attendance> _dbSet = context.Set<Attendance>();
 
@@ -22,10 +23,10 @@ public class AttendanceRepository(AppDbContext context)
             .AsNoTracking()
             .FilterDeleted()
             .Where(a => a.CongregationId == congregationId)
-            .Include(a => a.AttendanceContext)
-            .Include(a => a.Member)
-            .Filter(filters)
-            .OrderByDescending(a => a.ForDate)
+            .Include(a => a.Person)
+            .Include(a => a.AttendanceType)
+            .Filter(filters, timeProvider)
+            .OrderByDescending(a => a.Date)
             .ThenBy(a => a.Id)
             .Paginate(cursor, pageSize)
             .ToListAsync(ct);
@@ -40,43 +41,78 @@ public class AttendanceRepository(AppDbContext context)
         return await _dbSet
             .FilterDeleted()
             .Where(a => a.Id == id && a.CongregationId == congregationId)
-            .Include(a => a.Member)
-            .Include(a => a.AttendanceContext)
+            .Include(a => a.Person)
+            .Include(a => a.AttendanceType)
             .FirstOrDefaultAsync(ct);
     }
 
-    public void Create(Attendance entity)
-    {
-        _dbSet.Add(entity);
-    }
+    public Task<int> CountTotal(
+        Guid congregationId,
+        AttendanceFilters filters,
+        CancellationToken ct = default
+    ) =>
+        _dbSet
+            .AsNoTracking()
+            .FilterDeleted()
+            .Where(a => a.CongregationId == congregationId)
+            .Filter(filters, timeProvider)
+            .CountAsync(ct);
 
-    public void SoftDelete(Attendance entity)
-    {
-        entity.DeletedAt = DateTime.UtcNow;
-    }
+    public Task<int> CountByKind(
+        Guid congregationId,
+        PersonKind kind,
+        AttendanceFilters filters,
+        CancellationToken ct = default
+    ) =>
+        _dbSet
+            .AsNoTracking()
+            .FilterDeleted()
+            .Where(a => a.CongregationId == congregationId && a.Person.Kind == kind)
+            .Filter(filters, timeProvider)
+            .CountAsync(ct);
+
+    public Task<int> CountFirstTimeVisitors(
+        Guid congregationId,
+        AttendanceFilters filters,
+        CancellationToken ct = default
+    ) =>
+        _dbSet
+            .AsNoTracking()
+            .FilterDeleted()
+            .Where(a => a.CongregationId == congregationId && a.Person.Kind == PersonKind.Visitor)
+            .Filter(filters, timeProvider)
+            .Where(a =>
+                !_dbSet
+                    .FilterDeleted()
+                    .Any(prev => prev.PersonId == a.PersonId && prev.Date < a.Date)
+            )
+            .Select(a => a.PersonId)
+            .Distinct()
+            .CountAsync(ct);
+
+    public void Create(Attendance entity) => _dbSet.Add(entity);
+
+    public void SoftDelete(Attendance entity) => entity.DeletedAt = DateTime.UtcNow;
 }
 
 internal static class AttendanceQueryExtensions
 {
     internal static IQueryable<Attendance> Filter(
         this IQueryable<Attendance> query,
-        AttendanceFilters filters
+        AttendanceFilters filters,
+        TimeProvider timeProvider
     )
     {
-        var firstDayOfWeek = DateUtils.GetFirstDayOfWeek(TimeProvider.System.GetUtcNow().DateTime);
+        if (filters.AttendanceTypeId is not null)
+            query = query.Where(a => a.AttendanceTypeId == filters.AttendanceTypeId);
 
-        query = filters.ForDate is not null
-            ? query.Where(a => a.ForDate == filters.ForDate)
-            : query.Where(a => a.ForDate >= firstDayOfWeek);
+        if (filters.Kind is not null)
+            query = query.Where(a => a.Person.Kind == filters.Kind);
 
-        if (filters.AttendanceContextId is not null)
-            query = query.Where(a => a.AttendanceContextId == filters.AttendanceContextId);
+        var from = filters.From ?? DateUtils.GetFirstDayOfWeek(timeProvider);
+        var to = filters.To ?? DateUtils.GetDateToday(timeProvider);
 
-        if (filters.MemberId is not null)
-            query = query.Where(a => a.MemberId == filters.MemberId);
-
-        if (filters.MemberName is not null)
-            query = query.Where(a => EF.Functions.ILike(a.Member.Name, filters.MemberName));
+        query = query.Where(a => a.Date >= from && a.Date <= to);
 
         return query;
     }
@@ -88,8 +124,8 @@ internal static class AttendanceQueryExtensions
     )
     {
         if (cursor is not null)
-            query = query.Where(e =>
-                e.ForDate < cursor.ForDate || (e.ForDate == cursor.ForDate && e.Id > cursor.Id)
+            query = query.Where(a =>
+                a.Date < cursor.Date || (a.Date == cursor.Date && a.Id > cursor.Id)
             );
 
         return query.Take(pageSize);

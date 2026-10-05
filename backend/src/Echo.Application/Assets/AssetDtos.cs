@@ -85,4 +85,14 @@ public record AssetFilters
     public AssetStatus? Status { get; init; }
     public int? CategoryId { get; init; }
     public string? Name { get; init; }
+    public DateOnly? From { get; init; }
+    public DateOnly? To { get; init; }
+}
+
+public record AssetSummaryDto
+{
+    public int TotalAssets { get; init; }
+    public decimal TotalCurrentValue { get; init; }
+    public decimal TotalPurchaseCost { get; init; }
+    public decimal TotalDepreciation { get; init; }
 }

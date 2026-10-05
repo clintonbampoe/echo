@@ -1,34 +1,35 @@
 using Echo.Data;
 using Echo.Domain.Tithes;
+using Echo.Domain.Transactions;
 using Echo.Shared.Query;
+using Echo.Shared.Utilities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Application.Tithes;
 
-public class TitheRepository(AppDbContext context)
+public class TitheRepository(AppDbContext context, TimeProvider timeProvider)
 {
     private readonly DbSet<Tithe> _dbSet = context.Set<Tithe>();
 
     public async Task<List<Tithe>> List(
         Guid congregationId,
-        TitheFilter filters,
+        TitheFilters filters,
         TitheCursor? cursor,
         int pageSize,
         CancellationToken ct
     )
     {
-        var res = await _dbSet
+        return await _dbSet
             .AsNoTracking()
             .FilterDeleted()
             .Where(t => t.CongregationId == congregationId)
             .Include(t => t.Member)
-            .Filter(filters)
+                .ThenInclude(m => m.Person)
+            .Filter(filters, timeProvider)
             .OrderByDescending(t => t.CollectionDate)
             .ThenBy(t => t.Id)
             .Paginate(cursor, pageSize)
             .ToListAsync(ct);
-
-        return res;
     }
 
     public async Task<Tithe?> GetById(Guid congregationId, Guid id, CancellationToken ct)
@@ -37,43 +38,93 @@ public class TitheRepository(AppDbContext context)
             .FilterDeleted()
             .Where(t => t.Id == id && t.CongregationId == congregationId)
             .Include(t => t.Member)
+                .ThenInclude(m => m.Person)
             .FirstOrDefaultAsync(ct);
     }
 
-    public void Create(Tithe entity)
-    {
-        _dbSet.Add(entity);
-    }
+    public Task<decimal> SumCollected(
+        Guid congregationId,
+        TitheFilters filters,
+        CancellationToken ct = default
+    ) =>
+        _dbSet
+            .AsNoTracking()
+            .FilterDeleted()
+            .Where(t => t.CongregationId == congregationId)
+            .Filter(filters, timeProvider)
+            .SumAsync(t => t.Amount, ct);
 
-    public void SoftDelete(Tithe entity)
-    {
-        entity.DeletedAt = DateTime.UtcNow;
-    }
+    public Task<int> CountUniqueTithers(
+        Guid congregationId,
+        TitheFilters filters,
+        CancellationToken ct = default
+    ) =>
+        _dbSet
+            .AsNoTracking()
+            .FilterDeleted()
+            .Where(t => t.CongregationId == congregationId)
+            .Filter(filters, timeProvider)
+            .Select(t => t.MemberId)
+            .Distinct()
+            .CountAsync(ct);
+
+    public Task<PaymentMethod?> MostUsedPaymentMethod(
+        Guid congregationId,
+        TitheFilters filters,
+        CancellationToken ct = default
+    ) =>
+        _dbSet
+            .AsNoTracking()
+            .FilterDeleted()
+            .Where(t => t.CongregationId == congregationId)
+            .Filter(filters, timeProvider)
+            .GroupBy(t => t.PaymentMethod)
+            .OrderByDescending(g => g.Count())
+            .Select(g => (PaymentMethod?)g.Key)
+            .FirstOrDefaultAsync(ct);
+
+    public Task<decimal> AveragePerMember(
+        Guid congregationId,
+        TitheFilters filters,
+        CancellationToken ct = default
+    ) =>
+        _dbSet
+            .AsNoTracking()
+            .FilterDeleted()
+            .Where(t => t.CongregationId == congregationId)
+            .Filter(filters, timeProvider)
+            .AverageAsync(t => (decimal?)t.Amount, ct)
+            .ContinueWith(t => t.Result ?? 0m, ct);
+
+    public void Create(Tithe entity) => _dbSet.Add(entity);
+
+    public void SoftDelete(Tithe entity) => entity.DeletedAt = DateTime.UtcNow;
 }
 
 internal static class TitheQueryExtensions
 {
-    internal static IQueryable<Tithe> Filter(this IQueryable<Tithe> query, TitheFilter filters)
+    internal static IQueryable<Tithe> Filter(
+        this IQueryable<Tithe> query,
+        TitheFilters filters,
+        TimeProvider timeProvider
+    )
     {
-        var currentYear = TimeProvider.System.GetUtcNow().Year;
-        var currentMonth = (MonthOfYear)TimeProvider.System.GetUtcNow().Month;
-
-        query = filters.Year is not null
-            ? query.Where(t => t.ForYear == filters.Year)
-            : query.Where(t => t.ForYear == currentYear);
-
-        if (filters.Month is not null)
-            query = query.Where(t => t.ForMonth == filters.Month);
-
-        // query = filters.Month is not null
-        //     ? query.Where(t => t.ForMonth == filters.Month)
-        //     : query.Where(t => t.ForMonth == currentMonth);
+        if (filters.MemberId is not null)
+            query = query.Where(t => t.MemberId == filters.MemberId);
 
         if (filters.PaymentMethod is not null)
             query = query.Where(t => t.PaymentMethod == filters.PaymentMethod);
 
-        if (filters.MemberId is not null)
-            query = query.Where(t => t.MemberId == filters.MemberId);
+        if (filters.Year is not null)
+            query = query.Where(t => t.ForYear == filters.Year);
+
+        if (filters.Month is not null)
+            query = query.Where(t => t.ForMonth == filters.Month);
+
+        var from = filters.From ?? DateUtils.GetFirstDayOfWeek(timeProvider);
+        var to = filters.To ?? DateUtils.GetDateToday(timeProvider);
+
+        query = query.Where(t => t.CollectionDate >= from && t.CollectionDate <= to);
 
         return query;
     }

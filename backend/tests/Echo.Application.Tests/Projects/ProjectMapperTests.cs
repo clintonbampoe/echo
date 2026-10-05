@@ -49,7 +49,7 @@ public class ProjectMapperTests
         Assert.Equal(entity.CategoryId, result.CategoryId);
         Assert.Equal(entity.Category.Name, result.CategoryName);
         Assert.Equal(entity.ManagerId, result.ManagerId);
-        Assert.Equal(entity.Manager.Name, result.ManagerName);
+        Assert.Equal(entity.Manager.Person.Name, result.ManagerName);
         Assert.Equal(entity.Name, result.Name);
         Assert.Equal(entity.TargetAmount, result.TargetAmount);
         Assert.Equal(entity.Status, result.Status);

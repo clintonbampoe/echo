@@ -10,15 +10,15 @@ public static partial class SessionLog
 
     [LoggerMessage(
         Level = LogLevel.Warning,
-        Message = "Login failed: invalid credentials for congregation {CongregationId}"
+        Message = "Login failed: invalid credentials for user: {userId}"
     )]
-    public static partial void LoginInvalidCredentials(ILogger logger, Guid congregationId);
+    public static partial void LoginInvalidCredentials(ILogger logger, Guid userId);
 
     [LoggerMessage(
         Level = LogLevel.Warning,
-        Message = "Login failed: email not verified for congregation {CongregationId}"
+        Message = "Login failed: email not verified for user {UserId}"
     )]
-    public static partial void LoginEmailNotVerified(ILogger logger, Guid congregationId);
+    public static partial void LoginEmailNotVerified(ILogger logger, Guid userId);
 
     [LoggerMessage(
         Level = LogLevel.Information,

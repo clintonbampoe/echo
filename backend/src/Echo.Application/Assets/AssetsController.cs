@@ -59,4 +59,12 @@ public class AssetsController(AssetService service, ApplicationInstrumentation i
         var res = await service.Search(GetCongregationId(), q, ct);
         return res.ToActionResult();
     }
+
+    [HttpGet("summary")]
+    public async Task<ActionResult> Summary([FromQuery] AssetFilters filters, CancellationToken ct)
+    {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.asset.summary");
+        var response = await service.Summary(GetCongregationId(), filters, ct);
+        return response.ToActionResult();
+    }
 }

@@ -59,7 +59,7 @@ public class ProjectService(
         return new SuccessResult<PagedResponse<ProjectResponseDto>>(res);
     }
 
-    public async Task<IOperationResult> GetById(Guid id, Guid congregationId, CancellationToken ct)
+    public async Task<IOperationResult> GetById(Guid congregationId, Guid id, CancellationToken ct)
     {
         using var activity = instrumentation.ActivitySource.StartActivity("svc.project.get_by_id");
         activity?.SetTag("project.id", id);
@@ -251,6 +251,35 @@ public class ProjectService(
         activity?.SetTag("project.count", res.Count);
         ProjectLog.Searched(logger, congregationId, name, res.Count);
         return new SuccessResult<List<ProjectSearchResultDto>>(res);
+    }
+
+    public async Task<IOperationResult> Summary(
+        Guid congregationId,
+        ProjectFilters filters,
+        CancellationToken ct
+    )
+    {
+        using var activity = instrumentation.ActivitySource.StartActivity("svc.project.summary");
+
+        var countTask = repository.Count(congregationId, filters, ct);
+        var raisedTask = repository.SumRaised(congregationId, filters, ct);
+        var targetTask = repository.SumTarget(congregationId, filters, ct);
+        var atRiskTask = repository.CountAtRisk(congregationId, filters, ct);
+
+        await Task.WhenAll(countTask, raisedTask, targetTask, atRiskTask);
+
+        var res = new ProjectSummaryDto
+        {
+            TotalProjects = countTask.Result,
+            TotalRaised = raisedTask.Result,
+            TotalTarget = targetTask.Result,
+            AtRiskCount = atRiskTask.Result,
+        };
+
+        activity?.SetTag("project.summary.total", res.TotalProjects);
+        ProjectLog.Summarized(logger, congregationId, res.TotalProjects);
+
+        return new SuccessResult<ProjectSummaryDto>(res);
     }
 
     private static ProjectCursor BuildCursor(Project last)

@@ -6,18 +6,18 @@ namespace Echo.Application.Organizations;
 [Mapper]
 public partial class OrganizationMemberMapper : IOrganizationMemberMapper
 {
-    [MapperIgnoreSource(nameof(entity.Congregation))]
-    [MapperIgnoreSource(nameof(entity.CongregationId))]
-    [MapperIgnoreSource(nameof(entity.DeletedAt))]
-    [MapProperty(
-        nameof(OrganizationMember.Member.Name),
-        nameof(OrganizationMemberResponseDto.MemberName)
-    )]
-    [MapProperty(
-        nameof(OrganizationMember.Organization.Name),
-        nameof(OrganizationMemberResponseDto.OrganizationName)
-    )]
-    public partial OrganizationMemberResponseDto ToDto(OrganizationMember entity);
+    public OrganizationMemberResponseDto ToDto(OrganizationMember entity) =>
+        new OrganizationMemberResponseDto
+        {
+            Id = entity.Id,
+            MemberId = entity.MemberId,
+            MemberName = entity.Member.Person.Name,
+            OrganizationId = entity.OrganizationId,
+            OrganizationName = entity.Organization.Name,
+            Role = entity.Role,
+            JoinedAt = entity.JoinedAt,
+            CreatedAt = entity.CreatedAt,
+        };
 
     [MapperIgnoreTarget(nameof(OrganizationMember.Congregation))]
     [MapperIgnoreTarget(nameof(OrganizationMember.CongregationId))]

@@ -101,12 +101,9 @@ public record MemberUpdateDto
     public MemberStatus? Status { get; init; }
 }
 
-// TODO: Remove redundant Name field
-// Return either the concatenated Name field or the Raw FirstName, LastName & OtherNames
-// but not both
 public record MemberResponseDto
 {
-    public Guid Id { get; init; }
+    public Guid Id { get; init; } // maps to Person.Id / Member.PersonId
     public required string Name { get; init; }
     public required string FirstName { get; init; }
     public required string LastName { get; init; }
@@ -141,7 +138,19 @@ public record MemberFilters
     public string? Name { get; init; }
     public MemberStatus? Status { get; init; }
     public Gender? Gender { get; init; }
-    public DateOnly? JoinedDate { get; init; }
+    public Region? Region { get; init; }
+    public MaritalStatus? MaritalStatus { get; init; }
+    public DateOnly? From { get; init; }
+    public DateOnly? To { get; init; }
+}
+
+public record MemberSummaryDto
+{
+    public int TotalMembers { get; init; }
+    public int ActiveMembers { get; init; }
+    public int MaleCount { get; init; }
+    public int FemaleCount { get; init; }
+    public double AverageAge { get; init; }
 }
 
 public record MemberCursor

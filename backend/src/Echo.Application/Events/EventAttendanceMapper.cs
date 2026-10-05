@@ -6,15 +6,17 @@ namespace Echo.Application.Events;
 [Mapper]
 public partial class EventAttendanceMapper : IEventAttendanceMapper
 {
-    [MapperIgnoreSource(nameof(entity.Congregation))]
-    [MapperIgnoreSource(nameof(entity.CongregationId))]
-    [MapperIgnoreSource(nameof(entity.DeletedAt))]
-    [MapProperty(
-        nameof(EventAttendance.Member.Name),
-        nameof(EventAttendanceResponseDto.MemberName)
-    )]
-    [MapProperty(nameof(EventAttendance.Event.Name), nameof(EventAttendanceResponseDto.EventName))]
-    public partial EventAttendanceResponseDto ToDto(EventAttendance entity);
+    public EventAttendanceResponseDto ToDto(EventAttendance entity) =>
+        new EventAttendanceResponseDto
+        {
+            Id = entity.Id,
+            MemberId = entity.MemberId,
+            MemberName = entity.Member.Person.Name,
+            EventId = entity.EventId,
+            EventName = entity.Event.Name,
+            CheckInTime = entity.CheckInTime,
+            CreatedAt = entity.CreatedAt,
+        };
 
     [MapperIgnoreTarget(nameof(EventAttendance.Congregation))]
     [MapperIgnoreTarget(nameof(EventAttendance.CongregationId))]

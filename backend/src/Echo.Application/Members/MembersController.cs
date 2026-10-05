@@ -59,4 +59,12 @@ public class MembersController(MemberService service, ApplicationInstrumentation
         var res = await service.Search(GetCongregationId(), q, ct);
         return res.ToActionResult();
     }
+
+    [HttpGet("summary")]
+    public async Task<ActionResult> Summary([FromQuery] MemberFilters filters, CancellationToken ct)
+    {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.member.summary");
+        var response = await service.Summary(GetCongregationId(), filters, ct);
+        return response.ToActionResult();
+    }
 }

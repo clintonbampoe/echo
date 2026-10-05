@@ -6,12 +6,22 @@ namespace Echo.Application.Projects;
 [Mapper]
 public partial class ProjectMapper : IProjectMapper
 {
-    [MapperIgnoreSource(nameof(entity.Congregation))]
-    [MapperIgnoreSource(nameof(entity.CongregationId))]
-    [MapperIgnoreSource(nameof(entity.DeletedAt))]
-    [MapProperty(nameof(Project.Category.Name), nameof(ProjectResponseDto.CategoryName))]
-    [MapProperty(nameof(Project.Manager.Name), nameof(ProjectResponseDto.ManagerName))]
-    public partial ProjectResponseDto ToDto(Project entity);
+    public ProjectResponseDto ToDto(Project entity) =>
+        new ProjectResponseDto
+        {
+            Id = entity.Id,
+            CategoryId = entity.CategoryId,
+            CategoryName = entity.Category.Name,
+            ManagerId = entity.ManagerId,
+            ManagerName = entity.Manager.Person.Name,
+            Name = entity.Name,
+            TargetAmount = entity.TargetAmount,
+            Status = entity.Status,
+            StartDate = entity.StartDate,
+            EndDate = entity.EndDate,
+            Description = entity.Description,
+            CreatedAt = entity.CreatedAt,
+        };
 
     [MapperIgnoreTarget(nameof(Project.Congregation))]
     [MapperIgnoreTarget(nameof(Project.CongregationId))]

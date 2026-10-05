@@ -1,5 +1,7 @@
+using Echo.Application.Members;
 using Echo.Data;
 using Echo.Domain.Attendances;
+using Echo.Domain.Members;
 using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
@@ -10,10 +12,11 @@ namespace Echo.Application.Attendances;
 
 public class AttendanceService(
     AttendanceRepository repository,
-    AttendanceContextRepository contextRepository,
+    AttendanceTypeRepository serviceTypeRepository,
+    PersonRepository personRepository,
     IUnitOfWork unitOfWork,
-    IEncoder encoder,
     IAttendanceMapper mapper,
+    IEncoder encoder,
     IIdGenerator idGenerator,
     ApplicationInstrumentation instrumentation,
     ILogger<AttendanceService> logger
@@ -45,6 +48,7 @@ public class AttendanceService(
         var hasMore = entities.Count > pagination.PageSize;
         if (hasMore)
             entities.RemoveAt(entities.Count - 1);
+
         var nextCursor = hasMore ? encoder.Encode(BuildCursor(entities.Last())) : null;
 
         var data = mapper.ToListDto(entities);
@@ -60,8 +64,8 @@ public class AttendanceService(
         using var activity = instrumentation.ActivitySource.StartActivity(
             "svc.attendance.get_by_id"
         );
-
         activity?.SetTag("attendance.id", id);
+
         Attendance? entity;
         using (instrumentation.ActivitySource.StartActivity("svc.attendance.fetch.by_id"))
         {
@@ -88,23 +92,39 @@ public class AttendanceService(
     {
         using var activity = instrumentation.ActivitySource.StartActivity("svc.attendance.create");
 
-        AttendanceContext? context;
-        using (instrumentation.ActivitySource.StartActivity("svc.attendance.validate.context"))
+        AttendanceType? serviceType;
+        using (instrumentation.ActivitySource.StartActivity("svc.attendance.validate.service_type"))
         {
-            context = await contextRepository.GetById(congregationId, dto.AttendanceContextId, ct);
+            serviceType = await serviceTypeRepository.GetById(
+                congregationId,
+                dto.AttendanceTypeId,
+                ct
+            );
         }
+        if (serviceType is null)
+        {
+            AttendanceLog.CreateServiceTypeNotFound(logger, congregationId, dto.AttendanceTypeId);
+            return new ForeignKeyEntityNotFound(nameof(serviceType));
+        }
+        AttendanceLog.CreateServiceTypeFound(logger, congregationId, dto.AttendanceTypeId);
 
-        if (context is null)
+        Person? person;
+        using (instrumentation.ActivitySource.StartActivity("svc.attendance.validate.person"))
         {
-            AttendanceLog.CreateContextNotFound(logger, congregationId, dto.AttendanceContextId);
-            return new ForeignKeyEntityNotFound(nameof(context));
+            person = await personRepository.GetById(congregationId, dto.PersonId, ct);
         }
-        AttendanceLog.CreateContextFound(logger, congregationId, dto.AttendanceContextId);
+        if (person is null)
+        {
+            AttendanceLog.CreatePersonNotFound(logger, congregationId, dto.PersonId);
+            return new ForeignKeyEntityNotFound(nameof(person));
+        }
+        AttendanceLog.CreatePersonFound(logger, congregationId, dto.PersonId);
 
         var entity = mapper.ToEntity(dto);
-        entity.CongregationId = congregationId;
         entity.Id = idGenerator.Generate();
-        entity.AttendanceContext = context;
+        entity.CongregationId = congregationId;
+        entity.AttendanceType = serviceType;
+        entity.Person = person;
 
         using (instrumentation.ActivitySource.StartActivity("svc.attendance.persist"))
         {
@@ -142,35 +162,9 @@ public class AttendanceService(
             return new NotFoundResult(id.ToString());
         }
 
-        // Validate Context if it's being changed
-        if (dto.AttendanceContextId != entity.AttendanceContextId)
-        {
-            AttendanceContext? context;
-            using (instrumentation.ActivitySource.StartActivity("svc.attendance.validate.context"))
-            {
-                context = await contextRepository.GetById(
-                    congregationId,
-                    entity.AttendanceContextId,
-                    ct
-                );
-            }
-
-            if (context is null)
-            {
-                AttendanceLog.UpdateContextNotFound(
-                    logger,
-                    congregationId,
-                    entity.AttendanceContextId
-                );
-                return new ForeignKeyEntityNotFound(nameof(context));
-            }
-            AttendanceLog.UpdateContextFound(logger, congregationId, entity.AttendanceContextId);
-        }
-
-        mapper.Patch(dto, entity);
-
         using (instrumentation.ActivitySource.StartActivity("svc.attendance.persist"))
         {
+            mapper.Patch(dto, entity);
             await unitOfWork.CommitAsync(ct);
         }
 
@@ -209,8 +203,35 @@ public class AttendanceService(
         return new NoContentResult();
     }
 
-    private static AttendanceCursor BuildCursor(Attendance last)
+    public async Task<IOperationResult> Summary(
+        Guid congregationId,
+        AttendanceFilters filters,
+        CancellationToken ct
+    )
     {
-        return new AttendanceCursor { ForDate = last.ForDate, Id = last.Id };
+        using var activity = instrumentation.ActivitySource.StartActivity("svc.attendance.summary");
+
+        var totalTask = repository.CountTotal(congregationId, filters, ct);
+        var membersTask = repository.CountByKind(congregationId, PersonKind.Member, filters, ct);
+        var visitorsTask = repository.CountByKind(congregationId, PersonKind.Visitor, filters, ct);
+        var firstTimeTask = repository.CountFirstTimeVisitors(congregationId, filters, ct);
+
+        await Task.WhenAll(totalTask, membersTask, visitorsTask, firstTimeTask);
+
+        var res = new AttendanceSummaryDto
+        {
+            TotalPresent = totalTask.Result,
+            MembersPresent = membersTask.Result,
+            VisitorsPresent = visitorsTask.Result,
+            FirstTimeVisitors = firstTimeTask.Result,
+        };
+
+        activity?.SetTag("attendance.summary.total", res.TotalPresent);
+        AttendanceLog.Summarized(logger, congregationId, res.TotalPresent);
+
+        return new SuccessResult<AttendanceSummaryDto>(res);
     }
+
+    private static AttendanceCursor BuildCursor(Attendance last) =>
+        new AttendanceCursor { Date = last.Date, Id = last.Id };
 }

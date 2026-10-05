@@ -18,7 +18,7 @@ public class AttendanceTypeMapperTests
     }
 
     [Fact]
-    public void ToEntity_ShouldNotMap_Id_CongregationId_Congregation_AttendanceContext_Member_CreatedAt_DeletedAt_FromCreateDto()
+    public void ToEntity_ShouldNotMap_Id_CongregationId_Congregation_CreatedAt_DeletedAt_FromCreateDto()
     {
         var dto = AttendanceTypeFactory.NewCreateDto();
 

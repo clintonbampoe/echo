@@ -97,6 +97,17 @@ public static partial class TitheLog
     )]
     public static partial void DeleteNotFound(ILogger logger, Guid congregationId, Guid titheId);
 
+    // --- Summary ---
+    [LoggerMessage(
+        Level = LogLevel.Information,
+        Message = "Tithe summary: total {TotalCollected} collected for congregation {CongregationId}"
+    )]
+    public static partial void Summarized(
+        ILogger logger,
+        Guid congregationId,
+        decimal totalCollected
+    );
+
     // --- Unexpected ---
     [LoggerMessage(
         Level = LogLevel.Error,

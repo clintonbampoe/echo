@@ -51,4 +51,15 @@ public class AttendanceController(
         var response = await service.Delete(GetCongregationId(), id, ct);
         return response.ToActionResult();
     }
+
+    [HttpGet("summary")]
+    public async Task<ActionResult> Summary(
+        [FromQuery] AttendanceFilters filters,
+        CancellationToken ct
+    )
+    {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.attendance.summary");
+        var response = await service.Summary(GetCongregationId(), filters, ct);
+        return response.ToActionResult();
+    }
 }

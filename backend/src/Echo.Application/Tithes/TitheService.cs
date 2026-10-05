@@ -23,7 +23,7 @@ public class TitheService(
 {
     public async Task<IOperationResult> List(
         Guid congregationId,
-        TitheFilter filters,
+        TitheFilters filters,
         PaginationRequest pagination,
         CancellationToken ct
     )
@@ -199,6 +199,35 @@ public class TitheService(
         TitheLog.Deleted(logger, congregationId, id);
 
         return new NoContentResult();
+    }
+
+    public async Task<IOperationResult> Summary(
+        Guid congregationId,
+        TitheFilters filters,
+        CancellationToken ct
+    )
+    {
+        using var activity = instrumentation.ActivitySource.StartActivity("svc.tithe.summary");
+
+        var totalTask = repository.SumCollected(congregationId, filters, ct);
+        var tithersTask = repository.CountUniqueTithers(congregationId, filters, ct);
+        var paymentMethodTask = repository.MostUsedPaymentMethod(congregationId, filters, ct);
+        var averageTask = repository.AveragePerMember(congregationId, filters, ct);
+
+        await Task.WhenAll(totalTask, tithersTask, paymentMethodTask, averageTask);
+
+        var res = new TitheSummaryDto
+        {
+            TotalCollected = totalTask.Result,
+            UniqueTithers = tithersTask.Result,
+            MostUsedPaymentMethod = paymentMethodTask.Result?.ToString(),
+            AveragePerMember = averageTask.Result,
+        };
+
+        activity?.SetTag("tithe.summary.total", res.TotalCollected);
+        TitheLog.Summarized(logger, congregationId, res.TotalCollected);
+
+        return new SuccessResult<TitheSummaryDto>(res);
     }
 
     private static TitheCursor BuildCursor(Tithe last)

@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Echo.Domain.Projects;
 using Echo.Domain.Transactions;
 
 namespace Echo.Application.Projects;
@@ -49,7 +50,18 @@ public record ProjectContributionCursor
 
 public record ProjectContributionFilters
 {
-    public decimal? Amount { get; init; }
-    public DateOnly? Date { get; init; }
+    public Guid? ProjectId { get; init; }
+    public decimal? MinAmount { get; init; }
+    public decimal? MaxAmount { get; init; }
     public PaymentMethod? PaymentMethod { get; init; }
+    public DateOnly? From { get; init; }
+    public DateOnly? To { get; init; }
+}
+
+public record ProjectContributionSummaryDto
+{
+    public decimal TotalContributed { get; init; }
+    public int TotalContributions { get; init; }
+    public decimal AverageAmount { get; init; }
+    public string? MostUsedPaymentMethod { get; init; }
 }

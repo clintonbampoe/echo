@@ -11,7 +11,6 @@ namespace Echo.Application.Transactions;
 public class TransactionService(
     TransactionRepository repository,
     TransactionCategoryRepository categoryRepository,
-    TimeProvider timeProvider,
     IUnitOfWork unitOfWork,
     IEncoder encoder,
     ITransactionMapper mapper,
@@ -36,7 +35,6 @@ public class TransactionService(
         {
             entities = await repository.List(
                 congregationId,
-                timeProvider,
                 filters,
                 cursor,
                 pagination.PageSize + 1,
@@ -207,6 +205,36 @@ public class TransactionService(
         TransactionLog.Deleted(logger, congregationId, id);
 
         return new NoContentResult();
+    }
+
+    public async Task<IOperationResult> Summary(
+        Guid congregationId,
+        TransactionFilters filters,
+        CancellationToken ct
+    )
+    {
+        using var activity = instrumentation.ActivitySource.StartActivity(
+            "svc.transaction.summary"
+        );
+
+        var incomeTask = repository.SumIncome(congregationId, filters, ct);
+        var expensesTask = repository.SumExpenses(congregationId, filters, ct);
+        var categoryTask = repository.MostActiveCategory(congregationId, filters, ct);
+
+        await Task.WhenAll(incomeTask, expensesTask, categoryTask);
+
+        var res = new TransactionSummaryDto
+        {
+            TotalIncome = incomeTask.Result,
+            TotalExpenses = expensesTask.Result,
+            Net = incomeTask.Result - expensesTask.Result,
+            MostActiveCategory = categoryTask.Result,
+        };
+
+        activity?.SetTag("transaction.summary.income", res.TotalIncome);
+        TransactionLog.Summarized(logger, congregationId, res.TotalIncome, res.TotalExpenses);
+
+        return new SuccessResult<TransactionSummaryDto>(res);
     }
 
     private static TransactionCursor BuildCursor(Transaction last)
