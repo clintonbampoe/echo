@@ -1,11 +1,13 @@
 using Echo.Data;
 using Echo.Domain.Projects;
+using Echo.Domain.Transactions;
 using Echo.Shared.Query;
+using Echo.Shared.Utilities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Application.Projects;
 
-public class ProjectContributionRepository(AppDbContext context)
+public class ProjectContributionRepository(AppDbContext context, TimeProvider timeProvider)
 {
     private readonly DbSet<ProjectContribution> _dbSet = context.Set<ProjectContribution>();
 
@@ -22,7 +24,7 @@ public class ProjectContributionRepository(AppDbContext context)
             .FilterDeleted()
             .Where(p => p.CongregationId == congregationId)
             .Include(p => p.Project)
-            .Filter(filters)
+            .Filter(filters, timeProvider)
             .OrderByDescending(p => p.DateContributed)
             .ThenBy(p => p.Id)
             .Paginate(cursor, pageSize)
@@ -42,32 +44,87 @@ public class ProjectContributionRepository(AppDbContext context)
             .FirstOrDefaultAsync(ct);
     }
 
-    public void Create(ProjectContribution entity)
-    {
-        _dbSet.Add(entity);
-    }
+    public Task<decimal> SumContributed(
+        Guid congregationId,
+        ProjectContributionFilters filters,
+        CancellationToken ct = default
+    ) =>
+        _dbSet
+            .AsNoTracking()
+            .FilterDeleted()
+            .Where(p => p.CongregationId == congregationId)
+            .Filter(filters, timeProvider)
+            .SumAsync(p => p.Amount, ct);
 
-    public void SoftDelete(ProjectContribution entity)
-    {
-        entity.DeletedAt = DateTime.UtcNow;
-    }
+    public Task<int> Count(
+        Guid congregationId,
+        ProjectContributionFilters filters,
+        CancellationToken ct = default
+    ) =>
+        _dbSet
+            .AsNoTracking()
+            .FilterDeleted()
+            .Where(p => p.CongregationId == congregationId)
+            .Filter(filters, timeProvider)
+            .CountAsync(ct);
+
+    public Task<decimal> Average(
+        Guid congregationId,
+        ProjectContributionFilters filters,
+        CancellationToken ct = default
+    ) =>
+        _dbSet
+            .AsNoTracking()
+            .FilterDeleted()
+            .Where(p => p.CongregationId == congregationId)
+            .Filter(filters, timeProvider)
+            .AverageAsync(p => (decimal?)p.Amount, ct)
+            .ContinueWith(t => t.Result ?? 0m, ct);
+
+    public Task<PaymentMethod?> MostUsedPaymentMethod(
+        Guid congregationId,
+        ProjectContributionFilters filters,
+        CancellationToken ct = default
+    ) =>
+        _dbSet
+            .AsNoTracking()
+            .FilterDeleted()
+            .Where(p => p.CongregationId == congregationId)
+            .Filter(filters, timeProvider)
+            .GroupBy(p => p.PaymentMethod)
+            .OrderByDescending(g => g.Count())
+            .Select(g => (PaymentMethod?)g.Key)
+            .FirstOrDefaultAsync(ct);
+
+    public void Create(ProjectContribution entity) => _dbSet.Add(entity);
+
+    public void SoftDelete(ProjectContribution entity) => entity.DeletedAt = DateTime.UtcNow;
 }
 
 internal static class ProjectContributionQueryExtensions
 {
     internal static IQueryable<ProjectContribution> Filter(
         this IQueryable<ProjectContribution> query,
-        ProjectContributionFilters filters
+        ProjectContributionFilters filters,
+        TimeProvider timeProvider
     )
     {
-        if (filters.Amount is not null)
-            query = query.Where(p => p.Amount > filters.Amount);
+        if (filters.ProjectId is not null)
+            query = query.Where(p => p.ProjectId == filters.ProjectId);
 
-        if (filters.Date is not null)
-            query = query.Where(p => p.DateContributed == filters.Date);
+        if (filters.MinAmount is not null)
+            query = query.Where(p => p.Amount >= filters.MinAmount);
+
+        if (filters.MaxAmount is not null)
+            query = query.Where(p => p.Amount <= filters.MaxAmount);
 
         if (filters.PaymentMethod is not null)
             query = query.Where(p => p.PaymentMethod == filters.PaymentMethod);
+
+        var from = filters.From ?? DateUtils.GetFirstDayOfWeek(timeProvider);
+        var to = filters.To ?? DateUtils.GetDateToday(timeProvider);
+
+        query = query.Where(p => p.DateContributed >= from && p.DateContributed <= to);
 
         return query;
     }
@@ -79,12 +136,11 @@ internal static class ProjectContributionQueryExtensions
     )
     {
         if (cursor is not null)
-            query = query.Where(e =>
-                e.DateContributed < cursor.DateContributed
-                || (e.DateContributed == cursor.DateContributed && e.Id > cursor.Id)
+            query = query.Where(p =>
+                p.DateContributed < cursor.DateContributed
+                || (p.DateContributed == cursor.DateContributed && p.Id > cursor.Id)
             );
 
-        query = query.Take(pageSize);
-        return query;
+        return query.Take(pageSize);
     }
 }

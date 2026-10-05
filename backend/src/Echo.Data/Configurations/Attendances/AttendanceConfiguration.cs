@@ -8,37 +8,54 @@ public class AttendanceConfiguration : IEntityTypeConfiguration<Attendance>
 {
     public void Configure(EntityTypeBuilder<Attendance> builder)
     {
-        builder.HasKey(e => e.Id);
+        builder.HasKey(a => a.Id);
 
-        builder.Property(e => e.CreatedAt).HasDefaultValueSql("now()").ValueGeneratedOnAdd();
+        builder.Property(a => a.CreatedAt).HasDefaultValueSql("now()").ValueGeneratedOnAdd();
 
         builder
-            .HasOne(e => e.Congregation)
+            .HasOne(a => a.Congregation)
             .WithMany()
-            .HasForeignKey(e => e.CongregationId)
+            .HasForeignKey(a => a.CongregationId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasIndex(e => e.CongregationId);
-
         builder
-            .HasOne(a => a.Member)
+            .HasOne(a => a.Person)
             .WithMany()
-            .HasForeignKey(a => a.MemberId)
-            .IsRequired(false)
-            .OnDelete(DeleteBehavior.SetNull);
-
-        builder
-            .HasOne(a => a.AttendanceContext)
-            .WithMany()
-            .HasForeignKey(a => a.AttendanceContextId)
+            .HasForeignKey(a => a.PersonId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasIndex(a => a.MemberId);
-        builder.HasIndex(a => a.AttendanceContextId);
-        builder.HasIndex(a => a.ForDate);
-
         builder
-            .HasIndex(a => new { a.ForDate, a.Id })
+            .HasOne(a => a.AttendanceType)
+            .WithMany()
+            .HasForeignKey(a => a.AttendanceTypeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Prevent duplicate check-ins for the same person on the same date and service
+        builder
+            .HasIndex(a => new
+            {
+                a.CongregationId,
+                a.PersonId,
+                a.AttendanceTypeId,
+                a.Date,
+            })
+            .IsUnique()
+            .HasFilter($"\"{nameof(Attendance.DeletedAt)}\" IS NULL");
+
+        // For fetching all attendance for a given service type + date (the implicit session)
+        builder.HasIndex(a => new
+        {
+            a.CongregationId,
+            a.AttendanceTypeId,
+            a.Date,
+        });
+
+        // For fetching all attendance for a person (history)
+        builder.HasIndex(a => new { a.CongregationId, a.PersonId });
+
+        // For cursor pagination
+        builder
+            .HasIndex(a => new { a.Date, a.Id })
             .HasFilter($"\"{nameof(Attendance.DeletedAt)}\" IS NULL");
     }
 }

@@ -59,4 +59,15 @@ public class ProjectsController(ProjectService service, ApplicationInstrumentati
         var res = await service.Search(GetCongregationId(), q, ct);
         return res.ToActionResult();
     }
+
+    [HttpGet("summary")]
+    public async Task<ActionResult> Summary(
+        [FromQuery] ProjectFilters filters,
+        CancellationToken ct
+    )
+    {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.project.summary");
+        var response = await service.Summary(GetCongregationId(), filters, ct);
+        return response.ToActionResult();
+    }
 }

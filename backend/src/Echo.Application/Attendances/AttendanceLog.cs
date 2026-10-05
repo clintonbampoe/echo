@@ -27,43 +27,42 @@ public static partial class AttendanceLog
     // --- Create dependencies ---
     [LoggerMessage(
         Level = LogLevel.Information,
-        Message = "Attendance create: context {ContextId} found in congregation {CongregationId}"
+        Message = "Attendance create: service type {ServiceTypeId} found in congregation {CongregationId}"
     )]
-    public static partial void CreateContextFound(
+    public static partial void CreateServiceTypeFound(
         ILogger logger,
         Guid congregationId,
-        int contextId
+        int serviceTypeId
     );
 
     [LoggerMessage(
         Level = LogLevel.Warning,
-        Message = "Attendance create failed: context {ContextId} not found in congregation {CongregationId}"
+        Message = "Attendance create failed: service type {ServiceTypeId} not found in congregation {CongregationId}"
     )]
-    public static partial void CreateContextNotFound(
+    public static partial void CreateServiceTypeNotFound(
         ILogger logger,
         Guid congregationId,
-        int contextId
+        int serviceTypeId
     );
 
-    // --- Update dependencies ---
     [LoggerMessage(
         Level = LogLevel.Information,
-        Message = "Attendance update: context {ContextId} found in congregation {CongregationId}"
+        Message = "Attendance create: person {PersonId} found in congregation {CongregationId}"
     )]
-    public static partial void UpdateContextFound(
+    public static partial void CreatePersonFound(
         ILogger logger,
         Guid congregationId,
-        int contextId
+        Guid personId
     );
 
     [LoggerMessage(
         Level = LogLevel.Warning,
-        Message = "Attendance update failed: context {ContextId} not found in congregation {CongregationId}"
+        Message = "Attendance create failed: person {PersonId} not found in congregation {CongregationId}"
     )]
-    public static partial void UpdateContextNotFound(
+    public static partial void CreatePersonNotFound(
         ILogger logger,
         Guid congregationId,
-        int contextId
+        Guid personId
     );
 
     // --- Outcomes ---
@@ -104,6 +103,13 @@ public static partial class AttendanceLog
         Guid congregationId,
         Guid attendanceId
     );
+
+    // --- Summary ---
+    [LoggerMessage(
+        Level = LogLevel.Information,
+        Message = "Attendance summary: {TotalPresent} present for congregation {CongregationId}"
+    )]
+    public static partial void Summarized(ILogger logger, Guid congregationId, int totalPresent);
 
     // --- Unexpected ---
     [LoggerMessage(

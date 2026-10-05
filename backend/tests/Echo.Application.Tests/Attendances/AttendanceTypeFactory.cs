@@ -8,12 +8,12 @@ public static class AttendanceTypeFactory
 {
     public static AttendanceType NewEntity()
     {
-        return new AttendanceType()
+        return new AttendanceType
         {
             Id = Constants.DefaultInt,
             CongregationId = Constants.DefaultGuid,
             Congregation = CongregationFactory.NewEntity(),
-            Name = "AttendanceType-01",
+            Name = "Sunday Service",
             CreatedAt = Constants.DefaultDateTime,
             DeletedAt = null,
         };
@@ -23,25 +23,22 @@ public static class AttendanceTypeFactory
     {
         var res = new List<AttendanceType>();
         for (int i = 0; i < 5; i++)
-        {
             res.Add(NewEntity());
-        }
-
         return res;
     }
 
     public static AttendanceTypeCreateDto NewCreateDto()
     {
-        return new AttendanceTypeCreateDto() { Name = "AttendanceTypeCreate-01" };
+        return new AttendanceTypeCreateDto { Name = "AttendanceTypeCreate-01" };
     }
 
     public static AttendanceTypeUpdateDto NewUpdateDto()
     {
-        return new AttendanceTypeUpdateDto() { Name = "AttendanceTypeUpdate-01" };
+        return new AttendanceTypeUpdateDto { Name = "AttendanceTypeUpdate-01" };
     }
 
     public static AttendanceTypeUpdateDto NewUpdateDtoWithNullFields()
     {
-        return new AttendanceTypeUpdateDto() { Name = null };
+        return new AttendanceTypeUpdateDto { Name = null };
     }
 }

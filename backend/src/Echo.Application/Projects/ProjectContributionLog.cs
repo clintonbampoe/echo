@@ -105,6 +105,17 @@ public static partial class ProjectContributionLog
         Guid contributionId
     );
 
+    // --- Summary ---
+    [LoggerMessage(
+        Level = LogLevel.Information,
+        Message = "Project contribution summary: total {TotalContributed} contributed for congregation {CongregationId}"
+    )]
+    public static partial void Summarized(
+        ILogger logger,
+        Guid congregationId,
+        decimal totalContributed
+    );
+
     // --- Unexpected ---
     [LoggerMessage(
         Level = LogLevel.Error,

@@ -51,7 +51,7 @@ public class EventMapperTests
         Assert.Equal(entity.OrganizationId, result.OrganizationId);
         Assert.Equal(entity.Organization.Name, result.OrganizationName);
         Assert.Equal(entity.OrganizerId, result.OrganizerId);
-        Assert.Equal(entity.Organizer.Name, result.OrganizerName);
+        Assert.Equal(entity.Organizer.Person.Name, result.OrganizerName);
         Assert.Equal(entity.Name, result.Name);
         Assert.Equal(entity.StartDate, result.StartDate);
         Assert.Equal(entity.EndDate, result.EndDate);

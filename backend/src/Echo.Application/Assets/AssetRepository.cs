@@ -1,11 +1,12 @@
 using Echo.Data;
 using Echo.Domain.Assets;
 using Echo.Shared.Query;
+using Echo.Shared.Utilities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Application.Assets;
 
-public class AssetRepository(AppDbContext context)
+public class AssetRepository(AppDbContext context, TimeProvider timeProvider)
 {
     private readonly DbSet<Asset> _dbSet = context.Set<Asset>();
 
@@ -22,7 +23,7 @@ public class AssetRepository(AppDbContext context)
             .FilterDeleted()
             .Where(a => a.CongregationId == congregationId)
             .Include(a => a.Category)
-            .Filter(filters)
+            .Filter(filters, timeProvider)
             .OrderBy(a => a.Name)
             .ThenBy(a => a.Id)
             .Paginate(cursor, pageSize)
@@ -57,11 +58,63 @@ public class AssetRepository(AppDbContext context)
     {
         entity.DeletedAt = DateTime.UtcNow;
     }
+
+    public Task<int> Count(
+        Guid congregationId,
+        AssetFilters filters,
+        CancellationToken ct = default
+    ) =>
+        _dbSet
+            .AsNoTracking()
+            .FilterDeleted()
+            .Where(a => a.CongregationId == congregationId)
+            .Filter(filters, timeProvider)
+            .CountAsync(ct);
+
+    public Task<decimal> SumCurrentValue(
+        Guid congregationId,
+        AssetFilters filters,
+        CancellationToken ct = default
+    ) =>
+        _dbSet
+            .AsNoTracking()
+            .FilterDeleted()
+            .Where(a => a.CongregationId == congregationId)
+            .Filter(filters, timeProvider)
+            .SumAsync(a => a.CurrentValue, ct);
+
+    public Task<decimal> SumPurchaseCost(
+        Guid congregationId,
+        AssetFilters filters,
+        CancellationToken ct = default
+    ) =>
+        _dbSet
+            .AsNoTracking()
+            .FilterDeleted()
+            .Where(a => a.CongregationId == congregationId)
+            .Filter(filters, timeProvider)
+            .SumAsync(a => a.PurchaseCost, ct);
+
+    public Task<int> CountByStatus(
+        Guid congregationId,
+        AssetFilters filters,
+        CancellationToken ct = default
+    ) =>
+        _dbSet
+            .AsNoTracking()
+            .FilterDeleted()
+            .Where(a => a.CongregationId == congregationId)
+            .Filter(filters, timeProvider)
+            .CountAsync(ct);
 }
 
 internal static class AssetQueryExtensions
 {
-    internal static IQueryable<Asset> Filter(this IQueryable<Asset> query, AssetFilters filters)
+    internal static IQueryable<Asset> Filter(
+        this IQueryable<Asset> query,
+        AssetFilters filters,
+        TimeProvider timeProvider
+    )
     {
         if (filters.Name is not null)
             query = query.Where(a => EF.Functions.ILike(a.Name, $"%{filters.Name}%"));
@@ -71,6 +124,11 @@ internal static class AssetQueryExtensions
 
         if (filters.Status is not null)
             query = query.Where(a => a.Status == filters.Status);
+
+        var from = filters.From ?? DateUtils.GetFirstDayOfWeek(timeProvider);
+        var to = filters.To ?? DateUtils.GetDateToday(timeProvider);
+
+        query = query.Where(a => a.PurchaseDate >= from && a.PurchaseDate <= to);
 
         return query;
     }

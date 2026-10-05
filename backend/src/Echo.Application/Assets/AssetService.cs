@@ -216,6 +216,34 @@ public class AssetService(
         return new SuccessResult<List<AssetSearchResultDto>>(res);
     }
 
+    public async Task<IOperationResult> Summary(
+        Guid congregationId,
+        AssetFilters filters,
+        CancellationToken ct
+    )
+    {
+        using var activity = instrumentation.ActivitySource.StartActivity("svc.asset.summary");
+
+        var countTask = repository.Count(congregationId, filters, ct);
+        var currentValueTask = repository.SumCurrentValue(congregationId, filters, ct);
+        var purchaseCostTask = repository.SumPurchaseCost(congregationId, filters, ct);
+
+        await Task.WhenAll(countTask, currentValueTask, purchaseCostTask);
+
+        var res = new AssetSummaryDto
+        {
+            TotalAssets = countTask.Result,
+            TotalCurrentValue = currentValueTask.Result,
+            TotalPurchaseCost = purchaseCostTask.Result,
+            TotalDepreciation = purchaseCostTask.Result - currentValueTask.Result,
+        };
+
+        activity?.SetTag("asset.summary.total", res.TotalAssets);
+        AssetLog.Summarized(logger, congregationId, res.TotalAssets);
+
+        return new SuccessResult<AssetSummaryDto>(res);
+    }
+
     private static AssetCursor BuildCursor(Asset last)
     {
         return new AssetCursor { Name = last.Name, Id = last.Id };

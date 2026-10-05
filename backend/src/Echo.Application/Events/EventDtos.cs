@@ -80,8 +80,17 @@ public record EventCursor
 
 public record EventFilters
 {
-    public DateOnly? StartDate { get; init; }
     public string? Name { get; init; }
     public Guid? OrganizationId { get; init; }
     public Guid? OrganizerId { get; init; }
+    public DateOnly? From { get; init; }
+    public DateOnly? To { get; init; } // on StartDate
+}
+
+public record EventSummaryDto
+{
+    public int TotalEvents { get; init; }
+    public int UpcomingEvents { get; init; }
+    public int TotalRegistered { get; init; }
+    public int TotalAttended { get; init; }
 }

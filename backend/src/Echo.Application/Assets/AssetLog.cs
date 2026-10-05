@@ -109,6 +109,13 @@ public static partial class AssetLog
     )]
     public static partial void DeleteNotFound(ILogger logger, Guid congregationId, Guid assetId);
 
+    // --- Summary ---
+    [LoggerMessage(
+        Level = LogLevel.Information,
+        Message = "Asset summary: {TotalAssets} assets summarized for congregation {CongregationId}"
+    )]
+    public static partial void Summarized(ILogger logger, Guid congregationId, int totalAssets);
+
     // --- Unexpected ---
     [LoggerMessage(
         Level = LogLevel.Error,

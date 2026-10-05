@@ -20,6 +20,7 @@ public class OrganizationService(
 {
     public async Task<IOperationResult> List(
         Guid congregationId,
+        OrganizationFilters filters,
         PaginationRequest pagination,
         CancellationToken ct = default
     )
@@ -31,7 +32,13 @@ public class OrganizationService(
         List<Organization> entities;
         using (instrumentation.ActivitySource.StartActivity("svc.organization.fetch.list"))
         {
-            entities = await repository.List(congregationId, cursor, pagination.PageSize + 1, ct);
+            entities = await repository.List(
+                congregationId,
+                filters,
+                cursor,
+                pagination.PageSize + 1,
+                ct
+            );
         }
 
         var hasMore = entities.Count > pagination.PageSize;
@@ -48,7 +55,7 @@ public class OrganizationService(
         return new SuccessResult<PagedResponse<OrganizationResponseDto>>(res);
     }
 
-    public async Task<IOperationResult> GetById(Guid id, Guid congregationId, CancellationToken ct)
+    public async Task<IOperationResult> GetById(Guid congregationId, Guid id, CancellationToken ct)
     {
         using var activity = instrumentation.ActivitySource.StartActivity(
             "svc.organization.get_by_id"
@@ -190,6 +197,37 @@ public class OrganizationService(
         activity?.SetTag("organization.count", res.Count);
         OrganizationLog.Searched(logger, congregationId, name, res.Count);
         return new SuccessResult<List<OrganizationSearchResultDto>>(res);
+    }
+
+    public async Task<IOperationResult> Summary(
+        Guid congregationId,
+        OrganizationFilters filters,
+        CancellationToken ct
+    )
+    {
+        using var activity = instrumentation.ActivitySource.StartActivity(
+            "svc.organization.summary"
+        );
+
+        var countTask = repository.Count(congregationId, filters, ct);
+        var totalMembersTask = repository.CountTotalMembers(congregationId, filters, ct);
+        var averageTask = repository.AverageMembersPerOrganization(congregationId, filters, ct);
+        var largestTask = repository.LargestOrganization(congregationId, filters, ct);
+
+        await Task.WhenAll(countTask, totalMembersTask, averageTask, largestTask);
+
+        var res = new OrganizationSummaryDto
+        {
+            TotalOrganizations = countTask.Result,
+            TotalMembers = totalMembersTask.Result,
+            AverageMembersPerOrganization = averageTask.Result,
+            LargestOrganization = largestTask.Result,
+        };
+
+        activity?.SetTag("organization.summary.total", res.TotalOrganizations);
+        OrganizationLog.Summarized(logger, congregationId, res.TotalOrganizations);
+
+        return new SuccessResult<OrganizationSummaryDto>(res);
     }
 
     private static OrganizationCursor BuildCursor(Organization last)

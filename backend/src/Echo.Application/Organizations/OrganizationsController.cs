@@ -11,12 +11,13 @@ public class OrganizationsController(
 {
     [HttpGet]
     public async Task<ActionResult> List(
+        [FromQuery] OrganizationFilters filters,
         [FromQuery] PaginationRequest pagination,
         CancellationToken ct
     )
     {
         using var span = StartEndpointSpan(instrumentation, "endpoint.organization.list");
-        var response = await service.List(GetCongregationId(), pagination, ct);
+        var response = await service.List(GetCongregationId(), filters, pagination, ct);
         return response.ToActionResult();
     }
 
@@ -59,5 +60,16 @@ public class OrganizationsController(
         using var span = StartEndpointSpan(instrumentation, "endpoint.organization.search");
         var res = await service.Search(GetCongregationId(), q, ct);
         return res.ToActionResult();
+    }
+
+    [HttpGet("summary")]
+    public async Task<ActionResult> Summary(
+        [FromQuery] OrganizationFilters filters,
+        CancellationToken ct
+    )
+    {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.organization.summary");
+        var response = await service.Summary(GetCongregationId(), filters, ct);
+        return response.ToActionResult();
     }
 }

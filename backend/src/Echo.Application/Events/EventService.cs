@@ -262,13 +262,37 @@ public class EventService(
         return new SuccessResult<List<EventSearchResultDto>>(res);
     }
 
+    public async Task<IOperationResult> Summary(
+        Guid congregationId,
+        EventFilters filters,
+        CancellationToken ct
+    )
+    {
+        using var activity = instrumentation.ActivitySource.StartActivity("svc.event.summary");
+
+        var countTask = repository.Count(congregationId, filters, ct);
+        var upcomingTask = repository.CountUpcoming(congregationId, filters, ct);
+        var registrationsTask = repository.CountRegistrations(congregationId, filters, ct);
+        var attendeesTask = repository.CountAttendees(congregationId, filters, ct);
+
+        await Task.WhenAll(countTask, upcomingTask, registrationsTask, attendeesTask);
+
+        var res = new EventSummaryDto
+        {
+            TotalEvents = countTask.Result,
+            UpcomingEvents = upcomingTask.Result,
+            TotalRegistered = registrationsTask.Result,
+            TotalAttended = attendeesTask.Result,
+        };
+
+        activity?.SetTag("event.summary.total", res.TotalEvents);
+        EventLog.Summarized(logger, congregationId, res.TotalEvents);
+
+        return new SuccessResult<EventSummaryDto>(res);
+    }
+
     private static EventCursor BuildCursor(Event last)
     {
         return new EventCursor { StartDate = last.StartDate, Id = last.Id };
-    }
-
-    public Task<IOperationResult> GetSummary(Guid congregationId, CancellationToken ct)
-    {
-        throw new NotImplementedException();
     }
 }

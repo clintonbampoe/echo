@@ -34,6 +34,21 @@ public record OrganizationSearchResultDto
     public required string Name { get; init; }
 }
 
+public record OrganizationFilters
+{
+    public string? Name { get; init; }
+    public DateOnly? From { get; init; }
+    public DateOnly? To { get; init; } // on CreatedAt
+}
+
+public record OrganizationSummaryDto
+{
+    public int TotalOrganizations { get; init; }
+    public int TotalMembers { get; init; }
+    public double AverageMembersPerOrganization { get; init; }
+    public string? LargestOrganization { get; init; }
+}
+
 public record OrganizationCursor
 {
     public string Name { get; init; } = string.Empty;

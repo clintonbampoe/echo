@@ -12,26 +12,29 @@ public class MemberMapperTests
     {
         var dto = MemberFactory.NewCreateDto();
 
-        var entity = _mapper.ToEntity(dto);
+        var (person, member) = _mapper.ToEntity(dto);
 
-        Assert.Equal(dto.FirstName, entity.FirstName);
-        Assert.Equal(dto.LastName, entity.LastName);
-        Assert.Equal(dto.OtherNames, entity.OtherNames);
-        Assert.Equal(dto.EmailAddress, entity.EmailAddress);
-        Assert.Equal(dto.PhoneNumber, entity.PhoneNumber);
-        Assert.Equal(dto.DateOfBirth, entity.DateOfBirth);
-        Assert.Equal(dto.JoinedDate, entity.JoinedDate);
-        Assert.Equal(dto.Gender, entity.Gender);
-        Assert.Equal(dto.ResidentialAddress, entity.ResidentialAddress);
-        Assert.Equal(dto.City, entity.City);
-        Assert.Equal(dto.Hometown, entity.Hometown);
-        Assert.Equal(dto.Region, entity.Region);
-        Assert.Equal(dto.GpsAddress, entity.GpsAddress);
-        Assert.Equal(dto.MaritalStatus, entity.MaritalStatus);
-        Assert.Equal(dto.NextOfKin, entity.NextOfKin);
-        Assert.Equal(dto.EmergencyContactName, entity.EmergencyContactName);
-        Assert.Equal(dto.EmergencyContactPhoneNumber, entity.EmergencyContactPhoneNumber);
-        Assert.Equal(dto.Status, entity.Status);
+        // Person fields
+        Assert.Equal(dto.FirstName, person.FirstName);
+        Assert.Equal(dto.LastName, person.LastName);
+        Assert.Equal(dto.OtherNames, person.OtherNames);
+        Assert.Equal(dto.EmailAddress, person.EmailAddress);
+        Assert.Equal(dto.PhoneNumber, person.PhoneNumber);
+
+        // Member fields
+        Assert.Equal(dto.DateOfBirth, member.DateOfBirth);
+        Assert.Equal(dto.JoinedDate, member.JoinedDate);
+        Assert.Equal(dto.Gender, member.Gender);
+        Assert.Equal(dto.ResidentialAddress, member.ResidentialAddress);
+        Assert.Equal(dto.City, member.City);
+        Assert.Equal(dto.Hometown, member.Hometown);
+        Assert.Equal(dto.Region, member.Region);
+        Assert.Equal(dto.GpsAddress, member.GpsAddress);
+        Assert.Equal(dto.MaritalStatus, member.MaritalStatus);
+        Assert.Equal(dto.NextOfKin, member.NextOfKin);
+        Assert.Equal(dto.EmergencyContactName, member.EmergencyContactName);
+        Assert.Equal(dto.EmergencyContactPhoneNumber, member.EmergencyContactPhoneNumber);
+        Assert.Equal(dto.Status, member.Status);
     }
 
     [Fact]
@@ -39,10 +42,12 @@ public class MemberMapperTests
     {
         var dto = MemberFactory.NewCreateDto();
 
-        var entity = _mapper.ToEntity(dto);
+        var (person, member) = _mapper.ToEntity(dto);
 
-        Assert.Equal(Guid.Empty, entity.Id);
-        Assert.Equal(Guid.Empty, entity.CongregationId);
+        Assert.Equal(Guid.Empty, person.Id);
+        Assert.Equal(Guid.Empty, person.CongregationId);
+        Assert.Equal(Guid.Empty, member.PersonId);
+        Assert.Equal(Guid.Empty, member.CongregationId);
     }
 
     [Fact]
@@ -52,12 +57,13 @@ public class MemberMapperTests
 
         var result = _mapper.ToDto(entity);
 
-        Assert.Equal(entity.Id, result.Id);
-        Assert.Equal(entity.FirstName, result.FirstName);
-        Assert.Equal(entity.LastName, result.LastName);
-        Assert.Equal(entity.OtherNames, result.OtherNames);
-        Assert.Equal(entity.EmailAddress, result.EmailAddress);
-        Assert.Equal(entity.PhoneNumber, result.PhoneNumber);
+        Assert.Equal(entity.PersonId, result.Id);
+        Assert.Equal(entity.Person.Name, result.Name);
+        Assert.Equal(entity.Person.FirstName, result.FirstName);
+        Assert.Equal(entity.Person.LastName, result.LastName);
+        Assert.Equal(entity.Person.OtherNames, result.OtherNames);
+        Assert.Equal(entity.Person.EmailAddress, result.EmailAddress);
+        Assert.Equal(entity.Person.PhoneNumber, result.PhoneNumber);
         Assert.Equal(entity.DateOfBirth, result.DateOfBirth);
         Assert.Equal(entity.JoinedDate, result.JoinedDate);
         Assert.Equal(entity.Gender, result.Gender);
@@ -75,18 +81,21 @@ public class MemberMapperTests
     }
 
     [Fact]
-    public void PatchEntity_ShouldPatchSpecifiedFieldsInDto_ToEntity()
+    public void Patch_ShouldUpdateAllFields_WhenDtoHasValues()
     {
         var dto = MemberFactory.NewUpdateDto();
         var entity = MemberFactory.NewEntity();
 
-        _mapper.Patch(dto, entity);
+        _mapper.Patch(dto, entity.Person, entity);
 
-        Assert.Equal(dto.FirstName, entity.FirstName);
-        Assert.Equal(dto.LastName, entity.LastName);
-        Assert.Equal(dto.OtherNames, entity.OtherNames);
-        Assert.Equal(dto.EmailAddress, entity.EmailAddress);
-        Assert.Equal(dto.PhoneNumber, entity.PhoneNumber);
+        // Person fields
+        Assert.Equal(dto.FirstName, entity.Person.FirstName);
+        Assert.Equal(dto.LastName, entity.Person.LastName);
+        Assert.Equal(dto.OtherNames, entity.Person.OtherNames);
+        Assert.Equal(dto.EmailAddress, entity.Person.EmailAddress);
+        Assert.Equal(dto.PhoneNumber, entity.Person.PhoneNumber);
+
+        // Member fields
         Assert.Equal(dto.DateOfBirth, entity.DateOfBirth);
         Assert.Equal(dto.JoinedDate, entity.JoinedDate);
         Assert.Equal(dto.Gender, entity.Gender);
@@ -103,19 +112,22 @@ public class MemberMapperTests
     }
 
     [Fact]
-    public void PatchEntity_ShouldIgnoreAllNullFieldsInDto()
+    public void Patch_ShouldIgnoreAllNullFields_WhenDtoFieldsAreNull()
     {
         var nullDto = MemberFactory.NewUpdateDtoWithNullValues();
         var entity = MemberFactory.NewEntity();
         var original = MemberFactory.NewEntity();
 
-        _mapper.Patch(nullDto, entity);
+        _mapper.Patch(nullDto, entity.Person, entity);
 
-        Assert.Equal(original.FirstName, entity.FirstName);
-        Assert.Equal(original.LastName, entity.LastName);
-        Assert.Equal(original.OtherNames, entity.OtherNames);
-        Assert.Equal(original.EmailAddress, entity.EmailAddress);
-        Assert.Equal(original.PhoneNumber, entity.PhoneNumber);
+        // Person fields preserved
+        Assert.Equal(original.Person.FirstName, entity.Person.FirstName);
+        Assert.Equal(original.Person.LastName, entity.Person.LastName);
+        Assert.Equal(original.Person.OtherNames, entity.Person.OtherNames);
+        Assert.Equal(original.Person.EmailAddress, entity.Person.EmailAddress);
+        Assert.Equal(original.Person.PhoneNumber, entity.Person.PhoneNumber);
+
+        // Member fields preserved
         Assert.Equal(original.DateOfBirth, entity.DateOfBirth);
         Assert.Equal(original.JoinedDate, entity.JoinedDate);
         Assert.Equal(original.Gender, entity.Gender);
@@ -143,10 +155,12 @@ public class MemberMapperTests
         var lastEntity = entityList.Last();
         var lastDto = dtoList.Last();
 
-        Assert.Equal(firstEntity.Id, firstDto.Id);
-        Assert.Equal(firstEntity.Name, firstDto.Name);
+        Assert.Equal(firstEntity.PersonId, firstDto.Id);
+        Assert.Equal(firstEntity.Person.Name, firstDto.Name);
+        Assert.Equal(firstEntity.Person.PhoneNumber, firstDto.PhoneNumber);
 
-        Assert.Equal(lastEntity.Id, lastDto.Id);
-        Assert.Equal(lastEntity.Name, lastDto.Name);
+        Assert.Equal(lastEntity.PersonId, lastDto.Id);
+        Assert.Equal(lastEntity.Person.Name, lastDto.Name);
+        Assert.Equal(lastEntity.Person.PhoneNumber, lastDto.PhoneNumber);
     }
 }

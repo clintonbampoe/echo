@@ -53,7 +53,16 @@ public record TransactionCursor
 
 public record TransactionFilters
 {
-    public DateOnly? Date { get; init; }
     public TransactionType? TransactionType { get; init; }
     public int? CategoryId { get; init; }
+    public DateOnly? From { get; init; }
+    public DateOnly? To { get; init; } // on TransactionDate
+}
+
+public record TransactionSummaryDto
+{
+    public decimal TotalIncome { get; init; }
+    public decimal TotalExpenses { get; init; }
+    public decimal Net { get; init; }
+    public string? MostActiveCategory { get; init; }
 }

@@ -6,11 +6,20 @@ namespace Echo.Application.Tithes;
 [Mapper]
 public partial class TitheMapper : ITitheMapper
 {
-    [MapperIgnoreSource(nameof(entity.Congregation))]
-    [MapperIgnoreSource(nameof(entity.CongregationId))]
-    [MapperIgnoreSource(nameof(entity.DeletedAt))]
-    [MapProperty(nameof(Tithe.Member.Name), nameof(TitheResponseDto.MemberName))]
-    public partial TitheResponseDto ToDto(Tithe entity);
+    public TitheResponseDto ToDto(Tithe entity) =>
+        new TitheResponseDto
+        {
+            Id = entity.Id,
+            MemberId = entity.MemberId,
+            MemberName = entity.Member.Person.Name,
+            Amount = entity.Amount,
+            ForYear = entity.ForYear,
+            ForMonth = entity.ForMonth,
+            PaymentMethod = entity.PaymentMethod,
+            CollectionDate = entity.CollectionDate,
+            Description = entity.Description,
+            CreatedAt = entity.CreatedAt,
+        };
 
     [MapperIgnoreTarget(nameof(Tithe.Congregation))]
     [MapperIgnoreTarget(nameof(Tithe.CongregationId))]

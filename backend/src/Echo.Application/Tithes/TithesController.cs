@@ -8,7 +8,7 @@ public class TithesController(TitheService service, ApplicationInstrumentation i
 {
     [HttpGet]
     public async Task<ActionResult> List(
-        [FromQuery] TitheFilter filters,
+        [FromQuery] TitheFilters filters,
         [FromQuery] PaginationRequest pagination,
         CancellationToken ct
     )
@@ -22,7 +22,7 @@ public class TithesController(TitheService service, ApplicationInstrumentation i
     public async Task<ActionResult> GetById(Guid id, CancellationToken ct)
     {
         using var span = StartEndpointSpan(instrumentation, "endpoint.tithe.fetch_by_id");
-        var response = await service.GetById(id, GetCongregationId(), ct);
+        var response = await service.GetById(GetCongregationId(), id, ct);
         return response.ToActionResult();
     }
 
@@ -47,6 +47,14 @@ public class TithesController(TitheService service, ApplicationInstrumentation i
     {
         using var span = StartEndpointSpan(instrumentation, "endpoint.tithe.delete");
         var response = await service.Delete(GetCongregationId(), id, ct);
+        return response.ToActionResult();
+    }
+
+    [HttpGet("summary")]
+    public async Task<ActionResult> Summary([FromQuery] TitheFilters filters, CancellationToken ct)
+    {
+        using var span = StartEndpointSpan(instrumentation, "endpoint.tithe.summary");
+        var response = await service.Summary(GetCongregationId(), filters, ct);
         return response.ToActionResult();
     }
 }

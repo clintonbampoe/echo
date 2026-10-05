@@ -58,7 +58,7 @@ public class ProjectContributionService(
         return new SuccessResult<PagedResponse<ProjectContributionResponseDto>>(res);
     }
 
-    public async Task<IOperationResult> GetById(Guid id, Guid congregationId, CancellationToken ct)
+    public async Task<IOperationResult> GetById(Guid congregationId, Guid id, CancellationToken ct)
     {
         using var activity = instrumentation.ActivitySource.StartActivity(
             "svc.project_contribution.get_by_id"
@@ -152,23 +152,8 @@ public class ProjectContributionService(
             return new NotFoundResult(id.ToString());
         }
 
-        // Validate Project if it's being changed
-        Project? project;
-        using (
-            instrumentation.ActivitySource.StartActivity(
-                "svc.project_contribution.validate.project"
-            )
-        )
-        {
-            project = await projectRepository.GetById(congregationId, entity.ProjectId, ct);
-        }
-
-        if (project is null)
-        {
-            ProjectContributionLog.UpdateProjectNotFound(logger, congregationId, entity.ProjectId);
-            return new ForeignKeyEntityNotFound(nameof(project));
-        }
-        ProjectContributionLog.UpdateProjectFound(logger, congregationId, entity.ProjectId);
+        // ProjectContributionUpdateDto only updates amount, date, paymentMethod, description
+        // ProjectId is not updatable so no FK validation needed here
 
         mapper.Patch(dto, entity);
 
@@ -221,5 +206,36 @@ public class ProjectContributionService(
             DateContributed = last.DateContributed,
             Id = last.Id,
         };
+    }
+
+    public async Task<IOperationResult> Summary(
+        Guid congregationId,
+        ProjectContributionFilters filters,
+        CancellationToken ct
+    )
+    {
+        using var activity = instrumentation.ActivitySource.StartActivity(
+            "svc.project_contribution.summary"
+        );
+
+        var totalTask = repository.SumContributed(congregationId, filters, ct);
+        var countTask = repository.Count(congregationId, filters, ct);
+        var averageTask = repository.Average(congregationId, filters, ct);
+        var paymentMethodTask = repository.MostUsedPaymentMethod(congregationId, filters, ct);
+
+        await Task.WhenAll(totalTask, countTask, averageTask, paymentMethodTask);
+
+        var res = new ProjectContributionSummaryDto
+        {
+            TotalContributed = totalTask.Result,
+            TotalContributions = countTask.Result,
+            AverageAmount = averageTask.Result,
+            MostUsedPaymentMethod = paymentMethodTask.Result?.ToString(),
+        };
+
+        activity?.SetTag("project_contribution.summary.total", res.TotalContributed);
+        ProjectContributionLog.Summarized(logger, congregationId, res.TotalContributed);
+
+        return new SuccessResult<ProjectContributionSummaryDto>(res);
     }
 }

@@ -43,7 +43,7 @@ public class OrganizationMemberMapperTests
 
         Assert.Equal(entity.Id, result.Id);
         Assert.Equal(entity.MemberId, result.MemberId);
-        Assert.Equal(entity.Member.Name, result.MemberName);
+        Assert.Equal(entity.Member.Person.Name, result.MemberName);
         Assert.Equal(entity.OrganizationId, result.OrganizationId);
         Assert.Equal(entity.Organization.Name, result.OrganizationName);
         Assert.Equal(entity.Role, result.Role);

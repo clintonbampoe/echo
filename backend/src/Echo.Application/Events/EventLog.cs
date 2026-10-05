@@ -149,6 +149,13 @@ public static partial class EventLog
     )]
     public static partial void DeleteNotFound(ILogger logger, Guid congregationId, Guid eventId);
 
+    // --- Summary ---
+    [LoggerMessage(
+        Level = LogLevel.Information,
+        Message = "Event summary: {TotalEvents} events summarized for congregation {CongregationId}"
+    )]
+    public static partial void Summarized(ILogger logger, Guid congregationId, int totalEvents);
+
     // --- Unexpected ---
     [LoggerMessage(
         Level = LogLevel.Error,

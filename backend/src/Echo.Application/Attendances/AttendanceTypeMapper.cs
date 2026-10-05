@@ -21,13 +21,10 @@ public partial class AttendanceTypeMapper : IAttendanceTypeMapper
 
     public partial List<AttendanceTypeResponseDto> ToListDto(List<AttendanceType> entities);
 
-    public List<AttendanceTypeSearchResultDto> ToSearchDto(List<AttendanceType> entities)
-    {
-        var res = entities
-            .Select(e => new AttendanceTypeSearchResultDto() { Id = e.Id, Name = e.Name })
+    public List<AttendanceTypeSearchResultDto> ToSearchDto(List<AttendanceType> entities) =>
+        entities
+            .Select(e => new AttendanceTypeSearchResultDto { Id = e.Id, Name = e.Name })
             .ToList();
-        return res;
-    }
 
     public void Patch(AttendanceTypeUpdateDto dto, AttendanceType entity)
     {

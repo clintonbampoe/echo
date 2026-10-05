@@ -75,8 +75,17 @@ public record ProjectCursor
 
 public record ProjectFilters
 {
-    public DateOnly? StartDate { get; init; }
+    public string? Name { get; init; }
     public ProjectStatus? Status { get; init; }
     public int? CategoryId { get; init; }
-    public string? Name { get; init; }
+    public DateOnly? From { get; init; }
+    public DateOnly? To { get; init; } // on StartDate
+}
+
+public record ProjectSummaryDto
+{
+    public int TotalProjects { get; init; }
+    public decimal TotalRaised { get; init; }
+    public decimal TotalTarget { get; init; }
+    public int AtRiskCount { get; init; }
 }

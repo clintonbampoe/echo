@@ -23,6 +23,9 @@ public static class Extensions
         services.AddScoped<MembersController>();
         services.AddSingleton<IMemberMapper, MemberMapper>();
 
+        // Visitors
+        services.AddSingleton<IVisitorMapper, VisitorMapper>();
+
         // Users
         services.AddScoped<UserRepository>();
         services.AddScoped<UserService>();
@@ -51,16 +54,7 @@ public static class Extensions
         services.AddSingleton<IAttendanceMapper, AttendanceMapper>();
 
         // Attendance Types
-        services.AddScoped<AttendanceTypeRepository>();
-        services.AddScoped<AttendanceTypeService>();
-        services.AddScoped<AttendanceTypeController>();
         services.AddSingleton<IAttendanceTypeMapper, AttendanceTypeMapper>();
-
-        // Attendance Contexts
-        services.AddScoped<AttendanceContextRepository>();
-        services.AddScoped<AttendanceContextService>();
-        services.AddScoped<AttendanceContextsController>();
-        services.AddSingleton<IAttendanceContextMapper, AttendanceContextMapper>();
 
         // Events
         services.AddScoped<EventRepository>();

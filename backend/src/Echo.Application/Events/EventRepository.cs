@@ -1,13 +1,16 @@
 using Echo.Data;
 using Echo.Domain.Events;
 using Echo.Shared.Query;
+using Echo.Shared.Utilities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Application.Events;
 
-public class EventRepository(AppDbContext context)
+public class EventRepository(AppDbContext context, TimeProvider timeProvider)
 {
     private readonly DbSet<Event> _dbSet = context.Set<Event>();
+    private readonly DbSet<EventRegistration> _registrationDbSet = context.Set<EventRegistration>();
+    private readonly DbSet<EventAttendance> _attendanceDbSet = context.Set<EventAttendance>();
 
     public async Task<List<Event>> List(
         Guid congregationId,
@@ -23,7 +26,7 @@ public class EventRepository(AppDbContext context)
             .Where(e => e.CongregationId == congregationId)
             .Include(e => e.Organization)
             .Include(e => e.Organizer)
-            .Filter(filters)
+            .Filter(filters, timeProvider)
             .OrderBy(e => e.StartDate)
             .ThenBy(e => e.Id)
             .Paginate(cursor, pageSize)
@@ -40,36 +43,84 @@ public class EventRepository(AppDbContext context)
             .FirstOrDefaultAsync(ct);
     }
 
-    public void Create(Event entity)
-    {
-        _dbSet.Add(entity);
-    }
-
-    public void SoftDelete(Event entity)
-    {
-        entity.DeletedAt = DateTime.UtcNow;
-    }
-
     public async Task<List<Event>> Search(Guid congregationId, string name, CancellationToken ct)
     {
         return await _dbSet
             .AsNoTracking()
             .FilterDeleted()
-            .Where(a => a.CongregationId == congregationId)
+            .Where(e => e.CongregationId == congregationId)
             .SearchName(name)
             .ToListAsync(ct);
     }
+
+    public Task<int> Count(
+        Guid congregationId,
+        EventFilters filters,
+        CancellationToken ct = default
+    ) =>
+        _dbSet
+            .AsNoTracking()
+            .FilterDeleted()
+            .Where(e => e.CongregationId == congregationId)
+            .Filter(filters, timeProvider)
+            .CountAsync(ct);
+
+    public Task<int> CountUpcoming(
+        Guid congregationId,
+        EventFilters filters,
+        CancellationToken ct = default
+    )
+    {
+        var today = DateUtils.GetDateToday(timeProvider);
+        return _dbSet
+            .AsNoTracking()
+            .FilterDeleted()
+            .Where(e => e.CongregationId == congregationId && e.StartDate >= today)
+            .Filter(filters, timeProvider)
+            .CountAsync(ct);
+    }
+
+    public Task<int> CountRegistrations(
+        Guid congregationId,
+        EventFilters filters,
+        CancellationToken ct = default
+    ) =>
+        _dbSet
+            .AsNoTracking()
+            .FilterDeleted()
+            .Where(e => e.CongregationId == congregationId)
+            .Filter(filters, timeProvider)
+            .SelectMany(e => _registrationDbSet.FilterDeleted().Where(r => r.EventId == e.Id))
+            .CountAsync(ct);
+
+    public Task<int> CountAttendees(
+        Guid congregationId,
+        EventFilters filters,
+        CancellationToken ct = default
+    ) =>
+        _dbSet
+            .AsNoTracking()
+            .FilterDeleted()
+            .Where(e => e.CongregationId == congregationId)
+            .Filter(filters, timeProvider)
+            .SelectMany(e => _attendanceDbSet.FilterDeleted().Where(a => a.EventId == e.Id))
+            .CountAsync(ct);
+
+    public void Create(Event entity) => _dbSet.Add(entity);
+
+    public void SoftDelete(Event entity) => entity.DeletedAt = DateTime.UtcNow;
 }
 
 internal static class EventQueryExtensions
 {
-    internal static IQueryable<Event> Filter(this IQueryable<Event> query, EventFilters filters)
+    internal static IQueryable<Event> Filter(
+        this IQueryable<Event> query,
+        EventFilters filters,
+        TimeProvider timeProvider
+    )
     {
-        var dateToday = DateOnly.FromDateTime(TimeProvider.System.GetUtcNow().DateTime);
-
-        query = filters.StartDate is not null
-            ? query.Where(e => e.StartDate == filters.StartDate)
-            : query.Where(e => e.StartDate >= dateToday);
+        if (filters.Name is not null)
+            query = query.Where(e => EF.Functions.ILike(e.Name, $"%{filters.Name}%"));
 
         if (filters.OrganizerId is not null)
             query = query.Where(e => e.OrganizerId == filters.OrganizerId);
@@ -77,8 +128,10 @@ internal static class EventQueryExtensions
         if (filters.OrganizationId is not null)
             query = query.Where(e => e.OrganizationId == filters.OrganizationId);
 
-        if (filters.Name is not null)
-            query = query.Where(e => EF.Functions.ILike(e.Name, $"%{filters.Name}%"));
+        var from = filters.From ?? DateUtils.GetFirstDayOfWeek(timeProvider);
+        var to = filters.To ?? DateUtils.GetDateToday(timeProvider);
+
+        query = query.Where(e => e.StartDate >= from && e.StartDate <= to);
 
         return query;
     }
