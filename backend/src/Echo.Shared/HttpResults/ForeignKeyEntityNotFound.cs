@@ -10,9 +10,10 @@ public class ForeignKeyEntityNotFound(string name) : IOperationResult
             new ProblemDetails
             {
                 Status = StatusCodes.Status404NotFound,
-                Title = "The requested resource was not found",
-                Detail =
-                    $"The foreign key property specified with Name ({name})  is invalid or has been deleted.",
+                Type = ErrorTypes.ForeignKeyNotFound,
+                Title = "Related Resource Not Found",
+                Detail = $"The referenced {name} does not exist or has been deleted.",
+                Extensions = { ["errorCode"] = "FOREIGN_KEY_NOT_FOUND" },
             }
         )
         {

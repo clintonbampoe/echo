@@ -3,15 +3,17 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Echo.Shared.HttpResults;
 
-public class ConflictResult(string message) : IOperationResult
+public class ConflictResult(string detail) : IOperationResult
 {
     public ActionResult ToActionResult() =>
         new ObjectResult(
             new ProblemDetails
             {
                 Status = StatusCodes.Status409Conflict,
-                Title = "An unexpected error occured with your request.",
-                Detail = message,
+                Type = ErrorTypes.Conflict,
+                Title = "Conflict",
+                Detail = detail,
+                Extensions = { ["errorCode"] = "CONFLICT" },
             }
         )
         {

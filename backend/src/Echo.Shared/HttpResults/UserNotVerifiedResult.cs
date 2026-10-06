@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Echo.Shared.HttpResults;
 
-public class UserNotVerifiedResult(string message = "Verify your email before logging in.")
+public class UserNotVerifiedResult(string detail = "Verify your email before logging in.")
     : IOperationResult
 {
     public ActionResult ToActionResult() =>
@@ -11,9 +11,9 @@ public class UserNotVerifiedResult(string message = "Verify your email before lo
             new ProblemDetails
             {
                 Status = StatusCodes.Status403Forbidden,
-                Type = "https://yourdomain.com/errors/email-not-verified",
+                Type = ErrorTypes.EmailNotVerified,
                 Title = "Account Email Unverified",
-                Detail = message,
+                Detail = detail,
                 Extensions = { ["errorCode"] = "EMAIL_NOT_VERIFIED" },
             }
         )

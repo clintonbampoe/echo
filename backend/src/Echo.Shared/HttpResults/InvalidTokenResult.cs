@@ -9,12 +9,14 @@ public class InvalidTokenResult : IOperationResult
         new ObjectResult(
             new ProblemDetails
             {
-                Status = StatusCodes.Status500InternalServerError,
-                Title = "An unexpected error occurred",
-                Detail = "Token is invalid or already used",
+                Status = StatusCodes.Status401Unauthorized,
+                Type = ErrorTypes.InvalidToken,
+                Title = "Invalid Token",
+                Detail = "The token is invalid or has already been used.",
+                Extensions = { ["errorCode"] = "INVALID_TOKEN" },
             }
         )
         {
-            StatusCode = StatusCodes.Status500InternalServerError,
+            StatusCode = StatusCodes.Status401Unauthorized,
         };
 }

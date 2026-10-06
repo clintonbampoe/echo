@@ -10,8 +10,10 @@ public class NotFoundResult(string id) : IOperationResult
             new ProblemDetails
             {
                 Status = StatusCodes.Status404NotFound,
-                Title = "The requested resource was not found",
-                Detail = $"The resource with Id: {id} is invalid or has been deleted.",
+                Type = ErrorTypes.NotFound,
+                Title = "Resource Not Found",
+                Detail = $"The resource with Id: {id} was not found or has been deleted.",
+                Extensions = { ["errorCode"] = "NOT_FOUND" },
             }
         )
         {

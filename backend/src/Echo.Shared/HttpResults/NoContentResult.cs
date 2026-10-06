@@ -5,6 +5,5 @@ namespace Echo.Shared.HttpResults;
 
 public class NoContentResult : IOperationResult
 {
-    public ActionResult ToActionResult() =>
-        new StatusCodeResult(StatusCodes.Status204NoContent);
+    public ActionResult ToActionResult() => new StatusCodeResult(StatusCodes.Status204NoContent);
 }

@@ -18,6 +18,8 @@ builder.Services.AddSharedServices();
 
 builder.ConfigureAuthObservability();
 
+builder.Services.ConfigureApiOptions();
+builder.Services.ConfigureInvalidModelStateResponse();
 builder.Services.ConfigureApiRouting();
 builder.Services.ConfigureControllerOptions();
 builder.Services.ConfigureSwaggerDocs();
