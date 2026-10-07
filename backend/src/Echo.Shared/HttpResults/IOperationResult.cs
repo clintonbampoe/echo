@@ -1,9 +1,8 @@
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
 
-namespace  Echo.Shared.HttpResults;
+namespace Echo.Shared.HttpResults;
 
 public interface IOperationResult
 {
-    ActionResult ToActionResult();
+    IResult ToResult();
 }
-

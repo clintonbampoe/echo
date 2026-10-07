@@ -6,6 +6,8 @@ using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 
 namespace Echo.Application.Events;
@@ -19,6 +21,7 @@ public class EventAttendanceService(
     IEventAttendanceMapper mapper,
     IIdGenerator idGenerator,
     ApplicationInstrumentation instrumentation,
+    LinkGenerator linker,
     ILogger<EventAttendanceService> logger
 )
 {
@@ -155,6 +158,7 @@ public class EventAttendanceService(
     public async Task<IOperationResult> Create(
         Guid congregationId,
         EventAttendanceCreateDto dto,
+        HttpContext httpContext,
         CancellationToken ct
     )
     {
@@ -201,7 +205,12 @@ public class EventAttendanceService(
         activity?.SetTag("event_attendance.id", entity.Id);
         EventAttendanceLog.Created(logger, congregationId, entity.Id);
         var res = mapper.ToDto(entity);
-        return new CreatedAtResult<EventAttendanceResponseDto>(res);
+        var location =
+            linker.GetPathByName(httpContext, "GetEventAttendanceById", new { id = res.Id })
+            ?? throw new InvalidOperationException(
+                "Route 'GetEventAttendanceById' is not registered."
+            );
+        return new CreatedResult<EventAttendanceResponseDto>(location, res);
     }
 
     public async Task<IOperationResult> Update(

@@ -4,6 +4,8 @@ using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 
 namespace Echo.Application.Members;
@@ -16,6 +18,7 @@ public class MemberService(
     IEncoder encoder,
     IIdGenerator idGenerator,
     ApplicationInstrumentation instrumentation,
+    LinkGenerator linker,
     ILogger<MemberService> logger
 )
 {
@@ -82,6 +85,7 @@ public class MemberService(
     public async Task<IOperationResult> Create(
         Guid congregationId,
         MemberCreateDto dto,
+        HttpContext httpContext,
         CancellationToken ct
     )
     {
@@ -107,7 +111,11 @@ public class MemberService(
         MemberLog.Created(logger, congregationId, member.PersonId);
 
         var res = mapper.ToDto(member);
-        return new CreatedAtResult<MemberResponseDto>(res);
+
+        var location =
+            linker.GetPathByName(httpContext, "GetMemberById", new { id = res.Id })
+            ?? throw new InvalidOperationException("Route 'GetMemberById' is not registered.");
+        return new CreatedResult<MemberResponseDto>(location, res);
     }
 
     public async Task<IOperationResult> Update(
@@ -228,5 +236,5 @@ public class MemberService(
     }
 
     private static MemberCursor BuildCursor(Member last) =>
-        new MemberCursor { Name = last.Person.Name, Id = last.PersonId };
+        new() { Name = last.Person.Name, Id = last.PersonId };
 }

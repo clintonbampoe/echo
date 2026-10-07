@@ -4,6 +4,8 @@ using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 
 namespace Echo.Application.Members;
@@ -14,9 +16,11 @@ public class VisitorService(
     PersonRepository personRepository,
     IUnitOfWork unitOfWork,
     IVisitorMapper mapper,
+    IMemberMapper memberMapper,
     IEncoder encoder,
     IIdGenerator idGenerator,
     ApplicationInstrumentation instrumentation,
+    LinkGenerator linker,
     ILogger<VisitorService> logger
 )
 {
@@ -83,6 +87,7 @@ public class VisitorService(
     public async Task<IOperationResult> Create(
         Guid congregationId,
         VisitorCreateDto dto,
+        HttpContext httpContext,
         CancellationToken ct
     )
     {
@@ -108,7 +113,69 @@ public class VisitorService(
         VisitorLog.Created(logger, congregationId, visitor.PersonId);
 
         var res = mapper.ToDto(visitor);
-        return new CreatedAtResult<VisitorResponseDto>(res);
+        var location =
+            linker.GetPathByName(httpContext, "GetVisitorById", new { id = res.Id })
+            ?? throw new InvalidOperationException("Route 'GetVisitorById' is not registered.");
+        return new CreatedResult<VisitorResponseDto>(location, res);
+    }
+
+    public async Task<IOperationResult> Convert(
+        Guid congregationId,
+        Guid visitorId,
+        MemberCreateDto dto,
+        HttpContext httpContext,
+        CancellationToken ct
+    )
+    {
+        using var activity = instrumentation.ActivitySource.StartActivity("svc.visitor.convert");
+        activity?.SetTag("visitor.id", visitorId);
+
+        Visitor? visitor;
+        using (instrumentation.ActivitySource.StartActivity("svc.visitor.fetch.by_id"))
+        {
+            visitor = await repository.GetById(congregationId, visitorId, ct);
+        }
+
+        if (visitor is null)
+        {
+            activity?.SetTag("visitor.found", false);
+            VisitorLog.ConvertNotFound(logger, congregationId, visitorId);
+            return new NotFoundResult(visitorId.ToString());
+        }
+
+        if (visitor.ConvertedToMemberPersonId is not null)
+        {
+            VisitorLog.AlreadyConverted(logger, congregationId, visitorId);
+            return new ConflictResult(visitorId.ToString());
+        }
+
+        visitor.Person.Kind = PersonKind.Member;
+
+        var member = mapper.ToMemberEntity(dto);
+        member.PersonId = visitor.PersonId;
+        member.CongregationId = congregationId;
+        member.Person = visitor.Person;
+
+        visitor.ConvertedToMemberPersonId = visitor.PersonId;
+        visitor.ConvertedAt = DateTime.UtcNow;
+
+        using (instrumentation.ActivitySource.StartActivity("svc.visitor.persist"))
+        {
+            memberRepository.Create(member);
+            await unitOfWork.CommitAsync(ct);
+        }
+
+        activity?.SetTag("member.id", member.PersonId);
+        VisitorLog.Converted(logger, congregationId, visitorId, member.PersonId);
+
+        // Build the response from the new Member so the client gets the full record
+        // and a Location header pointing at it.
+        var memberDto = memberMapper.ToDto(member);
+
+        var location =
+            linker.GetPathByName(httpContext, "GetMemberById", new { id = memberDto.Id })
+            ?? throw new InvalidOperationException("Route 'GetMemberById' is not registered.");
+        return new CreatedResult<MemberResponseDto>(location, memberDto);
     }
 
     public async Task<IOperationResult> Update(
@@ -281,5 +348,5 @@ public class VisitorService(
     }
 
     private static VisitorCursor BuildCursor(Visitor last) =>
-        new VisitorCursor { Name = last.Person.Name, Id = last.PersonId };
+        new() { Name = last.Person.Name, Id = last.PersonId };
 }

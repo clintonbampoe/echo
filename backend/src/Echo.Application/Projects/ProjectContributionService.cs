@@ -4,6 +4,8 @@ using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 
 namespace Echo.Application.Projects;
@@ -16,6 +18,7 @@ public class ProjectContributionService(
     IProjectContributionMapper mapper,
     IIdGenerator idGenerator,
     ApplicationInstrumentation instrumentation,
+    LinkGenerator linker,
     ILogger<ProjectContributionService> logger
 )
 {
@@ -86,6 +89,7 @@ public class ProjectContributionService(
     public async Task<IOperationResult> Create(
         Guid congregationId,
         ProjectContributionCreateDto dto,
+        HttpContext httpContext,
         CancellationToken ct
     )
     {
@@ -124,7 +128,13 @@ public class ProjectContributionService(
         ProjectContributionLog.Created(logger, congregationId, entity.Id);
 
         var res = mapper.ToDto(entity);
-        return new CreatedAtResult<ProjectContributionResponseDto>(res);
+
+        var location =
+            linker.GetPathByName(httpContext, "GetProjectContributionById", new { id = res.Id })
+            ?? throw new InvalidOperationException(
+                "Route 'GetProjectContributionById' is not registered."
+            );
+        return new CreatedResult<ProjectContributionResponseDto>(location, res);
     }
 
     public async Task<IOperationResult> Update(

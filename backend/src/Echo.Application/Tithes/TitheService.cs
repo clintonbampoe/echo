@@ -6,6 +6,8 @@ using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 
 namespace Echo.Application.Tithes;
@@ -18,6 +20,7 @@ public class TitheService(
     ITitheMapper mapper,
     IIdGenerator idGenerator,
     ApplicationInstrumentation instrumentation,
+    LinkGenerator linker,
     ILogger<TitheService> logger
 )
 {
@@ -84,6 +87,7 @@ public class TitheService(
     public async Task<IOperationResult> Create(
         Guid congregationId,
         TitheCreateDto dto,
+        HttpContext httpContext,
         CancellationToken ct
     )
     {
@@ -116,7 +120,11 @@ public class TitheService(
         TitheLog.Created(logger, congregationId, entity.Id);
 
         var res = mapper.ToDto(entity);
-        return new CreatedAtResult<TitheResponseDto>(res);
+
+        var location =
+            linker.GetPathByName(httpContext, "GetTitheById", new { id = res.Id })
+            ?? throw new InvalidOperationException("Route 'GetTitheById' is not registered.");
+        return new CreatedResult<TitheResponseDto>(location, res);
     }
 
     public async Task<IOperationResult> Update(
@@ -142,21 +150,21 @@ public class TitheService(
             return new NotFoundResult(id.ToString());
         }
 
-        // Validate Member if it's being changed
-        if (dto.MemberId != entity.MemberId)
+        // Validate the NEW member, not the existing one.
+        if (dto.MemberId.HasValue && dto.MemberId.Value != entity.MemberId)
         {
             Member? member;
             using (instrumentation.ActivitySource.StartActivity("svc.tithe.validate.member"))
             {
-                member = await memberRepository.GetById(congregationId, entity.MemberId, ct);
+                member = await memberRepository.GetById(congregationId, dto.MemberId.Value, ct);
             }
 
             if (member is null)
             {
-                TitheLog.UpdateMemberNotFound(logger, congregationId, entity.MemberId);
+                TitheLog.UpdateMemberNotFound(logger, congregationId, dto.MemberId.Value);
                 return new ForeignKeyEntityNotFound(nameof(member));
             }
-            TitheLog.UpdateMemberFound(logger, congregationId, entity.MemberId);
+            TitheLog.UpdateMemberFound(logger, congregationId, dto.MemberId.Value);
         }
 
         mapper.Patch(dto, entity);

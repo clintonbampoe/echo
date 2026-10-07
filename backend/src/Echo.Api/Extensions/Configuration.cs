@@ -1,8 +1,6 @@
 using System.Text.Json.Serialization;
-using Asp.Versioning;
 using Asp.Versioning.ApiExplorer;
 using Microsoft.Extensions.Options;
-using Microsoft.OpenApi;
 using Scalar.AspNetCore;
 using Swashbuckle.AspNetCore.SwaggerGen;
 
@@ -20,6 +18,16 @@ public static class Configuration
         return services;
     }
 
+    public static IServiceCollection ConfigureJsonSerializer(this IServiceCollection services)
+    {
+        services.ConfigureHttpJsonOptions(options =>
+        {
+            options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        });
+
+        return services;
+    }
+
     public static IServiceCollection ConfigureControllerOptions(this IServiceCollection services)
     {
         services
@@ -27,27 +35,6 @@ public static class Configuration
             .AddJsonOptions(options =>
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter())
             );
-        return services;
-    }
-
-    public static IServiceCollection ConfigureApiVersioning(this IServiceCollection services)
-    {
-        services
-            .AddApiVersioning(options =>
-            {
-                options.DefaultApiVersion = new ApiVersion(1, 0);
-                options.AssumeDefaultVersionWhenUnspecified = true;
-                options.ReportApiVersions = true;
-
-                options.ApiVersionReader = new UrlSegmentApiVersionReader();
-            })
-            .AddMvc()
-            .AddApiExplorer(options =>
-            {
-                options.GroupNameFormat = "'v'VVV";
-                options.SubstituteApiVersionInUrl = true;
-            });
-
         return services;
     }
 
@@ -86,20 +73,5 @@ public static class Configuration
             .AllowAnonymous();
 
         return app;
-    }
-}
-
-internal sealed class ConfigureSwaggerOptions(IApiVersionDescriptionProvider provider)
-    : IConfigureOptions<SwaggerGenOptions>
-{
-    public void Configure(SwaggerGenOptions options)
-    {
-        foreach (var description in provider.ApiVersionDescriptions)
-        {
-            options.SwaggerDoc(
-                description.GroupName,
-                new OpenApiInfo { Title = "Echo API", Version = description.ApiVersion.ToString() }
-            );
-        }
     }
 }

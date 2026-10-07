@@ -4,6 +4,8 @@ using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 
 namespace Echo.Application.Organizations;
@@ -15,6 +17,7 @@ public class OrganizationService(
     IOrganizationMapper mapper,
     IIdGenerator idGenerator,
     ApplicationInstrumentation instrumentation,
+    LinkGenerator linker,
     ILogger<OrganizationService> logger
 )
 {
@@ -83,6 +86,7 @@ public class OrganizationService(
     public async Task<IOperationResult> Create(
         Guid congregationId,
         OrganizationCreateDto dto,
+        HttpContext httpContext,
         CancellationToken ct
     )
     {
@@ -104,7 +108,13 @@ public class OrganizationService(
         OrganizationLog.Created(logger, congregationId, entity.Id);
 
         var res = mapper.ToDto(entity);
-        return new CreatedAtResult<OrganizationResponseDto>(res);
+
+        var location =
+            linker.GetPathByName(httpContext, "GetOrganizationById", new { id = res.Id })
+            ?? throw new InvalidOperationException(
+                "Route 'GetOrganizationById' is not registered."
+            );
+        return new CreatedResult<OrganizationResponseDto>(location, res);
     }
 
     public async Task<IOperationResult> Update(

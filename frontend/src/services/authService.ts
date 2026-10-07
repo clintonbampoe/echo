@@ -1,4 +1,4 @@
-import { apiFetch } from './api';
+import { apiFetch } from "./api";
 
 export interface TokenPair {
   accessToken: string;
@@ -10,7 +10,7 @@ export interface TokenPair {
 export interface RegisterCongregationPayload {
   congregationDto: {
     name: string;
-    orgType: 'Church' | 'Mosque' | 'Temple' | 'Other';
+    orgType: "Church" | "Mosque" | "Temple" | "Other";
     phoneNumber: string;
     emailAddress: string;
     region: string;
@@ -31,15 +31,15 @@ export interface RegisterCongregationPayload {
 
 export const authService = {
   login: async (email: string, password: string): Promise<TokenPair> => {
-    return apiFetch<TokenPair>('/auth/v1/sessions/login', {
-      method: 'POST',
+    return apiFetch<TokenPair>("/v1/auth/sessions/login", {
+      method: "POST",
       body: JSON.stringify({ email, password }),
     });
   },
 
   refresh: async (refreshToken: string): Promise<TokenPair> => {
-    return apiFetch<TokenPair>('/auth/v1/sessions/refresh', {
-      method: 'POST',
+    return apiFetch<TokenPair>("/v1/auth/sessions/refresh", {
+      method: "POST",
       body: JSON.stringify({ refreshToken }),
     });
   },
@@ -47,8 +47,8 @@ export const authService = {
   logout: async (refreshToken?: string): Promise<void> => {
     if (!refreshToken) return;
     try {
-      await apiFetch<void>('/auth/v1/sessions/revoke', {
-        method: 'POST',
+      await apiFetch<void>("/v1/auth/sessions/revoke", {
+        method: "POST",
         body: JSON.stringify({ refreshToken }),
       });
     } catch {
@@ -56,9 +56,11 @@ export const authService = {
     }
   },
 
-  registerCongregation: async (data: RegisterCongregationPayload): Promise<void> => {
-    return apiFetch<void>('/auth/v1/registrations/congregation', {
-      method: 'POST',
+  registerCongregation: async (
+    data: RegisterCongregationPayload,
+  ): Promise<void> => {
+    return apiFetch<void>("/v1/auth/registrations/congregation", {
+      method: "POST",
       body: JSON.stringify(data),
     });
   },

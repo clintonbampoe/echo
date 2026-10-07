@@ -43,7 +43,7 @@ public class EmailVerificationService(
             span?.SetTag("auth.result", "user_not_found");
             RecordVerificationSent("user_not_found", "unknown");
             EmailVerificationLog.SendVerificationFailedUserNotFound(logger);
-            return new GenericEmailSentSuccessResult();
+            return new SuccessResult<string>("Email has been sent if user is valid");
         }
 
         span?.SetTag("congregation.id", user.CongregationId);
@@ -66,13 +66,12 @@ public class EmailVerificationService(
                 user.Id,
                 user.CongregationId
             );
-            return new OkResult(
+            return new SuccessResult<string>(
                 "A verification email was already sent. Please check your email inbox."
             );
         }
 
-        if (existingToken is not null)
-            existingToken.InvalidatedAt = timeProvider.GetUtcNow().UtcDateTime;
+        existingToken?.InvalidatedAt = timeProvider.GetUtcNow().UtcDateTime;
 
         try
         {
@@ -103,7 +102,7 @@ public class EmailVerificationService(
             RecordVerificationSent("success", user.CongregationId.ToString());
             EmailVerificationLog.SendVerificationSucceeded(logger, user.Id, user.CongregationId);
 
-            return new OkResult($"Operation Completed Successfully. Token: {token}");
+            return new SuccessResult<string>($"Operation Completed Successfully. Token: {token}");
         }
         catch (Exception ex)
         {
@@ -199,7 +198,7 @@ public class EmailVerificationService(
                 );
             }
 
-            return new OkResult("Operation Completed successfully.");
+            return new SuccessResult<string>("Operation Completed successfully.");
         }
         catch (Exception ex)
         {

@@ -6,6 +6,8 @@ using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 
 namespace Echo.Application.Attendances;
@@ -19,6 +21,7 @@ public class AttendanceService(
     IEncoder encoder,
     IIdGenerator idGenerator,
     ApplicationInstrumentation instrumentation,
+    LinkGenerator linker,
     ILogger<AttendanceService> logger
 )
 {
@@ -87,6 +90,7 @@ public class AttendanceService(
     public async Task<IOperationResult> Create(
         Guid congregationId,
         AttendanceCreateDto dto,
+        HttpContext httpContext,
         CancellationToken ct
     )
     {
@@ -136,7 +140,10 @@ public class AttendanceService(
         AttendanceLog.Created(logger, congregationId, entity.Id);
 
         var res = mapper.ToDto(entity);
-        return new CreatedAtResult<AttendanceResponseDto>(res);
+        var location =
+            linker.GetPathByName(httpContext, "GetAttendanceById", new { id = res.Id })
+            ?? throw new InvalidOperationException("Route 'GetAttendanceById' is not registered.");
+        return new CreatedResult<AttendanceResponseDto>(location, res);
     }
 
     public async Task<IOperationResult> Update(
@@ -233,5 +240,5 @@ public class AttendanceService(
     }
 
     private static AttendanceCursor BuildCursor(Attendance last) =>
-        new AttendanceCursor { Date = last.Date, Id = last.Id };
+        new() { Date = last.Date, Id = last.Id };
 }

@@ -1,21 +1,14 @@
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 
 namespace Echo.Shared.HttpResults;
 
 public class ForeignKeyEntityNotFound(string name) : IOperationResult
 {
-    public ActionResult ToActionResult() =>
-        new ObjectResult(
-            new ProblemDetails
-            {
-                Status = StatusCodes.Status404NotFound,
-                Title = "The requested resource was not found",
-                Detail =
-                    $"The foreign key property specified with Name ({name})  is invalid or has been deleted.",
-            }
-        )
-        {
-            StatusCode = StatusCodes.Status404NotFound,
-        };
+    public IResult ToResult() =>
+        TypedResults.Problem(
+            detail: $"The referenced {name} does not exist or has been deleted.",
+            statusCode: StatusCodes.Status404NotFound,
+            title: "Related Resource Not Found",
+            type: ErrorTypes.ForeignKeyNotFound
+        );
 }

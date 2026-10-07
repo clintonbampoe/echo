@@ -1,12 +1,7 @@
 namespace Echo.Shared.Pagination;
 
-public class PaginationRequest
+public class PaginationRequest(string? cursor, int pageSize = 50)
 {
-    public string? Cursor { get; init; }
-
-    public int PageSize
-    {
-        get;
-        set => field = Math.Clamp(value, 1, 24);
-    } = 24;
+    public string? Cursor { get; } = cursor;
+    public int PageSize { get; } = Math.Clamp(pageSize, 1, 50);
 }

@@ -1,6 +1,8 @@
 using Echo.Data;
 using Echo.Domain.Transactions;
 using Echo.Shared.HttpResults;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 
 namespace Echo.Application.Transactions;
@@ -10,6 +12,7 @@ public class TransactionCategoryService(
     IUnitOfWork unitOfWork,
     ITransactionCategoryMapper mapper,
     ApplicationInstrumentation instrumentation,
+    LinkGenerator linker,
     ILogger<TransactionCategoryService> logger
 )
 {
@@ -60,6 +63,7 @@ public class TransactionCategoryService(
     public async Task<IOperationResult> Create(
         Guid congregationId,
         TransactionCategoryCreateDto dto,
+        HttpContext httpContext,
         CancellationToken ct
     )
     {
@@ -80,7 +84,13 @@ public class TransactionCategoryService(
         TransactionCategoryLog.Created(logger, congregationId, entity.Id);
 
         var res = mapper.ToDto(entity);
-        return new CreatedAtResult<TransactionCategoryResponseDto>(res);
+
+        var location =
+            linker.GetPathByName(httpContext, "GetTransactionCategoryById", new { id = res.Id })
+            ?? throw new InvalidOperationException(
+                "Route 'GetTransactionCategoryById' is not registered."
+            );
+        return new CreatedResult<TransactionCategoryResponseDto>(location, res);
     }
 
     public async Task<IOperationResult> Update(
