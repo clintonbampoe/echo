@@ -6,6 +6,8 @@ using Echo.Auth.Sessions;
 using Echo.Shared.Options.Frontend;
 using Echo.Shared.Options.Jwt;
 using Echo.Shared.Services.Email;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -27,13 +29,10 @@ public static class Extensions
         services.AddScoped<IEmailService, ResendEmailService>();
 
         services.AddScoped<RegistrationService>();
-        services.AddScoped<RegistrationsController>();
         services.AddScoped<EmailVerificationRepository>();
         services.AddScoped<EmailVerificationService>();
-        services.AddScoped<SessionsController>();
         services.AddScoped<PasswordResetRepository>();
         services.AddScoped<PasswordResetService>();
-        services.AddScoped<PasswordsController>();
 
         services.Configure<FrontendOptions>(configuration.GetSection("FrontendClient"));
         services.AddScoped<LinkBuilder>();
@@ -48,7 +47,6 @@ public static class Extensions
         services.AddScoped<SessionRepository>();
         services.AddScoped<InvitationRepository>();
         services.AddScoped<InvitationService>();
-        services.AddScoped<InvitationsController>();
 
         services.AddSingleton<AuthInstrumentation>();
         return services;
@@ -66,5 +64,19 @@ public static class Extensions
             })
             .WithMetrics(metrics => AuthInstrumentation.ConfigureMetrics(metrics));
         return builder;
+    }
+
+    public static RouteGroupBuilder MapAuthEndpoints(
+        this RouteGroupBuilder group,
+        AuthInstrumentation instrumentation
+    )
+    {
+        var auth = group.MapGroup("/auth");
+        auth.MapSessionEndpoints(instrumentation);
+        auth.MapPasswordEndpoints(instrumentation);
+        auth.MapInvitationEndpoints(instrumentation);
+        auth.MapVerificationEndpoints(instrumentation);
+        auth.MapRegistrationEndpoints(instrumentation);
+        return group;
     }
 }

@@ -7,18 +7,11 @@ public class InternalServerError(
     string detail = "Something went wrong while processing your request."
 ) : IOperationResult
 {
-    public ActionResult ToActionResult() =>
-        new ObjectResult(
-            new ProblemDetails
-            {
-                Status = StatusCodes.Status500InternalServerError,
-                Type = ErrorTypes.InternalServerError,
-                Title = "Internal Server Error",
-                Detail = detail,
-                Extensions = { ["errorCode"] = "INTERNAL_SERVER_ERROR" },
-            }
-        )
-        {
-            StatusCode = StatusCodes.Status500InternalServerError,
-        };
+    public IResult ToResult() =>
+        TypedResults.Problem(
+            detail: detail,
+            statusCode: StatusCodes.Status500InternalServerError,
+            title: "Internal Server Error",
+            type: ErrorTypes.InternalServerError
+        );
 }

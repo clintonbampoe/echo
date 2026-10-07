@@ -118,7 +118,9 @@ public class SessionService(
         {
             span?.SetTag("auth.result", "user_not_found");
             SessionLog.LogoutOfAllSessionsFailed(logger);
-            return new OkResult("All active sessions for this user have been terminated.");
+            return new SuccessResult<string>(
+                "All active sessions for this user have been terminated."
+            );
         }
 
         span?.SetTag("congregation.id", entity.CongregationId);
@@ -134,7 +136,9 @@ public class SessionService(
                 RecordLogoutAll("success", entity.CongregationId.ToString());
                 SessionLog.LogoutOfAllSessionsSucceeded(logger, entity.Id, entity.CongregationId);
 
-                return new OkResult("All active sessions for this user have been terminated.");
+                return new SuccessResult<string>(
+                    "All active sessions for this user have been terminated."
+                );
             }
         }
         catch (Exception ex)
@@ -233,7 +237,7 @@ public class SessionService(
             RecordTokenRevocation("success");
             SessionLog.TokenRevoked(logger);
 
-            return new OkResult("Token revoked successfully.");
+            return new SuccessResult<string>("Token revoked successfully.");
         }
         catch (Exception ex)
         {

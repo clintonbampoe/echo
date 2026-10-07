@@ -1,8 +1,8 @@
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
 
 namespace Echo.Shared.HttpResults;
 
 public class CreatedResult<T>(string locationUri, T data) : IOperationResult
 {
-    public ActionResult ToActionResult() => new CreatedResult(locationUri, data);
+    public IResult ToResult() => TypedResults.Created(locationUri, data);
 }

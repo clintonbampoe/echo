@@ -46,7 +46,7 @@ public class PasswordResetService(
             span?.SetTag("auth.result", "user_not_found");
             RecordPasswordResetRequest("user_not_found", "unknown");
             PasswordLog.PasswordResetRequestUserNotFound(logger);
-            return new OkResult("Reset link has been sent.");
+            return new SuccessResult<string>("Reset link has been sent.");
         }
 
         span?.SetTag("congregation.id", user.CongregationId);
@@ -81,7 +81,7 @@ public class PasswordResetService(
             RecordPasswordResetRequest("success", user.CongregationId.ToString());
             PasswordLog.PasswordResetRequestSucceeded(logger, user.Id, user.CongregationId);
 
-            return new OkResult("Reset link has been sent.");
+            return new SuccessResult<string>("Reset link has been sent.");
         }
         catch (Exception ex)
         {
@@ -156,14 +156,18 @@ public class PasswordResetService(
 
         try
         {
-            using (instrumentation.ActivitySource.StartActivity("svc.password.validate.password_hash"))
+            using (
+                instrumentation.ActivitySource.StartActivity("svc.password.validate.password_hash")
+            )
             {
                 tokenEntity.User.PasswordHash = await passwordHashService.HashAsync(newPassword);
             }
 
             tokenEntity.UsedAt = timeProvider.GetUtcNow().UtcDateTime;
 
-            using (instrumentation.ActivitySource.StartActivity("svc.password.persist.revoke_sessions"))
+            using (
+                instrumentation.ActivitySource.StartActivity("svc.password.persist.revoke_sessions")
+            )
             {
                 await refreshTokenService.RevokeAllActiveSessionsForUserById(
                     tokenEntity.UserId,
@@ -180,7 +184,7 @@ public class PasswordResetService(
                 tokenEntity.User.CongregationId
             );
 
-            return new OkResult("Password reset successfully");
+            return new SuccessResult<string>("Password reset successfully");
         }
         catch (Exception ex)
         {

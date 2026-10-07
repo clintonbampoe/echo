@@ -8,6 +8,7 @@ using Echo.Application.Projects;
 using Echo.Application.Tithes;
 using Echo.Application.Transactions;
 using Echo.Application.Users;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using OpenTelemetry.Trace;
 
@@ -23,13 +24,11 @@ public static class Extensions
         // Members
         services.AddScoped<MemberRepository>();
         services.AddScoped<MemberService>();
-        services.AddScoped<MembersController>();
         services.AddSingleton<IMemberMapper, MemberMapper>();
 
         // Visitors
         services.AddScoped<VisitorRepository>();
         services.AddScoped<VisitorService>();
-        services.AddScoped<VisitorsController>();
         services.AddSingleton<IVisitorMapper, VisitorMapper>();
 
         // Users
@@ -44,91 +43,76 @@ public static class Extensions
         // Assets
         services.AddScoped<AssetRepository>();
         services.AddScoped<AssetService>();
-        services.AddScoped<AssetsController>();
         services.AddSingleton<IAssetMapper, AssetMapper>();
 
         // Asset Categories
         services.AddScoped<AssetCategoryRepository>();
         services.AddScoped<AssetCategoryService>();
-        services.AddScoped<AssetCategoriesController>();
         services.AddSingleton<IAssetCategoryMapper, AssetCategoryMapper>();
 
         // Attendance
         services.AddScoped<AttendanceRepository>();
         services.AddScoped<AttendanceService>();
-        services.AddScoped<AttendanceController>();
         services.AddSingleton<IAttendanceMapper, AttendanceMapper>();
 
         // Attendance Types
         services.AddScoped<AttendanceTypeRepository>();
         services.AddScoped<AttendanceTypeService>();
-        services.AddScoped<AttendanceTypesController>();
         services.AddSingleton<IAttendanceTypeMapper, AttendanceTypeMapper>();
 
         // Events
         services.AddScoped<EventRepository>();
         services.AddScoped<EventService>();
-        services.AddScoped<EventsController>();
         services.AddSingleton<IEventMapper, EventMapper>();
 
         // Event Attendance
         services.AddScoped<EventAttendanceRepository>();
         services.AddScoped<EventAttendanceService>();
-        services.AddScoped<EventAttendanceController>();
         services.AddSingleton<IEventAttendanceMapper, EventAttendanceMapper>();
 
         // Event Registrations
         services.AddScoped<EventRegistrationRepository>();
         services.AddScoped<EventRegistrationService>();
-        services.AddScoped<EventRegistrationsController>();
         services.AddSingleton<IEventRegistrationMapper, EventRegistrationMapper>();
 
         // Organizations
         services.AddScoped<OrganizationRepository>();
         services.AddScoped<OrganizationService>();
-        services.AddScoped<OrganizationsController>();
         services.AddSingleton<IOrganizationMapper, OrganizationMapper>();
 
         // Organization Members
         services.AddScoped<OrganizationMemberRepository>();
         services.AddScoped<OrganizationMemberService>();
-        services.AddScoped<OrganizationMemberController>();
         services.AddSingleton<IOrganizationMemberMapper, OrganizationMemberMapper>();
 
         // Projects
         services.AddScoped<ProjectRepository>();
         services.AddScoped<ProjectService>();
-        services.AddScoped<ProjectsController>();
         services.AddSingleton<IProjectMapper, ProjectMapper>();
 
         // Project Categories
         services.AddScoped<ProjectCategoryRepository>();
         services.AddScoped<ProjectCategoryService>();
-        services.AddScoped<ProjectCategoriesController>();
         services.AddSingleton<IProjectCategoryMapper, ProjectCategoryMapper>();
 
         // Project Contributions
         services.AddScoped<ProjectContributionRepository>();
         services.AddScoped<ProjectContributionService>();
-        services.AddScoped<ProjectContributionsController>();
         services.AddSingleton<IProjectContributionMapper, ProjectContributionMapper>();
 
         // Tithes
         services.AddScoped<TitheRepository>();
         services.AddScoped<TitheService>();
-        services.AddScoped<TithesController>();
         services.AddSingleton<ITitheMapper, TitheMapper>();
 
         // Transactions
         services.AddScoped<TransactionRepository>();
         services.AddScoped<TransactionService>();
-        services.AddScoped<TransactionsController>();
         services.AddSingleton<ITransactionMapper, TransactionMapper>();
 
         // Transaction Categories
         services.AddScoped<TransactionCategoryRepository>();
         services.AddScoped<TransactionCategoryService>();
-        services.AddScoped<TransactionCategoriesController>();
         services.AddSingleton<ITransactionCategoryMapper, TransactionCategoryMapper>();
 
         services.AddSingleton<ApplicationInstrumentation>();
@@ -142,5 +126,32 @@ public static class Extensions
             .WithMetrics(metrics => ApplicationInstrumentation.ConfigureMetrics(metrics));
 
         return services;
+    }
+
+    public static RouteGroupBuilder MapApplicationEndpoints(
+        this RouteGroupBuilder group,
+        ApplicationInstrumentation instrumentation
+    )
+    {
+        group.MapAssetEndpoints(instrumentation);
+        group.MapAssetCategoryEndpoints(instrumentation);
+        group.MapAttendanceEndpoints(instrumentation);
+        group.MapAttendanceTypeEndpoints(instrumentation);
+        group.MapEventEndpoints(instrumentation);
+        group.MapEventAttendanceEndpoints(instrumentation);
+        group.MapEventRegistrationEndpoints(instrumentation);
+        group.MapMemberEndpoints(instrumentation);
+        group.MapVisitorEndpoints(instrumentation);
+        group.MapOrganizationEndpoints(instrumentation);
+        group.MapOrganizationMemberEndpoints(instrumentation);
+        group.MapProjectEndpoints(instrumentation);
+        group.MapProjectCategoryEndpoints(instrumentation);
+        group.MapProjectContributionEndpoints(instrumentation);
+        group.MapTitheEndpoints(instrumentation);
+        group.MapTransactionEndpoints(instrumentation);
+        group.MapTransactionCategoryEndpoints(instrumentation);
+        group.MapUserEndpoints(instrumentation);
+
+        return group;
     }
 }

@@ -6,13 +6,13 @@ public static class ErrorTypes
 
     private static string BuildBaseUrl()
     {
-        var baseUrl = Environment.GetEnvironmentVariable("ApiOptions__BaseUrl");
+        var baseUrl = Environment.GetEnvironmentVariable("Api__BaseUrl");
 
         if (string.IsNullOrWhiteSpace(baseUrl))
         {
             throw new InvalidOperationException(
-                "CRITICAL: Environment variable 'ApiOptions__BaseUrl' is missing or empty. "
-                    + "You must specify 'ApiOptions__BaseUrl' (e.g., 'http://localhost:5025' or 'https://api.echo.com') to launch the application."
+                "CRITICAL: Environment variable 'Api__BaseUrl' is missing or empty. "
+                    + "You must specify 'Api__BaseUrl' (e.g., 'http://localhost:5025' or 'https://api.echo.com') to launch the application."
             );
         }
 

@@ -33,7 +33,9 @@ public class RegistrationService(
         CancellationToken ct
     )
     {
-        using var span = instrumentation.ActivitySource.StartActivity("svc.registration.congregation");
+        using var span = instrumentation.ActivitySource.StartActivity(
+            "svc.registration.congregation"
+        );
 
         var congregation = congregationMapper.ToEntity(congregationDto);
         congregation.Id = idGenerator.Generate();
@@ -71,13 +73,19 @@ public class RegistrationService(
 
         try
         {
-            using (instrumentation.ActivitySource.StartActivity("svc.registration.validate.password_hash"))
+            using (
+                instrumentation.ActivitySource.StartActivity(
+                    "svc.registration.validate.password_hash"
+                )
+            )
             {
                 user.PasswordHash = await passwordHashService.HashAsync(userDto.Password);
             }
 
             using (
-                var activity = instrumentation.ActivitySource.StartActivity("svc.registration.persist.setup")
+                var activity = instrumentation.ActivitySource.StartActivity(
+                    "svc.registration.persist.setup"
+                )
             )
             {
                 congregationRepository.Create(congregation);
@@ -94,7 +102,7 @@ public class RegistrationService(
             RecordCongregationRegistration("success");
             RegistrationLog.CongregationRegistrationSucceeded(logger, congregation.Id, user.Id);
 
-            return new OkResult("Operation completed successfully.");
+            return new SuccessResult<string>("Operation completed successfully.");
         }
         catch (Exception ex)
         {
@@ -159,7 +167,11 @@ public class RegistrationService(
         try
         {
             string passwordHash;
-            using (instrumentation.ActivitySource.StartActivity("svc.registration.validate.password_hash"))
+            using (
+                instrumentation.ActivitySource.StartActivity(
+                    "svc.registration.validate.password_hash"
+                )
+            )
             {
                 passwordHash = await passwordHashService.HashAsync(request.UserInfo.Password);
             }
@@ -184,7 +196,11 @@ public class RegistrationService(
                 await unitOfWork.CommitAsync(ct);
             }
 
-            using (instrumentation.ActivitySource.StartActivity("svc.registration.persist.email_verification"))
+            using (
+                instrumentation.ActivitySource.StartActivity(
+                    "svc.registration.persist.email_verification"
+                )
+            )
             {
                 Activity.Current?.SetTag("email.provider", "resend");
                 Activity.Current?.SetTag("email.type", "email_verification");
@@ -195,7 +211,7 @@ public class RegistrationService(
             RecordUserRegistration("success", invitation.CongregationId.ToString());
             RegistrationLog.UserRegistrationSucceeded(logger, user.Id, invitation.CongregationId);
 
-            return new OkResult(
+            return new SuccessResult<string>(
                 "Check your email to verify your account and complete registration."
             );
         }

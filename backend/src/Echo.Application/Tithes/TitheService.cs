@@ -6,6 +6,7 @@ using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 
 namespace Echo.Application.Tithes;
@@ -18,6 +19,7 @@ public class TitheService(
     ITitheMapper mapper,
     IIdGenerator idGenerator,
     ApplicationInstrumentation instrumentation,
+    LinkGenerator linker,
     ILogger<TitheService> logger
 )
 {
@@ -116,7 +118,11 @@ public class TitheService(
         TitheLog.Created(logger, congregationId, entity.Id);
 
         var res = mapper.ToDto(entity);
-        return new CreatedAtResult<TitheResponseDto>(res);
+
+        var location =
+            linker.GetPathByName("GetTitheById", new { id = res.Id })
+            ?? throw new InvalidOperationException("Route 'GetTitheById' is not registered.");
+        return new CreatedResult<TitheResponseDto>(location, res);
     }
 
     public async Task<IOperationResult> Update(

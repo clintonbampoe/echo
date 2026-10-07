@@ -4,6 +4,7 @@ using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 
 namespace Echo.Application.Members;
@@ -17,6 +18,7 @@ public class VisitorService(
     IEncoder encoder,
     IIdGenerator idGenerator,
     ApplicationInstrumentation instrumentation,
+    LinkGenerator linker,
     ILogger<VisitorService> logger
 )
 {
@@ -108,7 +110,10 @@ public class VisitorService(
         VisitorLog.Created(logger, congregationId, visitor.PersonId);
 
         var res = mapper.ToDto(visitor);
-        return new CreatedAtResult<VisitorResponseDto>(res);
+        var location =
+            linker.GetPathByName("GetVisitorById", new { id = res.Id })
+            ?? throw new InvalidOperationException("Route 'GetVisitorById' is not registered.");
+        return new CreatedResult<VisitorResponseDto>(location, res);
     }
 
     public async Task<IOperationResult> Update(
@@ -281,5 +286,5 @@ public class VisitorService(
     }
 
     private static VisitorCursor BuildCursor(Visitor last) =>
-        new VisitorCursor { Name = last.Person.Name, Id = last.PersonId };
+        new() { Name = last.Person.Name, Id = last.PersonId };
 }

@@ -4,6 +4,7 @@ using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 
 namespace Echo.Application.Assets;
@@ -16,6 +17,7 @@ public class AssetService(
     IAssetMapper mapper,
     IIdGenerator idGenerator,
     ApplicationInstrumentation instrumentation,
+    LinkGenerator linker,
     ILogger<AssetService> logger
 )
 {
@@ -112,7 +114,11 @@ public class AssetService(
         activity?.SetTag("asset.id", entity.Id);
         AssetLog.Created(logger, congregationId, entity.Id);
         var res = mapper.ToDto(entity);
-        return new SuccessResult<AssetResponseDto>(res);
+
+        var location =
+            linker.GetPathByName("GetAssetById", new { id = res.Id })
+            ?? throw new InvalidOperationException("Route 'GetAssetById' is not registered.");
+        return new CreatedResult<AssetResponseDto>(location, res);
     }
 
     public async Task<IOperationResult> Update(

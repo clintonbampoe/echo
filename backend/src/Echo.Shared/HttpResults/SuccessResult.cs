@@ -1,8 +1,8 @@
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
 
 namespace Echo.Shared.HttpResults;
 
 public class SuccessResult<T>(T data) : IOperationResult
 {
-    public ActionResult ToActionResult() => new OkObjectResult(data);
+    public IResult ToResult() => TypedResults.Ok(data);
 }

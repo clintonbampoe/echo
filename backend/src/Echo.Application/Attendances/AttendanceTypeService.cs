@@ -1,6 +1,7 @@
 using Echo.Data;
 using Echo.Domain.Attendances;
 using Echo.Shared.HttpResults;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 
 namespace Echo.Application.Attendances;
@@ -10,6 +11,7 @@ public class AttendanceTypeService(
     IUnitOfWork unitOfWork,
     IAttendanceTypeMapper mapper,
     ApplicationInstrumentation instrumentation,
+    LinkGenerator linker,
     ILogger<AttendanceTypeService> logger
 )
 {
@@ -78,7 +80,12 @@ public class AttendanceTypeService(
         AttendanceTypeLog.Created(logger, congregationId, entity.Id);
 
         var res = mapper.ToDto(entity);
-        return new CreatedAtResult<AttendanceTypeResponseDto>(res);
+        var location =
+            linker.GetPathByName("GetAttendanceTypeById", new { id = res.Id })
+            ?? throw new InvalidOperationException(
+                "Route 'GetAttendanceTypeById' is not registered."
+            );
+        return new CreatedResult<AttendanceTypeResponseDto>(location, res);
     }
 
     public async Task<IOperationResult> Update(

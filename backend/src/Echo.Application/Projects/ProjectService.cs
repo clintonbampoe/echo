@@ -6,6 +6,7 @@ using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 
 namespace Echo.Application.Projects;
@@ -19,6 +20,7 @@ public class ProjectService(
     IProjectMapper mapper,
     IIdGenerator idGenerator,
     ApplicationInstrumentation instrumentation,
+    LinkGenerator linker,
     ILogger<ProjectService> logger
 )
 {
@@ -130,7 +132,11 @@ public class ProjectService(
         ProjectLog.Created(logger, congregationId, entity.Id);
 
         var res = mapper.ToDto(entity);
-        return new CreatedAtResult<ProjectResponseDto>(res);
+
+        var location =
+            linker.GetPathByName("GetProjectById", new { id = res.Id })
+            ?? throw new InvalidOperationException("Route 'GetProjectById' is not registered.");
+        return new CreatedResult<ProjectResponseDto>(location, res);
     }
 
     public async Task<IOperationResult> Update(

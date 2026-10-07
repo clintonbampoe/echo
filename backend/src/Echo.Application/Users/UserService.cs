@@ -4,6 +4,7 @@ using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 
 namespace Echo.Application.Users;
@@ -15,6 +16,7 @@ public class UserService(
     IEncoder encoder,
     IIdGenerator idGenerator,
     ApplicationInstrumentation instrumentation,
+    LinkGenerator linker,
     ILogger<UserService> logger
 )
 {
@@ -105,7 +107,11 @@ public class UserService(
         UserLog.Created(logger, congregationId, entity.Id);
 
         var res = mapper.ToDto(entity);
-        return new CreatedAtResult<UserResponseDto>(res);
+
+        var location =
+            linker.GetPathByName("GetUserById", new { id = res.Id })
+            ?? throw new InvalidOperationException("Route 'GetUserById' is not registered.");
+        return new CreatedResult<UserResponseDto>(location, res);
     }
 
     public async Task<IOperationResult> Update(

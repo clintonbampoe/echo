@@ -16,6 +16,7 @@ services:
     environment:
       ConnectionStrings__echodb: ${ConnectionStrings__echodb}
       OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT}
+      OTEL_SERVICE_NAME: ${OTEL_SERVICE_NAME}
       Jwt__PrivateKey: ${Jwt__PrivateKey}
       Jwt__PublicKey: ${Jwt__PublicKey}
       # Only set during a key rotation grace period; empty the rest of the time.
@@ -23,6 +24,7 @@ services:
       Jwt__Issuer: ${Jwt__Issuer}
       Jwt__Audience: ${Jwt__Audience}
       Cors__AllowedOrigins: ${Cors__AllowedOrigins}
+      Api__BaseUrl: ${Api__BaseUrl}
       Frontend__BaseUrl: ${Frontend__BaseUrl}
       MailClient__Address: ${MailClient__Address}
       Resend__ApiKey: ${Resend__ApiKey}

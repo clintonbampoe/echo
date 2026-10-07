@@ -4,6 +4,7 @@ using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 
 namespace Echo.Application.Transactions;
@@ -16,6 +17,7 @@ public class TransactionService(
     ITransactionMapper mapper,
     IIdGenerator idGenerator,
     ApplicationInstrumentation instrumentation,
+    LinkGenerator linker,
     ILogger<TransactionService> logger
 )
 {
@@ -120,7 +122,11 @@ public class TransactionService(
         TransactionLog.Created(logger, congregationId, entity.Id);
 
         var res = mapper.ToDto(entity);
-        return new CreatedAtResult<TransactionResponseDto>(res);
+
+        var location =
+            linker.GetPathByName("GetTransactionById", new { id = res.Id })
+            ?? throw new InvalidOperationException("Route 'GetTransactionById' is not registered.");
+        return new CreatedResult<TransactionResponseDto>(location, res);
     }
 
     public async Task<IOperationResult> Update(
