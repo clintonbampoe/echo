@@ -1,6 +1,7 @@
 using Echo.Data;
 using Echo.Domain.Assets;
 using Echo.Shared.HttpResults;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 
@@ -62,6 +63,7 @@ public class AssetCategoryService(
     public async Task<IOperationResult> Create(
         Guid congregationId,
         AssetCategoryCreateDto dto,
+        HttpContext httpContext,
         CancellationToken ct
     )
     {
@@ -83,7 +85,7 @@ public class AssetCategoryService(
 
         var res = mapper.ToDto(entity);
         var location =
-            linker.GetPathByName("GetAssetCategoryById", new { id = res.Id })
+            linker.GetPathByName(httpContext, "GetAssetCategoryById", new { id = res.Id })
             ?? throw new InvalidOperationException(
                 "Route 'GetAssetCategoryById' is not registered."
             );

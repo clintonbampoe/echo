@@ -1,6 +1,7 @@
 using Echo.Data;
 using Echo.Domain.Projects;
 using Echo.Shared.HttpResults;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 
@@ -61,6 +62,7 @@ public class ProjectCategoryService(
     public async Task<IOperationResult> Create(
         Guid congregationId,
         ProjectCategoryCreateDto dto,
+        HttpContext httpContext,
         CancellationToken ct
     )
     {
@@ -83,7 +85,7 @@ public class ProjectCategoryService(
         var res = mapper.ToDto(entity);
 
         var location =
-            linker.GetPathByName("GetProjectCategoryById", new { id = res.Id })
+            linker.GetPathByName(httpContext, "GetProjectCategoryById", new { id = res.Id })
             ?? throw new InvalidOperationException(
                 "Route 'GetProjectCategoryById' is not registered."
             );

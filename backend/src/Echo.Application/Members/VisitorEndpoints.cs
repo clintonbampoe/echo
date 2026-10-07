@@ -45,15 +45,23 @@ public static class VisitorEndpoints
             .WithSummary("Returns a paginated list of visitors.")
             .WithDescription(
                 """
-                Returns a cursor-paginated list of visitors scoped to the authenticated congregation. Only active visitor records are returned — converted and soft-deleted visitors are excluded.
+                Returns a cursor-paginated list of Visitors scoped to the caller's congregation.
 
                 ### Filtering
-                Filter by date range or status. All filters are optional and combinable.
+                - `name` — partial, case-insensitive match against the visitor's full name.
+                - `converted` — when `true`, returns only visitors who have been converted to Members. When `false`, returns only unconverted visitors. Omit to receive both.
+                - `from` / `to` — filter by first-visit date range.
+
+                ### Default behavior
+                With no filters, the list includes **both** converted and unconverted visitors. This is different from what you might expect — the historical record is preserved and shows up by default. If you only want active visitors in a picker, pass `converted=false` explicitly.
+
+                ### Ordering
+                Ordered by name, then by ID as a tiebreaker. Stable across pages.
 
                 ### Pagination
-                Pass the `next` cursor from the previous response as the `cursor` query parameter to fetch the next page. When `hasMore` is false no further pages exist.
+                Pass the `next` cursor from the previous response as the `cursor` query parameter. When `hasMore` is `false`, `next` is null.
 
-                ### Errors
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
                 """
             )
@@ -83,11 +91,13 @@ public static class VisitorEndpoints
             .WithSummary("Returns a single visitor by ID.")
             .WithDescription(
                 """
-                Returns the full visitor record for the given ID, scoped to the authenticated congregation.
+                Returns the full Visitor record for the given ID, scoped to the caller's congregation.
 
-                ### Errors
+                If the visitor has been converted to a Member, the response includes `convertedToMemberPersonId`, `convertedToMemberName`, and `convertedAt`. You can use `convertedToMemberPersonId` to fetch the Member via `GET /members/{id}`.
+
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
-                - `404 NOT_FOUND` — no visitor exists with the given ID in this congregation, or they have been soft-deleted or converted.
+                - `404 NOT_FOUND` — no visitor exists with the given ID in this congregation, or the record has been soft-deleted.
                 """
             )
             .Produces<VisitorResponseDto>(StatusCodes.Status200OK)
@@ -109,7 +119,12 @@ public static class VisitorEndpoints
                         instrumentation,
                         "endpoint.visitor.create"
                     );
-                    var result = await service.Create(context.User.GetCongregationId(), dto, ct);
+                    var result = await service.Create(
+                        context.User.GetCongregationId(),
+                        dto,
+                        context,
+                        ct
+                    );
                     return result.ToResult();
                 }
             )
@@ -117,12 +132,24 @@ public static class VisitorEndpoints
             .WithSummary("Records a new visitor.")
             .WithDescription(
                 """
-                Records a new visitor for the authenticated congregation. Use this when someone attends for the first time but is not yet a member.
+                Records a new Visitor for the caller's congregation. Use this when someone attends for the first time but is not yet a Member.
 
-                On success, returns `201 Created` with the full visitor record and a `Location` header pointing to the newly created resource.
+                ### Request body
+                - `firstName`, `lastName` — required.
+                - `phoneNumber`, `emailAddress` — optional.
+                - `dateOfBirth` — optional.
+                - `notes` — optional, up to 2000 characters. Free-form context — how they heard about the congregation, who invited them, follow-up reminders, anything the congregation wants to track.
 
-                ### Errors
-                - `400 BAD_REQUEST` — malformed request body.
+                Visitors have a much smaller profile than Members by design. The rest of the profile — next of kin, emergency contact, residential address — is captured at conversion time, not here.
+
+                ### On success
+                Returns `201 Created` with the full `VisitorResponseDto` and a `Location` header pointing to `GET /visitors/{id}`.
+
+                ### Side effects
+                - A new Person record and Visitor record are created in the caller's congregation.
+
+                ### Failure modes
+                - `400 BAD_REQUEST` — the request body is malformed.
                 - `400 VALIDATION_ERROR` — one or more fields failed validation. Inspect the `errors` object.
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
                 """
@@ -160,13 +187,21 @@ public static class VisitorEndpoints
             .WithSummary("Updates an existing visitor.")
             .WithDescription(
                 """
-                Replaces the fields of an existing visitor record. All updatable fields must be supplied.
+                Updates the supplied fields on an existing Visitor. Partial update — omitted fields retain their current values.
 
-                ### Errors
-                - `400 BAD_REQUEST` — malformed request body.
-                - `400 VALIDATION_ERROR` — one or more fields failed validation. Inspect the `errors` object.
+                ### Request body
+                All fields are optional. The DTO allows updating `firstName`, `lastName`, `phoneNumber`, `emailAddress`, `dateOfBirth`, and `notes`.
+
+                **`convertedToMemberPersonId` and `convertedAt` are not editable.** Once a visitor has been converted, that state is permanent — you cannot un-convert a visitor through this endpoint.
+
+                ### On success
+                Returns `200 OK` with the full updated `VisitorResponseDto`.
+
+                ### Failure modes
+                - `400 BAD_REQUEST` — the request body is malformed.
+                - `400 VALIDATION_ERROR` — one or more fields failed validation.
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
-                - `404 NOT_FOUND` — no visitor exists with the given ID in this congregation, or they have been soft-deleted or converted.
+                - `404 NOT_FOUND` — no visitor exists with the given ID in this congregation, or the record has been soft-deleted.
                 """
             )
             .Produces<VisitorResponseDto>(StatusCodes.Status200OK)
@@ -197,13 +232,25 @@ public static class VisitorEndpoints
             .WithSummary("Soft deletes a visitor.")
             .WithDescription(
                 """
-                Marks the visitor as deleted. The record is retained in the database but excluded from all list, search, and lookup results.
+                Soft-deletes the Visitor and the underlying Person record. Both are excluded from list, search, and lookup responses but retained in the database.
 
-                Returns `204 No Content` on success.
+                ### On success
+                Returns `204 No Content` with no body.
 
-                ### Errors
+                ### Side effects
+                - The Visitor and Person rows are marked as deleted.
+                - **Attendance records that reference the visitor are not affected.** If the visitor had been counted in any general attendance records, those records remain and continue to reference the (now deleted) person.
+                - If the visitor was previously converted to a Member, the resulting Member record is **not** affected by this deletion. Deleting the visitor does not delete the member.
+
+                ### When to use this
+                - Someone was recorded as a visitor by mistake.
+                - A duplicate visitor record needs to be removed.
+
+                Not to be confused with conversion. If you want to promote the visitor to a Member, use `POST /visitors/{id}/convert` — do not delete the visitor.
+
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
-                - `404 NOT_FOUND` — no visitor exists with the given ID in this congregation, or they have already been soft-deleted.
+                - `404 NOT_FOUND` — no visitor exists with the given ID in this congregation, or the record has already been soft-deleted.
                 """
             )
             .Produces(StatusCodes.Status204NoContent)
@@ -233,12 +280,22 @@ public static class VisitorEndpoints
             .WithSummary("Searches visitors by name.")
             .WithDescription(
                 """
-                Performs a trigram-based similarity search against visitor names using `pg_trgm`. Results are ranked by similarity to the query string `q`. Returns a flat list — no pagination.
+                Trigram-based similarity search against visitor names using `pg_trgm`.
 
-                This endpoint is rate-limited. Excessive requests will be rejected.
+                ### Query parameter
+                - `q` — required. Case-insensitive.
 
-                ### Errors
+                ### On success
+                Returns `200 OK` with a flat array of `VisitorSearchResultDto`, ranked by similarity. **No pagination.** Each result includes `id`, `name`, and `phoneNumber`.
+
+                ### What is searched
+                All visitor records are eligible — converted and unconverted alike. Converted visitors will appear in results. If your UI needs to filter them out, check the `converted` flag via `GET /visitors/{id}`.
+
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
+
+                ### Rate limiting
+                Rate-limited per the `search` policy.
                 """
             )
             .RequireRateLimiting("search")
@@ -265,6 +322,7 @@ public static class VisitorEndpoints
                         context.User.GetCongregationId(),
                         id,
                         dto,
+                        context,
                         ct
                     );
                     return result.ToResult();
@@ -274,22 +332,33 @@ public static class VisitorEndpoints
             .WithSummary("Converts a visitor record into a full member.")
             .WithDescription(
                 """
-                Promotes an existing visitor to a full member. The request body supplies the additional fields required for a complete member profile that were not captured on the visitor record.
+                Promotes an existing Visitor to a Member. The Visitor's Person record is preserved — the conversion flips its `Kind` from `Visitor` to `Member` and creates the Member side table.
 
-                The original visitor record is retained for historical reference but is marked as converted and excluded from active visitor lists.
+                ### Request body
+                A full `MemberCreateDto`. The service uses it to build the Member side table — the fields that a Visitor does not have (next of kin, emergency contact, residential address, and so on).
 
-                On success, returns `201 Created` with the new member record and a `Location` header pointing to it.
+                ### On success
+                Returns `201 Created` with the new `MemberResponseDto` and a `Location` header pointing to `GET /members/{id}`.
 
-                ### Errors
-                - `400 BAD_REQUEST` — malformed request body.
+                ### Side effects
+                - The Person's `Kind` flips from `Visitor` to `Member`.
+                - A new Member row is created, linked to the existing Person.
+                - The Visitor record is retained for history but marked converted: `convertedToMemberPersonId`, `convertedToMemberName`, and `convertedAt` are populated.
+                - **The `id` of the new Member is the same UUID as the original visitor's Person ID.** If the client stored the visitor ID, it can be used as the member ID in subsequent requests — the underlying Person is the same entity.
+
+                ### Failure modes
+                - `400 BAD_REQUEST` — the request body is malformed.
                 - `400 VALIDATION_ERROR` — one or more fields failed validation. Inspect the `errors` object.
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
-                - `404 NOT_FOUND` — no visitor exists with the given ID in this congregation, or they have been soft-deleted or already converted.
+                - `404 NOT_FOUND` — no visitor exists with the given ID in this congregation, or the record has been soft-deleted.
+                - `409 CONFLICT` — the visitor has already been converted. A visitor can only be converted once. The response includes the visitor ID — use `GET /visitors/{id}` to retrieve `convertedToMemberPersonId` and fetch the existing Member instead of re-attempting conversion.
                 """
             )
             .Produces<MemberResponseDto>(StatusCodes.Status201Created)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status401Unauthorized);
+            .ProducesProblem(StatusCodes.Status409Conflict);
 
         group
             .MapGet(
@@ -318,13 +387,17 @@ public static class VisitorEndpoints
             .WithSummary("Returns aggregate summary metrics for visitors.")
             .WithDescription(
                 """
-                Returns aggregated visitor metrics for the congregation, optionally scoped by the same filters available on the list endpoint.
+                Returns aggregated visitor counts for the caller's congregation, optionally scoped by the same filters as the list endpoint.
 
-                ### Response includes
-                - `totalVisitors` — count of active visitors matching the filter.
-                - Conversion trends and first-visit date breakdowns where applicable.
+                ### Response fields
+                - `totalVisitors` — count of visitors matching the filter.
+                - `newVisitors` — count of first-time visitors (no prior visit recorded).
+                - `recurringVisitors` — count of visitors with more than one recorded visit.
+                - `convertedVisitors` — count of visitors who have been converted to Members.
 
-                ### Errors
+                `newVisitors + recurringVisitors` is not necessarily equal to `totalVisitors` — the classification depends on how the underlying repository defines "first visit," and the counts may overlap depending on filter scope.
+
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
                 """
             )

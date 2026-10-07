@@ -44,15 +44,20 @@ public static class TransactionEndpoints
             .WithSummary("Returns a paginated list of transactions.")
             .WithDescription(
                 """
-                Returns a cursor-paginated list of financial transactions scoped to the authenticated congregation.
+                Returns a cursor-paginated list of Transactions scoped to the caller's congregation.
 
                 ### Filtering
-                Filter by category, transaction type (income/expenditure), or date range. All filters are optional and combinable.
+                - `transactionType` — `Income` or `Expense`.
+                - `categoryId` — filter to a specific Transaction Category.
+                - `from` / `to` — filter by transaction date range.
+
+                ### Ordering
+                Transactions are ordered by transaction date, most recent first. Stable across pages.
 
                 ### Pagination
-                Pass the `next` cursor from the previous response as the `cursor` query parameter to fetch the next page. When `hasMore` is false no further pages exist.
+                Pass the `next` cursor from the previous response as the `cursor` query parameter. When `hasMore` is `false`, `next` is null.
 
-                ### Errors
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
                 """
             )
@@ -82,11 +87,13 @@ public static class TransactionEndpoints
             .WithSummary("Returns a single transaction by ID.")
             .WithDescription(
                 """
-                Returns the full transaction record for the given ID, scoped to the authenticated congregation.
+                Returns the full Transaction record for the given ID, scoped to the caller's congregation.
 
-                ### Errors
+                The response includes the resolved `categoryName` — no follow-up call needed.
+
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
-                - `404 NOT_FOUND` — no transaction exists with the given ID in this congregation, or it has been soft-deleted.
+                - `404 NOT_FOUND` — no transaction exists with the given ID in this congregation, or the record has been soft-deleted.
                 """
             )
             .Produces<TransactionResponseDto>(StatusCodes.Status200OK)
@@ -108,7 +115,12 @@ public static class TransactionEndpoints
                         instrumentation,
                         "endpoint.transaction.create"
                     );
-                    var result = await service.Create(context.User.GetCongregationId(), dto, ct);
+                    var result = await service.Create(
+                        context.User.GetCongregationId(),
+                        dto,
+                        context,
+                        ct
+                    );
                     return result.ToResult();
                 }
             )
@@ -116,21 +128,41 @@ public static class TransactionEndpoints
             .WithSummary("Records a new transaction.")
             .WithDescription(
                 """
-                Records a new financial transaction scoped to the authenticated congregation. The transaction must reference an existing Transaction Category within the same congregation.
+                Records a new Transaction — general income or expense.
 
-                On success, returns `201 Created` with the full transaction record and a `Location` header pointing to the newly created resource.
+                ### Request body
+                Required fields:
+                - `categoryId` — must reference a Transaction Category in the caller's congregation.
+                - `transactionType` — `Income` or `Expense`.
+                - `transactionDate` — ISO date.
+                - `amount` — 0.01 to 1,000,000.
 
-                ### Errors
-                - `400 BAD_REQUEST` — malformed request body.
-                - `400 VALIDATION_ERROR` — one or more fields failed validation. Inspect the `errors` object.
+                Optional:
+                - `description` — up to 2000 characters.
+
+                ### The category type must match
+                Transaction Categories are typed — each category is either an `Income` or `Expense` category. The category's `categoryType` and the transaction's `transactionType` should agree. **The API does not enforce this cross-check.** Sending an `Income` transaction with an `Expense` category is accepted — the two fields are validated independently. Filter the category picker on the transaction type the user is recording.
+
+                ### Not attributed to a member
+                Transactions have no member field. If you need giving attributed to a specific person, use **Tithes** (for tithes) or **Project Contributions** (for project-specific giving). Transactions are for general financial activity.
+
+                ### On success
+                Returns `201 Created` with the full `TransactionResponseDto` and a `Location` header pointing to `GET /transactions/{id}`.
+
+                ### Side effects
+                - The transaction is recorded. `GET /transactions/summary` reflects it on next call.
+
+                ### Failure modes
+                - `400 BAD_REQUEST` — the request body is malformed.
+                - `400 VALIDATION_ERROR` — one or more fields failed validation.
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
-                - `404 FOREIGN_KEY_NOT_FOUND` — the referenced Transaction Category does not exist in this congregation.
+                - `404 FOREIGN_KEY_NOT_FOUND` — the referenced category does not exist in this congregation.
                 """
             )
             .Produces<TransactionResponseDto>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest)
-            .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status401Unauthorized);
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status404NotFound);
 
         group
             .MapPut(
@@ -161,13 +193,25 @@ public static class TransactionEndpoints
             .WithSummary("Updates an existing transaction.")
             .WithDescription(
                 """
-                Replaces the fields of an existing transaction record. All updatable fields must be supplied.
+                Updates the supplied fields on an existing Transaction. Partial update.
 
-                ### Errors
-                - `400 BAD_REQUEST` — malformed request body.
-                - `400 VALIDATION_ERROR` — one or more fields failed validation. Inspect the `errors` object.
+                ### Request body
+                All fields optional: `categoryId`, `transactionType`, `transactionDate`, `amount`, `description`.
+
+                If `categoryId` is supplied, the new category is validated against the caller's congregation.
+
+                ### On success
+                Returns `200 OK` with the full updated `TransactionResponseDto`.
+
+                ### Side effects
+                - `GET /transactions/summary` recalculates on next call, reflecting the updated amount and category.
+
+                ### Failure modes
+                - `400 BAD_REQUEST` — the request body is malformed.
+                - `400 VALIDATION_ERROR` — one or more fields failed validation.
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
-                - `404 NOT_FOUND` — no transaction exists with the given ID in this congregation, or it has been soft-deleted.
+                - `404 NOT_FOUND` — no transaction exists with the given ID in this congregation, or the record has been soft-deleted.
+                - `404 FOREIGN_KEY_NOT_FOUND` — the referenced category does not exist in this congregation.
                 """
             )
             .Produces<TransactionResponseDto>(StatusCodes.Status200OK)
@@ -198,13 +242,18 @@ public static class TransactionEndpoints
             .WithSummary("Soft deletes a transaction.")
             .WithDescription(
                 """
-                Marks the transaction as deleted. The record is retained in the database but excluded from all list and lookup results. Transaction summary totals will reflect the deletion.
+                Soft-deletes the Transaction. The row is retained in the database but excluded from list, summary, and lookup responses.
 
-                Returns `204 No Content` on success.
+                ### On success
+                Returns `204 No Content` with no body.
 
-                ### Errors
+                ### Side effects
+                - The transaction is marked as deleted.
+                - **Summary totals reflect the deletion.** `GET /transactions/summary` recalculates `totalIncome`, `totalExpenses`, and `net` from live records only.
+
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
-                - `404 NOT_FOUND` — no transaction exists with the given ID in this congregation, or it has already been soft-deleted.
+                - `404 NOT_FOUND` — no transaction exists with the given ID in this congregation, or the record has already been soft-deleted.
                 """
             )
             .Produces(StatusCodes.Status204NoContent)
@@ -238,15 +287,15 @@ public static class TransactionEndpoints
             .WithSummary("Returns aggregate summary metrics for transactions.")
             .WithDescription(
                 """
-                Returns aggregated financial metrics for the congregation's transactions, optionally scoped by the same filters available on the list endpoint.
+                Returns aggregated financial metrics for the caller's congregation, optionally scoped by the same filters as the list endpoint.
 
-                ### Response includes
-                - `totalTransactions` — count of transactions matching the filter.
-                - `totalIncome` — sum of all income transactions matching the filter.
-                - `totalExpenditure` — sum of all expenditure transactions matching the filter.
-                - `netBalance` — difference between total income and total expenditure.
+                ### Response fields
+                - `totalIncome` — sum of amounts for matching transactions with `transactionType = Income`.
+                - `totalExpenses` — sum of amounts for matching transactions with `transactionType = Expense`.
+                - `net` — `totalIncome - totalExpenses`. Negative when expenses exceed income.
+                - `mostActiveCategory` — the category name with the largest total transaction volume (count, not amount). Null when no transactions match.
 
-                ### Errors
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
                 """
             )

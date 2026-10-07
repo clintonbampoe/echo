@@ -39,11 +39,15 @@ public static class TransactionCategoryEndpoints
             .WithSummary("Returns all transaction categories for the congregation.")
             .WithDescription(
                 """
-                Returns the complete list of transaction categories for the authenticated congregation. Transaction categories are lightweight lookup entities — no pagination is applied and the full list is always returned.
+                Returns the complete list of Transaction Categories for the caller's congregation.
 
-                Fetch this list to populate category selectors when creating or updating transactions.
+                ### No pagination
+                Plain array, not a paged envelope.
 
-                ### Errors
+                ### Categories are typed
+                Each category carries a `categoryType` of `Income` or `Expense`. When building a category picker for a transaction, filter this list by the `categoryType` that matches the transaction type the user is recording — a Salary category (`Expense`) should not appear when the user is recording an Income transaction.
+
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
                 """
             )
@@ -73,11 +77,11 @@ public static class TransactionCategoryEndpoints
             .WithSummary("Returns a single transaction category by ID.")
             .WithDescription(
                 """
-                Returns the transaction category record for the given ID, scoped to the authenticated congregation.
+                Returns the Transaction Category record for the given ID, scoped to the caller's congregation.
 
-                ### Errors
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
-                - `404 NOT_FOUND` — no transaction category exists with the given ID in this congregation, or it has been soft-deleted.
+                - `404 NOT_FOUND` — no transaction category exists with the given ID in this congregation, or the record has been soft-deleted.
                 """
             )
             .Produces<TransactionCategoryResponseDto>(StatusCodes.Status200OK)
@@ -99,7 +103,12 @@ public static class TransactionCategoryEndpoints
                         instrumentation,
                         "endpoint.transaction_category.create"
                     );
-                    var result = await service.Create(context.User.GetCongregationId(), dto, ct);
+                    var result = await service.Create(
+                        context.User.GetCongregationId(),
+                        dto,
+                        context,
+                        ct
+                    );
                     return result.ToResult();
                 }
             )
@@ -107,13 +116,18 @@ public static class TransactionCategoryEndpoints
             .WithSummary("Creates a new transaction category.")
             .WithDescription(
                 """
-                Creates a new transaction category scoped to the authenticated congregation. Once created, it becomes available for assignment to transactions.
+                Creates a new Transaction Category — for example Offerings, Utilities, or Salaries. Scoped to the caller's congregation.
 
-                On success, returns `201 Created` with the full category record and a `Location` header pointing to the newly created resource.
+                ### Request body
+                - `name` — required. 1 to 100 characters.
+                - `categoryType` — **required.** `Income` or `Expense`. The type is set at creation and determines what the category can be used for.
 
-                ### Errors
-                - `400 BAD_REQUEST` — malformed request body.
-                - `400 VALIDATION_ERROR` — one or more fields failed validation. Inspect the `errors` object.
+                ### On success
+                Returns `201 Created` with the full `TransactionCategoryResponseDto` and a `Location` header pointing to `GET /transaction-categories/{id}`.
+
+                ### Failure modes
+                - `400 BAD_REQUEST` — the request body is malformed.
+                - `400 VALIDATION_ERROR` — one or more fields failed validation.
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
                 """
             )
@@ -150,13 +164,20 @@ public static class TransactionCategoryEndpoints
             .WithSummary("Updates an existing transaction category.")
             .WithDescription(
                 """
-                Replaces the fields of an existing transaction category. Existing transactions assigned to this category retain their assignment after the update.
+                Updates the name or type of a Transaction Category. Partial update.
 
-                ### Errors
-                - `400 BAD_REQUEST` — malformed request body.
-                - `400 VALIDATION_ERROR` — one or more fields failed validation. Inspect the `errors` object.
+                ### Request body
+                - `name` — optional.
+                - `categoryType` — optional. **Changing the type affects future transaction creation.** Existing transactions that reference this category keep their own `transactionType` — the category type and the transaction type can become inconsistent if you change one without the other. Prefer to leave the type alone after creation unless you have a specific need.
+
+                ### Side effects
+                - **Existing Transactions assigned to this category are not affected** and retain their assignment. They will display the updated category name on next fetch.
+
+                ### Failure modes
+                - `400 BAD_REQUEST` — the request body is malformed.
+                - `400 VALIDATION_ERROR` — one or more fields failed validation.
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
-                - `404 NOT_FOUND` — no transaction category exists with the given ID in this congregation, or it has been soft-deleted.
+                - `404 NOT_FOUND` — no transaction category exists with the given ID in this congregation, or the record has been soft-deleted.
                 """
             )
             .Produces<TransactionCategoryResponseDto>(StatusCodes.Status200OK)
@@ -187,13 +208,19 @@ public static class TransactionCategoryEndpoints
             .WithSummary("Soft deletes a transaction category.")
             .WithDescription(
                 """
-                Marks the transaction category as deleted. The record is retained in the database but excluded from all list, search, and lookup results. Existing transactions that reference this category are not affected.
+                Soft-deletes the Transaction Category. The row is retained in the database but excluded from list, search, and lookup responses.
 
-                Returns `204 No Content` on success.
+                ### On success
+                Returns `204 No Content` with no body.
 
-                ### Errors
+                ### Side effects
+                - The category is marked as deleted.
+                - **Existing Transactions assigned to this category are not affected.** They keep their `categoryId` pointing at the deleted category. `categoryName` may resolve to null on fetch.
+                - **New transactions cannot reference a deleted category** — the FK lookup will fail with `404 FOREIGN_KEY_NOT_FOUND`.
+
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
-                - `404 NOT_FOUND` — no transaction category exists with the given ID in this congregation, or it has already been soft-deleted.
+                - `404 NOT_FOUND` — no transaction category exists with the given ID in this congregation, or the record has already been soft-deleted.
                 """
             )
             .Produces(StatusCodes.Status204NoContent)
@@ -223,12 +250,21 @@ public static class TransactionCategoryEndpoints
             .WithSummary("Searches transaction categories by name.")
             .WithDescription(
                 """
-                Performs a trigram-based similarity search against transaction category names using `pg_trgm`. Results are ranked by similarity to the query string `q`. Returns a flat list — no pagination.
+                Trigram-based similarity search over transaction category names using `pg_trgm`.
 
-                This endpoint is rate-limited. Excessive requests will be rejected.
+                ### Query parameter
+                - `q` — required. Case-insensitive.
 
-                ### Errors
+                ### On success
+                Returns `200 OK` with a flat array of `TransactionCategorySearchResponseDto`, ranked by similarity. **No pagination.**
+
+                Each result includes the category's `type` (`Income` or `Expense`), so the client can group or filter results without a follow-up call.
+
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
+
+                ### Rate limiting
+                Rate-limited per the `search` policy.
                 """
             )
             .RequireRateLimiting("search")

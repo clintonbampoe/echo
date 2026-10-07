@@ -45,21 +45,27 @@ public static class AssetEndpoints
             .WithSummary("Returns a paginated list of assets.")
             .WithDescription(
                 """
-                Returns a cursor-paginated list of assets scoped to the authenticated congregation.
+                Returns a cursor-paginated list of Assets scoped to the caller's congregation.
 
                 ### Filtering
-                All filter parameters are optional and combinable. Omitting them returns all active assets ordered by name.
+                All filters are optional and combinable:
+                - `status` — `Active`, `InUse`, `InStorage`, `UnderMaintenance`, `Liquidated`.
+                - `categoryId` — filter to a specific Asset Category.
+                - `name` — partial, case-insensitive match against the asset name.
+                - `from` / `to` — filter by purchase-date range (inclusive).
+
+                ### Ordering
+                Assets are ordered by name, then by ID as a tiebreaker. Stable across pages.
 
                 ### Pagination
-                Pass the `next` cursor from the previous response as the `cursor` query parameter to fetch the next page. When `hasMore` is false no further pages exist.
+                Pass the `next` cursor from the previous response as the `cursor` query parameter. When `hasMore` is `false`, `next` is null.
 
-                ### Errors
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
                 """
             )
             .Produces<PagedResponse<AssetResponseDto>>(StatusCodes.Status200OK)
-            .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status403Forbidden);
+            .ProducesProblem(StatusCodes.Status401Unauthorized);
 
         group
             .MapGet(
@@ -79,11 +85,13 @@ public static class AssetEndpoints
             .WithSummary("Returns a single asset by ID.")
             .WithDescription(
                 """
-                Returns the full asset record for the given ID, scoped to the authenticated congregation.
+                Returns the full Asset record for the given ID, scoped to the caller's congregation.
 
-                ### Errors
+                The response includes the resolved `categoryName` — no follow-up call needed.
+
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
-                - `404 NOT_FOUND` — no asset exists with the given ID in this congregation, or it has been soft-deleted.
+                - `404 NOT_FOUND` — no asset exists with the given ID in this congregation, or the record has been soft-deleted.
                 """
             )
             .Produces<AssetResponseDto>(StatusCodes.Status200OK)
@@ -105,7 +113,12 @@ public static class AssetEndpoints
                         instrumentation,
                         "endpoint.asset.create"
                     );
-                    var result = await service.Create(context.User.GetCongregationId(), dto, ct);
+                    var result = await service.Create(
+                        context.User.GetCongregationId(),
+                        dto,
+                        context,
+                        ct
+                    );
                     return result.ToResult();
                 }
             )
@@ -113,12 +126,29 @@ public static class AssetEndpoints
             .WithSummary("Creates a new asset.")
             .WithDescription(
                 """
-                Creates a new asset record scoped to the authenticated congregation. The asset must reference an existing Asset Category within the same congregation.
+                Creates a new Asset scoped to the caller's congregation.
 
-                On success, returns `201 Created` with the full asset record and a `Location` header pointing to the newly created resource.
+                ### Request body
+                Required fields:
+                - `name` — 1 to 100 characters.
+                - `categoryId` — must reference an Asset Category in the caller's congregation.
+                - `purchaseCost` — 0 to 1,000,000.
+                - `currentValue` — 0 to 1,000,000.
+                - `status` — one of `Active`, `InUse`, `InStorage`, `UnderMaintenance`, `Liquidated`.
 
-                ### Errors
-                - `400 BAD_REQUEST` — malformed request body.
+                Optional fields:
+                - `serialNumber` — up to 100 characters.
+                - `purchaseDate` — ISO date.
+                - `description` — up to 2000 characters.
+
+                ### On success
+                Returns `201 Created` with the full `AssetResponseDto` and a `Location` header pointing to `GET /assets/{id}`.
+
+                ### Depreciation
+                The server does **not** compute depreciation for you. `purchaseCost` and `currentValue` are stored as supplied. The summary endpoint reports `totalDepreciation` as the difference between the two totals across matching assets — it does not track depreciation over time per asset.
+
+                ### Failure modes
+                - `400 BAD_REQUEST` — the request body is malformed.
                 - `400 VALIDATION_ERROR` — one or more fields failed validation. Inspect the `errors` object.
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
                 - `404 FOREIGN_KEY_NOT_FOUND` — the referenced Asset Category does not exist in this congregation.
@@ -126,8 +156,8 @@ public static class AssetEndpoints
             )
             .Produces<AssetResponseDto>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest)
-            .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status401Unauthorized);
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status404NotFound);
 
         group
             .MapPut(
@@ -158,15 +188,19 @@ public static class AssetEndpoints
             .WithSummary("Updates an existing asset.")
             .WithDescription(
                 """
-                Replaces the fields of an existing asset record. All updatable fields must be supplied — this is a full replacement, not a partial update.
+                Updates the supplied fields on an existing Asset. Partial update — omitted fields retain their current values.
 
-                If the `categoryId` is being changed, the new category must exist within the same congregation.
+                ### Request body
+                All fields optional. If `categoryId` is supplied, the new category must exist in the caller's congregation.
 
-                ### Errors
-                - `400 BAD_REQUEST` — malformed request body.
-                - `400 VALIDATION_ERROR` — one or more fields failed validation. Inspect the `errors` object.
+                ### On success
+                Returns `200 OK` with the full updated `AssetResponseDto`.
+
+                ### Failure modes
+                - `400 BAD_REQUEST` — the request body is malformed.
+                - `400 VALIDATION_ERROR` — one or more fields failed validation.
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
-                - `404 NOT_FOUND` — no asset exists with the given ID in this congregation, or it has been soft-deleted.
+                - `404 NOT_FOUND` — no asset exists with the given ID in this congregation, or the record has been soft-deleted.
                 - `404 FOREIGN_KEY_NOT_FOUND` — the referenced Asset Category does not exist in this congregation.
                 """
             )
@@ -193,13 +227,21 @@ public static class AssetEndpoints
             .WithSummary("Soft deletes an asset.")
             .WithDescription(
                 """
-                Marks the asset as deleted. The record is retained in the database but excluded from all list, search, and lookup results. This operation is irreversible through the API.
+                Soft-deletes the Asset. The row is retained in the database but excluded from list, summary, and lookup responses.
 
-                Returns `204 No Content` on success.
+                ### On success
+                Returns `204 No Content` with no body.
 
-                ### Errors
+                ### Side effects
+                - The asset is marked as deleted.
+                - **Summary totals will reflect the deletion.** `GET /assets/summary` recalculates from live assets only.
+
+                ### Reversibility
+                Not exposed as reversible through the API.
+
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
-                - `404 NOT_FOUND` — no asset exists with the given ID in this congregation, or it has already been soft-deleted.
+                - `404 NOT_FOUND` — no asset exists with the given ID in this congregation, or the record has already been soft-deleted.
                 """
             )
             .Produces(StatusCodes.Status204NoContent)
@@ -229,12 +271,19 @@ public static class AssetEndpoints
             .WithSummary("Searches assets by name.")
             .WithDescription(
                 """
-                Performs a trigram-based similarity search against asset names using `pg_trgm`. Results are ranked by similarity to the query string `q`. Returns a flat list — no pagination.
+                Trigram-based similarity search over asset names using `pg_trgm`.
 
-                This endpoint is rate-limited. Excessive requests will be rejected.
+                ### Query parameter
+                - `q` — required. Case-insensitive. Partial matches supported.
 
-                ### Errors
+                ### On success
+                Returns `200 OK` with a flat array of `AssetSearchResultDto`, ranked by similarity. **No pagination.**
+
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
+
+                ### Rate limiting
+                Rate-limited per the `search` policy.
                 """
             )
             .RequireRateLimiting("search")
@@ -268,15 +317,20 @@ public static class AssetEndpoints
             .WithSummary("Returns aggregate summary metrics for assets.")
             .WithDescription(
                 """
-                Returns aggregated financial metrics for the congregation's assets, optionally scoped by the same filters available on the list endpoint.
+                Returns aggregated financial metrics for the caller's assets, optionally scoped by the same filters as the list endpoint.
 
-                ### Response includes
-                - `totalAssets` — count of active assets matching the filter.
-                - `totalCurrentValue` — sum of current values across matching assets.
-                - `totalPurchaseCost` — sum of original purchase costs.
-                - `totalDepreciation` — difference between total purchase cost and total current value.
+                ### Response fields
+                - `totalAssets` — count of assets matching the filter.
+                - `totalCurrentValue` — sum of `currentValue` across matching assets.
+                - `totalPurchaseCost` — sum of `purchaseCost` across matching assets.
+                - `totalDepreciation` — `totalPurchaseCost - totalCurrentValue`.
 
-                ### Errors
+                ### Depreciation is a snapshot, not a time series
+                `totalDepreciation` is the arithmetic difference between two stored fields. It does not model depreciation schedules, useful life, or accounting depreciation. If you need those, compute them client-side or in a reporting layer.
+
+                `totalDepreciation` can be negative if current values exceed purchase costs (appreciation).
+
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
                 """
             )

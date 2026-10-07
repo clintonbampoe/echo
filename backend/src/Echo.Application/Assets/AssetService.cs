@@ -4,6 +4,7 @@ using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 
@@ -82,12 +83,14 @@ public class AssetService(
     public async Task<IOperationResult> Create(
         Guid congregationId,
         AssetCreateDto dto,
+        HttpContext httpContext,
         CancellationToken ct
     )
     {
         using var activity = instrumentation.ActivitySource.StartActivity("svc.asset.create");
 
         var entity = mapper.ToEntity(dto);
+
         AssetCategory? category;
         using (instrumentation.ActivitySource.StartActivity("svc.asset.validate.category"))
         {
@@ -116,7 +119,7 @@ public class AssetService(
         var res = mapper.ToDto(entity);
 
         var location =
-            linker.GetPathByName("GetAssetById", new { id = res.Id })
+            linker.GetPathByName(httpContext, "GetAssetById", new { id = res.Id })
             ?? throw new InvalidOperationException("Route 'GetAssetById' is not registered.");
         return new CreatedResult<AssetResponseDto>(location, res);
     }
@@ -144,21 +147,26 @@ public class AssetService(
             return new NotFoundResult(id.ToString());
         }
 
-        // Validate Category if it's being changed
-        if (dto.CategoryId != entity.CategoryId)
+        // Validate Category if it is being changed to a different one.
+        // We validate the NEW category (from the DTO), not the existing one.
+        if (dto.CategoryId.HasValue && dto.CategoryId.Value != entity.CategoryId)
         {
             AssetCategory? category;
             using (instrumentation.ActivitySource.StartActivity("svc.asset.validate.category"))
             {
-                category = await categoryRepository.GetById(congregationId, entity.CategoryId, ct);
+                category = await categoryRepository.GetById(
+                    congregationId,
+                    dto.CategoryId.Value,
+                    ct
+                );
             }
 
             if (category is null)
             {
-                AssetLog.UpdateCategoryNotFound(logger, congregationId, entity.CategoryId);
+                AssetLog.UpdateCategoryNotFound(logger, congregationId, dto.CategoryId.Value);
                 return new ForeignKeyEntityNotFound(nameof(category));
             }
-            AssetLog.UpdateCategoryFound(logger, congregationId, entity.CategoryId);
+            AssetLog.UpdateCategoryFound(logger, congregationId, dto.CategoryId.Value);
         }
 
         using (instrumentation.ActivitySource.StartActivity("svc.asset.persist"))

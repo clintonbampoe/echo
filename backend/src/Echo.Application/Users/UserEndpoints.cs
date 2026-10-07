@@ -43,13 +43,25 @@ public static class UserEndpoints
             .WithSummary("Returns a paginated list of users.")
             .WithDescription(
                 """
-                Returns a cursor-paginated list of users scoped to the authenticated congregation. Only congregation administrators should have access to this endpoint.
+                Returns a cursor-paginated list of platform accounts scoped to the authenticated user's congregation. Only users that belong to the same congregation as the caller are returned.
 
-                ### Pagination  
-                Pass the `next` cursor from the previous response as the `cursor` query parameter to fetch the next page. When `hasMore` is false no further pages exist.
+                ### What is in the list
+                Each entry is a `UserResponseDto` — the platform account, not the Member record. See the **Users** tag description for the distinction. If you need people records, use `/members` instead.
 
-                ### Errors  
+                ### Ordering
+                Users are ordered by name, then by ID as a tiebreaker. The order is stable across pages.
+
+                ### Pagination
+                Pass the `next` cursor from the previous response as the `cursor` query parameter on the next request. When `hasMore` is `false`, `next` is null and no further pages exist.
+
+                ### Authentication
+                Bearer token required. The list is automatically scoped to the caller's congregation — there is no parameter to override this.
+
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
+
+                ### Rate limiting
+                Not rate-limited beyond the platform default.
                 """
             )
             .Produces<PagedResponse<UserResponseDto>>(StatusCodes.Status200OK)
@@ -73,11 +85,14 @@ public static class UserEndpoints
             .WithSummary("Returns a single user by ID.")
             .WithDescription(
                 """
-                Returns the full user record for the given ID, scoped to the authenticated congregation.
+                Returns the full account record for the given user ID, scoped to the caller's congregation.
 
-                ### Errors  
+                ### On success
+                Returns `200 OK` with a `UserResponseDto`. Includes `verifiedAt` — null means the account exists but has not completed email verification and cannot sign in.
+
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
-                - `404 NOT_FOUND` — no user exists with the given ID in this congregation, or they have been soft-deleted.
+                - `404 NOT_FOUND` — no user exists with the given ID in this congregation, or the account has been soft-deleted. Both cases return the same code — the API does not reveal whether a record exists elsewhere.
                 """
             )
             .Produces<UserResponseDto>(StatusCodes.Status200OK)
@@ -99,7 +114,12 @@ public static class UserEndpoints
                         instrumentation,
                         "endpoint.user.create"
                     );
-                    var result = await service.Create(context.User.GetCongregationId(), dto, ct);
+                    var result = await service.Create(
+                        context.User.GetCongregationId(),
+                        dto,
+                        context,
+                        ct
+                    );
                     return result.ToResult();
                 }
             )
@@ -107,20 +127,34 @@ public static class UserEndpoints
             .WithSummary("Creates a new user.")
             .WithDescription(
                 """
-                Creates a new user account scoped to the authenticated congregation. The email address must be unique within the congregation. After creation, the user will receive a verification email before they can log in.
+                Creates a new platform account scoped to the caller's congregation.
 
-                On success, returns `201 Created` with the full user record and a `Location` header pointing to the newly created resource.
+                ### Request body
+                - `firstName`, `lastName` — required.
+                - `emailAddress` — required. Must be unique across the platform, not just within the congregation.
+                - `password` — required, minimum 8 characters.
+                - `otherNames` — optional.
+                - `role` — optional `UserRole`. One of `Admin`, `Accountant`, `Clerk`, `Member`. Defaults to `Member` if omitted.
 
-                ### Errors  
-                - `400 BAD_REQUEST` — malformed request body.
+                ### On success
+                Returns `201 Created` with the full `UserResponseDto` and a `Location` header pointing to `GET /users/{id}`.
+
+                **The new account is unverified.** `verifiedAt` is null. The user cannot sign in until they complete email verification. The server may send a verification email automatically; if not, the client should trigger `POST /auth/verifications/account` with the new email.
+
+                ### Side effects
+                - A new user record is created in the caller's congregation.
+                - A verification email may be sent to the supplied address.
+                - No session is created for the new user. They will log in separately via `/auth/sessions/login` after verifying.
+
+                ### Failure modes
+                - `400 BAD_REQUEST` — the request body is malformed.
                 - `400 VALIDATION_ERROR` — one or more fields failed validation. Inspect the `errors` object.
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
-                - `409 CONFLICT` — a user with the given email address already exists in this congregation.
+                - `409 CONFLICT` — a user with the supplied email already exists. In this build the service returns this as `400 BAD_REQUEST` with the message "Email already exists or is invalid." — check the response body's `detail` field to distinguish from a genuine malformed-body failure.
                 """
             )
             .Produces<UserResponseDto>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest)
-            .ProducesProblem(StatusCodes.Status409Conflict)
             .ProducesProblem(StatusCodes.Status401Unauthorized);
 
         group
@@ -152,13 +186,27 @@ public static class UserEndpoints
             .WithSummary("Updates an existing user.")
             .WithDescription(
                 """
-                Replaces the fields of an existing user record. All updatable fields must be supplied.
+                Updates the supplied fields on an existing user record. This is a partial update — only fields present in the request body are changed. Omitted fields retain their current values.
 
-                ### Errors  
-                - `400 BAD_REQUEST` — malformed request body.
-                - `400 VALIDATION_ERROR` — one or more fields failed validation. Inspect the `errors` object.
+                ### Request body
+                - `emailAddress` — optional. If supplied, must remain unique across the platform.
+                - `password` — optional. If supplied, must meet the same policy as create (minimum 8 characters).
+                - `role` — optional. Changing the role takes effect immediately on the user's next request.
+
+                **Do not** send fields you do not intend to change — sending `"role": null` will clear the role.
+
+                ### On success
+                Returns `200 OK` with the full updated `UserResponseDto`.
+
+                ### Side effects
+                - If the password changed, existing sessions are **not** revoked by this endpoint. The user remains signed in on other devices until their access tokens expire and their refresh tokens are next used. If you need to force a sign-out, call `POST /auth/sessions/logout` with the user's email afterward.
+                - If the email changed, the account's verified state is **preserved as-is** — this endpoint does not reset verification. If your policy requires re-verification on email change, that must be handled separately.
+
+                ### Failure modes
+                - `400 BAD_REQUEST` — the request body is malformed.
+                - `400 VALIDATION_ERROR` — one or more fields failed validation.
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
-                - `404 NOT_FOUND` — no user exists with the given ID in this congregation, or they have been soft-deleted.
+                - `404 NOT_FOUND` — no user exists with the given ID in this congregation, or the account has been soft-deleted.
                 """
             )
             .Produces<UserResponseDto>(StatusCodes.Status200OK)
@@ -184,13 +232,22 @@ public static class UserEndpoints
             .WithSummary("Soft deletes a user.")
             .WithDescription(
                 """
-                Marks the user as deleted. The record is retained in the database but the user can no longer authenticate. This operation is scoped to the congregation — a user deleted here is only removed from this congregation.
+                Soft-deletes the user record. The row is retained in the database but the account can no longer authenticate and no longer appears in list, search, or lookup responses.
 
-                Returns `204 No Content` on success.
+                ### On success
+                Returns `204 No Content` with no body.
 
-                ### Errors
+                ### Side effects
+                - The user is marked as deleted.
+                - **Existing sessions are not revoked by this endpoint.** Any access token already issued continues to work until it expires (up to ~15 minutes). Any refresh token already issued can still be exchanged for a new pair. If you need to force a sign-out, call `POST /auth/sessions/logout` with the user's email **before** deleting.
+                - Records that reference this user — as an event organizer, project manager, etc. — are not affected. The references remain, though lookups of the underlying user will now return `404`.
+
+                ### Reversibility
+                Soft delete is not exposed as reversible through the API. Restoring a deleted user requires database access.
+
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
-                - `404 NOT_FOUND` — no user exists with the given ID in this congregation, or they have already been soft-deleted.
+                - `404 NOT_FOUND` — no user exists with the given ID in this congregation, or the account has already been soft-deleted.
                 """
             )
             .Produces(StatusCodes.Status204NoContent)
@@ -220,12 +277,24 @@ public static class UserEndpoints
             .WithSummary("Searches users by name.")
             .WithDescription(
                 """
-                Performs a trigram-based similarity search against user names using `pg_trgm`. Results are ranked by similarity to the query string `q`. Returns a flat list — no pagination.
+                Trigram-based similarity search over user names, scoped to the caller's congregation. Backed by PostgreSQL `pg_trgm`.
 
-                This endpoint is rate-limited. Excessive requests will be rejected.
+                ### When to use this
+                For autocomplete and quick lookup when the client needs to find a user without knowing their ID. For structured filtering, use the list endpoint instead — this one has no filters beyond the query string.
 
-                ### Errors
+                ### Query parameter
+                - `q` — required. The search string. Case-insensitive. Partial matches are supported — `"joh"` matches `"John"`.
+
+                ### On success
+                Returns `200 OK` with a flat array of `UserSearchResultDto`. **No pagination** — the result set is bounded server-side. Results are ranked by similarity to `q`, highest first.
+
+                Each result includes `id`, `name`, and `emailAddress` — enough to render a picker without a follow-up call.
+
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
+
+                ### Rate limiting
+                This endpoint is rate-limited per the `search` policy. Excessive requests return `429 Too Many Requests`. Debounce the query in the UI.
                 """
             )
             .RequireRateLimiting("search")

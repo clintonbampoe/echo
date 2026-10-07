@@ -45,15 +45,22 @@ public static class EventEndpoints
             .WithSummary("Returns a paginated list of events.")
             .WithDescription(
                 """
-                Returns a cursor-paginated list of events scoped to the authenticated congregation.
+                Returns a cursor-paginated list of Events scoped to the caller's congregation.
 
                 ### Filtering
-                Filter by date range or status. All filters are optional and combinable.
+                All filters are optional and combinable:
+                - `name` — partial, case-insensitive match against the event name.
+                - `organizationId` — events organized by a specific Organization.
+                - `organizerId` — events with a specific Member as organizer.
+                - `from` / `to` — filter by start-date range (inclusive).
+
+                ### Ordering
+                Events are ordered by start date. The direction depends on the server-side default — the current implementation orders ascending by start date. There is no client-facing sort parameter.
 
                 ### Pagination
-                Pass the `next` cursor from the previous response as the `cursor` query parameter to fetch the next page. When `hasMore` is false no further pages exist.
+                Pass the `next` cursor from the previous response as the `cursor` query parameter. When `hasMore` is `false`, `next` is null.
 
-                ### Errors
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
                 """
             )
@@ -78,11 +85,13 @@ public static class EventEndpoints
             .WithSummary("Returns a single event by ID.")
             .WithDescription(
                 """
-                Returns the full event record for the given ID, scoped to the authenticated congregation.
+                Returns the full Event record for the given ID, scoped to the caller's congregation.
 
-                ### Errors
+                The response includes the resolved `organizationName` and `organizerName`, so the client does not need follow-up calls to render the event.
+
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
-                - `404 NOT_FOUND` — no event exists with the given ID in this congregation, or it has been soft-deleted.
+                - `404 NOT_FOUND` — no event exists with the given ID in this congregation, or the record has been soft-deleted.
                 """
             )
             .Produces<EventResponseDto>(StatusCodes.Status200OK)
@@ -104,7 +113,12 @@ public static class EventEndpoints
                         instrumentation,
                         "endpoint.event.create"
                     );
-                    var result = await service.Create(context.User.GetCongregationId(), dto, ct);
+                    var result = await service.Create(
+                        context.User.GetCongregationId(),
+                        dto,
+                        context,
+                        ct
+                    );
                     return result.ToResult();
                 }
             )
@@ -112,19 +126,41 @@ public static class EventEndpoints
             .WithSummary("Creates a new event.")
             .WithDescription(
                 """
-                Creates a new event scoped to the authenticated congregation. Once created, the event is available for registrations and attendance tracking via the Event Registrations and Event Attendance resources.
+                Creates a new Event scoped to the caller's congregation.
 
-                On success, returns `201 Created` with the full event record and a `Location` header pointing to the newly created resource.
+                ### Request body
+                Required fields:
+                - `name` — 1 to 100 characters.
+                - `organizationId` — **required.** The Organization responsible for the event.
+                - `organizerId` — **required.** The Member coordinating the event.
+                - `startDate` — required.
+                - `endDate` — required.
 
-                ### Errors
-                - `400 BAD_REQUEST` — malformed request body.
+                Optional fields:
+                - `startTime`, `endTime`
+                - `location` — up to 255 characters.
+                - `capacity` — maximum attendees, 1 to 100,000.
+                - `description` — up to 2000 characters.
+
+                **Both `organizationId` and `organizerId` are required despite what the OpenAPI schema may imply.** If either is missing, the service returns `FOREIGN_KEY_NOT_FOUND` rather than a validation error — the FK check runs first.
+
+                ### On success
+                Returns `201 Created` with the full `EventResponseDto` and a `Location` header pointing to `GET /events/{id}`.
+
+                ### Side effects
+                - A new Event record is created. No registrations or attendance records are created automatically — those are separate resources with their own endpoints.
+
+                ### Failure modes
+                - `400 BAD_REQUEST` — the request body is malformed.
                 - `400 VALIDATION_ERROR` — one or more fields failed validation. Inspect the `errors` object.
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                - `404 FOREIGN_KEY_NOT_FOUND` — the referenced organization or organizer does not exist in this congregation.
                 """
             )
             .Produces<EventResponseDto>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest)
-            .ProducesProblem(StatusCodes.Status401Unauthorized);
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status404NotFound);
 
         group
             .MapPut(
@@ -155,13 +191,26 @@ public static class EventEndpoints
             .WithSummary("Updates an existing event.")
             .WithDescription(
                 """
-                Replaces the fields of an existing event. All updatable fields must be supplied. Existing registrations and attendance records for this event are not affected.
+                Updates the supplied fields on an existing Event. Partial update — omitted fields retain their current values.
 
-                ### Errors
-                - `400 BAD_REQUEST` — malformed request body.
-                - `400 VALIDATION_ERROR` — one or more fields failed validation. Inspect the `errors` object.
+                ### Request body
+                All fields are optional. The DTO allows updating `name`, `startDate`, `endDate`, `startTime`, `endTime`, `location`, `capacity`, `description`, and — unlike most update endpoints — `organizationId` and `organizerId`.
+
+                If either `organizationId` or `organizerId` is supplied, the new value is validated against the congregation's FK constraints. The referenced organization or member must exist in the same congregation.
+
+                ### On success
+                Returns `200 OK` with the full updated `EventResponseDto`.
+
+                ### Side effects
+                - **Existing registrations and attendance are not affected.** A member who registered for the event under the old organizer remains registered. The organizer field on the event is informational.
+                - Changing the date does not invalidate registrations or attendance — the client is responsible for reconciling any scheduling changes.
+
+                ### Failure modes
+                - `400 BAD_REQUEST` — the request body is malformed.
+                - `400 VALIDATION_ERROR` — one or more fields failed validation.
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
-                - `404 NOT_FOUND` — no event exists with the given ID in this congregation, or it has been soft-deleted.
+                - `404 NOT_FOUND` — no event exists with the given ID in this congregation, or the record has been soft-deleted.
+                - `404 FOREIGN_KEY_NOT_FOUND` — the referenced organization or organizer does not exist in this congregation.
                 """
             )
             .Produces<EventResponseDto>(StatusCodes.Status200OK)
@@ -187,13 +236,19 @@ public static class EventEndpoints
             .WithSummary("Soft deletes an event.")
             .WithDescription(
                 """
-                Marks the event as deleted. The record is retained in the database but excluded from all list, search, and lookup results.
+                Soft-deletes the Event. The row is retained in the database but excluded from list, search, and lookup responses.
 
-                Returns `204 No Content` on success.
+                ### On success
+                Returns `204 No Content` with no body.
 
-                ### Errors
+                ### Side effects
+                - The event is marked as deleted.
+                - **Existing Event Registrations and Event Attendance for this event are not affected.** They remain in the database and continue to reference the (now deleted) event. When those records are fetched via their own endpoints, `eventName` may resolve to null.
+                - **New registrations or attendance cannot reference a deleted event** — the FK lookup will fail with `404 FOREIGN_KEY_NOT_FOUND`.
+
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
-                - `404 NOT_FOUND` — no event exists with the given ID in this congregation, or it has already been soft-deleted.
+                - `404 NOT_FOUND` — no event exists with the given ID in this congregation, or the record has already been soft-deleted.
                 """
             )
             .Produces(StatusCodes.Status204NoContent)
@@ -223,12 +278,19 @@ public static class EventEndpoints
             .WithSummary("Searches events by name.")
             .WithDescription(
                 """
-                Performs a trigram-based similarity search against event names using `pg_trgm`. Results are ranked by similarity to the query string `q`. Returns a flat list — no pagination.
+                Trigram-based similarity search over event names using `pg_trgm`.
 
-                This endpoint is rate-limited. Excessive requests will be rejected.
+                ### Query parameter
+                - `q` — required. Case-insensitive. Partial matches supported.
 
-                ### Errors
+                ### On success
+                Returns `200 OK` with a flat array of `EventSearchResultDto`, ranked by similarity. **No pagination.**
+
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
+
+                ### Rate limiting
+                Rate-limited per the `search` policy.
                 """
             )
             .RequireRateLimiting("search")

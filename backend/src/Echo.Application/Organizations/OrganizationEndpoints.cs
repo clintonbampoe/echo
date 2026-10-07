@@ -45,15 +45,21 @@ public static class OrganizationEndpoints
             .WithSummary("Returns a paginated list of organizations.")
             .WithDescription(
                 """
-                Returns a cursor-paginated list of organizations scoped to the authenticated congregation.
+                Returns a cursor-paginated list of Organizations scoped to the caller's congregation.
 
                 ### Filtering
-                All filters are optional and combinable.
+                - `name` — partial, case-insensitive match against the organization name.
+                - `from` / `to` — filter by creation-date range.
+
+                Omitting all filters returns every active organization.
+
+                ### Ordering
+                Organizations are ordered by name, then by ID as a tiebreaker. Stable across pages.
 
                 ### Pagination
-                Pass the `next` cursor from the previous response as the `cursor` query parameter to fetch the next page. When `hasMore` is false no further pages exist.
+                Pass the `next` cursor from the previous response as the `cursor` query parameter. When `hasMore` is `false`, `next` is null.
 
-                ### Errors
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
                 """
             )
@@ -83,11 +89,11 @@ public static class OrganizationEndpoints
             .WithSummary("Returns a single organization by ID.")
             .WithDescription(
                 """
-                Returns the full organization record for the given ID, scoped to the authenticated congregation.
+                Returns the full Organization record for the given ID, scoped to the caller's congregation.
 
-                ### Errors
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
-                - `404 NOT_FOUND` — no organization exists with the given ID in this congregation, or it has been soft-deleted.
+                - `404 NOT_FOUND` — no organization exists with the given ID in this congregation, or the record has been soft-deleted.
                 """
             )
             .Produces<OrganizationResponseDto>(StatusCodes.Status200OK)
@@ -109,7 +115,12 @@ public static class OrganizationEndpoints
                         instrumentation,
                         "endpoint.organization.create"
                     );
-                    var result = await service.Create(context.User.GetCongregationId(), dto, ct);
+                    var result = await service.Create(
+                        context.User.GetCongregationId(),
+                        dto,
+                        context,
+                        ct
+                    );
                     return result.ToResult();
                 }
             )
@@ -117,13 +128,22 @@ public static class OrganizationEndpoints
             .WithSummary("Creates a new organization.")
             .WithDescription(
                 """
-                Creates a new organization scoped to the authenticated congregation. Once created, members can be assigned to it via the Organization Members resource.
+                Creates a new Organization scoped to the caller's congregation.
 
-                On success, returns `201 Created` with the full organization record and a `Location` header pointing to the newly created resource.
+                ### Request body
+                - `name` — required. 1 to 100 characters.
+                - `description` — optional, up to 2000 characters.
 
-                ### Errors
-                - `400 BAD_REQUEST` — malformed request body.
-                - `400 VALIDATION_ERROR` — one or more fields failed validation. Inspect the `errors` object.
+                ### On success
+                Returns `201 Created` with the full `OrganizationResponseDto` and a `Location` header pointing to `GET /organizations/{id}`.
+
+                ### Side effects
+                - A new Organization is created.
+                - No member assignments are made. To assign members, use `POST /organization-members` with the new Organization's ID.
+
+                ### Failure modes
+                - `400 BAD_REQUEST` — the request body is malformed.
+                - `400 VALIDATION_ERROR` — `name` failed validation.
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
                 """
             )
@@ -160,13 +180,23 @@ public static class OrganizationEndpoints
             .WithSummary("Updates an existing organization.")
             .WithDescription(
                 """
-                Replaces the fields of an existing organization record. All updatable fields must be supplied. Existing member assignments for this organization are not affected.
+                Updates the supplied fields on an existing Organization. Partial update — omitted fields retain their current values.
 
-                ### Errors
-                - `400 BAD_REQUEST` — malformed request body.
-                - `400 VALIDATION_ERROR` — one or more fields failed validation. Inspect the `errors` object.
+                ### Request body
+                All fields optional: `name`, `description`.
+
+                ### On success
+                Returns `200 OK` with the full updated `OrganizationResponseDto`.
+
+                ### Side effects
+                - **Existing member assignments for this organization are not affected.** The members remain in the organization under the updated name.
+                - **Events that reference this organization are not affected.** They continue to link to the same Organization ID.
+
+                ### Failure modes
+                - `400 BAD_REQUEST` — the request body is malformed.
+                - `400 VALIDATION_ERROR` — one or more fields failed validation.
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
-                - `404 NOT_FOUND` — no organization exists with the given ID in this congregation, or it has been soft-deleted.
+                - `404 NOT_FOUND` — no organization exists with the given ID in this congregation, or the record has been soft-deleted.
                 """
             )
             .Produces<OrganizationResponseDto>(StatusCodes.Status200OK)
@@ -197,13 +227,20 @@ public static class OrganizationEndpoints
             .WithSummary("Soft deletes an organization.")
             .WithDescription(
                 """
-                Marks the organization as deleted. The record is retained in the database but excluded from all list, search, and lookup results. Existing member assignments linked to this organization are not affected.
+                Soft-deletes the Organization. The row is retained in the database but excluded from list, search, and lookup responses.
 
-                Returns `204 No Content` on success.
+                ### On success
+                Returns `204 No Content` with no body.
 
-                ### Errors
+                ### Side effects
+                - The organization is marked as deleted.
+                - **Existing member assignments are not affected.** Organization Member records that reference this organization remain in the database. When those assignments are fetched via their own endpoints, `organizationName` may resolve to null.
+                - **Events that reference this organization are not affected.** They continue to link to the (now deleted) organization.
+                - **New member assignments cannot reference a deleted organization** — the FK lookup will fail with `404 FOREIGN_KEY_NOT_FOUND`.
+
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
-                - `404 NOT_FOUND` — no organization exists with the given ID in this congregation, or it has already been soft-deleted.
+                - `404 NOT_FOUND` — no organization exists with the given ID in this congregation, or the record has already been soft-deleted.
                 """
             )
             .Produces(StatusCodes.Status204NoContent)
@@ -233,12 +270,19 @@ public static class OrganizationEndpoints
             .WithSummary("Searches organizations by name.")
             .WithDescription(
                 """
-                Performs a trigram-based similarity search against organization names using `pg_trgm`. Results are ranked by similarity to the query string `q`. Returns a flat list — no pagination.
+                Trigram-based similarity search over organization names using `pg_trgm`.
 
-                This endpoint is rate-limited. Excessive requests will be rejected.
+                ### Query parameter
+                - `q` — required. Case-insensitive. Partial matches supported.
 
-                ### Errors
+                ### On success
+                Returns `200 OK` with a flat array of `OrganizationSearchResultDto`, ranked by similarity. **No pagination.**
+
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
+
+                ### Rate limiting
+                Rate-limited per the `search` policy.
                 """
             )
             .RequireRateLimiting("search")
@@ -272,13 +316,17 @@ public static class OrganizationEndpoints
             .WithSummary("Returns aggregate summary metrics for organizations.")
             .WithDescription(
                 """
-                Returns aggregated metrics for organizations in the congregation, optionally scoped by filters.
+                Returns aggregated metrics for organizations in the caller's congregation, optionally scoped by the same filters as the list endpoint.
 
-                ### Response includes
-                - `totalOrganizations` — count of active organizations matching the filter.
+                ### Response fields
+                - `totalOrganizations` — count of organizations matching the filter.
                 - `totalMembers` — total member assignments across matching organizations.
+                - `averageMembersPerOrganization` — mean of the member counts.
+                - `largestOrganization` — name of the organization with the most members. Null if no organizations match.
 
-                ### Errors
+                `totalMembers` counts **assignments**, not distinct members. A member who belongs to three organizations contributes three to this number.
+
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
                 """
             )

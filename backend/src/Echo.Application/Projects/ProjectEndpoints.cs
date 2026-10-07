@@ -45,15 +45,22 @@ public static class ProjectEndpoints
             .WithSummary("Returns a paginated list of projects.")
             .WithDescription(
                 """
-                Returns a cursor-paginated list of projects scoped to the authenticated congregation.
+                Returns a cursor-paginated list of Projects scoped to the caller's congregation.
 
                 ### Filtering
-                Filter by category, status, or date range. All filters are optional and combinable.
+                All filters are optional and combinable:
+                - `name` — partial, case-insensitive match against the project name.
+                - `status` — `Planning`, `OnTrack`, `AtRisk`, `Complete`, `Missed`.
+                - `categoryId` — filter to a specific Project Category.
+                - `from` / `to` — filter by start-date range.
+
+                ### Ordering
+                Projects are ordered by start date, then by ID as a tiebreaker. Stable across pages.
 
                 ### Pagination
-                Pass the `next` cursor from the previous response as the `cursor` query parameter to fetch the next page. When `hasMore` is false no further pages exist.
+                Pass the `next` cursor from the previous response as the `cursor` query parameter. When `hasMore` is `false`, `next` is null.
 
-                ### Errors
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
                 """
             )
@@ -83,11 +90,13 @@ public static class ProjectEndpoints
             .WithSummary("Returns a single project by ID.")
             .WithDescription(
                 """
-                Returns the full project record for the given ID, scoped to the authenticated congregation.
+                Returns the full Project record for the given ID, scoped to the caller's congregation.
 
-                ### Errors
+                The response includes the resolved `categoryName` and `managerName` — no follow-up calls needed.
+
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
-                - `404 NOT_FOUND` — no project exists with the given ID in this congregation, or it has been soft-deleted.
+                - `404 NOT_FOUND` — no project exists with the given ID in this congregation, or the record has been soft-deleted.
                 """
             )
             .Produces<ProjectResponseDto>(StatusCodes.Status200OK)
@@ -109,7 +118,12 @@ public static class ProjectEndpoints
                         instrumentation,
                         "endpoint.project.create"
                     );
-                    var result = await service.Create(context.User.GetCongregationId(), dto, ct);
+                    var result = await service.Create(
+                        context.User.GetCongregationId(),
+                        dto,
+                        context,
+                        ct
+                    );
                     return result.ToResult();
                 }
             )
@@ -117,20 +131,38 @@ public static class ProjectEndpoints
             .WithSummary("Creates a new project.")
             .WithDescription(
                 """
-                Creates a new project scoped to the authenticated congregation. The project must reference an existing Project Category within the same congregation.
+                Creates a new Project scoped to the caller's congregation.
 
-                On success, returns `201 Created` with the full project record and a `Location` header pointing to the newly created resource.
+                ### Request body
+                Required fields:
+                - `name` — 1 to 100 characters.
+                - `categoryId` — must reference a Project Category in the caller's congregation.
+                - `managerId` — must reference a Member in the caller's congregation.
+                - `targetAmount` — 0.01 to 1,000,000.
+                - `status` — `Planning`, `OnTrack`, `AtRisk`, `Complete`, `Missed`.
+                - `startDate` — required.
 
-                ### Errors
-                - `400 BAD_REQUEST` — malformed request body.
+                Optional fields:
+                - `endDate` — optional; null for open-ended projects.
+                - `description` — up to 2000 characters.
+
+                ### On success
+                Returns `201 Created` with the full `ProjectResponseDto` and a `Location` header pointing to `GET /projects/{id}`.
+
+                ### Side effects
+                - A new Project is created. **No contributions are created automatically.** To record money raised, use `POST /project-contributions`.
+
+                ### Failure modes
+                - `400 BAD_REQUEST` — the request body is malformed.
                 - `400 VALIDATION_ERROR` — one or more fields failed validation. Inspect the `errors` object.
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
-                - `404 FOREIGN_KEY_NOT_FOUND` — the referenced Project Category does not exist in this congregation.
+                - `404 FOREIGN_KEY_NOT_FOUND` — the referenced category or manager does not exist in this congregation.
                 """
             )
             .Produces<ProjectResponseDto>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest)
-            .ProducesProblem(StatusCodes.Status401Unauthorized);
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status404NotFound);
 
         group
             .MapPut(
@@ -161,13 +193,24 @@ public static class ProjectEndpoints
             .WithSummary("Updates an existing project.")
             .WithDescription(
                 """
-                Replaces the fields of an existing project. All updatable fields must be supplied. Existing contributions linked to this project are not affected.
+                Updates the supplied fields on an existing Project. Partial update — omitted fields retain their current values.
 
-                ### Errors
-                - `400 BAD_REQUEST` — malformed request body.
-                - `400 VALIDATION_ERROR` — one or more fields failed validation. Inspect the `errors` object.
+                ### Request body
+                All fields optional. If `categoryId` or `managerId` is supplied, the new value is validated against the caller's congregation.
+
+                ### On success
+                Returns `200 OK` with the full updated `ProjectResponseDto`.
+
+                ### Side effects
+                - **Existing contributions linked to this project are not affected.** Changing the target amount or status does not rewrite contribution history.
+                - Changing the target amount updates the projection for "raised vs target" — the `GET /projects/summary` endpoint recalculates `totalTarget` and derived percentages from the new value.
+
+                ### Failure modes
+                - `400 BAD_REQUEST` — the request body is malformed.
+                - `400 VALIDATION_ERROR` — one or more fields failed validation.
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
-                - `404 NOT_FOUND` — no project exists with the given ID in this congregation, or it has been soft-deleted.
+                - `404 NOT_FOUND` — no project exists with the given ID in this congregation, or the record has been soft-deleted.
+                - `404 FOREIGN_KEY_NOT_FOUND` — the referenced category or manager does not exist in this congregation.
                 """
             )
             .Produces<ProjectResponseDto>(StatusCodes.Status200OK)
@@ -198,13 +241,20 @@ public static class ProjectEndpoints
             .WithSummary("Soft deletes a project.")
             .WithDescription(
                 """
-                Marks the project as deleted. The record is retained in the database but excluded from all list, search, and lookup results. Existing contributions linked to this project are not affected.
+                Soft-deletes the Project. The row is retained in the database but excluded from list, search, and lookup responses.
 
-                Returns `204 No Content` on success.
+                ### On success
+                Returns `204 No Content` with no body.
 
-                ### Errors
+                ### Side effects
+                - The project is marked as deleted.
+                - **Existing Project Contributions are not affected.** They remain in the database and continue to reference the (now deleted) project.
+                - **New contributions cannot reference a deleted project** — the FK lookup will fail with `404 FOREIGN_KEY_NOT_FOUND`.
+                - Project summary totals (`GET /projects/summary`) no longer include the deleted project.
+
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
-                - `404 NOT_FOUND` — no project exists with the given ID in this congregation, or it has already been soft-deleted.
+                - `404 NOT_FOUND` — no project exists with the given ID in this congregation, or the record has already been soft-deleted.
                 """
             )
             .Produces(StatusCodes.Status204NoContent)
@@ -234,12 +284,19 @@ public static class ProjectEndpoints
             .WithSummary("Searches projects by name.")
             .WithDescription(
                 """
-                Performs a trigram-based similarity search against project names using `pg_trgm`. Results are ranked by similarity to the query string `q`. Returns a flat list — no pagination.
+                Trigram-based similarity search over project names using `pg_trgm`.
 
-                This endpoint is rate-limited. Excessive requests will be rejected.
+                ### Query parameter
+                - `q` — required. Case-insensitive. Partial matches supported.
 
-                ### Errors
+                ### On success
+                Returns `200 OK` with a flat array of `ProjectSearchResultDto`, ranked by similarity. **No pagination.**
+
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
+
+                ### Rate limiting
+                Rate-limited per the `search` policy.
                 """
             )
             .RequireRateLimiting("search")
@@ -273,14 +330,17 @@ public static class ProjectEndpoints
             .WithSummary("Returns aggregate summary metrics for projects.")
             .WithDescription(
                 """
-                Returns aggregated project metrics for the congregation, optionally scoped by filters.
+                Returns aggregated project metrics for the caller's congregation, optionally scoped by the same filters as the list endpoint.
 
-                ### Response includes
-                - `totalProjects` — count of active projects matching the filter.
-                - `totalFundingGoal` — sum of funding goals across matching projects.
-                - `totalRaised` — sum of contributions received across matching projects.
+                ### Response fields
+                - `totalProjects` — count of projects matching the filter.
+                - `totalRaised` — sum of contributions across matching projects.
+                - `totalTarget` — sum of target amounts across matching projects.
+                - `atRiskCount` — count of projects with `status = AtRisk`.
 
-                ### Errors
+                `totalRaised` is derived live from the Project Contributions resource, so a contribution deleted or added will be reflected immediately.
+
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
                 """
             )

@@ -35,11 +35,17 @@ public static class AttendanceTypeEndpoints
             .WithSummary("Returns all attendance types for the congregation.")
             .WithDescription(
                 """
-                Returns the complete list of attendance types for the authenticated congregation. Attendance types are lightweight lookup entities — no pagination is applied and the full list is always returned.
+                Returns the complete list of attendance types for the caller's congregation.
 
-                Fetch this list to populate type selectors when recording attendance.
+                ### No pagination
+                The response is a plain array, not a paged envelope. Attendance types are lightweight lookup entities bounded in number, so the full list is always returned.
 
-                ### Errors
+                Call this to populate the type selector when recording attendance.
+
+                ### Ordering
+                Types are returned in a stable server-defined order. Do not rely on alphabetical ordering — the sort is not exposed as a parameter.
+
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
                 """
             )
@@ -69,11 +75,14 @@ public static class AttendanceTypeEndpoints
             .WithSummary("Returns a single attendance type by ID.")
             .WithDescription(
                 """
-                Returns the attendance type record for the given ID, scoped to the authenticated congregation.
+                Returns the attendance type record for the given ID, scoped to the caller's congregation.
 
-                ### Errors
+                ### ID is an integer
+                Attendance Type IDs are 32-bit integers, not UUIDs. This is deliberate — lookup entities in Echo use integer keys for compactness.
+
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
-                - `404 NOT_FOUND` — no attendance type exists with the given ID in this congregation, or it has been soft-deleted.
+                - `404 NOT_FOUND` — no attendance type exists with the given ID in this congregation, or the record has been soft-deleted.
                 """
             )
             .Produces<AttendanceTypeResponseDto>(StatusCodes.Status200OK)
@@ -95,7 +104,12 @@ public static class AttendanceTypeEndpoints
                         instrumentation,
                         "endpoint.attendance_type.create"
                     );
-                    var result = await service.Create(context.User.GetCongregationId(), dto, ct);
+                    var result = await service.Create(
+                        context.User.GetCongregationId(),
+                        dto,
+                        context,
+                        ct
+                    );
                     return result.ToResult();
                 }
             )
@@ -103,13 +117,20 @@ public static class AttendanceTypeEndpoints
             .WithSummary("Creates a new attendance type.")
             .WithDescription(
                 """
-                Creates a new attendance type scoped to the authenticated congregation. Once created, it becomes available for use when recording attendance.
+                Creates a new attendance type — for example "Sunday Service", "Midweek Service", or "Prayer Meeting". Scoped to the caller's congregation.
 
-                On success, returns `201 Created` with the full attendance type record and a `Location` header pointing to the newly created resource.
+                ### Request body
+                - `name` — required. Minimum 1 character, maximum 100. Should be unique within the congregation for practical purposes, though this is not enforced as a hard constraint.
 
-                ### Errors
-                - `400 BAD_REQUEST` — malformed request body.
-                - `400 VALIDATION_ERROR` — one or more fields failed validation. Inspect the `errors` object.
+                ### On success
+                Returns `201 Created` with the full `AttendanceTypeResponseDto` and a `Location` header pointing to `GET /attendance-types/{id}`.
+
+                ### Side effects
+                - The type becomes immediately available for use when creating Attendance records.
+
+                ### Failure modes
+                - `400 BAD_REQUEST` — the request body is malformed.
+                - `400 VALIDATION_ERROR` — `name` failed validation (missing, empty, or longer than 100 characters).
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
                 """
             )
@@ -146,13 +167,17 @@ public static class AttendanceTypeEndpoints
             .WithSummary("Updates an existing attendance type.")
             .WithDescription(
                 """
-                Replaces the fields of an existing attendance type. Existing attendance records that reference this type retain their assignment after the update.
+                Updates an attendance type's name. Partial update — only fields present in the request are changed.
 
-                ### Errors
-                - `400 BAD_REQUEST` — malformed request body.
-                - `400 VALIDATION_ERROR` — one or more fields failed validation. Inspect the `errors` object.
+                ### Side effects
+                - **Existing attendance records that reference this type are not affected** and continue to work. They will now display the updated name in their `attendanceTypeName` field.
+                - Records created before the rename are indistinguishable from records created after — there is no versioning of the type name on historical records.
+
+                ### Failure modes
+                - `400 BAD_REQUEST` — the request body is malformed.
+                - `400 VALIDATION_ERROR` — `name` failed validation.
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
-                - `404 NOT_FOUND` — no attendance type exists with the given ID in this congregation, or it has been soft-deleted.
+                - `404 NOT_FOUND` — no attendance type exists with the given ID in this congregation, or the record has been soft-deleted.
                 """
             )
             .Produces<AttendanceTypeResponseDto>(StatusCodes.Status200OK)
@@ -183,13 +208,22 @@ public static class AttendanceTypeEndpoints
             .WithSummary("Soft deletes an attendance type.")
             .WithDescription(
                 """
-                Marks the attendance type as deleted. The record is retained in the database but excluded from all list, search, and lookup results.
+                Soft-deletes the attendance type. The row is retained in the database but excluded from list, search, and lookup responses.
 
-                Returns `204 No Content` on success.
+                ### On success
+                Returns `204 No Content` with no body.
 
-                ### Errors
+                ### Side effects
+                - The type is marked as deleted.
+                - **Existing attendance records that reference this type are not affected.** They remain in the database with a foreign key to the (now deleted) type. In list responses, `attendanceTypeName` may resolve as null or as the stale name depending on the join, since the type lookup no longer finds the record.
+                - **New attendance records cannot reference a deleted type** — the FK lookup will fail with `404 FOREIGN_KEY_NOT_FOUND`.
+
+                ### When to use this
+                Only when a type is genuinely obsolete. If you just want to stop using a type for new records, consider leaving it in place — the reference integrity cost of deletion is higher than the readability cost of a stale type in a dropdown.
+
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
-                - `404 NOT_FOUND` — no attendance type exists with the given ID in this congregation, or it has already been soft-deleted.
+                - `404 NOT_FOUND` — no attendance type exists with the given ID in this congregation, or the record has already been soft-deleted.
                 """
             )
             .Produces(StatusCodes.Status204NoContent)
@@ -219,12 +253,19 @@ public static class AttendanceTypeEndpoints
             .WithSummary("Searches attendance types by name.")
             .WithDescription(
                 """
-                Performs a trigram-based similarity search against attendance type names using `pg_trgm`. Results are ranked by similarity to the query string `q`. Returns a flat list — no pagination.
+                Trigram-based similarity search over attendance type names using `pg_trgm`.
 
-                This endpoint is rate-limited. Excessive requests will be rejected.
+                ### Query parameter
+                - `q` — required. Case-insensitive. Partial matches supported.
 
-                ### Errors
+                ### On success
+                Returns `200 OK` with a flat array of `AttendanceTypeSearchResultDto`, ranked by similarity. **No pagination.**
+
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
+
+                ### Rate limiting
+                Rate-limited per the `search` policy.
                 """
             )
             .RequireRateLimiting("search")

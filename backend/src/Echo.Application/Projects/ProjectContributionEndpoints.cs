@@ -46,15 +46,24 @@ public static class ProjectContributionEndpoints
             .WithSummary("Returns a paginated list of project contributions.")
             .WithDescription(
                 """
-                Returns a cursor-paginated list of project contributions scoped to the authenticated congregation.
+                Returns a cursor-paginated list of Project Contributions scoped to the caller's congregation.
 
                 ### Filtering
-                Filter by project, member, or date range. All filters are optional and combinable.
+                All filters are optional and combinable:
+                - `projectId` — contributions toward one Project.
+                - `minAmount` / `maxAmount` — filter by amount range.
+                - `paymentMethod` — `Cash`, `Cheque`, `CreditCard`, `MobileMoney`, `BankTransfer`.
+                - `from` / `to` — filter by contribution date range.
+
+                **There is no member filter.** Contributions are anonymous — no member is referenced. See the **Project Contributions** tag description for the reasoning.
+
+                ### Ordering
+                Contributions are ordered by contribution date, most recent first. Stable across pages.
 
                 ### Pagination
-                Pass the `next` cursor from the previous response as the `cursor` query parameter to fetch the next page. When `hasMore` is false no further pages exist.
+                Pass the `next` cursor from the previous response as the `cursor` query parameter. When `hasMore` is `false`, `next` is null.
 
-                ### Errors
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
                 """
             )
@@ -84,11 +93,13 @@ public static class ProjectContributionEndpoints
             .WithSummary("Returns a single project contribution by ID.")
             .WithDescription(
                 """
-                Returns the full project contribution record for the given ID, scoped to the authenticated congregation.
+                Returns the full Project Contribution record for the given ID, scoped to the caller's congregation.
 
-                ### Errors
+                The response includes the resolved `projectName` — no follow-up call needed.
+
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
-                - `404 NOT_FOUND` — no project contribution exists with the given ID in this congregation, or it has been soft-deleted.
+                - `404 NOT_FOUND` — no contribution exists with the given ID in this congregation, or the record has been soft-deleted.
                 """
             )
             .Produces<ProjectContributionResponseDto>(StatusCodes.Status200OK)
@@ -110,7 +121,12 @@ public static class ProjectContributionEndpoints
                         instrumentation,
                         "endpoint.project_contribution.create"
                     );
-                    var result = await service.Create(context.User.GetCongregationId(), dto, ct);
+                    var result = await service.Create(
+                        context.User.GetCongregationId(),
+                        dto,
+                        context,
+                        ct
+                    );
                     return result.ToResult();
                 }
             )
@@ -118,21 +134,37 @@ public static class ProjectContributionEndpoints
             .WithSummary("Records a new project contribution.")
             .WithDescription(
                 """
-                Records a financial or in-kind contribution made by a member toward a specific project. Both the member and the project must exist within the same congregation.
+                Records a contribution made toward a Project.
 
-                On success, returns `201 Created` with the full contribution record and a `Location` header pointing to the newly created resource.
+                ### Request body
+                Required fields:
+                - `projectId` — must reference a Project in the caller's congregation.
+                - `amount` — 0.01 to 1,000,000.
+                - `dateContributed` — ISO date.
+                - `paymentMethod` — `Cash`, `Cheque`, `CreditCard`, `MobileMoney`, `BankTransfer`.
+                - `description` — up to 2000 characters. Required even though the schema permits an empty string — the DTO marks this field non-nullable.
 
-                ### Errors
-                - `400 BAD_REQUEST` — malformed request body.
+                ### Contributions are anonymous
+                **There is no member field.** Contributions are not attributed to a Member. This is by design — see the **Project Contributions** tag description. If you need member-attributed giving, use Tithes.
+
+                ### On success
+                Returns `201 Created` with the full `ProjectContributionResponseDto` and a `Location` header pointing to `GET /project-contributions/{id}`.
+
+                ### Side effects
+                - The contribution is recorded.
+                - **`GET /projects/summary` will reflect the new amount in `totalRaised`** on the next call.
+
+                ### Failure modes
+                - `400 BAD_REQUEST` — the request body is malformed.
                 - `400 VALIDATION_ERROR` — one or more fields failed validation. Inspect the `errors` object.
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
-                - `404 FOREIGN_KEY_NOT_FOUND` — the referenced member or project does not exist in this congregation.
+                - `404 FOREIGN_KEY_NOT_FOUND` — the referenced project does not exist in this congregation.
                 """
             )
             .Produces<ProjectContributionResponseDto>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest)
-            .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status401Unauthorized);
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status404NotFound);
 
         group
             .MapPut(
@@ -163,13 +195,24 @@ public static class ProjectContributionEndpoints
             .WithSummary("Updates an existing project contribution.")
             .WithDescription(
                 """
-                Replaces the fields of an existing project contribution. All updatable fields must be supplied.
+                Updates the supplied fields on an existing Project Contribution. Partial update.
 
-                ### Errors
-                - `400 BAD_REQUEST` — malformed request body.
-                - `400 VALIDATION_ERROR` — one or more fields failed validation. Inspect the `errors` object.
+                ### Request body
+                All fields optional: `amount`, `dateContributed`, `paymentMethod`, `description`.
+
+                **`projectId` is immutable.** You cannot move a contribution from one project to another. Delete the contribution and create a new one against the correct project.
+
+                ### On success
+                Returns `200 OK` with the full updated `ProjectContributionResponseDto`.
+
+                ### Side effects
+                - If the amount changed, `GET /projects/summary` recalculates `totalRaised` on next call.
+
+                ### Failure modes
+                - `400 BAD_REQUEST` — the request body is malformed.
+                - `400 VALIDATION_ERROR` — one or more fields failed validation.
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
-                - `404 NOT_FOUND` — no project contribution exists with the given ID in this congregation, or it has been soft-deleted.
+                - `404 NOT_FOUND` — no contribution exists with the given ID in this congregation, or the record has been soft-deleted.
                 """
             )
             .Produces<ProjectContributionResponseDto>(StatusCodes.Status200OK)
@@ -200,13 +243,22 @@ public static class ProjectContributionEndpoints
             .WithSummary("Soft deletes a project contribution.")
             .WithDescription(
                 """
-                Marks the project contribution as deleted. The record is retained in the database but excluded from all list and lookup results. Project summary totals will reflect the deletion.
+                Soft-deletes the Project Contribution. The row is retained in the database but excluded from list, summary, and lookup responses.
 
-                Returns `204 No Content` on success.
+                ### On success
+                Returns `204 No Content` with no body.
 
-                ### Errors
+                ### Side effects
+                - The contribution is marked as deleted.
+                - **Project summary totals will reflect the deletion.** `GET /projects/summary` and `GET /project-contributions/summary` recalculate from live contributions only.
+
+                ### When to use this
+                - The contribution was entered by mistake.
+                - The contribution was refunded or reversed and the congregation does not want it in the totals.
+
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
-                - `404 NOT_FOUND` — no project contribution exists with the given ID in this congregation, or it has already been soft-deleted.
+                - `404 NOT_FOUND` — no contribution exists with the given ID in this congregation, or the record has already been soft-deleted.
                 """
             )
             .Produces(StatusCodes.Status204NoContent)
@@ -240,13 +292,18 @@ public static class ProjectContributionEndpoints
             .WithSummary("Returns aggregate summary metrics for project contributions.")
             .WithDescription(
                 """
-                Returns aggregated contribution metrics for the congregation, optionally scoped by the same filters available on the list endpoint.
+                Returns aggregated contribution metrics for the caller's congregation, optionally scoped by the same filters as the list endpoint.
 
-                ### Response includes
-                - `totalContributions` — count of contributions matching the filter.
-                - `totalAmount` — sum of all contribution amounts matching the filter.
+                ### Response fields
+                - `totalContributed` — sum of amounts across matching contributions.
+                - `totalContributions` — count of matching contributions.
+                - `averageAmount` — mean contribution size.
+                - `mostUsedPaymentMethod` — the payment method with the most contributions, as a string. Null when no contributions match.
 
-                ### Errors
+                ### Difference from `/projects/summary`
+                This endpoint aggregates across **all** contributions unless filtered by `projectId`. `GET /projects/summary` aggregates per project. Use this one when you want congregation-wide contribution stats; use that one when you want per-project funding progress.
+
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
                 """
             )

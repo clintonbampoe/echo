@@ -35,11 +35,14 @@ public static class ProjectCategoryEndpoints
             .WithSummary("Returns all project categories for the congregation.")
             .WithDescription(
                 """
-                Returns the complete list of project categories for the authenticated congregation. Project categories are lightweight lookup entities — no pagination is applied and the full list is always returned.
+                Returns the complete list of Project Categories for the caller's congregation.
 
-                Fetch this list to populate category selectors when creating or updating projects.
+                ### No pagination
+                Plain array, not a paged envelope. Project Categories are lightweight lookup entities bounded in number.
 
-                ### Errors
+                Call this to populate the category selector when creating or updating Projects.
+
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
                 """
             )
@@ -69,11 +72,14 @@ public static class ProjectCategoryEndpoints
             .WithSummary("Returns a single project category by ID.")
             .WithDescription(
                 """
-                Returns the project category record for the given ID, scoped to the authenticated congregation.
+                Returns the Project Category record for the given ID, scoped to the caller's congregation.
 
-                ### Errors
+                ### ID is an integer
+                Project Category IDs are 32-bit integers, not UUIDs.
+
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
-                - `404 NOT_FOUND` — no project category exists with the given ID in this congregation, or it has been soft-deleted.
+                - `404 NOT_FOUND` — no project category exists with the given ID in this congregation, or the record has been soft-deleted.
                 """
             )
             .Produces<ProjectCategoryResponseDto>(StatusCodes.Status200OK)
@@ -95,7 +101,12 @@ public static class ProjectCategoryEndpoints
                         instrumentation,
                         "endpoint.project_category.create"
                     );
-                    var result = await service.Create(context.User.GetCongregationId(), dto, ct);
+                    var result = await service.Create(
+                        context.User.GetCongregationId(),
+                        dto,
+                        context,
+                        ct
+                    );
                     return result.ToResult();
                 }
             )
@@ -103,13 +114,17 @@ public static class ProjectCategoryEndpoints
             .WithSummary("Creates a new project category.")
             .WithDescription(
                 """
-                Creates a new project category scoped to the authenticated congregation. Once created, the category becomes available for assignment to projects.
+                Creates a new Project Category — for example Construction, Outreach, or Equipment. Scoped to the caller's congregation.
 
-                On success, returns `201 Created` with the full category record and a `Location` header pointing to the newly created resource.
+                ### Request body
+                - `name` — required. 1 to 100 characters.
 
-                ### Errors
-                - `400 BAD_REQUEST` — malformed request body.
-                - `400 VALIDATION_ERROR` — one or more fields failed validation. Inspect the `errors` object.
+                ### On success
+                Returns `201 Created` with the full `ProjectCategoryResponseDto` and a `Location` header pointing to `GET /project-categories/{id}`.
+
+                ### Failure modes
+                - `400 BAD_REQUEST` — the request body is malformed.
+                - `400 VALIDATION_ERROR` — `name` failed validation.
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
                 """
             )
@@ -146,13 +161,16 @@ public static class ProjectCategoryEndpoints
             .WithSummary("Updates an existing project category.")
             .WithDescription(
                 """
-                Replaces the fields of an existing project category. Existing projects assigned to this category retain their assignment after the update.
+                Updates the name of a Project Category. Partial update.
 
-                ### Errors
-                - `400 BAD_REQUEST` — malformed request body.
-                - `400 VALIDATION_ERROR` — one or more fields failed validation. Inspect the `errors` object.
+                ### Side effects
+                - **Existing Projects assigned to this category are not affected.** They will display the new name via `categoryName` on next fetch.
+
+                ### Failure modes
+                - `400 BAD_REQUEST` — the request body is malformed.
+                - `400 VALIDATION_ERROR` — `name` failed validation.
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
-                - `404 NOT_FOUND` — no project category exists with the given ID in this congregation, or it has been soft-deleted.
+                - `404 NOT_FOUND` — no project category exists with the given ID in this congregation, or the record has been soft-deleted.
                 """
             )
             .Produces<ProjectCategoryResponseDto>(StatusCodes.Status200OK)
@@ -183,13 +201,19 @@ public static class ProjectCategoryEndpoints
             .WithSummary("Soft deletes a project category.")
             .WithDescription(
                 """
-                Marks the project category as deleted. The record is retained in the database but excluded from all list, search, and lookup results. Existing projects that reference this category are not affected.
+                Soft-deletes the Project Category. The row is retained in the database but excluded from list, search, and lookup responses.
 
-                Returns `204 No Content` on success.
+                ### On success
+                Returns `204 No Content` with no body.
 
-                ### Errors
+                ### Side effects
+                - The category is marked as deleted.
+                - **Existing Projects assigned to this category are not affected.** They keep their `categoryId` pointing at the deleted category. `categoryName` may resolve to null on fetch.
+                - **New projects cannot reference a deleted category** — the FK lookup will fail with `404 FOREIGN_KEY_NOT_FOUND`.
+
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
-                - `404 NOT_FOUND` — no project category exists with the given ID in this congregation, or it has already been soft-deleted.
+                - `404 NOT_FOUND` — no project category exists with the given ID in this congregation, or the record has already been soft-deleted.
                 """
             )
             .Produces(StatusCodes.Status204NoContent)
@@ -219,12 +243,19 @@ public static class ProjectCategoryEndpoints
             .WithSummary("Searches project categories by name.")
             .WithDescription(
                 """
-                Performs a trigram-based similarity search against project category names using `pg_trgm`. Results are ranked by similarity to the query string `q`. Returns a flat list — no pagination.
+                Trigram-based similarity search over project category names using `pg_trgm`.
 
-                This endpoint is rate-limited. Excessive requests will be rejected.
+                ### Query parameter
+                - `q` — required. Case-insensitive.
 
-                ### Errors
+                ### On success
+                Returns `200 OK` with a flat array of `ProjectCategorySearchResultDto`. **No pagination.**
+
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
+
+                ### Rate limiting
+                Rate-limited per the `search` policy.
                 """
             )
             .RequireRateLimiting("search")

@@ -45,15 +45,27 @@ public static class MemberEndpoints
             .WithSummary("Returns a paginated list of members.")
             .WithDescription(
                 """
-                Returns a cursor-paginated list of members scoped to the authenticated congregation.
+                Returns a cursor-paginated list of Members scoped to the caller's congregation.
 
                 ### Filtering
-                Filter by gender, marital status, region, membership status, or join date range. All filters are optional and combinable.
+                All filters are optional and combinable:
+
+                - `name` — partial, case-insensitive match against the member's full name.
+                - `status` — `Active`, `Inactive`, `Archived`, `Transferred`.
+                - `gender` — `Male`, `Female`, `Other`.
+                - `region` — one of the sixteen Ghana regions (`Ashanti`, `GreaterAccra`, …).
+                - `maritalStatus` — `Single`, `Married`, `Widowed`.
+                - `from` / `to` — filter by joined-date range (inclusive).
+
+                Omitting all filters returns every active member.
+
+                ### Ordering
+                Members are ordered by name, then by ID as a tiebreaker. Stable across pages.
 
                 ### Pagination
-                Pass the `next` cursor from the previous response as the `cursor` query parameter to fetch the next page. When `hasMore` is false no further pages exist.
+                Pass the `next` cursor from the previous response as the `cursor` query parameter. When `hasMore` is `false`, `next` is null.
 
-                ### Errors
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
                 """
             )
@@ -78,11 +90,11 @@ public static class MemberEndpoints
             .WithSummary("Returns a single member by ID.")
             .WithDescription(
                 """
-                Returns the full member profile for the given ID, scoped to the authenticated congregation. Includes personal details, contact information, next of kin, and membership status.
+                Returns the full member profile for the given ID, scoped to the caller's congregation. Includes personal details, contact information, next of kin, and membership status.
 
-                ### Errors
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
-                - `404 NOT_FOUND` — no member exists with the given ID in this congregation, or they have been soft-deleted.
+                - `404 NOT_FOUND` — no member exists with the given ID in this congregation, or the record has been soft-deleted.
                 """
             )
             .Produces<MemberResponseDto>(StatusCodes.Status200OK)
@@ -104,7 +116,12 @@ public static class MemberEndpoints
                         instrumentation,
                         "endpoint.member.create"
                     );
-                    var result = await service.Create(context.User.GetCongregationId(), dto, ct);
+                    var result = await service.Create(
+                        context.User.GetCongregationId(),
+                        dto,
+                        context,
+                        ct
+                    );
                     return result.ToResult();
                 }
             )
@@ -112,12 +129,32 @@ public static class MemberEndpoints
             .WithSummary("Creates a new member.")
             .WithDescription(
                 """
-                Creates a new member record scoped to the authenticated congregation. To convert an existing Visitor to a Member, use `POST /visitors/{id}/convert` instead.
+                Creates a new Member record scoped to the caller's congregation. This is the direct path — no visitor conversion involved.
 
-                On success, returns `201 Created` with the full member record and a `Location` header pointing to the newly created resource.
+                If you have a Visitor record and want to promote that person to a Member, use `POST /visitors/{id}/convert` instead. That endpoint preserves the existing person and history; this one creates a fresh record.
 
-                ### Errors
-                - `400 BAD_REQUEST` — malformed request body.
+                ### Request body
+                Required fields:
+                - `firstName`, `lastName`
+                - `phoneNumber`
+                - `residentialAddress`, `city`, `hometown`
+                - `nextOfKin`
+                - `emergencyContactName`, `emergencyContactPhoneNumber`
+
+                Optional fields:
+                - `otherNames`, `emailAddress`
+                - `dateOfBirth`, `joinedDate`
+                - `gender`, `region`, `maritalStatus`, `gpsAddress`, `status`
+
+                ### On success
+                Returns `201 Created` with the full `MemberResponseDto` and a `Location` header pointing to `GET /members/{id}`.
+
+                ### Side effects
+                - A new Person record and Member record are created in the caller's congregation.
+                - No user account is created — a Member is not the same as a User. If this person needs to sign in to Echo, create a User separately.
+
+                ### Failure modes
+                - `400 BAD_REQUEST` — the request body is malformed.
                 - `400 VALIDATION_ERROR` — one or more fields failed validation. Inspect the `errors` object.
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
                 """
@@ -155,13 +192,19 @@ public static class MemberEndpoints
             .WithSummary("Updates an existing member.")
             .WithDescription(
                 """
-                Replaces the fields of an existing member record. All updatable fields must be supplied — this is a full replacement, not a partial update.
+                Updates the supplied fields on an existing Member. This is a partial update — omitted fields retain their current values.
 
-                ### Errors
-                - `400 BAD_REQUEST` — malformed request body.
-                - `400 VALIDATION_ERROR` — one or more fields failed validation. Inspect the `errors` object.
+                ### Request body
+                All fields are optional. Supply only what you intend to change. The DTO mirrors `MemberCreateDto` but every field accepts null.
+
+                ### On success
+                Returns `200 OK` with the full updated `MemberResponseDto`.
+
+                ### Failure modes
+                - `400 BAD_REQUEST` — the request body is malformed.
+                - `400 VALIDATION_ERROR` — one or more fields failed validation.
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
-                - `404 NOT_FOUND` — no member exists with the given ID in this congregation, or they have been soft-deleted.
+                - `404 NOT_FOUND` — no member exists with the given ID in this congregation, or the record has been soft-deleted.
                 """
             )
             .Produces<MemberResponseDto>(StatusCodes.Status200OK)
@@ -187,13 +230,23 @@ public static class MemberEndpoints
             .WithSummary("Soft deletes a member.")
             .WithDescription(
                 """
-                Marks the member as deleted. The record is retained in the database but excluded from all list, search, and lookup results. Existing attendance, organization membership, and contribution records linked to this member are not affected.
+                Soft-deletes the Member **and** the underlying Person record. The rows are retained in the database but excluded from list, search, and lookup responses.
 
-                Returns `204 No Content` on success.
+                ### On success
+                Returns `204 No Content` with no body.
 
-                ### Errors
+                ### Side effects
+                - The Member is marked as deleted.
+                - The Person record backing the Member is also soft-deleted.
+                - **Records linked to the member are not affected.** Attendance, organization memberships, tithe records, event registrations, and event attendance all remain in the database and continue to reference the deleted member. Queries that join to the member will see it as missing.
+                - **User accounts are not affected.** If a User account exists that happens to correspond to this person, it remains active. The two records are not linked.
+
+                ### Reversibility
+                Not exposed as reversible through the API.
+
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
-                - `404 NOT_FOUND` — no member exists with the given ID in this congregation, or they have already been soft-deleted.
+                - `404 NOT_FOUND` — no member exists with the given ID in this congregation, or the record has already been soft-deleted.
                 """
             )
             .Produces(StatusCodes.Status204NoContent)
@@ -223,12 +276,19 @@ public static class MemberEndpoints
             .WithSummary("Searches members by name.")
             .WithDescription(
                 """
-                Performs a trigram-based similarity search against member names using `pg_trgm`. Searches across full name, first name, and last name. Results are ranked by similarity to the query string `q`. Returns a flat list — no pagination.
+                Trigram-based similarity search against member names using `pg_trgm`. Searches across full name, first name, and last name — a query of `"Ama Mensah"` matches a member named that, and a query of `"Mensah"` matches any member with that surname.
 
-                This endpoint is rate-limited. Excessive requests will be rejected.
+                ### Query parameter
+                - `q` — required. Case-insensitive.
 
-                ### Errors
+                ### On success
+                Returns `200 OK` with a flat array of `MemberSearchResultDto`, ranked by similarity. **No pagination.** Each result includes `id`, `name`, and `phoneNumber` — enough to disambiguate common names without a follow-up call.
+
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
+
+                ### Rate limiting
+                Rate-limited per the `search` policy. Debounce the query in the UI.
                 """
             )
             .RequireRateLimiting("search")
@@ -262,13 +322,18 @@ public static class MemberEndpoints
             .WithSummary("Returns aggregate summary metrics for members.")
             .WithDescription(
                 """
-                Returns aggregated membership metrics for the congregation, optionally scoped by the same filters available on the list endpoint.
+                Returns aggregated membership counts for the caller's congregation, optionally scoped by the same filter set as the list endpoint.
 
-                ### Response Includes
-                - `totalMembers` — total count of active members matching the filter.
-                - Breakdowns by gender, status, and region where applicable.
+                ### Response fields
+                - `totalMembers` — count of members matching the filter.
+                - `activeMembers` — count of members with `status = Active`.
+                - `maleCount` — count with `gender = Male`.
+                - `femaleCount` — count with `gender = Female`.
+                - `averageAge` — mean age in years, computed from `dateOfBirth`.
 
-                ### Errors
+                Age is calculated against the current date; members with no `dateOfBirth` are excluded from the average but still counted in the totals.
+
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
                 """
             )

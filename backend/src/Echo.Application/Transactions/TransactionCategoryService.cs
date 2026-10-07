@@ -1,6 +1,7 @@
 using Echo.Data;
 using Echo.Domain.Transactions;
 using Echo.Shared.HttpResults;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 
@@ -62,6 +63,7 @@ public class TransactionCategoryService(
     public async Task<IOperationResult> Create(
         Guid congregationId,
         TransactionCategoryCreateDto dto,
+        HttpContext httpContext,
         CancellationToken ct
     )
     {
@@ -84,7 +86,7 @@ public class TransactionCategoryService(
         var res = mapper.ToDto(entity);
 
         var location =
-            linker.GetPathByName("GetTransactionCategoryById", new { id = res.Id })
+            linker.GetPathByName(httpContext, "GetTransactionCategoryById", new { id = res.Id })
             ?? throw new InvalidOperationException(
                 "Route 'GetTransactionCategoryById' is not registered."
             );

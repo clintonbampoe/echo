@@ -44,15 +44,24 @@ public static class AttendanceEndpoints
             .WithSummary("Returns a paginated list of attendance records.")
             .WithDescription(
                 """
-                Returns a cursor-paginated list of attendance records scoped to the authenticated congregation.
+                Returns a cursor-paginated list of general attendance records scoped to the caller's congregation.
+
+                ### What is a general attendance record
+                A record linking a **person** (Member or Visitor) to an Attendance Type on a specific date. This is not the same as Event Attendance — see the **Attendance** tag description for the distinction.
 
                 ### Filtering
-                Filter by date range, member ID, or attendance type ID. All filters are optional and combinable.
+                All filters are optional and combinable:
+                - `attendanceTypeId` — records of one specific type.
+                - `kind` — `Member` or `Visitor`. Filter to just members or just visitors.
+                - `from` / `to` — filter by attendance date range (inclusive).
+
+                ### Ordering
+                Attendance records are ordered by date (most recent first), then by ID as a tiebreaker. Stable across pages.
 
                 ### Pagination
-                Pass the `next` cursor from the previous response as the `cursor` query parameter to fetch the next page. When `hasMore` is false no further pages exist.
+                Pass the `next` cursor from the previous response as the `cursor` query parameter. When `hasMore` is `false`, `next` is null.
 
-                ### Errors
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
                 """
             )
@@ -82,11 +91,13 @@ public static class AttendanceEndpoints
             .WithSummary("Returns a single attendance record by ID.")
             .WithDescription(
                 """
-                Returns the full attendance record for the given ID, scoped to the authenticated congregation.
+                Returns one attendance record, scoped to the caller's congregation.
 
-                ### Errors
+                The response includes the resolved `attendanceTypeName`, `personName`, and `personKind` — the client does not need to follow up with additional calls to render the record.
+
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
-                - `404 NOT_FOUND` — no attendance record exists with the given ID in this congregation, or it has been soft-deleted.
+                - `404 NOT_FOUND` — no attendance record exists with the given ID in this congregation, or the record has been soft-deleted.
                 """
             )
             .Produces<AttendanceResponseDto>(StatusCodes.Status200OK)
@@ -108,7 +119,12 @@ public static class AttendanceEndpoints
                         instrumentation,
                         "endpoint.attendance.create"
                     );
-                    var result = await service.Create(context.User.GetCongregationId(), dto, ct);
+                    var result = await service.Create(
+                        context.User.GetCongregationId(),
+                        dto,
+                        context,
+                        ct
+                    );
                     return result.ToResult();
                 }
             )
@@ -116,20 +132,34 @@ public static class AttendanceEndpoints
             .WithSummary("Records a new attendance entry.")
             .WithDescription(
                 """
-                Records a new attendance entry linking a member to an attendance type on a specific date. Both the member and the attendance type must exist within the same congregation.
+                Records that a person attended a service or activity on a specific date.
 
-                On success, returns `201 Created` with the full attendance record and a `Location` header pointing to the newly created resource.
+                ### Request body
+                Required fields:
+                - `attendanceTypeId` — must reference an Attendance Type in the same congregation.
+                - `personId` — the Member or Visitor attending. Both kinds are accepted.
+                - `date` — the date of attendance.
 
-                ### Errors
-                - `400 BAD_REQUEST` — malformed request body.
+                Optional fields:
+                - `checkInTime` — the time of arrival, if known.
+                - `notes` — free-form, up to 2000 characters.
+
+                **The `personKind` is not supplied in the request.** The server derives it from the referenced person's current `Kind`. If the person later converts from Visitor to Member, existing attendance records keep the kind they were recorded with.
+
+                ### On success
+                Returns `201 Created` with the full `AttendanceResponseDto` and a `Location` header pointing to `GET /attendance/{id}`.
+
+                ### Failure modes
+                - `400 BAD_REQUEST` — the request body is malformed.
                 - `400 VALIDATION_ERROR` — one or more fields failed validation. Inspect the `errors` object.
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
-                - `404 FOREIGN_KEY_NOT_FOUND` — the referenced member or attendance type does not exist in this congregation.
+                - `404 FOREIGN_KEY_NOT_FOUND` — the referenced person or attendance type does not exist in this congregation.
                 """
             )
             .Produces<AttendanceResponseDto>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest)
-            .ProducesProblem(StatusCodes.Status401Unauthorized);
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status404NotFound);
 
         group
             .MapPut(
@@ -160,13 +190,26 @@ public static class AttendanceEndpoints
             .WithSummary("Updates an existing attendance record.")
             .WithDescription(
                 """
-                Replaces the fields of an existing attendance record. All updatable fields must be supplied.
+                Updates the check-in time or notes on an attendance record.
 
-                ### Errors
-                - `400 BAD_REQUEST` — malformed request body.
-                - `400 VALIDATION_ERROR` — one or more fields failed validation. Inspect the `errors` object.
+                ### What you can change
+                Only two fields are editable via this endpoint:
+                - `checkInTime`
+                - `notes`
+
+                **`personId`, `attendanceTypeId`, and `date` are immutable.** If you recorded the wrong person or the wrong date, delete the record and create a new one.
+
+                ### Request body
+                All fields optional. Partial update — omitted fields retain their values.
+
+                ### On success
+                Returns `200 OK` with the full updated `AttendanceResponseDto`.
+
+                ### Failure modes
+                - `400 BAD_REQUEST` — the request body is malformed.
+                - `400 VALIDATION_ERROR` — one or more fields failed validation.
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
-                - `404 NOT_FOUND` — no attendance record exists with the given ID in this congregation, or it has been soft-deleted.
+                - `404 NOT_FOUND` — no attendance record exists with the given ID in this congregation, or the record has been soft-deleted.
                 """
             )
             .Produces<AttendanceResponseDto>(StatusCodes.Status200OK)
@@ -197,13 +240,19 @@ public static class AttendanceEndpoints
             .WithSummary("Soft deletes an attendance record.")
             .WithDescription(
                 """
-                Marks the attendance record as deleted. The record is retained in the database but excluded from all list and lookup results.
+                Soft-deletes the attendance record. The row is retained in the database but excluded from list, summary, and lookup responses.
 
-                Returns `204 No Content` on success.
+                ### On success
+                Returns `204 No Content` with no body.
 
-                ### Errors
+                ### Side effects
+                - The record is marked as deleted.
+                - **Summary totals will reflect the deletion.** `GET /attendance/summary` recalculates from live records only.
+                - The person and the attendance type are not affected — only this one attendance record is removed.
+
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
-                - `404 NOT_FOUND` — no attendance record exists with the given ID in this congregation, or it has already been soft-deleted.
+                - `404 NOT_FOUND` — no attendance record exists with the given ID in this congregation, or the record has already been soft-deleted.
                 """
             )
             .Produces(StatusCodes.Status204NoContent)
@@ -237,11 +286,17 @@ public static class AttendanceEndpoints
             .WithSummary("Returns aggregate summary metrics for attendance.")
             .WithDescription(
                 """
-                Returns aggregated attendance metrics for the congregation, optionally scoped by the same filters available on the list endpoint.
+                Returns aggregated attendance counts for the caller's congregation, optionally scoped by the same filters as the list endpoint.
 
-                Use this endpoint to power reporting dashboards — total headcount, breakdowns by attendance type, and trends by date range.
+                ### Response fields
+                - `totalPresent` — count of all attendance records matching the filter.
+                - `membersPresent` — count where the person was a Member.
+                - `visitorsPresent` — count where the person was a Visitor.
+                - `firstTimeVisitors` — count of visitors appearing in attendance for the first time within the filter range.
 
-                ### Errors
+                Use this endpoint to power reporting dashboards. The filter parameters match the list endpoint exactly, so a summary and its corresponding list are guaranteed to describe the same population.
+
+                ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
                 """
             )

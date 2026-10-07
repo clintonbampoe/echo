@@ -6,6 +6,7 @@ using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 
@@ -160,6 +161,7 @@ public class EventRegistrationService(
     public async Task<IOperationResult> Create(
         Guid congregationId,
         EventRegistrationCreateDto dto,
+        HttpContext httpContext,
         CancellationToken ct
     )
     {
@@ -212,7 +214,7 @@ public class EventRegistrationService(
         var res = mapper.ToDto(entity);
 
         var location =
-            linker.GetPathByName("GetEventRegistrationById", new { id = res.Id })
+            linker.GetPathByName(httpContext, "GetEventRegistrationById", new { id = res.Id })
             ?? throw new InvalidOperationException(
                 "Route 'GetEventRegistrationById' is not registered."
             );

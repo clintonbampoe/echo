@@ -17,11 +17,15 @@ public static class ErrorCatalog
 
     public static string ToMarkdownTable()
     {
-        var rows = Entries.Select(e => $"| {e.Status} | `{e.ErrorCode}` | {e.Cause} |");
+        var rows = string.Join(
+            '\n',
+            Entries.Select(e => $"| {e.Status} | `{e.ErrorCode}` | {e.Cause} |")
+        );
+
         return $"""
             | Status | errorCode | Cause |
             |--------|-----------|-------|
-            {string.Join("\n            ", rows)}
+            {rows}
             """;
     }
 }

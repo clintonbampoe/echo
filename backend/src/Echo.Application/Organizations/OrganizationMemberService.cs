@@ -6,6 +6,7 @@ using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 
@@ -169,6 +170,7 @@ public class OrganizationMemberService(
     public async Task<IOperationResult> Create(
         Guid congregationId,
         OrganizationMemberCreateDto dto,
+        HttpContext httpContext,
         CancellationToken ct
     )
     {
@@ -222,7 +224,7 @@ public class OrganizationMemberService(
         var res = mapper.ToDto(entity);
 
         var location =
-            linker.GetPathByName("GetOrganizationMemberById", new { id = res.Id })
+            linker.GetPathByName(httpContext, "GetOrganizationMemberById", new { id = res.Id })
             ?? throw new InvalidOperationException(
                 "Route 'GetOrganizationMemberById' is not registered."
             );

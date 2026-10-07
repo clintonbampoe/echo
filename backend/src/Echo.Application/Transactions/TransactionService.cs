@@ -4,6 +4,7 @@ using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 
@@ -86,6 +87,7 @@ public class TransactionService(
     public async Task<IOperationResult> Create(
         Guid congregationId,
         TransactionCreateDto dto,
+        HttpContext httpContext,
         CancellationToken ct
     )
     {
@@ -124,7 +126,7 @@ public class TransactionService(
         var res = mapper.ToDto(entity);
 
         var location =
-            linker.GetPathByName("GetTransactionById", new { id = res.Id })
+            linker.GetPathByName(httpContext, "GetTransactionById", new { id = res.Id })
             ?? throw new InvalidOperationException("Route 'GetTransactionById' is not registered.");
         return new CreatedResult<TransactionResponseDto>(location, res);
     }
@@ -152,23 +154,27 @@ public class TransactionService(
             return new NotFoundResult(id.ToString());
         }
 
-        // Validate Category if it's being changed
-        if (dto.CategoryId != entity.CategoryId)
+        // Validate the NEW category, not the existing one.
+        if (dto.CategoryId.HasValue && dto.CategoryId.Value != entity.CategoryId)
         {
             TransactionCategory? category;
             using (
                 instrumentation.ActivitySource.StartActivity("svc.transaction.validate.category")
             )
             {
-                category = await categoryRepository.GetById(congregationId, entity.CategoryId, ct);
+                category = await categoryRepository.GetById(
+                    congregationId,
+                    dto.CategoryId.Value,
+                    ct
+                );
             }
 
             if (category is null)
             {
-                TransactionLog.UpdateCategoryNotFound(logger, congregationId, entity.CategoryId);
+                TransactionLog.UpdateCategoryNotFound(logger, congregationId, dto.CategoryId.Value);
                 return new ForeignKeyEntityNotFound(nameof(category));
             }
-            TransactionLog.UpdateCategoryFound(logger, congregationId, entity.CategoryId);
+            TransactionLog.UpdateCategoryFound(logger, congregationId, dto.CategoryId.Value);
         }
 
         mapper.Patch(dto, entity);

@@ -4,6 +4,7 @@ using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 
@@ -79,6 +80,7 @@ public class UserService(
     public async Task<IOperationResult> Create(
         Guid congregationId,
         UserCreateDto dto,
+        HttpContext httpContext,
         CancellationToken ct
     )
     {
@@ -89,7 +91,7 @@ public class UserService(
             if (await IsEmailTaken(dto.EmailAddress, ct))
             {
                 UserLog.CreateEmailTaken(logger, congregationId);
-                return new BadRequestResult("Email already exists or is invalid.");
+                return new ConflictResult("Email already exists or is invalid.");
             }
         }
 
@@ -109,7 +111,7 @@ public class UserService(
         var res = mapper.ToDto(entity);
 
         var location =
-            linker.GetPathByName("GetUserById", new { id = res.Id })
+            linker.GetPathByName(httpContext, "GetUserById", new { id = res.Id })
             ?? throw new InvalidOperationException("Route 'GetUserById' is not registered.");
         return new CreatedResult<UserResponseDto>(location, res);
     }

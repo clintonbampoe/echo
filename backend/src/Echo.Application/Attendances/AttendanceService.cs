@@ -6,6 +6,7 @@ using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 
@@ -89,6 +90,7 @@ public class AttendanceService(
     public async Task<IOperationResult> Create(
         Guid congregationId,
         AttendanceCreateDto dto,
+        HttpContext httpContext,
         CancellationToken ct
     )
     {
@@ -139,7 +141,7 @@ public class AttendanceService(
 
         var res = mapper.ToDto(entity);
         var location =
-            linker.GetPathByName("GetAttendanceById", new { id = res.Id })
+            linker.GetPathByName(httpContext, "GetAttendanceById", new { id = res.Id })
             ?? throw new InvalidOperationException("Route 'GetAttendanceById' is not registered.");
         return new CreatedResult<AttendanceResponseDto>(location, res);
     }
