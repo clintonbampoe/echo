@@ -24,6 +24,7 @@ builder
     .ConfigureInvalidModelStateResponse()
     .ConfigureApiRouting()
     .ConfigureControllerOptions()
+    .ConfigureJsonSerializer()
     .ConfigureSwaggerDocs()
     .ConfigureDbContext(builder.Configuration)
     .ConfigureApiVersioning()
@@ -53,6 +54,8 @@ if (app.Environment.IsDevelopment())
     app.UseScalarUi();
     app.MapOpenApi().AllowAnonymous();
 }
+
+app.ConfigureExceptionHandler();
 
 app.UseRouting();
 app.UseCors(Cors.FrontendPolicy);

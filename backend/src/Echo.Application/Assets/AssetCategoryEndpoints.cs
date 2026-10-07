@@ -33,6 +33,16 @@ public static class AssetCategoryEndpoints
             )
             .WithName("ListAssetCategories")
             .WithSummary("Returns all asset categories for the congregation.")
+            .WithDescription(
+                """
+                Returns the complete list of asset categories for the authenticated congregation. Asset categories are lightweight lookup entities — no pagination is applied and the full list is always returned.
+
+                Fetch this list to populate category selectors when creating or updating assets.
+
+                ### Errors
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                """
+            )
             .Produces<List<AssetCategoryResponseDto>>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized);
 
@@ -57,6 +67,15 @@ public static class AssetCategoryEndpoints
             )
             .WithName("GetAssetCategoryById")
             .WithSummary("Returns a single asset category by ID.")
+            .WithDescription(
+                """
+                Returns the asset category record for the given ID, scoped to the authenticated congregation.
+
+                ### Errors
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                - `404 NOT_FOUND` — no asset category exists with the given ID in this congregation, or it has been soft-deleted.
+                """
+            )
             .Produces<AssetCategoryResponseDto>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status401Unauthorized);
@@ -82,6 +101,18 @@ public static class AssetCategoryEndpoints
             )
             .WithName("CreateAssetCategory")
             .WithSummary("Creates a new asset category.")
+            .WithDescription(
+                """
+                Creates a new asset category scoped to the authenticated congregation. Once created, the category becomes available for assignment to assets.
+
+                On success, returns `201 Created` with the full category record and a `Location` header pointing to the newly created resource.
+
+                ### Errors
+                - `400 BAD_REQUEST` — malformed request body.
+                - `400 VALIDATION_ERROR` — one or more fields failed validation. Inspect the `errors` object.
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                """
+            )
             .Produces<AssetCategoryResponseDto>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status401Unauthorized);
@@ -113,6 +144,17 @@ public static class AssetCategoryEndpoints
             )
             .WithName("UpdateAssetCategory")
             .WithSummary("Updates an existing asset category.")
+            .WithDescription(
+                """
+                Replaces the fields of an existing asset category. All existing assets assigned to this category retain their assignment after the update.
+
+                ### Errors
+                - `400 BAD_REQUEST` — malformed request body.
+                - `400 VALIDATION_ERROR` — one or more fields failed validation. Inspect the `errors` object.
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                - `404 NOT_FOUND` — no asset category exists with the given ID in this congregation, or it has been soft-deleted.
+                """
+            )
             .Produces<AssetCategoryResponseDto>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status404NotFound)
@@ -139,6 +181,17 @@ public static class AssetCategoryEndpoints
             )
             .WithName("DeleteAssetCategory")
             .WithSummary("Soft deletes an asset category.")
+            .WithDescription(
+                """
+                Marks the asset category as deleted. The record is retained in the database but excluded from all list, search, and lookup results. Existing assets that reference this category are not affected.
+
+                Returns `204 No Content` on success.
+
+                ### Errors
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                - `404 NOT_FOUND` — no asset category exists with the given ID in this congregation, or it has already been soft-deleted.
+                """
+            )
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status401Unauthorized);
@@ -164,6 +217,16 @@ public static class AssetCategoryEndpoints
             )
             .WithName("SearchAssetCategories")
             .WithSummary("Searches asset categories by name.")
+            .WithDescription(
+                """
+                Performs a trigram-based similarity search against asset category names using `pg_trgm`. Results are ranked by similarity to the query string `q`. Returns a flat list — no pagination.
+
+                This endpoint is rate-limited. Excessive requests will be rejected.
+
+                ### Errors
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                """
+            )
             .RequireRateLimiting("search")
             .Produces<List<AssetCategorySearchResultDto>>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized);

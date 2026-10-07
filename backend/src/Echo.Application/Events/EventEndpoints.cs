@@ -43,6 +43,20 @@ public static class EventEndpoints
             )
             .WithName("ListEvents")
             .WithSummary("Returns a paginated list of events.")
+            .WithDescription(
+                """
+                Returns a cursor-paginated list of events scoped to the authenticated congregation.
+
+                ### Filtering
+                Filter by date range or status. All filters are optional and combinable.
+
+                ### Pagination
+                Pass the `next` cursor from the previous response as the `cursor` query parameter to fetch the next page. When `hasMore` is false no further pages exist.
+
+                ### Errors
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                """
+            )
             .Produces<PagedResponse<EventResponseDto>>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized);
 
@@ -62,6 +76,15 @@ public static class EventEndpoints
             )
             .WithName("GetEventById")
             .WithSummary("Returns a single event by ID.")
+            .WithDescription(
+                """
+                Returns the full event record for the given ID, scoped to the authenticated congregation.
+
+                ### Errors
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                - `404 NOT_FOUND` — no event exists with the given ID in this congregation, or it has been soft-deleted.
+                """
+            )
             .Produces<EventResponseDto>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status401Unauthorized);
@@ -87,6 +110,18 @@ public static class EventEndpoints
             )
             .WithName("CreateEvent")
             .WithSummary("Creates a new event.")
+            .WithDescription(
+                """
+                Creates a new event scoped to the authenticated congregation. Once created, the event is available for registrations and attendance tracking via the Event Registrations and Event Attendance resources.
+
+                On success, returns `201 Created` with the full event record and a `Location` header pointing to the newly created resource.
+
+                ### Errors
+                - `400 BAD_REQUEST` — malformed request body.
+                - `400 VALIDATION_ERROR` — one or more fields failed validation. Inspect the `errors` object.
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                """
+            )
             .Produces<EventResponseDto>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status401Unauthorized);
@@ -118,6 +153,17 @@ public static class EventEndpoints
             )
             .WithName("UpdateEvent")
             .WithSummary("Updates an existing event.")
+            .WithDescription(
+                """
+                Replaces the fields of an existing event. All updatable fields must be supplied. Existing registrations and attendance records for this event are not affected.
+
+                ### Errors
+                - `400 BAD_REQUEST` — malformed request body.
+                - `400 VALIDATION_ERROR` — one or more fields failed validation. Inspect the `errors` object.
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                - `404 NOT_FOUND` — no event exists with the given ID in this congregation, or it has been soft-deleted.
+                """
+            )
             .Produces<EventResponseDto>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status404NotFound)
@@ -139,6 +185,17 @@ public static class EventEndpoints
             )
             .WithName("DeleteEvent")
             .WithSummary("Soft deletes an event.")
+            .WithDescription(
+                """
+                Marks the event as deleted. The record is retained in the database but excluded from all list, search, and lookup results.
+
+                Returns `204 No Content` on success.
+
+                ### Errors
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                - `404 NOT_FOUND` — no event exists with the given ID in this congregation, or it has already been soft-deleted.
+                """
+            )
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status401Unauthorized);
@@ -164,6 +221,16 @@ public static class EventEndpoints
             )
             .WithName("SearchEvents")
             .WithSummary("Searches events by name.")
+            .WithDescription(
+                """
+                Performs a trigram-based similarity search against event names using `pg_trgm`. Results are ranked by similarity to the query string `q`. Returns a flat list — no pagination.
+
+                This endpoint is rate-limited. Excessive requests will be rejected.
+
+                ### Errors
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                """
+            )
             .RequireRateLimiting("search")
             .Produces<List<EventSearchResultDto>>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized);

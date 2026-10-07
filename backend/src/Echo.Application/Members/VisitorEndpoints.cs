@@ -43,6 +43,20 @@ public static class VisitorEndpoints
             )
             .WithName("ListVisitors")
             .WithSummary("Returns a paginated list of visitors.")
+            .WithDescription(
+                """
+                Returns a cursor-paginated list of visitors scoped to the authenticated congregation. Only active visitor records are returned — converted and soft-deleted visitors are excluded.
+
+                ### Filtering
+                Filter by date range or status. All filters are optional and combinable.
+
+                ### Pagination
+                Pass the `next` cursor from the previous response as the `cursor` query parameter to fetch the next page. When `hasMore` is false no further pages exist.
+
+                ### Errors
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                """
+            )
             .Produces<PagedResponse<VisitorResponseDto>>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized);
 
@@ -67,6 +81,15 @@ public static class VisitorEndpoints
             )
             .WithName("GetVisitorById")
             .WithSummary("Returns a single visitor by ID.")
+            .WithDescription(
+                """
+                Returns the full visitor record for the given ID, scoped to the authenticated congregation.
+
+                ### Errors
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                - `404 NOT_FOUND` — no visitor exists with the given ID in this congregation, or they have been soft-deleted or converted.
+                """
+            )
             .Produces<VisitorResponseDto>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status401Unauthorized);
@@ -92,6 +115,18 @@ public static class VisitorEndpoints
             )
             .WithName("CreateVisitor")
             .WithSummary("Records a new visitor.")
+            .WithDescription(
+                """
+                Records a new visitor for the authenticated congregation. Use this when someone attends for the first time but is not yet a member.
+
+                On success, returns `201 Created` with the full visitor record and a `Location` header pointing to the newly created resource.
+
+                ### Errors
+                - `400 BAD_REQUEST` — malformed request body.
+                - `400 VALIDATION_ERROR` — one or more fields failed validation. Inspect the `errors` object.
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                """
+            )
             .Produces<VisitorResponseDto>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status401Unauthorized);
@@ -123,6 +158,17 @@ public static class VisitorEndpoints
             )
             .WithName("UpdateVisitor")
             .WithSummary("Updates an existing visitor.")
+            .WithDescription(
+                """
+                Replaces the fields of an existing visitor record. All updatable fields must be supplied.
+
+                ### Errors
+                - `400 BAD_REQUEST` — malformed request body.
+                - `400 VALIDATION_ERROR` — one or more fields failed validation. Inspect the `errors` object.
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                - `404 NOT_FOUND` — no visitor exists with the given ID in this congregation, or they have been soft-deleted or converted.
+                """
+            )
             .Produces<VisitorResponseDto>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status404NotFound)
@@ -149,6 +195,17 @@ public static class VisitorEndpoints
             )
             .WithName("DeleteVisitor")
             .WithSummary("Soft deletes a visitor.")
+            .WithDescription(
+                """
+                Marks the visitor as deleted. The record is retained in the database but excluded from all list, search, and lookup results.
+
+                Returns `204 No Content` on success.
+
+                ### Errors
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                - `404 NOT_FOUND` — no visitor exists with the given ID in this congregation, or they have already been soft-deleted.
+                """
+            )
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status401Unauthorized);
@@ -174,6 +231,16 @@ public static class VisitorEndpoints
             )
             .WithName("SearchVisitors")
             .WithSummary("Searches visitors by name.")
+            .WithDescription(
+                """
+                Performs a trigram-based similarity search against visitor names using `pg_trgm`. Results are ranked by similarity to the query string `q`. Returns a flat list — no pagination.
+
+                This endpoint is rate-limited. Excessive requests will be rejected.
+
+                ### Errors
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                """
+            )
             .RequireRateLimiting("search")
             .Produces<List<VisitorSearchResultDto>>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized);
@@ -205,6 +272,21 @@ public static class VisitorEndpoints
             )
             .WithName("ConvertVisitorToMember")
             .WithSummary("Converts a visitor record into a full member.")
+            .WithDescription(
+                """
+                Promotes an existing visitor to a full member. The request body supplies the additional fields required for a complete member profile that were not captured on the visitor record.
+
+                The original visitor record is retained for historical reference but is marked as converted and excluded from active visitor lists.
+
+                On success, returns `201 Created` with the new member record and a `Location` header pointing to it.
+
+                ### Errors
+                - `400 BAD_REQUEST` — malformed request body.
+                - `400 VALIDATION_ERROR` — one or more fields failed validation. Inspect the `errors` object.
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                - `404 NOT_FOUND` — no visitor exists with the given ID in this congregation, or they have been soft-deleted or already converted.
+                """
+            )
             .Produces<MemberResponseDto>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status401Unauthorized);
@@ -234,6 +316,18 @@ public static class VisitorEndpoints
             )
             .WithName("GetVisitorSummary")
             .WithSummary("Returns aggregate summary metrics for visitors.")
+            .WithDescription(
+                """
+                Returns aggregated visitor metrics for the congregation, optionally scoped by the same filters available on the list endpoint.
+
+                ### Response includes
+                - `totalVisitors` — count of active visitors matching the filter.
+                - Conversion trends and first-visit date breakdowns where applicable.
+
+                ### Errors
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                """
+            )
             .Produces<VisitorSummaryDto>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized);
 

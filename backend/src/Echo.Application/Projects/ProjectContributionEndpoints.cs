@@ -44,6 +44,20 @@ public static class ProjectContributionEndpoints
             )
             .WithName("ListProjectContributions")
             .WithSummary("Returns a paginated list of project contributions.")
+            .WithDescription(
+                """
+                Returns a cursor-paginated list of project contributions scoped to the authenticated congregation.
+
+                ### Filtering
+                Filter by project, member, or date range. All filters are optional and combinable.
+
+                ### Pagination
+                Pass the `next` cursor from the previous response as the `cursor` query parameter to fetch the next page. When `hasMore` is false no further pages exist.
+
+                ### Errors
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                """
+            )
             .Produces<PagedResponse<ProjectContributionResponseDto>>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized);
 
@@ -68,6 +82,15 @@ public static class ProjectContributionEndpoints
             )
             .WithName("GetProjectContributionById")
             .WithSummary("Returns a single project contribution by ID.")
+            .WithDescription(
+                """
+                Returns the full project contribution record for the given ID, scoped to the authenticated congregation.
+
+                ### Errors
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                - `404 NOT_FOUND` — no project contribution exists with the given ID in this congregation, or it has been soft-deleted.
+                """
+            )
             .Produces<ProjectContributionResponseDto>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status401Unauthorized);
@@ -93,6 +116,19 @@ public static class ProjectContributionEndpoints
             )
             .WithName("CreateProjectContribution")
             .WithSummary("Records a new project contribution.")
+            .WithDescription(
+                """
+                Records a financial or in-kind contribution made by a member toward a specific project. Both the member and the project must exist within the same congregation.
+
+                On success, returns `201 Created` with the full contribution record and a `Location` header pointing to the newly created resource.
+
+                ### Errors
+                - `400 BAD_REQUEST` — malformed request body.
+                - `400 VALIDATION_ERROR` — one or more fields failed validation. Inspect the `errors` object.
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                - `404 FOREIGN_KEY_NOT_FOUND` — the referenced member or project does not exist in this congregation.
+                """
+            )
             .Produces<ProjectContributionResponseDto>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status404NotFound)
@@ -125,6 +161,17 @@ public static class ProjectContributionEndpoints
             )
             .WithName("UpdateProjectContribution")
             .WithSummary("Updates an existing project contribution.")
+            .WithDescription(
+                """
+                Replaces the fields of an existing project contribution. All updatable fields must be supplied.
+
+                ### Errors
+                - `400 BAD_REQUEST` — malformed request body.
+                - `400 VALIDATION_ERROR` — one or more fields failed validation. Inspect the `errors` object.
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                - `404 NOT_FOUND` — no project contribution exists with the given ID in this congregation, or it has been soft-deleted.
+                """
+            )
             .Produces<ProjectContributionResponseDto>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status404NotFound)
@@ -151,6 +198,17 @@ public static class ProjectContributionEndpoints
             )
             .WithName("DeleteProjectContribution")
             .WithSummary("Soft deletes a project contribution.")
+            .WithDescription(
+                """
+                Marks the project contribution as deleted. The record is retained in the database but excluded from all list and lookup results. Project summary totals will reflect the deletion.
+
+                Returns `204 No Content` on success.
+
+                ### Errors
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                - `404 NOT_FOUND` — no project contribution exists with the given ID in this congregation, or it has already been soft-deleted.
+                """
+            )
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status401Unauthorized);
@@ -180,6 +238,18 @@ public static class ProjectContributionEndpoints
             )
             .WithName("GetProjectContributionSummary")
             .WithSummary("Returns aggregate summary metrics for project contributions.")
+            .WithDescription(
+                """
+                Returns aggregated contribution metrics for the congregation, optionally scoped by the same filters available on the list endpoint.
+
+                ### Response includes
+                - `totalContributions` — count of contributions matching the filter.
+                - `totalAmount` — sum of all contribution amounts matching the filter.
+
+                ### Errors
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                """
+            )
             .Produces<ProjectContributionSummaryDto>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized);
 

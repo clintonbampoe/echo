@@ -42,6 +42,20 @@ public static class TransactionEndpoints
             )
             .WithName("ListTransactions")
             .WithSummary("Returns a paginated list of transactions.")
+            .WithDescription(
+                """
+                Returns a cursor-paginated list of financial transactions scoped to the authenticated congregation.
+
+                ### Filtering
+                Filter by category, transaction type (income/expenditure), or date range. All filters are optional and combinable.
+
+                ### Pagination
+                Pass the `next` cursor from the previous response as the `cursor` query parameter to fetch the next page. When `hasMore` is false no further pages exist.
+
+                ### Errors
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                """
+            )
             .Produces<PagedResponse<TransactionResponseDto>>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized);
 
@@ -66,6 +80,15 @@ public static class TransactionEndpoints
             )
             .WithName("GetTransactionById")
             .WithSummary("Returns a single transaction by ID.")
+            .WithDescription(
+                """
+                Returns the full transaction record for the given ID, scoped to the authenticated congregation.
+
+                ### Errors
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                - `404 NOT_FOUND` — no transaction exists with the given ID in this congregation, or it has been soft-deleted.
+                """
+            )
             .Produces<TransactionResponseDto>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status401Unauthorized);
@@ -91,6 +114,19 @@ public static class TransactionEndpoints
             )
             .WithName("CreateTransaction")
             .WithSummary("Records a new transaction.")
+            .WithDescription(
+                """
+                Records a new financial transaction scoped to the authenticated congregation. The transaction must reference an existing Transaction Category within the same congregation.
+
+                On success, returns `201 Created` with the full transaction record and a `Location` header pointing to the newly created resource.
+
+                ### Errors
+                - `400 BAD_REQUEST` — malformed request body.
+                - `400 VALIDATION_ERROR` — one or more fields failed validation. Inspect the `errors` object.
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                - `404 FOREIGN_KEY_NOT_FOUND` — the referenced Transaction Category does not exist in this congregation.
+                """
+            )
             .Produces<TransactionResponseDto>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status404NotFound)
@@ -123,6 +159,17 @@ public static class TransactionEndpoints
             )
             .WithName("UpdateTransaction")
             .WithSummary("Updates an existing transaction.")
+            .WithDescription(
+                """
+                Replaces the fields of an existing transaction record. All updatable fields must be supplied.
+
+                ### Errors
+                - `400 BAD_REQUEST` — malformed request body.
+                - `400 VALIDATION_ERROR` — one or more fields failed validation. Inspect the `errors` object.
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                - `404 NOT_FOUND` — no transaction exists with the given ID in this congregation, or it has been soft-deleted.
+                """
+            )
             .Produces<TransactionResponseDto>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status404NotFound)
@@ -149,6 +196,17 @@ public static class TransactionEndpoints
             )
             .WithName("DeleteTransaction")
             .WithSummary("Soft deletes a transaction.")
+            .WithDescription(
+                """
+                Marks the transaction as deleted. The record is retained in the database but excluded from all list and lookup results. Transaction summary totals will reflect the deletion.
+
+                Returns `204 No Content` on success.
+
+                ### Errors
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                - `404 NOT_FOUND` — no transaction exists with the given ID in this congregation, or it has already been soft-deleted.
+                """
+            )
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status401Unauthorized);
@@ -178,6 +236,20 @@ public static class TransactionEndpoints
             )
             .WithName("GetTransactionSummary")
             .WithSummary("Returns aggregate summary metrics for transactions.")
+            .WithDescription(
+                """
+                Returns aggregated financial metrics for the congregation's transactions, optionally scoped by the same filters available on the list endpoint.
+
+                ### Response includes
+                - `totalTransactions` — count of transactions matching the filter.
+                - `totalIncome` — sum of all income transactions matching the filter.
+                - `totalExpenditure` — sum of all expenditure transactions matching the filter.
+                - `netBalance` — difference between total income and total expenditure.
+
+                ### Errors
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                """
+            )
             .Produces<TransactionSummaryDto>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized);
 

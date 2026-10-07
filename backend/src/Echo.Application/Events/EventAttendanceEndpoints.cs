@@ -42,6 +42,17 @@ public static class EventAttendanceEndpoints
             )
             .WithName("ListEventAttendance")
             .WithSummary("Returns a paginated list of event attendance records.")
+            .WithDescription(
+                """
+                Returns a cursor-paginated list of all event attendance records scoped to the authenticated congregation. To filter by a specific event or member use the dedicated sub-endpoints.
+
+                ### Pagination
+                Pass the `next` cursor from the previous response as the `cursor` query parameter to fetch the next page. When `hasMore` is false no further pages exist.
+
+                ### Errors
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                """
+            )
             .Produces<PagedResponse<EventAttendanceResponseDto>>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized);
 
@@ -66,6 +77,15 @@ public static class EventAttendanceEndpoints
             )
             .WithName("GetEventAttendanceById")
             .WithSummary("Returns a single event attendance record by ID.")
+            .WithDescription(
+                """
+                Returns the full event attendance record for the given ID, scoped to the authenticated congregation.
+
+                ### Errors
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                - `404 NOT_FOUND` — no event attendance record exists with the given ID in this congregation, or it has been soft-deleted.
+                """
+            )
             .Produces<EventAttendanceResponseDto>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status401Unauthorized);
@@ -97,6 +117,18 @@ public static class EventAttendanceEndpoints
             )
             .WithName("ListEventAttendanceByEvent")
             .WithSummary("Returns paginated attendance records for a specific event.")
+            .WithDescription(
+                """
+                Returns a cursor-paginated list of attendance records for the specified event. Use this to see who attended a particular event.
+
+                ### Pagination
+                Pass the `next` cursor from the previous response as the `cursor` query parameter to fetch the next page. When `hasMore` is false no further pages exist.
+
+                ### Errors
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                - `404 NOT_FOUND` — no event exists with the given ID in this congregation.
+                """
+            )
             .Produces<PagedResponse<EventAttendanceResponseDto>>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status401Unauthorized);
@@ -128,6 +160,18 @@ public static class EventAttendanceEndpoints
             )
             .WithName("ListEventAttendanceByMember")
             .WithSummary("Returns paginated attendance records for a specific member.")
+            .WithDescription(
+                """
+                Returns a cursor-paginated list of event attendance records for the specified member. Use this to see a member's full event attendance history.
+
+                ### Pagination
+                Pass the `next` cursor from the previous response as the `cursor` query parameter to fetch the next page. When `hasMore` is false no further pages exist.
+
+                ### Errors
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                - `404 NOT_FOUND` — no member exists with the given ID in this congregation.
+                """
+            )
             .Produces<PagedResponse<EventAttendanceResponseDto>>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status401Unauthorized);
@@ -153,6 +197,19 @@ public static class EventAttendanceEndpoints
             )
             .WithName("CreateEventAttendance")
             .WithSummary("Records attendance for an event.")
+            .WithDescription(
+                """
+                Records that a member attended a specific event. Both the member and the event must exist within the same congregation. A member may register for an event without attending — registrations and attendance are tracked separately.
+
+                On success, returns `201 Created` with the full attendance record and a `Location` header pointing to the newly created resource.
+
+                ### Errors
+                - `400 BAD_REQUEST` — malformed request body.
+                - `400 VALIDATION_ERROR` — one or more fields failed validation. Inspect the `errors` object.
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                - `404 FOREIGN_KEY_NOT_FOUND` — the referenced member or event does not exist in this congregation.
+                """
+            )
             .Produces<EventAttendanceResponseDto>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status404NotFound)
@@ -185,6 +242,17 @@ public static class EventAttendanceEndpoints
             )
             .WithName("UpdateEventAttendance")
             .WithSummary("Updates an existing event attendance record.")
+            .WithDescription(
+                """
+                Replaces the fields of an existing event attendance record. All updatable fields must be supplied.
+
+                ### Errors
+                - `400 BAD_REQUEST` — malformed request body.
+                - `400 VALIDATION_ERROR` — one or more fields failed validation. Inspect the `errors` object.
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                - `404 NOT_FOUND` — no event attendance record exists with the given ID in this congregation, or it has been soft-deleted.
+                """
+            )
             .Produces<EventAttendanceResponseDto>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status404NotFound)
@@ -211,6 +279,17 @@ public static class EventAttendanceEndpoints
             )
             .WithName("DeleteEventAttendance")
             .WithSummary("Soft deletes an event attendance record.")
+            .WithDescription(
+                """
+                Marks the event attendance record as deleted. The record is retained in the database but excluded from all list and lookup results.
+
+                Returns `204 No Content` on success.
+
+                ### Errors
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                - `404 NOT_FOUND` — no event attendance record exists with the given ID in this congregation, or it has already been soft-deleted.
+                """
+            )
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status401Unauthorized);

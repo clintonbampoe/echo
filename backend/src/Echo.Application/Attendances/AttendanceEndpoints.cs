@@ -42,6 +42,20 @@ public static class AttendanceEndpoints
             )
             .WithName("ListAttendance")
             .WithSummary("Returns a paginated list of attendance records.")
+            .WithDescription(
+                """
+                Returns a cursor-paginated list of attendance records scoped to the authenticated congregation.
+
+                ### Filtering
+                Filter by date range, member ID, or attendance type ID. All filters are optional and combinable.
+
+                ### Pagination
+                Pass the `next` cursor from the previous response as the `cursor` query parameter to fetch the next page. When `hasMore` is false no further pages exist.
+
+                ### Errors
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                """
+            )
             .Produces<PagedResponse<AttendanceResponseDto>>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized);
 
@@ -66,6 +80,15 @@ public static class AttendanceEndpoints
             )
             .WithName("GetAttendanceById")
             .WithSummary("Returns a single attendance record by ID.")
+            .WithDescription(
+                """
+                Returns the full attendance record for the given ID, scoped to the authenticated congregation.
+
+                ### Errors
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                - `404 NOT_FOUND` — no attendance record exists with the given ID in this congregation, or it has been soft-deleted.
+                """
+            )
             .Produces<AttendanceResponseDto>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status401Unauthorized);
@@ -91,6 +114,19 @@ public static class AttendanceEndpoints
             )
             .WithName("CreateAttendance")
             .WithSummary("Records a new attendance entry.")
+            .WithDescription(
+                """
+                Records a new attendance entry linking a member to an attendance type on a specific date. Both the member and the attendance type must exist within the same congregation.
+
+                On success, returns `201 Created` with the full attendance record and a `Location` header pointing to the newly created resource.
+
+                ### Errors
+                - `400 BAD_REQUEST` — malformed request body.
+                - `400 VALIDATION_ERROR` — one or more fields failed validation. Inspect the `errors` object.
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                - `404 FOREIGN_KEY_NOT_FOUND` — the referenced member or attendance type does not exist in this congregation.
+                """
+            )
             .Produces<AttendanceResponseDto>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status401Unauthorized);
@@ -122,6 +158,17 @@ public static class AttendanceEndpoints
             )
             .WithName("UpdateAttendance")
             .WithSummary("Updates an existing attendance record.")
+            .WithDescription(
+                """
+                Replaces the fields of an existing attendance record. All updatable fields must be supplied.
+
+                ### Errors
+                - `400 BAD_REQUEST` — malformed request body.
+                - `400 VALIDATION_ERROR` — one or more fields failed validation. Inspect the `errors` object.
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                - `404 NOT_FOUND` — no attendance record exists with the given ID in this congregation, or it has been soft-deleted.
+                """
+            )
             .Produces<AttendanceResponseDto>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status404NotFound)
@@ -148,6 +195,17 @@ public static class AttendanceEndpoints
             )
             .WithName("DeleteAttendance")
             .WithSummary("Soft deletes an attendance record.")
+            .WithDescription(
+                """
+                Marks the attendance record as deleted. The record is retained in the database but excluded from all list and lookup results.
+
+                Returns `204 No Content` on success.
+
+                ### Errors
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                - `404 NOT_FOUND` — no attendance record exists with the given ID in this congregation, or it has already been soft-deleted.
+                """
+            )
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status401Unauthorized);
@@ -177,6 +235,16 @@ public static class AttendanceEndpoints
             )
             .WithName("GetAttendanceSummary")
             .WithSummary("Returns aggregate summary metrics for attendance.")
+            .WithDescription(
+                """
+                Returns aggregated attendance metrics for the congregation, optionally scoped by the same filters available on the list endpoint.
+
+                Use this endpoint to power reporting dashboards — total headcount, breakdowns by attendance type, and trends by date range.
+
+                ### Errors
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                """
+            )
             .Produces<AttendanceSummaryDto>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized);
 

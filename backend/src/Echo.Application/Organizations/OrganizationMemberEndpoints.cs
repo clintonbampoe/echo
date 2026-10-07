@@ -44,6 +44,17 @@ public static class OrganizationMemberEndpoints
             )
             .WithName("ListOrganizationMembers")
             .WithSummary("Returns a paginated list of organization members.")
+            .WithDescription(
+                """
+                Returns a cursor-paginated list of all organization member assignments scoped to the authenticated congregation. To filter by a specific member or organization use the dedicated sub-endpoints.
+
+                ### Pagination
+                Pass the `next` cursor from the previous response as the `cursor` query parameter to fetch the next page. When `hasMore` is false no further pages exist.
+
+                ### Errors
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                """
+            )
             .Produces<PagedResponse<OrganizationMemberResponseDto>>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized);
 
@@ -68,6 +79,15 @@ public static class OrganizationMemberEndpoints
             )
             .WithName("GetOrganizationMemberById")
             .WithSummary("Returns a single organization member record by ID.")
+            .WithDescription(
+                """
+                Returns the full organization member assignment record for the given ID.
+
+                ### Errors
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                - `404 NOT_FOUND` — no organization member record exists with the given ID in this congregation, or it has been soft-deleted.
+                """
+            )
             .Produces<OrganizationMemberResponseDto>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status401Unauthorized);
@@ -101,6 +121,18 @@ public static class OrganizationMemberEndpoints
             )
             .WithName("ListOrganizationMembersByMember")
             .WithSummary("Returns paginated organization memberships for a specific member.")
+            .WithDescription(
+                """
+                Returns a cursor-paginated list of all organization assignments for the specified member. Use this to see every organization a member belongs to.
+
+                ### Pagination
+                Pass the `next` cursor from the previous response as the `cursor` query parameter to fetch the next page. When `hasMore` is false no further pages exist.
+
+                ### Errors
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                - `404 NOT_FOUND` — no member exists with the given ID in this congregation.
+                """
+            )
             .Produces<PagedResponse<OrganizationMemberResponseDto>>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status401Unauthorized);
@@ -134,6 +166,18 @@ public static class OrganizationMemberEndpoints
             )
             .WithName("ListOrganizationMembersByOrganization")
             .WithSummary("Returns paginated members for a specific organization.")
+            .WithDescription(
+                """
+                Returns a cursor-paginated list of all member assignments for the specified organization. Use this to see everyone who belongs to a particular organization.
+
+                ### Pagination
+                Pass the `next` cursor from the previous response as the `cursor` query parameter to fetch the next page. When `hasMore` is false no further pages exist.
+
+                ### Errors
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                - `404 NOT_FOUND` — no organization exists with the given ID in this congregation.
+                """
+            )
             .Produces<PagedResponse<OrganizationMemberResponseDto>>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status401Unauthorized);
@@ -159,6 +203,19 @@ public static class OrganizationMemberEndpoints
             )
             .WithName("CreateOrganizationMember")
             .WithSummary("Adds a member to an organization.")
+            .WithDescription(
+                """
+                Creates an assignment linking a member to an organization. Both the member and the organization must exist within the same congregation. A member can belong to multiple organizations simultaneously.
+
+                On success, returns `201 Created` with the full assignment record and a `Location` header pointing to the newly created resource.
+
+                ### Errors
+                - `400 BAD_REQUEST` — malformed request body.
+                - `400 VALIDATION_ERROR` — one or more fields failed validation. Inspect the `errors` object.
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                - `404 FOREIGN_KEY_NOT_FOUND` — the referenced member or organization does not exist in this congregation.
+                """
+            )
             .Produces<OrganizationMemberResponseDto>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status404NotFound)
@@ -191,6 +248,17 @@ public static class OrganizationMemberEndpoints
             )
             .WithName("UpdateOrganizationMember")
             .WithSummary("Updates an organization member record.")
+            .WithDescription(
+                """
+                Replaces the fields of an existing organization member assignment. Use this to update a member's role within an organization.
+
+                ### Errors
+                - `400 BAD_REQUEST` — malformed request body.
+                - `400 VALIDATION_ERROR` — one or more fields failed validation. Inspect the `errors` object.
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                - `404 NOT_FOUND` — no organization member record exists with the given ID in this congregation, or it has been soft-deleted.
+                """
+            )
             .Produces<OrganizationMemberResponseDto>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status404NotFound)
@@ -217,6 +285,17 @@ public static class OrganizationMemberEndpoints
             )
             .WithName("DeleteOrganizationMember")
             .WithSummary("Removes a member from an organization.")
+            .WithDescription(
+                """
+                Soft deletes the organization member assignment, effectively removing the member from the organization. The underlying member and organization records are not affected.
+
+                Returns `204 No Content` on success.
+
+                ### Errors
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                - `404 NOT_FOUND` — no organization member record exists with the given ID in this congregation, or it has already been soft-deleted.
+                """
+            )
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status401Unauthorized);

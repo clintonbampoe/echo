@@ -42,6 +42,19 @@ public static class EventRegistrationEndpoints
             )
             .WithName("ListEventRegistrations")
             .WithSummary("Returns a paginated list of event registrations.")
+            .WithDescription(
+                """
+                Returns a cursor-paginated list of all event registrations scoped to the authenticated congregation. To filter by a specific event or member use the dedicated sub-endpoints.
+
+                Registration does not imply attendance — attendance is tracked separately via the Event Attendance resource.
+
+                ### Pagination
+                Pass the `next` cursor from the previous response as the `cursor` query parameter to fetch the next page. When `hasMore` is false no further pages exist.
+
+                ### Errors
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                """
+            )
             .Produces<PagedResponse<EventRegistrationResponseDto>>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized);
 
@@ -66,6 +79,15 @@ public static class EventRegistrationEndpoints
             )
             .WithName("GetEventRegistrationById")
             .WithSummary("Returns a single event registration by ID.")
+            .WithDescription(
+                """
+                Returns the full event registration record for the given ID, scoped to the authenticated congregation.
+
+                ### Errors
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                - `404 NOT_FOUND` — no event registration exists with the given ID in this congregation, or it has been soft-deleted.
+                """
+            )
             .Produces<EventRegistrationResponseDto>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status401Unauthorized);
@@ -97,6 +119,18 @@ public static class EventRegistrationEndpoints
             )
             .WithName("ListEventRegistrationsByEvent")
             .WithSummary("Returns paginated registrations for a specific event.")
+            .WithDescription(
+                """
+                Returns a cursor-paginated list of registrations for the specified event. Use this to see who has signed up for a particular event.
+
+                ### Pagination
+                Pass the `next` cursor from the previous response as the `cursor` query parameter to fetch the next page. When `hasMore` is false no further pages exist.
+
+                ### Errors
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                - `404 NOT_FOUND` — no event exists with the given ID in this congregation.
+                """
+            )
             .Produces<PagedResponse<EventRegistrationResponseDto>>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status401Unauthorized);
@@ -128,6 +162,18 @@ public static class EventRegistrationEndpoints
             )
             .WithName("ListEventRegistrationsByMember")
             .WithSummary("Returns paginated registrations for a specific member.")
+            .WithDescription(
+                """
+                Returns a cursor-paginated list of event registrations for the specified member. Use this to see all events a member has signed up for.
+
+                ### Pagination
+                Pass the `next` cursor from the previous response as the `cursor` query parameter to fetch the next page. When `hasMore` is false no further pages exist.
+
+                ### Errors
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                - `404 NOT_FOUND` — no member exists with the given ID in this congregation.
+                """
+            )
             .Produces<PagedResponse<EventRegistrationResponseDto>>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status401Unauthorized);
@@ -153,6 +199,19 @@ public static class EventRegistrationEndpoints
             )
             .WithName("CreateEventRegistration")
             .WithSummary("Registers a member for an event.")
+            .WithDescription(
+                """
+                Registers a member for a specific event. Both the member and the event must exist within the same congregation. Registration does not automatically record attendance — use the Event Attendance resource to record actual presence.
+
+                On success, returns `201 Created` with the full registration record and a `Location` header pointing to the newly created resource.
+
+                ### Errors
+                - `400 BAD_REQUEST` — malformed request body.
+                - `400 VALIDATION_ERROR` — one or more fields failed validation. Inspect the `errors` object.
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                - `404 FOREIGN_KEY_NOT_FOUND` — the referenced member or event does not exist in this congregation.
+                """
+            )
             .Produces<EventRegistrationResponseDto>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status404NotFound)
@@ -185,6 +244,17 @@ public static class EventRegistrationEndpoints
             )
             .WithName("UpdateEventRegistration")
             .WithSummary("Updates an existing event registration.")
+            .WithDescription(
+                """
+                Replaces the fields of an existing event registration. All updatable fields must be supplied.
+
+                ### Errors
+                - `400 BAD_REQUEST` — malformed request body.
+                - `400 VALIDATION_ERROR` — one or more fields failed validation. Inspect the `errors` object.
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                - `404 NOT_FOUND` — no event registration exists with the given ID in this congregation, or it has been soft-deleted.
+                """
+            )
             .Produces<EventRegistrationResponseDto>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status404NotFound)
@@ -211,6 +281,17 @@ public static class EventRegistrationEndpoints
             )
             .WithName("DeleteEventRegistration")
             .WithSummary("Soft deletes an event registration.")
+            .WithDescription(
+                """
+                Marks the event registration as deleted. The record is retained in the database but excluded from all list and lookup results.
+
+                Returns `204 No Content` on success.
+
+                ### Errors
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                - `404 NOT_FOUND` — no event registration exists with the given ID in this congregation, or it has already been soft-deleted.
+                """
+            )
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status401Unauthorized);
