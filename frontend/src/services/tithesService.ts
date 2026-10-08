@@ -7,7 +7,7 @@ import type {
   TitheUpdatePayload,
 } from "../types/tithe";
 
-const BASE_PATH = "/v1/Tithes";
+const BASE_PATH = "/v1/tithes";
 
 export const tithesService = {
   list: async (

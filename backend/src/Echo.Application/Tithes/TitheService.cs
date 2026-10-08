@@ -6,6 +6,8 @@ using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 
 namespace Echo.Application.Tithes;
@@ -18,12 +20,13 @@ public class TitheService(
     ITitheMapper mapper,
     IIdGenerator idGenerator,
     ApplicationInstrumentation instrumentation,
+    LinkGenerator linker,
     ILogger<TitheService> logger
 )
 {
     public async Task<IOperationResult> List(
         Guid congregationId,
-        TitheFilter filters,
+        TitheFilters filters,
         PaginationRequest pagination,
         CancellationToken ct
     )
@@ -84,6 +87,7 @@ public class TitheService(
     public async Task<IOperationResult> Create(
         Guid congregationId,
         TitheCreateDto dto,
+        HttpContext httpContext,
         CancellationToken ct
     )
     {
@@ -116,7 +120,11 @@ public class TitheService(
         TitheLog.Created(logger, congregationId, entity.Id);
 
         var res = mapper.ToDto(entity);
-        return new CreatedAtResult<TitheResponseDto>(res);
+
+        var location =
+            linker.GetPathByName(httpContext, "GetTitheById", new { id = res.Id })
+            ?? throw new InvalidOperationException("Route 'GetTitheById' is not registered.");
+        return new CreatedResult<TitheResponseDto>(location, res);
     }
 
     public async Task<IOperationResult> Update(
@@ -142,21 +150,21 @@ public class TitheService(
             return new NotFoundResult(id.ToString());
         }
 
-        // Validate Member if it's being changed
-        if (dto.MemberId != entity.MemberId)
+        // Validate the NEW member, not the existing one.
+        if (dto.MemberId.HasValue && dto.MemberId.Value != entity.MemberId)
         {
             Member? member;
             using (instrumentation.ActivitySource.StartActivity("svc.tithe.validate.member"))
             {
-                member = await memberRepository.GetById(congregationId, entity.MemberId, ct);
+                member = await memberRepository.GetById(congregationId, dto.MemberId.Value, ct);
             }
 
             if (member is null)
             {
-                TitheLog.UpdateMemberNotFound(logger, congregationId, entity.MemberId);
+                TitheLog.UpdateMemberNotFound(logger, congregationId, dto.MemberId.Value);
                 return new ForeignKeyEntityNotFound(nameof(member));
             }
-            TitheLog.UpdateMemberFound(logger, congregationId, entity.MemberId);
+            TitheLog.UpdateMemberFound(logger, congregationId, dto.MemberId.Value);
         }
 
         mapper.Patch(dto, entity);
@@ -199,6 +207,35 @@ public class TitheService(
         TitheLog.Deleted(logger, congregationId, id);
 
         return new NoContentResult();
+    }
+
+    public async Task<IOperationResult> Summary(
+        Guid congregationId,
+        TitheFilters filters,
+        CancellationToken ct
+    )
+    {
+        using var activity = instrumentation.ActivitySource.StartActivity("svc.tithe.summary");
+
+        var totalTask = repository.SumCollected(congregationId, filters, ct);
+        var tithersTask = repository.CountUniqueTithers(congregationId, filters, ct);
+        var paymentMethodTask = repository.MostUsedPaymentMethod(congregationId, filters, ct);
+        var averageTask = repository.AveragePerMember(congregationId, filters, ct);
+
+        await Task.WhenAll(totalTask, tithersTask, paymentMethodTask, averageTask);
+
+        var res = new TitheSummaryDto
+        {
+            TotalCollected = totalTask.Result,
+            UniqueTithers = tithersTask.Result,
+            MostUsedPaymentMethod = paymentMethodTask.Result?.ToString(),
+            AveragePerMember = averageTask.Result,
+        };
+
+        activity?.SetTag("tithe.summary.total", res.TotalCollected);
+        TitheLog.Summarized(logger, congregationId, res.TotalCollected);
+
+        return new SuccessResult<TitheSummaryDto>(res);
     }
 
     private static TitheCursor BuildCursor(Tithe last)

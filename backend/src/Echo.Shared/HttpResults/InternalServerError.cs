@@ -3,30 +3,15 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Echo.Shared.HttpResults;
 
-public class InternalServerError : IOperationResult
+public class InternalServerError(
+    string detail = "Something went wrong while processing your request."
+) : IOperationResult
 {
-    private readonly string _detail;
-
-    public InternalServerError()
-    {
-        _detail = "Operation Failed. Something went wrong while processing your request.";
-    }
-
-    public InternalServerError(string detail)
-    {
-        _detail = detail;
-    }
-
-    public ActionResult ToActionResult() =>
-        new ObjectResult(
-            new ProblemDetails
-            {
-                Status = StatusCodes.Status500InternalServerError,
-                Title = "An unexpected error occurred",
-                Detail = _detail,
-            }
-        )
-        {
-            StatusCode = StatusCodes.Status500InternalServerError,
-        };
+    public IResult ToResult() =>
+        TypedResults.Problem(
+            detail: detail,
+            statusCode: StatusCodes.Status500InternalServerError,
+            title: "Internal Server Error",
+            type: ErrorTypes.InternalServerError
+        );
 }

@@ -6,70 +6,119 @@ namespace Echo.Application.Members;
 [Mapper]
 public partial class MemberMapper : IMemberMapper
 {
-    [MapperIgnoreSource(nameof(entity.Congregation))]
-    [MapperIgnoreSource(nameof(entity.CongregationId))]
-    [MapperIgnoreSource(nameof(entity.DeletedAt))]
-    public partial MemberResponseDto ToDto(Member entity);
-
-    [MapperIgnoreTarget(nameof(Member.Congregation))]
-    [MapperIgnoreTarget(nameof(Member.CongregationId))]
-    [MapperIgnoreTarget(nameof(Member.Id))]
-    [MapperIgnoreTarget(nameof(Member.CreatedAt))]
-    [MapperIgnoreTarget(nameof(Member.DeletedAt))]
-    public partial Member ToEntity(MemberCreateDto dto);
-
-    public partial List<MemberResponseDto> ToListDto(List<Member> entities);
-
-    public List<MemberSearchResultDto> ToSearchDto(List<Member> entities)
+    public MemberResponseDto ToDto(Member entity)
     {
-        var res = entities
-            .Select(m => new MemberSearchResultDto
-            {
-                Id = m.Id,
-                Name = m.Name,
-                PhoneNumber = m.PhoneNumber,
-            })
-            .ToList();
-        return res;
+        return new MemberResponseDto
+        {
+            Id = entity.PersonId,
+            Name = entity.Person.Name,
+            FirstName = entity.Person.FirstName,
+            LastName = entity.Person.LastName,
+            OtherNames = entity.Person.OtherNames,
+            EmailAddress = entity.Person.EmailAddress,
+            PhoneNumber = entity.Person.PhoneNumber,
+            DateOfBirth = entity.DateOfBirth,
+            JoinedDate = entity.JoinedDate,
+            Gender = entity.Gender,
+            ResidentialAddress = entity.ResidentialAddress,
+            City = entity.City,
+            Hometown = entity.Hometown,
+            Region = entity.Region,
+            GpsAddress = entity.GpsAddress,
+            MaritalStatus = entity.MaritalStatus,
+            NextOfKin = entity.NextOfKin,
+            EmergencyContactName = entity.EmergencyContactName,
+            EmergencyContactPhoneNumber = entity.EmergencyContactPhoneNumber,
+            Status = entity.Status,
+            CreatedAt = entity.CreatedAt,
+        };
     }
 
-    public void Patch(MemberUpdateDto dto, Member entity)
+    public (Person person, Member member) ToEntity(MemberCreateDto dto)
     {
+        var person = new Person
+        {
+            Kind = PersonKind.Member,
+            FirstName = dto.FirstName,
+            LastName = dto.LastName,
+            OtherNames = dto.OtherNames,
+            EmailAddress = dto.EmailAddress,
+            PhoneNumber = dto.PhoneNumber,
+        };
+
+        var member = new Member
+        {
+            DateOfBirth = dto.DateOfBirth,
+            JoinedDate = dto.JoinedDate,
+            Gender = dto.Gender,
+            ResidentialAddress = dto.ResidentialAddress,
+            City = dto.City,
+            Hometown = dto.Hometown,
+            Region = dto.Region,
+            GpsAddress = dto.GpsAddress,
+            MaritalStatus = dto.MaritalStatus,
+            NextOfKin = dto.NextOfKin,
+            EmergencyContactName = dto.EmergencyContactName,
+            EmergencyContactPhoneNumber = dto.EmergencyContactPhoneNumber,
+            Status = dto.Status,
+        };
+
+        return (person, member);
+    }
+
+    public List<MemberResponseDto> ToListDto(List<Member> entities) =>
+        entities.Select(ToDto).ToList();
+
+    public List<MemberSearchResultDto> ToSearchDto(List<Member> entities) =>
+        entities
+            .Select(m => new MemberSearchResultDto
+            {
+                Id = m.PersonId,
+                Name = m.Person.Name,
+                PhoneNumber = m.Person.PhoneNumber,
+            })
+            .ToList();
+
+    public void Patch(MemberUpdateDto dto, Person person, Member member)
+    {
+        // Person fields
         if (dto.FirstName != null)
-            entity.FirstName = dto.FirstName;
+            person.FirstName = dto.FirstName;
         if (dto.LastName != null)
-            entity.LastName = dto.LastName;
+            person.LastName = dto.LastName;
         if (dto.OtherNames != null)
-            entity.OtherNames = dto.OtherNames;
+            person.OtherNames = dto.OtherNames;
         if (dto.EmailAddress != null)
-            entity.EmailAddress = dto.EmailAddress;
+            person.EmailAddress = dto.EmailAddress;
         if (dto.PhoneNumber != null)
-            entity.PhoneNumber = dto.PhoneNumber;
+            person.PhoneNumber = dto.PhoneNumber;
+
+        // Member fields
         if (dto.DateOfBirth.HasValue)
-            entity.DateOfBirth = dto.DateOfBirth.Value;
+            member.DateOfBirth = dto.DateOfBirth.Value;
         if (dto.JoinedDate.HasValue)
-            entity.JoinedDate = dto.JoinedDate.Value;
+            member.JoinedDate = dto.JoinedDate.Value;
         if (dto.Gender.HasValue)
-            entity.Gender = dto.Gender.Value;
+            member.Gender = dto.Gender.Value;
         if (dto.ResidentialAddress != null)
-            entity.ResidentialAddress = dto.ResidentialAddress;
+            member.ResidentialAddress = dto.ResidentialAddress;
         if (dto.City != null)
-            entity.City = dto.City;
+            member.City = dto.City;
         if (dto.Hometown != null)
-            entity.Hometown = dto.Hometown;
+            member.Hometown = dto.Hometown;
         if (dto.Region.HasValue)
-            entity.Region = dto.Region.Value;
+            member.Region = dto.Region.Value;
         if (dto.GpsAddress != null)
-            entity.GpsAddress = dto.GpsAddress;
+            member.GpsAddress = dto.GpsAddress;
         if (dto.MaritalStatus.HasValue)
-            entity.MaritalStatus = dto.MaritalStatus.Value;
+            member.MaritalStatus = dto.MaritalStatus.Value;
         if (dto.NextOfKin != null)
-            entity.NextOfKin = dto.NextOfKin;
+            member.NextOfKin = dto.NextOfKin;
         if (dto.EmergencyContactName != null)
-            entity.EmergencyContactName = dto.EmergencyContactName;
+            member.EmergencyContactName = dto.EmergencyContactName;
         if (dto.EmergencyContactPhoneNumber != null)
-            entity.EmergencyContactPhoneNumber = dto.EmergencyContactPhoneNumber;
+            member.EmergencyContactPhoneNumber = dto.EmergencyContactPhoneNumber;
         if (dto.Status.HasValue)
-            entity.Status = dto.Status.Value;
+            member.Status = dto.Status.Value;
     }
 }

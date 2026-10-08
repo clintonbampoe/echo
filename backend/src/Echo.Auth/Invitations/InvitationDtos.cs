@@ -7,7 +7,7 @@ public record InviteRequest
 {
     public required UserRole AllowedRole { get; init; }
 
-    [Range(1, 365)]
+    [Range(1, 30)]
     public int? ExpiryDays { get; init; }
 }
 

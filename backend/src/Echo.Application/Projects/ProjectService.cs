@@ -6,6 +6,8 @@ using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 
 namespace Echo.Application.Projects;
@@ -19,6 +21,7 @@ public class ProjectService(
     IProjectMapper mapper,
     IIdGenerator idGenerator,
     ApplicationInstrumentation instrumentation,
+    LinkGenerator linker,
     ILogger<ProjectService> logger
 )
 {
@@ -59,7 +62,7 @@ public class ProjectService(
         return new SuccessResult<PagedResponse<ProjectResponseDto>>(res);
     }
 
-    public async Task<IOperationResult> GetById(Guid id, Guid congregationId, CancellationToken ct)
+    public async Task<IOperationResult> GetById(Guid congregationId, Guid id, CancellationToken ct)
     {
         using var activity = instrumentation.ActivitySource.StartActivity("svc.project.get_by_id");
         activity?.SetTag("project.id", id);
@@ -85,6 +88,7 @@ public class ProjectService(
     public async Task<IOperationResult> Create(
         Guid congregationId,
         ProjectCreateDto dto,
+        HttpContext httpContext,
         CancellationToken ct
     )
     {
@@ -130,7 +134,11 @@ public class ProjectService(
         ProjectLog.Created(logger, congregationId, entity.Id);
 
         var res = mapper.ToDto(entity);
-        return new CreatedAtResult<ProjectResponseDto>(res);
+
+        var location =
+            linker.GetPathByName(httpContext, "GetProjectById", new { id = res.Id })
+            ?? throw new InvalidOperationException("Route 'GetProjectById' is not registered.");
+        return new CreatedResult<ProjectResponseDto>(location, res);
     }
 
     public async Task<IOperationResult> Update(
@@ -156,38 +164,42 @@ public class ProjectService(
             return new NotFoundResult(id.ToString());
         }
 
-        // Validate Manager if it's being changed
-        if (dto.ManagerId != entity.ManagerId)
+        // Validate the NEW manager, not the existing one.
+        if (dto.ManagerId.HasValue && dto.ManagerId.Value != entity.ManagerId)
         {
             Member? manager;
             using (instrumentation.ActivitySource.StartActivity("svc.project.validate.manager"))
             {
-                manager = await memberRepository.GetById(congregationId, entity.ManagerId, ct);
+                manager = await memberRepository.GetById(congregationId, dto.ManagerId.Value, ct);
             }
 
             if (manager is null)
             {
-                ProjectLog.UpdateManagerNotFound(logger, congregationId, entity.ManagerId);
+                ProjectLog.UpdateManagerNotFound(logger, congregationId, dto.ManagerId.Value);
                 return new ForeignKeyEntityNotFound(nameof(manager));
             }
-            ProjectLog.UpdateManagerFound(logger, congregationId, entity.ManagerId);
+            ProjectLog.UpdateManagerFound(logger, congregationId, dto.ManagerId.Value);
         }
 
-        // Validate Category if it's being changed
-        if (dto.CategoryId != entity.CategoryId)
+        // Validate the NEW category, not the existing one.
+        if (dto.CategoryId.HasValue && dto.CategoryId.Value != entity.CategoryId)
         {
             ProjectCategory? category;
             using (instrumentation.ActivitySource.StartActivity("svc.project.validate.category"))
             {
-                category = await categoryRepository.GetById(congregationId, entity.CategoryId, ct);
+                category = await categoryRepository.GetById(
+                    congregationId,
+                    dto.CategoryId.Value,
+                    ct
+                );
             }
 
             if (category is null)
             {
-                ProjectLog.UpdateCategoryNotFound(logger, congregationId, entity.CategoryId);
+                ProjectLog.UpdateCategoryNotFound(logger, congregationId, dto.CategoryId.Value);
                 return new ForeignKeyEntityNotFound(nameof(category));
             }
-            ProjectLog.UpdateCategoryFound(logger, congregationId, entity.CategoryId);
+            ProjectLog.UpdateCategoryFound(logger, congregationId, dto.CategoryId.Value);
         }
 
         mapper.Patch(dto, entity);
@@ -251,6 +263,35 @@ public class ProjectService(
         activity?.SetTag("project.count", res.Count);
         ProjectLog.Searched(logger, congregationId, name, res.Count);
         return new SuccessResult<List<ProjectSearchResultDto>>(res);
+    }
+
+    public async Task<IOperationResult> Summary(
+        Guid congregationId,
+        ProjectFilters filters,
+        CancellationToken ct
+    )
+    {
+        using var activity = instrumentation.ActivitySource.StartActivity("svc.project.summary");
+
+        var countTask = repository.Count(congregationId, filters, ct);
+        var raisedTask = repository.SumRaised(congregationId, filters, ct);
+        var targetTask = repository.SumTarget(congregationId, filters, ct);
+        var atRiskTask = repository.CountAtRisk(congregationId, filters, ct);
+
+        await Task.WhenAll(countTask, raisedTask, targetTask, atRiskTask);
+
+        var res = new ProjectSummaryDto
+        {
+            TotalProjects = countTask.Result,
+            TotalRaised = raisedTask.Result,
+            TotalTarget = targetTask.Result,
+            AtRiskCount = atRiskTask.Result,
+        };
+
+        activity?.SetTag("project.summary.total", res.TotalProjects);
+        ProjectLog.Summarized(logger, congregationId, res.TotalProjects);
+
+        return new SuccessResult<ProjectSummaryDto>(res);
     }
 
     private static ProjectCursor BuildCursor(Project last)

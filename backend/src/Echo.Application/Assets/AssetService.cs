@@ -4,6 +4,8 @@ using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 
 namespace Echo.Application.Assets;
@@ -16,6 +18,7 @@ public class AssetService(
     IAssetMapper mapper,
     IIdGenerator idGenerator,
     ApplicationInstrumentation instrumentation,
+    LinkGenerator linker,
     ILogger<AssetService> logger
 )
 {
@@ -80,12 +83,14 @@ public class AssetService(
     public async Task<IOperationResult> Create(
         Guid congregationId,
         AssetCreateDto dto,
+        HttpContext httpContext,
         CancellationToken ct
     )
     {
         using var activity = instrumentation.ActivitySource.StartActivity("svc.asset.create");
 
         var entity = mapper.ToEntity(dto);
+
         AssetCategory? category;
         using (instrumentation.ActivitySource.StartActivity("svc.asset.validate.category"))
         {
@@ -112,7 +117,11 @@ public class AssetService(
         activity?.SetTag("asset.id", entity.Id);
         AssetLog.Created(logger, congregationId, entity.Id);
         var res = mapper.ToDto(entity);
-        return new SuccessResult<AssetResponseDto>(res);
+
+        var location =
+            linker.GetPathByName(httpContext, "GetAssetById", new { id = res.Id })
+            ?? throw new InvalidOperationException("Route 'GetAssetById' is not registered.");
+        return new CreatedResult<AssetResponseDto>(location, res);
     }
 
     public async Task<IOperationResult> Update(
@@ -138,21 +147,26 @@ public class AssetService(
             return new NotFoundResult(id.ToString());
         }
 
-        // Validate Category if it's being changed
-        if (dto.CategoryId != entity.CategoryId)
+        // Validate Category if it is being changed to a different one.
+        // We validate the NEW category (from the DTO), not the existing one.
+        if (dto.CategoryId.HasValue && dto.CategoryId.Value != entity.CategoryId)
         {
             AssetCategory? category;
             using (instrumentation.ActivitySource.StartActivity("svc.asset.validate.category"))
             {
-                category = await categoryRepository.GetById(congregationId, entity.CategoryId, ct);
+                category = await categoryRepository.GetById(
+                    congregationId,
+                    dto.CategoryId.Value,
+                    ct
+                );
             }
 
             if (category is null)
             {
-                AssetLog.UpdateCategoryNotFound(logger, congregationId, entity.CategoryId);
+                AssetLog.UpdateCategoryNotFound(logger, congregationId, dto.CategoryId.Value);
                 return new ForeignKeyEntityNotFound(nameof(category));
             }
-            AssetLog.UpdateCategoryFound(logger, congregationId, entity.CategoryId);
+            AssetLog.UpdateCategoryFound(logger, congregationId, dto.CategoryId.Value);
         }
 
         using (instrumentation.ActivitySource.StartActivity("svc.asset.persist"))
@@ -214,6 +228,34 @@ public class AssetService(
         activity?.SetTag("asset.count", res.Count);
 
         return new SuccessResult<List<AssetSearchResultDto>>(res);
+    }
+
+    public async Task<IOperationResult> Summary(
+        Guid congregationId,
+        AssetFilters filters,
+        CancellationToken ct
+    )
+    {
+        using var activity = instrumentation.ActivitySource.StartActivity("svc.asset.summary");
+
+        var countTask = repository.Count(congregationId, filters, ct);
+        var currentValueTask = repository.SumCurrentValue(congregationId, filters, ct);
+        var purchaseCostTask = repository.SumPurchaseCost(congregationId, filters, ct);
+
+        await Task.WhenAll(countTask, currentValueTask, purchaseCostTask);
+
+        var res = new AssetSummaryDto
+        {
+            TotalAssets = countTask.Result,
+            TotalCurrentValue = currentValueTask.Result,
+            TotalPurchaseCost = purchaseCostTask.Result,
+            TotalDepreciation = purchaseCostTask.Result - currentValueTask.Result,
+        };
+
+        activity?.SetTag("asset.summary.total", res.TotalAssets);
+        AssetLog.Summarized(logger, congregationId, res.TotalAssets);
+
+        return new SuccessResult<AssetSummaryDto>(res);
     }
 
     private static AssetCursor BuildCursor(Asset last)

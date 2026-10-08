@@ -10,9 +10,6 @@ public record ForgotPasswordRequest
 
 public record PasswordResetRequest
 {
-    [Required, EmailAddress, StringLength(255)]
-    public string Email { get; init; } = string.Empty;
-
     [Required, StringLength(128, MinimumLength = 8)]
     public string NewPassword { get; init; } = string.Empty;
 

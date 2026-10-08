@@ -8,6 +8,8 @@ using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 
 namespace Echo.Application.Events;
@@ -21,6 +23,7 @@ public class EventService(
     IEventMapper mapper,
     IIdGenerator idGenerator,
     ApplicationInstrumentation instrumentation,
+    LinkGenerator linker,
     ILogger<EventService> logger
 )
 {
@@ -87,6 +90,7 @@ public class EventService(
     public async Task<IOperationResult> Create(
         Guid congregationId,
         EventCreateDto dto,
+        HttpContext httpContext,
         CancellationToken ct
     )
     {
@@ -136,7 +140,10 @@ public class EventService(
         EventLog.Created(logger, congregationId, entity.Id);
 
         var res = mapper.ToDto(entity);
-        return new CreatedAtResult<EventResponseDto>(res);
+        var location =
+            linker.GetPathByName(httpContext, "GetEventById", new { id = res.Id })
+            ?? throw new InvalidOperationException("Route 'GetEventById' is not registered.");
+        return new CreatedResult<EventResponseDto>(location, res);
     }
 
     public async Task<IOperationResult> Update(
@@ -162,42 +169,50 @@ public class EventService(
             return new NotFoundResult(id.ToString());
         }
 
-        // Validate Organizer if it's being changed
-        if (dto.OrganizerId != entity.OrganizerId)
+        // Validate the NEW organizer, not the existing one.
+        if (dto.OrganizerId.HasValue && dto.OrganizerId.Value != entity.OrganizerId)
         {
             Member? organizer;
             using (instrumentation.ActivitySource.StartActivity("svc.event.validate.organizer"))
             {
-                organizer = await memberRepository.GetById(congregationId, entity.OrganizerId, ct);
+                organizer = await memberRepository.GetById(
+                    congregationId,
+                    dto.OrganizerId.Value,
+                    ct
+                );
             }
 
             if (organizer is null)
             {
-                EventLog.UpdateOrganizerNotFound(logger, congregationId, entity.OrganizerId);
+                EventLog.UpdateOrganizerNotFound(logger, congregationId, dto.OrganizerId.Value);
                 return new ForeignKeyEntityNotFound(nameof(organizer));
             }
-            EventLog.UpdateOrganizerFound(logger, congregationId, entity.OrganizerId);
+            EventLog.UpdateOrganizerFound(logger, congregationId, dto.OrganizerId.Value);
         }
 
-        // Validate Organization if it's being changed
-        if (dto.OrganizationId != entity.OrganizationId)
+        // Validate the NEW organization, not the existing one.
+        if (dto.OrganizationId.HasValue && dto.OrganizationId.Value != entity.OrganizationId)
         {
             Organization? organization;
             using (instrumentation.ActivitySource.StartActivity("svc.event.validate.organization"))
             {
                 organization = await organizationRepository.GetById(
                     congregationId,
-                    entity.OrganizationId,
+                    dto.OrganizationId.Value,
                     ct
                 );
             }
 
             if (organization is null)
             {
-                EventLog.UpdateOrganizationNotFound(logger, congregationId, entity.OrganizationId);
+                EventLog.UpdateOrganizationNotFound(
+                    logger,
+                    congregationId,
+                    dto.OrganizationId.Value
+                );
                 return new ForeignKeyEntityNotFound(nameof(organization));
             }
-            EventLog.UpdateOrganizationFound(logger, congregationId, entity.OrganizationId);
+            EventLog.UpdateOrganizationFound(logger, congregationId, dto.OrganizationId.Value);
         }
 
         mapper.Patch(dto, entity);
@@ -262,13 +277,37 @@ public class EventService(
         return new SuccessResult<List<EventSearchResultDto>>(res);
     }
 
+    public async Task<IOperationResult> Summary(
+        Guid congregationId,
+        EventFilters filters,
+        CancellationToken ct
+    )
+    {
+        using var activity = instrumentation.ActivitySource.StartActivity("svc.event.summary");
+
+        var countTask = repository.Count(congregationId, filters, ct);
+        var upcomingTask = repository.CountUpcoming(congregationId, filters, ct);
+        var registrationsTask = repository.CountRegistrations(congregationId, filters, ct);
+        var attendeesTask = repository.CountAttendees(congregationId, filters, ct);
+
+        await Task.WhenAll(countTask, upcomingTask, registrationsTask, attendeesTask);
+
+        var res = new EventSummaryDto
+        {
+            TotalEvents = countTask.Result,
+            UpcomingEvents = upcomingTask.Result,
+            TotalRegistered = registrationsTask.Result,
+            TotalAttended = attendeesTask.Result,
+        };
+
+        activity?.SetTag("event.summary.total", res.TotalEvents);
+        EventLog.Summarized(logger, congregationId, res.TotalEvents);
+
+        return new SuccessResult<EventSummaryDto>(res);
+    }
+
     private static EventCursor BuildCursor(Event last)
     {
         return new EventCursor { StartDate = last.StartDate, Id = last.Id };
-    }
-
-    public Task<IOperationResult> GetSummary(Guid congregationId, CancellationToken ct)
-    {
-        throw new NotImplementedException();
     }
 }

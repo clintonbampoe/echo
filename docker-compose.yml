@@ -23,6 +23,7 @@ services:
       Jwt__Issuer: ${Jwt__Issuer}
       Jwt__Audience: ${Jwt__Audience}
       Cors__AllowedOrigins: ${Cors__AllowedOrigins}
+      Api__BaseUrl: ${Api__BaseUrl}
       Frontend__BaseUrl: ${Frontend__BaseUrl}
       MailClient__Address: ${MailClient__Address}
       Resend__ApiKey: ${Resend__ApiKey}

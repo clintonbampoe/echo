@@ -6,9 +6,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Application.Projects;
 
-public class ProjectRepository(AppDbContext context)
+public class ProjectRepository(AppDbContext context, TimeProvider timeProvider)
 {
     private readonly DbSet<Project> _dbSet = context.Set<Project>();
+    private readonly DbSet<ProjectContribution> _contributionDbSet =
+        context.Set<ProjectContribution>();
 
     public async Task<List<Project>> List(
         Guid congregationId,
@@ -24,7 +26,8 @@ public class ProjectRepository(AppDbContext context)
             .Where(p => p.CongregationId == congregationId)
             .Include(p => p.Category)
             .Include(p => p.Manager)
-            .Filter(filters)
+                .ThenInclude(m => m.Person)
+            .Filter(filters, timeProvider)
             .OrderBy(p => p.StartDate)
             .ThenBy(p => p.Id)
             .Paginate(cursor, pageSize)
@@ -38,41 +41,84 @@ public class ProjectRepository(AppDbContext context)
             .Where(p => p.Id == id && p.CongregationId == congregationId)
             .Include(p => p.Category)
             .Include(p => p.Manager)
+                .ThenInclude(m => m.Person)
             .FirstOrDefaultAsync(ct);
     }
 
     public async Task<List<Project>> Search(Guid congregationId, string name, CancellationToken ct)
     {
         return await _dbSet
+            .AsNoTracking()
             .FilterDeleted()
-            .Where(pr => pr.CongregationId == congregationId)
+            .Where(p => p.CongregationId == congregationId)
             .SearchName(name)
             .ToListAsync(ct);
     }
 
-    public void Create(Project entity)
-    {
-        _dbSet.Add(entity);
-    }
+    public Task<int> Count(
+        Guid congregationId,
+        ProjectFilters filters,
+        CancellationToken ct = default
+    ) =>
+        _dbSet
+            .AsNoTracking()
+            .FilterDeleted()
+            .Where(p => p.CongregationId == congregationId)
+            .Filter(filters, timeProvider)
+            .CountAsync(ct);
 
-    public void SoftDelete(Project entity)
-    {
-        entity.DeletedAt = DateTime.UtcNow;
-    }
+    public Task<decimal> SumTarget(
+        Guid congregationId,
+        ProjectFilters filters,
+        CancellationToken ct = default
+    ) =>
+        _dbSet
+            .AsNoTracking()
+            .FilterDeleted()
+            .Where(p => p.CongregationId == congregationId)
+            .Filter(filters, timeProvider)
+            .SumAsync(p => p.TargetAmount, ct);
+
+    public Task<decimal> SumRaised(
+        Guid congregationId,
+        ProjectFilters filters,
+        CancellationToken ct = default
+    ) =>
+        _dbSet
+            .AsNoTracking()
+            .FilterDeleted()
+            .Where(p => p.CongregationId == congregationId)
+            .Filter(filters, timeProvider)
+            .SelectMany(p => _contributionDbSet.FilterDeleted().Where(c => c.ProjectId == p.Id))
+            .SumAsync(c => c.Amount, ct);
+
+    public Task<int> CountAtRisk(
+        Guid congregationId,
+        ProjectFilters filters,
+        CancellationToken ct = default
+    ) =>
+        _dbSet
+            .AsNoTracking()
+            .FilterDeleted()
+            .Where(p => p.CongregationId == congregationId && p.Status == ProjectStatus.AtRisk)
+            .Filter(filters, timeProvider)
+            .CountAsync(ct);
+
+    public void Create(Project entity) => _dbSet.Add(entity);
+
+    public void SoftDelete(Project entity) => entity.DeletedAt = DateTime.UtcNow;
 }
 
 internal static class ProjectQueryExtensions
 {
     internal static IQueryable<Project> Filter(
         this IQueryable<Project> query,
-        ProjectFilters filters
+        ProjectFilters filters,
+        TimeProvider timeProvider
     )
     {
-        var today = DateUtils.GetDateToday();
-
-        query = filters.StartDate is not null
-            ? query.Where(p => p.StartDate == filters.StartDate)
-            : query.Where(p => p.StartDate == today);
+        if (filters.Name is not null)
+            query = query.Where(p => EF.Functions.ILike(p.Name, $"%{filters.Name}%"));
 
         if (filters.CategoryId is not null)
             query = query.Where(p => p.CategoryId == filters.CategoryId);
@@ -80,8 +126,10 @@ internal static class ProjectQueryExtensions
         if (filters.Status is not null)
             query = query.Where(p => p.Status == filters.Status);
 
-        if (filters.Name is not null)
-            query = query.Where(p => EF.Functions.ILike(p.Name, $"%{filters.Name}%"));
+        var from = filters.From ?? DateUtils.GetFirstDayOfWeek(timeProvider);
+        var to = filters.To ?? DateUtils.GetDateToday(timeProvider);
+
+        query = query.Where(p => p.StartDate >= from && p.StartDate <= to);
 
         return query;
     }
@@ -98,7 +146,6 @@ internal static class ProjectQueryExtensions
                 || (p.StartDate == cursor.StartDate && p.Id > cursor.Id)
             );
 
-        query = query.Take(pageSize);
-        return query;
+        return query.Take(pageSize);
     }
 }

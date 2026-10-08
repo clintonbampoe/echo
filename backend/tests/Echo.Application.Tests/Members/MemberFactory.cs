@@ -7,15 +7,12 @@ public static class MemberFactory
 {
     public static Member NewEntity()
     {
-        return new Member()
+        var person = PersonFactory.NewMemberPerson();
+        return new Member
         {
-            Id = Constants.DefaultGuid,
+            PersonId = Constants.DefaultGuid,
+            Person = person,
             CongregationId = Constants.DefaultGuid,
-            FirstName = Constants.DefaultName,
-            LastName = Constants.DefaultName,
-            OtherNames = Constants.DefaultName,
-            EmailAddress = Constants.DefaultEmailAddress,
-            PhoneNumber = Constants.DefaultPhoneNumber,
             DateOfBirth = Constants.DefaultDateOnly,
             JoinedDate = Constants.DefaultDateOnly,
             Gender = default,
@@ -38,16 +35,13 @@ public static class MemberFactory
     {
         var res = new List<Member>();
         for (int i = 0; i < 5; i++)
-        {
             res.Add(NewEntity());
-        }
-
         return res;
     }
 
     public static MemberCreateDto NewCreateDto()
     {
-        return new MemberCreateDto()
+        return new MemberCreateDto
         {
             FirstName = Constants.DefaultName,
             LastName = Constants.DefaultName,
@@ -72,7 +66,7 @@ public static class MemberFactory
 
     public static MemberUpdateDto NewUpdateDto()
     {
-        return new MemberUpdateDto()
+        return new MemberUpdateDto
         {
             FirstName = Constants.DefaultName,
             LastName = Constants.DefaultName,
@@ -97,7 +91,7 @@ public static class MemberFactory
 
     public static MemberUpdateDto NewUpdateDtoWithNullValues()
     {
-        return new MemberUpdateDto()
+        return new MemberUpdateDto
         {
             FirstName = null,
             LastName = null,

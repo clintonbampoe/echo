@@ -81,6 +81,13 @@ public static partial class MemberLog
     )]
     public static partial void DeleteNotFound(ILogger logger, Guid congregationId, Guid memberId);
 
+    // --- Summary ---
+    [LoggerMessage(
+        Level = LogLevel.Information,
+        Message = "Member summary: {TotalMembers} members summarized for congregation {CongregationId}"
+    )]
+    public static partial void Summarized(ILogger logger, Guid congregationId, int totalMembers);
+
     // --- Unexpected ---
     [LoggerMessage(
         Level = LogLevel.Error,

@@ -8,7 +8,7 @@ import type {
 } from "../types/event";
 import type { PagedResponse } from "../types/pagination";
 
-const BASE_PATH = "/v1/Events";
+const BASE_PATH = "/v1/events";
 
 export const eventsService = {
   list: async (

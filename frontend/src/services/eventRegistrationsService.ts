@@ -6,7 +6,7 @@ import type {
 } from "../types/eventRegistration";
 import type { PagedResponse } from "../types/pagination";
 
-const BASE_PATH = "/v1/eventregistrations";
+const BASE_PATH = "/v1/event-registrations";
 
 export const eventRegistrationsService = {
   list: async (

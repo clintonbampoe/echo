@@ -8,7 +8,7 @@ import type {
 } from "../types/asset";
 import type { PagedResponse } from "../types/pagination";
 
-const BASE_PATH = "/v1/Assets";
+const BASE_PATH = "/v1/assets";
 
 export const assetsService = {
   list: async (

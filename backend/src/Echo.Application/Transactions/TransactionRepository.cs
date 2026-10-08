@@ -6,13 +6,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Application.Transactions;
 
-public class TransactionRepository(AppDbContext context)
+public class TransactionRepository(AppDbContext context, TimeProvider timeProvider)
 {
     private readonly DbSet<Transaction> _dbSet = context.Set<Transaction>();
 
     public async Task<List<Transaction>> List(
         Guid congregationId,
-        TimeProvider timeProvider,
         TransactionFilters filters,
         TransactionCursor? cursor,
         int pageSize,
@@ -40,15 +39,52 @@ public class TransactionRepository(AppDbContext context)
             .FirstOrDefaultAsync(ct);
     }
 
-    public void Create(Transaction entity)
-    {
-        _dbSet.Add(entity);
-    }
+    public Task<decimal> SumIncome(
+        Guid congregationId,
+        TransactionFilters filters,
+        CancellationToken ct = default
+    ) =>
+        _dbSet
+            .AsNoTracking()
+            .FilterDeleted()
+            .Where(t =>
+                t.CongregationId == congregationId && t.TransactionType == TransactionType.Income
+            )
+            .Filter(filters, timeProvider)
+            .SumAsync(t => t.Amount, ct);
 
-    public void SoftDelete(Transaction entity)
-    {
-        entity.DeletedAt = DateTime.UtcNow;
-    }
+    public Task<decimal> SumExpenses(
+        Guid congregationId,
+        TransactionFilters filters,
+        CancellationToken ct = default
+    ) =>
+        _dbSet
+            .AsNoTracking()
+            .FilterDeleted()
+            .Where(t =>
+                t.CongregationId == congregationId && t.TransactionType == TransactionType.Expense
+            )
+            .Filter(filters, timeProvider)
+            .SumAsync(t => t.Amount, ct);
+
+    public Task<string?> MostActiveCategory(
+        Guid congregationId,
+        TransactionFilters filters,
+        CancellationToken ct = default
+    ) =>
+        _dbSet
+            .AsNoTracking()
+            .FilterDeleted()
+            .Where(t => t.CongregationId == congregationId)
+            .Filter(filters, timeProvider)
+            .GroupBy(t => t.Category.Name)
+            .OrderByDescending(g => g.Count())
+            .Select(g => g.Key)
+            .FirstOrDefaultAsync(ct);
+
+    public void Create(Transaction entity) => _dbSet.Add(entity);
+
+    public void SoftDelete(Transaction entity) => entity.DeletedAt = DateTime.UtcNow;
 }
 
 internal static class TransactionQueryExtensions
@@ -59,24 +95,16 @@ internal static class TransactionQueryExtensions
         TimeProvider timeProvider
     )
     {
-        var firstDayOfWeek = DateUtils.GetFirstDayOfWeek(timeProvider.GetUtcNow().DateTime);
-
-        if (filters.Date is not null)
-        {
-            query = query.Where(t => t.TransactionDate == filters.Date);
-        }
-        else
-        {
-            var weekEnd = firstDayOfWeek.AddDays(7);
-            var weekStart = firstDayOfWeek;
-            query = query.Where(t => t.TransactionDate >= weekStart && t.TransactionDate < weekEnd);
-        }
-
         if (filters.CategoryId is not null)
             query = query.Where(t => t.CategoryId == filters.CategoryId);
 
         if (filters.TransactionType is not null)
             query = query.Where(t => t.TransactionType == filters.TransactionType);
+
+        var from = filters.From ?? DateUtils.GetFirstDayOfWeek(timeProvider);
+        var to = filters.To ?? DateUtils.GetDateToday(timeProvider);
+
+        query = query.Where(t => t.TransactionDate >= from && t.TransactionDate <= to);
 
         return query;
     }
@@ -88,9 +116,9 @@ internal static class TransactionQueryExtensions
     )
     {
         if (cursor is not null)
-            query = query.Where(e =>
-                e.TransactionDate < cursor.TransactionDate
-                || (e.TransactionDate == cursor.TransactionDate && e.Id > cursor.Id)
+            query = query.Where(t =>
+                t.TransactionDate < cursor.TransactionDate
+                || (t.TransactionDate == cursor.TransactionDate && t.Id > cursor.Id)
             );
 
         return query.Take(pageSize);

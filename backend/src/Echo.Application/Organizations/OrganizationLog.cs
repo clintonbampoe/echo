@@ -75,6 +75,17 @@ public static partial class OrganizationLog
         Guid organizationId
     );
 
+    // --- Summary ---
+    [LoggerMessage(
+        Level = LogLevel.Information,
+        Message = "Organization summary: {TotalOrganizations} organizations summarized for congregation {CongregationId}"
+    )]
+    public static partial void Summarized(
+        ILogger logger,
+        Guid congregationId,
+        int totalOrganizations
+    );
+
     // --- Unexpected ---
     [LoggerMessage(
         Level = LogLevel.Error,

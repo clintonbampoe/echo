@@ -5,7 +5,7 @@ import type {
   ProjectCategoryUpdatePayload,
 } from "../types/projectCategory";
 
-const BASE_PATH = "/v1/ProjectCategories";
+const BASE_PATH = "/v1/project-categories";
 
 export const projectCategoriesService = {
   list: async (): Promise<ProjectCategory[]> => {

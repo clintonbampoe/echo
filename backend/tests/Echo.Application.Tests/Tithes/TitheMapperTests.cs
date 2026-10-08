@@ -47,7 +47,7 @@ public class TitheMapperTests
 
         Assert.Equal(entity.Id, result.Id);
         Assert.Equal(entity.MemberId, result.MemberId);
-        Assert.Equal(entity.Member.Name, result.MemberName);
+        Assert.Equal(entity.Member.Person.Name, result.MemberName);
         Assert.Equal(entity.Amount, result.Amount);
         Assert.Equal(entity.ForYear, result.ForYear);
         Assert.Equal(entity.ForMonth, result.ForMonth);

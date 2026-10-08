@@ -22,6 +22,7 @@ public class OrganizationMemberRepository(AppDbContext context)
             .FilterDeleted()
             .Where(o => o.CongregationId == congregationId)
             .Include(o => o.Member)
+                .ThenInclude(m => m.Person)
             .Include(o => o.Organization)
             .Filter(filters)
             .OrderByDescending(o => o.CreatedAt)
@@ -40,26 +41,9 @@ public class OrganizationMemberRepository(AppDbContext context)
             .FilterDeleted()
             .Where(o => o.Id == id && o.CongregationId == congregationId)
             .Include(o => o.Member)
+                .ThenInclude(m => m.Person)
             .Include(o => o.Organization)
             .FirstOrDefaultAsync(ct);
-    }
-
-    public async Task<bool> ExistsForMemberAndOrganization(
-        Guid congregationId,
-        Guid memberId,
-        Guid organizationId,
-        CancellationToken ct = default
-    )
-    {
-        return await _dbSet
-            .FilterDeleted()
-            .AnyAsync(
-                o =>
-                    o.CongregationId == congregationId
-                    && o.MemberId == memberId
-                    && o.OrganizationId == organizationId,
-                ct
-            );
     }
 
     public void Create(OrganizationMember entity)
@@ -87,6 +71,7 @@ public class OrganizationMemberRepository(AppDbContext context)
             .Where(o => o.CongregationId == congregationId)
             .Where(o => o.MemberId == memberId)
             .Include(o => o.Member)
+                .ThenInclude(m => m.Person)
             .Include(o => o.Organization)
             .Filter(filters)
             .OrderByDescending(o => o.CreatedAt)
@@ -110,12 +95,31 @@ public class OrganizationMemberRepository(AppDbContext context)
             .Where(o => o.CongregationId == congregationId)
             .Where(o => o.OrganizationId == organizationId)
             .Include(o => o.Member)
+                .ThenInclude(m => m.Person)
             .Include(o => o.Organization)
             .Filter(filters)
             .OrderByDescending(o => o.CreatedAt)
             .ThenBy(o => o.Id)
             .Paginate(cursor, pageSize)
             .ToListAsync(ct);
+    }
+
+    public async Task<bool> ExistsForMemberAndOrganization(
+        Guid congregationId,
+        Guid memberId,
+        Guid organizationId,
+        CancellationToken ct = default
+    )
+    {
+        return await _dbSet
+            .FilterDeleted()
+            .AnyAsync(
+                o =>
+                    o.CongregationId == congregationId
+                    && o.MemberId == memberId
+                    && o.OrganizationId == organizationId,
+                ct
+            );
     }
 }
 

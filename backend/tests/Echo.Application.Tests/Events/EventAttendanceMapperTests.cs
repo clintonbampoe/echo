@@ -4,7 +4,7 @@ namespace Echo.Application.Tests.Events;
 
 public class EventAttendanceMapperTests
 {
-    private readonly IEventAttendanceMapper _mapper = new EventAttendanceMapper();
+    private readonly EventAttendanceMapper _mapper = new();
 
     [Fact]
     public void ToEntity_ShouldMapAllFields_FromCreateDto()
@@ -39,7 +39,7 @@ public class EventAttendanceMapperTests
 
         Assert.Equal(dto.MemberId, entity.MemberId);
         Assert.Equal(dto.EventId, entity.EventId);
-        Assert.Equal(dto.MemberName, entity.Member.Name);
+        Assert.Equal(dto.MemberName, entity.Member.Person.Name);
         Assert.Equal(dto.EventName, entity.Event.Name);
         Assert.Equal(dto.CheckInTime, entity.CheckInTime);
         Assert.Equal(dto.CreatedAt, entity.CreatedAt);

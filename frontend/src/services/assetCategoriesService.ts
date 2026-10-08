@@ -5,7 +5,7 @@ import type {
   AssetCategoryUpdatePayload,
 } from "../types/assetCategory";
 
-const BASE_PATH = "/v1/AssetCategories";
+const BASE_PATH = "/v1/asset-categories";
 
 export const assetCategoriesService = {
   list: async (): Promise<AssetCategory[]> => {

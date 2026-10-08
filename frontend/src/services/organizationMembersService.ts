@@ -7,7 +7,7 @@ import type {
 } from "../types/organizationMember";
 import type { PagedResponse } from "../types/pagination";
 
-const BASE_PATH = "/v1/OrganizationMember";
+const BASE_PATH = "/v1/organization-members";
 
 const buildParams = (
   filters: OrganizationMemberFilters,

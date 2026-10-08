@@ -50,8 +50,8 @@ public class SessionService(
             if (!isPasswordValid)
             {
                 span?.SetTag("auth.result", "invalid_credentials");
-                RecordLogin("invalid_credentials", entity.CongregationId.ToString());
-                SessionLog.LoginInvalidCredentials(logger, entity.CongregationId);
+                RecordLogin("invalid_credentials", entity.Id.ToString());
+                SessionLog.LoginInvalidCredentials(logger, entity.Id);
                 return new BadRequestResult("Email or password is invalid.");
             }
         }
@@ -59,9 +59,9 @@ public class SessionService(
         if (entity.EmailVerifiedAt is null)
         {
             span?.SetTag("auth.result", "email_not_verified");
-            RecordLogin("email_not_verified", entity.CongregationId.ToString());
-            SessionLog.LoginEmailNotVerified(logger, entity.CongregationId);
-            return new BadRequestResult("Verify your email before logging in.");
+            RecordLogin("email_not_verified", entity.Id.ToString());
+            SessionLog.LoginEmailNotVerified(logger, entity.Id);
+            return new UserNotVerifiedResult();
         }
 
         var user = mapper.ToAuthDto(entity);
@@ -118,7 +118,9 @@ public class SessionService(
         {
             span?.SetTag("auth.result", "user_not_found");
             SessionLog.LogoutOfAllSessionsFailed(logger);
-            return new OkResult("All active sessions for this user have been terminated.");
+            return new SuccessResult<string>(
+                "All active sessions for this user have been terminated."
+            );
         }
 
         span?.SetTag("congregation.id", entity.CongregationId);
@@ -134,7 +136,9 @@ public class SessionService(
                 RecordLogoutAll("success", entity.CongregationId.ToString());
                 SessionLog.LogoutOfAllSessionsSucceeded(logger, entity.Id, entity.CongregationId);
 
-                return new OkResult("All active sessions for this user have been terminated.");
+                return new SuccessResult<string>(
+                    "All active sessions for this user have been terminated."
+                );
             }
         }
         catch (Exception ex)
@@ -233,7 +237,7 @@ public class SessionService(
             RecordTokenRevocation("success");
             SessionLog.TokenRevoked(logger);
 
-            return new OkResult("Token revoked successfully.");
+            return new SuccessResult<string>("Token revoked successfully.");
         }
         catch (Exception ex)
         {

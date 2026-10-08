@@ -4,17 +4,21 @@ using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 
 namespace Echo.Application.Members;
 
 public class MemberService(
     MemberRepository repository,
+    PersonRepository personRepository,
     IUnitOfWork unitOfWork,
     IMemberMapper mapper,
     IEncoder encoder,
     IIdGenerator idGenerator,
     ApplicationInstrumentation instrumentation,
+    LinkGenerator linker,
     ILogger<MemberService> logger
 )
 {
@@ -55,7 +59,7 @@ public class MemberService(
         return new SuccessResult<PagedResponse<MemberResponseDto>>(res);
     }
 
-    public async Task<IOperationResult> GetById(Guid id, Guid congregationId, CancellationToken ct)
+    public async Task<IOperationResult> GetById(Guid congregationId, Guid id, CancellationToken ct)
     {
         using var activity = instrumentation.ActivitySource.StartActivity("svc.member.get_by_id");
         activity?.SetTag("member.id", id);
@@ -81,26 +85,37 @@ public class MemberService(
     public async Task<IOperationResult> Create(
         Guid congregationId,
         MemberCreateDto dto,
+        HttpContext httpContext,
         CancellationToken ct
     )
     {
         using var activity = instrumentation.ActivitySource.StartActivity("svc.member.create");
 
-        var entity = mapper.ToEntity(dto);
-        entity.CongregationId = congregationId;
-        entity.Id = idGenerator.Generate();
+        var (person, member) = mapper.ToEntity(dto);
+
+        person.Id = idGenerator.Generate();
+        person.CongregationId = congregationId;
+
+        member.PersonId = person.Id;
+        member.CongregationId = congregationId;
+        member.Person = person;
 
         using (instrumentation.ActivitySource.StartActivity("svc.member.persist"))
         {
-            repository.Create(entity);
+            personRepository.Create(person);
+            repository.Create(member);
             await unitOfWork.CommitAsync(ct);
         }
 
-        activity?.SetTag("member.id", entity.Id);
-        MemberLog.Created(logger, congregationId, entity.Id);
+        activity?.SetTag("member.id", member.PersonId);
+        MemberLog.Created(logger, congregationId, member.PersonId);
 
-        var res = mapper.ToDto(entity);
-        return new CreatedAtResult<MemberResponseDto>(res);
+        var res = mapper.ToDto(member);
+
+        var location =
+            linker.GetPathByName(httpContext, "GetMemberById", new { id = res.Id })
+            ?? throw new InvalidOperationException("Route 'GetMemberById' is not registered.");
+        return new CreatedResult<MemberResponseDto>(location, res);
     }
 
     public async Task<IOperationResult> Update(
@@ -126,9 +141,9 @@ public class MemberService(
             return new NotFoundResult(id.ToString());
         }
 
-        mapper.Patch(dto, entity);
         using (instrumentation.ActivitySource.StartActivity("svc.member.persist"))
         {
+            mapper.Patch(dto, entity.Person, entity);
             await unitOfWork.CommitAsync(ct);
         }
 
@@ -158,6 +173,7 @@ public class MemberService(
 
         using (instrumentation.ActivitySource.StartActivity("svc.member.persist"))
         {
+            personRepository.SoftDelete(entity.Person);
             repository.SoftDelete(entity);
             await unitOfWork.CommitAsync(ct);
         }
@@ -188,13 +204,37 @@ public class MemberService(
         return new SuccessResult<List<MemberSearchResultDto>>(res);
     }
 
-    public Task<IOperationResult> GetSummary(Guid congregationId, CancellationToken ct)
+    public async Task<IOperationResult> Summary(
+        Guid congregationId,
+        MemberFilters filters,
+        CancellationToken ct
+    )
     {
-        throw new NotImplementedException();
+        using var activity = instrumentation.ActivitySource.StartActivity("svc.member.summary");
+
+        var totalTask = repository.Count(congregationId, filters, ct);
+        var activeTask = repository.CountActive(congregationId, filters, ct);
+        var maleTask = repository.CountByGender(congregationId, Gender.Male, filters, ct);
+        var femaleTask = repository.CountByGender(congregationId, Gender.Female, filters, ct);
+        var avgAgeTask = repository.AverageAge(congregationId, filters, ct);
+
+        await Task.WhenAll(totalTask, activeTask, maleTask, femaleTask, avgAgeTask);
+
+        var res = new MemberSummaryDto
+        {
+            TotalMembers = totalTask.Result,
+            ActiveMembers = activeTask.Result,
+            MaleCount = maleTask.Result,
+            FemaleCount = femaleTask.Result,
+            AverageAge = avgAgeTask.Result,
+        };
+
+        activity?.SetTag("member.summary.total", res.TotalMembers);
+        MemberLog.Summarized(logger, congregationId, res.TotalMembers);
+
+        return new SuccessResult<MemberSummaryDto>(res);
     }
 
-    private static MemberCursor BuildCursor(Member last)
-    {
-        return new MemberCursor { Name = last.Name, Id = last.Id };
-    }
+    private static MemberCursor BuildCursor(Member last) =>
+        new() { Name = last.Person.Name, Id = last.PersonId };
 }

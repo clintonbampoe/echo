@@ -105,6 +105,18 @@ public static partial class TransactionLog
         Guid transactionId
     );
 
+    // --- Summary ---
+    [LoggerMessage(
+        Level = LogLevel.Information,
+        Message = "Transaction summary: income {TotalIncome}, expenses {TotalExpenses} for congregation {CongregationId}"
+    )]
+    public static partial void Summarized(
+        ILogger logger,
+        Guid congregationId,
+        decimal totalIncome,
+        decimal totalExpenses
+    );
+
     // --- Unexpected ---
     [LoggerMessage(
         Level = LogLevel.Error,

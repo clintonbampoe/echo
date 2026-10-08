@@ -8,21 +8,20 @@ public class AttendanceTypeConfiguration : IEntityTypeConfiguration<AttendanceTy
 {
     public void Configure(EntityTypeBuilder<AttendanceType> builder)
     {
-        builder.HasKey(e => e.Id);
+        builder.HasKey(s => s.Id);
 
-        builder.Property(e => e.Id).ValueGeneratedOnAdd();
+        builder.Property(s => s.Id).ValueGeneratedOnAdd();
 
-        builder.Property(e => e.CreatedAt).HasDefaultValueSql("now()").ValueGeneratedOnAdd();
+        builder.Property(s => s.CreatedAt).HasDefaultValueSql("now()").ValueGeneratedOnAdd();
 
         builder
-            .HasOne(e => e.Congregation)
+            .HasOne(s => s.Congregation)
             .WithMany()
-            .HasForeignKey(e => e.CongregationId)
+            .HasForeignKey(s => s.CongregationId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasIndex(e => e.CongregationId);
-        builder.HasIndex(t => new { t.CongregationId, t.Name }).IsUnique();
-
-        builder.HasIndex(m => m.Name).HasMethod("GIN").HasOperators("gin_trgm_ops");
+        builder.HasIndex(s => s.CongregationId);
+        builder.HasIndex(s => new { s.CongregationId, s.Name }).IsUnique();
+        builder.HasIndex(s => s.Name).HasMethod("GIN").HasOperators("gin_trgm_ops");
     }
 }
