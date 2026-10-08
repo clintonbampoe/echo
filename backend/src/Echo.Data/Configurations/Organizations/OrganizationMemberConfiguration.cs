@@ -33,7 +33,10 @@ public class OrganizationMemberConfiguration : IEntityTypeConfiguration<Organiza
             .HasForeignKey(om => om.OrganizationId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasIndex(om => new { om.MemberId, om.OrganizationId }).IsUnique();
+        builder
+            .HasIndex(om => new { om.MemberId, om.OrganizationId })
+            .IsUnique()
+            .HasFilter($"\"{nameof(OrganizationMember.DeletedAt)}\" IS NULL");
 
         builder
             .HasIndex(om => new { om.CreatedAt, om.Id })

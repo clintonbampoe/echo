@@ -186,6 +186,24 @@ public class EventAttendanceService(
         }
         EventAttendanceLog.CreateMemberFound(logger, congregationId, dto.MemberId);
 
+        bool alreadyCheckedIn;
+        using (
+            instrumentation.ActivitySource.StartActivity("svc.event_attendance.validate.duplicate")
+        )
+        {
+            alreadyCheckedIn = await repository.ExistsForEventAndMember(
+                congregationId,
+                dto.EventId,
+                dto.MemberId,
+                ct
+            );
+        }
+        if (alreadyCheckedIn)
+        {
+            EventAttendanceLog.CreateDuplicate(logger, congregationId, dto.EventId, dto.MemberId);
+            return new ConflictResult("This member has already checked in to this event.");
+        }
+
         var entity = mapper.ToEntity(dto);
         entity.CongregationId = congregationId;
         entity.Id = idGenerator.Generate();

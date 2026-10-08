@@ -6,7 +6,7 @@ import type {
 } from "../types/eventRegistration";
 import type { PagedResponse } from "../types/pagination";
 
-const BASE_PATH = "/v1/EventRegistrations";
+const BASE_PATH = "/v1/eventregistrations";
 
 export const eventRegistrationsService = {
   list: async (
@@ -27,7 +27,7 @@ export const eventRegistrationsService = {
     const params = new URLSearchParams();
     params.append("PageSize", pageSize.toString());
     if (cursor) params.append("Cursor", cursor);
-    return apiFetch(`${BASE_PATH}/event/${eventId}?${params.toString()}`);
+    return apiFetch(`${BASE_PATH}/event${eventId}?${params.toString()}`);
   },
 
   listByMemberId: async (
@@ -38,7 +38,7 @@ export const eventRegistrationsService = {
     const params = new URLSearchParams();
     params.append("PageSize", pageSize.toString());
     if (cursor) params.append("Cursor", cursor);
-    return apiFetch(`${BASE_PATH}/member/${memberId}?${params.toString()}`);
+    return apiFetch(`${BASE_PATH}/member${memberId}?${params.toString()}`);
   },
 
   getById: async (id: string): Promise<EventRegistration> => {
@@ -48,7 +48,7 @@ export const eventRegistrationsService = {
   create: async (
     data: EventRegistrationCreatePayload,
   ): Promise<EventRegistration> => {
-    return apiFetch(BASE_PATH, {
+    return apiFetch(`${BASE_PATH}`, {
       method: "POST",
       body: JSON.stringify(data),
     });

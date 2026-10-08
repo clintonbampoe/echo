@@ -44,6 +44,24 @@ public class OrganizationMemberRepository(AppDbContext context)
             .FirstOrDefaultAsync(ct);
     }
 
+    public async Task<bool> ExistsForMemberAndOrganization(
+        Guid congregationId,
+        Guid memberId,
+        Guid organizationId,
+        CancellationToken ct = default
+    )
+    {
+        return await _dbSet
+            .FilterDeleted()
+            .AnyAsync(
+                o =>
+                    o.CongregationId == congregationId
+                    && o.MemberId == memberId
+                    && o.OrganizationId == organizationId,
+                ct
+            );
+    }
+
     public void Create(OrganizationMember entity)
     {
         _dbSet.Add(entity);

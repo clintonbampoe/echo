@@ -42,6 +42,24 @@ public class EventAttendanceRepository(AppDbContext context)
             .FirstOrDefaultAsync(ct);
     }
 
+    public async Task<bool> ExistsForEventAndMember(
+        Guid congregationId,
+        Guid eventId,
+        Guid memberId,
+        CancellationToken ct = default
+    )
+    {
+        return await _dbSet
+            .FilterDeleted()
+            .AnyAsync(
+                e =>
+                    e.CongregationId == congregationId
+                    && e.EventId == eventId
+                    && e.MemberId == memberId,
+                ct
+            );
+    }
+
     public void Create(EventAttendance entity)
     {
         _dbSet.Add(entity);

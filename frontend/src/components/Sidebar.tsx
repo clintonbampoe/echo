@@ -12,6 +12,7 @@ import {
   FinanceIcon,
   LogoutIcon,
   MembersIcon,
+  OrganizationsIcon,
   ProjectsIcon,
   ReportingIcon,
   TitheIcon
@@ -48,6 +49,7 @@ const Sidebar: React.FC = () => {
         { id: 'events', label: 'Events', icon: 'calendar' },
         { id: 'assets', label: 'Assets', icon: 'box' },
         { id: 'members', label: 'Members', icon: 'members' },
+        { id: 'organizations', label: 'Organizations', icon: 'organizations' },
     ];
 
     const renderSidebarIcon = (iconName: string) => {
@@ -63,6 +65,7 @@ const Sidebar: React.FC = () => {
             case 'calendar': return <CalendarIcon className={className} />;
             case 'box': return <BoxIcon className={className} />;
             case 'members': return <MembersIcon className={className} />;
+            case 'organizations': return <OrganizationsIcon className={className} />;
             default: return null;
         }
     };

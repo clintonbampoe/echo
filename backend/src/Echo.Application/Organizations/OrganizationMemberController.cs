@@ -31,7 +31,7 @@ public class OrganizationMemberController(
         return response.ToActionResult();
     }
 
-    [HttpGet("member{id}")]
+    [HttpGet("member/{id}")]
     public async Task<ActionResult> ListByMemberId(
         Guid id,
         [FromQuery] OrganizationMemberFilters filters,
@@ -53,7 +53,7 @@ public class OrganizationMemberController(
         return response.ToActionResult();
     }
 
-    [HttpGet("organizations{id}")]
+    [HttpGet("organizations/{id}")]
     public async Task<ActionResult> ListByOrganizationId(
         Guid id,
         [FromQuery] OrganizationMemberFilters filters,

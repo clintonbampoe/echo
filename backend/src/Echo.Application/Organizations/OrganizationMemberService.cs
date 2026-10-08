@@ -202,6 +202,27 @@ public class OrganizationMemberService(
             return new ForeignKeyEntityNotFound(nameof(organization));
         }
 
+        bool alreadyMember;
+        using (instrumentation.ActivitySource.StartActivity("svc.org_member.validate.duplicate"))
+        {
+            alreadyMember = await repository.ExistsForMemberAndOrganization(
+                congregationId,
+                dto.MemberId,
+                dto.OrganizationId,
+                ct
+            );
+        }
+        if (alreadyMember)
+        {
+            OrganizationMemberLog.CreateDuplicate(
+                logger,
+                congregationId,
+                dto.MemberId,
+                dto.OrganizationId
+            );
+            return new ConflictResult("This member already belongs to this organization.");
+        }
+
         var entity = mapper.ToEntity(dto);
         entity.CongregationId = congregationId;
         entity.Id = idGenerator.Generate();
