@@ -1,4 +1,4 @@
-import { apiFetch } from './api';
+import { apiFetch } from "./api";
 
 export interface TokenPair {
   accessToken: string;
@@ -10,7 +10,7 @@ export interface TokenPair {
 export interface RegisterCongregationPayload {
   congregationDto: {
     name: string;
-    orgType: 'Church' | 'Mosque' | 'Temple' | 'Other';
+    orgType: "Church" | "Mosque" | "Temple" | "Other";
     phoneNumber: string;
     emailAddress: string;
     region: string;

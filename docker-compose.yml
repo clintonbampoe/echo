@@ -16,6 +16,7 @@ services:
     environment:
       ConnectionStrings__echodb: ${ConnectionStrings__echodb}
       OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT}
+      OTEL_SERVICE_NAME: ${OTEL_SERVICE_NAME}
       Jwt__PrivateKey: ${Jwt__PrivateKey}
       Jwt__PublicKey: ${Jwt__PublicKey}
       # Only set during a key rotation grace period; empty the rest of the time.

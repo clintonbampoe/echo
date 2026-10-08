@@ -1,4 +1,5 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5025/api';
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:5025/api";
 
 let isRefreshing = false;
 let failedQueue: Array<{
@@ -7,7 +8,7 @@ let failedQueue: Array<{
 }> = [];
 
 const processQueue = (error: unknown) => {
-  failedQueue.forEach(prom => {
+  failedQueue.forEach((prom) => {
     if (error) {
       prom.reject(error);
     } else {
@@ -17,23 +18,26 @@ const processQueue = (error: unknown) => {
   failedQueue = [];
 };
 
-export const apiFetch = async <T = unknown>(endpoint: string, options: RequestInit = {}): Promise<T> => {
-  const userStr = localStorage.getItem('user');
-  let token = '';
-  let refreshToken = '';
+export const apiFetch = async <T = unknown>(
+  endpoint: string,
+  options: RequestInit = {},
+): Promise<T> => {
+  const userStr = localStorage.getItem("user");
+  let token = "";
+  let refreshToken = "";
 
   if (userStr) {
     try {
       const user = JSON.parse(userStr);
-      token = user?.token || '';
-      refreshToken = user?.refreshToken || '';
+      token = user?.token || "";
+      refreshToken = user?.refreshToken || "";
     } catch {
       // ignore
     }
   }
 
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...((options.headers as Record<string, string>) || {}),
   };
@@ -58,7 +62,7 @@ export const apiFetch = async <T = unknown>(endpoint: string, options: RequestIn
 
           if (refreshRes.ok) {
             let data = await refreshRes.json();
-            if (data && typeof data === 'object' && 'data' in data) {
+            if (data && typeof data === "object" && "data" in data) {
               data = data.data;
             }
 
@@ -68,7 +72,7 @@ export const apiFetch = async <T = unknown>(endpoint: string, options: RequestIn
               token: data.accessToken,
               refreshToken: data.refreshToken,
             };
-            localStorage.setItem('user', JSON.stringify(updatedUser));
+            localStorage.setItem("user", JSON.stringify(updatedUser));
             isRefreshing = false;
             processQueue(null);
 
@@ -86,7 +90,7 @@ export const apiFetch = async <T = unknown>(endpoint: string, options: RequestIn
         }
 
         isRefreshing = false;
-        processQueue(new Error('Session expired'));
+        processQueue(new Error("Session expired"));
       } else {
         // Wait for refresh to finish then retry
         return new Promise((resolve, reject) => {
@@ -95,9 +99,9 @@ export const apiFetch = async <T = unknown>(endpoint: string, options: RequestIn
       }
     }
 
-    localStorage.removeItem('user');
-    window.dispatchEvent(new Event('auth:unauthorized'));
-    throw new Error('Unauthorized');
+    localStorage.removeItem("user");
+    window.dispatchEvent(new Event("auth:unauthorized"));
+    throw new Error("Unauthorized");
   }
 
   if (!response.ok) {
@@ -105,18 +109,18 @@ export const apiFetch = async <T = unknown>(endpoint: string, options: RequestIn
     let errorMessage = errorData.detail || errorData.message || errorData.title;
 
     if (!errorMessage && errorData.errors) {
-      errorMessage = Object.values(errorData.errors).flat().join(' ');
+      errorMessage = Object.values(errorData.errors).flat().join(" ");
     }
 
-    throw new Error(errorMessage || 'Something went wrong');
+    throw new Error(errorMessage || "Something went wrong");
   }
 
-  const contentType = response.headers.get('content-type');
-  if (contentType && contentType.includes('application/json')) {
+  const contentType = response.headers.get("content-type");
+  if (contentType && contentType.includes("application/json")) {
     const json = await response.json();
-    if (json && typeof json === 'object') {
-      if ('data' in json) return json.data as T;
-      if ('resource' in json) return json.resource as T;
+    if (json && typeof json === "object") {
+      if ("data" in json) return json.data as T;
+      if ("resource" in json) return json.resource as T;
     }
     return json as T;
   }
