@@ -137,6 +137,17 @@ public static partial class EventAttendanceLog
         Guid attendanceId
     );
 
+    [LoggerMessage(
+        Level = LogLevel.Warning,
+        Message = "Event attendance create failed: member {MemberId} already checked in to event {EventId} in congregation {CongregationId}"
+    )]
+    public static partial void CreateDuplicate(
+        ILogger logger,
+        Guid congregationId,
+        Guid eventId,
+        Guid memberId
+    );
+
     // --- Unexpected ---
     [LoggerMessage(
         Level = LogLevel.Error,

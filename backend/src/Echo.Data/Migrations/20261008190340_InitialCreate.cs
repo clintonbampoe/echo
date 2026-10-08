@@ -83,45 +83,6 @@ namespace Echo.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Members",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    CongregationId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false, computedColumnSql: "TRIM(COALESCE(\"LastName\", '') || ' ' || COALESCE(\"FirstName\", '') || ' ' || COALESCE(\"OtherNames\", ''))", stored: true),
-                    FirstName = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
-                    LastName = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
-                    OtherNames = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
-                    EmailAddress = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
-                    PhoneNumber = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
-                    DateOfBirth = table.Column<DateOnly>(type: "date", nullable: false),
-                    JoinedDate = table.Column<DateOnly>(type: "date", nullable: true),
-                    Gender = table.Column<string>(type: "text", nullable: false),
-                    ResidentialAddress = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
-                    City = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
-                    Hometown = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
-                    Region = table.Column<string>(type: "text", nullable: false),
-                    GpsAddress = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
-                    MaritalStatus = table.Column<string>(type: "text", nullable: false),
-                    NextOfKin = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
-                    EmergencyContactName = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
-                    EmergencyContactPhoneNumber = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
-                    Status = table.Column<string>(type: "text", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "now()"),
-                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Members", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Members_Congregations_CongregationId",
-                        column: x => x.CongregationId,
-                        principalTable: "Congregations",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Organizations",
                 columns: table => new
                 {
@@ -137,6 +98,33 @@ namespace Echo.Data.Migrations
                     table.PrimaryKey("PK_Organizations", x => x.Id);
                     table.ForeignKey(
                         name: "FK_Organizations_Congregations_CongregationId",
+                        column: x => x.CongregationId,
+                        principalTable: "Congregations",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "People",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    CongregationId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Kind = table.Column<string>(type: "text", nullable: false),
+                    Name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false, computedColumnSql: "TRIM(COALESCE(\"LastName\", '') || ' ' || COALESCE(\"FirstName\", '') || ' ' || COALESCE(\"OtherNames\", ''))", stored: true),
+                    FirstName = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    LastName = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    OtherNames = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
+                    PhoneNumber = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    EmailAddress = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "now()"),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_People", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_People_Congregations_CongregationId",
                         column: x => x.CongregationId,
                         principalTable: "Congregations",
                         principalColumn: "Id",
@@ -213,7 +201,7 @@ namespace Echo.Data.Migrations
                         column: x => x.CongregationId,
                         principalTable: "Congregations",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -251,183 +239,79 @@ namespace Echo.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "AttendanceContexts",
+                name: "Attendance",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "integer", nullable: false)
-                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
                     CongregationId = table.Column<Guid>(type: "uuid", nullable: false),
                     AttendanceTypeId = table.Column<int>(type: "integer", nullable: false),
-                    Name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    PersonId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Date = table.Column<DateOnly>(type: "date", nullable: false),
+                    CheckInTime = table.Column<TimeOnly>(type: "time without time zone", nullable: false),
+                    Notes = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "now()"),
                     DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_AttendanceContexts", x => x.Id);
+                    table.PrimaryKey("PK_Attendance", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_AttendanceContexts_AttendanceTypes_AttendanceTypeId",
+                        name: "FK_Attendance_AttendanceTypes_AttendanceTypeId",
                         column: x => x.AttendanceTypeId,
                         principalTable: "AttendanceTypes",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_AttendanceContexts_Congregations_CongregationId",
-                        column: x => x.CongregationId,
-                        principalTable: "Congregations",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Tithes",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    CongregationId = table.Column<Guid>(type: "uuid", nullable: false),
-                    MemberId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Amount = table.Column<decimal>(type: "numeric", nullable: false),
-                    ForYear = table.Column<int>(type: "integer", nullable: false),
-                    ForMonth = table.Column<string>(type: "text", nullable: false),
-                    PaymentMethod = table.Column<string>(type: "text", nullable: false),
-                    CollectionDate = table.Column<DateOnly>(type: "date", nullable: false),
-                    Description = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "now()"),
-                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Tithes", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Tithes_Congregations_CongregationId",
+                        name: "FK_Attendance_Congregations_CongregationId",
                         column: x => x.CongregationId,
                         principalTable: "Congregations",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_Tithes_Members_MemberId",
-                        column: x => x.MemberId,
-                        principalTable: "Members",
+                        name: "FK_Attendance_People_PersonId",
+                        column: x => x.PersonId,
+                        principalTable: "People",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Events",
+                name: "Members",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    PersonId = table.Column<Guid>(type: "uuid", nullable: false),
                     CongregationId = table.Column<Guid>(type: "uuid", nullable: false),
-                    OrganizationId = table.Column<Guid>(type: "uuid", nullable: false),
-                    OrganizerId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
-                    StartDate = table.Column<DateOnly>(type: "date", nullable: false),
-                    EndDate = table.Column<DateOnly>(type: "date", nullable: false),
-                    StartTime = table.Column<TimeOnly>(type: "time without time zone", nullable: true),
-                    EndTime = table.Column<TimeOnly>(type: "time without time zone", nullable: true),
-                    Location = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
-                    Capacity = table.Column<int>(type: "integer", nullable: true),
-                    Description = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "now()"),
-                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Events", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Events_Congregations_CongregationId",
-                        column: x => x.CongregationId,
-                        principalTable: "Congregations",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Events_Members_OrganizerId",
-                        column: x => x.OrganizerId,
-                        principalTable: "Members",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Events_Organizations_OrganizationId",
-                        column: x => x.OrganizationId,
-                        principalTable: "Organizations",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "OrganizationMembers",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    CongregationId = table.Column<Guid>(type: "uuid", nullable: false),
-                    MemberId = table.Column<Guid>(type: "uuid", nullable: false),
-                    OrganizationId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Role = table.Column<string>(type: "text", nullable: false),
-                    JoinedAt = table.Column<DateOnly>(type: "date", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "now()"),
-                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_OrganizationMembers", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_OrganizationMembers_Congregations_CongregationId",
-                        column: x => x.CongregationId,
-                        principalTable: "Congregations",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_OrganizationMembers_Members_MemberId",
-                        column: x => x.MemberId,
-                        principalTable: "Members",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_OrganizationMembers_Organizations_OrganizationId",
-                        column: x => x.OrganizationId,
-                        principalTable: "Organizations",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Projects",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    CongregationId = table.Column<Guid>(type: "uuid", nullable: false),
-                    CategoryId = table.Column<int>(type: "integer", nullable: false),
-                    ManagerId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
-                    TargetAmount = table.Column<decimal>(type: "numeric", nullable: false),
+                    DateOfBirth = table.Column<DateOnly>(type: "date", nullable: false),
+                    JoinedDate = table.Column<DateOnly>(type: "date", nullable: true),
+                    Gender = table.Column<string>(type: "text", nullable: false),
+                    ResidentialAddress = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    City = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    Hometown = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    Region = table.Column<string>(type: "text", nullable: false),
+                    GpsAddress = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
+                    MaritalStatus = table.Column<string>(type: "text", nullable: false),
+                    NextOfKin = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    EmergencyContactName = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    EmergencyContactPhoneNumber = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
                     Status = table.Column<string>(type: "text", nullable: false),
-                    StartDate = table.Column<DateOnly>(type: "date", nullable: false),
-                    EndDate = table.Column<DateOnly>(type: "date", nullable: true),
-                    Description = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "now()"),
                     DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Projects", x => x.Id);
+                    table.PrimaryKey("PK_Members", x => x.PersonId);
                     table.ForeignKey(
-                        name: "FK_Projects_Congregations_CongregationId",
+                        name: "FK_Members_Congregations_CongregationId",
                         column: x => x.CongregationId,
                         principalTable: "Congregations",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_Projects_Members_ManagerId",
-                        column: x => x.ManagerId,
-                        principalTable: "Members",
+                        name: "FK_Members_People_PersonId",
+                        column: x => x.PersonId,
+                        principalTable: "People",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Projects_ProjectCategories_CategoryId",
-                        column: x => x.CategoryId,
-                        principalTable: "ProjectCategories",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -564,41 +448,189 @@ namespace Echo.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "AttendanceRecords",
+                name: "Events",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
                     CongregationId = table.Column<Guid>(type: "uuid", nullable: false),
-                    AttendanceContextId = table.Column<int>(type: "integer", nullable: false),
-                    MemberId = table.Column<Guid>(type: "uuid", nullable: false),
-                    ForDate = table.Column<DateOnly>(type: "date", nullable: false),
-                    AttendeeType = table.Column<string>(type: "text", nullable: false),
-                    CheckInTime = table.Column<TimeOnly>(type: "time without time zone", nullable: false),
+                    OrganizationId = table.Column<Guid>(type: "uuid", nullable: false),
+                    OrganizerId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    StartDate = table.Column<DateOnly>(type: "date", nullable: false),
+                    EndDate = table.Column<DateOnly>(type: "date", nullable: false),
+                    StartTime = table.Column<TimeOnly>(type: "time without time zone", nullable: true),
+                    EndTime = table.Column<TimeOnly>(type: "time without time zone", nullable: true),
+                    Location = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
+                    Capacity = table.Column<int>(type: "integer", nullable: true),
                     Description = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "now()"),
                     DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_AttendanceRecords", x => x.Id);
+                    table.PrimaryKey("PK_Events", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_AttendanceRecords_AttendanceContexts_AttendanceContextId",
-                        column: x => x.AttendanceContextId,
-                        principalTable: "AttendanceContexts",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_AttendanceRecords_Congregations_CongregationId",
+                        name: "FK_Events_Congregations_CongregationId",
                         column: x => x.CongregationId,
                         principalTable: "Congregations",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_AttendanceRecords_Members_MemberId",
+                        name: "FK_Events_Members_OrganizerId",
+                        column: x => x.OrganizerId,
+                        principalTable: "Members",
+                        principalColumn: "PersonId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Events_Organizations_OrganizationId",
+                        column: x => x.OrganizationId,
+                        principalTable: "Organizations",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "OrganizationMembers",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    CongregationId = table.Column<Guid>(type: "uuid", nullable: false),
+                    MemberId = table.Column<Guid>(type: "uuid", nullable: false),
+                    OrganizationId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Role = table.Column<string>(type: "text", nullable: false),
+                    JoinedAt = table.Column<DateOnly>(type: "date", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "now()"),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OrganizationMembers", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_OrganizationMembers_Congregations_CongregationId",
+                        column: x => x.CongregationId,
+                        principalTable: "Congregations",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_OrganizationMembers_Members_MemberId",
                         column: x => x.MemberId,
                         principalTable: "Members",
+                        principalColumn: "PersonId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_OrganizationMembers_Organizations_OrganizationId",
+                        column: x => x.OrganizationId,
+                        principalTable: "Organizations",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.SetNull);
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Projects",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    CongregationId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CategoryId = table.Column<int>(type: "integer", nullable: false),
+                    ManagerId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: false),
+                    TargetAmount = table.Column<decimal>(type: "numeric", nullable: false),
+                    Status = table.Column<string>(type: "text", nullable: false),
+                    StartDate = table.Column<DateOnly>(type: "date", nullable: false),
+                    EndDate = table.Column<DateOnly>(type: "date", nullable: true),
+                    Description = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "now()"),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Projects", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Projects_Congregations_CongregationId",
+                        column: x => x.CongregationId,
+                        principalTable: "Congregations",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Projects_Members_ManagerId",
+                        column: x => x.ManagerId,
+                        principalTable: "Members",
+                        principalColumn: "PersonId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Projects_ProjectCategories_CategoryId",
+                        column: x => x.CategoryId,
+                        principalTable: "ProjectCategories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Tithes",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    CongregationId = table.Column<Guid>(type: "uuid", nullable: false),
+                    MemberId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Amount = table.Column<decimal>(type: "numeric", nullable: false),
+                    ForYear = table.Column<int>(type: "integer", nullable: false),
+                    ForMonth = table.Column<string>(type: "text", nullable: false),
+                    PaymentMethod = table.Column<string>(type: "text", nullable: false),
+                    CollectionDate = table.Column<DateOnly>(type: "date", nullable: false),
+                    Description = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "now()"),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Tithes", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Tithes_Congregations_CongregationId",
+                        column: x => x.CongregationId,
+                        principalTable: "Congregations",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Tithes_Members_MemberId",
+                        column: x => x.MemberId,
+                        principalTable: "Members",
+                        principalColumn: "PersonId",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Visitors",
+                columns: table => new
+                {
+                    PersonId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CongregationId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Notes = table.Column<string>(type: "character varying(255)", maxLength: 255, nullable: true),
+                    ConvertedToMemberPersonId = table.Column<Guid>(type: "uuid", nullable: true),
+                    ConvertedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false, defaultValueSql: "now()"),
+                    DeletedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Visitors", x => x.PersonId);
+                    table.ForeignKey(
+                        name: "FK_Visitors_Congregations_CongregationId",
+                        column: x => x.CongregationId,
+                        principalTable: "Congregations",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Visitors_Members_ConvertedToMemberPersonId",
+                        column: x => x.ConvertedToMemberPersonId,
+                        principalTable: "Members",
+                        principalColumn: "PersonId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Visitors_People_PersonId",
+                        column: x => x.PersonId,
+                        principalTable: "People",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -632,7 +664,7 @@ namespace Echo.Data.Migrations
                         name: "FK_EventAttendances_Members_MemberId",
                         column: x => x.MemberId,
                         principalTable: "Members",
-                        principalColumn: "Id",
+                        principalColumn: "PersonId",
                         onDelete: ReferentialAction.Restrict);
                 });
 
@@ -667,7 +699,7 @@ namespace Echo.Data.Migrations
                         name: "FK_EventRegistrations_Members_MemberId",
                         column: x => x.MemberId,
                         principalTable: "Members",
-                        principalColumn: "Id",
+                        principalColumn: "PersonId",
                         onDelete: ReferentialAction.Restrict);
                 });
 
@@ -750,48 +782,37 @@ namespace Echo.Data.Migrations
                 filter: "\"DeletedAt\" IS NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_AttendanceContexts_AttendanceTypeId_Name",
-                table: "AttendanceContexts",
-                columns: new[] { "AttendanceTypeId", "Name" },
-                unique: true);
+                name: "IX_Attendance_AttendanceTypeId",
+                table: "Attendance",
+                column: "AttendanceTypeId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_AttendanceContexts_CongregationId",
-                table: "AttendanceContexts",
-                column: "CongregationId");
+                name: "IX_Attendance_CongregationId_AttendanceTypeId_Date",
+                table: "Attendance",
+                columns: new[] { "CongregationId", "AttendanceTypeId", "Date" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_AttendanceContexts_Name",
-                table: "AttendanceContexts",
-                column: "Name")
-                .Annotation("Npgsql:IndexMethod", "GIN")
-                .Annotation("Npgsql:IndexOperators", new[] { "gin_trgm_ops" });
+                name: "IX_Attendance_CongregationId_PersonId",
+                table: "Attendance",
+                columns: new[] { "CongregationId", "PersonId" });
 
             migrationBuilder.CreateIndex(
-                name: "IX_AttendanceRecords_AttendanceContextId",
-                table: "AttendanceRecords",
-                column: "AttendanceContextId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_AttendanceRecords_CongregationId",
-                table: "AttendanceRecords",
-                column: "CongregationId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_AttendanceRecords_ForDate",
-                table: "AttendanceRecords",
-                column: "ForDate");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_AttendanceRecords_ForDate_Id",
-                table: "AttendanceRecords",
-                columns: new[] { "ForDate", "Id" },
+                name: "IX_Attendance_CongregationId_PersonId_AttendanceTypeId_Date",
+                table: "Attendance",
+                columns: new[] { "CongregationId", "PersonId", "AttendanceTypeId", "Date" },
+                unique: true,
                 filter: "\"DeletedAt\" IS NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_AttendanceRecords_MemberId",
-                table: "AttendanceRecords",
-                column: "MemberId");
+                name: "IX_Attendance_Date_Id",
+                table: "Attendance",
+                columns: new[] { "Date", "Id" },
+                filter: "\"DeletedAt\" IS NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Attendance_PersonId",
+                table: "Attendance",
+                column: "PersonId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_AttendanceTypes_CongregationId",
@@ -855,7 +876,8 @@ namespace Echo.Data.Migrations
                 name: "IX_EventAttendances_EventId_MemberId",
                 table: "EventAttendances",
                 columns: new[] { "EventId", "MemberId" },
-                unique: true);
+                unique: true,
+                filter: "\"DeletedAt\" IS NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_EventAttendances_MemberId",
@@ -871,7 +893,8 @@ namespace Echo.Data.Migrations
                 name: "IX_EventRegistrations_EventId_MemberId",
                 table: "EventRegistrations",
                 columns: new[] { "EventId", "MemberId" },
-                unique: true);
+                unique: true,
+                filter: "\"DeletedAt\" IS NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_EventRegistrations_MemberId",
@@ -945,17 +968,9 @@ namespace Echo.Data.Migrations
                 column: "CongregationId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Members_Name",
+                name: "IX_Members_Status",
                 table: "Members",
-                column: "Name")
-                .Annotation("Npgsql:IndexMethod", "GIN")
-                .Annotation("Npgsql:IndexOperators", new[] { "gin_trgm_ops" });
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Members_Name_Id",
-                table: "Members",
-                columns: new[] { "Name", "Id" },
-                filter: "\"DeletedAt\" IS NULL");
+                column: "Status");
 
             migrationBuilder.CreateIndex(
                 name: "IX_OrganizationMembers_CongregationId",
@@ -972,7 +987,8 @@ namespace Echo.Data.Migrations
                 name: "IX_OrganizationMembers_MemberId_OrganizationId",
                 table: "OrganizationMembers",
                 columns: new[] { "MemberId", "OrganizationId" },
-                unique: true);
+                unique: true,
+                filter: "\"DeletedAt\" IS NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_OrganizationMembers_OrganizationId",
@@ -1017,6 +1033,29 @@ namespace Echo.Data.Migrations
                 name: "IX_PasswordVerificationTokens_UserId",
                 table: "PasswordVerificationTokens",
                 column: "UserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_People_CongregationId",
+                table: "People",
+                column: "CongregationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_People_CongregationId_Kind",
+                table: "People",
+                columns: new[] { "CongregationId", "Kind" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_People_Name",
+                table: "People",
+                column: "Name")
+                .Annotation("Npgsql:IndexMethod", "GIN")
+                .Annotation("Npgsql:IndexOperators", new[] { "gin_trgm_ops" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_People_Name_Id",
+                table: "People",
+                columns: new[] { "Name", "Id" },
+                filter: "\"DeletedAt\" IS NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_ProjectCategories_CongregationId",
@@ -1160,6 +1199,12 @@ namespace Echo.Data.Migrations
                 filter: "\"DeletedAt\" IS NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Users_EmailAddress_Id",
+                table: "Users",
+                columns: new[] { "EmailAddress", "Id" },
+                filter: "\"DeletedAt\" IS NULL");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Users_Name",
                 table: "Users",
                 column: "Name")
@@ -1171,6 +1216,16 @@ namespace Echo.Data.Migrations
                 table: "Users",
                 columns: new[] { "Name", "Id" },
                 filter: "\"DeletedAt\" IS NULL");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Visitors_CongregationId",
+                table: "Visitors",
+                column: "CongregationId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Visitors_ConvertedToMemberPersonId",
+                table: "Visitors",
+                column: "ConvertedToMemberPersonId");
         }
 
         /// <inheritdoc />
@@ -1180,7 +1235,7 @@ namespace Echo.Data.Migrations
                 name: "Assets");
 
             migrationBuilder.DropTable(
-                name: "AttendanceRecords");
+                name: "Attendance");
 
             migrationBuilder.DropTable(
                 name: "EmailVerificationTokens");
@@ -1213,10 +1268,13 @@ namespace Echo.Data.Migrations
                 name: "Transactions");
 
             migrationBuilder.DropTable(
+                name: "Visitors");
+
+            migrationBuilder.DropTable(
                 name: "AssetCategories");
 
             migrationBuilder.DropTable(
-                name: "AttendanceContexts");
+                name: "AttendanceTypes");
 
             migrationBuilder.DropTable(
                 name: "Events");
@@ -1231,9 +1289,6 @@ namespace Echo.Data.Migrations
                 name: "TransactionCategories");
 
             migrationBuilder.DropTable(
-                name: "AttendanceTypes");
-
-            migrationBuilder.DropTable(
                 name: "Organizations");
 
             migrationBuilder.DropTable(
@@ -1241,6 +1296,9 @@ namespace Echo.Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "ProjectCategories");
+
+            migrationBuilder.DropTable(
+                name: "People");
 
             migrationBuilder.DropTable(
                 name: "Congregations");

@@ -382,6 +382,7 @@ const Events: React.FC = () => {
       setShowRegForm(false);
     } catch (err: unknown) {
       console.error("Failed to register member", err);
+      alert(getErrorMessage(err, "Failed to register member."));
     }
   };
 
@@ -403,6 +404,7 @@ const Events: React.FC = () => {
       setShowAttForm(false);
     } catch (err: unknown) {
       console.error("Failed to check-in member", err);
+      alert(getErrorMessage(err, "Failed to check in member."));
     }
   };
 
@@ -961,19 +963,10 @@ const Events: React.FC = () => {
             <h3 className="detail-table-title">
               Registrations: {viewingEvent.name}
             </h3>
-            <button
-              type="button"
-              className="event-action-btn primary"
-              onClick={() => {
-                setRegForm({
-                  memberId: membersList[0]?.id || "",
-                  registrationDate: new Date().toISOString().split("T")[0],
-                });
-                setShowRegForm(true);
-              }}
-            >
-              + Add Registration
-            </button>
+            <span className="detail-table-count">
+              {registrationsList.length}{" "}
+              {registrationsList.length === 1 ? "registration" : "registrations"}
+            </span>
           </div>
           <table className="events-table">
             <thead>
@@ -1043,21 +1036,10 @@ const Events: React.FC = () => {
             <h3 className="detail-table-title">
               Attendance Check-ins: {viewingEvent.name}
             </h3>
-            <button
-              type="button"
-              className="event-action-btn primary"
-              onClick={() => {
-                const now = new Date();
-                const timeStr = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
-                setAttForm({
-                  memberId: membersList[0]?.id || "",
-                  checkInTime: timeStr,
-                });
-                setShowAttForm(true);
-              }}
-            >
-              + Check-in Member
-            </button>
+            <span className="detail-table-count">
+              {attendanceList.length}{" "}
+              {attendanceList.length === 1 ? "check-in" : "check-ins"}
+            </span>
           </div>
           <table className="events-table">
             <thead>

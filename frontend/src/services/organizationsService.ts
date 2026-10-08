@@ -7,11 +7,11 @@ import type {
 } from "../types/organization";
 import type { PagedResponse } from "../types/pagination";
 
-const BASE_PATH = "/v1/Organizations";
+const BASE_PATH = "/v1/organizations";
 
 export const organizationsService = {
   list: async (
-    pageSize: number = 50,
+    pageSize: number = 24,
     cursor?: string,
   ): Promise<PagedResponse<Organization>> => {
     const params = new URLSearchParams();
@@ -48,9 +48,9 @@ export const organizationsService = {
     return apiFetch<void>(`${BASE_PATH}/${id}`, { method: "DELETE" });
   },
 
-  search: async (name: string): Promise<OrganizationSearchResult[]> => {
+  search: async (query: string): Promise<OrganizationSearchResult[]> => {
     return apiFetch<OrganizationSearchResult[]>(
-      `${BASE_PATH}/search?name=${encodeURIComponent(name)}`,
+      `${BASE_PATH}/search?q=${encodeURIComponent(query)}`,
     );
   },
 };

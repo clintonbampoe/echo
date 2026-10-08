@@ -93,6 +93,24 @@ public class EventAttendanceRepository(AppDbContext context)
             .Paginate(cursor, pageSize)
             .ToListAsync(ct);
     }
+
+    public async Task<bool> ExistsForEventAndMember(
+        Guid congregationId,
+        Guid eventId,
+        Guid memberId,
+        CancellationToken ct = default
+    )
+    {
+        return await _dbSet
+            .FilterDeleted()
+            .AnyAsync(
+                e =>
+                    e.CongregationId == congregationId
+                    && e.EventId == eventId
+                    && e.MemberId == memberId,
+                ct
+            );
+    }
 }
 
 internal static class EventAttendanceQueryExtensions

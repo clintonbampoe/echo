@@ -137,6 +137,17 @@ public static partial class OrganizationMemberLog
     )]
     public static partial void DeleteNotFound(ILogger logger, Guid congregationId, Guid memberId);
 
+    [LoggerMessage(
+        Level = LogLevel.Warning,
+        Message = "Organization member create failed: member {MemberId} already belongs to organization {OrganizationId} in congregation {CongregationId}"
+    )]
+    public static partial void CreateDuplicate(
+        ILogger logger,
+        Guid congregationId,
+        Guid memberId,
+        Guid organizationId
+    );
+
     // --- Unexpected ---
     [LoggerMessage(
         Level = LogLevel.Error,

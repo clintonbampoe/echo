@@ -49,19 +49,16 @@ export const apiFetch = async <T = unknown>(
 
   if (response.status === 401) {
     // If we have a refresh token and this is not already an auth endpoint request, try refreshing
-    if (refreshToken && !endpoint.includes("/auth/v1/sessions/")) {
+    if (refreshToken && !endpoint.includes('/v1/auth/sessions/')) {
       if (!isRefreshing) {
         isRefreshing = true;
 
         try {
-          const refreshRes = await fetch(
-            `${API_BASE_URL}/auth/v1/sessions/refresh`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ refreshToken }),
-            },
-          );
+          const refreshRes = await fetch(`${API_BASE_URL}/v1/auth/sessions/refresh`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ refreshToken }),
+          });
 
           if (refreshRes.ok) {
             let data = await refreshRes.json();

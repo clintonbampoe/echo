@@ -7,7 +7,7 @@ import type {
 } from "../types/projectContribution";
 import type { PagedResponse } from "../types/pagination";
 
-const BASE_PATH = "/v1/ProjectContributions";
+const BASE_PATH = "/v1/project-contributions";
 
 export const projectContributionsService = {
   list: async (

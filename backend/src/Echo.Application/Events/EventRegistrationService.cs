@@ -197,6 +197,26 @@ public class EventRegistrationService(
         }
         EventRegistrationLog.CreateMemberFound(logger, congregationId, dto.MemberId);
 
+        bool alreadyRegistered;
+        using (
+            instrumentation.ActivitySource.StartActivity(
+                "svc.event_registration.validate.duplicate"
+            )
+        )
+        {
+            alreadyRegistered = await repository.ExistsForEventAndMember(
+                congregationId,
+                dto.EventId,
+                dto.MemberId,
+                ct
+            );
+        }
+        if (alreadyRegistered)
+        {
+            EventRegistrationLog.CreateDuplicate(logger, congregationId, dto.EventId, dto.MemberId);
+            return new ConflictResult("This member is already registered for this event.");
+        }
+
         var entity = mapper.ToEntity(dto);
         entity.CongregationId = congregationId;
         entity.Id = idGenerator.Generate();

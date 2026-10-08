@@ -32,7 +32,10 @@ public class EventRegistrationConfiguration : IEntityTypeConfiguration<EventRegi
             .HasForeignKey(er => er.EventId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasIndex(er => new { er.EventId, er.MemberId }).IsUnique();
+        builder
+            .HasIndex(er => new { er.EventId, er.MemberId })
+            .IsUnique()
+            .HasFilter($"\"{nameof(EventRegistration.DeletedAt)}\" IS NULL");
 
         builder
             .HasIndex(er => new { er.RegistrationDate, er.Id })

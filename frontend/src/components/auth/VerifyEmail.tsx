@@ -40,7 +40,7 @@ const VerifyEmail: React.FC = () => {
     try {
       // Step 1: Send verification request to get token
      
-      const response = await apiFetch<VerificationResponse>('/auth/v1/verifications/account', {
+      const response = await apiFetch<VerificationResponse>('/v1/auth/verifications/account', {
         method: 'POST',
         body: JSON.stringify({ email }),
       });
@@ -73,7 +73,7 @@ const VerifyEmail: React.FC = () => {
 
       // Step 2: Automatically verify with the token from response
       const verifyResponse = await fetch(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:5025/api'}/auth/v1/verifications/verify-email?token=${encodeURIComponent(token)}`,
+        `${import.meta.env.VITE_API_URL || 'http://localhost:5025/api'}/v1/auth/verifications/verify-email?token=${encodeURIComponent(token)}`,
         { method: 'POST' }
       );
 

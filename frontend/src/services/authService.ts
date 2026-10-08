@@ -31,15 +31,15 @@ export interface RegisterCongregationPayload {
 
 export const authService = {
   login: async (email: string, password: string): Promise<TokenPair> => {
-    return apiFetch<TokenPair>("/v1/auth/sessions/login", {
-      method: "POST",
+    return apiFetch<TokenPair>('/v1/auth/sessions/login', {
+      method: 'POST',
       body: JSON.stringify({ email, password }),
     });
   },
 
   refresh: async (refreshToken: string): Promise<TokenPair> => {
-    return apiFetch<TokenPair>("/v1/auth/sessions/refresh", {
-      method: "POST",
+    return apiFetch<TokenPair>('/v1/auth/sessions/refresh', {
+      method: 'POST',
       body: JSON.stringify({ refreshToken }),
     });
   },
@@ -47,8 +47,8 @@ export const authService = {
   logout: async (refreshToken?: string): Promise<void> => {
     if (!refreshToken) return;
     try {
-      await apiFetch<void>("/v1/auth/sessions/revoke", {
-        method: "POST",
+      await apiFetch<void>('/v1/auth/sessions/revoke', {
+        method: 'POST',
         body: JSON.stringify({ refreshToken }),
       });
     } catch {
@@ -56,11 +56,9 @@ export const authService = {
     }
   },
 
-  registerCongregation: async (
-    data: RegisterCongregationPayload,
-  ): Promise<void> => {
-    return apiFetch<void>("/v1/auth/registrations/congregation", {
-      method: "POST",
+  registerCongregation: async (data: RegisterCongregationPayload): Promise<void> => {
+    return apiFetch<void>('/v1/auth/registrations/congregation', {
+      method: 'POST',
       body: JSON.stringify(data),
     });
   },

@@ -6,7 +6,7 @@ import type {
   AttendanceTypeSearchResult,
 } from "../types/attendanceType";
 
-const BASE_PATH = "/v1/AttendanceTypes";
+const BASE_PATH = "/v1/attendance-types";
 
 export const attendanceTypesService = {
   getAll: async (): Promise<AttendanceType[]> => {

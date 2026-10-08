@@ -6,7 +6,7 @@ import type {
   TransactionCategorySearchResult,
 } from "../types/transactionCategory";
 
-const BASE_PATH = "/v1/TransactionCategories";
+const BASE_PATH = "/v1/transaction-categories";
 
 export const transactionCategoriesService = {
   list: async (): Promise<TransactionCategory[]> => {

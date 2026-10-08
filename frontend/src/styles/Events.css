@@ -276,6 +276,7 @@
 }
 
 .detail-table-header {
+  gap: 16px;
   padding: 16px 24px;
   border-bottom: 1px solid var(--border);
   background-color: white;
@@ -286,6 +287,16 @@
   font-weight: 700;
   color: var(--text-main);
   margin: 0;
+}
+
+.detail-table-count {
+  flex-shrink: 0;
+  padding: 4px 10px;
+  border-radius: 100px;
+  background-color: #f2f2f7;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
 }
 
 .events-table {

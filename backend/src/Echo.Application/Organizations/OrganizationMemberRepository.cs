@@ -103,6 +103,24 @@ public class OrganizationMemberRepository(AppDbContext context)
             .Paginate(cursor, pageSize)
             .ToListAsync(ct);
     }
+
+    public async Task<bool> ExistsForMemberAndOrganization(
+        Guid congregationId,
+        Guid memberId,
+        Guid organizationId,
+        CancellationToken ct = default
+    )
+    {
+        return await _dbSet
+            .FilterDeleted()
+            .AnyAsync(
+                o =>
+                    o.CongregationId == congregationId
+                    && o.MemberId == memberId
+                    && o.OrganizationId == organizationId,
+                ct
+            );
+    }
 }
 
 internal static class OrganizationMemberQueryExtensions

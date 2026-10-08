@@ -7,7 +7,7 @@ import type {
 } from "../types/transaction";
 import type { PagedResponse } from "../types/pagination";
 
-const BASE_PATH = "/v1/Transactions";
+const BASE_PATH = "/v1/transactions";
 
 export const transactionsService = {
   list: async (

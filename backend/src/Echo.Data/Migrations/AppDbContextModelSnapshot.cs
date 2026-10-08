@@ -578,7 +578,8 @@ namespace Echo.Data.Migrations
                         .HasFilter("\"DeletedAt\" IS NULL");
 
                     b.HasIndex("EventId", "MemberId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("\"DeletedAt\" IS NULL");
 
                     b.ToTable("EventAttendances");
                 });
@@ -616,7 +617,8 @@ namespace Echo.Data.Migrations
                     b.HasIndex("MemberId");
 
                     b.HasIndex("EventId", "MemberId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("\"DeletedAt\" IS NULL");
 
                     b.HasIndex("RegistrationDate", "Id")
                         .HasFilter("\"DeletedAt\" IS NULL");
@@ -892,7 +894,8 @@ namespace Echo.Data.Migrations
                         .HasFilter("\"DeletedAt\" IS NULL");
 
                     b.HasIndex("MemberId", "OrganizationId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("\"DeletedAt\" IS NULL");
 
                     b.ToTable("OrganizationMembers");
                 });

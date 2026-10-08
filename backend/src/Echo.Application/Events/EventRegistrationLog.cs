@@ -137,6 +137,17 @@ public static partial class EventRegistrationLog
         Guid registrationId
     );
 
+    [LoggerMessage(
+        Level = LogLevel.Warning,
+        Message = "Event registration create failed: member {MemberId} is already registered for event {EventId} in congregation {CongregationId}"
+    )]
+    public static partial void CreateDuplicate(
+        ILogger logger,
+        Guid congregationId,
+        Guid eventId,
+        Guid memberId
+    );
+
     // --- Unexpected ---
     [LoggerMessage(
         Level = LogLevel.Error,
