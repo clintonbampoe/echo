@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>dotnet-Echo.Seeder-06dc0e1d-0a52-4523-a965-15f6e3a9f4d1</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Npgsql.EntityFrameworkCore.PostgreSQL" />
+    <PackageReference Include="Bogus" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Echo.ServiceDefaults\Echo.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\Echo.Domain\Echo.Domain.csproj" />
+    <ProjectReference Include="..\Echo.Data\Echo.Data.csproj" />
+  </ItemGroup>
+</Project>

@@ -130,7 +130,9 @@ internal static class MemberQueryExtensions
         var from = filters.From ?? DateUtils.GetFirstDayOfYear(timeProvider);
         var to = filters.To ?? DateUtils.GetLastDayOfYear(timeProvider);
 
-        query = query.Where(m => m.JoinedDate >= from && m.JoinedDate <= to);
+        query = query.Where(m =>
+            m.JoinedDate == null || (m.JoinedDate >= from && m.JoinedDate <= to)
+        );
 
         return query;
     }

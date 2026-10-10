@@ -24,13 +24,7 @@ public class VisitorConfiguration : IEntityTypeConfiguration<Visitor>
             .HasForeignKey(v => v.CongregationId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder
-            .HasOne(v => v.ConvertedToMember)
-            .WithMany()
-            .HasForeignKey(v => v.ConvertedToMemberPersonId)
-            .OnDelete(DeleteBehavior.Restrict);
-
         builder.HasIndex(v => v.CongregationId);
-        builder.HasIndex(v => v.ConvertedToMemberPersonId);
+        builder.HasIndex(v => v.ConvertedAt);
     }
 }

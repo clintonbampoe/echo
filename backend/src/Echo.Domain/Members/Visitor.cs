@@ -12,8 +12,6 @@ public class Visitor : ISoftDeletable
 
     public string? Notes { get; set; }
 
-    public Guid? ConvertedToMemberPersonId { get; set; }
-    public Member? ConvertedToMember { get; set; }
     public DateTime? ConvertedAt { get; set; }
 
     public DateTime CreatedAt { get; set; }

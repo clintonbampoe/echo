@@ -143,21 +143,21 @@ public class VisitorService(
             return new NotFoundResult(visitorId.ToString());
         }
 
-        if (visitor.ConvertedToMemberPersonId is not null)
+        if (visitor.ConvertedAt is not null)
         {
             VisitorLog.AlreadyConverted(logger, congregationId, visitorId);
             return new ConflictResult(visitorId.ToString());
         }
 
         visitor.Person.Kind = PersonKind.Member;
-
         var member = mapper.ToMemberEntity(dto);
         member.PersonId = visitor.PersonId;
         member.CongregationId = congregationId;
         member.Person = visitor.Person;
 
-        visitor.ConvertedToMemberPersonId = visitor.PersonId;
-        visitor.ConvertedAt = DateTime.UtcNow;
+        var now = DateTime.UtcNow;
+        visitor.ConvertedAt = now;
+        member.JoinedDate = DateOnly.FromDateTime(now);
 
         using (instrumentation.ActivitySource.StartActivity("svc.visitor.persist"))
         {
@@ -264,60 +264,6 @@ public class VisitorService(
         return new SuccessResult<List<VisitorSearchResultDto>>(res);
     }
 
-    public async Task<IOperationResult> Convert(
-        Guid congregationId,
-        Guid visitorId,
-        MemberCreateDto dto,
-        CancellationToken ct
-    )
-    {
-        using var activity = instrumentation.ActivitySource.StartActivity("svc.visitor.convert");
-        activity?.SetTag("visitor.id", visitorId);
-
-        Visitor? visitor;
-        using (instrumentation.ActivitySource.StartActivity("svc.visitor.fetch.by_id"))
-        {
-            visitor = await repository.GetById(congregationId, visitorId, ct);
-        }
-
-        if (visitor is null)
-        {
-            activity?.SetTag("visitor.found", false);
-            VisitorLog.ConvertNotFound(logger, congregationId, visitorId);
-            return new NotFoundResult(visitorId.ToString());
-        }
-
-        if (visitor.ConvertedToMemberPersonId is not null)
-        {
-            VisitorLog.AlreadyConverted(logger, congregationId, visitorId);
-            return new ConflictResult(visitorId.ToString());
-        }
-
-        // Flip Person.Kind
-        visitor.Person.Kind = PersonKind.Member;
-
-        // Create Member side table row using existing Person
-        var member = mapper.ToMemberEntity(dto);
-        member.PersonId = visitor.PersonId;
-        member.CongregationId = congregationId;
-        member.Person = visitor.Person;
-
-        // Link visitor to member
-        visitor.ConvertedToMemberPersonId = visitor.PersonId;
-        visitor.ConvertedAt = DateTime.UtcNow;
-
-        using (instrumentation.ActivitySource.StartActivity("svc.visitor.persist"))
-        {
-            memberRepository.Create(member);
-            await unitOfWork.CommitAsync(ct);
-        }
-
-        activity?.SetTag("member.id", member.PersonId);
-        VisitorLog.Converted(logger, congregationId, visitorId, member.PersonId);
-
-        return new NoContentResult();
-    }
-
     public async Task<IOperationResult> Summary(
         Guid congregationId,
         VisitorFilters filters,
@@ -327,7 +273,7 @@ public class VisitorService(
         using var activity = instrumentation.ActivitySource.StartActivity("svc.visitor.summary");
 
         var totalTask = repository.Count(congregationId, filters, ct);
-        var newTask = repository.CountNew(congregationId, filters, ct);
+        var newTask = repository.CountConverted(congregationId, filters, ct);
         var recurringTask = repository.CountRecurring(congregationId, filters, ct);
         var convertedTask = repository.CountConverted(congregationId, filters, ct);
 

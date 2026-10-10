@@ -15,8 +15,6 @@ public class VisitorMapper : IVisitorMapper
             PhoneNumber = entity.Person.PhoneNumber,
             EmailAddress = entity.Person.EmailAddress,
             Notes = entity.Notes,
-            ConvertedToMemberPersonId = entity.ConvertedToMemberPersonId,
-            ConvertedToMemberName = entity.ConvertedToMember?.Person.Name,
             ConvertedAt = entity.ConvertedAt,
             CreatedAt = entity.CreatedAt,
         };
@@ -39,17 +37,17 @@ public class VisitorMapper : IVisitorMapper
     }
 
     public List<VisitorResponseDto> ToListDto(List<Visitor> entities) =>
-        entities.Select(ToDto).ToList();
+        [.. entities.Select(ToDto)];
 
     public List<VisitorSearchResultDto> ToSearchDto(List<Visitor> entities) =>
-        entities
-            .Select(v => new VisitorSearchResultDto
+        [
+            .. entities.Select(v => new VisitorSearchResultDto
             {
                 Id = v.PersonId,
                 Name = v.Person.Name,
                 PhoneNumber = v.Person.PhoneNumber,
-            })
-            .ToList();
+            }),
+        ];
 
     public void Patch(VisitorUpdateDto dto, Person person, Visitor visitor)
     {

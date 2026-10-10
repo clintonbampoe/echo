@@ -15,4 +15,10 @@ builder
     .WaitFor(echodb)
     .WaitForCompletion(migrations);
 
+builder
+    .AddProject<Echo_Seeder>("seeder")
+    .WithReference(echodb)
+    .WaitForCompletion(migrations)
+    .WithExplicitStart();
+
 builder.Build().Run();
