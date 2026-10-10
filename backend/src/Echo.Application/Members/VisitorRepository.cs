@@ -24,8 +24,6 @@ public class VisitorRepository(AppDbContext context, TimeProvider timeProvider)
             .FilterDeleted()
             .Where(v => v.CongregationId == congregationId)
             .Include(v => v.Person)
-            .Include(v => v.ConvertedToMember)
-                .ThenInclude(m => m!.Person)
             .Filter(filters, timeProvider)
             .OrderBy(v => v.Person.Name)
             .ThenBy(v => v.PersonId)
@@ -39,8 +37,6 @@ public class VisitorRepository(AppDbContext context, TimeProvider timeProvider)
             .FilterDeleted()
             .Where(v => v.PersonId == id && v.CongregationId == congregationId)
             .Include(v => v.Person)
-            .Include(v => v.ConvertedToMember)
-                .ThenInclude(m => m!.Person)
             .FirstOrDefaultAsync(ct);
     }
 
@@ -67,26 +63,18 @@ public class VisitorRepository(AppDbContext context, TimeProvider timeProvider)
             .Filter(filters, timeProvider)
             .CountAsync(ct);
 
-    public Task<int> CountNew(
+    public Task<int> CountConverted(
         Guid congregationId,
         VisitorFilters filters,
         CancellationToken ct = default
-    )
-    {
-        var from = filters.From ?? DateUtils.GetFirstDayOfWeek(timeProvider);
-        var to = filters.To ?? DateUtils.GetDateToday(timeProvider);
-
-        return _dbSet
+    ) =>
+        _dbSet
             .AsNoTracking()
             .FilterDeleted()
-            .Where(v =>
-                v.CongregationId == congregationId
-                && DateOnly.FromDateTime(v.CreatedAt) >= from
-                && DateOnly.FromDateTime(v.CreatedAt) <= to
-            )
+            .Where(v => v.CongregationId == congregationId)
+            .Where(v => v.ConvertedAt != null)
             .Filter(filters, timeProvider)
             .CountAsync(ct);
-    }
 
     public Task<int> CountRecurring(
         Guid congregationId,
@@ -104,18 +92,6 @@ public class VisitorRepository(AppDbContext context, TimeProvider timeProvider)
             .CountAsync(ct);
     }
 
-    public Task<int> CountConverted(
-        Guid congregationId,
-        VisitorFilters filters,
-        CancellationToken ct = default
-    ) =>
-        _dbSet
-            .AsNoTracking()
-            .FilterDeleted()
-            .Where(v => v.CongregationId == congregationId && v.ConvertedToMemberPersonId != null)
-            .Filter(filters, timeProvider)
-            .CountAsync(ct);
-
     public void Create(Visitor entity) => _dbSet.Add(entity);
 
     public void SoftDelete(Visitor entity) => entity.DeletedAt = DateTime.UtcNow;
@@ -132,10 +108,13 @@ internal static class VisitorQueryExtensions
         if (filters.Name is not null)
             query = query.Where(v => EF.Functions.ILike(v.Person.Name, $"%{filters.Name}%"));
 
-        if (filters.Converted.HasValue)
-            query = filters.Converted.Value
-                ? query.Where(v => v.ConvertedToMemberPersonId != null)
-                : query.Where(v => v.ConvertedToMemberPersonId == null);
+        // Default is "current visitors only" (ConvertedAt IS NULL).
+        // Pass Converted = true for the historical/converted view.
+        // Converted = false is the same as the default — kept for explicit callers.
+        query =
+            filters.Converted == true
+                ? query.Where(v => v.ConvertedAt != null)
+                : query.Where(v => v.ConvertedAt == null);
 
         var from = filters.From ?? DateUtils.GetFirstDayOfWeek(timeProvider);
         var to = filters.To ?? DateUtils.GetDateToday(timeProvider);

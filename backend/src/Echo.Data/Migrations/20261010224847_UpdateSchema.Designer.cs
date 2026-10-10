@@ -12,15 +12,15 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Echo.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20261005192541_RedesignAttendanceWithPersonEntity")]
-    partial class RedesignAttendanceWithPersonEntity
+    [Migration("20261010224847_UpdateSchema")]
+    partial class UpdateSchema
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.10")
+                .HasAnnotation("ProductVersion", "10.0.12")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "pg_trgm");
@@ -581,7 +581,8 @@ namespace Echo.Data.Migrations
                         .HasFilter("\"DeletedAt\" IS NULL");
 
                     b.HasIndex("EventId", "MemberId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("\"DeletedAt\" IS NULL");
 
                     b.ToTable("EventAttendances");
                 });
@@ -619,7 +620,8 @@ namespace Echo.Data.Migrations
                     b.HasIndex("MemberId");
 
                     b.HasIndex("EventId", "MemberId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("\"DeletedAt\" IS NULL");
 
                     b.HasIndex("RegistrationDate", "Id")
                         .HasFilter("\"DeletedAt\" IS NULL");
@@ -787,9 +789,6 @@ namespace Echo.Data.Migrations
                     b.Property<DateTime?>("ConvertedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid?>("ConvertedToMemberPersonId")
-                        .HasColumnType("uuid");
-
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -806,7 +805,7 @@ namespace Echo.Data.Migrations
 
                     b.HasIndex("CongregationId");
 
-                    b.HasIndex("ConvertedToMemberPersonId");
+                    b.HasIndex("ConvertedAt");
 
                     b.ToTable("Visitors");
                 });
@@ -895,7 +894,8 @@ namespace Echo.Data.Migrations
                         .HasFilter("\"DeletedAt\" IS NULL");
 
                     b.HasIndex("MemberId", "OrganizationId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("\"DeletedAt\" IS NULL");
 
                     b.ToTable("OrganizationMembers");
                 });
@@ -1505,11 +1505,6 @@ namespace Echo.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Echo.Domain.Members.Member", "ConvertedToMember")
-                        .WithMany()
-                        .HasForeignKey("ConvertedToMemberPersonId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("Echo.Domain.Members.Person", "Person")
                         .WithOne()
                         .HasForeignKey("Echo.Domain.Members.Visitor", "PersonId")
@@ -1517,8 +1512,6 @@ namespace Echo.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Congregation");
-
-                    b.Navigation("ConvertedToMember");
 
                     b.Navigation("Person");
                 });

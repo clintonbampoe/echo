@@ -105,6 +105,18 @@ services:
         condition: service_healthy
     networks: [echo-network]
     profiles: [db-tools]
+  seeder:
+    build:
+      context: .
+      dockerfile: backend/src/Echo.Seeder/Dockerfile
+    logging: *default-logging
+    environment:
+      ConnectionStrings__echodb: ${ConnectionStrings__echodb}
+    depends_on:
+      db: 
+        condition: service_healthy
+    networks: [echo-network]
+    profiles: [db-tools]
   collector:
     image: grafana/otel-lgtm:0.34.0
     ports:

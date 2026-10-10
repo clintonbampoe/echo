@@ -17,7 +17,7 @@ namespace Echo.Data.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.10")
+                .HasAnnotation("ProductVersion", "10.0.12")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.HasPostgresExtension(modelBuilder, "pg_trgm");
@@ -786,9 +786,6 @@ namespace Echo.Data.Migrations
                     b.Property<DateTime?>("ConvertedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid?>("ConvertedToMemberPersonId")
-                        .HasColumnType("uuid");
-
                     b.Property<DateTime>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -805,7 +802,7 @@ namespace Echo.Data.Migrations
 
                     b.HasIndex("CongregationId");
 
-                    b.HasIndex("ConvertedToMemberPersonId");
+                    b.HasIndex("ConvertedAt");
 
                     b.ToTable("Visitors");
                 });
@@ -1505,11 +1502,6 @@ namespace Echo.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("Echo.Domain.Members.Member", "ConvertedToMember")
-                        .WithMany()
-                        .HasForeignKey("ConvertedToMemberPersonId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("Echo.Domain.Members.Person", "Person")
                         .WithOne()
                         .HasForeignKey("Echo.Domain.Members.Visitor", "PersonId")
@@ -1517,8 +1509,6 @@ namespace Echo.Data.Migrations
                         .IsRequired();
 
                     b.Navigation("Congregation");
-
-                    b.Navigation("ConvertedToMember");
 
                     b.Navigation("Person");
                 });
