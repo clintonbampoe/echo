@@ -37,6 +37,8 @@ export const useUpdateTransactionCategory = () => {
     onSuccess: (updated) => {
       queryClient.setQueryData(["transactionCategories", updated.id], updated);
       queryClient.invalidateQueries({ queryKey: ["transactionCategories"] });
+      // Lists show the category name, so refresh them after a rename.
+      queryClient.invalidateQueries({ queryKey: ["transactions"] });
     },
   });
 };

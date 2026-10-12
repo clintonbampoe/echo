@@ -48,6 +48,14 @@ public class AssetCategoryRepository(AppDbContext context)
     {
         _dbSet.AddRange(entities);
     }
+  
+    public async Task<bool> IsInUse(Guid congregationId, int id, CancellationToken ct)
+    {
+        return await context
+            .Set<Asset>()
+            .FilterDeleted()
+            .AnyAsync(e => e.CongregationId == congregationId && e.CategoryId == id, ct);
+    }
 
     public void SoftDelete(AssetCategory entity)
     {

@@ -5,7 +5,7 @@ export interface TopBarCTA {
   type: 'search' | 'button' | 'dropdown' | 'avatar';
   label?: string;
   placeholder?: string;
-  icon?: 'plus' | 'search' | 'export' | 'calendar' | 'download' | 'filter';
+  icon?: 'plus' | 'search' | 'export' | 'calendar' | 'download' | 'filter' | 'tag';
   variant?: 'primary' | 'secondary' | 'ghost';
   onClick?: () => void;
 }
