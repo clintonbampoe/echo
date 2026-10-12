@@ -8,6 +8,7 @@ using Echo.Application.Projects;
 using Echo.Application.Tithes;
 using Echo.Application.Transactions;
 using Echo.Application.Users;
+using Echo.Domain.Attendances;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using OpenTelemetry.Trace;
@@ -55,10 +56,13 @@ public static class Extensions
         services.AddScoped<AttendanceService>();
         services.AddSingleton<IAttendanceMapper, AttendanceMapper>();
 
-        // Attendance Types
-        services.AddScoped<AttendanceTypeRepository>();
-        services.AddScoped<AttendanceTypeService>();
-        services.AddSingleton<IAttendanceTypeMapper, AttendanceTypeMapper>();
+        services.AddScoped<SessionService>();
+        services.AddScoped<SessionRepository>();
+        services.AddScoped<ISessionMapper, SessionMapper>();
+
+        services.AddScoped<SessionLabelRepository>();
+        services.AddScoped<SessionLabelService>();
+        services.AddScoped<ISessionLabelMapper, SessionLabelMapper>();
 
         // Events
         services.AddScoped<EventRepository>();
@@ -136,7 +140,8 @@ public static class Extensions
         group.MapAssetEndpoints(instrumentation);
         group.MapAssetCategoryEndpoints(instrumentation);
         group.MapAttendanceEndpoints(instrumentation);
-        group.MapAttendanceTypeEndpoints(instrumentation);
+        group.MapSessionEndpoints(instrumentation);
+        group.MapSessionLabelEndpoints(instrumentation);
         group.MapEventEndpoints(instrumentation);
         group.MapEventAttendanceEndpoints(instrumentation);
         group.MapEventRegistrationEndpoints(instrumentation);

@@ -135,6 +135,7 @@ public sealed class PeoplePhase(SeedFakers fakers) : ISeedPhase
                     var conversionDaysAgo = rng.Next(0, visitDaysAgo + 1);
                     convertedAt = ctx.Now.AddDays(-conversionDaysAgo);
 
+                    seed.ConvertedVisitorDates[person.Id] = convertedAt.Value;
                     person.Kind = PersonKind.Member;
 
                     member = fakers.Member.Generate();

@@ -4,14 +4,12 @@ namespace Echo.Application.Attendances;
 
 public static partial class AttendanceLog
 {
-    // --- List ---
     [LoggerMessage(
         Level = LogLevel.Information,
         Message = "Attendance list: {Count} records returned for congregation {CongregationId}"
     )]
     public static partial void Listed(ILogger logger, Guid congregationId, int count);
 
-    // --- Get by id ---
     [LoggerMessage(
         Level = LogLevel.Information,
         Message = "Attendance found: {AttendanceId} in congregation {CongregationId}"
@@ -24,35 +22,14 @@ public static partial class AttendanceLog
     )]
     public static partial void NotFound(ILogger logger, Guid congregationId, Guid attendanceId);
 
-    // --- Create dependencies ---
-    [LoggerMessage(
-        Level = LogLevel.Information,
-        Message = "Attendance create: service type {ServiceTypeId} found in congregation {CongregationId}"
-    )]
-    public static partial void CreateServiceTypeFound(
-        ILogger logger,
-        Guid congregationId,
-        int serviceTypeId
-    );
-
     [LoggerMessage(
         Level = LogLevel.Warning,
-        Message = "Attendance create failed: service type {ServiceTypeId} not found in congregation {CongregationId}"
+        Message = "Attendance create failed: session {SessionId} not found in congregation {CongregationId}"
     )]
-    public static partial void CreateServiceTypeNotFound(
+    public static partial void CreateSessionNotFound(
         ILogger logger,
         Guid congregationId,
-        int serviceTypeId
-    );
-
-    [LoggerMessage(
-        Level = LogLevel.Information,
-        Message = "Attendance create: person {PersonId} found in congregation {CongregationId}"
-    )]
-    public static partial void CreatePersonFound(
-        ILogger logger,
-        Guid congregationId,
-        Guid personId
+        Guid sessionId
     );
 
     [LoggerMessage(
@@ -65,7 +42,17 @@ public static partial class AttendanceLog
         Guid personId
     );
 
-    // --- Outcomes ---
+    [LoggerMessage(
+        Level = LogLevel.Warning,
+        Message = "Attendance create rejected: person {PersonId} already marked present at session {SessionId} in congregation {CongregationId}"
+    )]
+    public static partial void DuplicateRecord(
+        ILogger logger,
+        Guid congregationId,
+        Guid sessionId,
+        Guid personId
+    );
+
     [LoggerMessage(
         Level = LogLevel.Information,
         Message = "Attendance created: {AttendanceId} in congregation {CongregationId}"
@@ -104,14 +91,12 @@ public static partial class AttendanceLog
         Guid attendanceId
     );
 
-    // --- Summary ---
     [LoggerMessage(
         Level = LogLevel.Information,
         Message = "Attendance summary: {TotalPresent} present for congregation {CongregationId}"
     )]
     public static partial void Summarized(ILogger logger, Guid congregationId, int totalPresent);
 
-    // --- Unexpected ---
     [LoggerMessage(
         Level = LogLevel.Error,
         Message = "Attendance error: unexpected failure for congregation {CongregationId}"

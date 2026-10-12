@@ -14,7 +14,7 @@ namespace Echo.Application.Attendances;
 
 public class AttendanceService(
     AttendanceRepository repository,
-    AttendanceTypeRepository serviceTypeRepository,
+    SessionRepository sessionRepository,
     PersonRepository personRepository,
     IUnitOfWork unitOfWork,
     IAttendanceMapper mapper,
@@ -96,21 +96,16 @@ public class AttendanceService(
     {
         using var activity = instrumentation.ActivitySource.StartActivity("svc.attendance.create");
 
-        AttendanceType? serviceType;
-        using (instrumentation.ActivitySource.StartActivity("svc.attendance.validate.service_type"))
+        Session? session;
+        using (instrumentation.ActivitySource.StartActivity("svc.attendance.validate.session"))
         {
-            serviceType = await serviceTypeRepository.GetById(
-                congregationId,
-                dto.AttendanceTypeId,
-                ct
-            );
+            session = await sessionRepository.GetById(congregationId, dto.SessionId, ct);
         }
-        if (serviceType is null)
+        if (session is null)
         {
-            AttendanceLog.CreateServiceTypeNotFound(logger, congregationId, dto.AttendanceTypeId);
-            return new ForeignKeyEntityNotFound(nameof(serviceType));
+            AttendanceLog.CreateSessionNotFound(logger, congregationId, dto.SessionId);
+            return new ForeignKeyEntityNotFound(nameof(session));
         }
-        AttendanceLog.CreateServiceTypeFound(logger, congregationId, dto.AttendanceTypeId);
 
         Person? person;
         using (instrumentation.ActivitySource.StartActivity("svc.attendance.validate.person"))
@@ -122,13 +117,28 @@ public class AttendanceService(
             AttendanceLog.CreatePersonNotFound(logger, congregationId, dto.PersonId);
             return new ForeignKeyEntityNotFound(nameof(person));
         }
-        AttendanceLog.CreatePersonFound(logger, congregationId, dto.PersonId);
+
+        // Duplicate check — the unique index is the backstop, this returns a
+        // friendly error before hitting the constraint.
+        var exists = await repository.ExistsForSessionAndPerson(
+            congregationId,
+            dto.SessionId,
+            dto.PersonId,
+            ct
+        );
+        if (exists)
+        {
+            AttendanceLog.DuplicateRecord(logger, congregationId, dto.SessionId, dto.PersonId);
+            return new ConflictResult(dto.PersonId.ToString());
+        }
 
         var entity = mapper.ToEntity(dto);
         entity.Id = idGenerator.Generate();
         entity.CongregationId = congregationId;
-        entity.AttendanceType = serviceType;
+        entity.Session = session;
         entity.Person = person;
+        entity.PersonKindAtTime = person.Kind;
+        entity.RecordedBy = null; // populated when user-scoped auth lands
 
         using (instrumentation.ActivitySource.StartActivity("svc.attendance.persist"))
         {
@@ -169,9 +179,10 @@ public class AttendanceService(
             return new NotFoundResult(id.ToString());
         }
 
+        mapper.Patch(dto, entity);
+
         using (instrumentation.ActivitySource.StartActivity("svc.attendance.persist"))
         {
-            mapper.Patch(dto, entity);
             await unitOfWork.CommitAsync(ct);
         }
 
@@ -218,19 +229,28 @@ public class AttendanceService(
     {
         using var activity = instrumentation.ActivitySource.StartActivity("svc.attendance.summary");
 
-        var totalTask = repository.CountTotal(congregationId, filters, ct);
-        var membersTask = repository.CountByKind(congregationId, PersonKind.Member, filters, ct);
-        var visitorsTask = repository.CountByKind(congregationId, PersonKind.Visitor, filters, ct);
-        var firstTimeTask = repository.CountFirstTimeVisitors(congregationId, filters, ct);
-
-        await Task.WhenAll(totalTask, membersTask, visitorsTask, firstTimeTask);
+        // Sequential — DbContext is not thread-safe and cannot serve concurrent queries.
+        var total = await repository.CountTotal(congregationId, filters, ct);
+        var members = await repository.CountByKindAtTime(
+            congregationId,
+            PersonKind.Member,
+            filters,
+            ct
+        );
+        var visitors = await repository.CountByKindAtTime(
+            congregationId,
+            PersonKind.Visitor,
+            filters,
+            ct
+        );
+        var firstTime = await repository.CountFirstTimeVisitors(congregationId, filters, ct);
 
         var res = new AttendanceSummaryDto
         {
-            TotalPresent = totalTask.Result,
-            MembersPresent = membersTask.Result,
-            VisitorsPresent = visitorsTask.Result,
-            FirstTimeVisitors = firstTimeTask.Result,
+            TotalPresent = total,
+            MembersPresent = members,
+            VisitorsPresent = visitors,
+            FirstTimeVisitors = firstTime,
         };
 
         activity?.SetTag("attendance.summary.total", res.TotalPresent);
@@ -240,5 +260,5 @@ public class AttendanceService(
     }
 
     private static AttendanceCursor BuildCursor(Attendance last) =>
-        new() { Date = last.Date, Id = last.Id };
+        new() { SessionDate = last.Session.Date, Id = last.Id };
 }

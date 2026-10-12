@@ -19,43 +19,43 @@ public class AttendanceConfiguration : IEntityTypeConfiguration<Attendance>
             .OnDelete(DeleteBehavior.Restrict);
 
         builder
+            .HasOne(a => a.Session)
+            .WithMany()
+            .HasForeignKey(a => a.SessionId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder
             .HasOne(a => a.Person)
             .WithMany()
             .HasForeignKey(a => a.PersonId)
             .OnDelete(DeleteBehavior.Restrict);
 
         builder
-            .HasOne(a => a.AttendanceType)
+            .HasOne(a => a.Recorder)
             .WithMany()
-            .HasForeignKey(a => a.AttendanceTypeId)
+            .HasForeignKey(a => a.RecordedBy)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // Prevent duplicate check-ins for the same person on the same date and service
+        // Snapshot of the person's role at the time of attendance. Required
+        // because Person.Kind is a moving value and historical reports must
+        // reflect what was true when the row was written.
+        builder.Property(a => a.PersonKindAtTime).IsRequired();
+
+        // A person can only be marked present once per session. Blocks
+        // duplicate QR scans, retries, and races. Filtered to live rows so
+        // a soft-delete followed by a re-mark is allowed.
         builder
-            .HasIndex(a => new
-            {
-                a.CongregationId,
-                a.PersonId,
-                a.AttendanceTypeId,
-                a.Date,
-            })
+            .HasIndex(a => new { a.SessionId, a.PersonId })
             .IsUnique()
             .HasFilter($"\"{nameof(Attendance.DeletedAt)}\" IS NULL");
 
-        // For fetching all attendance for a given service type + date (the implicit session)
-        builder.HasIndex(a => new
-        {
-            a.CongregationId,
-            a.AttendanceTypeId,
-            a.Date,
-        });
+        // Summary queries ("how many visitors attended this period") now hit
+        // this index directly instead of joining to People and reading the
+        // current Kind.
+        builder.HasIndex(a => new { a.CongregationId, a.PersonKindAtTime });
 
-        // For fetching all attendance for a person (history)
-        builder.HasIndex(a => new { a.CongregationId, a.PersonId });
-
-        // For cursor pagination
-        builder
-            .HasIndex(a => new { a.Date, a.Id })
-            .HasFilter($"\"{nameof(Attendance.DeletedAt)}\" IS NULL");
+        builder.HasIndex(a => a.CongregationId);
+        builder.HasIndex(a => a.PersonId);
+        builder.HasIndex(a => a.SessionId);
     }
 }

@@ -48,6 +48,11 @@ public class ProjectCategoryRepository(AppDbContext context)
         _dbSet.Add(entity);
     }
 
+    public void BatchCreate(IList<ProjectCategory> entities)
+    {
+        _dbSet.AddRange(entities);
+    }
+
     public void SoftDelete(ProjectCategory entity)
     {
         entity.DeletedAt = DateTime.UtcNow;

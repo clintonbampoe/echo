@@ -1,3 +1,4 @@
+using Echo.Application.Congregations;
 using Echo.Auth.EmailVerifications;
 using Echo.Auth.Invitations;
 using Echo.Auth.Passwords;
@@ -28,6 +29,7 @@ public static class Extensions
         });
         services.AddScoped<IEmailService, ResendEmailService>();
 
+        services.AddScoped<CongregationProvisioningService>();
         services.AddScoped<RegistrationService>();
         services.AddScoped<EmailVerificationRepository>();
         services.AddScoped<EmailVerificationService>();

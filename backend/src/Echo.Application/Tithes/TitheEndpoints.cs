@@ -72,6 +72,68 @@ public static class TitheEndpoints
 
         group
             .MapGet(
+                "/member/{memberId:guid}",
+                async (
+                    Guid memberId,
+                    [AsParameters] TitheFilters filters,
+                    [AsParameters] PaginationRequest pagination,
+                    TitheService service,
+                    HttpContext context,
+                    CancellationToken ct
+                ) =>
+                {
+                    using var span = EndpointInstrumentation.StartSpan(
+                        context,
+                        instrumentation,
+                        "endpoint.tithe.get_by_member_id"
+                    );
+                    var result = await service.GetByMemberId(
+                        context.User.GetCongregationId(),
+                        memberId,
+                        filters,
+                        pagination,
+                        ct
+                    );
+                    return result.ToResult();
+                }
+            )
+            .WithName("GetTithesByMemberId")
+            .WithSummary("Returns a paginated list of tithes for a specific member.")
+            .WithDescription(
+                """
+                Returns a cursor-paginated list of Tithe records given by a single Member,
+                scoped to the caller's congregation.
+
+                If the member has no tithes — or the member ID does not exist in this
+                congregation — the response is `200 OK` with an empty `items` list and
+                `hasMore = false`. The endpoint does not distinguish between "no such
+                member" and "member with no tithes."
+
+                ### Filtering
+                Combines with the same filters as the list endpoint:
+                - `paymentMethod` — `Cash`, `Cheque`, `CreditCard`, `MobileMoney`, `BankTransfer`.
+                - `year` — the year the tithe is *for* (1900–2100).
+                - `month` — the month the tithe is *for*.
+                - `from` / `to` — filter by the actual collection date range.
+
+                `memberId` is taken from the path, not the query string.
+
+                ### Ordering
+                Tithes are ordered by collection date, most recent first. Stable across pages.
+
+                ### Pagination
+                Pass the `next` cursor from the previous response as the `cursor` query parameter.
+                When `hasMore` is `false`, `next` is null.
+
+                ### Failure modes
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                """
+            )
+            .Produces<PagedResponse<TitheResponseDto>>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status401Unauthorized);
+
+        group
+            .MapGet(
                 "/{id:guid}",
                 async (Guid id, TitheService service, HttpContext context, CancellationToken ct) =>
                 {

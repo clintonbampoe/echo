@@ -44,6 +44,11 @@ public class AssetCategoryRepository(AppDbContext context)
         _dbSet.Add(entity);
     }
 
+    public void BatchCreate(IList<AssetCategory> entities)
+    {
+        _dbSet.AddRange(entities);
+    }
+
     public void SoftDelete(AssetCategory entity)
     {
         entity.DeletedAt = DateTime.UtcNow;

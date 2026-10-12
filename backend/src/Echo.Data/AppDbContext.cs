@@ -36,7 +36,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Person> People { get; set; }
     public DbSet<Visitor> Visitors { get; set; }
     public DbSet<Attendance> Attendances { get; set; }
-    public DbSet<AttendanceType> AttendanceTypes { get; set; }
+    public DbSet<Session> Sessions { get; set; }
+    public DbSet<SessionLabel> SessionLabels { get; set; }
     public DbSet<Congregation> Congregations { get; set; }
     public DbSet<InvitationToken> InvitationTokens { get; set; }
     public DbSet<EmailVerificationToken> EmailVerificationTokens { get; set; }
