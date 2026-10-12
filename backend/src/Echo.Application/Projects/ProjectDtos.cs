@@ -78,6 +78,7 @@ public record ProjectFilters
     public string? Name { get; init; }
     public ProjectStatus? Status { get; init; }
     public int? CategoryId { get; init; }
+    public Guid? ManagerId { get; init; }
     public DateOnly? From { get; init; }
     public DateOnly? To { get; init; } // on StartDate
 }

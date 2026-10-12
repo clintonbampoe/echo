@@ -23,7 +23,7 @@ export const useOrganizationsInfinite = (pageSize: number = 24) => {
     queryFn: ({ pageParam }) => organizationsService.list(pageSize, pageParam),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) =>
-      lastPage.hasMore ? (lastPage.nextCursor ?? undefined) : undefined,
+      lastPage.hasMore ? (lastPage.next ?? undefined) : undefined,
   });
 };
 

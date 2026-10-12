@@ -52,6 +52,7 @@ public static class AttendanceEndpoints
                 ### Filtering
                 All filters are optional and combinable:
                 - `attendanceTypeId` — records of one specific type.
+                - `personId` — records for one specific Member or Visitor.
                 - `kind` — `Member` or `Visitor`. Filter to just members or just visitors.
                 - `from` / `to` — filter by attendance date range (inclusive).
 

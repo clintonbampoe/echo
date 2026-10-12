@@ -106,6 +106,9 @@ internal static class AttendanceQueryExtensions
         if (filters.AttendanceTypeId is not null)
             query = query.Where(a => a.AttendanceTypeId == filters.AttendanceTypeId);
 
+        if (filters.PersonId is not null)
+            query = query.Where(a => a.PersonId == filters.PersonId);
+
         if (filters.Kind is not null)
             query = query.Where(a => a.Person.Kind == filters.Kind);
 

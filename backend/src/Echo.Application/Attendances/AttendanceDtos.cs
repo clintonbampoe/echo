@@ -48,6 +48,7 @@ public record AttendanceCursor
 public record AttendanceFilters
 {
     public int? AttendanceTypeId { get; init; }
+    public Guid? PersonId { get; init; }
     public PersonKind? Kind { get; init; }
     public DateOnly? From { get; init; }
     public DateOnly? To { get; init; } // on Date

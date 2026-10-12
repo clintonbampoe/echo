@@ -123,6 +123,9 @@ internal static class ProjectQueryExtensions
         if (filters.CategoryId is not null)
             query = query.Where(p => p.CategoryId == filters.CategoryId);
 
+        if (filters.ManagerId is not null)
+            query = query.Where(p => p.ManagerId == filters.ManagerId);
+
         if (filters.Status is not null)
             query = query.Where(p => p.Status == filters.Status);
 
