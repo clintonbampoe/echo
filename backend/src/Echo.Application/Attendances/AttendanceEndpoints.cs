@@ -44,20 +44,24 @@ public static class AttendanceEndpoints
             .WithSummary("Returns a paginated list of attendance records.")
             .WithDescription(
                 """
-                Returns a cursor-paginated list of general attendance records scoped to the caller's congregation.
+                Returns a cursor-paginated list of attendance records scoped to the caller's congregation.
 
-                ### What is a general attendance record
-                A record linking a **person** (Member or Visitor) to an Attendance Type on a specific date. This is not the same as Event Attendance — see the **Attendance** tag description for the distinction.
+                ### What is an attendance record
+                A record linking a person (Member or Visitor) to a specific Session. Every attendance belongs to exactly one session — the Sunday service, the midweek meeting, the Christmas Eve service.
 
                 ### Filtering
                 All filters are optional and combinable:
-                - `attendanceTypeId` — records of one specific type.
                 - `personId` — records for one specific Member or Visitor.
-                - `kind` — `Member` or `Visitor`. Filter to just members or just visitors.
-                - `from` / `to` — filter by attendance date range (inclusive).
+                - `sessionId` — attendance for one specific session. Common for the "who checked in today" admin view.
+                - `sessionLabelId` — attendance across all sessions with a given label.
+                - `kind` — filter by the person's kind **at the time of attendance**, not their current kind.
+                - `from` / `to` — filter by session date range (inclusive).
+
+                ### About `kind`
+                The `kind` filter matches the person's role when the attendance was recorded, not their role now. A visitor who later becomes a member still appears as a Visitor for their pre-conversion attendance. This is deliberate — historical reports should reflect what was true when the record was written.
 
                 ### Ordering
-                Attendance records are ordered by date (most recent first), then by ID as a tiebreaker. Stable across pages.
+                Attendance records are ordered by session date (most recent first), then by ID as a tiebreaker. Stable across pages.
 
                 ### Pagination
                 Pass the `next` cursor from the previous response as the `cursor` query parameter. When `hasMore` is `false`, `next` is null.
@@ -94,7 +98,7 @@ public static class AttendanceEndpoints
                 """
                 Returns one attendance record, scoped to the caller's congregation.
 
-                The response includes the resolved `attendanceTypeName`, `personName`, and `personKind` — the client does not need to follow up with additional calls to render the record.
+                The response includes the resolved session date, session name, session label name, person name, and the person's kind at the time of attendance — the client does not need to follow up with additional calls.
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
@@ -133,19 +137,20 @@ public static class AttendanceEndpoints
             .WithSummary("Records a new attendance entry.")
             .WithDescription(
                 """
-                Records that a person attended a service or activity on a specific date.
+                Records that a person attended a specific session.
 
                 ### Request body
                 Required fields:
-                - `attendanceTypeId` — must reference an Attendance Type in the same congregation.
+                - `sessionId` — must reference a Session in the caller's congregation.
                 - `personId` — the Member or Visitor attending. Both kinds are accepted.
-                - `date` — the date of attendance.
 
                 Optional fields:
-                - `checkInTime` — the time of arrival, if known.
-                - `notes` — free-form, up to 2000 characters.
+                - `checkedInAt` — the exact moment of check-in. Omit for manually recorded attendance.
 
-                **The `personKind` is not supplied in the request.** The server derives it from the referenced person's current `Kind`. If the person later converts from Visitor to Member, existing attendance records keep the kind they were recorded with.
+                **The person's kind is not supplied in the request.** The server snapshots it from the person's current `Kind` at the moment of recording. If the person later converts from Visitor to Member, existing attendance records still report them as a Visitor — the record reflects what was true when it was written.
+
+                ### Duplicate attendance
+                A person can only be marked present once per session. If an attendance record already exists for this `(sessionId, personId)` pair, the request returns `409 CONFLICT`. Delete the existing record first if you need to re-record.
 
                 ### On success
                 Returns `201 Created` with the full `AttendanceResponseDto` and a `Location` header pointing to `GET /attendance/{id}`.
@@ -154,13 +159,15 @@ public static class AttendanceEndpoints
                 - `400 BAD_REQUEST` — the request body is malformed.
                 - `400 VALIDATION_ERROR` — one or more fields failed validation. Inspect the `errors` object.
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
-                - `404 FOREIGN_KEY_NOT_FOUND` — the referenced person or attendance type does not exist in this congregation.
+                - `404 FOREIGN_KEY_NOT_FOUND` — the referenced session or person does not exist in this congregation.
+                - `409 CONFLICT` — an attendance record already exists for this person and session.
                 """
             )
             .Produces<AttendanceResponseDto>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status404NotFound);
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict);
 
         group
             .MapPut(
@@ -191,14 +198,13 @@ public static class AttendanceEndpoints
             .WithSummary("Updates an existing attendance record.")
             .WithDescription(
                 """
-                Updates the check-in time or notes on an attendance record.
+                Updates the check-in time on an attendance record.
 
                 ### What you can change
-                Only two fields are editable via this endpoint:
-                - `checkInTime`
-                - `notes`
+                Only one field is editable via this endpoint:
+                - `checkedInAt`
 
-                **`personId`, `attendanceTypeId`, and `date` are immutable.** If you recorded the wrong person or the wrong date, delete the record and create a new one.
+                **`personId`, `sessionId`, and the recorded person kind are immutable.** If you recorded the wrong person or the wrong session, delete the record and create a new one. The person kind is a historical snapshot — it is not a value that gets corrected.
 
                 ### Request body
                 All fields optional. Partial update — omitted fields retain their values.
@@ -208,7 +214,7 @@ public static class AttendanceEndpoints
 
                 ### Failure modes
                 - `400 BAD_REQUEST` — the request body is malformed.
-                - `400 VALIDATION_ERROR` — one or more fields failed validation.
+                - `400 VALIDATION_ERROR` — the field failed validation.
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
                 - `404 NOT_FOUND` — no attendance record exists with the given ID in this congregation, or the record has been soft-deleted.
                 """
@@ -248,8 +254,9 @@ public static class AttendanceEndpoints
 
                 ### Side effects
                 - The record is marked as deleted.
-                - **Summary totals will reflect the deletion.** `GET /attendance/summary` recalculates from live records only.
-                - The person and the attendance type are not affected — only this one attendance record is removed.
+                - **Summary totals reflect the deletion.** `GET /attendance/summary` recalculates from live records only.
+                - **Session attendance counts reflect the deletion.** `attendanceCount` on `GET /sessions/{id}` drops by one.
+                - The person and the session are not affected — only this one record is removed.
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
@@ -291,9 +298,11 @@ public static class AttendanceEndpoints
 
                 ### Response fields
                 - `totalPresent` — count of all attendance records matching the filter.
-                - `membersPresent` — count where the person was a Member.
-                - `visitorsPresent` — count where the person was a Visitor.
-                - `firstTimeVisitors` — count of visitors appearing in attendance for the first time within the filter range.
+                - `membersPresent` — count where the person was a Member **at the time of attendance**.
+                - `visitorsPresent` — count where the person was a Visitor **at the time of attendance**.
+                - `firstTimeVisitors` — count of visitors whose earliest visitor attendance falls within the filter range.
+
+                All counts are based on the person's kind as recorded on the attendance row, not their current kind. A visitor who later became a member is still counted as a visitor for the attendances they made before converting.
 
                 Use this endpoint to power reporting dashboards. The filter parameters match the list endpoint exactly, so a summary and its corresponding list are guaranteed to describe the same population.
 

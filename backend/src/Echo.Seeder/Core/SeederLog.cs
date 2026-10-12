@@ -15,14 +15,23 @@ internal static partial class SeederLog
         DateTimeOffset now
     );
 
-    [LoggerMessage(Level = LogLevel.Information, Message = "── Phase: {Phase} ──")]
+    [LoggerMessage(Level = LogLevel.Information, Message = "Phase: {Phase}")]
     public static partial void PhaseStarted(this ILogger logger, string phase);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Phase: {Phase} done in {Elapsed:F1}s")]
+    public static partial void PhaseDone(this ILogger logger, string phase, double elapsed);
 
     [LoggerMessage(
         Level = LogLevel.Information,
-        Message = "── Phase: {Phase} done in {Elapsed:F1}s ──"
+        Message = "Created lookup entities — labels={labelCount} assets={assetCategoryCount} projects={projectCategoryCount} transactions={transactionCategoryCount}."
     )]
-    public static partial void PhaseDone(this ILogger logger, string phase, double elapsed);
+    public static partial void LookupsCreated(
+        this ILogger logger,
+        int labelCount,
+        int assetCategoryCount,
+        int projectCategoryCount,
+        int transactionCategoryCount
+    );
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Seeder complete in {Elapsed:F1}s.")]
     public static partial void Complete(this ILogger logger, double elapsed);
@@ -127,10 +136,4 @@ internal static partial class SeederLog
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Created {Count} admin user(s).")]
     public static partial void AdminsCreated(this ILogger logger, int count);
-
-    [LoggerMessage(
-        Level = LogLevel.Information,
-        Message = "Created lookup entities — attendance={A} assets={B} projects={P} transactions={T}."
-    )]
-    public static partial void LookupsCreated(this ILogger logger, int a, int b, int p, int t);
 }

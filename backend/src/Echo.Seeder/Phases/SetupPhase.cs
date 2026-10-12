@@ -11,17 +11,21 @@ namespace Echo.Seeder.Phases;
 
 /// <summary>
 /// Creates congregations, admin users, and all lookup tables.
-///
+/// <br/><br/>
 /// Why EF here instead of COPY?
 ///   These tables have int PKs with DB-generated sequences. After
 ///   SaveChangesAsync, EF populates those IDs back onto the entities. Later
 ///   phases use those IDs as FKs in their COPY statements. There's no safe way
 ///   to do this with raw COPY without a second round-trip to read the IDs back.
 ///   Volume is tiny (a handful of rows per congregation) so EF is fine.
-///
+/// <br/><br/>
 /// What this produces (written into each CongregationSeed):
-///   - Congregation, Admin, AttendanceTypes, AssetCategories,
-///     ProjectCategories, TransactionCategories
+///   Congregation, Admin, SessionLabels, AssetCategories,
+///   ProjectCategories, TransactionCategories
+/// <br/><br/>
+/// Lookup defaults come from CongregationDefaults, the same source the
+/// application's registration flow uses. Seeded congregations and
+/// newly-registered ones therefore start from identical lookup sets.
 /// </summary>
 public sealed class SetupPhase(SeedFakers fakers) : ISeedPhase
 {
@@ -32,7 +36,7 @@ public sealed class SetupPhase(SeedFakers fakers) : ISeedPhase
         var rng = ctx.RngFor(Name);
         var now = ctx.Now;
 
-        // ── Congregations ─────────────────────────────────────────────────
+        // Congregations
 
         var big = MakeCongregation(fakers, rng, "Grace Chapel International", isBig: true, now);
         var congregations = new List<Congregation> { big };
@@ -44,31 +48,36 @@ public sealed class SetupPhase(SeedFakers fakers) : ISeedPhase
         await ctx.Db.SaveChangesAsync(ct);
         Log.CreatedCongregations(ctx.Logger, congregations.Count, ctx.Options.SmallCount);
 
-        // Create Admins
+        // Admins
         var admins = congregations.Select(c => MakeAdmin(fakers, c.Id, now)).ToList();
         await ctx.Db.Users.AddRangeAsync(admins, ct);
         await ctx.Db.SaveChangesAsync(ct);
         Log.CreatedAdmins(ctx.Logger, admins.Count);
 
-        // Lookup tables (int PKs, EF generates them)
-        var attendanceTypes = new List<AttendanceType>();
+        // Lookup tables
+        // Every congregation gets the same defaults, sourced from
+        // CongregationDefaults. This matches what the registration flow
+        // creates for a brand-new congregation.
+
+        var sessionLabels = new List<SessionLabel>();
         var assetCategories = new List<AssetCategory>();
         var projectCategories = new List<ProjectCategory>();
         var transactionCategories = new List<TransactionCategory>();
 
         foreach (var congregation in congregations)
         {
-            foreach (var name in rng.PickSubset(_attendanceTypeNames, rng.Next(4, 8)))
-                attendanceTypes.Add(
-                    new AttendanceType
+            foreach (var (name, category) in CongregationDefaults.SessionLabels)
+                sessionLabels.Add(
+                    new SessionLabel
                     {
                         CongregationId = congregation.Id,
                         Name = name,
+                        Category = category,
                         CreatedAt = now,
                     }
                 );
 
-            foreach (var name in rng.PickSubset(_assetCategoryNames, rng.Next(4, 9)))
+            foreach (var name in CongregationDefaults.AssetCategoryNames)
                 assetCategories.Add(
                     new AssetCategory
                     {
@@ -78,7 +87,7 @@ public sealed class SetupPhase(SeedFakers fakers) : ISeedPhase
                     }
                 );
 
-            foreach (var name in rng.PickSubset(_projectCategoryNames, rng.Next(3, 7)))
+            foreach (var name in CongregationDefaults.ProjectCategoryNames)
                 projectCategories.Add(
                     new ProjectCategory
                     {
@@ -88,7 +97,7 @@ public sealed class SetupPhase(SeedFakers fakers) : ISeedPhase
                     }
                 );
 
-            foreach (var (name, type) in rng.PickSubset(_transactionCategoryPairs, rng.Next(6, 12)))
+            foreach (var (name, type) in CongregationDefaults.TransactionCategories)
                 transactionCategories.Add(
                     new TransactionCategory
                     {
@@ -100,22 +109,21 @@ public sealed class SetupPhase(SeedFakers fakers) : ISeedPhase
                 );
         }
 
-        await ctx.Db.AttendanceTypes.AddRangeAsync(attendanceTypes, ct);
+        await ctx.Db.SessionLabels.AddRangeAsync(sessionLabels, ct);
         await ctx.Db.AssetCategories.AddRangeAsync(assetCategories, ct);
         await ctx.Db.ProjectCategories.AddRangeAsync(projectCategories, ct);
         await ctx.Db.TransactionCategories.AddRangeAsync(transactionCategories, ct);
         await ctx.Db.SaveChangesAsync(ct);
 
-        ctx.Logger.LogInformation(
-            "Created lookup entities — attendance={A} assets={B} projects={P} transactions={T}.",
-            attendanceTypes.Count,
+        Log.CreatedReferenceEntities(
+            ctx.Logger,
+            sessionLabels.Count,
             assetCategories.Count,
             projectCategories.Count,
             transactionCategories.Count
         );
 
-        // ── Populate state ────────────────────────────────────────────────
-
+        // Populate state
         for (var i = 0; i < congregations.Count; i++)
         {
             var congregation = congregations[i];
@@ -126,8 +134,8 @@ public sealed class SetupPhase(SeedFakers fakers) : ISeedPhase
                 Admin = admins[i],
             };
 
-            seed.AttendanceTypes.AddRange(
-                attendanceTypes.Where(t => t.CongregationId == congregation.Id)
+            seed.SessionLabels.AddRange(
+                sessionLabels.Where(l => l.CongregationId == congregation.Id)
             );
             seed.AssetCategories.AddRange(
                 assetCategories.Where(c => c.CongregationId == congregation.Id)
@@ -143,7 +151,7 @@ public sealed class SetupPhase(SeedFakers fakers) : ISeedPhase
         }
     }
 
-    // ── Factories ─────────────────────────────────────────────────────────
+    // Factories
 
     private static Congregation MakeCongregation(
         SeedFakers fakers,
@@ -197,7 +205,7 @@ public sealed class SetupPhase(SeedFakers fakers) : ISeedPhase
         return $"{stem} {suffix} {index}";
     }
 
-    // ── Reference data ────────────────────────────────────────────────────
+    // Reference data
 
     private static readonly IReadOnlyList<(Region Value, double Weight)> _weightedRegions =
     [
@@ -218,72 +226,6 @@ public sealed class SetupPhase(SeedFakers fakers) : ISeedPhase
         (Region.Savannah, 1.5),
         (Region.NorthEast, 1.5),
     ];
-
-    private static readonly IReadOnlyList<string> _attendanceTypeNames =
-    [
-        "Sunday Service",
-        "Midweek Service",
-        "Prayer Meeting",
-        "Bible Study",
-        "Youth Service",
-        "Communion Service",
-        "Vigil",
-        "Special Service",
-        "Cell Group",
-        "Morning Devotion",
-    ];
-
-    private static readonly IReadOnlyList<string> _assetCategoryNames =
-    [
-        "Equipment",
-        "Furniture",
-        "Vehicles",
-        "Electronics",
-        "Musical Instruments",
-        "Sound System",
-        "Computers",
-        "Buildings",
-        "Land",
-        "Books & Media",
-        "Generators",
-        "Air Conditioning",
-        "Tools",
-    ];
-
-    private static readonly IReadOnlyList<string> _projectCategoryNames =
-    [
-        "Construction",
-        "Outreach",
-        "Equipment",
-        "Missions",
-        "Education",
-        "Welfare",
-        "Youth",
-        "Media",
-        "Transportation",
-        "Land Acquisition",
-    ];
-
-    private static readonly IReadOnlyList<(
-        string Name,
-        TransactionType Type
-    )> _transactionCategoryPairs =
-    [
-        ("Offerings", TransactionType.Income),
-        ("Tithes", TransactionType.Income),
-        ("Donations", TransactionType.Income),
-        ("Pledges", TransactionType.Income),
-        ("Fundraising", TransactionType.Income),
-        ("Utilities", TransactionType.Expense),
-        ("Rent", TransactionType.Expense),
-        ("Salaries", TransactionType.Expense),
-        ("Maintenance", TransactionType.Expense),
-        ("Transportation", TransactionType.Expense),
-        ("Events", TransactionType.Expense),
-        ("Outreach", TransactionType.Expense),
-        ("Printing", TransactionType.Expense),
-        ("Hospitality", TransactionType.Expense),
-    ];
 }
 
 public static partial class Log
@@ -296,4 +238,16 @@ public static partial class Log
 
     [LoggerMessage(Level = LogLevel.Information, Message = "Created {Count} admin user(s).")]
     public static partial void CreatedAdmins(this ILogger logger, int count);
+
+    [LoggerMessage(
+        Level = LogLevel.Information,
+        Message = "Created lookup entities — labels={sessionLabelCount} assets={assetCategoriesCount} projects={projectCategoriesCount} transactions={transactionCategoriesCount}."
+    )]
+    public static partial void CreatedReferenceEntities(
+        this ILogger logger,
+        int sessionLabelCount,
+        int assetCategoriesCount,
+        int projectCategoriesCount,
+        int transactionCategoriesCount
+    );
 }

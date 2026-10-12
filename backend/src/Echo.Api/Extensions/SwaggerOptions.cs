@@ -64,7 +64,8 @@ internal sealed class TagDescriptionDocumentFilter : IDocumentFilter
         "Visitors",
         // Attendance
         "Attendance",
-        "Attendance Types",
+        "Attendance Sessions",
+        "Session Labels",
         // Events
         "Events",
         "Event Attendance",
@@ -119,6 +120,8 @@ internal sealed class TagDescriptionDocumentFilter : IDocumentFilter
                     - **Refresh token** — long-lived (currently 30 days). Used only to obtain a new token pair. Never sent as a bearer token.
 
                     A *session* is a refresh token. Logging in creates one. Revoking a refresh token ends that one session. Logging out of all sessions ends every session for the user.
+
+                    > **Note on naming.** This tag describes *auth* sessions — the refresh-token lifecycle. The **Attendance Sessions** tag describes gathering sessions (a specific Sunday Service, a midweek meeting). Different concepts, different endpoints.
 
                     ### Refresh rotation
                     Refresh tokens are **single-use**. Every successful call to `POST /auth/sessions/refresh` returns a new pair and invalidates the old refresh token. Reusing a spent refresh token returns `401 INVALID_TOKEN` — the client should treat this as a signal of token theft and force re-login.
@@ -303,8 +306,8 @@ internal sealed class TagDescriptionDocumentFilter : IDocumentFilter
                     ### Conversion flow
                     `POST /visitors/{id}/convert` promotes a Visitor to a Member. The request body is a full `MemberCreateDto` — it supplies everything the Member profile requires that the Visitor did not have. On success:
 
-                    - A new Member record is created.
-                    - The Visitor record is retained for history but **marked as converted**. `convertedToMemberPersonId`, `convertedToMemberName`, and `convertedAt` are populated on the Visitor.
+                    - A Member record is created for the same PersonId.
+                    - The Visitor record is retained for history but **marked as converted**. `convertedAt` is populated on the Visitor.
                     - Converted Visitors are excluded from active lists, searches, and lookups.
                     - A Visitor can only be converted once. Attempting to convert an already-converted or soft-deleted Visitor returns `404 NOT_FOUND`.
 
@@ -325,26 +328,73 @@ internal sealed class TagDescriptionDocumentFilter : IDocumentFilter
             {
                 Name = "Attendance",
                 Description = """
-                    **General attendance tracking for congregation services and activities.** Each record links a **person** to an Attendance Type on a specific date, with an optional check-in time and notes.
+                    **General attendance tracking for congregation services and activities.** Each record links a **person** to an **Attendance Session** — a specific gathering like the 8am Sunday Service on 2026-10-12.
+
+                    ### Why sessions, not dates
+                    A date and a label alone cannot identify what actually happened. Two services on the same Sunday, a Christmas Eve service that falls on a Sunday, a vigil that starts Saturday night — none of these are distinguishable by date alone. Every attendance record references exactly one session.
 
                     ### Who counts as a "person"
-                    Attendance covers **both Members and Visitors**. The record carries a `personId` and a `personKind` of `Member` or `Visitor`. This matters — newcomers are typically tracked as Visitors before they become Members, and the congregation still wants their service attendance counted. The API does not convert one to the other automatically.
+                    Attendance covers **both Members and Visitors**. The record carries a `personId` and a `personKind` of `Member` or `Visitor`.
+
+                    **The kind is a snapshot, not a live value.** It reflects the person's role at the moment the attendance was recorded. A visitor who later becomes a member still reports as a Visitor for their pre-conversion attendance. This is deliberate — historical reports should show what was true when the record was written. The API does not retroactively rewrite `personKind` when a person converts.
+
+                    ### Duplicate attendance
+                    A person can only be marked present **once per session**. Attempting to create a second attendance for the same `(sessionId, personId)` returns `409 CONFLICT`. Delete the existing record and recreate if you need to correct a mistake.
 
                     ### How this differs from Event Attendance
-                    This tag tracks **general** attendance — services, midweek meetings, prayer gatherings. It is not tied to any scheduled Event. If you're recording presence at a specific event (conference, outreach), use **Event Attendance** instead. The two resources are separate and neither feeds the other.
+                    This tag tracks **general** attendance — services, midweek meetings, prayer gatherings, Bible studies. It is not tied to a scheduled Event. If you're recording presence at a specific event (conference, outreach), use **Event Attendance** instead. The two resources are separate and neither feeds the other.
 
                     ### Who can call these endpoints
                     Any authenticated user in the congregation.
 
                     ### Lifecycle
-                    Create requires a `personId` (Member or Visitor), an `attendanceTypeId`, and a `date`. Both references must exist in the same congregation. Update is limited — only `checkInTime` and `notes` are editable. Delete is a soft delete.
+                    Create requires a `sessionId` and a `personId`, both of which must exist in the same congregation. The person's kind is snapshotted at creation and never changes. Update is limited — only `checkedInAt` is editable. Delete is a soft delete.
 
                     ### Dependencies
-                    - **Person** — a Member or Visitor in the same congregation. A missing or cross-tenant reference returns `404 FOREIGN_KEY_NOT_FOUND`.
-                    - **Attendance Type** — must exist in the same congregation. Same error.
+                    - **Attendance Session** — must exist in the same congregation. A missing or cross-tenant reference returns `404 FOREIGN_KEY_NOT_FOUND`.
+                    - **Person** — a Member or Visitor in the same congregation. Same error.
 
                     ### Filters and pagination
-                    `GET /attendance` is cursor-paginated and supports filters by attendance type, `kind` (`Member` or `Visitor`), and date range. `GET /attendance/summary` returns `totalPresent`, `membersPresent`, `visitorsPresent`, and `firstTimeVisitors` for the same filter set — the split by kind is directly in the response.
+                    `GET /attendance` is cursor-paginated and supports filters by session, session label, `kind` (the snapshot kind), and session date range. `GET /attendance/summary` returns `totalPresent`, `membersPresent`, `visitorsPresent`, and `firstTimeVisitors` for the same filter set — all counts based on the recorded kind, not the person's current kind.
+
+                    ### Errors
+                    See the error catalog for `VALIDATION_ERROR`, `NOT_FOUND`, `FOREIGN_KEY_NOT_FOUND`, `CONFLICT`, and `UNAUTHORIZED`.
+                    """,
+            },
+            new()
+            {
+                Name = "Attendance Sessions",
+                Description = """
+                    **Attendance Sessions represent specific gatherings** — the 8am Sunday Service on 2026-10-12, the midweek Bible Study on 2026-10-15, the Christmas Eve service.
+
+                    ### Why sessions exist
+                    Attendance records need something concrete to point at. A date and a category alone can't distinguish two services on the same Sunday, or a Christmas Eve service that happens to fall on a Sunday. A session is the specific occasion, and every attendance record references one.
+
+                    This is also what QR-code check-in will target. The QR encodes a session ID, not a date-and-type pair, so a scan resolves unambiguously to a single gathering.
+
+                    ### Sessions vs. Session Labels
+                    A **Session Label** is a reusable category like "Sunday Service".
+                    A **Session** is one specific occurrence.
+
+                    A congregation might have 52 sessions labeled "Sunday Service" in a year. The label is created once; the sessions are created weekly.
+
+                    ### Fields that matter
+                    - `date` — the date the session begins. For overnight sessions (vigils), this is the **start** date, not the end. A Saturday-night vigil is dated Saturday even if it runs into Sunday morning.
+                    - `name` — optional. Overrides the label for display. A session labeled "Service" with `name = "Christmas Eve Service"` shows the custom name in the UI but still groups under the Service category in reports.
+                    - `status` — `Scheduled`, `Completed`, or `Cancelled`. Cancelled sessions are excluded from `completedSessions` counts and from the average attendance calculation.
+                    - `attendanceCount` — populated on both list and detail responses. No follow-up call needed.
+
+                    ### Immutable fields
+                    `date` and `sessionLabelId` cannot be changed after creation. Changing either effectively means it's a different session — delete this one and create a new one. This preserves the attendance records attached to it.
+
+                    ### Who can call these endpoints
+                    Any authenticated user in the congregation.
+
+                    ### Lifecycle
+                    Create a session → record attendance against it → optionally mark `Completed` or `Cancelled`. Delete is a soft delete — the session is excluded from lists, but existing attendance records that reference it remain in the database.
+
+                    ### Filters and pagination
+                    `GET /attendance/sessions` is cursor-paginated and supports filters by session label, status, name substring, and date range. `GET /attendance/sessions/summary` returns `totalSessions`, `completedSessions`, `cancelledSessions`, `totalAttendance`, and `averageAttendance` for the same filter set.
 
                     ### Errors
                     See the error catalog for `VALIDATION_ERROR`, `NOT_FOUND`, `FOREIGN_KEY_NOT_FOUND`, and `UNAUTHORIZED`.
@@ -352,26 +402,34 @@ internal sealed class TagDescriptionDocumentFilter : IDocumentFilter
             },
             new()
             {
-                Name = "Attendance Types",
+                Name = "Session Labels",
                 Description = """
-                    **Attendance Types are congregation-defined categories of service or activity** — for example Sunday Service, Midweek Service, or Prayer Meeting.
+                    **Session Labels are congregation-defined categories of gathering** — Sunday Service, Midweek Service, Prayer Meeting, Bible Study.
 
-                    Every Attendance record must reference an Attendance Type. Types are how the congregation classifies its gatherings for reporting.
+                    Every Attendance Session references exactly one Session Label. Labels are how the congregation classifies its gatherings for reporting.
+
+                    ### Name and category
+                    Each label has two parts:
+
+                    - `name` — the display name. Congregations can rename freely. "Sunday Service" in one congregation, "Sunday Morning Worship" in another.
+                    - `category` — a fixed category, one of `Service`, `Meeting`, `Study`, `Prayer`, `Practice`, `Outreach`, `Class`, or `Special`. **Not editable after creation.** Exists so cross-congregation analytics can group by category even when display names differ.
+
+                    The category is not shown to end users. It is visible in API responses for clients that want to build cross-congregation reporting.
 
                     ### Lookup entity — no pagination
-                    `GET /attendance-types` returns the **full list** with no pagination. Types are lightweight and bounded in number, so paging is unnecessary. Call this to populate the type selector when recording attendance.
+                    `GET /attendance/labels` returns the **full list** with no pagination. Labels are lightweight and bounded in number. Call this to populate the label selector when creating a session.
 
                     ### Who can call these endpoints
                     Any authenticated user in the congregation.
 
                     ### Lifecycle
-                    Create a type before creating any Attendance record that references it. Update replaces the full record. Delete is a soft delete — the type disappears from lists and lookups, but **existing Attendance records that reference it are not affected** and retain their classification.
+                    Create a label before creating any session that references it. Update can change `name` only — the category is immutable. Delete is a soft delete: the label disappears from lists and lookups, but **existing sessions that reference it are not affected** and retain their classification.
 
                     ### Dependencies
                     Nothing. This is a leaf lookup entity within a congregation.
 
                     ### Search
-                    `GET /attendance-types/search` is a flat, rate-limited trigram search over type names.
+                    `GET /attendance/labels/search` is a flat, rate-limited trigram search over label names.
 
                     ### Errors
                     See the error catalog for `VALIDATION_ERROR`, `NOT_FOUND`, and `UNAUTHORIZED`.

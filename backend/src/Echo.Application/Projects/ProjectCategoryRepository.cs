@@ -48,6 +48,11 @@ public class ProjectCategoryRepository(AppDbContext context)
         _dbSet.Add(entity);
     }
 
+    public void BatchCreate(IList<ProjectCategory> entities)
+    {
+        _dbSet.AddRange(entities);
+    }
+  
     public async Task<bool> IsInUse(Guid congregationId, int id, CancellationToken ct)
     {
         return await context

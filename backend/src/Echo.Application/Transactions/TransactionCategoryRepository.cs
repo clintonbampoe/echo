@@ -1,6 +1,6 @@
-using Echo.Shared.Query;
 using Echo.Data;
 using Echo.Domain.Transactions;
+using Echo.Shared.Query;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Application.Transactions;
@@ -48,6 +48,11 @@ public class TransactionCategoryRepository(AppDbContext context)
         _dbSet.Add(entity);
     }
 
+    public void BatchCreate(IList<TransactionCategory> entities)
+    {
+        _dbSet.AddRange(entities);
+    }
+  
     public async Task<bool> IsInUse(Guid congregationId, int id, CancellationToken ct)
     {
         return await context

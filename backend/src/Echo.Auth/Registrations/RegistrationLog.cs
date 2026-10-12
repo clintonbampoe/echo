@@ -29,7 +29,7 @@ public static partial class RegistrationLog
 
     [LoggerMessage(
         Level = LogLevel.Error,
-        Message = "Congregation registration error: unexpected failure for congregation {CongregationId} user {UserId}"
+        Message = "Congregation registration failed: transaction failed for congregation {CongregationId} user {UserId}"
     )]
     public static partial void CongregationRegistrationFailed(
         ILogger logger,
