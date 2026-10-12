@@ -59,6 +59,7 @@ public record AttendanceCursor
 
 public record AttendanceFilters
 {
+    public Guid? PersonId { get; init; }
     public Guid? SessionId { get; init; }
     public int? SessionLabelId { get; init; }
     public PersonKind? Kind { get; init; }
