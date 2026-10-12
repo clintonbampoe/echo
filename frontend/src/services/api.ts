@@ -117,12 +117,9 @@ export const apiFetch = async <T = unknown>(
 
   const contentType = response.headers.get("content-type");
   if (contentType && contentType.includes("application/json")) {
-    const json = await response.json();
-    if (json && typeof json === "object") {
-      if ("data" in json) return json.data as T;
-      if ("resource" in json) return json.resource as T;
-    }
-    return json as T;
+    // The API returns resources unwrapped; paged lists are { hasMore, next, data }
+    // and must be returned whole, so don't strip a top-level "data" key.
+    return (await response.json()) as T;
   }
 
   const text = await response.text();

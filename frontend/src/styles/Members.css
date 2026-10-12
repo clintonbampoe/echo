@@ -156,6 +156,27 @@
   transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 
+.member-card.clickable {
+  cursor: pointer;
+}
+
+.member-card.clickable:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.member-view-details-btn {
+  flex: none;
+  width: 100%;
+  background-color: var(--primary);
+  border-color: var(--primary);
+  color: white;
+}
+
+.member-view-details-btn:hover {
+  background-color: var(--primary-hover);
+}
+
 .member-card:hover {
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
   transform: translateY(-2px);

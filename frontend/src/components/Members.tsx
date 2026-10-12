@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useLayout } from "../hooks/useLayout";
 import {
   useMembers,
@@ -131,6 +132,7 @@ function toCreatePayload(form: MemberFormState): MemberCreatePayload {
 
 const Members: React.FC = () => {
   const { setTitle, setCtas } = useLayout();
+  const navigate = useNavigate();
 
   const [activeTab, setActiveTab] = useState<string>("All Members");
   const [searchQuery, setSearchQuery] = useState("");
@@ -391,7 +393,18 @@ const Members: React.FC = () => {
           ) : (
             <div className="members-card-grid">
               {members.map((member) => (
-                <div key={member.id} className="member-card">
+                <div
+                  key={member.id}
+                  className="member-card clickable"
+                  role="link"
+                  tabIndex={0}
+                  aria-label={`View details for ${member.firstName} ${member.lastName}`}
+                  onClick={() => navigate(`/members/${member.id}`)}
+                  onKeyDown={(e) => {
+                    if (e.target === e.currentTarget && e.key === "Enter")
+                      navigate(`/members/${member.id}`);
+                  }}
+                >
                   <div className="member-card-top">
                     <div className="member-card-avatar">
                       {getInitials(member.firstName, member.lastName)}
@@ -442,7 +455,22 @@ const Members: React.FC = () => {
                     </span>
                   </div>
 
-                  <div className="member-card-actions">
+                  <button
+                    type="button"
+                    className="member-action-btn member-view-details-btn"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/members/${member.id}`);
+                    }}
+                  >
+                    View full details
+                  </button>
+
+                  <div
+                    className="member-card-actions"
+                    onClick={(e) => e.stopPropagation()}
+                    onKeyDown={(e) => e.stopPropagation()}
+                  >
                     <button
                       type="button"
                       className="member-action-btn"

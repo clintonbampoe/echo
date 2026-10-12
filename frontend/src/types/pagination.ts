@@ -1,5 +1,5 @@
 export interface PagedResponse<T> {
   hasMore: boolean;
-  nextCursor: string | null;
+  next: string | null;
   data: T[];
 }

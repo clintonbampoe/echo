@@ -52,6 +52,7 @@ public static class ProjectEndpoints
                 - `name` — partial, case-insensitive match against the project name.
                 - `status` — `Planning`, `OnTrack`, `AtRisk`, `Complete`, `Missed`.
                 - `categoryId` — filter to a specific Project Category.
+                - `managerId` — projects managed by a specific Member.
                 - `from` / `to` — filter by start-date range.
 
                 ### Ordering

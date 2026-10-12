@@ -7,6 +7,7 @@ import Dashboard from './components/Dashboard';
 import Events from './components/Events';
 import Finance from './components/Finance';
 import Members from './components/Members';
+import MemberDetails from './components/MemberDetails';
 import Organizations from './components/Organizations';
 import Projects from './components/Projects';
 import Sidebar from './components/Sidebar';
@@ -61,6 +62,8 @@ const ProtectedLayout: React.FC = () => {
                             <Route path="/contributions" element={<Contributions />} />
                             <Route path="/events" element={<Events />} />
                             <Route path="/members" element={<Members />} />
+                            <Route path="/members/:memberId" element={<MemberDetails />} />
+                            <Route path="/members/:memberId/:section" element={<MemberDetails />} />
                             <Route path="/organizations" element={<Organizations />} />
                             <Route path="/reporting" element={<PlaceholderTab name="Reporting" />} />
                             <Route path="/assets" element={<Assets />} />

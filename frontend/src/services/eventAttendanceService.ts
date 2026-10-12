@@ -27,7 +27,7 @@ export const eventAttendanceService = {
     const params = new URLSearchParams();
     params.append("PageSize", pageSize.toString());
     if (cursor) params.append("Cursor", cursor);
-    return apiFetch(`${BASE_PATH}/event${eventId}?${params.toString()}`);
+    return apiFetch(`${BASE_PATH}/event/${eventId}?${params.toString()}`);
   },
 
   listByMemberId: async (
@@ -38,7 +38,7 @@ export const eventAttendanceService = {
     const params = new URLSearchParams();
     params.append("PageSize", pageSize.toString());
     if (cursor) params.append("Cursor", cursor);
-    return apiFetch(`${BASE_PATH}/member${memberId}?${params.toString()}`);
+    return apiFetch(`${BASE_PATH}/member/${memberId}?${params.toString()}`);
   },
 
   getById: async (id: string): Promise<EventAttendance> => {

@@ -26,7 +26,7 @@ export const useOrganizationMembersInfinite = (
       ),
     initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) =>
-      lastPage.hasMore ? (lastPage.nextCursor ?? undefined) : undefined,
+      lastPage.hasMore ? (lastPage.next ?? undefined) : undefined,
     enabled: !!organizationId,
   });
 };
