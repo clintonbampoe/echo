@@ -48,6 +48,14 @@ public class TransactionCategoryRepository(AppDbContext context)
         _dbSet.Add(entity);
     }
 
+    public async Task<bool> IsInUse(Guid congregationId, int id, CancellationToken ct)
+    {
+        return await context
+            .Set<Transaction>()
+            .FilterDeleted()
+            .AnyAsync(e => e.CongregationId == congregationId && e.CategoryId == id, ct);
+    }
+
     public void SoftDelete(TransactionCategory entity)
     {
         entity.DeletedAt = DateTime.UtcNow;

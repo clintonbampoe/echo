@@ -217,10 +217,12 @@ public static class AssetCategoryEndpoints
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
                 - `404 NOT_FOUND` — no asset category exists with the given ID in this congregation, or the record has already been soft-deleted.
+                - `409 CONFLICT` — the category is still used by existing assets. Move them to another category first.
                 """
             )
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict)
             .ProducesProblem(StatusCodes.Status401Unauthorized);
 
         group

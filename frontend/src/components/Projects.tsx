@@ -24,10 +24,13 @@ import {
   TrashIcon,
 } from "./Icons";
 import DeleteConfirmModal from "./common/DeleteConfirmModal";
+import ManageCategoriesModal from "./common/ManageCategoriesModal";
 import { getErrorMessage } from "../utils/errors";
 import {
   useCreateProjectCategory,
+  useDeleteProjectCategory,
   useProjectCategories,
+  useUpdateProjectCategory,
 } from "../hooks/useProjectCategories";
 import type { ProjectCategory } from "../types/projectCategory";
 
@@ -127,7 +130,8 @@ const Projects: React.FC = () => {
 
   // Queries
   const { data: projectsData, isLoading: isLoadingProjects } = useProjects();
-  const { data: categories = [] } = useProjectCategories();
+  const { data: categories = [], isLoading: isLoadingCategories } =
+    useProjectCategories();
   const { data: membersData } = useMembers({}, 500);
   const { data: contributionsData } = useProjectContributions({}, 1000);
 
@@ -167,6 +171,11 @@ const Projects: React.FC = () => {
 
   // ── Layout Header ──────────────────────────────────────────────────────────
 
+  const createCategory = useCreateProjectCategory();
+  const updateCategory = useUpdateProjectCategory();
+  const deleteCategory = useDeleteProjectCategory();
+  const [showManageCategories, setShowManageCategories] = useState(false);
+
   const openCreatePanel = useCallback(() => {
     setForm(emptyForm());
     setFormError(null);
@@ -176,6 +185,13 @@ const Projects: React.FC = () => {
   useEffect(() => {
     setTitle("Projects");
     setCtas([
+      {
+        type: "button",
+        label: "Manage Categories",
+        icon: "tag",
+        variant: "secondary",
+        onClick: () => setShowManageCategories(true),
+      },
       {
         type: "button",
         label: "Add Project",
@@ -774,6 +790,18 @@ const Projects: React.FC = () => {
         itemName={deletingProject?.name || ""}
         title="Delete Project"
         confirmText="Delete Project"
+      />
+
+      <ManageCategoriesModal
+        isOpen={showManageCategories}
+        onClose={() => setShowManageCategories(false)}
+        title="Project Categories"
+        usedBy="projects"
+        categories={categories}
+        isLoading={isLoadingCategories}
+        onCreate={(name) => createCategory.mutateAsync({ name })}
+        onUpdate={(id, name) => updateCategory.mutateAsync({ id, data: { name } })}
+        onDelete={(id) => deleteCategory.mutateAsync(id)}
       />
     </div>
   );
