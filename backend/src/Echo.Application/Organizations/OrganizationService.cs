@@ -62,7 +62,14 @@ public class OrganizationService(
 
         var nextCursor = hasMore ? encoder.Encode(BuildCursor(entities.Last())) : null;
 
-        var data = mapper.ToListDto(entities);
+        var counts = await repository.GetMemberCounts(
+            congregationId,
+            entities.Select(x => x.Id).ToList(),
+            ct
+        );
+        var data = entities
+            .Select(x => mapper.ToDto(x) with { MemberCount = counts.GetValueOrDefault(x.Id) })
+            .ToList();
         activity?.SetTag("organization.count", data.Count);
         OrganizationLog.Listed(logger, congregationId, data.Count);
 
@@ -91,7 +98,7 @@ public class OrganizationService(
         }
 
         OrganizationLog.Found(logger, congregationId, id);
-        var res = mapper.ToDto(entity);
+        var res = await WithCount(entity, congregationId, ct);
         return new SuccessResult<OrganizationResponseDto>(res);
     }
 
@@ -163,7 +170,7 @@ public class OrganizationService(
 
         OrganizationLog.Updated(logger, congregationId, id);
 
-        var res = mapper.ToDto(entity);
+        var res = await WithCount(entity, congregationId, ct);
         return new SuccessResult<OrganizationResponseDto>(res);
     }
 
@@ -259,5 +266,11 @@ public class OrganizationService(
     private static OrganizationCursor BuildCursor(Organization last)
     {
         return new OrganizationCursor { Name = last.Name, Id = last.Id };
+    }
+
+    private async Task<OrganizationResponseDto> WithCount(Organization entity, Guid congregationId, CancellationToken ct)
+    {
+        var counts = await repository.GetMemberCounts(congregationId, [entity.Id], ct);
+        return mapper.ToDto(entity) with { MemberCount = counts.GetValueOrDefault(entity.Id) };
     }
 }

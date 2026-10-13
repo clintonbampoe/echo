@@ -65,6 +65,7 @@ public record EventResponseDto
     public int? Capacity { get; init; }
     public string? Description { get; init; }
     public DateTime CreatedAt { get; init; }
+    public int RegistrationCount { get; init; }
 }
 
 public record EventSearchResultDto

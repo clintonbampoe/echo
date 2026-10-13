@@ -10,6 +10,8 @@ public partial class TransactionCategoryMapper : ITransactionCategoryMapper
     [MapperIgnoreSource(nameof(entity.CongregationId))]
     [MapperIgnoreSource(nameof(entity.CreatedAt))]
     [MapperIgnoreSource(nameof(entity.DeletedAt))]
+    // Filled by the service from a batched count query.
+    [MapperIgnoreTarget(nameof(TransactionCategoryResponseDto.TransactionCount))]
     public partial TransactionCategoryResponseDto ToDto(TransactionCategory entity);
 
     [MapperIgnoreTarget(nameof(TransactionCategory.Congregation))]

@@ -66,7 +66,14 @@ public class ProjectService(
 
         var nextCursor = hasMore ? encoder.Encode(BuildCursor(entities.Last())) : null;
 
-        var data = mapper.ToListDto(entities);
+        var counts = await repository.GetRaisedAmounts(
+            congregationId,
+            entities.Select(x => x.Id).ToList(),
+            ct
+        );
+        var data = entities
+            .Select(x => mapper.ToDto(x) with { RaisedAmount = counts.GetValueOrDefault(x.Id) })
+            .ToList();
         activity?.SetTag("project.count", data.Count);
         ProjectLog.Listed(logger, congregationId, data.Count);
 
@@ -93,7 +100,7 @@ public class ProjectService(
         }
 
         ProjectLog.Found(logger, congregationId, id);
-        var res = mapper.ToDto(entity);
+        var res = await WithCount(entity, congregationId, ct);
         return new SuccessResult<ProjectResponseDto>(res);
     }
 
@@ -223,7 +230,7 @@ public class ProjectService(
 
         ProjectLog.Updated(logger, congregationId, id);
 
-        var res = mapper.ToDto(entity);
+        var res = await WithCount(entity, congregationId, ct);
         return new SuccessResult<ProjectResponseDto>(res);
     }
 
@@ -313,5 +320,11 @@ public class ProjectService(
     private static ProjectCursor BuildCursor(Project last)
     {
         return new ProjectCursor { StartDate = last.StartDate, Id = last.Id };
+    }
+
+    private async Task<ProjectResponseDto> WithCount(Project entity, Guid congregationId, CancellationToken ct)
+    {
+        var counts = await repository.GetRaisedAmounts(congregationId, [entity.Id], ct);
+        return mapper.ToDto(entity) with { RaisedAmount = counts.GetValueOrDefault(entity.Id) };
     }
 }

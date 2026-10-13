@@ -10,6 +10,8 @@ public partial class ProjectCategoryMapper : IProjectCategoryMapper
     [MapperIgnoreSource(nameof(entity.CongregationId))]
     [MapperIgnoreSource(nameof(entity.CreatedAt))]
     [MapperIgnoreSource(nameof(entity.DeletedAt))]
+    // Filled by the service from a batched count query.
+    [MapperIgnoreTarget(nameof(ProjectCategoryResponseDto.ProjectCount))]
     public partial ProjectCategoryResponseDto ToDto(ProjectCategory entity);
 
     [MapperIgnoreTarget(nameof(ProjectCategory.Congregation))]

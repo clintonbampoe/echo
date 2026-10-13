@@ -57,6 +57,8 @@ public record VisitorResponseDto
     public string? ConvertedToMemberName { get; init; }
     public DateTime? ConvertedAt { get; init; }
     public DateTime CreatedAt { get; init; }
+    public int VisitCount { get; init; }
+    public DateOnly? LastVisitedAt { get; init; }
 }
 
 public record VisitorSearchResultDto

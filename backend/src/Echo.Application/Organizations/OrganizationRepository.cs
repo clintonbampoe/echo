@@ -113,6 +113,23 @@ public class OrganizationRepository(AppDbContext context)
             .Select(o => o.Name)
             .FirstOrDefaultAsync(ct);
 
+    public async Task<Dictionary<Guid, int>> GetMemberCounts(
+        Guid congregationId,
+        IReadOnlyList<Guid> organizationIds,
+        CancellationToken ct = default
+    )
+    {
+        if (organizationIds.Count == 0)
+            return [];
+
+        return await context
+            .Set<OrganizationMember>()
+            .AsNoTracking()
+            .Where(m => m.CongregationId == congregationId)
+            .CountPerOrganization(organizationIds)
+            .ToDictionaryAsync(x => x.Id, x => x.Count, ct);
+    }
+
     public void Create(Organization entity) => _dbSet.Add(entity);
 
     public void SoftDelete(Organization entity) => entity.DeletedAt = DateTime.UtcNow;

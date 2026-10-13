@@ -28,7 +28,14 @@ public class TransactionCategoryService(
             entities = await repository.GetAll(congregationId, ct);
         }
 
-        var res = mapper.ToListDto(entities);
+        var counts = await repository.GetTransactionCounts(
+            congregationId,
+            entities.Select(x => x.Id).ToList(),
+            ct
+        );
+        var res = entities
+            .Select(x => mapper.ToDto(x) with { TransactionCount = counts.GetValueOrDefault(x.Id) })
+            .ToList();
         TransactionCategoryLog.Listed(logger, congregationId, res.Count);
         activity?.SetTag("transaction_category.count", res.Count);
 
@@ -56,7 +63,7 @@ public class TransactionCategoryService(
         }
 
         TransactionCategoryLog.Found(logger, congregationId, id);
-        var res = mapper.ToDto(entity);
+        var res = await WithCount(entity, congregationId, ct);
         return new SuccessResult<TransactionCategoryResponseDto>(res);
     }
 
@@ -127,7 +134,7 @@ public class TransactionCategoryService(
 
         TransactionCategoryLog.Updated(logger, congregationId, id);
 
-        var res = mapper.ToDto(entity);
+        var res = await WithCount(entity, congregationId, ct);
         return new SuccessResult<TransactionCategoryResponseDto>(res);
     }
 
@@ -193,5 +200,11 @@ public class TransactionCategoryService(
         TransactionCategoryLog.Searched(logger, congregationId, name, res.Count);
         activity?.SetTag("transaction_category.count", res.Count);
         return new SuccessResult<List<TransactionCategorySearchResponseDto>>(res);
+    }
+
+    private async Task<TransactionCategoryResponseDto> WithCount(TransactionCategory entity, Guid congregationId, CancellationToken ct)
+    {
+        var counts = await repository.GetTransactionCounts(congregationId, [entity.Id], ct);
+        return mapper.ToDto(entity) with { TransactionCount = counts.GetValueOrDefault(entity.Id) };
     }
 }

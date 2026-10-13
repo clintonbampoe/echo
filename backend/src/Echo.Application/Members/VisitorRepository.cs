@@ -92,6 +92,23 @@ public class VisitorRepository(AppDbContext context)
             .CountAsync(ct);
     }
 
+    public async Task<Dictionary<Guid, (int Count, DateOnly LastVisited)>> GetVisitStats(
+        Guid congregationId,
+        IReadOnlyList<Guid> personIds,
+        CancellationToken ct = default
+    )
+    {
+        if (personIds.Count == 0)
+            return [];
+
+        return await context
+            .Set<Attendance>()
+            .AsNoTracking()
+            .Where(a => a.CongregationId == congregationId)
+            .VisitStatsFor(personIds)
+            .ToDictionaryAsync(x => x.PersonId, x => (x.Count, x.LastDate), ct);
+    }
+
     public void Create(Visitor entity) => _dbSet.Add(entity);
 
     public void SoftDelete(Visitor entity) => entity.DeletedAt = DateTime.UtcNow;

@@ -10,6 +10,8 @@ public partial class AssetCategoryMapper : IAssetCategoryMapper
     [MapperIgnoreSource(nameof(entity.CongregationId))]
     [MapperIgnoreSource(nameof(entity.CreatedAt))]
     [MapperIgnoreSource(nameof(entity.DeletedAt))]
+    // Filled by the service from a batched count query.
+    [MapperIgnoreTarget(nameof(AssetCategoryResponseDto.AssetCount))]
     public partial AssetCategoryResponseDto ToDto(AssetCategory entity);
 
     [MapperIgnoreTarget(nameof(AssetCategory.CreatedAt))]
