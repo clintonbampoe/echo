@@ -244,8 +244,19 @@ public class InvitationService(
         );
     }
 
-    public Task RecordUse(Guid invitationId, CancellationToken ct) =>
-        invitationTokenRepository.RecordUse(invitationId, ct);
+    // The count is informational, and it runs after the account exists, so a failure here is logged
+    // and swallowed rather than turning a successful registration into an error.
+    public async Task RecordUse(Guid invitationId, CancellationToken ct)
+    {
+        try
+        {
+            await invitationTokenRepository.RecordUse(invitationId, ct);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            InvitationLog.InvitationUseNotRecorded(logger, ex, invitationId);
+        }
+    }
 
     // Returns what is wrong with the request, or null when it was applied. Nothing changes on an error.
     internal static string? ApplyUpdate(InvitationToken token, InvitationUpdateDto dto, DateTime now)

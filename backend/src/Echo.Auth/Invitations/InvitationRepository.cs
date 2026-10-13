@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Auth.Invitations;
 
-public class InvitationRepository(AppDbContext context)
+public class InvitationRepository(AppDbContext context, TimeProvider timeProvider)
 {
     private readonly DbSet<InvitationToken> _tokens = context.Set<InvitationToken>();
 
@@ -72,7 +72,8 @@ public class InvitationRepository(AppDbContext context)
             .ExecuteUpdateAsync(s => s.SetProperty(i => i.UseCount, i => i.UseCount + 1), ct);
     }
 
-    public void SoftDelete(InvitationToken token) => token.DeletedAt = DateTime.UtcNow;
+    public void SoftDelete(InvitationToken token) =>
+        token.DeletedAt = timeProvider.GetUtcNow().UtcDateTime;
 
     public async Task<bool> Create(InvitationToken token, CancellationToken ct = default)
     {
