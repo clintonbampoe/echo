@@ -42,7 +42,6 @@ public static class TitheEndpoints
                 }
             )
             .WithName("ListTithes")
-            .RequireAuthorization(FinancePolicies.Manage)
             .WithSummary("Returns a paginated list of tithes.")
             .WithDescription(
                 """
@@ -70,8 +69,7 @@ public static class TitheEndpoints
                 """
             )
             .Produces<PagedResponse<TitheResponseDto>>(StatusCodes.Status200OK)
-            .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status403Forbidden);
+            .ProducesProblem(StatusCodes.Status401Unauthorized);
 
         group
             .MapGet(
@@ -101,7 +99,6 @@ public static class TitheEndpoints
                 }
             )
             .WithName("GetTithesByMemberId")
-            .RequireAuthorization(FinancePolicies.Manage)
             .WithSummary("Returns a paginated list of tithes for a specific member.")
             .WithDescription(
                 """
@@ -134,8 +131,7 @@ public static class TitheEndpoints
                 """
             )
             .Produces<PagedResponse<TitheResponseDto>>(StatusCodes.Status200OK)
-            .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status403Forbidden);
+            .ProducesProblem(StatusCodes.Status401Unauthorized);
 
         group
             .MapGet(
@@ -152,7 +148,6 @@ public static class TitheEndpoints
                 }
             )
             .WithName("GetTitheById")
-            .RequireAuthorization(FinancePolicies.Manage)
             .WithSummary("Returns a single tithe record by ID.")
             .WithDescription(
                 """
@@ -167,8 +162,7 @@ public static class TitheEndpoints
             )
             .Produces<TitheResponseDto>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status403Forbidden);
+            .ProducesProblem(StatusCodes.Status401Unauthorized);
 
         group
             .MapPost(
@@ -195,7 +189,6 @@ public static class TitheEndpoints
                 }
             )
             .WithName("CreateTithe")
-            .RequireAuthorization(FinancePolicies.Record)
             .WithSummary("Records a new tithe.")
             .WithDescription(
                 """
@@ -231,7 +224,6 @@ public static class TitheEndpoints
             .Produces<TitheResponseDto>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status403Forbidden)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
         group
@@ -260,7 +252,6 @@ public static class TitheEndpoints
                 }
             )
             .WithName("UpdateTithe")
-            .RequireAuthorization(FinancePolicies.Manage)
             .WithSummary("Updates an existing tithe record.")
             .WithDescription(
                 """
@@ -288,8 +279,7 @@ public static class TitheEndpoints
             .Produces<TitheResponseDto>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status403Forbidden);
+            .ProducesProblem(StatusCodes.Status401Unauthorized);
 
         group
             .MapDelete(
@@ -306,7 +296,6 @@ public static class TitheEndpoints
                 }
             )
             .WithName("DeleteTithe")
-            .RequireAuthorization(FinancePolicies.Manage)
             .WithSummary("Soft deletes a tithe record.")
             .WithDescription(
                 """
@@ -326,8 +315,7 @@ public static class TitheEndpoints
             )
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status403Forbidden);
+            .ProducesProblem(StatusCodes.Status401Unauthorized);
 
         group
             .MapGet(
@@ -353,7 +341,6 @@ public static class TitheEndpoints
                 }
             )
             .WithName("GetTitheSummary")
-            .RequireAuthorization(FinancePolicies.Manage)
             .WithSummary("Returns aggregate summary metrics for tithes.")
             .WithDescription(
                 """
@@ -370,8 +357,7 @@ public static class TitheEndpoints
                 """
             )
             .Produces<TitheSummaryDto>(StatusCodes.Status200OK)
-            .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status403Forbidden);
+            .ProducesProblem(StatusCodes.Status401Unauthorized);
 
         group
             .MapGet(
