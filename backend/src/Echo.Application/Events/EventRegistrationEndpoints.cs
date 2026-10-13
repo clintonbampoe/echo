@@ -246,6 +246,9 @@ public static class EventRegistrationEndpoints
                 - `400 VALIDATION_ERROR` — one or more fields failed validation.
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
                 - `404 FOREIGN_KEY_NOT_FOUND` — the referenced member or event does not exist in this congregation.
+                
+                ### Capacity
+                When the event has a `capacity` and it already has that many registrations, the request is rejected with `409 CONFLICT` and `errorCode: "EVENT_FULL"`. Events without a capacity are never full. Raising the capacity (through the event update) reopens registration; lowering it below the current count just keeps the event full. Check-ins are not limited by capacity, so walk-ins are always allowed.
                 """
             )
             .Produces<EventRegistrationResponseDto>(StatusCodes.Status201Created)

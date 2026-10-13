@@ -56,7 +56,7 @@ public static class EventEndpoints
                 - `from` / `to` — filter by start-date range (inclusive).
 
                 ### Ordering
-                Events are ordered by start date. The direction depends on the server-side default — the current implementation orders ascending by start date. There is no client-facing sort parameter.
+                Events are ordered by start date. `order=asc` (the default) lists the oldest first; `order=desc` lists the newest first, which suits a "Past" tab. A page's `next` cursor only continues a list in the direction it was fetched; passing it with the other `order` starts the list again from the first page.
 
                 ### Pagination
                 Pass the `next` cursor from the previous response as the `cursor` query parameter. When `hasMore` is `false`, `next` is null.

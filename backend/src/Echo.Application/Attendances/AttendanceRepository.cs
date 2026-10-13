@@ -92,6 +92,29 @@ public class AttendanceRepository(AppDbContext context)
         return stats ?? new AttendanceStats(0, 0, 0, 0);
     }
 
+    public async Task<HashSet<Guid>> PersonIdsPresent(
+        Guid congregationId,
+        Guid sessionId,
+        IReadOnlyList<Guid> personIds,
+        CancellationToken ct = default
+    )
+    {
+        var present = await _dbSet
+            .AsNoTracking()
+            .Live()
+            .Where(a =>
+                a.CongregationId == congregationId
+                && a.SessionId == sessionId
+                && personIds.Contains(a.PersonId)
+            )
+            .Select(a => a.PersonId)
+            .ToListAsync(ct);
+
+        return present.ToHashSet();
+    }
+
+    public void CreateMany(IEnumerable<Attendance> entities) => _dbSet.AddRange(entities);
+
     public void Create(Attendance entity) => _dbSet.Add(entity);
 
     public void SoftDelete(Attendance entity) => entity.DeletedAt = DateTime.UtcNow;

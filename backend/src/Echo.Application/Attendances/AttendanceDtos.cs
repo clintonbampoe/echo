@@ -80,3 +80,32 @@ public record AttendanceSummaryDto
     public int FirstTimeVisitors { get; init; }
     public DateWindow? Window { get; init; }
 }
+
+public record BulkAttendanceCreateDto
+{
+    public Guid SessionId { get; init; }
+
+    [Required, MinLength(1), MaxLength(500)]
+    public List<Guid> PersonIds { get; init; } = [];
+
+    /// <summary>Optional. Applied to every record created by the request.</summary>
+    public DateTime? CheckedInAt { get; init; }
+}
+
+public enum BulkSkipReason
+{
+    AlreadyPresent,
+    PersonNotFound,
+}
+
+public record BulkSkippedDto
+{
+    public Guid PersonId { get; init; }
+    public BulkSkipReason Reason { get; init; }
+}
+
+public record BulkAttendanceResponseDto
+{
+    public List<AttendanceResponseDto> Created { get; init; } = [];
+    public List<BulkSkippedDto> Skipped { get; init; } = [];
+}

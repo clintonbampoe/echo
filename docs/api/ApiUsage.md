@@ -263,6 +263,11 @@ The code looks like `K7QX-92MD-PW4T`: 12 characters from an alphabet without I, 
 
 `GET /congregation` returns the signed-in user's own congregation (name, type, contact details, location) for any role.
 
+**Events and attendance**
+- `GET /events` lists the oldest event first. Pass `order=desc` for the newest first (for a "Past" tab). A `next` cursor only continues a list in the direction it came from; with the other `order` the list starts again from the first page.
+- `POST /event-registrations` returns `409` with `errorCode: "EVENT_FULL"` once an event has as many live registrations as its `capacity`. Events without a capacity are unlimited, lowering a capacity below the current count just keeps the event full, and check-ins are never limited. Two requests for the last seat are handled one after the other, so the event cannot be overbooked.
+- `POST /attendance/bulk` marks up to 500 people present for a session in one request: `{ "sessionId": ..., "personIds": [...], "checkedInAt": ... }`. It returns `created` (the new records) and `skipped` (each with a `reason`: `AlreadyPresent` or `PersonNotFound`). Already-present people are skipped, not errors, an id sent twice counts once, and all the new records are saved together. If someone marks one of those people at the very same moment, the request returns `409` with `errorCode: "ATTENDANCE_CONFLICT"` and saves nothing; send it again and they come back as `AlreadyPresent`.
+
 ### 4. Search
 Search endpoints are available for all searchable entities. They use **trigram similarity** to find the best matches regardless of exact spelling.
 - **Behavior**: Returns the top 5 most relevant results. The term is matched literally, so `%` and `_` are not treated as wildcards.

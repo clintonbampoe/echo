@@ -4,6 +4,7 @@ using Echo.Shared.Query;
 using Echo.Shared.Utilities;
 using Microsoft.EntityFrameworkCore;
 using Echo.Domain.Congregations;
+using Echo.Shared.Pagination;
 
 namespace Echo.Application.Events;
 
@@ -29,8 +30,7 @@ public class EventRepository(AppDbContext context, TimeProvider timeProvider)
             .Include(e => e.Organizer)
                 .ThenInclude(o => o.Person)
             .Filter(filters)
-            .OrderBy(e => e.StartDate)
-            .ThenBy(e => e.Id)
+            .OrderForList(filters.Order)
             .Paginate(cursor, pageSize)
             .ToListAsync(ct);
     }
@@ -168,6 +168,15 @@ internal static class EventQueryExtensions
         return query;
     }
 
+    internal static IOrderedQueryable<Event> OrderForList(
+        this IQueryable<Event> query,
+        SortDirection order
+    ) =>
+        order == SortDirection.Desc
+            ? query.OrderByDescending(e => e.StartDate).ThenByDescending(e => e.Id)
+            : query.OrderBy(e => e.StartDate).ThenBy(e => e.Id);
+
+    // The cursor is the last row of the previous page and says which direction it was listed in.
     internal static IQueryable<Event> Paginate(
         this IQueryable<Event> query,
         EventCursor? cursor,
@@ -175,10 +184,16 @@ internal static class EventQueryExtensions
     )
     {
         if (cursor is not null)
-            query = query.Where(e =>
-                e.StartDate > cursor.StartDate
-                || (e.StartDate == cursor.StartDate && e.Id > cursor.Id)
-            );
+            query =
+                cursor.Order == SortDirection.Desc
+                    ? query.Where(e =>
+                        e.StartDate < cursor.StartDate
+                        || (e.StartDate == cursor.StartDate && e.Id < cursor.Id)
+                    )
+                    : query.Where(e =>
+                        e.StartDate > cursor.StartDate
+                        || (e.StartDate == cursor.StartDate && e.Id > cursor.Id)
+                    );
 
         return query.Take(pageSize);
     }

@@ -44,6 +44,38 @@ public class EventRegistrationRepository(AppDbContext context)
             .FirstOrDefaultAsync(ct);
     }
 
+    /// <summary>
+    /// Registers the member unless the event already has `capacity` live registrations. The event row
+    /// is locked for the duration, so two people going for the last seat are handled one after the
+    /// other and only the first gets it.
+    /// </summary>
+    public async Task<bool> TryCreateWithinCapacity(
+        EventRegistration entity,
+        int capacity,
+        CancellationToken ct = default
+    )
+    {
+        await using var transaction = await context.Database.BeginTransactionAsync(ct);
+
+        await context.Database.ExecuteSqlInterpolatedAsync(
+            $"SELECT 1 FROM \"Events\" WHERE \"Id\" = {entity.EventId} FOR UPDATE",
+            ct
+        );
+
+        var registered = await _dbSet
+            .FilterDeleted()
+            .CountAsync(r => r.EventId == entity.EventId, ct);
+        if (EventCapacity.IsFull(capacity, registered))
+            return false;
+
+        // Saved directly, inside the transaction that holds the lock. Nothing else is pending in this
+        // request, so only the new registration is written.
+        _dbSet.Add(entity);
+        await context.SaveChangesAsync(ct);
+        await transaction.CommitAsync(ct);
+        return true;
+    }
+
     public void Create(EventRegistration entity)
     {
         _dbSet.Add(entity);

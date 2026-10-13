@@ -112,6 +112,60 @@ public static class AttendanceEndpoints
 
         group
             .MapPost(
+                "/bulk",
+                async (
+                    [FromBody] BulkAttendanceCreateDto dto,
+                    AttendanceService service,
+                    HttpContext context,
+                    CancellationToken ct
+                ) =>
+                {
+                    using var span = EndpointInstrumentation.StartSpan(
+                        context,
+                        instrumentation,
+                        "endpoint.attendance.create_bulk"
+                    );
+                    var result = await service.CreateBulk(context.User.GetCongregationId(), dto, ct);
+                    return result.ToResult();
+                }
+            )
+            .WithName("BulkCreateAttendance")
+            .WithSummary("Marks many people present for one session in a single request.")
+            .WithDescription(
+                """
+                Marks up to 500 people present for one session. Use it for the "Mark present" panel and for catch-up entry instead of one request per person.
+
+                ### Request body
+                - `sessionId` — **required.** The session; it must exist in your congregation.
+                - `personIds` — **required**, 1 to 500 person ids (members or visitors).
+                - `checkedInAt` — optional. Applied to every record created.
+
+                Each person's kind (member or visitor) is recorded as it is at the time, exactly as for a single entry.
+
+                ### On success
+                `200 OK` with:
+                - `created` — the attendance records that were created, as returned by `POST /attendance`.
+                - `skipped` — people who were not marked, each with a `reason`:
+                  - `AlreadyPresent` — already marked present for this session. This is not an error here.
+                  - `PersonNotFound` — no such person in your congregation (for example a stale id).
+
+                An id sent more than once is counted once. All the new records are saved together, so a failure saves none of them.
+
+                ### Failure modes
+                - `400 VALIDATION_ERROR` — no ids, or more than 500.
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                - `404 NOT_FOUND` — the session does not exist.
+                - `409 CONFLICT` with `errorCode: "ATTENDANCE_CONFLICT"` — someone marked one of these people present at the very same moment. Nothing was saved; send the request again and they come back as `AlreadyPresent`.
+                """
+            )
+            .Produces<BulkAttendanceResponseDto>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .ProducesProblem(StatusCodes.Status401Unauthorized);
+
+        group
+            .MapPost(
                 "/",
                 async (
                     [FromBody] AttendanceCreateDto dto,
