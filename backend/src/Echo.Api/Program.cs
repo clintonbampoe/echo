@@ -5,6 +5,9 @@ using Echo.Auth;
 using Echo.Data;
 using Echo.ServiceDefaults;
 using Echo.Shared.Extensions;
+using Echo.Shared.HttpResults;
+using Echo.Shared.Options.Api;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,8 +39,12 @@ builder
 
 var app = builder.Build();
 
+// Problem responses link their "type" to the API's base URL; the options are validated at startup.
+ErrorTypes.UseBaseUrl(app.Services.GetRequiredService<IOptions<ApiOptions>>().Value.BaseUrl);
+
 // Must run before anything that reads the client IP or scheme (the rate limiter, auth).
 app.UseForwardedHeaders();
+app.UseSecurityHeaders();
 
 await Database.RunMigrationsOnStartup(app, builder.Configuration);
 

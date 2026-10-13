@@ -88,6 +88,8 @@ public class AssetRepository(AppDbContext context)
             .CountAsync(ct);
 }
 
+public record AssetStats(int Count, decimal CurrentValue, decimal PurchaseCost);
+
 internal static class AssetQueryExtensions
 {
     internal static IQueryable<AssetStats> SummarizeAssets(

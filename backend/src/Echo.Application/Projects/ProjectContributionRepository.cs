@@ -68,6 +68,13 @@ public class ProjectContributionRepository(AppDbContext context)
     public void SoftDelete(ProjectContribution entity) => entity.DeletedAt = DateTime.UtcNow;
 }
 
+public record ContributionStats(
+    decimal Total,
+    int Count,
+    decimal Average,
+    PaymentMethod? MostUsedPaymentMethod
+);
+
 internal static class ProjectContributionQueryExtensions
 {
     internal static IQueryable<ContributionStats> SummarizeContributions(

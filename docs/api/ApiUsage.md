@@ -84,6 +84,8 @@ The token carries the user's `UserRole` (`Admin`, `Accountant`, `Clerk`, `Member
 | Users: every endpoint (list, get, create, update, delete, search) | yes | no | no | no |
 | Invitations | yes | no | no | no |
 
+`GET /users/me` and `PUT /users/me` let any signed-in user read and edit their own profile (names and password; never the role or email). Changing the password requires the current one and ends all the user's sessions: refresh tokens stop working, and the access token in use expires on its own within about 15 minutes.
+
 All other endpoints currently only require a signed-in user. Finer role-based access (for example for tithes and other finance data) is planned after the first deployment.
 
 ---
@@ -108,7 +110,7 @@ Most endpoints return data wrapped in a `data` object.
 Used by all list endpoints.
 ```json
 {
-	"nextCursor": "opaque_base64_string",
+	"next": "opaque_base64_string",
 	"hasMore": true,
 	"data": [
 		{ "id": "guid", "name": "Item 1" },
@@ -118,7 +120,7 @@ Used by all list endpoints.
 }
 ```
 - `window`: The date range applied to the list, or `null` if none was. See [Default date windows](#3-cursor-based-pagination--filtering).
-- `nextCursor`: An opaque string used to fetch the next page. If `null`, no more pages exist.
+- `next`: An opaque string used to fetch the next page. If `null`, no more pages exist.
 - `hasMore`: A boolean flag indicating if more records are available.
 
 ### 3. Standard Error Response (Problem Details)
@@ -187,7 +189,7 @@ curl -H "Authorization: Bearer <your-token>" \
 ```
 
 **Fetching Subsequent Pages**
-Take the `nextCursor` value from the previous response and pass it as the `cursor` parameter.
+Take the `next` value from the previous response and pass it as the `cursor` parameter.
 
 
 **Constraints & Behavior**

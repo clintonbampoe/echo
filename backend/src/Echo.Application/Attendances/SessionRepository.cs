@@ -102,6 +102,14 @@ public class SessionRepository(AppDbContext context)
     public void SoftDelete(Session entity) => entity.DeletedAt = DateTime.UtcNow;
 }
 
+public record SessionStats(
+    int Total,
+    int Completed,
+    int Cancelled,
+    int TotalAttendance,
+    int CompletedAttendance
+);
+
 internal static class SessionQueryExtensions
 {
     internal static IQueryable<SessionStats> SummarizeSessions(

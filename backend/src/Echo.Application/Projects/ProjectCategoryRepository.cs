@@ -83,3 +83,17 @@ public class ProjectCategoryRepository(AppDbContext context)
         entity.DeletedAt = DateTime.UtcNow;
     }
 }
+
+internal static class ProjectCategoryQueryExtensions
+{
+    internal static IQueryable<CategoryCount> CountPerProjectCategory(
+        this IQueryable<Project> query,
+        IReadOnlyList<int> categoryIds
+    ) =>
+        query
+            .FilterDeleted()
+            .Where(p => categoryIds.Contains(p.CategoryId))
+            .GroupBy(p => p.CategoryId)
+            .Select(g => new CategoryCount(g.Key, g.Count()));
+
+}

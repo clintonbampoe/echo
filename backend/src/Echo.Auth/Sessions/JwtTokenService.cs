@@ -31,6 +31,7 @@ public class JwtTokenService(
                 .UtcDateTime.AddDays(_jwtOptions.RefreshTokenLifetimeDays),
         };
 
+        await refreshTokenRepository.PruneTokens(userId, ct);
         await refreshTokenRepository.CreateNewToken(tokenEntity, ct);
 
         return (tokenEntity, plainToken);

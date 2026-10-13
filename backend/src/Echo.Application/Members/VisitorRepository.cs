@@ -99,8 +99,23 @@ public class VisitorRepository(AppDbContext context)
     public void SoftDelete(Visitor entity) => entity.DeletedAt = DateTime.UtcNow;
 }
 
+public record VisitorStats(int Total, int New, int Converted, int Recurring);
+
+internal readonly record struct VisitStats(Guid PersonId, int Count, DateOnly LastDate);
+
 internal static class VisitorQueryExtensions
 {
+    /// <summary>Visits are attendance records made while the person was a visitor.</summary>
+    internal static IQueryable<VisitStats> VisitStatsFor(
+        this IQueryable<Attendance> query,
+        IReadOnlyList<Guid> personIds
+    ) =>
+        query
+            .Live()
+            .Where(a => personIds.Contains(a.PersonId) && a.PersonKindAtTime == PersonKind.Visitor)
+            .GroupBy(a => a.PersonId)
+            .Select(g => new VisitStats(g.Key, g.Count(), g.Max(a => a.Session.Date)));
+
     // visitors is the visitor list for the filters; created and converted are everyone created or
     // converted in the window, whatever their current status.
     internal static IQueryable<VisitorStats> SummarizeVisitors(

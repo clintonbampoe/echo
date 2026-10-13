@@ -79,3 +79,17 @@ public class AssetCategoryRepository(AppDbContext context)
         entity.DeletedAt = DateTime.UtcNow;
     }
 }
+
+internal static class AssetCategoryQueryExtensions
+{
+    internal static IQueryable<CategoryCount> CountPerAssetCategory(
+        this IQueryable<Asset> query,
+        IReadOnlyList<int> categoryIds
+    ) =>
+        query
+            .FilterDeleted()
+            .Where(a => categoryIds.Contains(a.CategoryId))
+            .GroupBy(a => a.CategoryId)
+            .Select(g => new CategoryCount(g.Key, g.Count()));
+
+}

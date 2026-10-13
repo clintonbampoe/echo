@@ -97,8 +97,20 @@ public class OrganizationRepository(AppDbContext context)
     public void SoftDelete(Organization entity) => entity.DeletedAt = DateTime.UtcNow;
 }
 
+public record OrganizationStats(int Count, int TotalMembers, double AverageMembers, string? Largest);
+
 internal static class OrganizationQueryExtensions
 {
+    internal static IQueryable<ParentCount> CountPerOrganization(
+        this IQueryable<OrganizationMember> query,
+        IReadOnlyList<Guid> organizationIds
+    ) =>
+        query
+            .FilterDeleted()
+            .Where(m => organizationIds.Contains(m.OrganizationId))
+            .GroupBy(m => m.OrganizationId)
+            .Select(g => new ParentCount(g.Key, g.Count()));
+
     internal static IQueryable<OrganizationStats> SummarizeOrganizations(
         this IQueryable<Congregation> oneRow,
         IQueryable<Organization> organizations,

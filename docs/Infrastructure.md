@@ -223,6 +223,9 @@ This is a security barrier—a comma-separated list of trusted origins (e.g., `h
 **3. Client IP and rate limiting (`ForwardedHeaders__TrustedNetworks`)**
 Behind nginx, every request reaches the API from the nginx container, so the API reads the real client address from the `X-Forwarded-For` header that nginx sets. The rate limiter partitions by that address, so without it everyone would share one bucket. The header is honoured only when the request comes from a trusted network, and only the last hop is trusted (nginx appends the real peer address), so a client cannot spoof its address by sending its own `X-Forwarded-For`. By default the trusted networks are loopback and the private ranges Docker allocates networks from (`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`). To narrow them, set one variable per range on the `api` service, e.g. `ForwardedHeaders__TrustedNetworks__0=172.18.0.0/16`; this replaces the defaults. Blank values are ignored, and a value that is not valid CIDR stops the API at startup with a message naming it. Keep the API unpublished in production (only nginx exposes a port), otherwise anything that can reach it from a trusted network could set the header.
 
+**4. Security headers**
+The API adds `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY` and `Referrer-Policy: strict-origin-when-cross-origin` to every response, plus `Content-Security-Policy: default-src 'none'; frame-ancestors 'none'` outside Development (the development API docs need to load scripts). It does **not** send `Strict-Transport-Security`: browsers only honour it over HTTPS and it is sticky, so add it in nginx when TLS is set up, starting with a short `max-age` and raising it once everything works over HTTPS.
+
 ---
 
 ## Rotating the JWT signing key

@@ -76,6 +76,8 @@ public class MemberRepository(AppDbContext context, TimeProvider timeProvider)
     public void SoftDelete(Member entity) => entity.DeletedAt = DateTime.UtcNow;
 }
 
+public record MemberStats(int Total, int Active, int Male, int Female, double AverageAge);
+
 internal static class MemberQueryExtensions
 {
     internal static IQueryable<MemberStats> SummarizeMembers(
