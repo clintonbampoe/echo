@@ -7,6 +7,7 @@ using Echo.Shared.Services.Generators;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
+using Echo.Shared.Utilities;
 
 namespace Echo.Application.Organizations;
 
@@ -18,9 +19,17 @@ public class OrganizationService(
     IIdGenerator idGenerator,
     ApplicationInstrumentation instrumentation,
     LinkGenerator linker,
+    DateWindows dateWindows,
     ILogger<OrganizationService> logger
 )
 {
+    internal static DateWindow? ResolveWindow(OrganizationFilters filters, DateWindows dateWindows) =>
+        dateWindows.ThisYear(
+            filters.From,
+            filters.To,
+            hasParent: false
+        );
+
     public async Task<IOperationResult> List(
         Guid congregationId,
         OrganizationFilters filters,
@@ -28,6 +37,9 @@ public class OrganizationService(
         CancellationToken ct = default
     )
     {
+        var window = ResolveWindow(filters, dateWindows);
+        filters = filters with { From = window?.From, To = window?.To };
+
         using var activity = instrumentation.ActivitySource.StartActivity("svc.organization.list");
 
         var cursor = encoder.Decode<OrganizationCursor>(pagination.Cursor);
@@ -54,7 +66,7 @@ public class OrganizationService(
         activity?.SetTag("organization.count", data.Count);
         OrganizationLog.Listed(logger, congregationId, data.Count);
 
-        var res = new PagedResponse<OrganizationResponseDto>(hasMore, nextCursor, data);
+        var res = new PagedResponse<OrganizationResponseDto>(hasMore, nextCursor, data, window);
         return new SuccessResult<PagedResponse<OrganizationResponseDto>>(res);
     }
 
@@ -215,6 +227,9 @@ public class OrganizationService(
         CancellationToken ct
     )
     {
+        var window = ResolveWindow(filters, dateWindows);
+        filters = filters with { From = window?.From, To = window?.To };
+
         using var activity = instrumentation.ActivitySource.StartActivity(
             "svc.organization.summary"
         );
@@ -228,6 +243,7 @@ public class OrganizationService(
 
         var res = new OrganizationSummaryDto
         {
+            Window = window,
             TotalOrganizations = countTask.Result,
             TotalMembers = totalMembersTask.Result,
             AverageMembersPerOrganization = averageTask.Result,

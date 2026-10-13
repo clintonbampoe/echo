@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using Echo.Domain.Members;
+using Echo.Shared.Utilities;
 
 namespace Echo.Application.Attendances;
 
@@ -57,6 +58,10 @@ public record AttendanceCursor
     public Guid Id { get; init; }
 }
 
+/// <summary>
+/// Default window when From/To are omitted: this week to today (by Session.Date).
+/// No default window when SessionId or PersonId is set.
+/// </summary>
 public record AttendanceFilters
 {
     public Guid? PersonId { get; init; }
@@ -73,4 +78,5 @@ public record AttendanceSummaryDto
     public int MembersPresent { get; init; }
     public int VisitorsPresent { get; init; }
     public int FirstTimeVisitors { get; init; }
+    public DateWindow? Window { get; init; }
 }

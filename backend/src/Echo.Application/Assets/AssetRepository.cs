@@ -1,12 +1,11 @@
 using Echo.Data;
 using Echo.Domain.Assets;
 using Echo.Shared.Query;
-using Echo.Shared.Utilities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Application.Assets;
 
-public class AssetRepository(AppDbContext context, TimeProvider timeProvider)
+public class AssetRepository(AppDbContext context)
 {
     private readonly DbSet<Asset> _dbSet = context.Set<Asset>();
 
@@ -23,7 +22,7 @@ public class AssetRepository(AppDbContext context, TimeProvider timeProvider)
             .FilterDeleted()
             .Where(a => a.CongregationId == congregationId)
             .Include(a => a.Category)
-            .Filter(filters, timeProvider)
+            .Filter(filters)
             .OrderBy(a => a.Name)
             .ThenBy(a => a.Id)
             .Paginate(cursor, pageSize)
@@ -68,7 +67,7 @@ public class AssetRepository(AppDbContext context, TimeProvider timeProvider)
             .AsNoTracking()
             .FilterDeleted()
             .Where(a => a.CongregationId == congregationId)
-            .Filter(filters, timeProvider)
+            .Filter(filters)
             .CountAsync(ct);
 
     public Task<decimal> SumCurrentValue(
@@ -80,7 +79,7 @@ public class AssetRepository(AppDbContext context, TimeProvider timeProvider)
             .AsNoTracking()
             .FilterDeleted()
             .Where(a => a.CongregationId == congregationId)
-            .Filter(filters, timeProvider)
+            .Filter(filters)
             .SumAsync(a => a.CurrentValue, ct);
 
     public Task<decimal> SumPurchaseCost(
@@ -92,7 +91,7 @@ public class AssetRepository(AppDbContext context, TimeProvider timeProvider)
             .AsNoTracking()
             .FilterDeleted()
             .Where(a => a.CongregationId == congregationId)
-            .Filter(filters, timeProvider)
+            .Filter(filters)
             .SumAsync(a => a.PurchaseCost, ct);
 
     public Task<int> CountByStatus(
@@ -104,7 +103,7 @@ public class AssetRepository(AppDbContext context, TimeProvider timeProvider)
             .AsNoTracking()
             .FilterDeleted()
             .Where(a => a.CongregationId == congregationId)
-            .Filter(filters, timeProvider)
+            .Filter(filters)
             .CountAsync(ct);
 }
 
@@ -112,8 +111,7 @@ internal static class AssetQueryExtensions
 {
     internal static IQueryable<Asset> Filter(
         this IQueryable<Asset> query,
-        AssetFilters filters,
-        TimeProvider timeProvider
+        AssetFilters filters
     )
     {
         if (filters.Name is not null)
@@ -125,10 +123,11 @@ internal static class AssetQueryExtensions
         if (filters.Status is not null)
             query = query.Where(a => a.Status == filters.Status);
 
-        var from = filters.From ?? DateUtils.GetFirstDayOfYear(timeProvider);
-        var to = filters.To ?? DateUtils.GetLastDayOfYear(timeProvider);
+        if (filters.From is not null)
+            query = query.Where(a => a.PurchaseDate >= filters.From);
 
-        query = query.Where(a => a.PurchaseDate >= from && a.PurchaseDate <= to);
+        if (filters.To is not null)
+            query = query.Where(a => a.PurchaseDate <= filters.To);
 
         return query;
     }

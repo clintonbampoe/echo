@@ -1,12 +1,11 @@
 using Echo.Data;
 using Echo.Domain.Organizations;
 using Echo.Shared.Query;
-using Echo.Shared.Utilities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Application.Organizations;
 
-public class OrganizationRepository(AppDbContext context, TimeProvider timeProvider)
+public class OrganizationRepository(AppDbContext context)
 {
     private readonly DbSet<Organization> _dbSet = context.Set<Organization>();
     private readonly DbSet<OrganizationMember> _memberDbSet = context.Set<OrganizationMember>();
@@ -23,7 +22,7 @@ public class OrganizationRepository(AppDbContext context, TimeProvider timeProvi
             .AsNoTracking()
             .FilterDeleted()
             .Where(o => o.CongregationId == congregationId)
-            .Filter(filters, timeProvider)
+            .Filter(filters)
             .OrderBy(o => o.Name)
             .ThenBy(o => o.Id)
             .Paginate(cursor, pageSize)
@@ -65,7 +64,7 @@ public class OrganizationRepository(AppDbContext context, TimeProvider timeProvi
             .AsNoTracking()
             .FilterDeleted()
             .Where(o => o.CongregationId == congregationId)
-            .Filter(filters, timeProvider)
+            .Filter(filters)
             .CountAsync(ct);
 
     public Task<int> CountTotalMembers(
@@ -77,7 +76,7 @@ public class OrganizationRepository(AppDbContext context, TimeProvider timeProvi
             .AsNoTracking()
             .FilterDeleted()
             .Where(o => o.CongregationId == congregationId)
-            .Filter(filters, timeProvider)
+            .Filter(filters)
             .SelectMany(o => _memberDbSet.FilterDeleted().Where(m => m.OrganizationId == o.Id))
             .CountAsync(ct);
 
@@ -90,7 +89,7 @@ public class OrganizationRepository(AppDbContext context, TimeProvider timeProvi
             .AsNoTracking()
             .FilterDeleted()
             .Where(o => o.CongregationId == congregationId)
-            .Filter(filters, timeProvider)
+            .Filter(filters)
             .Select(o => _memberDbSet.FilterDeleted().Count(m => m.OrganizationId == o.Id))
             .AverageAsync(count => (double?)count, ct)
             .ContinueWith(t => t.Result ?? 0d, ct);
@@ -104,7 +103,7 @@ public class OrganizationRepository(AppDbContext context, TimeProvider timeProvi
             .AsNoTracking()
             .FilterDeleted()
             .Where(o => o.CongregationId == congregationId)
-            .Filter(filters, timeProvider)
+            .Filter(filters)
             .Select(o => new
             {
                 o.Name,
@@ -123,19 +122,17 @@ internal static class OrganizationQueryExtensions
 {
     internal static IQueryable<Organization> Filter(
         this IQueryable<Organization> query,
-        OrganizationFilters filters,
-        TimeProvider timeProvider
+        OrganizationFilters filters
     )
     {
         if (filters.Name is not null)
             query = query.Where(o => EF.Functions.ILike(o.Name, $"%{filters.Name}%"));
 
-        var from = filters.From ?? DateUtils.GetFirstDayOfYear(timeProvider);
-        var to = filters.To ?? DateUtils.GetLastDayOfYear(timeProvider);
+        if (filters.From is not null)
+            query = query.Where(o => DateOnly.FromDateTime(o.CreatedAt) >= filters.From);
 
-        query = query.Where(o =>
-            DateOnly.FromDateTime(o.CreatedAt) >= from && DateOnly.FromDateTime(o.CreatedAt) <= to
-        );
+        if (filters.To is not null)
+            query = query.Where(o => DateOnly.FromDateTime(o.CreatedAt) <= filters.To);
 
         return query;
     }

@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using Echo.Domain.Assets;
+using Echo.Shared.Utilities;
 
 namespace Echo.Application.Assets;
 
@@ -80,6 +81,9 @@ public record AssetCursor
     public Guid Id { get; init; }
 }
 
+/// <summary>
+/// Default window when From/To are omitted: this year (by PurchaseDate).
+/// </summary>
 public record AssetFilters
 {
     public AssetStatus? Status { get; init; }
@@ -95,4 +99,5 @@ public record AssetSummaryDto
     public decimal TotalCurrentValue { get; init; }
     public decimal TotalPurchaseCost { get; init; }
     public decimal TotalDepreciation { get; init; }
+    public DateWindow? Window { get; init; }
 }

@@ -103,9 +103,11 @@ Used by all list endpoints.
 	"data": [
 		{ "id": "guid", "name": "Item 1" },
 		{ "id": "guid", "name": "Item 2" }
-	]
+	],
+	"window": { "from": "2026-10-11", "to": "2026-10-14", "isDefault": true }
 }
 ```
+- `window`: The date range applied to the list, or `null` if none was. See [Default date windows](#3-cursor-based-pagination--filtering).
 - `nextCursor`: An opaque string used to fetch the next page. If `null`, no more pages exist.
 - `hasMore`: A boolean flag indicating if more records are available.
 
@@ -184,6 +186,26 @@ Take the `nextCursor` value from the previous response and pass it as the `curso
 Filtering is achieved via query parameters. The available filters depend on the entity.
 *Example: Fetching members filtered by status*
 `GET /api/v1/members?status=Active&pageSize=20`
+
+**Default date windows**
+List and summary endpoints that filter by date apply a default window when both `from` and `to` are omitted. An explicit `from` or `to` always wins; the missing side is filled from the default.
+
+| List | Default window | Date field |
+|---|---|---|
+| Attendance records | this week to today | session date |
+| Tithes | this week to today | collection date |
+| Transactions | this week to today | transaction date |
+| Sessions | whole current week (Sunday to Saturday) | session date |
+| Project contributions | this month to today | date contributed |
+| Visitors | this year | created date (converted date when `converted=true`) |
+| Projects | this year; running projects stay visible | start and end date |
+| Members, Assets, Organizations, Events | this year | joined / purchase / created / start date |
+
+Attendance (`sessionId`, `personId`), tithes (`memberId`, including `GET /tithes/member/{memberId}`) and contributions (`projectId`) apply **no default window** when scoped to a parent record.
+
+A project is in the window when it started on or before `to` and has not ended before `from`; open-ended projects (no end date) always stay visible once started. This applies to explicit `from`/`to` too.
+
+Paged list responses and summary responses include `window: { from, to, isDefault }`, or `null` when no window was applied. Dates use UTC and weeks start on Sunday.
 
 ### 4. Search
 Search endpoints are available for all searchable entities. They use **trigram similarity** to find the best matches regardless of exact spelling.

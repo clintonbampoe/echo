@@ -2,12 +2,11 @@ using Echo.Data;
 using Echo.Domain.Attendances;
 using Echo.Domain.Members;
 using Echo.Shared.Query;
-using Echo.Shared.Utilities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Application.Attendances;
 
-public class AttendanceRepository(AppDbContext context, TimeProvider timeProvider)
+public class AttendanceRepository(AppDbContext context)
 {
     private readonly DbSet<Attendance> _dbSet = context.Set<Attendance>();
 
@@ -26,7 +25,7 @@ public class AttendanceRepository(AppDbContext context, TimeProvider timeProvide
             .Include(a => a.Person)
             .Include(a => a.Session)
                 .ThenInclude(s => s.SessionLabel)
-            .Filter(filters, timeProvider)
+            .Filter(filters)
             .OrderByDescending(a => a.Session.Date)
             .ThenBy(a => a.Id)
             .Paginate(cursor, pageSize)
@@ -78,7 +77,7 @@ public class AttendanceRepository(AppDbContext context, TimeProvider timeProvide
             .AsNoTracking()
             .FilterDeleted()
             .Where(a => a.CongregationId == congregationId)
-            .Filter(filters, timeProvider)
+            .Filter(filters)
             .CountAsync(ct);
 
     /// <summary>
@@ -95,7 +94,7 @@ public class AttendanceRepository(AppDbContext context, TimeProvider timeProvide
             .AsNoTracking()
             .FilterDeleted()
             .Where(a => a.CongregationId == congregationId && a.PersonKindAtTime == kind)
-            .Filter(filters, timeProvider)
+            .Filter(filters)
             .CountAsync(ct);
 
     public Task<int> CountFirstTimeVisitors(
@@ -109,7 +108,7 @@ public class AttendanceRepository(AppDbContext context, TimeProvider timeProvide
             .Where(a =>
                 a.CongregationId == congregationId && a.PersonKindAtTime == PersonKind.Visitor
             )
-            .Filter(filters, timeProvider)
+            .Filter(filters)
             .Where(a =>
                 !_dbSet
                     .FilterDeleted()
@@ -132,8 +131,7 @@ internal static class AttendanceQueryExtensions
 {
     internal static IQueryable<Attendance> Filter(
         this IQueryable<Attendance> query,
-        AttendanceFilters filters,
-        TimeProvider timeProvider
+        AttendanceFilters filters
     )
     {
         if (filters.SessionId is not null)
@@ -148,10 +146,11 @@ internal static class AttendanceQueryExtensions
         if (filters.Kind is not null)
             query = query.Where(a => a.PersonKindAtTime == filters.Kind);
 
-        var from = filters.From ?? DateUtils.GetFirstDayOfWeek(timeProvider);
-        var to = filters.To ?? DateUtils.GetDateToday(timeProvider);
+        if (filters.From is not null)
+            query = query.Where(a => a.Session.Date >= filters.From);
 
-        query = query.Where(a => a.Session.Date >= from && a.Session.Date <= to);
+        if (filters.To is not null)
+            query = query.Where(a => a.Session.Date <= filters.To);
 
         return query;
     }

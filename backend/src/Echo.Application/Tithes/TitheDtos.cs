@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using Echo.Domain.Tithes;
 using Echo.Domain.Transactions;
+using Echo.Shared.Utilities;
 
 namespace Echo.Application.Tithes;
 
@@ -60,6 +61,10 @@ public record TitheCursor
     public Guid Id { get; init; }
 }
 
+/// <summary>
+/// Default window when From/To are omitted: this week to today (by CollectionDate).
+/// No default window when MemberId is set.
+/// </summary>
 public record TitheFilters
 {
     public Guid? MemberId { get; init; }
@@ -76,4 +81,5 @@ public record TitheSummaryDto
     public int UniqueTithers { get; init; }
     public string? MostUsedPaymentMethod { get; init; }
     public decimal AveragePerMember { get; init; }
+    public DateWindow? Window { get; init; }
 }

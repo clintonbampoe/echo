@@ -9,6 +9,7 @@ using Echo.Shared.Services.Generators;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
+using Echo.Shared.Utilities;
 
 namespace Echo.Application.Tithes;
 
@@ -21,9 +22,17 @@ public class TitheService(
     IIdGenerator idGenerator,
     ApplicationInstrumentation instrumentation,
     LinkGenerator linker,
+    DateWindows dateWindows,
     ILogger<TitheService> logger
 )
 {
+    internal static DateWindow? ResolveWindow(TitheFilters filters, DateWindows dateWindows) =>
+        dateWindows.ThisWeekToDate(
+            filters.From,
+            filters.To,
+            hasParent: filters.MemberId is not null
+        );
+
     public async Task<IOperationResult> List(
         Guid congregationId,
         TitheFilters filters,
@@ -31,6 +40,9 @@ public class TitheService(
         CancellationToken ct
     )
     {
+        var window = ResolveWindow(filters, dateWindows);
+        filters = filters with { From = window?.From, To = window?.To };
+
         using var activity = instrumentation.ActivitySource.StartActivity("svc.tithe.list");
 
         var cursor = encoder.Decode<TitheCursor>(pagination.Cursor);
@@ -57,7 +69,7 @@ public class TitheService(
         activity?.SetTag("tithe.count", data.Count);
         TitheLog.Listed(logger, congregationId, data.Count);
 
-        var res = new PagedResponse<TitheResponseDto>(hasMore, nextCursor, data);
+        var res = new PagedResponse<TitheResponseDto>(hasMore, nextCursor, data, window);
         return new SuccessResult<PagedResponse<TitheResponseDto>>(res);
     }
 
@@ -69,6 +81,9 @@ public class TitheService(
         CancellationToken ct
     )
     {
+        var window = ResolveWindow(filters with { MemberId = memberId }, dateWindows);
+        filters = filters with { From = window?.From, To = window?.To };
+
         var activity = instrumentation.ActivitySource.StartActivity("svc.tithe.get.by_member_id");
         var cursor = encoder.Decode<TitheCursor>(pagination.Cursor);
 
@@ -95,7 +110,7 @@ public class TitheService(
         activity?.SetTag("tithe.count", data.Count);
         TitheLog.ListByMemberId(logger, congregationId, memberId, data.Count);
 
-        var res = new PagedResponse<TitheResponseDto>(hasMore, nextCursor, data);
+        var res = new PagedResponse<TitheResponseDto>(hasMore, nextCursor, data, window);
         return new SuccessResult<PagedResponse<TitheResponseDto>>(res);
     }
 
@@ -253,6 +268,9 @@ public class TitheService(
         CancellationToken ct
     )
     {
+        var window = ResolveWindow(filters, dateWindows);
+        filters = filters with { From = window?.From, To = window?.To };
+
         using var activity = instrumentation.ActivitySource.StartActivity("svc.tithe.summary");
 
         var totalTask = repository.SumCollected(congregationId, filters, ct);
@@ -264,6 +282,7 @@ public class TitheService(
 
         var res = new TitheSummaryDto
         {
+            Window = window,
             TotalCollected = totalTask.Result,
             UniqueTithers = tithersTask.Result,
             MostUsedPaymentMethod = paymentMethodTask.Result?.ToString(),

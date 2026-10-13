@@ -1,12 +1,11 @@
 using Echo.Data;
 using Echo.Domain.Projects;
 using Echo.Shared.Query;
-using Echo.Shared.Utilities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Application.Projects;
 
-public class ProjectRepository(AppDbContext context, TimeProvider timeProvider)
+public class ProjectRepository(AppDbContext context)
 {
     private readonly DbSet<Project> _dbSet = context.Set<Project>();
     private readonly DbSet<ProjectContribution> _contributionDbSet =
@@ -27,7 +26,7 @@ public class ProjectRepository(AppDbContext context, TimeProvider timeProvider)
             .Include(p => p.Category)
             .Include(p => p.Manager)
                 .ThenInclude(m => m.Person)
-            .Filter(filters, timeProvider)
+            .Filter(filters)
             .OrderBy(p => p.StartDate)
             .ThenBy(p => p.Id)
             .Paginate(cursor, pageSize)
@@ -64,7 +63,7 @@ public class ProjectRepository(AppDbContext context, TimeProvider timeProvider)
             .AsNoTracking()
             .FilterDeleted()
             .Where(p => p.CongregationId == congregationId)
-            .Filter(filters, timeProvider)
+            .Filter(filters)
             .CountAsync(ct);
 
     public Task<decimal> SumTarget(
@@ -76,7 +75,7 @@ public class ProjectRepository(AppDbContext context, TimeProvider timeProvider)
             .AsNoTracking()
             .FilterDeleted()
             .Where(p => p.CongregationId == congregationId)
-            .Filter(filters, timeProvider)
+            .Filter(filters)
             .SumAsync(p => p.TargetAmount, ct);
 
     public Task<decimal> SumRaised(
@@ -88,7 +87,7 @@ public class ProjectRepository(AppDbContext context, TimeProvider timeProvider)
             .AsNoTracking()
             .FilterDeleted()
             .Where(p => p.CongregationId == congregationId)
-            .Filter(filters, timeProvider)
+            .Filter(filters)
             .SelectMany(p => _contributionDbSet.FilterDeleted().Where(c => c.ProjectId == p.Id))
             .SumAsync(c => c.Amount, ct);
 
@@ -101,7 +100,7 @@ public class ProjectRepository(AppDbContext context, TimeProvider timeProvider)
             .AsNoTracking()
             .FilterDeleted()
             .Where(p => p.CongregationId == congregationId && p.Status == ProjectStatus.AtRisk)
-            .Filter(filters, timeProvider)
+            .Filter(filters)
             .CountAsync(ct);
 
     public void Create(Project entity) => _dbSet.Add(entity);
@@ -113,8 +112,7 @@ internal static class ProjectQueryExtensions
 {
     internal static IQueryable<Project> Filter(
         this IQueryable<Project> query,
-        ProjectFilters filters,
-        TimeProvider timeProvider
+        ProjectFilters filters
     )
     {
         if (filters.Name is not null)
@@ -129,10 +127,13 @@ internal static class ProjectQueryExtensions
         if (filters.Status is not null)
             query = query.Where(p => p.Status == filters.Status);
 
-        var from = filters.From ?? DateUtils.GetFirstDayOfWeek(timeProvider);
-        var to = filters.To ?? DateUtils.GetDateToday(timeProvider);
+        // A project is in the window when it started on or before To
+        // and has not ended before From (an open-ended project never ends).
+        if (filters.To is not null)
+            query = query.Where(p => p.StartDate <= filters.To);
 
-        query = query.Where(p => p.StartDate >= from && p.StartDate <= to);
+        if (filters.From is not null)
+            query = query.Where(p => p.EndDate == null || p.EndDate >= filters.From);
 
         return query;
     }

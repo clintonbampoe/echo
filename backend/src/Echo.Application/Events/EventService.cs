@@ -11,6 +11,7 @@ using Echo.Shared.Services.Generators;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
+using Echo.Shared.Utilities;
 
 namespace Echo.Application.Events;
 
@@ -24,9 +25,17 @@ public class EventService(
     IIdGenerator idGenerator,
     ApplicationInstrumentation instrumentation,
     LinkGenerator linker,
+    DateWindows dateWindows,
     ILogger<EventService> logger
 )
 {
+    internal static DateWindow? ResolveWindow(EventFilters filters, DateWindows dateWindows) =>
+        dateWindows.ThisYear(
+            filters.From,
+            filters.To,
+            hasParent: false
+        );
+
     public async Task<IOperationResult> List(
         Guid congregationId,
         EventFilters filters,
@@ -34,6 +43,9 @@ public class EventService(
         CancellationToken ct
     )
     {
+        var window = ResolveWindow(filters, dateWindows);
+        filters = filters with { From = window?.From, To = window?.To };
+
         using var activity = instrumentation.ActivitySource.StartActivity("svc.event.list");
 
         var cursor = encoder.Decode<EventCursor>(pagination.Cursor);
@@ -60,7 +72,7 @@ public class EventService(
         activity?.SetTag("event.count", data.Count);
         EventLog.Listed(logger, congregationId, data.Count);
 
-        var res = new PagedResponse<EventResponseDto>(hasMore, nextCursor, data);
+        var res = new PagedResponse<EventResponseDto>(hasMore, nextCursor, data, window);
         return new SuccessResult<PagedResponse<EventResponseDto>>(res);
     }
 
@@ -283,6 +295,9 @@ public class EventService(
         CancellationToken ct
     )
     {
+        var window = ResolveWindow(filters, dateWindows);
+        filters = filters with { From = window?.From, To = window?.To };
+
         using var activity = instrumentation.ActivitySource.StartActivity("svc.event.summary");
 
         var countTask = repository.Count(congregationId, filters, ct);
@@ -294,6 +309,7 @@ public class EventService(
 
         var res = new EventSummaryDto
         {
+            Window = window,
             TotalEvents = countTask.Result,
             UpcomingEvents = upcomingTask.Result,
             TotalRegistered = registrationsTask.Result,

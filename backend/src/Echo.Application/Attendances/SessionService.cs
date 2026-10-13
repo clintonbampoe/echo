@@ -7,6 +7,7 @@ using Echo.Shared.Services.Generators;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
+using Echo.Shared.Utilities;
 
 namespace Echo.Application.Attendances;
 
@@ -19,9 +20,17 @@ public class SessionService(
     IIdGenerator idGenerator,
     ApplicationInstrumentation instrumentation,
     LinkGenerator linker,
+    DateWindows dateWindows,
     ILogger<SessionService> logger
 )
 {
+    internal static DateWindow? ResolveWindow(SessionFilters filters, DateWindows dateWindows) =>
+        dateWindows.ThisWeek(
+            filters.From,
+            filters.To,
+            hasParent: false
+        );
+
     public async Task<IOperationResult> List(
         Guid congregationId,
         SessionFilters filters,
@@ -29,6 +38,9 @@ public class SessionService(
         CancellationToken ct
     )
     {
+        var window = ResolveWindow(filters, dateWindows);
+        filters = filters with { From = window?.From, To = window?.To };
+
         using var activity = instrumentation.ActivitySource.StartActivity("svc.session.list");
 
         var cursor = encoder.Decode<SessionCursor>(pagination.Cursor);
@@ -61,7 +73,7 @@ public class SessionService(
         activity?.SetTag("session.count", data.Count);
         SessionLog.Listed(logger, congregationId, data.Count);
 
-        var res = new PagedResponse<SessionResponseDto>(hasMore, nextCursor, data);
+        var res = new PagedResponse<SessionResponseDto>(hasMore, nextCursor, data, window);
         return new SuccessResult<PagedResponse<SessionResponseDto>>(res);
     }
 
@@ -206,6 +218,9 @@ public class SessionService(
         CancellationToken ct
     )
     {
+        var window = ResolveWindow(filters, dateWindows);
+        filters = filters with { From = window?.From, To = window?.To };
+
         using var activity = instrumentation.ActivitySource.StartActivity("svc.session.summary");
 
         // Sequential — DbContext is not thread-safe and cannot serve concurrent queries.
@@ -238,6 +253,7 @@ public class SessionService(
 
         var res = new SessionSummaryDto
         {
+            Window = window,
             TotalSessions = total,
             CompletedSessions = completed,
             CancelledSessions = cancelled,

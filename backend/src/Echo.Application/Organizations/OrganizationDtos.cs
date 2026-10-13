@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Echo.Shared.Utilities;
 
 namespace Echo.Application.Organizations;
 
@@ -34,6 +35,9 @@ public record OrganizationSearchResultDto
     public required string Name { get; init; }
 }
 
+/// <summary>
+/// Default window when From/To are omitted: this year (by CreatedAt).
+/// </summary>
 public record OrganizationFilters
 {
     public string? Name { get; init; }
@@ -47,6 +51,7 @@ public record OrganizationSummaryDto
     public int TotalMembers { get; init; }
     public double AverageMembersPerOrganization { get; init; }
     public string? LargestOrganization { get; init; }
+    public DateWindow? Window { get; init; }
 }
 
 public record OrganizationCursor

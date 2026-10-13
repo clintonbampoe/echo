@@ -2,12 +2,11 @@ using Echo.Data;
 using Echo.Domain.Projects;
 using Echo.Domain.Transactions;
 using Echo.Shared.Query;
-using Echo.Shared.Utilities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Application.Projects;
 
-public class ProjectContributionRepository(AppDbContext context, TimeProvider timeProvider)
+public class ProjectContributionRepository(AppDbContext context)
 {
     private readonly DbSet<ProjectContribution> _dbSet = context.Set<ProjectContribution>();
 
@@ -24,7 +23,7 @@ public class ProjectContributionRepository(AppDbContext context, TimeProvider ti
             .FilterDeleted()
             .Where(p => p.CongregationId == congregationId)
             .Include(p => p.Project)
-            .Filter(filters, timeProvider)
+            .Filter(filters)
             .OrderByDescending(p => p.DateContributed)
             .ThenBy(p => p.Id)
             .Paginate(cursor, pageSize)
@@ -53,7 +52,7 @@ public class ProjectContributionRepository(AppDbContext context, TimeProvider ti
             .AsNoTracking()
             .FilterDeleted()
             .Where(p => p.CongregationId == congregationId)
-            .Filter(filters, timeProvider)
+            .Filter(filters)
             .SumAsync(p => p.Amount, ct);
 
     public Task<int> Count(
@@ -65,7 +64,7 @@ public class ProjectContributionRepository(AppDbContext context, TimeProvider ti
             .AsNoTracking()
             .FilterDeleted()
             .Where(p => p.CongregationId == congregationId)
-            .Filter(filters, timeProvider)
+            .Filter(filters)
             .CountAsync(ct);
 
     public Task<decimal> Average(
@@ -77,7 +76,7 @@ public class ProjectContributionRepository(AppDbContext context, TimeProvider ti
             .AsNoTracking()
             .FilterDeleted()
             .Where(p => p.CongregationId == congregationId)
-            .Filter(filters, timeProvider)
+            .Filter(filters)
             .AverageAsync(p => (decimal?)p.Amount, ct)
             .ContinueWith(t => t.Result ?? 0m, ct);
 
@@ -90,7 +89,7 @@ public class ProjectContributionRepository(AppDbContext context, TimeProvider ti
             .AsNoTracking()
             .FilterDeleted()
             .Where(p => p.CongregationId == congregationId)
-            .Filter(filters, timeProvider)
+            .Filter(filters)
             .GroupBy(p => p.PaymentMethod)
             .OrderByDescending(g => g.Count())
             .Select(g => (PaymentMethod?)g.Key)
@@ -105,8 +104,7 @@ internal static class ProjectContributionQueryExtensions
 {
     internal static IQueryable<ProjectContribution> Filter(
         this IQueryable<ProjectContribution> query,
-        ProjectContributionFilters filters,
-        TimeProvider timeProvider
+        ProjectContributionFilters filters
     )
     {
         if (filters.ProjectId is not null)
@@ -121,10 +119,11 @@ internal static class ProjectContributionQueryExtensions
         if (filters.PaymentMethod is not null)
             query = query.Where(p => p.PaymentMethod == filters.PaymentMethod);
 
-        var from = filters.From ?? DateUtils.GetFirstDayOfMonth(timeProvider);
-        var to = filters.To ?? DateUtils.GetDateToday(timeProvider);
+        if (filters.From is not null)
+            query = query.Where(p => p.DateContributed >= filters.From);
 
-        query = query.Where(p => p.DateContributed >= from && p.DateContributed <= to);
+        if (filters.To is not null)
+            query = query.Where(p => p.DateContributed <= filters.To);
 
         return query;
     }
