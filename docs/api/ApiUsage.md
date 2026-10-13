@@ -81,12 +81,10 @@ The token carries the user's `UserRole` (`Admin`, `Accountant`, `Clerk`, `Member
 
 | Endpoints | Admin | Accountant | Clerk | Member |
 |---|---|---|---|---|
-| Tithes: list, summary, by member, get by ID, update, delete | yes | yes | no | no |
-| Tithes: create (`POST /tithes`) | yes | yes | yes | no |
 | Users: every endpoint (list, get, create, update, delete, search) | yes | no | no | no |
 | Invitations | yes | no | no | no |
 
-All other endpoints currently only require a signed-in user.
+All other endpoints currently only require a signed-in user. Finer role-based access (for example for tithes and other finance data) is planned after the first deployment.
 
 ---
 
