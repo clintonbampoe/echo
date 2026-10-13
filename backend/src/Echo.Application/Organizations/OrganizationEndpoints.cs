@@ -235,7 +235,7 @@ public static class OrganizationEndpoints
 
                 ### Side effects
                 - The organization is marked as deleted.
-                - **Existing member assignments are not affected.** Organization Member records that reference this organization remain in the database. When those assignments are fetched via their own endpoints, `organizationName` may resolve to null.
+                - **Existing member assignments are not affected.** Organization Member records that reference this organization remain in the database. When those assignments are fetched via their own endpoints, `organizationName` still returns the deleted organization's name.
                 - **Events that reference this organization are not affected.** They continue to link to the (now deleted) organization.
                 - **New member assignments cannot reference a deleted organization** — the FK lookup will fail with `404 FOREIGN_KEY_NOT_FOUND`.
 

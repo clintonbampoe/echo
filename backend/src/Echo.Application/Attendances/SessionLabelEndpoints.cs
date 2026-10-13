@@ -220,7 +220,7 @@ public static class SessionLabelEndpoints
 
                 ### Side effects
                 - The label is marked as deleted.
-                - **Existing sessions that reference this label are not affected.** They remain in the database with a foreign key to the (now deleted) label. `sessionLabelName` may resolve as null or as the stale name depending on the join, since the label lookup no longer finds the record.
+                - **Existing sessions that reference this label are not affected.** They remain in the database with a foreign key to the (now deleted) label. `sessionLabelName` still returns the deleted label's name.
                 - **New sessions cannot reference a deleted label** — the FK lookup will fail with `404 FOREIGN_KEY_NOT_FOUND`.
 
                 ### When to use this

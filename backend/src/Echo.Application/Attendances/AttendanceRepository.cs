@@ -20,7 +20,7 @@ public class AttendanceRepository(AppDbContext context)
     {
         return await _dbSet
             .AsNoTracking()
-            .FilterDeleted()
+            .Live()
             .Where(a => a.CongregationId == congregationId)
             .Include(a => a.Person)
             .Include(a => a.Session)
@@ -39,7 +39,7 @@ public class AttendanceRepository(AppDbContext context)
     )
     {
         return await _dbSet
-            .FilterDeleted()
+            .Live()
             .Where(a => a.Id == id && a.CongregationId == congregationId)
             .Include(a => a.Person)
             .Include(a => a.Session)
@@ -59,7 +59,7 @@ public class AttendanceRepository(AppDbContext context)
     ) =>
         _dbSet
             .AsNoTracking()
-            .FilterDeleted()
+            .Live()
             .AnyAsync(
                 a =>
                     a.CongregationId == congregationId
@@ -75,7 +75,7 @@ public class AttendanceRepository(AppDbContext context)
     ) =>
         _dbSet
             .AsNoTracking()
-            .FilterDeleted()
+            .Live()
             .Where(a => a.CongregationId == congregationId)
             .Filter(filters)
             .CountAsync(ct);
@@ -92,7 +92,7 @@ public class AttendanceRepository(AppDbContext context)
     ) =>
         _dbSet
             .AsNoTracking()
-            .FilterDeleted()
+            .Live()
             .Where(a => a.CongregationId == congregationId && a.PersonKindAtTime == kind)
             .Filter(filters)
             .CountAsync(ct);
@@ -104,14 +104,14 @@ public class AttendanceRepository(AppDbContext context)
     ) =>
         _dbSet
             .AsNoTracking()
-            .FilterDeleted()
+            .Live()
             .Where(a =>
                 a.CongregationId == congregationId && a.PersonKindAtTime == PersonKind.Visitor
             )
             .Filter(filters)
             .Where(a =>
                 !_dbSet
-                    .FilterDeleted()
+                    .Live()
                     .Any(prev =>
                         prev.PersonId == a.PersonId
                         && prev.PersonKindAtTime == PersonKind.Visitor
@@ -129,6 +129,15 @@ public class AttendanceRepository(AppDbContext context)
 
 internal static class AttendanceQueryExtensions
 {
+    // An attendance record is visible only while both it and its session are not deleted.
+    internal static IQueryable<Attendance> Live(this IQueryable<Attendance> query) =>
+        query.FilterDeleted().Where(a => a.Session.DeletedAt == null);
+
+    internal static IQueryable<Attendance> InSessions(
+        this IQueryable<Attendance> query,
+        IQueryable<Session> sessions
+    ) => query.Where(a => sessions.Any(s => s.Id == a.SessionId));
+
     internal static IQueryable<Attendance> Filter(
         this IQueryable<Attendance> query,
         AttendanceFilters filters

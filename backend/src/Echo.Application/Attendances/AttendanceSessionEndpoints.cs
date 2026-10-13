@@ -259,8 +259,8 @@ public static class AttendanceSessionEndpoints
 
                     ### Side effects
                     - The session is marked as deleted.
-                    - **Attendance records are not deleted.** They remain in the database with a foreign key to the (now deleted) session. Whether they surface in attendance list responses depends on the query — the current attendance repository filters by `DeletedAt` on the attendance row, not the session's. Confirm your query expectations before relying on this.
-                    - **Summary totals will reflect the deletion.** Session summaries recalculate from live records only.
+                    - **Attendance records are kept but hidden.** They remain in the database with a foreign key to the (now deleted) session, and no longer appear in attendance lists or in any attendance count, including the attendance summary and the first-time and recurring visitor counts.
+                    - **Summary totals will reflect the deletion.** Session and attendance summaries recalculate from live records only.
 
                     ### When to use this
                     Only for sessions that were created in error. If a session was planned and cancelled, set `status = Cancelled` instead — that preserves the record of the session happening (or not happening) and excludes it from active reports.

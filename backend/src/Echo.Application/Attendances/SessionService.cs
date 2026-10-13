@@ -24,6 +24,10 @@ public class SessionService(
     ILogger<SessionService> logger
 )
 {
+    // Scheduled and cancelled sessions have no attendance, so only completed ones count.
+    internal static double AverageAttendance(int attendance, int completedSessions) =>
+        completedSessions == 0 ? 0.0 : (double)attendance / completedSessions;
+
     internal static DateWindow? ResolveWindow(SessionFilters filters, DateWindows dateWindows) =>
         dateWindows.ThisWeek(
             filters.From,
@@ -238,18 +242,14 @@ public class SessionService(
             ct
         );
 
-        // Average attendance is computed from the sessions in scope.
-        var sessions = await repository.List(
+        var totalAttendance = await repository.SumAttendance(congregationId, filters, null, ct);
+        var completedAttendance = await repository.SumAttendance(
             congregationId,
             filters,
-            cursor: null,
-            pageSize: int.MaxValue,
+            SessionStatus.Completed,
             ct
         );
-        var ids = sessions.Select(s => s.Id).ToList();
-        var counts = await repository.GetAttendanceCounts(congregationId, ids, ct);
-        var totalAttendance = counts.Values.Sum();
-        var average = sessions.Count == 0 ? 0.0 : (double)totalAttendance / sessions.Count;
+        var average = AverageAttendance(completedAttendance, completed);
 
         var res = new SessionSummaryDto
         {

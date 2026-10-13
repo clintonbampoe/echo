@@ -244,7 +244,7 @@ public static class EventEndpoints
 
                 ### Side effects
                 - The event is marked as deleted.
-                - **Existing Event Registrations and Event Attendance for this event are not affected.** They remain in the database and continue to reference the (now deleted) event. When those records are fetched via their own endpoints, `eventName` may resolve to null.
+                - **Existing Event Registrations and Event Attendance for this event are not affected.** They remain in the database and continue to reference the (now deleted) event. When those records are fetched via their own endpoints, `eventName` still returns the deleted event's name.
                 - **New registrations or attendance cannot reference a deleted event** — the FK lookup will fail with `404 FOREIGN_KEY_NOT_FOUND`.
 
                 ### Failure modes

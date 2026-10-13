@@ -90,11 +90,40 @@ public class SessionRepository(AppDbContext context)
         return context
             .Set<Attendance>()
             .AsNoTracking()
-            .FilterDeleted()
+            .Live()
             .Where(a => a.CongregationId == congregationId && sessionIds.Contains(a.SessionId))
             .GroupBy(a => a.SessionId)
             .Select(g => new { SessionId = g.Key, Count = g.Count() })
             .ToDictionaryAsync(x => x.SessionId, x => x.Count, ct);
+    }
+
+    /// <summary>
+    /// Attendance records on the sessions in scope, counted in the database. Pass a status to
+    /// count only sessions with that status (for example Completed).
+    /// </summary>
+    public Task<int> SumAttendance(
+        Guid congregationId,
+        SessionFilters filters,
+        SessionStatus? status,
+        CancellationToken ct = default
+    )
+    {
+        var sessions = _dbSet
+            .AsNoTracking()
+            .FilterDeleted()
+            .Where(s => s.CongregationId == congregationId)
+            .Filter(filters);
+
+        if (status is not null)
+            sessions = sessions.Where(s => s.Status == status);
+
+        return context
+            .Set<Attendance>()
+            .AsNoTracking()
+            .Live()
+            .Where(a => a.CongregationId == congregationId)
+            .InSessions(sessions)
+            .CountAsync(ct);
     }
 
     public void Create(Session entity) => _dbSet.Add(entity);
