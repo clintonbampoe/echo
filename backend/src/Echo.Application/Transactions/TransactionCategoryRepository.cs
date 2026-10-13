@@ -43,6 +43,23 @@ public class TransactionCategoryRepository(AppDbContext context)
             .ToListAsync(ct);
     }
 
+    public async Task<Dictionary<int, int>> GetTransactionCounts(
+        Guid congregationId,
+        IReadOnlyList<int> categoryIds,
+        CancellationToken ct = default
+    )
+    {
+        if (categoryIds.Count == 0)
+            return [];
+
+        return await context
+            .Set<Transaction>()
+            .AsNoTracking()
+            .Where(t => t.CongregationId == congregationId)
+            .CountPerTransactionCategory(categoryIds)
+            .ToDictionaryAsync(x => x.Id, x => x.Count, ct);
+    }
+
     public void Create(TransactionCategory entity)
     {
         _dbSet.Add(entity);

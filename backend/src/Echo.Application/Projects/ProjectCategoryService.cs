@@ -28,7 +28,14 @@ public class ProjectCategoryService(
             entities = await repository.GetAll(congregationId, ct);
         }
 
-        var res = mapper.ToListDto(entities);
+        var counts = await repository.GetProjectCounts(
+            congregationId,
+            entities.Select(x => x.Id).ToList(),
+            ct
+        );
+        var res = entities
+            .Select(x => mapper.ToDto(x) with { ProjectCount = counts.GetValueOrDefault(x.Id) })
+            .ToList();
         activity?.SetTag("project_category.count", res.Count);
         ProjectCategoryLog.Listed(logger, congregationId, res.Count);
         return new SuccessResult<IEnumerable<ProjectCategoryResponseDto>>(res);
@@ -55,7 +62,7 @@ public class ProjectCategoryService(
         }
 
         ProjectCategoryLog.Found(logger, congregationId, id);
-        var res = mapper.ToDto(entity);
+        var res = await WithCount(entity, congregationId, ct);
         return new SuccessResult<ProjectCategoryResponseDto>(res);
     }
 
@@ -126,7 +133,7 @@ public class ProjectCategoryService(
 
         ProjectCategoryLog.Updated(logger, congregationId, id);
 
-        var res = mapper.ToDto(entity);
+        var res = await WithCount(entity, congregationId, ct);
         return new SuccessResult<ProjectCategoryResponseDto>(res);
     }
 
@@ -190,5 +197,11 @@ public class ProjectCategoryService(
         activity?.SetTag("project_category.count", res.Count);
         ProjectCategoryLog.Searched(logger, congregationId, name, res.Count);
         return new SuccessResult<List<ProjectCategorySearchResultDto>>(res);
+    }
+
+    private async Task<ProjectCategoryResponseDto> WithCount(ProjectCategory entity, Guid congregationId, CancellationToken ct)
+    {
+        var counts = await repository.GetProjectCounts(congregationId, [entity.Id], ct);
+        return mapper.ToDto(entity) with { ProjectCount = counts.GetValueOrDefault(entity.Id) };
     }
 }

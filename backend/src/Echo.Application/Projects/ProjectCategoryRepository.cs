@@ -43,6 +43,23 @@ public class ProjectCategoryRepository(AppDbContext context)
             .ToListAsync(ct);
     }
 
+    public async Task<Dictionary<int, int>> GetProjectCounts(
+        Guid congregationId,
+        IReadOnlyList<int> categoryIds,
+        CancellationToken ct = default
+    )
+    {
+        if (categoryIds.Count == 0)
+            return [];
+
+        return await context
+            .Set<Project>()
+            .AsNoTracking()
+            .Where(p => p.CongregationId == congregationId)
+            .CountPerProjectCategory(categoryIds)
+            .ToDictionaryAsync(x => x.Id, x => x.Count, ct);
+    }
+
     public void Create(ProjectCategory entity)
     {
         _dbSet.Add(entity);

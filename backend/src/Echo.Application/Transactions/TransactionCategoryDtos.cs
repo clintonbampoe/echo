@@ -24,6 +24,7 @@ public record TransactionCategoryResponseDto
     public int Id { get; init; }
     public required string Name { get; init; }
     public TransactionType CategoryType { get; init; }
+    public int TransactionCount { get; init; }
 }
 
 public record TransactionCategorySearchResponseDto

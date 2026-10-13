@@ -65,7 +65,12 @@ public class VisitorService(
 
         var nextCursor = hasMore ? encoder.Encode(BuildCursor(entities.Last())) : null;
 
-        var data = mapper.ToListDto(entities);
+        var stats = await repository.GetVisitStats(
+            congregationId,
+            entities.Select(x => x.PersonId).ToList(),
+            ct
+        );
+        var data = entities.Select(x => WithVisitStats(mapper.ToDto(x), x.PersonId, stats)).ToList();
         activity?.SetTag("visitor.count", data.Count);
         VisitorLog.Listed(logger, congregationId, data.Count);
 
@@ -92,7 +97,7 @@ public class VisitorService(
         }
 
         VisitorLog.Found(logger, congregationId, id);
-        var res = mapper.ToDto(entity);
+        var res = await WithVisitStats(entity, congregationId, ct);
         return new SuccessResult<VisitorResponseDto>(res);
     }
 
@@ -221,7 +226,7 @@ public class VisitorService(
 
         VisitorLog.Updated(logger, congregationId, id);
 
-        var res = mapper.ToDto(entity);
+        var res = await WithVisitStats(entity, congregationId, ct);
         return new SuccessResult<VisitorResponseDto>(res);
     }
 
@@ -311,4 +316,23 @@ public class VisitorService(
 
     private static VisitorCursor BuildCursor(Visitor last) =>
         new() { Name = last.Person.Name, Id = last.PersonId };
+
+    private static VisitorResponseDto WithVisitStats(
+        VisitorResponseDto dto,
+        Guid personId,
+        Dictionary<Guid, (int Count, DateOnly LastVisited)> stats
+    ) =>
+        stats.TryGetValue(personId, out var visit)
+            ? dto with { VisitCount = visit.Count, LastVisitedAt = visit.LastVisited }
+            : dto;
+
+    private async Task<VisitorResponseDto> WithVisitStats(
+        Visitor entity,
+        Guid congregationId,
+        CancellationToken ct
+    )
+    {
+        var stats = await repository.GetVisitStats(congregationId, [entity.PersonId], ct);
+        return WithVisitStats(mapper.ToDto(entity), entity.PersonId, stats);
+    }
 }

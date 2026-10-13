@@ -108,6 +108,23 @@ public class EventRepository(AppDbContext context, TimeProvider timeProvider)
             .SelectMany(e => _attendanceDbSet.FilterDeleted().Where(a => a.EventId == e.Id))
             .CountAsync(ct);
 
+    public async Task<Dictionary<Guid, int>> GetRegistrationCounts(
+        Guid congregationId,
+        IReadOnlyList<Guid> eventIds,
+        CancellationToken ct = default
+    )
+    {
+        if (eventIds.Count == 0)
+            return [];
+
+        return await context
+            .Set<EventRegistration>()
+            .AsNoTracking()
+            .Where(r => r.CongregationId == congregationId)
+            .CountPerEvent(eventIds)
+            .ToDictionaryAsync(x => x.Id, x => x.Count, ct);
+    }
+
     public void Create(Event entity) => _dbSet.Add(entity);
 
     public void SoftDelete(Event entity) => entity.DeletedAt = DateTime.UtcNow;

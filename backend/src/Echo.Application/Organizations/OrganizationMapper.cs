@@ -9,6 +9,8 @@ public partial class OrganizationMapper : IOrganizationMapper
     [MapperIgnoreSource(nameof(entity.Congregation))]
     [MapperIgnoreSource(nameof(entity.CongregationId))]
     [MapperIgnoreSource(nameof(entity.DeletedAt))]
+    // Filled by the service from a batched count query.
+    [MapperIgnoreTarget(nameof(OrganizationResponseDto.MemberCount))]
     public partial OrganizationResponseDto ToDto(Organization entity);
 
     [MapperIgnoreTarget(nameof(Organization.Congregation))]

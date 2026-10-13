@@ -221,6 +221,21 @@ A project is in the window when it started on or before `to` and has not ended b
 
 Paged list responses and summary responses include `window: { from, to, isDefault }`, or `null` when no window was applied. Dates use UTC and weeks start on Sunday.
 
+**Counts on list responses**
+Some list, detail and update responses carry a count so a screen does not need one extra request per row. Deleted records are never counted, and a newly created record always reports `0`.
+
+| Response | Field | What it counts |
+|---|---|---|
+| Event | `registrationCount` | registrations for the event |
+| Organization | `memberCount` | members assigned to the organization |
+| Project | `raisedAmount` | sum of the project's contributions |
+| Visitor | `visitCount`, `lastVisitedAt` | attendance records made while the person was a visitor, and the date of the latest session they attended (`null` when none) |
+| Project category | `projectCount` | projects in the category |
+| Asset category | `assetCount` | assets in the category |
+| Transaction category | `transactionCount` | transactions in the category |
+
+For categories this is the same number that blocks deleting a category with `409`.
+
 ### 4. Search
 Search endpoints are available for all searchable entities. They use **trigram similarity** to find the best matches regardless of exact spelling.
 - **Behavior**: Returns the top 5 most relevant results. The term is matched literally, so `%` and `_` are not treated as wildcards.

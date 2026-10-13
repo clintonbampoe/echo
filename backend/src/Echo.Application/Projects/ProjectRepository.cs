@@ -103,6 +103,22 @@ public class ProjectRepository(AppDbContext context)
             .Filter(filters)
             .CountAsync(ct);
 
+    public async Task<Dictionary<Guid, decimal>> GetRaisedAmounts(
+        Guid congregationId,
+        IReadOnlyList<Guid> projectIds,
+        CancellationToken ct = default
+    )
+    {
+        if (projectIds.Count == 0)
+            return [];
+
+        return await _contributionDbSet
+            .AsNoTracking()
+            .Where(c => c.CongregationId == congregationId)
+            .RaisedPerProject(projectIds)
+            .ToDictionaryAsync(x => x.Id, x => x.Amount, ct);
+    }
+
     public void Create(Project entity) => _dbSet.Add(entity);
 
     public void SoftDelete(Project entity) => entity.DeletedAt = DateTime.UtcNow;

@@ -18,6 +18,7 @@ public record AssetCategoryResponseDto
 {
     public int Id { get; init; }
     public required string Name { get; init; }
+    public int AssetCount { get; init; }
 }
 
 public record AssetCategorySearchResultDto

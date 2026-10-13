@@ -28,7 +28,14 @@ public class AssetCategoryService(
             entities = await repository.GetAll(congregationId, ct);
         }
 
-        var res = mapper.ToListDto(entities);
+        var counts = await repository.GetAssetCounts(
+            congregationId,
+            entities.Select(x => x.Id).ToList(),
+            ct
+        );
+        var res = entities
+            .Select(x => mapper.ToDto(x) with { AssetCount = counts.GetValueOrDefault(x.Id) })
+            .ToList();
         AssetCategoryLog.Listed(logger, congregationId, res.Count);
         activity?.SetTag("asset_category.count", res.Count);
 
@@ -56,7 +63,7 @@ public class AssetCategoryService(
         }
 
         AssetCategoryLog.Found(logger, congregationId, id);
-        var res = mapper.ToDto(entity);
+        var res = await WithCount(entity, congregationId, ct);
         return new SuccessResult<AssetCategoryResponseDto>(res);
     }
 
@@ -126,7 +133,7 @@ public class AssetCategoryService(
             AssetCategoryLog.Updated(logger, congregationId, id);
         }
 
-        var res = mapper.ToDto(entity);
+        var res = await WithCount(entity, congregationId, ct);
         return new SuccessResult<AssetCategoryResponseDto>(res);
     }
 
@@ -190,5 +197,11 @@ public class AssetCategoryService(
         var res = mapper.ToSearchDto(entities);
         activity?.SetTag("asset_category.count", res.Count);
         return new SuccessResult<List<AssetCategorySearchResultDto>>(res);
+    }
+
+    private async Task<AssetCategoryResponseDto> WithCount(AssetCategory entity, Guid congregationId, CancellationToken ct)
+    {
+        var counts = await repository.GetAssetCounts(congregationId, [entity.Id], ct);
+        return mapper.ToDto(entity) with { AssetCount = counts.GetValueOrDefault(entity.Id) };
     }
 }

@@ -60,6 +60,7 @@ public record ProjectResponseDto
     public DateOnly? EndDate { get; init; }
     public string? Description { get; init; }
     public DateTime CreatedAt { get; init; }
+    public decimal RaisedAmount { get; init; }
 }
 
 public record ProjectSearchResultDto
