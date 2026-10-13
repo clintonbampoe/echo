@@ -109,8 +109,20 @@ public class EventRepository(AppDbContext context, TimeProvider timeProvider)
     public void SoftDelete(Event entity) => entity.DeletedAt = DateTime.UtcNow;
 }
 
+public record EventStats(int Total, int Upcoming, int Registrations, int Attendees);
+
 internal static class EventQueryExtensions
 {
+    internal static IQueryable<ParentCount> CountPerEvent(
+        this IQueryable<EventRegistration> query,
+        IReadOnlyList<Guid> eventIds
+    ) =>
+        query
+            .FilterDeleted()
+            .Where(r => eventIds.Contains(r.EventId))
+            .GroupBy(r => r.EventId)
+            .Select(g => new ParentCount(g.Key, g.Count()));
+
     // Upcoming means "starts today or later", whatever date window the list is showing. The other
     // filters (name, organization, organizer) still apply.
     internal static IQueryable<Event> Upcoming(

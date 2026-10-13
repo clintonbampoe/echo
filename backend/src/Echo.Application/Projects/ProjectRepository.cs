@@ -95,8 +95,22 @@ public class ProjectRepository(AppDbContext context)
     public void SoftDelete(Project entity) => entity.DeletedAt = DateTime.UtcNow;
 }
 
+public record ProjectStats(int Count, decimal Raised, decimal Target, int AtRisk);
+
+internal readonly record struct ParentAmount(Guid Id, decimal Amount);
+
 internal static class ProjectQueryExtensions
 {
+    internal static IQueryable<ParentAmount> RaisedPerProject(
+        this IQueryable<ProjectContribution> query,
+        IReadOnlyList<Guid> projectIds
+    ) =>
+        query
+            .FilterDeleted()
+            .Where(c => projectIds.Contains(c.ProjectId))
+            .GroupBy(c => c.ProjectId)
+            .Select(g => new ParentAmount(g.Key, g.Sum(c => c.Amount)));
+
     internal static IQueryable<ProjectStats> SummarizeProjects(
         this IQueryable<Congregation> oneRow,
         IQueryable<Project> projects,

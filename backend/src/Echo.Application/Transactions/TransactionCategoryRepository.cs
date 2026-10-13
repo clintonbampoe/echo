@@ -83,3 +83,17 @@ public class TransactionCategoryRepository(AppDbContext context)
         entity.DeletedAt = DateTime.UtcNow;
     }
 }
+
+internal static class TransactionCategoryQueryExtensions
+{
+    internal static IQueryable<CategoryCount> CountPerTransactionCategory(
+        this IQueryable<Transaction> query,
+        IReadOnlyList<int> categoryIds
+    ) =>
+        query
+            .FilterDeleted()
+            .Where(t => categoryIds.Contains(t.CategoryId))
+            .GroupBy(t => t.CategoryId)
+            .Select(g => new CategoryCount(g.Key, g.Count()));
+
+}

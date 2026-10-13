@@ -13,6 +13,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Resend;
+using Echo.Auth.Profile;
 
 namespace Echo.Auth;
 
@@ -45,6 +46,7 @@ public static class Extensions
         services.AddSingleton<JwtTokenGenerator>();
 
         services.AddScoped<SessionService>();
+        services.AddScoped<ProfileService>();
         services.AddScoped<JwtTokenService>();
         services.AddScoped<SessionRepository>();
         services.AddScoped<InvitationRepository>();
@@ -79,6 +81,7 @@ public static class Extensions
         auth.MapInvitationEndpoints(instrumentation);
         auth.MapVerificationEndpoints(instrumentation);
         auth.MapRegistrationEndpoints(instrumentation);
+        group.MapProfileEndpoints(instrumentation);
         return group;
     }
 }

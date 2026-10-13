@@ -22,6 +22,17 @@ public class SessionRepository(AppDbContext context, TimeProvider timeProvider)
         return tokenObject;
     }
 
+    /// <summary>
+    /// Deletes the user's tokens that can never be used again: expired ones, and ones revoked
+    /// more than a week ago. Called whenever a new token is issued, so the table cannot grow
+    /// without bound and no scheduled job is needed.
+    /// </summary>
+    public async Task PruneTokens(Guid userId, CancellationToken ct = default)
+    {
+        var now = timeProvider.GetUtcNow().UtcDateTime;
+        await _tokens.Where(t => t.UserId == userId).Prunable(now).ExecuteDeleteAsync(ct);
+    }
+
     public async Task<bool> CreateNewToken(RefreshToken token, CancellationToken ct = default)
     {
         await _tokens.AddAsync(token, ct);
@@ -59,5 +70,21 @@ public class SessionRepository(AppDbContext context, TimeProvider timeProvider)
             token.RevokedAt = timeProvider.GetUtcNow().UtcDateTime;
 
         return true;
+    }
+}
+
+internal static class RefreshTokenQueryExtensions
+{
+    internal const int RevokedRetentionDays = 7;
+
+    internal static IQueryable<RefreshToken> Prunable(
+        this IQueryable<RefreshToken> query,
+        DateTime now
+    )
+    {
+        var revokedBefore = now.AddDays(-RevokedRetentionDays);
+        return query.Where(t =>
+            t.ExpiresAt < now || (t.RevokedAt != null && t.RevokedAt < revokedBefore)
+        );
     }
 }

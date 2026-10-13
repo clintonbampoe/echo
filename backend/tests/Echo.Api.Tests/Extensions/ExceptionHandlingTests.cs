@@ -8,10 +8,6 @@ namespace Echo.Api.Tests.Extensions;
 [Trait("Category", "Unit")]
 public class ExceptionHandlingTests
 {
-    // ErrorTypes reads this in a static initializer; the real app gets it from .env.
-    static ExceptionHandlingTests() =>
-        Environment.SetEnvironmentVariable("Api__BaseUrl", "http://localhost:5025");
-
     private static async Task<(int Status, JsonElement Body, string Raw)> WriteServerError(
         HttpContext context
     )

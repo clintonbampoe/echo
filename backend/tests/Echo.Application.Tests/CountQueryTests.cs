@@ -1,6 +1,7 @@
 using Echo.Application.Assets;
 using Echo.Application.Attendances;
 using Echo.Application.Events;
+using Echo.Application.Members;
 using Echo.Application.Organizations;
 using Echo.Application.Projects;
 using Echo.Application.Transactions;

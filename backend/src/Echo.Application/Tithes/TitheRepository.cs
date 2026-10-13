@@ -105,6 +105,12 @@ public class TitheRepository(AppDbContext context)
     public void SoftDelete(Tithe entity) => entity.DeletedAt = DateTime.UtcNow;
 }
 
+public record TitheStats(
+    decimal Total,
+    int UniqueTithers,
+    PaymentMethod? MostUsedPaymentMethod
+);
+
 internal static class TitheQueryExtensions
 {
     internal static IQueryable<TitheStats> SummarizeTithes(

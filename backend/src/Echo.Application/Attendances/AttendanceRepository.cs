@@ -97,6 +97,8 @@ public class AttendanceRepository(AppDbContext context)
     public void SoftDelete(Attendance entity) => entity.DeletedAt = DateTime.UtcNow;
 }
 
+public record AttendanceStats(int Total, int Members, int Visitors, int FirstTimeVisitors);
+
 internal static class AttendanceQueryExtensions
 {
     // allLive is every live attendance record, not just the ones in scope: a visitor is a first-time
