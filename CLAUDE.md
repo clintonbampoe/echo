@@ -39,7 +39,21 @@ dotnet ef database update --project backend/src/Echo.Infrastructure --startup-pr
 dotnet test backend/src/Echo.Api/Echo.Api.csproj
 ```
 
-There is currently no separate test project — `backend/tests/` is empty. Tests are wired through the API csproj and CI uses `dotnet test backend/src/Echo.Api/Echo.Api.csproj --no-build -c Release` (continue-on-error, see `.github/workflows/ci.yml`).
+Tests live in `backend/tests/` (xunit.v3 + Bogus): `Echo.Api.Tests`, `Echo.Application.Tests`, `Echo.Auth.Tests`, `Echo.Shared.Tests`, and `Echo.IntegrationTests` (stub, not yet in `Echo.slnx`). Coverage is still thin and being grown incrementally — add tests alongside every fix. Run with `dotnet test backend/Echo.slnx`.
+
+> NOTE: the Backend Architecture section below predates the current solution (it lists `Echo.Core`/`Echo.Infrastructure`; the solution now has `Echo.Data`, `Echo.AppHost`, `Echo.ServiceDefaults`, `Echo.MigrationService`, `Echo.Seeder`). Verify against `backend/Echo.slnx` before relying on it.
+
+### Skill routing (dotnet-skills plugin)
+
+Load only the skill that matches the task; don't preload.
+
+- EF Core queries, migrations, N+1, `AsNoTracking` → `efcore-patterns`, `database-performance`
+- New/changed C# code style, records, async → `csharp-coding-standards`, `csharp-nullable-reference-types`
+- DI registration (`Add*Services`) → `microsoft-extensions-dependency-injection`
+- Aspire AppHost / ServiceDefaults → `aspire-configuration`, `aspire-service-defaults`
+- Integration tests with real Postgres → `testcontainers`, `aspire-integration-testing`
+- NuGet changes (Central Package Management) → `package-management`
+- After any code change → `slopwatch` (catch disabled tests, suppressed warnings, empty catches)
 
 ### Frontend
 

@@ -199,6 +199,7 @@ The following table lists all available configuration variables. If you add a ne
 | `Database__Password`     | YES      | db, api | Postgres login password.                                                           |
 | `Frontend__BaseUrl`    | YES      | api     | **Identity**: The public URL of the app. Used to build links in outbound emails.   |
 | `Cors__AllowedOrigins`   | YES      | api     | **Security**: Comma-separated list of domains allowed to make requests to the API. |
+| `ForwardedHeaders__TrustedNetworks__0` (`__1`, ...) | NO | api | **Security**: CIDR ranges allowed to set the client IP via `X-Forwarded-For`. Defaults to loopback and the private ranges. See "Client IP and rate limiting" below. |
 | `Jwt__PrivateKey`        | YES      | api     | Signs login tokens (Base64 encoded).                                               |
 | `Jwt__PublicKey`         | YES      | api     | Verifies login tokens (Base64 encoded). Must be the public half of `Jwt__PrivateKey` — the API refuses to start if it isn't. |
 | `Jwt__PreviousPublicKey` | NO       | api     | The public key active before the last rotation. Set only during a rotation grace period, so tokens signed with the old key keep working. See [Rotating the JWT signing key](#rotating-the-jwt-signing-key). |
@@ -218,6 +219,9 @@ This is the "Public Face" of the application—a single, absolute URL (e.g., `ht
 
 **2. CORS Security (`Cors__AllowedOrigins`)**
 This is a security barrier—a comma-separated list of trusted origins (e.g., `http://localhost:5173,https://app.echo.church`). It tells the browser which domains are authorized to make requests to the API. If a request comes from an origin not in this list, the API rejects the request and the browser blocks the response. To add a new environment (such as a staging site), simply append the URL to this list.
+
+**3. Client IP and rate limiting (`ForwardedHeaders__TrustedNetworks`)**
+Behind nginx, every request reaches the API from the nginx container, so the API reads the real client address from the `X-Forwarded-For` header that nginx sets. The rate limiter partitions by that address, so without it everyone would share one bucket. The header is honoured only when the request comes from a trusted network, and only the last hop is trusted (nginx appends the real peer address), so a client cannot spoof its address by sending its own `X-Forwarded-For`. By default the trusted networks are loopback and the private ranges Docker allocates networks from (`10.0.0.0/8`, `172.16.0.0/12`, `192.168.0.0/16`). To narrow them, set one variable per range on the `api` service, e.g. `ForwardedHeaders__TrustedNetworks__0=172.18.0.0/16`; this replaces the defaults. Blank values are ignored, and a value that is not valid CIDR stops the API at startup with a message naming it. Keep the API unpublished in production (only nginx exposes a port), otherwise anything that can reach it from a trusted network could set the header.
 
 ---
 
