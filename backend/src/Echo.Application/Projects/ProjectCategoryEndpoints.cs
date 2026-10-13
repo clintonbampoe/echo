@@ -265,6 +265,54 @@ public static class ProjectCategoryEndpoints
             .Produces<List<ProjectCategorySearchResultDto>>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized);
 
+        group
+            .MapPost(
+                "/{id:int}/reassign",
+                async (
+                    [FromRoute] int id,
+                    [FromBody] ReassignCategoryDto dto,
+                    ProjectCategoryService service,
+                    HttpContext context,
+                    CancellationToken ct
+                ) =>
+                {
+                    using var span = EndpointInstrumentation.StartSpan(
+                        context,
+                        instrumentation,
+                        "endpoint.project_category.reassign"
+                    );
+                    var result = await service.Reassign(
+                        context.User.GetCongregationId(),
+                        id,
+                        dto,
+                        ct
+                    );
+                    return result.ToResult();
+                }
+            )
+            .WithName("ReassignProjectCategory")
+            .WithSummary("Moves all projects of a project category to another project category.")
+            .WithDescription(
+                """
+                Moves every non-deleted project in this project category to `targetCategoryId`, in a single database transaction. Soft-deleted records are left where they are.
+
+                Set `deleteSource` to `true` to also soft-delete this category in the same transaction, so a category can be merged away without a window where it is empty but still present.
+
+                ### On success
+                Returns `200 OK` with `{ "moved": n, "sourceDeleted": bool }`. `moved` is `0` when the category was empty.
+
+                ### Failure modes
+                - `400 BAD_REQUEST` — `targetCategoryId` equals the source category.
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                - `404 NOT_FOUND` — the source category does not exist in this congregation or is deleted.
+                - `404 FOREIGN_KEY_NOT_FOUND` — the target category does not exist in this congregation or is deleted.
+                """
+            )
+            .Produces<ReassignCategoryResponseDto>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status401Unauthorized);
+
         return app;
     }
 }

@@ -78,6 +78,34 @@ public class TransactionCategoryRepository(AppDbContext context)
             .AnyAsync(e => e.CongregationId == congregationId && e.CategoryId == id, ct);
     }
 
+    // Moves every live transaction of the source category to the target, and optionally soft-deletes the
+    // source, in one database transaction. Returns how many rows moved.
+    public async Task<int> Reassign(
+        Guid congregationId,
+        TransactionCategory source,
+        int targetId,
+        bool deleteSource,
+        CancellationToken ct
+    )
+    {
+        await using var tx = await context.Database.BeginTransactionAsync(ct);
+
+        var moved = await context
+            .Set<Transaction>()
+            .FilterDeleted()
+            .Where(e => e.CongregationId == congregationId && e.CategoryId == source.Id)
+            .ExecuteUpdateAsync(s => s.SetProperty(e => e.CategoryId, targetId), ct);
+
+        if (deleteSource)
+        {
+            SoftDelete(source);
+            await context.SaveChangesAsync(ct);
+        }
+
+        await tx.CommitAsync(ct);
+        return moved;
+    }
+
     public void SoftDelete(TransactionCategory entity)
     {
         entity.DeletedAt = DateTime.UtcNow;

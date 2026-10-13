@@ -236,6 +236,20 @@ Some list, detail and update responses carry a count so a screen does not need o
 
 For categories this is the same number that blocks deleting a category with `409`.
 
+**Moving records between categories**
+A category that is still used cannot be deleted. To clear it, move its records first:
+
+`POST /transaction-categories/{id}/reassign`, `/project-categories/{id}/reassign`, `/asset-categories/{id}/reassign`
+
+```json
+{ "targetCategoryId": 7, "deleteSource": false }
+```
+
+Every non-deleted record of the source category moves to the target in one database transaction, and the response is `{ "moved": 12, "sourceDeleted": false }`. With `deleteSource: true` the source category is soft-deleted in the same transaction. Errors: `400` if the target is the source (or, for transaction categories, has a different income/expense type), `404` if the source is missing, `404 FOREIGN_KEY_NOT_FOUND` if the target is missing.
+
+**Transaction type and category type**
+A transaction's `transactionType` must equal its category's `categoryType`. Creating or updating a transaction that breaks this returns `400`. An update that changes only `transactionType` is checked against the transaction's current category.
+
 **Summaries**
 Most modules have a `GET .../summary` that accepts the same filters as the list. Besides the totals, a few have extras:
 
