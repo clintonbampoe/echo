@@ -267,7 +267,7 @@ public static class ProjectEndpoints
             .MapGet(
                 "/search",
                 async (
-                    [FromQuery, StringLength(100, MinimumLength = 2)] string q,
+                    [FromQuery, StringLength(100, MinimumLength = 1)] string q,
                     ProjectService service,
                     HttpContext context,
                     CancellationToken ct

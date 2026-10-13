@@ -89,9 +89,9 @@ public class ValidationTests : IAsyncLifetime
         where T : class => (T)RuntimeHelpers.GetUninitializedObject(typeof(T));
 
     [Theory]
-    [InlineData("/members/search?q=a")]
-    [InlineData("/users/search?q=a")]
-    public async Task Search_TermShorterThanTwoCharacters_Returns400(string url)
+    [InlineData("/members/search?q=")]
+    [InlineData("/users/search?q=")]
+    public async Task Search_EmptyTerm_Returns400(string url)
     {
         var res = await _client.GetAsync(url, TestContext.Current.CancellationToken);
 

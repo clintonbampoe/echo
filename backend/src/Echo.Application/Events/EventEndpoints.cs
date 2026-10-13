@@ -260,7 +260,7 @@ public static class EventEndpoints
             .MapGet(
                 "/search",
                 async (
-                    [FromQuery, StringLength(100, MinimumLength = 2)] string q,
+                    [FromQuery, StringLength(100, MinimumLength = 1)] string q,
                     EventService service,
                     HttpContext context,
                     CancellationToken ct

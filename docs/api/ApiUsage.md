@@ -224,7 +224,7 @@ Paged list responses and summary responses include `window: { from, to, isDefaul
 ### 4. Search
 Search endpoints are available for all searchable entities. They use **trigram similarity** to find the best matches regardless of exact spelling.
 - **Behavior**: Returns the top 5 most relevant results. The term is matched literally, so `%` and `_` are not treated as wildcards.
-- **Term**: the `q` query parameter is required and must be between 2 and 100 characters; otherwise the API returns `400`.
+- **Term**: the `q` query parameter is required and must be between 1 and 100 characters; otherwise the API returns `400`.
 - **Example**: `GET /api/v1/events/search?q=Christmas`
 
 ### 5. Health Check

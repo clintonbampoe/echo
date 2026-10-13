@@ -253,7 +253,7 @@ public static class AssetEndpoints
             .MapGet(
                 "/search",
                 async (
-                    [FromQuery, StringLength(100, MinimumLength = 2)] string q,
+                    [FromQuery, StringLength(100, MinimumLength = 1)] string q,
                     AssetService service,
                     HttpContext context,
                     CancellationToken ct
