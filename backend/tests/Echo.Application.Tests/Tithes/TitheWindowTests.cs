@@ -68,4 +68,20 @@ public class TitheWindowTests
 
         Assert.Null(TitheService.ResolveWindow(filters, _windows));
     }
+
+    [Fact]
+    public void ResolveWindow_YearSet_ReturnsNull()
+    {
+        var filters = new TitheFilters { Year = 2026 };
+
+        Assert.Null(TitheService.ResolveWindow(filters, _windows));
+    }
+
+    [Fact]
+    public void ResolveWindow_MonthSet_ReturnsNull()
+    {
+        var filters = new TitheFilters { Month = MonthOfYear.March };
+
+        Assert.Null(TitheService.ResolveWindow(filters, _windows));
+    }
 }

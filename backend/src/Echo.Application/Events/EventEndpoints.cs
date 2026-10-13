@@ -287,7 +287,7 @@ public static class EventEndpoints
 
                 ### Response fields
                 - `totalEvents` — events matching the filters.
-                - `upcomingEvents` — matching events that have not started yet.
+                - `upcomingEvents` — events that start today or later, matching the name, organization and organizer filters. It is not limited by `from`/`to`, so it counts events outside the date window too.
                 - `totalRegistered` — registrations for the matching events.
                 - `totalAttended` — check-ins for the matching events.
                 - `window` — the date range that was applied.

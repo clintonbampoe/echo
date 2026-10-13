@@ -298,8 +298,7 @@ public class VisitorService(
         {
             Window = window,
             TotalVisitors = stats.Total,
-            // Still mirrors the converted count; what "new" means is tracked in #258.
-            NewVisitors = stats.Converted,
+            NewVisitors = stats.New,
             RecurringVisitors = stats.Recurring,
             ConvertedVisitors = stats.Converted,
         };

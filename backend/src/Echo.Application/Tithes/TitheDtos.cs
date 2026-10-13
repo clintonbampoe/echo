@@ -63,7 +63,7 @@ public record TitheCursor
 
 /// <summary>
 /// Default window when From/To are omitted: this week to today (by CollectionDate).
-/// No default window when MemberId is set.
+/// No default window when MemberId, Year or Month is set.
 /// </summary>
 public record TitheFilters
 {

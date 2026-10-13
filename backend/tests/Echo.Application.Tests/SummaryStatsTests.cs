@@ -62,39 +62,41 @@ public class SummaryStatsTests
     }
 
     [Fact]
-    public void Members_CountByStatusAndGender_AndAverageTheAge()
+    public void Members_CountByStatusAndGender_AndAverageTheExactAge()
     {
-        Member Row(MemberStatus status, Gender gender, int birthYear)
+        Member Row(MemberStatus status, Gender gender, DateOnly dateOfBirth)
         {
             var m = MemberFactory.NewEntity();
             m.Status = status;
             m.Gender = gender;
-            m.DateOfBirth = new DateOnly(birthYear, 6, 1);
+            m.DateOfBirth = dateOfBirth;
             return m;
         }
 
+        // Today is 2026-10-14: the first has had this year's birthday (26), the second has not
+        // (35, not 36), and the third has it today (46).
         var members = new[]
         {
-            Row(MemberStatus.Active, Gender.Male, 2000),
-            Row(MemberStatus.Active, Gender.Female, 1990),
-            Row(MemberStatus.Inactive, Gender.Female, 1980),
+            Row(MemberStatus.Active, Gender.Male, new DateOnly(2000, 6, 1)),
+            Row(MemberStatus.Active, Gender.Female, new DateOnly(1990, 12, 25)),
+            Row(MemberStatus.Inactive, Gender.Female, new DateOnly(1980, 10, 14)),
         };
 
-        var res = OneRow.SummarizeMembers(members.AsQueryable(), currentYear: 2026).Single();
+        var res = OneRow.SummarizeMembers(members.AsQueryable(), new DateOnly(2026, 10, 14)).Single();
 
-        Assert.Equal(new MemberStats(3, 2, 1, 2, (26 + 36 + 46) / 3.0), res);
+        Assert.Equal(new MemberStats(3, 2, 1, 2, (26 + 35 + 46) / 3.0), res);
     }
 
     [Fact]
     public void Members_NoMembers_AverageAgeIsZero()
     {
-        var res = OneRow.SummarizeMembers(Array.Empty<Member>().AsQueryable(), 2026).Single();
+        var res = OneRow.SummarizeMembers(Array.Empty<Member>().AsQueryable(), new DateOnly(2026, 10, 14)).Single();
 
         Assert.Equal(new MemberStats(0, 0, 0, 0, 0d), res);
     }
 
     [Fact]
-    public void Visitors_CountTotalConvertedAndRecurring()
+    public void Visitors_CountTotalNewConvertedAndRecurring()
     {
         var recurringPerson = Guid.NewGuid();
         var oncePerson = Guid.NewGuid();
@@ -116,23 +118,68 @@ public class SummaryStatsTests
             return a;
         }
 
-        var visitors = new[]
-        {
-            Visitor(recurringPerson),
-            Visitor(oncePerson),
-            Visitor(convertedPerson, DateTime.UtcNow),
-        };
+        // The visitor list shows people who have not converted. "New" is everyone created in the
+        // window, converted or not; "converted" is everyone converted in the window.
+        var current = new[] { Visitor(recurringPerson), Visitor(oncePerson) };
+        var createdInWindow = new[] { Visitor(recurringPerson), Visitor(oncePerson), Visitor(convertedPerson, DateTime.UtcNow) };
+        var convertedInWindow = new[] { Visitor(convertedPerson, DateTime.UtcNow) };
         var attendance = new[] { Present(recurringPerson), Present(recurringPerson), Present(oncePerson) };
 
-        var res = OneRow.SummarizeVisitors(visitors.AsQueryable(), attendance.AsQueryable().Live()).Single();
+        var res = OneRow
+            .SummarizeVisitors(
+                current.AsQueryable(),
+                createdInWindow.AsQueryable(),
+                convertedInWindow.AsQueryable(),
+                attendance.AsQueryable().Live()
+            )
+            .Single();
 
-        Assert.Equal(new VisitorStats(3, 1, 1), res);
+        Assert.Equal(new VisitorStats(Total: 2, New: 3, Converted: 1, Recurring: 1), res);
+    }
+
+    private static Visitor VisitorOn(DateTime createdAt, DateTime? convertedAt = null) =>
+        new()
+        {
+            PersonId = Guid.NewGuid(),
+            Person = PersonFactory.NewVisitorPerson(),
+            CongregationId = Constants.DefaultGuid,
+            CreatedAt = createdAt,
+            ConvertedAt = convertedAt,
+        };
+
+    [Fact]
+    public void Visitors_CreatedBetween_CountsEveryoneCreatedInTheWindowConvertedOrNot()
+    {
+        var rows = new[]
+        {
+            VisitorOn(new DateTime(2026, 3, 1, 0, 0, 0, DateTimeKind.Utc)),
+            VisitorOn(new DateTime(2026, 4, 1, 0, 0, 0, DateTimeKind.Utc), new DateTime(2026, 5, 1, 0, 0, 0, DateTimeKind.Utc)),
+            VisitorOn(new DateTime(2025, 12, 31, 23, 0, 0, DateTimeKind.Utc)),
+        };
+
+        var res = rows.AsQueryable().CreatedBetween(new DateOnly(2026, 1, 1), new DateOnly(2026, 12, 31)).ToList();
+
+        Assert.Equal(2, res.Count);
+    }
+
+    [Fact]
+    public void Visitors_ConvertedBetween_UsesTheConversionDateAndSkipsUnconverted()
+    {
+        var rows = new[]
+        {
+            VisitorOn(new DateTime(2025, 3, 1, 0, 0, 0, DateTimeKind.Utc), new DateTime(2026, 5, 1, 0, 0, 0, DateTimeKind.Utc)),
+            VisitorOn(new DateTime(2026, 3, 1, 0, 0, 0, DateTimeKind.Utc), new DateTime(2025, 5, 1, 0, 0, 0, DateTimeKind.Utc)),
+            VisitorOn(new DateTime(2026, 3, 1, 0, 0, 0, DateTimeKind.Utc)),
+        };
+
+        var res = rows.AsQueryable().ConvertedBetween(new DateOnly(2026, 1, 1), new DateOnly(2026, 12, 31)).ToList();
+
+        Assert.Single(res);
     }
 
     [Fact]
     public void Events_CountTotalUpcomingRegistrationsAndAttendees()
     {
-        var today = new DateOnly(2026, 10, 14);
         Event Row(DateOnly start)
         {
             var e = EventFactory.NewEntity();
@@ -161,13 +208,40 @@ public class SummaryStatsTests
         var res = OneRow
             .SummarizeEvents(
                 new[] { past, upcoming }.AsQueryable(),
+                new[] { upcoming }.AsQueryable(),
                 new[] { Reg(past.Id), Reg(upcoming.Id), Reg(upcoming.Id), Reg(Guid.NewGuid()) }.AsQueryable(),
-                new[] { Attended(past.Id), Attended(Guid.NewGuid()) }.AsQueryable(),
-                today
+                new[] { Attended(past.Id), Attended(Guid.NewGuid()) }.AsQueryable()
             )
             .Single();
 
         Assert.Equal(new EventStats(2, 1, 3, 1), res);
+    }
+
+    [Fact]
+    public void Events_Upcoming_IgnoresTheDateWindow()
+    {
+        var today = new DateOnly(2026, 10, 14);
+        Event Row(string name, DateOnly start)
+        {
+            var e = EventFactory.NewEntity();
+            e.Id = Guid.NewGuid();
+            e.Name = name;
+            e.StartDate = start;
+            return e;
+        }
+
+        var rows = new[]
+        {
+            Row("Camp", new DateOnly(2026, 9, 1)),   // before today
+            Row("Camp", new DateOnly(2026, 11, 1)),  // upcoming, inside the window
+            Row("Camp", new DateOnly(2027, 2, 1)),   // upcoming, outside the window
+            Row("Revival", new DateOnly(2026, 12, 1)),
+        };
+        var thisYear = new EventFilters { From = new DateOnly(2026, 1, 1), To = new DateOnly(2026, 12, 31) };
+
+        var res = rows.AsQueryable().Upcoming(thisYear, today).ToList();
+
+        Assert.Equal(3, res.Count);
     }
 
     [Fact]
@@ -230,7 +304,7 @@ public class SummaryStatsTests
     }
 
     [Fact]
-    public void Tithes_SumUniqueTithersAverageAndFindTheMostUsedMethod()
+    public void Tithes_SumUniqueTithersAndFindTheMostUsedMethod()
     {
         var member1 = Guid.NewGuid();
         var member2 = Guid.NewGuid();
@@ -252,7 +326,21 @@ public class SummaryStatsTests
 
         var res = OneRow.SummarizeTithes(rows.AsQueryable()).Single();
 
-        Assert.Equal(new TitheStats(180m, 2, 60m, PaymentMethod.Cash), res);
+        Assert.Equal(new TitheStats(180m, 2, PaymentMethod.Cash), res);
+    }
+
+    [Theory]
+    [InlineData(180, 2, 90)]
+    [InlineData(100, 4, 25)]
+    [InlineData(0, 0, 0)]
+    [InlineData(50, 0, 0)]
+    public void Tithes_AveragePerMember_IsTheTotalOverTheUniqueTithers_ZeroWhenNone(
+        int total,
+        int tithers,
+        int expected
+    )
+    {
+        Assert.Equal((decimal)expected, TitheService.AveragePerMember(total, tithers));
     }
 
     [Fact]
@@ -260,7 +348,7 @@ public class SummaryStatsTests
     {
         var res = OneRow.SummarizeTithes(Array.Empty<Tithe>().AsQueryable()).Single();
 
-        Assert.Equal(new TitheStats(0m, 0, 0m, null), res);
+        Assert.Equal(new TitheStats(0m, 0, null), res);
     }
 
     [Fact]
