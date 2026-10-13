@@ -48,7 +48,7 @@ public class EventService(
 
         using var activity = instrumentation.ActivitySource.StartActivity("svc.event.list");
 
-        var cursor = encoder.Decode<EventCursor>(pagination.Cursor);
+        var cursor = UsableCursor(encoder.Decode<EventCursor>(pagination.Cursor), filters.Order);
 
         List<Event> entities;
         using (instrumentation.ActivitySource.StartActivity("svc.event.fetch.list"))
@@ -66,7 +66,7 @@ public class EventService(
         if (hasMore)
             entities.RemoveAt(entities.Count - 1);
 
-        var nextCursor = hasMore ? encoder.Encode(BuildCursor(entities.Last())) : null;
+        var nextCursor = hasMore ? encoder.Encode(BuildCursor(entities.Last(), filters.Order)) : null;
 
         var counts = await repository.GetRegistrationCounts(
             congregationId,
@@ -324,10 +324,20 @@ public class EventService(
         return new SuccessResult<EventSummaryDto>(res);
     }
 
-    private static EventCursor BuildCursor(Event last)
+    private static EventCursor BuildCursor(Event last, SortDirection order)
     {
-        return new EventCursor { StartDate = last.StartDate, Id = last.Id };
+        return new EventCursor
+        {
+            StartDate = last.StartDate,
+            Id = last.Id,
+            Order = order,
+        };
     }
+
+    // A cursor from the other direction would skip or repeat events, so it is ignored (the list starts
+    // again), the same as any malformed cursor.
+    internal static EventCursor? UsableCursor(EventCursor? cursor, SortDirection order) =>
+        cursor is not null && cursor.Order == order ? cursor : null;
 
     private async Task<EventResponseDto> WithCount(Event entity, Guid congregationId, CancellationToken ct)
     {

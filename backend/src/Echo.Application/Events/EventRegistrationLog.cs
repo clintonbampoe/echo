@@ -148,6 +148,12 @@ public static partial class EventRegistrationLog
         Guid memberId
     );
 
+    [LoggerMessage(
+        Level = LogLevel.Information,
+        Message = "Event registration create rejected: event {EventId} in congregation {CongregationId} is full"
+    )]
+    public static partial void CreateEventFull(ILogger logger, Guid congregationId, Guid eventId);
+
     // --- Unexpected ---
     [LoggerMessage(
         Level = LogLevel.Error,

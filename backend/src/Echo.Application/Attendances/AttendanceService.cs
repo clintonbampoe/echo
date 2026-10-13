@@ -10,6 +10,7 @@ using Echo.Shared.Utilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Application.Attendances;
 
@@ -260,6 +261,106 @@ public class AttendanceService(
 
         return new SuccessResult<AttendanceSummaryDto>(res);
     }
+
+
+    public async Task<IOperationResult> CreateBulk(
+        Guid congregationId,
+        BulkAttendanceCreateDto dto,
+        CancellationToken ct
+    )
+    {
+        using var activity = instrumentation.ActivitySource.StartActivity(
+            "svc.attendance.create_bulk"
+        );
+
+        var session = await sessionRepository.GetById(congregationId, dto.SessionId, ct);
+        if (session is null)
+        {
+            AttendanceLog.CreateSessionNotFound(logger, congregationId, dto.SessionId);
+            return new ForeignKeyEntityNotFound(nameof(session));
+        }
+
+        var requested = dto.PersonIds.Distinct().ToList();
+        var people = await personRepository.GetByIds(congregationId, requested, ct);
+        var present = await repository.PersonIdsPresent(congregationId, dto.SessionId, requested, ct);
+        var plan = PlanBulk(requested, people, present);
+
+        var created = plan
+            .ToCreate.Select(person => new Attendance
+            {
+                Id = idGenerator.Generate(),
+                CongregationId = congregationId,
+                SessionId = session.Id,
+                Session = session,
+                PersonId = person.Id,
+                Person = person,
+                PersonKindAtTime = person.Kind,
+                CheckedInAt = dto.CheckedInAt,
+            })
+            .ToList();
+
+        // One SaveChanges: either every new record is saved or none is.
+        if (created.Count > 0)
+        {
+            repository.CreateMany(created);
+            try
+            {
+                await unitOfWork.CommitAsync(ct);
+            }
+            catch (DbUpdateException ex) when (ex.IsUniqueViolation())
+            {
+                // Someone marked one of these people present between the check above and the save.
+                // Nothing was saved; sending the request again reports them as already present.
+                AttendanceLog.BulkConflict(logger, congregationId, dto.SessionId);
+                return new ConflictResult(
+                    "Someone else marked some of these people present at the same moment. Nothing was saved; send the request again.",
+                    "ATTENDANCE_CONFLICT"
+                );
+            }
+        }
+
+        AttendanceLog.BulkCreated(
+            logger,
+            congregationId,
+            dto.SessionId,
+            created.Count,
+            plan.Skipped.Count
+        );
+
+        return new SuccessResult<BulkAttendanceResponseDto>(
+            new BulkAttendanceResponseDto
+            {
+                Created = created.Select(a => mapper.ToDto(a)).ToList(),
+                Skipped = plan.Skipped,
+            }
+        );
+    }
+
+    // Decides, for each person asked for, whether to mark them present or skip them and why. An id
+    // sent twice counts once. People who cannot be found are skipped rather than failing the batch.
+    internal static BulkPlan PlanBulk(
+        IReadOnlyList<Guid> requested,
+        IReadOnlyDictionary<Guid, Person> people,
+        IReadOnlySet<Guid> alreadyPresent
+    )
+    {
+        var toCreate = new List<Person>();
+        var skipped = new List<BulkSkippedDto>();
+
+        foreach (var id in requested.Distinct())
+        {
+            if (!people.TryGetValue(id, out var person))
+                skipped.Add(new BulkSkippedDto { PersonId = id, Reason = BulkSkipReason.PersonNotFound });
+            else if (alreadyPresent.Contains(id))
+                skipped.Add(new BulkSkippedDto { PersonId = id, Reason = BulkSkipReason.AlreadyPresent });
+            else
+                toCreate.Add(person);
+        }
+
+        return new BulkPlan(toCreate, skipped);
+    }
+
+    internal sealed record BulkPlan(List<Person> ToCreate, List<BulkSkippedDto> Skipped);
 
     private static AttendanceCursor BuildCursor(Attendance last) =>
         new() { SessionDate = last.Session.Date, Id = last.Id };

@@ -225,8 +225,20 @@ public class EventRegistrationService(
 
         using (instrumentation.ActivitySource.StartActivity("svc.event_registration.persist"))
         {
-            repository.Create(entity);
-            await unitOfWork.CommitAsync(ct);
+            if (evnt.Capacity is { } capacity)
+            {
+                // Counted and inserted under a lock on the event, so the last seat cannot be taken twice.
+                if (!await repository.TryCreateWithinCapacity(entity, capacity, ct))
+                {
+                    EventRegistrationLog.CreateEventFull(logger, congregationId, dto.EventId);
+                    return new ConflictResult("This event is full.", "EVENT_FULL");
+                }
+            }
+            else
+            {
+                repository.Create(entity);
+                await unitOfWork.CommitAsync(ct);
+            }
         }
 
         activity?.SetTag("event_registration.id", entity.Id);

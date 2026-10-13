@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using Echo.Shared.Utilities;
+using Echo.Shared.Pagination;
 
 namespace Echo.Application.Events;
 
@@ -78,6 +79,9 @@ public record EventCursor
 {
     public DateOnly StartDate { get; init; }
     public Guid Id { get; init; }
+
+    // The direction the page was listed in. A cursor only continues a list in the same direction.
+    public SortDirection Order { get; init; }
 }
 
 /// <summary>
@@ -90,6 +94,9 @@ public record EventFilters
     public Guid? OrganizerId { get; init; }
     public DateOnly? From { get; init; }
     public DateOnly? To { get; init; } // on StartDate
+
+    /// <summary>Asc (default) lists the oldest event first, Desc the newest. Ignored by the summary.</summary>
+    public SortDirection Order { get; init; }
 }
 
 public record EventSummaryDto

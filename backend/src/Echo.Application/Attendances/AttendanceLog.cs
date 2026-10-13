@@ -44,6 +44,24 @@ public static partial class AttendanceLog
 
     [LoggerMessage(
         Level = LogLevel.Warning,
+        Message = "Bulk attendance for session {SessionId} in congregation {CongregationId} hit a concurrent duplicate; nothing was saved"
+    )]
+    public static partial void BulkConflict(ILogger logger, Guid congregationId, Guid sessionId);
+
+    [LoggerMessage(
+        Level = LogLevel.Information,
+        Message = "Bulk attendance for session {SessionId} in congregation {CongregationId}: {Created} created, {Skipped} skipped"
+    )]
+    public static partial void BulkCreated(
+        ILogger logger,
+        Guid congregationId,
+        Guid sessionId,
+        int created,
+        int skipped
+    );
+
+    [LoggerMessage(
+        Level = LogLevel.Warning,
         Message = "Attendance create rejected: person {PersonId} already marked present at session {SessionId} in congregation {CongregationId}"
     )]
     public static partial void DuplicateRecord(
