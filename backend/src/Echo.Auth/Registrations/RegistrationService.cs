@@ -18,6 +18,7 @@ public class RegistrationService(
     UserRepository userRepository,
     EmailVerificationService emailVerificationService,
     InvitationService invitationService,
+    CongregationProvisioningService provisioningService,
     IUnitOfWork unitOfWork,
     IUserMapper userMapper,
     ICongregationMapper congregationMapper,
@@ -74,15 +75,6 @@ public class RegistrationService(
         try
         {
             using (
-                instrumentation.ActivitySource.StartActivity(
-                    "svc.registration.validate.password_hash"
-                )
-            )
-            {
-                user.PasswordHash = await passwordHashService.HashAsync(userDto.Password);
-            }
-
-            using (
                 var activity = instrumentation.ActivitySource.StartActivity(
                     "svc.registration.persist.setup"
                 )
@@ -93,6 +85,9 @@ public class RegistrationService(
 
                 userRepository.Create(user);
                 activity?.AddEvent(new ActivityEvent("user.create"));
+
+                provisioningService.ProvisionDefaults(congregation.Id);
+                activity?.AddEvent(new ActivityEvent("congregation.provision_defaults"));
 
                 await unitOfWork.CommitAsync(ct);
                 activity?.AddEvent(new ActivityEvent("db.commit"));

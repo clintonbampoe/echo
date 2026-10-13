@@ -2,7 +2,7 @@ namespace Echo.Seeder.Core;
 
 /// <summary>
 /// A thin wrapper around System.Random with a fixed seed.
-///
+/// <br/><br/>
 /// One Rng instance is created per phase, seeded from the global seed plus
 /// the phase name.
 /// </summary>
@@ -93,6 +93,43 @@ public sealed class Rng
     {
         var shuffled = Shuffle(source);
         return [.. shuffled.Take(Math.Min(count, shuffled.Count))];
+    }
+
+    /// <summary>
+    /// Picks <paramref name="count"/> distinct elements from the virtual
+    /// concatenation of <paramref name="head"/> and <paramref name="tail"/>.
+    ///
+    /// <br/><br/>
+    ///
+    /// Uses rejection sampling over integer indices. Fast when count is much
+    /// smaller than the combined pool size, which is the case in every caller.
+    /// Does not allocate a copy of the pools.
+    /// </summary>
+    public List<T> PickFromPair<T>(IReadOnlyList<T> head, IReadOnlyList<T> tail, int count)
+    {
+        var total = head.Count + tail.Count;
+
+        if (count >= total)
+        {
+            var all = new List<T>(total);
+            all.AddRange(head);
+            all.AddRange(tail);
+            return all;
+        }
+
+        var picked = new List<T>(count);
+        var seen = new HashSet<int>(count);
+
+        while (picked.Count < count)
+        {
+            var idx = _random.Next(total);
+            if (!seen.Add(idx))
+                continue;
+
+            picked.Add(idx < head.Count ? head[idx] : tail[idx - head.Count]);
+        }
+
+        return picked;
     }
 
     /// <summary>

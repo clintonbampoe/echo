@@ -151,6 +151,14 @@ public class TransactionCategoryService(
             return new NotFoundResult(id.ToString());
         }
 
+        if (await repository.IsInUse(congregationId, id, ct))
+        {
+            activity?.SetTag("transaction_category.in_use", true);
+            return new ConflictResult(
+                "This category is still used by existing transactions. Move them to another category before deleting it."
+            );
+        }
+
         using (instrumentation.ActivitySource.StartActivity("svc.transaction_category.persist"))
         {
             repository.SoftDelete(entity);

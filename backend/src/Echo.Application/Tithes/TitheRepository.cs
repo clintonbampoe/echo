@@ -42,6 +42,25 @@ public class TitheRepository(AppDbContext context, TimeProvider timeProvider)
             .FirstOrDefaultAsync(ct);
     }
 
+    public async Task<List<Tithe>> GetByMemberId(
+        Guid congregationId,
+        Guid memberId,
+        TitheFilters filters,
+        TitheCursor? cursor,
+        int pageSize,
+        CancellationToken ct
+    )
+    {
+        return await _dbSet
+            .FilterDeleted()
+            .Where(t => t.MemberId == memberId && t.CongregationId == congregationId)
+            .Include(t => t.Member)
+                .ThenInclude(t => t.Person)
+            .Filter(filters, timeProvider)
+            .Paginate(cursor, pageSize)
+            .ToListAsync(ct);
+    }
+
     public Task<decimal> SumCollected(
         Guid congregationId,
         TitheFilters filters,

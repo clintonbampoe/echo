@@ -4,43 +4,37 @@ namespace Echo.Application.Attendances;
 
 public class AttendanceMapper : IAttendanceMapper
 {
-    public AttendanceResponseDto ToDto(Attendance entity)
-    {
-        return new AttendanceResponseDto
+    public AttendanceResponseDto ToDto(Attendance entity) =>
+        new()
         {
             Id = entity.Id,
-            AttendanceTypeId = entity.AttendanceTypeId,
-            AttendanceTypeName = entity.AttendanceType.Name,
+            SessionId = entity.SessionId,
+            SessionDate = entity.Session.Date,
+            SessionName = entity.Session.Name,
+            SessionLabelId = entity.Session.SessionLabelId,
+            SessionLabelName = entity.Session.SessionLabel.Name,
             PersonId = entity.PersonId,
             PersonName = entity.Person.Name,
-            PersonKind = entity.Person.Kind,
-            Date = entity.Date,
-            CheckInTime = entity.CheckInTime,
-            Notes = entity.Notes,
+            PersonKind = entity.PersonKindAtTime,
+            CheckedInAt = entity.CheckedInAt,
+            RecordedBy = entity.RecordedBy,
             CreatedAt = entity.CreatedAt,
         };
-    }
 
-    public Attendance ToEntity(AttendanceCreateDto dto)
-    {
-        return new Attendance
+    public Attendance ToEntity(AttendanceCreateDto dto) =>
+        new()
         {
-            AttendanceTypeId = dto.AttendanceTypeId,
+            SessionId = dto.SessionId,
             PersonId = dto.PersonId,
-            Date = dto.Date,
-            CheckInTime = dto.CheckInTime,
-            Notes = dto.Notes,
+            CheckedInAt = dto.CheckedInAt,
         };
-    }
 
     public List<AttendanceResponseDto> ToListDto(List<Attendance> entities) =>
-        entities.Select(ToDto).ToList();
+        [.. entities.Select(ToDto)];
 
     public void Patch(AttendanceUpdateDto dto, Attendance entity)
     {
-        if (dto.CheckInTime.HasValue)
-            entity.CheckInTime = dto.CheckInTime.Value;
-        if (dto.Notes != null)
-            entity.Notes = dto.Notes;
+        if (dto.CheckedInAt.HasValue)
+            entity.CheckedInAt = dto.CheckedInAt.Value;
     }
 }

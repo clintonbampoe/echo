@@ -7,12 +7,15 @@ import {
   useDeleteAsset,
 } from "../hooks/useAssets";
 import type { Asset, AssetCreatePayload, AssetStatus } from "../types/asset";
-import { CloseIcon, RecordIcon } from "./Icons";
+import { CloseIcon, RecordIcon, TagIcon } from "./Icons";
 import DeleteConfirmModal from "./common/DeleteConfirmModal";
+import ManageCategoriesModal from "./common/ManageCategoriesModal";
 import "../styles/Assets.css";
 import {
   useAssetCategories,
   useCreateAssetCategory,
+  useUpdateAssetCategory,
+  useDeleteAssetCategory,
 } from "../hooks/useAssetCategories";
 
 const formatCurrency = (amount: number): string => {
@@ -61,12 +64,15 @@ const Assets: React.FC = () => {
   );
   const assets = useMemo(() => assetsData?.data || [], [assetsData?.data]);
 
-  const { data: categories = [] } = useAssetCategories();
+  const { data: categories = [], isLoading: isLoadingCategories } =
+    useAssetCategories();
 
   const createAsset = useCreateAsset();
   const updateAsset = useUpdateAsset();
   const deleteAsset = useDeleteAsset();
   const createCategory = useCreateAssetCategory();
+  const updateCategory = useUpdateAssetCategory();
+  const deleteCategory = useDeleteAssetCategory();
 
   // ── Modals & Form State ───────────────────────────────────────────────────
   const [showModal, setShowModal] = useState(false);
@@ -86,9 +92,7 @@ const Assets: React.FC = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deletingAsset, setDeletingAsset] = useState<Asset | null>(null);
 
-  // New Category Modal
-  const [showNewCategoryModal, setShowNewCategoryModal] = useState(false);
-  const [newCategoryName, setNewCategoryName] = useState("");
+  const [showManageCategories, setShowManageCategories] = useState(false);
 
   // ── Layout Header ─────────────────────────────────────────────────────────
   const handleOpenAddModal = useCallback(() => {
@@ -110,6 +114,13 @@ const Assets: React.FC = () => {
     setTitle("Assets");
     setCtas([
       { type: "search", placeholder: "Search assets..." },
+      {
+        type: "button",
+        label: "Manage Categories",
+        icon: "tag",
+        variant: "secondary",
+        onClick: () => setShowManageCategories(true),
+      },
       {
         type: "button",
         label: "Add Asset",
@@ -212,23 +223,6 @@ const Assets: React.FC = () => {
     }
   };
 
-  const handleCreateCategory = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newCategoryName.trim()) return;
-
-    try {
-      const created = await createCategory.mutateAsync({
-        name: newCategoryName.trim(),
-      });
-      setFormData((prev) => ({ ...prev, categoryId: created.id }));
-      setNewCategoryName("");
-      setShowNewCategoryModal(false);
-    } catch (err) {
-      console.error("Failed to create category:", err);
-      alert("Failed to create category.");
-    }
-  };
-
   return (
     <div className="assets-container">
       {/* ─── Summary Cards ──────────────────────────────────────────────────── */}
@@ -293,9 +287,9 @@ const Assets: React.FC = () => {
         <button
           type="button"
           className="assets-btn assets-btn-secondary"
-          onClick={() => setShowNewCategoryModal(true)}
+          onClick={() => setShowManageCategories(true)}
         >
-          + Add Category
+          <TagIcon size={16} /> Manage Categories
         </button>
       </div>
 
@@ -576,86 +570,20 @@ const Assets: React.FC = () => {
         </div>
       )}
 
-      {/* ─── New Category Modal ──────────────────────────────────────────────── */}
-      {showNewCategoryModal && (
-        <div
-          className="assets-panel-overlay"
-          onClick={() => setShowNewCategoryModal(false)}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <div
-            className="modal-content"
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              background: "white",
-              borderRadius: "16px",
-              padding: "24px",
-              width: "100%",
-              maxWidth: "440px",
-              boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1)",
-            }}
-          >
-            <h3
-              style={{
-                fontSize: "18px",
-                fontWeight: 600,
-                marginBottom: "16px",
-              }}
-            >
-              Create Asset Category
-            </h3>
-            <form onSubmit={handleCreateCategory}>
-              <div style={{ marginBottom: "20px" }}>
-                <label
-                  style={{
-                    display: "block",
-                    fontSize: "13px",
-                    fontWeight: 500,
-                    marginBottom: "6px",
-                  }}
-                >
-                  Category Name
-                </label>
-                <input
-                  type="text"
-                  className="assets-form-input"
-                  placeholder="e.g. Musical Instruments, Audio Equipment, Furniture"
-                  value={newCategoryName}
-                  onChange={(e) => setNewCategoryName(e.target.value)}
-                  required
-                  autoFocus
-                />
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "flex-end",
-                  gap: "12px",
-                }}
-              >
-                <button
-                  type="button"
-                  className="assets-btn assets-btn-secondary"
-                  onClick={() => setShowNewCategoryModal(false)}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="assets-btn assets-btn-primary"
-                  disabled={createCategory.isPending}
-                >
-                  {createCategory.isPending ? "Creating..." : "Create Category"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <ManageCategoriesModal
+        isOpen={showManageCategories}
+        onClose={() => setShowManageCategories(false)}
+        title="Asset Categories"
+        usedBy="assets"
+        categories={categories}
+        isLoading={isLoadingCategories}
+        onCreate={(name) => createCategory.mutateAsync({ name })}
+        onUpdate={(id, name) => updateCategory.mutateAsync({ id, data: { name } })}
+        onDelete={async (id) => {
+          await deleteCategory.mutateAsync(id);
+          if (selectedCategoryId === id) setSelectedCategoryId("");
+        }}
+      />
 
       <DeleteConfirmModal
         isOpen={showDeleteConfirm}

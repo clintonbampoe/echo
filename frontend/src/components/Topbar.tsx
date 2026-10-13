@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLayout } from '../hooks/useLayout';
-import { PlusIcon, SearchIcon, ExportIcon, CalendarIcon, FilterIcon } from './Icons';
+import { PlusIcon, SearchIcon, ExportIcon, CalendarIcon, FilterIcon, TagIcon } from './Icons';
 import '../styles/Topbar.css';
 
 const Topbar: React.FC = () => {
@@ -19,6 +19,8 @@ const Topbar: React.FC = () => {
         return <CalendarIcon size={size} />;
       case 'filter':
         return <FilterIcon size={size} />;
+      case 'tag':
+        return <TagIcon size={size} />;
       default:
         return null;
     }

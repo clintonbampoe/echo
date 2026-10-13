@@ -24,9 +24,10 @@ public class AttendanceRepository(AppDbContext context, TimeProvider timeProvide
             .FilterDeleted()
             .Where(a => a.CongregationId == congregationId)
             .Include(a => a.Person)
-            .Include(a => a.AttendanceType)
+            .Include(a => a.Session)
+                .ThenInclude(s => s.SessionLabel)
             .Filter(filters, timeProvider)
-            .OrderByDescending(a => a.Date)
+            .OrderByDescending(a => a.Session.Date)
             .ThenBy(a => a.Id)
             .Paginate(cursor, pageSize)
             .ToListAsync(ct);
@@ -42,9 +43,31 @@ public class AttendanceRepository(AppDbContext context, TimeProvider timeProvide
             .FilterDeleted()
             .Where(a => a.Id == id && a.CongregationId == congregationId)
             .Include(a => a.Person)
-            .Include(a => a.AttendanceType)
+            .Include(a => a.Session)
+                .ThenInclude(s => s.SessionLabel)
             .FirstOrDefaultAsync(ct);
     }
+
+    /// <summary>
+    /// Used by the QR check-in flow to detect a prior check-in for the same
+    /// person at the same session.
+    /// </summary>
+    public Task<bool> ExistsForSessionAndPerson(
+        Guid congregationId,
+        Guid sessionId,
+        Guid personId,
+        CancellationToken ct = default
+    ) =>
+        _dbSet
+            .AsNoTracking()
+            .FilterDeleted()
+            .AnyAsync(
+                a =>
+                    a.CongregationId == congregationId
+                    && a.SessionId == sessionId
+                    && a.PersonId == personId,
+                ct
+            );
 
     public Task<int> CountTotal(
         Guid congregationId,
@@ -58,7 +81,11 @@ public class AttendanceRepository(AppDbContext context, TimeProvider timeProvide
             .Filter(filters, timeProvider)
             .CountAsync(ct);
 
-    public Task<int> CountByKind(
+    /// <summary>
+    /// Counts attendance filtered by the person's role at the time the
+    /// attendance was recorded. Not the person's current role.
+    /// </summary>
+    public Task<int> CountByKindAtTime(
         Guid congregationId,
         PersonKind kind,
         AttendanceFilters filters,
@@ -67,7 +94,7 @@ public class AttendanceRepository(AppDbContext context, TimeProvider timeProvide
         _dbSet
             .AsNoTracking()
             .FilterDeleted()
-            .Where(a => a.CongregationId == congregationId && a.Person.Kind == kind)
+            .Where(a => a.CongregationId == congregationId && a.PersonKindAtTime == kind)
             .Filter(filters, timeProvider)
             .CountAsync(ct);
 
@@ -79,12 +106,18 @@ public class AttendanceRepository(AppDbContext context, TimeProvider timeProvide
         _dbSet
             .AsNoTracking()
             .FilterDeleted()
-            .Where(a => a.CongregationId == congregationId && a.Person.Kind == PersonKind.Visitor)
+            .Where(a =>
+                a.CongregationId == congregationId && a.PersonKindAtTime == PersonKind.Visitor
+            )
             .Filter(filters, timeProvider)
             .Where(a =>
                 !_dbSet
                     .FilterDeleted()
-                    .Any(prev => prev.PersonId == a.PersonId && prev.Date < a.Date)
+                    .Any(prev =>
+                        prev.PersonId == a.PersonId
+                        && prev.PersonKindAtTime == PersonKind.Visitor
+                        && prev.Session.Date < a.Session.Date
+                    )
             )
             .Select(a => a.PersonId)
             .Distinct()
@@ -103,19 +136,22 @@ internal static class AttendanceQueryExtensions
         TimeProvider timeProvider
     )
     {
-        if (filters.AttendanceTypeId is not null)
-            query = query.Where(a => a.AttendanceTypeId == filters.AttendanceTypeId);
+        if (filters.SessionId is not null)
+            query = query.Where(a => a.SessionId == filters.SessionId);
+
+        if (filters.SessionLabelId is not null)
+            query = query.Where(a => a.Session.SessionLabelId == filters.SessionLabelId);
 
         if (filters.PersonId is not null)
             query = query.Where(a => a.PersonId == filters.PersonId);
 
         if (filters.Kind is not null)
-            query = query.Where(a => a.Person.Kind == filters.Kind);
+            query = query.Where(a => a.PersonKindAtTime == filters.Kind);
 
         var from = filters.From ?? DateUtils.GetFirstDayOfWeek(timeProvider);
         var to = filters.To ?? DateUtils.GetDateToday(timeProvider);
 
-        query = query.Where(a => a.Date >= from && a.Date <= to);
+        query = query.Where(a => a.Session.Date >= from && a.Session.Date <= to);
 
         return query;
     }
@@ -128,7 +164,8 @@ internal static class AttendanceQueryExtensions
     {
         if (cursor is not null)
             query = query.Where(a =>
-                a.Date < cursor.Date || (a.Date == cursor.Date && a.Id > cursor.Id)
+                a.Session.Date < cursor.SessionDate
+                || (a.Session.Date == cursor.SessionDate && a.Id > cursor.Id)
             );
 
         return query.Take(pageSize);

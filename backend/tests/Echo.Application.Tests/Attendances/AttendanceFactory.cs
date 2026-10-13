@@ -2,6 +2,7 @@ using Echo.Application.Attendances;
 using Echo.Application.Tests.Congregations;
 using Echo.Application.Tests.Members;
 using Echo.Domain.Attendances;
+using Echo.Domain.Members;
 
 namespace Echo.Application.Tests.Attendances;
 
@@ -14,13 +15,14 @@ public static class AttendanceFactory
             Id = Constants.DefaultGuid,
             CongregationId = Constants.DefaultGuid,
             Congregation = CongregationFactory.NewEntity(),
-            AttendanceTypeId = Constants.DefaultInt,
-            AttendanceType = AttendanceTypeFactory.NewEntity(),
+            SessionId = Constants.DefaultGuid,
+            Session = SessionFactory.NewEntity(),
             PersonId = Constants.DefaultGuid,
             Person = PersonFactory.NewMemberPerson(),
-            Date = Constants.DefaultDateOnly,
-            CheckInTime = Constants.DefaultTimeOnly,
-            Notes = "Notes-01",
+            PersonKindAtTime = PersonKind.Member,
+            CheckedInAt = Constants.DefaultDateTime,
+            RecordedBy = null,
+            Recorder = null,
             CreatedAt = Constants.DefaultDateTime,
             DeletedAt = null,
         };
@@ -38,25 +40,19 @@ public static class AttendanceFactory
     {
         return new AttendanceCreateDto
         {
-            AttendanceTypeId = Constants.DefaultInt,
+            SessionId = Constants.DefaultGuid,
             PersonId = Constants.DefaultGuid,
-            Date = Constants.DefaultDateOnly,
-            CheckInTime = Constants.DefaultTimeOnly,
-            Notes = "AttendanceCreateNotes-01",
+            CheckedInAt = Constants.DefaultDateTime,
         };
     }
 
     public static AttendanceUpdateDto NewUpdateDto()
     {
-        return new AttendanceUpdateDto
-        {
-            CheckInTime = Constants.DefaultTimeOnly,
-            Notes = "AttendanceUpdateNotes-01",
-        };
+        return new AttendanceUpdateDto { CheckedInAt = Constants.DefaultDateTime };
     }
 
     public static AttendanceUpdateDto NewUpdateDtoWithNullFields()
     {
-        return new AttendanceUpdateDto { CheckInTime = null, Notes = null };
+        return new AttendanceUpdateDto { CheckedInAt = null };
     }
 }

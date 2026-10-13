@@ -150,6 +150,14 @@ public class ProjectCategoryService(
             return new NotFoundResult(id.ToString());
         }
 
+        if (await repository.IsInUse(congregationId, id, ct))
+        {
+            activity?.SetTag("project_category.in_use", true);
+            return new ConflictResult(
+                "This category is still used by existing projects. Move them to another category before deleting it."
+            );
+        }
+
         using (instrumentation.ActivitySource.StartActivity("svc.project_category.persist"))
         {
             repository.SoftDelete(entity);

@@ -134,11 +134,8 @@ namespace Echo.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<int>("AttendanceTypeId")
-                        .HasColumnType("integer");
-
-                    b.Property<TimeOnly>("CheckInTime")
-                        .HasColumnType("time without time zone");
+                    b.Property<DateTime?>("CheckedInAt")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<Guid>("CongregationId")
                         .HasColumnType("uuid");
@@ -148,46 +145,111 @@ namespace Echo.Data.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasDefaultValueSql("now()");
 
-                    b.Property<DateOnly>("Date")
-                        .HasColumnType("date");
-
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Notes")
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
 
                     b.Property<Guid>("PersonId")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("PersonKindAtTime")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("RecordedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("SessionId")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("AttendanceTypeId");
+                    b.HasIndex("CongregationId");
 
                     b.HasIndex("PersonId");
 
-                    b.HasIndex("CongregationId", "PersonId");
+                    b.HasIndex("RecordedBy");
 
-                    b.HasIndex("Date", "Id")
-                        .HasFilter("\"DeletedAt\" IS NULL");
+                    b.HasIndex("SessionId");
 
-                    b.HasIndex("CongregationId", "AttendanceTypeId", "Date");
+                    b.HasIndex("CongregationId", "PersonKindAtTime");
 
-                    b.HasIndex("CongregationId", "PersonId", "AttendanceTypeId", "Date")
+                    b.HasIndex("SessionId", "PersonId")
                         .IsUnique()
                         .HasFilter("\"DeletedAt\" IS NULL");
 
                     b.ToTable("Attendance");
                 });
 
-            modelBuilder.Entity("Echo.Domain.Attendances.AttendanceType", b =>
+            modelBuilder.Entity("Echo.Domain.Attendances.Session", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CongregationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<Guid?>("CreatedBy")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<TimeOnly?>("EndsAt")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<int>("SessionLabelId")
+                        .HasColumnType("integer");
+
+                    b.Property<TimeOnly?>("StartsAt")
+                        .HasColumnType("time without time zone");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Topic")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedBy");
+
+                    b.HasIndex("SessionLabelId");
+
+                    b.HasIndex("CongregationId", "Date");
+
+                    b.ToTable("Sessions");
+                });
+
+            modelBuilder.Entity("Echo.Domain.Attendances.SessionLabel", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<Guid>("CongregationId")
                         .HasColumnType("uuid");
@@ -202,22 +264,18 @@ namespace Echo.Data.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("character varying(255)");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("CongregationId");
 
-                    b.HasIndex("Name");
-
-                    NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("Name"), "GIN");
-                    NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex("Name"), new[] { "gin_trgm_ops" });
-
                     b.HasIndex("CongregationId", "Name")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("\"DeletedAt\" IS NULL");
 
-                    b.ToTable("AttendanceTypes");
+                    b.ToTable("SessionLabels");
                 });
 
             modelBuilder.Entity("Echo.Domain.Auth.EmailVerificationToken", b =>
@@ -1295,12 +1353,6 @@ namespace Echo.Data.Migrations
 
             modelBuilder.Entity("Echo.Domain.Attendances.Attendance", b =>
                 {
-                    b.HasOne("Echo.Domain.Attendances.AttendanceType", "AttendanceType")
-                        .WithMany()
-                        .HasForeignKey("AttendanceTypeId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("Echo.Domain.Congregations.Congregation", "Congregation")
                         .WithMany()
                         .HasForeignKey("CongregationId")
@@ -1313,14 +1365,53 @@ namespace Echo.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("AttendanceType");
+                    b.HasOne("Echo.Domain.Users.User", "Recorder")
+                        .WithMany()
+                        .HasForeignKey("RecordedBy")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Echo.Domain.Attendances.Session", "Session")
+                        .WithMany()
+                        .HasForeignKey("SessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Congregation");
 
                     b.Navigation("Person");
+
+                    b.Navigation("Recorder");
+
+                    b.Navigation("Session");
                 });
 
-            modelBuilder.Entity("Echo.Domain.Attendances.AttendanceType", b =>
+            modelBuilder.Entity("Echo.Domain.Attendances.Session", b =>
+                {
+                    b.HasOne("Echo.Domain.Congregations.Congregation", "Congregation")
+                        .WithMany()
+                        .HasForeignKey("CongregationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Echo.Domain.Users.User", "Creator")
+                        .WithMany()
+                        .HasForeignKey("CreatedBy")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Echo.Domain.Attendances.SessionLabel", "SessionLabel")
+                        .WithMany()
+                        .HasForeignKey("SessionLabelId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Congregation");
+
+                    b.Navigation("Creator");
+
+                    b.Navigation("SessionLabel");
+                });
+
+            modelBuilder.Entity("Echo.Domain.Attendances.SessionLabel", b =>
                 {
                     b.HasOne("Echo.Domain.Congregations.Congregation", "Congregation")
                         .WithMany()

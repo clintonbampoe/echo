@@ -17,9 +17,10 @@ public static class AttendanceCopy
             """
             COPY "Attendance" (
                 "Id", "CongregationId",
-                "AttendanceTypeId", "PersonId",
-                "Date", "CheckInTime",
-                "Notes", "CreatedAt"
+                "SessionId", "PersonId",
+                "PersonKindAtTime",
+                "CheckedInAt", "RecordedBy",
+                "CreatedAt"
             ) FROM STDIN (FORMAT BINARY)
             """,
             ct
@@ -30,11 +31,11 @@ public static class AttendanceCopy
             await writer.StartRowAsync(ct);
             await writer.WriteAsync(a.Id, NpgsqlDbType.Uuid, ct);
             await writer.WriteAsync(a.CongregationId, NpgsqlDbType.Uuid, ct);
-            await writer.WriteAsync(a.AttendanceTypeId, NpgsqlDbType.Integer, ct);
+            await writer.WriteAsync(a.SessionId, NpgsqlDbType.Uuid, ct);
             await writer.WriteAsync(a.PersonId, NpgsqlDbType.Uuid, ct);
-            await writer.WriteAsync(a.Date, NpgsqlDbType.Date, ct);
-            await writer.WriteAsync(a.CheckInTime, NpgsqlDbType.Time, ct);
-            await WriteNullableText(writer, a.Notes, ct);
+            await writer.WriteAsync(a.PersonKindAtTime.ToString(), NpgsqlDbType.Text, ct);
+            await WriteNullableTimestamp(writer, a.CheckedInAt, ct);
+            await WriteNullableUuid(writer, a.RecordedBy, ct);
             await writer.WriteAsync(a.CreatedAt, NpgsqlDbType.TimestampTz, ct);
         }
 

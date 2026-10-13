@@ -61,6 +61,44 @@ public class TitheService(
         return new SuccessResult<PagedResponse<TitheResponseDto>>(res);
     }
 
+    public async Task<IOperationResult> GetByMemberId(
+        Guid congregationId,
+        Guid memberId,
+        TitheFilters filters,
+        PaginationRequest pagination,
+        CancellationToken ct
+    )
+    {
+        var activity = instrumentation.ActivitySource.StartActivity("svc.tithe.get.by_member_id");
+        var cursor = encoder.Decode<TitheCursor>(pagination.Cursor);
+
+        List<Tithe> entities;
+        using (instrumentation.ActivitySource.StartActivity("svc.tithe.fetch.by_member_id"))
+        {
+            entities = await repository.GetByMemberId(
+                congregationId,
+                memberId,
+                filters,
+                cursor,
+                pagination.PageSize + 1,
+                ct
+            );
+        }
+
+        var hasMore = entities.Count > pagination.PageSize;
+        if (hasMore)
+            entities.RemoveAt(entities.Count - 1);
+
+        var nextCursor = hasMore ? encoder.Encode(BuildCursor(entities.Last())) : null;
+
+        var data = mapper.ToListDto(entities);
+        activity?.SetTag("tithe.count", data.Count);
+        TitheLog.ListByMemberId(logger, congregationId, memberId, data.Count);
+
+        var res = new PagedResponse<TitheResponseDto>(hasMore, nextCursor, data);
+        return new SuccessResult<PagedResponse<TitheResponseDto>>(res);
+    }
+
     public async Task<IOperationResult> GetById(Guid congregationId, Guid id, CancellationToken ct)
     {
         using var activity = instrumentation.ActivitySource.StartActivity("svc.tithe.get_by_id");

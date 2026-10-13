@@ -45,6 +45,8 @@ export const useUpdateProjectCategory = () => {
     onSuccess: (updated) => {
       queryClient.setQueryData(["projectCategories", updated.id], updated);
       queryClient.invalidateQueries({ queryKey: ["projectCategories"] });
+      // Lists show the category name, so refresh them after a rename.
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
     },
   });
 };

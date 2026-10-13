@@ -45,6 +45,8 @@ export const useUpdateAssetCategory = () => {
     onSuccess: (updated) => {
       queryClient.setQueryData(["assetCategories", updated.id], updated);
       queryClient.invalidateQueries({ queryKey: ["assetCategories"] });
+      // Lists show the category name, so refresh them after a rename.
+      queryClient.invalidateQueries({ queryKey: ["assets"] });
     },
   });
 };

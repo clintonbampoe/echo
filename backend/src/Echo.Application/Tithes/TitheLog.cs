@@ -11,6 +11,17 @@ public static partial class TitheLog
     )]
     public static partial void Listed(ILogger logger, Guid congregationId, int count);
 
+    [LoggerMessage(
+        Level = LogLevel.Information,
+        Message = "Tithe list: {Count} tithes returned for member {memberId} in congregation {congregationId}"
+    )]
+    public static partial void ListByMemberId(
+        ILogger logger,
+        Guid memberId,
+        Guid congregationId,
+        int count
+    );
+
     // --- Get by id ---
     [LoggerMessage(
         Level = LogLevel.Information,

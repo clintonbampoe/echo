@@ -25,6 +25,8 @@ import {
   DashboardIcon,
 } from "./Icons";
 import DeleteConfirmModal from "./common/DeleteConfirmModal";
+import ManageCategoriesModal from "./common/ManageCategoriesModal";
+import { getErrorMessage } from "../utils/errors";
 import "../styles/Finance.css";
 import type {
   Transaction,
@@ -195,6 +197,7 @@ const Finance: React.FC = () => {
   const [showRecordModal, setShowRecordModal] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [showManageCategories, setShowManageCategories] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const [editingCategory, setEditingCategory] =
@@ -224,6 +227,13 @@ const Finance: React.FC = () => {
   useEffect(() => {
     setTitle("Finances");
     setCtas([
+      {
+        type: "button",
+        label: "Manage Categories",
+        icon: "tag",
+        variant: "secondary",
+        onClick: () => setShowManageCategories(true),
+      },
       {
         type: "button",
         label: "Export Report",
@@ -384,6 +394,8 @@ const Finance: React.FC = () => {
       setDeletingCategory(null);
     } catch (err) {
       console.error("Failed to delete category:", err);
+      setShowDeleteConfirm(false);
+      alert(getErrorMessage(err, "Failed to delete category."));
     }
   };
 
@@ -1048,7 +1060,30 @@ const Finance: React.FC = () => {
         itemName={deletingCategory?.name || ""}
         title="Delete Stream"
         confirmText="Delete Stream"
-        warningMessage="Transactions under this stream will become uncategorized. This action cannot be undone."
+        warningMessage="A category that still has transactions can't be deleted — move those transactions to another category first."
+      />
+
+      <ManageCategoriesModal
+        isOpen={showManageCategories}
+        onClose={() => setShowManageCategories(false)}
+        title="Transaction Categories"
+        usedBy="transactions"
+        categories={categories.map((c) => ({ ...c, type: c.categoryType }))}
+        isLoading={isLoadingCategories}
+        typeOptions={["Income", "Expense"]}
+        onCreate={(name, type) =>
+          createCategory.mutateAsync({
+            name,
+            categoryType: type as TransactionType,
+          })
+        }
+        onUpdate={(id, name, type) =>
+          updateCategory.mutateAsync({
+            id,
+            data: { name, categoryType: type as TransactionType },
+          })
+        }
+        onDelete={(id) => deleteCategory.mutateAsync(id)}
       />
     </div>
   );

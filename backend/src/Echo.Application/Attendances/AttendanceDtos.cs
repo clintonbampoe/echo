@@ -5,53 +5,66 @@ namespace Echo.Application.Attendances;
 
 public record AttendanceCreateDto
 {
-    [Range(1, int.MaxValue)]
-    public int AttendanceTypeId { get; init; }
+    public Guid SessionId { get; init; }
 
     public Guid PersonId { get; init; }
 
-    public DateOnly Date { get; init; }
-    public TimeOnly CheckInTime { get; init; }
-
-    [StringLength(2000)]
-    public string? Notes { get; init; }
+    /// <summary>
+    /// Optional. If omitted, the service sets it based on context:
+    /// QR-scan check-ins get the current UTC time; admin-entered records
+    /// leave it null unless the admin explicitly provides a value.
+    /// </summary>
+    public DateTime? CheckedInAt { get; init; }
 }
 
 public record AttendanceUpdateDto
 {
-    public TimeOnly? CheckInTime { get; init; }
+    public DateTime? CheckedInAt { get; init; }
 
-    [StringLength(2000)]
-    public string? Notes { get; init; }
+    // PersonId and SessionId are immutable. Delete and recreate to change either.
+    // PersonKindAtTime is immutable. It reflects what was true when the
+    // attendance was recorded.
 }
 
 public record AttendanceResponseDto
 {
     public Guid Id { get; init; }
-    public int AttendanceTypeId { get; init; }
-    public required string AttendanceTypeName { get; init; }
+
+    public Guid SessionId { get; init; }
+    public DateOnly SessionDate { get; init; }
+    public string? SessionName { get; init; }
+    public int SessionLabelId { get; init; }
+    public required string SessionLabelName { get; init; }
+
     public Guid PersonId { get; init; }
     public required string PersonName { get; init; }
+
+    /// <summary>
+    /// The person's role at the time this attendance was recorded.
+    /// Not necessarily their current role — a visitor who later became a
+    /// member still shows as Visitor for their pre-conversion attendances.
+    /// </summary>
     public PersonKind PersonKind { get; init; }
-    public DateOnly Date { get; init; }
-    public TimeOnly CheckInTime { get; init; }
-    public string? Notes { get; init; }
+
+    public DateTime? CheckedInAt { get; init; }
+    public Guid? RecordedBy { get; init; }
     public DateTime CreatedAt { get; init; }
 }
 
 public record AttendanceCursor
 {
-    public DateOnly Date { get; init; }
+    public DateOnly SessionDate { get; init; }
     public Guid Id { get; init; }
 }
 
 public record AttendanceFilters
 {
-    public int? AttendanceTypeId { get; init; }
     public Guid? PersonId { get; init; }
+    public Guid? SessionId { get; init; }
+    public int? SessionLabelId { get; init; }
     public PersonKind? Kind { get; init; }
     public DateOnly? From { get; init; }
-    public DateOnly? To { get; init; } // on Date
+    public DateOnly? To { get; init; }
 }
 
 public record AttendanceSummaryDto
