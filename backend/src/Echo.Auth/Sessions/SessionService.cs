@@ -174,7 +174,7 @@ public class SessionService(
         User? entity;
         using (instrumentation.ActivitySource.StartActivity("svc.session.fetch.user_by_id"))
         {
-            entity = await userRepository.GetById(result.UserId, ct);
+            entity = await userRepository.GetByIdAnyCongregation(result.UserId, ct);
         }
 
         if (entity is null)

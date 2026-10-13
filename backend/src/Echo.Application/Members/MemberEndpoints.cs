@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Echo.Shared.Extensions;
 using Echo.Shared.Pagination;
 using Microsoft.AspNetCore.Builder;
@@ -105,7 +106,7 @@ public static class MemberEndpoints
             .MapPost(
                 "/",
                 async (
-                    MemberCreateDto dto,
+                    [FromBody] MemberCreateDto dto,
                     MemberService service,
                     HttpContext context,
                     CancellationToken ct
@@ -167,8 +168,8 @@ public static class MemberEndpoints
             .MapPut(
                 "/{id:guid}",
                 async (
-                    Guid id,
-                    MemberUpdateDto dto,
+                    [FromRoute] Guid id,
+                    [FromBody] MemberUpdateDto dto,
                     MemberService service,
                     HttpContext context,
                     CancellationToken ct
@@ -257,7 +258,7 @@ public static class MemberEndpoints
             .MapGet(
                 "/search",
                 async (
-                    [FromQuery] string q,
+                    [FromQuery, StringLength(100, MinimumLength = 1)] string q,
                     MemberService service,
                     HttpContext context,
                     CancellationToken ct

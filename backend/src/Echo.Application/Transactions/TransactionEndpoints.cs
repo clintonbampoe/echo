@@ -2,6 +2,7 @@ using Echo.Shared.Extensions;
 using Echo.Shared.Pagination;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 
 namespace Echo.Application.Transactions;
@@ -68,7 +69,7 @@ public static class TransactionEndpoints
             .MapGet(
                 "/{id:guid}",
                 async (
-                    Guid id,
+                    [FromRoute] Guid id,
                     TransactionService service,
                     HttpContext context,
                     CancellationToken ct
@@ -104,7 +105,7 @@ public static class TransactionEndpoints
             .MapPost(
                 "/",
                 async (
-                    TransactionCreateDto dto,
+                    [FromBody] TransactionCreateDto dto,
                     TransactionService service,
                     HttpContext context,
                     CancellationToken ct
@@ -168,8 +169,8 @@ public static class TransactionEndpoints
             .MapPut(
                 "/{id:guid}",
                 async (
-                    Guid id,
-                    TransactionUpdateDto dto,
+                    [FromRoute] Guid id,
+                    [FromBody] TransactionUpdateDto dto,
                     TransactionService service,
                     HttpContext context,
                     CancellationToken ct
@@ -223,7 +224,7 @@ public static class TransactionEndpoints
             .MapDelete(
                 "/{id:guid}",
                 async (
-                    Guid id,
+                    [FromRoute] Guid id,
                     TransactionService service,
                     HttpContext context,
                     CancellationToken ct

@@ -26,7 +26,14 @@ public class UserRepository(AppDbContext context)
             .ToListAsync(ct);
     }
 
-    public async Task<User?> GetById(Guid id, CancellationToken ct = default)
+    public async Task<User?> GetById(Guid congregationId, Guid id, CancellationToken ct = default)
+    {
+        return await _dbSet.FilterDeleted().ById(congregationId, id).FirstOrDefaultAsync(ct);
+    }
+
+    // Only for flows that start from a token or link and do not know the congregation yet
+    // (for example refreshing a session). Request handlers must use the scoped GetById.
+    public async Task<User?> GetByIdAnyCongregation(Guid id, CancellationToken ct = default)
     {
         return await _dbSet.FilterDeleted().Where(u => u.Id == id).FirstOrDefaultAsync(ct);
     }
@@ -68,6 +75,12 @@ public class UserRepository(AppDbContext context)
 
 internal static class UserQueryExtensions
 {
+    internal static IQueryable<User> ById(
+        this IQueryable<User> query,
+        Guid congregationId,
+        Guid id
+    ) => query.Where(u => u.Id == id && u.CongregationId == congregationId);
+
     internal static IQueryable<User> Paginate(
         this IQueryable<User> query,
         UserCursor? cursor,

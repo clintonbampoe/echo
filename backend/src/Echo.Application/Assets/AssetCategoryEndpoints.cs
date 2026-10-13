@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Echo.Shared.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -53,7 +54,7 @@ public static class AssetCategoryEndpoints
             .MapGet(
                 "/{id:int}",
                 async (
-                    int id,
+                    [FromRoute] int id,
                     AssetCategoryService service,
                     HttpContext context,
                     CancellationToken ct
@@ -90,7 +91,7 @@ public static class AssetCategoryEndpoints
             .MapPost(
                 "/",
                 async (
-                    AssetCategoryCreateDto dto,
+                    [FromBody] AssetCategoryCreateDto dto,
                     AssetCategoryService service,
                     HttpContext context,
                     CancellationToken ct
@@ -139,8 +140,8 @@ public static class AssetCategoryEndpoints
             .MapPut(
                 "/{id:int}",
                 async (
-                    int id,
-                    AssetCategoryUpdateDto dto,
+                    [FromRoute] int id,
+                    [FromBody] AssetCategoryUpdateDto dto,
                     AssetCategoryService service,
                     HttpContext context,
                     CancellationToken ct
@@ -185,7 +186,7 @@ public static class AssetCategoryEndpoints
             .MapDelete(
                 "/{id:int}",
                 async (
-                    int id,
+                    [FromRoute] int id,
                     AssetCategoryService service,
                     HttpContext context,
                     CancellationToken ct
@@ -229,7 +230,7 @@ public static class AssetCategoryEndpoints
             .MapGet(
                 "/search",
                 async (
-                    [FromQuery] string q,
+                    [FromQuery, StringLength(100, MinimumLength = 1)] string q,
                     AssetCategoryService service,
                     HttpContext context,
                     CancellationToken ct
