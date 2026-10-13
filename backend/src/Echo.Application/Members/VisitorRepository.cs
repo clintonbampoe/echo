@@ -1,3 +1,4 @@
+using Echo.Application.Attendances;
 using Echo.Data;
 using Echo.Domain.Attendances;
 using Echo.Domain.Members;
@@ -87,7 +88,7 @@ public class VisitorRepository(AppDbContext context)
             .FilterDeleted()
             .Where(v => v.CongregationId == congregationId)
             .Filter(filters)
-            .Where(v => attendanceDbSet.FilterDeleted().Count(a => a.PersonId == v.PersonId) > 1)
+            .Where(v => attendanceDbSet.Live().Count(a => a.PersonId == v.PersonId) > 1)
             .CountAsync(ct);
     }
 

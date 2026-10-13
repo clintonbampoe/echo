@@ -215,7 +215,7 @@ public static class TransactionCategoryEndpoints
 
                 ### Side effects
                 - The category is marked as deleted.
-                - **Existing Transactions assigned to this category are not affected.** They keep their `categoryId` pointing at the deleted category. `categoryName` may resolve to null on fetch.
+                - **Existing Transactions assigned to this category are not affected.** They keep their `categoryId` pointing at the deleted category. `categoryName` still returns the deleted category's name.
                 - **New transactions cannot reference a deleted category** — the FK lookup will fail with `404 FOREIGN_KEY_NOT_FOUND`.
 
                 ### Failure modes

@@ -211,7 +211,7 @@ public static class AssetCategoryEndpoints
 
                 ### Side effects
                 - The category is marked as deleted.
-                - **Existing Assets assigned to this category are not affected.** They keep their `categoryId` pointing at the (now deleted) category. On fetch, `categoryName` may resolve to null.
+                - **Existing Assets assigned to this category are not affected.** They keep their `categoryId` pointing at the (now deleted) category. On fetch, `categoryName` still returns the deleted category's name.
                 - **New assets cannot reference a deleted category** — the FK lookup will fail with `404 FOREIGN_KEY_NOT_FOUND`.
 
                 ### Failure modes
