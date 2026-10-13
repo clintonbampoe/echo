@@ -25,8 +25,7 @@ public class TitheRepository(AppDbContext context)
             .Include(t => t.Member)
                 .ThenInclude(m => m.Person)
             .Filter(filters)
-            .OrderByDescending(t => t.CollectionDate)
-            .ThenBy(t => t.Id)
+            .OrderForList()
             .Paginate(cursor, pageSize)
             .ToListAsync(ct);
     }
@@ -56,6 +55,7 @@ public class TitheRepository(AppDbContext context)
             .Include(t => t.Member)
                 .ThenInclude(t => t.Person)
             .Filter(filters)
+            .OrderForList()
             .Paginate(cursor, pageSize)
             .ToListAsync(ct);
     }
@@ -146,6 +146,10 @@ internal static class TitheQueryExtensions
 
         return query;
     }
+
+    // Paginate's cursor assumes exactly this order.
+    internal static IOrderedQueryable<Tithe> OrderForList(this IQueryable<Tithe> query) =>
+        query.OrderByDescending(t => t.CollectionDate).ThenBy(t => t.Id);
 
     internal static IQueryable<Tithe> Paginate(
         this IQueryable<Tithe> query,
