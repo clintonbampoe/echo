@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Echo.Shared.Extensions;
 using Echo.Shared.Pagination;
 using Microsoft.AspNetCore.Builder;
@@ -72,7 +73,7 @@ public static class VisitorEndpoints
             .MapGet(
                 "/{id:guid}",
                 async (
-                    Guid id,
+                    [FromRoute] Guid id,
                     VisitorService service,
                     HttpContext context,
                     CancellationToken ct
@@ -108,7 +109,7 @@ public static class VisitorEndpoints
             .MapPost(
                 "/",
                 async (
-                    VisitorCreateDto dto,
+                    [FromBody] VisitorCreateDto dto,
                     VisitorService service,
                     HttpContext context,
                     CancellationToken ct
@@ -162,8 +163,8 @@ public static class VisitorEndpoints
             .MapPut(
                 "/{id:guid}",
                 async (
-                    Guid id,
-                    VisitorUpdateDto dto,
+                    [FromRoute] Guid id,
+                    [FromBody] VisitorUpdateDto dto,
                     VisitorService service,
                     HttpContext context,
                     CancellationToken ct
@@ -213,7 +214,7 @@ public static class VisitorEndpoints
             .MapDelete(
                 "/{id:guid}",
                 async (
-                    Guid id,
+                    [FromRoute] Guid id,
                     VisitorService service,
                     HttpContext context,
                     CancellationToken ct
@@ -261,7 +262,7 @@ public static class VisitorEndpoints
             .MapGet(
                 "/search",
                 async (
-                    [FromQuery] string q,
+                    [FromQuery, StringLength(100, MinimumLength = 2)] string q,
                     VisitorService service,
                     HttpContext context,
                     CancellationToken ct
@@ -306,8 +307,8 @@ public static class VisitorEndpoints
             .MapPost(
                 "/{id:guid}/convert",
                 async (
-                    Guid id,
-                    MemberCreateDto dto,
+                    [FromRoute] Guid id,
+                    [FromBody] MemberCreateDto dto,
                     VisitorService service,
                     HttpContext context,
                     CancellationToken ct

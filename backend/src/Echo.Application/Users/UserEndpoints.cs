@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+using Echo.Domain.Users;
 using Echo.Shared.Extensions;
 using Echo.Shared.Pagination;
 using Microsoft.AspNetCore.Builder;
@@ -14,7 +16,9 @@ public static class UserEndpoints
         ApplicationInstrumentation instrumentation
     )
     {
-        var group = app.MapGroup("/users").WithTags("Users").RequireAuthorization();
+        var group = app.MapGroup("/users")
+            .WithTags("Users")
+            .RequireAuthorization(policy => policy.RequireRole(nameof(UserRole.Admin)));
 
         group
             .MapGet(
@@ -65,7 +69,8 @@ public static class UserEndpoints
                 """
             )
             .Produces<PagedResponse<UserResponseDto>>(StatusCodes.Status200OK)
-            .ProducesProblem(StatusCodes.Status401Unauthorized);
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden);
 
         group
             .MapGet(
@@ -97,13 +102,14 @@ public static class UserEndpoints
             )
             .Produces<UserResponseDto>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status401Unauthorized);
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden);
 
         group
             .MapPost(
                 "/",
                 async (
-                    UserCreateDto dto,
+                    [FromBody] UserCreateDto dto,
                     UserService service,
                     HttpContext context,
                     CancellationToken ct
@@ -155,14 +161,15 @@ public static class UserEndpoints
             )
             .Produces<UserResponseDto>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest)
-            .ProducesProblem(StatusCodes.Status401Unauthorized);
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden);
 
         group
             .MapPut(
                 "/{id:guid}",
                 async (
-                    Guid id,
-                    UserUpdateDto dto,
+                    [FromRoute] Guid id,
+                    [FromBody] UserUpdateDto dto,
                     UserService service,
                     HttpContext context,
                     CancellationToken ct
@@ -212,7 +219,8 @@ public static class UserEndpoints
             .Produces<UserResponseDto>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status401Unauthorized);
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden);
 
         group
             .MapDelete(
@@ -252,13 +260,14 @@ public static class UserEndpoints
             )
             .Produces(StatusCodes.Status204NoContent)
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status401Unauthorized);
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden);
 
         group
             .MapGet(
                 "/search",
                 async (
-                    [FromQuery] string q,
+                    [FromQuery, StringLength(100, MinimumLength = 2)] string q,
                     UserService service,
                     HttpContext context,
                     CancellationToken ct
@@ -299,7 +308,8 @@ public static class UserEndpoints
             )
             .RequireRateLimiting("search")
             .Produces<List<UserSearchResultDto>>(StatusCodes.Status200OK)
-            .ProducesProblem(StatusCodes.Status401Unauthorized);
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden);
 
         return app;
     }

@@ -23,6 +23,9 @@ public static class Extensions
         // Date windows
         services.AddSingleton<DateWindows>();
 
+        // Enforce the DataAnnotations on endpoint parameters and request DTOs
+        services.AddValidation();
+
         // Person
         services.AddScoped<PersonRepository>();
 

@@ -83,6 +83,7 @@ The token carries the user's `UserRole` (`Admin`, `Accountant`, `Clerk`, `Member
 |---|---|---|---|---|
 | Tithes: list, summary, by member, get by ID, update, delete | yes | yes | no | no |
 | Tithes: create (`POST /tithes`) | yes | yes | yes | no |
+| Users: every endpoint (list, get, create, update, delete, search) | yes | no | no | no |
 | Invitations | yes | no | no | no |
 
 All other endpoints currently only require a signed-in user.
@@ -128,9 +129,11 @@ Errors follow the RFC 7807 standard.
 {
   "status": 400,
   "title": "An unexpected error occured with your request.",
-  "detail": "Specific error message explaining why the request failed."
+  "detail": "Specific error message explaining why the request failed.",
+  "traceId": "4bf92f3577b34da6a3ce929d0e0e4736"
 }
 ```
+Unexpected errors (`500`) and malformed requests (`400`) include a `traceId` that matches the trace in the logs. Quote it when reporting a problem. Requests that break a validation rule (for example a password shorter than 8 characters) return `400` with a validation problem listing each field under `errors`.
 
 ---
 
@@ -220,8 +223,9 @@ Paged list responses and summary responses include `window: { from, to, isDefaul
 
 ### 4. Search
 Search endpoints are available for all searchable entities. They use **trigram similarity** to find the best matches regardless of exact spelling.
-- **Behavior**: Returns the top 5 most relevant results.
-- **Example**: `GET /api/v1/events/search?query=Christmas`
+- **Behavior**: Returns the top 5 most relevant results. The term is matched literally, so `%` and `_` are not treated as wildcards.
+- **Term**: the `q` query parameter is required and must be between 2 and 100 characters; otherwise the API returns `400`.
+- **Example**: `GET /api/v1/events/search?q=Christmas`
 
 ### 5. Health Check
 To verify the API is running:

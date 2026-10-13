@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Echo.Shared.Extensions;
 using Echo.Shared.Pagination;
 using Microsoft.AspNetCore.Builder;
@@ -102,7 +103,7 @@ public static class AssetEndpoints
             .MapPost(
                 "/",
                 async (
-                    AssetCreateDto dto,
+                    [FromBody] AssetCreateDto dto,
                     AssetService service,
                     HttpContext context,
                     CancellationToken ct
@@ -163,8 +164,8 @@ public static class AssetEndpoints
             .MapPut(
                 "/{id:guid}",
                 async (
-                    Guid id,
-                    AssetUpdateDto dto,
+                    [FromRoute] Guid id,
+                    [FromBody] AssetUpdateDto dto,
                     AssetService service,
                     HttpContext context,
                     CancellationToken ct
@@ -252,7 +253,7 @@ public static class AssetEndpoints
             .MapGet(
                 "/search",
                 async (
-                    [FromQuery] string q,
+                    [FromQuery, StringLength(100, MinimumLength = 2)] string q,
                     AssetService service,
                     HttpContext context,
                     CancellationToken ct

@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Echo.Shared.Extensions;
 using Echo.Shared.Pagination;
 using Microsoft.AspNetCore.Builder;
@@ -102,7 +103,7 @@ public static class EventEndpoints
             .MapPost(
                 "/",
                 async (
-                    EventCreateDto dto,
+                    [FromBody] EventCreateDto dto,
                     EventService service,
                     HttpContext context,
                     CancellationToken ct
@@ -166,8 +167,8 @@ public static class EventEndpoints
             .MapPut(
                 "/{id:guid}",
                 async (
-                    Guid id,
-                    EventUpdateDto dto,
+                    [FromRoute] Guid id,
+                    [FromBody] EventUpdateDto dto,
                     EventService service,
                     HttpContext context,
                     CancellationToken ct
@@ -259,7 +260,7 @@ public static class EventEndpoints
             .MapGet(
                 "/search",
                 async (
-                    [FromQuery] string q,
+                    [FromQuery, StringLength(100, MinimumLength = 2)] string q,
                     EventService service,
                     HttpContext context,
                     CancellationToken ct

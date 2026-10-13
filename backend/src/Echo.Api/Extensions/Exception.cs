@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Echo.Shared.HttpResults;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
@@ -31,7 +32,7 @@ public static class ExceptionHandlingExtensions
         return app;
     }
 
-    private static async Task WriteBadRequest(
+    internal static async Task WriteBadRequest(
         HttpContext context,
         BadHttpRequestException exception,
         bool isDevelopment
@@ -48,6 +49,7 @@ public static class ExceptionHandlingExtensions
             Instance = context.Request.Path,
         };
         problem.Extensions["errorCode"] = "BAD_REQUEST";
+        problem.Extensions["traceId"] = GetTraceId(context);
 
         if (isDevelopment && exception.InnerException is not null)
         {
@@ -58,7 +60,7 @@ public static class ExceptionHandlingExtensions
         await context.Response.WriteAsJsonAsync(problem);
     }
 
-    private static async Task WriteServerError(
+    internal static async Task WriteServerError(
         HttpContext context,
         Exception? exception,
         bool isDevelopment
@@ -77,6 +79,7 @@ public static class ExceptionHandlingExtensions
             Instance = context.Request.Path,
         };
         problem.Extensions["errorCode"] = "INTERNAL_SERVER_ERROR";
+        problem.Extensions["traceId"] = GetTraceId(context);
 
         if (isDevelopment && exception is not null)
         {
@@ -87,6 +90,10 @@ public static class ExceptionHandlingExtensions
 
         await context.Response.WriteAsJsonAsync(problem);
     }
+
+    // Matches the trace id in logs and OpenTelemetry, so support can find the failing request.
+    private static string GetTraceId(HttpContext context) =>
+        Activity.Current?.TraceId.ToString() ?? context.TraceIdentifier;
 
     private static string[] FlattenInnerExceptions(Exception exception)
     {

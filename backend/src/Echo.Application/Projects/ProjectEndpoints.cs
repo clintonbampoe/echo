@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Echo.Shared.Extensions;
 using Echo.Shared.Pagination;
 using Microsoft.AspNetCore.Builder;
@@ -72,7 +73,7 @@ public static class ProjectEndpoints
             .MapGet(
                 "/{id:guid}",
                 async (
-                    Guid id,
+                    [FromRoute] Guid id,
                     ProjectService service,
                     HttpContext context,
                     CancellationToken ct
@@ -108,7 +109,7 @@ public static class ProjectEndpoints
             .MapPost(
                 "/",
                 async (
-                    ProjectCreateDto dto,
+                    [FromBody] ProjectCreateDto dto,
                     ProjectService service,
                     HttpContext context,
                     CancellationToken ct
@@ -169,8 +170,8 @@ public static class ProjectEndpoints
             .MapPut(
                 "/{id:guid}",
                 async (
-                    Guid id,
-                    ProjectUpdateDto dto,
+                    [FromRoute] Guid id,
+                    [FromBody] ProjectUpdateDto dto,
                     ProjectService service,
                     HttpContext context,
                     CancellationToken ct
@@ -223,7 +224,7 @@ public static class ProjectEndpoints
             .MapDelete(
                 "/{id:guid}",
                 async (
-                    Guid id,
+                    [FromRoute] Guid id,
                     ProjectService service,
                     HttpContext context,
                     CancellationToken ct
@@ -266,7 +267,7 @@ public static class ProjectEndpoints
             .MapGet(
                 "/search",
                 async (
-                    [FromQuery] string q,
+                    [FromQuery, StringLength(100, MinimumLength = 2)] string q,
                     ProjectService service,
                     HttpContext context,
                     CancellationToken ct

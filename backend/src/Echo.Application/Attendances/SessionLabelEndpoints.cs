@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Echo.Shared.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -59,7 +60,7 @@ public static class SessionLabelEndpoints
             .MapGet(
                 "/{id:int}",
                 async (
-                    int id,
+                    [FromRoute] int id,
                     SessionLabelService service,
                     HttpContext context,
                     CancellationToken ct
@@ -96,7 +97,7 @@ public static class SessionLabelEndpoints
             .MapPost(
                 "/",
                 async (
-                    SessionLabelCreateDto dto,
+                    [FromBody] SessionLabelCreateDto dto,
                     SessionLabelService service,
                     HttpContext context,
                     CancellationToken ct
@@ -146,8 +147,8 @@ public static class SessionLabelEndpoints
             .MapPut(
                 "/{id:int}",
                 async (
-                    int id,
-                    SessionLabelUpdateDto dto,
+                    [FromRoute] int id,
+                    [FromBody] SessionLabelUpdateDto dto,
                     SessionLabelService service,
                     HttpContext context,
                     CancellationToken ct
@@ -193,7 +194,7 @@ public static class SessionLabelEndpoints
             .MapDelete(
                 "/{id:int}",
                 async (
-                    int id,
+                    [FromRoute] int id,
                     SessionLabelService service,
                     HttpContext context,
                     CancellationToken ct
@@ -238,7 +239,7 @@ public static class SessionLabelEndpoints
             .MapGet(
                 "/search",
                 async (
-                    [FromQuery] string q,
+                    [FromQuery, StringLength(100, MinimumLength = 2)] string q,
                     SessionLabelService service,
                     HttpContext context,
                     CancellationToken ct

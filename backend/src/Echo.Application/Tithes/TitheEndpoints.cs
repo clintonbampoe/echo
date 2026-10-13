@@ -2,6 +2,7 @@ using Echo.Shared.Extensions;
 using Echo.Shared.Pagination;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 
 namespace Echo.Application.Tithes;
@@ -76,7 +77,7 @@ public static class TitheEndpoints
             .MapGet(
                 "/member/{memberId:guid}",
                 async (
-                    Guid memberId,
+                    [FromRoute] Guid memberId,
                     [AsParameters] TitheFilters filters,
                     [AsParameters] PaginationRequest pagination,
                     TitheService service,
@@ -173,7 +174,7 @@ public static class TitheEndpoints
             .MapPost(
                 "/",
                 async (
-                    TitheCreateDto dto,
+                    [FromBody] TitheCreateDto dto,
                     TitheService service,
                     HttpContext context,
                     CancellationToken ct
@@ -237,8 +238,8 @@ public static class TitheEndpoints
             .MapPut(
                 "/{id:guid}",
                 async (
-                    Guid id,
-                    TitheUpdateDto dto,
+                    [FromRoute] Guid id,
+                    [FromBody] TitheUpdateDto dto,
                     TitheService service,
                     HttpContext context,
                     CancellationToken ct
