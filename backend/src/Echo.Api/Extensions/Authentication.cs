@@ -1,3 +1,4 @@
+using Echo.Application;
 using Echo.Shared.Options.Jwt;
 using Echo.Shared.Services.Security;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -41,6 +42,8 @@ public static class Authentication
             options.DefaultPolicy = new AuthorizationPolicyBuilder()
                 .RequireAuthenticatedUser()
                 .Build();
+
+            options.AddFinancePolicies();
         });
 
         return services;
