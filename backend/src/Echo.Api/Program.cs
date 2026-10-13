@@ -28,12 +28,16 @@ builder
     .ConfigureSwaggerDocs()
     .ConfigureDbContext(builder.Configuration)
     .ConfigureApiVersioning()
+    .ConfigureForwardedHeaders(builder.Configuration)
     .ConfigureRateLimits()
     .ConfigureHealthChecks()
     .ConfigureJwtAuthentication(builder.Configuration)
     .ConfigureCors(builder.Configuration);
 
 var app = builder.Build();
+
+// Must run before anything that reads the client IP or scheme (the rate limiter, auth).
+app.UseForwardedHeaders();
 
 await Database.RunMigrationsOnStartup(app, builder.Configuration);
 
