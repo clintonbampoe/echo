@@ -76,6 +76,17 @@ Authorization: Bearer <your-jwt-token>
 Echo is a multi-tenant platform. The `CongregationId` is encrypted within the JWT.
 **Security Note:** The system automatically extracts the `CongregationId` from your token. You cannot pass a different `CongregationId` in the request body or query to access other tenants; this is strictly enforced at the service layer.
 
+### Roles
+The token carries the user's `UserRole` (`Admin`, `Accountant`, `Clerk`, `Member`). Some endpoints are restricted by role and return `403 Forbidden` when the signed-in user's role is not allowed.
+
+| Endpoints | Admin | Accountant | Clerk | Member |
+|---|---|---|---|---|
+| Tithes: list, summary, by member, get by ID, update, delete | yes | yes | no | no |
+| Tithes: create (`POST /tithes`) | yes | yes | yes | no |
+| Invitations | yes | no | no | no |
+
+All other endpoints currently only require a signed-in user.
+
 ---
 
 ## Standard Response Formats
