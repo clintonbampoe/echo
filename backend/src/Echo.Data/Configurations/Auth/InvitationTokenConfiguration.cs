@@ -13,6 +13,9 @@ public class InvitationTokenConfiguration : IEntityTypeConfiguration<InvitationT
         builder.Property(e => e.CreatedAt).HasDefaultValueSql("now()").ValueGeneratedOnAdd();
 
         builder.HasIndex(i => i.TokenHash).IsUnique();
+        builder.HasIndex(i => new { i.CongregationId, i.CreatedAt });
+        builder.Property(i => i.Label).HasMaxLength(100);
+        builder.Property(i => i.UseCount).HasDefaultValue(0);
 
         builder
             .HasOne(i => i.Congregation)

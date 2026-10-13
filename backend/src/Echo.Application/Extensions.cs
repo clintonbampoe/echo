@@ -46,6 +46,7 @@ public static class Extensions
 
         // Congregations
         services.AddScoped<CongregationRepository>();
+        services.AddScoped<CongregationService>();
         services.AddSingleton<ICongregationMapper, CongregationMapper>();
 
         // Assets
@@ -145,6 +146,7 @@ public static class Extensions
     )
     {
         group.MapAssetEndpoints(instrumentation);
+        group.MapCongregationEndpoints(instrumentation);
         group.MapAssetCategoryEndpoints(instrumentation);
         group.MapAttendanceEndpoints(instrumentation);
         group.MapSessionEndpoints(instrumentation);

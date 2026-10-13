@@ -247,6 +247,22 @@ Most modules have a `GET .../summary` that accepts the same filters as the list.
 - `GET /assets/summary` leaves out liquidated assets by default, because its totals describe what the church owns now. Pass `includeLiquidated=true` to include them. The asset list still shows liquidated assets; `includeLiquidated=false` hides them, and `status=Liquidated` always shows them.
 - `GET /transactions/summary/monthly` and `GET /tithes/summary/monthly` return one row per calendar month so a chart needs a single request. Transactions return `{ year, month, totalIncome, totalExpenses, net }`; tithes return `{ year, month, totalCollected, uniqueTithers }`. Months with nothing in them are returned with zeros. `from` and `to` choose the months (any day in the first and last month); the default is the last 12 months, and the range may cover at most 24 months and `from` must not be after `to`, otherwise the API returns `400`. The first and last months are always counted whole, whichever day you pass. Tithes are grouped by the month they are **for**, not by the day they were collected.
 
+**Invitations**
+Admins invite people with a code. An invitation is **reusable until it expires or is revoked**, and each registration adds one to its `useCount`.
+
+| Endpoint | Who | What it does |
+|---|---|---|
+| `POST /auth/invitations` | Admin | creates an invitation (`allowedRole`, optional `expiryDays` 1–30 and `label`); returns the code **once** |
+| `GET /auth/invitations` | Admin | lists them, newest first; filter by `status` (`Active`, `Expired`, `Revoked`) |
+| `PUT /auth/invitations/{id}` | Admin | changes the `label` and/or makes it expire `expiryDays` from now (not for a revoked one) |
+| `POST /auth/invitations/{id}/revoke` | Admin | stops it working; it stays in the list as `Revoked` |
+| `DELETE /auth/invitations/{id}` | Admin | removes it from the list and stops it working |
+| `GET /auth/invitations/{code}` | anyone | shows the congregation (name, city, region), role and expiry, so the join screen can confirm before sign-up |
+
+The code looks like `K7QX-92MD-PW4T`: 12 characters from an alphabet without I, L, O or U, so it is easy to read out and type. It can be entered in any case, with or without dashes or spaces, and `o` is read as `0` and `i`/`l` as `1`. The server stores only a hash, so a code cannot be shown again. The lookup is rate limited and answers `404` for a wrong, expired, revoked or deleted code alike.
+
+`GET /congregation` returns the signed-in user's own congregation (name, type, contact details, location) for any role.
+
 ### 4. Search
 Search endpoints are available for all searchable entities. They use **trigram similarity** to find the best matches regardless of exact spelling.
 - **Behavior**: Returns the top 5 most relevant results. The term is matched literally, so `%` and `_` are not treated as wildcards.

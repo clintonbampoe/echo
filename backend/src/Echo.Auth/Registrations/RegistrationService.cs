@@ -191,6 +191,8 @@ public class RegistrationService(
                 await unitOfWork.CommitAsync(ct);
             }
 
+            await invitationService.RecordUse(invitation.Id, ct);
+
             using (
                 instrumentation.ActivitySource.StartActivity(
                     "svc.registration.persist.email_verification"
