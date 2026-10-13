@@ -236,6 +236,14 @@ Some list, detail and update responses carry a count so a screen does not need o
 
 For categories this is the same number that blocks deleting a category with `409`.
 
+**Summaries**
+Most modules have a `GET .../summary` that accepts the same filters as the list. Besides the totals, a few have extras:
+
+- `GET /events/summary` returns `totalEvents`, `upcomingEvents`, `totalRegistered` and `totalAttended`.
+- `GET /transactions/summary` also returns `byCategory`: one row per category and type with `categoryId`, `categoryName`, `type`, `total` and `count`, largest total first. `mostActiveCategory` (by number of transactions) is unchanged.
+- `GET /assets/summary` leaves out liquidated assets by default, because its totals describe what the church owns now. Pass `includeLiquidated=true` to include them. The asset list still shows liquidated assets; `includeLiquidated=false` hides them, and `status=Liquidated` always shows them.
+- `GET /transactions/summary/monthly` and `GET /tithes/summary/monthly` return one row per calendar month so a chart needs a single request. Transactions return `{ year, month, totalIncome, totalExpenses, net }`; tithes return `{ year, month, totalCollected, uniqueTithers }`. Months with nothing in them are returned with zeros. `from` and `to` choose the months (any day in the first and last month); the default is the last 12 months, and the range may cover at most 24 months and `from` must not be after `to`, otherwise the API returns `400`. The first and last months are always counted whole, whichever day you pass. Tithes are grouped by the month they are **for**, not by the day they were collected.
+
 ### 4. Search
 Search endpoints are available for all searchable entities. They use **trigram similarity** to find the best matches regardless of exact spelling.
 - **Behavior**: Returns the top 5 most relevant results. The term is matched literally, so `%` and `_` are not treated as wildcards.

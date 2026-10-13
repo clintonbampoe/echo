@@ -4,6 +4,7 @@ using Echo.Domain.Attendances;
 using Echo.Domain.Members;
 using Echo.Shared.Query;
 using Microsoft.EntityFrameworkCore;
+using Echo.Domain.Congregations;
 
 namespace Echo.Application.Members;
 
@@ -51,47 +52,6 @@ public class VisitorRepository(AppDbContext context)
             .ToListAsync(ct);
     }
 
-    public Task<int> Count(
-        Guid congregationId,
-        VisitorFilters filters,
-        CancellationToken ct = default
-    ) =>
-        _dbSet
-            .AsNoTracking()
-            .FilterDeleted()
-            .Where(v => v.CongregationId == congregationId)
-            .Filter(filters)
-            .CountAsync(ct);
-
-    public Task<int> CountConverted(
-        Guid congregationId,
-        VisitorFilters filters,
-        CancellationToken ct = default
-    ) =>
-        _dbSet
-            .AsNoTracking()
-            .FilterDeleted()
-            .Where(v => v.CongregationId == congregationId)
-            .Where(v => v.ConvertedAt != null)
-            .Filter(filters)
-            .CountAsync(ct);
-
-    public Task<int> CountRecurring(
-        Guid congregationId,
-        VisitorFilters filters,
-        CancellationToken ct = default
-    )
-    {
-        var attendanceDbSet = context.Set<Attendance>();
-        return _dbSet
-            .AsNoTracking()
-            .FilterDeleted()
-            .Where(v => v.CongregationId == congregationId)
-            .Filter(filters)
-            .Where(v => attendanceDbSet.Live().Count(a => a.PersonId == v.PersonId) > 1)
-            .CountAsync(ct);
-    }
-
     public async Task<Dictionary<Guid, (int Count, DateOnly LastVisited)>> GetVisitStats(
         Guid congregationId,
         IReadOnlyList<Guid> personIds,
@@ -109,6 +69,26 @@ public class VisitorRepository(AppDbContext context)
             .ToDictionaryAsync(x => x.PersonId, x => (x.Count, x.LastDate), ct);
     }
 
+    public async Task<VisitorStats> GetSummaryStats(
+        Guid congregationId,
+        VisitorFilters filters,
+        CancellationToken ct = default
+    )
+    {
+        var visitors = _dbSet
+            .AsNoTracking()
+            .FilterDeleted()
+            .Where(v => v.CongregationId == congregationId)
+            .Filter(filters);
+        var attendance = context.Set<Attendance>().Live();
+
+        var stats = await context
+            .OneRow(congregationId)
+            .SummarizeVisitors(visitors, attendance)
+            .FirstOrDefaultAsync(ct);
+        return stats ?? new VisitorStats(0, 0, 0);
+    }
+
     public void Create(Visitor entity) => _dbSet.Add(entity);
 
     public void SoftDelete(Visitor entity) => entity.DeletedAt = DateTime.UtcNow;
@@ -116,6 +96,17 @@ public class VisitorRepository(AppDbContext context)
 
 internal static class VisitorQueryExtensions
 {
+    internal static IQueryable<VisitorStats> SummarizeVisitors(
+        this IQueryable<Congregation> oneRow,
+        IQueryable<Visitor> visitors,
+        IQueryable<Attendance> attendance
+    ) =>
+        oneRow.Select(_ => new VisitorStats(
+            visitors.Count(),
+            visitors.Count(v => v.ConvertedAt != null),
+            visitors.Count(v => attendance.Count(a => a.PersonId == v.PersonId) > 1)
+        ));
+
     internal static IQueryable<Visitor> Filter(
         this IQueryable<Visitor> query,
         VisitorFilters filters

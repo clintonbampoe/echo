@@ -292,20 +292,16 @@ public class VisitorService(
 
         using var activity = instrumentation.ActivitySource.StartActivity("svc.visitor.summary");
 
-        var totalTask = repository.Count(congregationId, filters, ct);
-        var newTask = repository.CountConverted(congregationId, filters, ct);
-        var recurringTask = repository.CountRecurring(congregationId, filters, ct);
-        var convertedTask = repository.CountConverted(congregationId, filters, ct);
-
-        await Task.WhenAll(totalTask, newTask, recurringTask, convertedTask);
+        var stats = await repository.GetSummaryStats(congregationId, filters, ct);
 
         var res = new VisitorSummaryDto
         {
             Window = window,
-            TotalVisitors = totalTask.Result,
-            NewVisitors = newTask.Result,
-            RecurringVisitors = recurringTask.Result,
-            ConvertedVisitors = convertedTask.Result,
+            TotalVisitors = stats.Total,
+            // Still mirrors the converted count; what "new" means is tracked in #258.
+            NewVisitors = stats.Converted,
+            RecurringVisitors = stats.Recurring,
+            ConvertedVisitors = stats.Converted,
         };
 
         activity?.SetTag("visitor.summary.total", res.TotalVisitors);

@@ -244,20 +244,8 @@ public class TransactionService(
             "svc.transaction.summary"
         );
 
-        var incomeTask = repository.SumIncome(congregationId, filters, ct);
-        var expensesTask = repository.SumExpenses(congregationId, filters, ct);
-        var categoryTask = repository.MostActiveCategory(congregationId, filters, ct);
-
-        await Task.WhenAll(incomeTask, expensesTask, categoryTask);
-
-        var res = new TransactionSummaryDto
-        {
-            Window = window,
-            TotalIncome = incomeTask.Result,
-            TotalExpenses = expensesTask.Result,
-            Net = incomeTask.Result - expensesTask.Result,
-            MostActiveCategory = categoryTask.Result,
-        };
+        var byCategory = await repository.GetCategoryTotals(congregationId, filters, ct);
+        var res = BuildSummary(byCategory) with { Window = window };
 
         activity?.SetTag("transaction.summary.income", res.TotalIncome);
         TransactionLog.Summarized(logger, congregationId, res.TotalIncome, res.TotalExpenses);
@@ -268,5 +256,72 @@ public class TransactionService(
     private static TransactionCursor BuildCursor(Transaction last)
     {
         return new TransactionCursor { TransactionDate = last.TransactionDate, Id = last.Id };
+    }
+
+    public async Task<IOperationResult> MonthlySummary(
+        Guid congregationId,
+        TransactionFilters filters,
+        CancellationToken ct
+    )
+    {
+        using var activity = instrumentation.ActivitySource.StartActivity(
+            "svc.transaction.monthly_summary"
+        );
+
+        var window = dateWindows.LastTwelveMonths(filters.From, filters.To, hasParent: false)!.Value;
+        var months = MonthRange.Between(window.From, window.To);
+        if (MonthRange.Problem(months) is { } problem)
+            return new BadRequestResult(problem);
+
+        filters = WholeMonths(filters, months);
+        var rows = await repository.GetMonthlyTotals(congregationId, filters, ct);
+
+        return new SuccessResult<List<TransactionMonthlyDto>>(FillMonths(months, rows));
+    }
+
+    // From and To may be any day in their month, but the first and last months are charted whole.
+    internal static TransactionFilters WholeMonths(
+        TransactionFilters filters,
+        IReadOnlyList<YearMonth> months
+    )
+    {
+        var (from, to) = MonthRange.Bounds(months);
+        return filters with { From = from, To = to };
+    }
+
+    // Months without transactions are returned as zeros so a chart has no gaps.
+    internal static List<TransactionMonthlyDto> FillMonths(
+        IReadOnlyList<YearMonth> months,
+        IReadOnlyList<TransactionMonthlyDto> rows
+    ) =>
+        months
+            .Select(m =>
+                rows.FirstOrDefault(r => r.Year == m.Year && r.Month == m.Month)
+                ?? new TransactionMonthlyDto { Year = m.Year, Month = m.Month }
+            )
+            .ToList();
+
+    // Every total in the summary comes from the per-category rows, so one query is enough.
+    internal static TransactionSummaryDto BuildSummary(
+        IReadOnlyList<TransactionCategoryTotalDto> byCategory
+    )
+    {
+        var income = byCategory.Where(c => c.Type == TransactionType.Income).Sum(c => c.Total);
+        var expenses = byCategory.Where(c => c.Type == TransactionType.Expense).Sum(c => c.Total);
+        var mostActiveCategory = byCategory
+            .GroupBy(c => c.CategoryName)
+            .OrderByDescending(group => group.Sum(c => c.Count))
+            .ThenBy(group => group.Key)
+            .Select(group => group.Key)
+            .FirstOrDefault();
+
+        return new TransactionSummaryDto
+        {
+            TotalIncome = income,
+            TotalExpenses = expenses,
+            Net = income - expenses,
+            MostActiveCategory = mostActiveCategory,
+            ByCategory = byCategory.ToList(),
+        };
     }
 }

@@ -2,6 +2,7 @@ using Echo.Data;
 using Echo.Domain.Attendances;
 using Echo.Shared.Query;
 using Microsoft.EntityFrameworkCore;
+using Echo.Domain.Congregations;
 
 namespace Echo.Application.Attendances;
 
@@ -44,31 +45,6 @@ public class SessionRepository(AppDbContext context)
             .FirstOrDefaultAsync(ct);
     }
 
-    public Task<int> Count(
-        Guid congregationId,
-        SessionFilters filters,
-        CancellationToken ct = default
-    ) =>
-        _dbSet
-            .AsNoTracking()
-            .FilterDeleted()
-            .Where(s => s.CongregationId == congregationId)
-            .Filter(filters)
-            .CountAsync(ct);
-
-    public Task<int> CountByStatus(
-        Guid congregationId,
-        SessionStatus status,
-        SessionFilters filters,
-        CancellationToken ct = default
-    ) =>
-        _dbSet
-            .AsNoTracking()
-            .FilterDeleted()
-            .Where(s => s.CongregationId == congregationId && s.Status == status)
-            .Filter(filters)
-            .CountAsync(ct);
-
     /// <summary>
     /// Returns the attendance count for each of the given sessions in a
     /// single query. Used by list and detail endpoints to populate
@@ -97,14 +73,9 @@ public class SessionRepository(AppDbContext context)
             .ToDictionaryAsync(x => x.SessionId, x => x.Count, ct);
     }
 
-    /// <summary>
-    /// Attendance records on the sessions in scope, counted in the database. Pass a status to
-    /// count only sessions with that status (for example Completed).
-    /// </summary>
-    public Task<int> SumAttendance(
+    public async Task<SessionStats> GetSummaryStats(
         Guid congregationId,
         SessionFilters filters,
-        SessionStatus? status,
         CancellationToken ct = default
     )
     {
@@ -113,17 +84,17 @@ public class SessionRepository(AppDbContext context)
             .FilterDeleted()
             .Where(s => s.CongregationId == congregationId)
             .Filter(filters);
-
-        if (status is not null)
-            sessions = sessions.Where(s => s.Status == status);
-
-        return context
+        var attendance = context
             .Set<Attendance>()
             .AsNoTracking()
             .Live()
-            .Where(a => a.CongregationId == congregationId)
-            .InSessions(sessions)
-            .CountAsync(ct);
+            .Where(a => a.CongregationId == congregationId);
+
+        var stats = await context
+            .OneRow(congregationId)
+            .SummarizeSessions(sessions, attendance)
+            .FirstOrDefaultAsync(ct);
+        return stats ?? new SessionStats(0, 0, 0, 0, 0);
     }
 
     public void Create(Session entity) => _dbSet.Add(entity);
@@ -133,6 +104,27 @@ public class SessionRepository(AppDbContext context)
 
 internal static class SessionQueryExtensions
 {
+    internal static IQueryable<SessionStats> SummarizeSessions(
+        this IQueryable<Congregation> oneRow,
+        IQueryable<Session> sessions,
+        IQueryable<Attendance> attendance
+    )
+    {
+        // Built before the projection: EF inlines these queries but cannot translate a custom
+        // method call (InSessions) made inside the lambda.
+        var completed = sessions.Where(s => s.Status == SessionStatus.Completed);
+        var allRecords = attendance.InSessions(sessions);
+        var completedRecords = attendance.InSessions(completed);
+
+        return oneRow.Select(_ => new SessionStats(
+            sessions.Count(),
+            completed.Count(),
+            sessions.Count(s => s.Status == SessionStatus.Cancelled),
+            allRecords.Count(),
+            completedRecords.Count()
+        ));
+    }
+
     internal static IQueryable<Session> Filter(
         this IQueryable<Session> query,
         SessionFilters filters

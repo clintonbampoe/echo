@@ -295,12 +295,58 @@ public static class TransactionEndpoints
                 - `totalExpenses` — sum of amounts for matching transactions with `transactionType = Expense`.
                 - `net` — `totalIncome - totalExpenses`. Negative when expenses exceed income.
                 - `mostActiveCategory` — the category name with the largest total transaction volume (count, not amount). Null when no transactions match.
+                - `byCategory` — one row per category and transaction type with `categoryId`, `categoryName`, `type`, `total` and `count`, sorted by `total` (largest first). Use it to see where the money goes.
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
                 """
             )
             .Produces<TransactionSummaryDto>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status401Unauthorized);
+
+        group
+            .MapGet(
+                "/summary/monthly",
+                async (
+                    [AsParameters] TransactionFilters filters,
+                    TransactionService service,
+                    HttpContext context,
+                    CancellationToken ct
+                ) =>
+                {
+                    using var span = EndpointInstrumentation.StartSpan(
+                        context,
+                        instrumentation,
+                        "endpoint.transaction.monthly_summary"
+                    );
+                    var result = await service.MonthlySummary(
+                        context.User.GetCongregationId(),
+                        filters,
+                        ct
+                    );
+                    return result.ToResult();
+                }
+            )
+            .WithName("GetTransactionMonthlySummary")
+            .WithSummary("Returns income and expense totals per month.")
+            .WithDescription(
+                """
+                Returns one row per calendar month in the range, so a chart can be drawn from a single request.
+
+                ### Query parameters
+                - `from`, `to` — the range; any day in the first and last month. Defaults to the last 12 months, ending with the current month. The range may cover at most 24 months.
+                - `transactionType`, `categoryId` — same meaning as on the list endpoint.
+
+                ### Response
+                A list of `{ year, month, totalIncome, totalExpenses, net }`, oldest month first. Months with no transactions are returned with zeros, so there are no gaps.
+
+                ### Failure modes
+                - `400 BAD_REQUEST` — the range covers more than 24 months, or `from` is after `to`.
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                """
+            )
+            .Produces<List<TransactionMonthlyDto>>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status401Unauthorized);
 
         return app;

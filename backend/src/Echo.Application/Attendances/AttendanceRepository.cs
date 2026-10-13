@@ -3,6 +3,7 @@ using Echo.Domain.Attendances;
 using Echo.Domain.Members;
 using Echo.Shared.Query;
 using Microsoft.EntityFrameworkCore;
+using Echo.Domain.Congregations;
 
 namespace Echo.Application.Attendances;
 
@@ -68,59 +69,28 @@ public class AttendanceRepository(AppDbContext context)
                 ct
             );
 
-    public Task<int> CountTotal(
+    /// <summary>
+    /// Members and visitors are counted by the person's role at the time the attendance was
+    /// recorded, not their current role.
+    /// </summary>
+    public async Task<AttendanceStats> GetSummaryStats(
         Guid congregationId,
         AttendanceFilters filters,
         CancellationToken ct = default
-    ) =>
-        _dbSet
+    )
+    {
+        var records = _dbSet
             .AsNoTracking()
             .Live()
             .Where(a => a.CongregationId == congregationId)
-            .Filter(filters)
-            .CountAsync(ct);
+            .Filter(filters);
 
-    /// <summary>
-    /// Counts attendance filtered by the person's role at the time the
-    /// attendance was recorded. Not the person's current role.
-    /// </summary>
-    public Task<int> CountByKindAtTime(
-        Guid congregationId,
-        PersonKind kind,
-        AttendanceFilters filters,
-        CancellationToken ct = default
-    ) =>
-        _dbSet
-            .AsNoTracking()
-            .Live()
-            .Where(a => a.CongregationId == congregationId && a.PersonKindAtTime == kind)
-            .Filter(filters)
-            .CountAsync(ct);
-
-    public Task<int> CountFirstTimeVisitors(
-        Guid congregationId,
-        AttendanceFilters filters,
-        CancellationToken ct = default
-    ) =>
-        _dbSet
-            .AsNoTracking()
-            .Live()
-            .Where(a =>
-                a.CongregationId == congregationId && a.PersonKindAtTime == PersonKind.Visitor
-            )
-            .Filter(filters)
-            .Where(a =>
-                !_dbSet
-                    .Live()
-                    .Any(prev =>
-                        prev.PersonId == a.PersonId
-                        && prev.PersonKindAtTime == PersonKind.Visitor
-                        && prev.Session.Date < a.Session.Date
-                    )
-            )
-            .Select(a => a.PersonId)
-            .Distinct()
-            .CountAsync(ct);
+        var stats = await context
+            .OneRow(congregationId)
+            .SummarizeAttendance(records, _dbSet.Live())
+            .FirstOrDefaultAsync(ct);
+        return stats ?? new AttendanceStats(0, 0, 0, 0);
+    }
 
     public void Create(Attendance entity) => _dbSet.Add(entity);
 
@@ -129,6 +99,31 @@ public class AttendanceRepository(AppDbContext context)
 
 internal static class AttendanceQueryExtensions
 {
+    // allLive is every live attendance record, not just the ones in scope: a visitor is a first-time
+    // visitor when they have no earlier visit at all.
+    internal static IQueryable<AttendanceStats> SummarizeAttendance(
+        this IQueryable<Congregation> oneRow,
+        IQueryable<Attendance> records,
+        IQueryable<Attendance> allLive
+    ) =>
+        oneRow.Select(_ => new AttendanceStats(
+            records.Count(),
+            records.Count(a => a.PersonKindAtTime == PersonKind.Member),
+            records.Count(a => a.PersonKindAtTime == PersonKind.Visitor),
+            records
+                .Where(a =>
+                    a.PersonKindAtTime == PersonKind.Visitor
+                    && !allLive.Any(prev =>
+                        prev.PersonId == a.PersonId
+                        && prev.PersonKindAtTime == PersonKind.Visitor
+                        && prev.Session.Date < a.Session.Date
+                    )
+                )
+                .Select(a => a.PersonId)
+                .Distinct()
+                .Count()
+        ));
+
     // An attendance record is visible only while both it and its session are not deleted.
     internal static IQueryable<Attendance> Live(this IQueryable<Attendance> query) =>
         query.FilterDeleted().Where(a => a.Session.DeletedAt == null);

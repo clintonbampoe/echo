@@ -119,4 +119,26 @@ public class DateWindowsTests
         Assert.Equal(new DateOnly(2026, 10, 14), before!.Value.To);
         Assert.Equal(new DateOnly(2026, 10, 15), after!.Value.To);
     }
+
+    [Fact]
+    public void LastTwelveMonths_NoDates_ReturnsThisMonthAndTheElevenBefore()
+    {
+        var w = Wednesday.LastTwelveMonths(null, null, hasParent: false);
+
+        Assert.Equal(
+            new DateWindow(new DateOnly(2025, 11, 1), new DateOnly(2026, 10, 31), true),
+            w
+        );
+    }
+
+    [Fact]
+    public void LastTwelveMonths_ExplicitDates_Win()
+    {
+        var w = Wednesday.LastTwelveMonths(new DateOnly(2026, 1, 1), new DateOnly(2026, 6, 30), hasParent: false);
+
+        Assert.Equal(
+            new DateWindow(new DateOnly(2026, 1, 1), new DateOnly(2026, 6, 30), false),
+            w
+        );
+    }
 }

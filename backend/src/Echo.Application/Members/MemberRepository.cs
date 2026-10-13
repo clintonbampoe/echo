@@ -3,6 +3,7 @@ using Echo.Domain.Members;
 using Echo.Shared.Query;
 using Echo.Shared.Utilities;
 using Microsoft.EntityFrameworkCore;
+using Echo.Domain.Congregations;
 
 namespace Echo.Application.Members;
 
@@ -50,54 +51,25 @@ public class MemberRepository(AppDbContext context, TimeProvider timeProvider)
             .ToListAsync(ct);
     }
 
-    public Task<int> Count(
+    public async Task<MemberStats> GetSummaryStats(
         Guid congregationId,
         MemberFilters filters,
         CancellationToken ct = default
-    ) =>
-        _dbSet
+    )
+    {
+        var members = _dbSet
             .AsNoTracking()
             .FilterDeleted()
             .Where(m => m.CongregationId == congregationId)
-            .Filter(filters)
-            .CountAsync(ct);
+            .Filter(filters);
 
-    public Task<int> CountActive(
-        Guid congregationId,
-        MemberFilters filters,
-        CancellationToken ct = default
-    ) =>
-        _dbSet
-            .AsNoTracking()
-            .FilterDeleted()
-            .Where(m => m.CongregationId == congregationId && m.Status == MemberStatus.Active)
-            .Filter(filters)
-            .CountAsync(ct);
-
-    public Task<int> CountByGender(
-        Guid congregationId,
-        Gender gender,
-        MemberFilters filters,
-        CancellationToken ct = default
-    ) =>
-        _dbSet
-            .AsNoTracking()
-            .FilterDeleted()
-            .Where(m => m.CongregationId == congregationId && m.Gender == gender)
-            .Filter(filters)
-            .CountAsync(ct);
-
-    public Task<double> AverageAge(
-        Guid congregationId,
-        MemberFilters filters,
-        CancellationToken ct = default
-    ) =>
-        _dbSet
-            .AsNoTracking()
-            .FilterDeleted()
-            .Where(m => m.CongregationId == congregationId)
-            .Filter(filters)
-            .AverageAsync(m => DateUtils.GetDateToday(timeProvider).Year - m.DateOfBirth.Year, ct);
+        var currentYear = DateUtils.GetDateToday(timeProvider).Year;
+        var stats = await context
+            .OneRow(congregationId)
+            .SummarizeMembers(members, currentYear)
+            .FirstOrDefaultAsync(ct);
+        return stats ?? new MemberStats(0, 0, 0, 0, 0d);
+    }
 
     public void Create(Member entity) => _dbSet.Add(entity);
 
@@ -106,6 +78,19 @@ public class MemberRepository(AppDbContext context, TimeProvider timeProvider)
 
 internal static class MemberQueryExtensions
 {
+    internal static IQueryable<MemberStats> SummarizeMembers(
+        this IQueryable<Congregation> oneRow,
+        IQueryable<Member> members,
+        int currentYear
+    ) =>
+        oneRow.Select(_ => new MemberStats(
+            members.Count(),
+            members.Count(m => m.Status == MemberStatus.Active),
+            members.Count(m => m.Gender == Gender.Male),
+            members.Count(m => m.Gender == Gender.Female),
+            members.Average(m => (double?)(currentYear - m.DateOfBirth.Year)) ?? 0d
+        ));
+
     internal static IQueryable<Member> Filter(
         this IQueryable<Member> query,
         MemberFilters filters

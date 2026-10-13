@@ -307,20 +307,15 @@ public class EventService(
 
         using var activity = instrumentation.ActivitySource.StartActivity("svc.event.summary");
 
-        var countTask = repository.Count(congregationId, filters, ct);
-        var upcomingTask = repository.CountUpcoming(congregationId, filters, ct);
-        var registrationsTask = repository.CountRegistrations(congregationId, filters, ct);
-        var attendeesTask = repository.CountAttendees(congregationId, filters, ct);
-
-        await Task.WhenAll(countTask, upcomingTask, registrationsTask, attendeesTask);
+        var stats = await repository.GetSummaryStats(congregationId, filters, ct);
 
         var res = new EventSummaryDto
         {
             Window = window,
-            TotalEvents = countTask.Result,
-            UpcomingEvents = upcomingTask.Result,
-            TotalRegistered = registrationsTask.Result,
-            TotalAttended = attendeesTask.Result,
+            TotalEvents = stats.Total,
+            UpcomingEvents = stats.Upcoming,
+            TotalRegistered = stats.Registrations,
+            TotalAttended = stats.Attendees,
         };
 
         activity?.SetTag("event.summary.total", res.TotalEvents);

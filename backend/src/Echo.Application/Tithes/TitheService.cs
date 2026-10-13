@@ -273,20 +273,15 @@ public class TitheService(
 
         using var activity = instrumentation.ActivitySource.StartActivity("svc.tithe.summary");
 
-        var totalTask = repository.SumCollected(congregationId, filters, ct);
-        var tithersTask = repository.CountUniqueTithers(congregationId, filters, ct);
-        var paymentMethodTask = repository.MostUsedPaymentMethod(congregationId, filters, ct);
-        var averageTask = repository.AveragePerMember(congregationId, filters, ct);
-
-        await Task.WhenAll(totalTask, tithersTask, paymentMethodTask, averageTask);
+        var stats = await repository.GetSummaryStats(congregationId, filters, ct);
 
         var res = new TitheSummaryDto
         {
             Window = window,
-            TotalCollected = totalTask.Result,
-            UniqueTithers = tithersTask.Result,
-            MostUsedPaymentMethod = paymentMethodTask.Result?.ToString(),
-            AveragePerMember = averageTask.Result,
+            TotalCollected = stats.Total,
+            UniqueTithers = stats.UniqueTithers,
+            MostUsedPaymentMethod = stats.MostUsedPaymentMethod?.ToString(),
+            AveragePerMember = stats.Average,
         };
 
         activity?.SetTag("tithe.summary.total", res.TotalCollected);
@@ -299,4 +294,40 @@ public class TitheService(
     {
         return new TitheCursor { CollectionDate = last.CollectionDate, Id = last.Id };
     }
+
+    public async Task<IOperationResult> MonthlySummary(
+        Guid congregationId,
+        TitheMonthlyFilters filters,
+        CancellationToken ct
+    )
+    {
+        using var activity = instrumentation.ActivitySource.StartActivity("svc.tithe.monthly_summary");
+
+        var window = dateWindows.LastTwelveMonths(filters.From, filters.To, hasParent: false)!.Value;
+        var months = MonthRange.Between(window.From, window.To);
+        if (MonthRange.Problem(months) is { } problem)
+            return new BadRequestResult(problem);
+
+        var rows = await repository.GetMonthlyTotals(
+            congregationId,
+            filters,
+            first: months[0],
+            last: months[^1],
+            ct
+        );
+
+        return new SuccessResult<List<TitheMonthlyDto>>(FillMonths(months, rows));
+    }
+
+    // Months without tithes are returned as zeros so a chart has no gaps.
+    internal static List<TitheMonthlyDto> FillMonths(
+        IReadOnlyList<YearMonth> months,
+        IReadOnlyList<TitheMonthlyDto> rows
+    ) =>
+        months
+            .Select(m =>
+                rows.FirstOrDefault(r => r.Year == m.Year && r.Month == m.Month)
+                ?? new TitheMonthlyDto { Year = m.Year, Month = m.Month }
+            )
+            .ToList();
 }

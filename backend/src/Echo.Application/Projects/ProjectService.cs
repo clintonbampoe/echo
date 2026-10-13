@@ -295,20 +295,15 @@ public class ProjectService(
 
         using var activity = instrumentation.ActivitySource.StartActivity("svc.project.summary");
 
-        var countTask = repository.Count(congregationId, filters, ct);
-        var raisedTask = repository.SumRaised(congregationId, filters, ct);
-        var targetTask = repository.SumTarget(congregationId, filters, ct);
-        var atRiskTask = repository.CountAtRisk(congregationId, filters, ct);
-
-        await Task.WhenAll(countTask, raisedTask, targetTask, atRiskTask);
+        var stats = await repository.GetSummaryStats(congregationId, filters, ct);
 
         var res = new ProjectSummaryDto
         {
             Window = window,
-            TotalProjects = countTask.Result,
-            TotalRaised = raisedTask.Result,
-            TotalTarget = targetTask.Result,
-            AtRiskCount = atRiskTask.Result,
+            TotalProjects = stats.Count,
+            TotalRaised = stats.Raised,
+            TotalTarget = stats.Target,
+            AtRiskCount = stats.AtRisk,
         };
 
         activity?.SetTag("project.summary.total", res.TotalProjects);

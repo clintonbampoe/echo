@@ -87,6 +87,13 @@ public record AssetCursor
 public record AssetFilters
 {
     public AssetStatus? Status { get; init; }
+
+    /// <summary>
+    /// Whether liquidated (sold or scrapped) assets are included. Not set means the list shows
+    /// them and the summary leaves them out, because its totals describe what the church owns now.
+    /// A Status of Liquidated always shows them.
+    /// </summary>
+    public bool? IncludeLiquidated { get; init; }
     public int? CategoryId { get; init; }
     public string? Name { get; init; }
     public DateOnly? From { get; init; }
