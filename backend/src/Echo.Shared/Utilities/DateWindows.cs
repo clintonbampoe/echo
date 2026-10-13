@@ -43,6 +43,15 @@ public sealed class DateWindows(TimeProvider timeProvider)
             DateUtils.GetLastDayOfYear(timeProvider)
         );
 
+    public DateWindow? LastTwelveMonths(DateOnly? from, DateOnly? to, bool hasParent) =>
+        Resolve(
+            from,
+            to,
+            hasParent,
+            DateUtils.GetFirstDayOfMonth(timeProvider).AddMonths(-11),
+            DateUtils.GetLastDayOfMonth(timeProvider)
+        );
+
     private static DateWindow? Resolve(
         DateOnly? from,
         DateOnly? to,

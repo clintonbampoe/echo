@@ -373,6 +373,56 @@ public static class TitheEndpoints
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status403Forbidden);
 
+        group
+            .MapGet(
+                "/summary/monthly",
+                async (
+                    [AsParameters] TitheMonthlyFilters filters,
+                    TitheService service,
+                    HttpContext context,
+                    CancellationToken ct
+                ) =>
+                {
+                    using var span = EndpointInstrumentation.StartSpan(
+                        context,
+                        instrumentation,
+                        "endpoint.tithe.monthly_summary"
+                    );
+                    var result = await service.MonthlySummary(
+                        context.User.GetCongregationId(),
+                        filters,
+                        ct
+                    );
+                    return result.ToResult();
+                }
+            )
+            .WithName("GetTitheMonthlySummary")
+            .RequireAuthorization(FinancePolicies.Manage)
+            .WithSummary("Returns tithes collected per month.")
+            .WithDescription(
+                """
+                Returns one row per calendar month in the range, so the Tithes page can chart them from a single request.
+
+                Tithes are grouped by the month they are **for** (`forYear` and `forMonth`), not by the day they were collected, so a December tithe given in January counts toward December.
+
+                ### Query parameters
+                - `from`, `to` — the months to chart; any day in the first and last month. Defaults to the last 12 months, ending with the current month. The range may cover at most 24 months.
+                - `memberId`, `paymentMethod` — same meaning as on the list endpoint.
+
+                ### Response
+                A list of `{ year, month, totalCollected, uniqueTithers }`, oldest month first. Months with no tithes are returned with zeros, so there are no gaps.
+
+                ### Failure modes
+                - `400 BAD_REQUEST` — the range covers more than 24 months, or `from` is after `to`.
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                - `403 FORBIDDEN` — the caller's role may not see giving data.
+                """
+            )
+            .Produces<List<TitheMonthlyDto>>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden);
+
         return app;
     }
 }

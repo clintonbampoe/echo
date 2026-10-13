@@ -244,28 +244,14 @@ public class AttendanceService(
         var window = ResolveWindow(filters, dateWindows);
         filters = filters with { From = window?.From, To = window?.To };
 
-        // Sequential — DbContext is not thread-safe and cannot serve concurrent queries.
-        var total = await repository.CountTotal(congregationId, filters, ct);
-        var members = await repository.CountByKindAtTime(
-            congregationId,
-            PersonKind.Member,
-            filters,
-            ct
-        );
-        var visitors = await repository.CountByKindAtTime(
-            congregationId,
-            PersonKind.Visitor,
-            filters,
-            ct
-        );
-        var firstTime = await repository.CountFirstTimeVisitors(congregationId, filters, ct);
+        var stats = await repository.GetSummaryStats(congregationId, filters, ct);
 
         var res = new AttendanceSummaryDto
         {
-            TotalPresent = total,
-            MembersPresent = members,
-            VisitorsPresent = visitors,
-            FirstTimeVisitors = firstTime,
+            TotalPresent = stats.Total,
+            MembersPresent = stats.Members,
+            VisitorsPresent = stats.Visitors,
+            FirstTimeVisitors = stats.FirstTimeVisitors,
             Window = window,
         };
 

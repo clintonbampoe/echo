@@ -24,6 +24,11 @@ public class AssetService(
     ILogger<AssetService> logger
 )
 {
+    // The summary describes what the church owns now, so liquidated assets are left out unless
+    // the caller asks for them.
+    internal static AssetFilters SummaryFilters(AssetFilters filters) =>
+        filters with { IncludeLiquidated = filters.IncludeLiquidated ?? false };
+
     internal static DateWindow? ResolveWindow(AssetFilters filters, DateWindows dateWindows) =>
         dateWindows.ThisYear(
             filters.From,
@@ -250,22 +255,19 @@ public class AssetService(
     {
         var window = ResolveWindow(filters, dateWindows);
         filters = filters with { From = window?.From, To = window?.To };
+        filters = SummaryFilters(filters);
 
         using var activity = instrumentation.ActivitySource.StartActivity("svc.asset.summary");
 
-        var countTask = repository.Count(congregationId, filters, ct);
-        var currentValueTask = repository.SumCurrentValue(congregationId, filters, ct);
-        var purchaseCostTask = repository.SumPurchaseCost(congregationId, filters, ct);
-
-        await Task.WhenAll(countTask, currentValueTask, purchaseCostTask);
+        var stats = await repository.GetSummaryStats(congregationId, filters, ct);
 
         var res = new AssetSummaryDto
         {
             Window = window,
-            TotalAssets = countTask.Result,
-            TotalCurrentValue = currentValueTask.Result,
-            TotalPurchaseCost = purchaseCostTask.Result,
-            TotalDepreciation = purchaseCostTask.Result - currentValueTask.Result,
+            TotalAssets = stats.Count,
+            TotalCurrentValue = stats.CurrentValue,
+            TotalPurchaseCost = stats.PurchaseCost,
+            TotalDepreciation = stats.PurchaseCost - stats.CurrentValue,
         };
 
         activity?.SetTag("asset.summary.total", res.TotalAssets);

@@ -38,48 +38,31 @@ public class TransactionRepository(AppDbContext context)
             .FirstOrDefaultAsync(ct);
     }
 
-    public Task<decimal> SumIncome(
+    public async Task<List<TransactionMonthlyDto>> GetMonthlyTotals(
         Guid congregationId,
         TransactionFilters filters,
         CancellationToken ct = default
     ) =>
-        _dbSet
-            .AsNoTracking()
-            .FilterDeleted()
-            .Where(t =>
-                t.CongregationId == congregationId && t.TransactionType == TransactionType.Income
-            )
-            .Filter(filters)
-            .SumAsync(t => t.Amount, ct);
-
-    public Task<decimal> SumExpenses(
-        Guid congregationId,
-        TransactionFilters filters,
-        CancellationToken ct = default
-    ) =>
-        _dbSet
-            .AsNoTracking()
-            .FilterDeleted()
-            .Where(t =>
-                t.CongregationId == congregationId && t.TransactionType == TransactionType.Expense
-            )
-            .Filter(filters)
-            .SumAsync(t => t.Amount, ct);
-
-    public Task<string?> MostActiveCategory(
-        Guid congregationId,
-        TransactionFilters filters,
-        CancellationToken ct = default
-    ) =>
-        _dbSet
+        await _dbSet
             .AsNoTracking()
             .FilterDeleted()
             .Where(t => t.CongregationId == congregationId)
             .Filter(filters)
-            .GroupBy(t => t.Category.Name)
-            .OrderByDescending(g => g.Count())
-            .Select(g => g.Key)
-            .FirstOrDefaultAsync(ct);
+            .MonthlyTotals()
+            .ToListAsync(ct);
+
+    public async Task<List<TransactionCategoryTotalDto>> GetCategoryTotals(
+        Guid congregationId,
+        TransactionFilters filters,
+        CancellationToken ct = default
+    ) =>
+        await _dbSet
+            .AsNoTracking()
+            .FilterDeleted()
+            .Where(t => t.CongregationId == congregationId)
+            .Filter(filters)
+            .TotalsByCategory()
+            .ToListAsync(ct);
 
     public void Create(Transaction entity) => _dbSet.Add(entity);
 
@@ -88,6 +71,42 @@ public class TransactionRepository(AppDbContext context)
 
 internal static class TransactionQueryExtensions
 {
+    internal static IQueryable<TransactionMonthlyDto> MonthlyTotals(
+        this IQueryable<Transaction> query
+    ) =>
+        query
+            .GroupBy(t => new { t.TransactionDate.Year, t.TransactionDate.Month })
+            .Select(g => new TransactionMonthlyDto
+            {
+                Year = g.Key.Year,
+                Month = g.Key.Month,
+                TotalIncome = g.Where(t => t.TransactionType == TransactionType.Income)
+                    .Sum(t => t.Amount),
+                TotalExpenses = g.Where(t => t.TransactionType == TransactionType.Expense)
+                    .Sum(t => t.Amount),
+            });
+
+    internal static IQueryable<TransactionCategoryTotalDto> TotalsByCategory(
+        this IQueryable<Transaction> query
+    ) =>
+        query
+            .GroupBy(t => new
+            {
+                t.CategoryId,
+                t.Category.Name,
+                t.TransactionType,
+            })
+            .Select(g => new TransactionCategoryTotalDto
+            {
+                CategoryId = g.Key.CategoryId,
+                CategoryName = g.Key.Name,
+                Type = g.Key.TransactionType,
+                Total = g.Sum(t => t.Amount),
+                Count = g.Count(),
+            })
+            .OrderByDescending(c => c.Total)
+            .ThenBy(c => c.CategoryName);
+
     internal static IQueryable<Transaction> Filter(
         this IQueryable<Transaction> query,
         TransactionFilters filters

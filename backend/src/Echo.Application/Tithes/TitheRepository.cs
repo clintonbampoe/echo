@@ -3,6 +3,8 @@ using Echo.Domain.Tithes;
 using Echo.Domain.Transactions;
 using Echo.Shared.Query;
 using Microsoft.EntityFrameworkCore;
+using Echo.Shared.Utilities;
+using Echo.Domain.Congregations;
 
 namespace Echo.Application.Tithes;
 
@@ -60,59 +62,43 @@ public class TitheRepository(AppDbContext context)
             .ToListAsync(ct);
     }
 
-    public Task<decimal> SumCollected(
+    public async Task<List<TitheMonthlyDto>> GetMonthlyTotals(
         Guid congregationId,
-        TitheFilters filters,
+        TitheMonthlyFilters filters,
+        YearMonth first,
+        YearMonth last,
         CancellationToken ct = default
-    ) =>
-        _dbSet
+    )
+    {
+        var query = _dbSet
             .AsNoTracking()
             .FilterDeleted()
-            .Where(t => t.CongregationId == congregationId)
-            .Filter(filters)
-            .SumAsync(t => t.Amount, ct);
+            .Where(t => t.CongregationId == congregationId);
 
-    public Task<int> CountUniqueTithers(
-        Guid congregationId,
-        TitheFilters filters,
-        CancellationToken ct = default
-    ) =>
-        _dbSet
-            .AsNoTracking()
-            .FilterDeleted()
-            .Where(t => t.CongregationId == congregationId)
-            .Filter(filters)
-            .Select(t => t.MemberId)
-            .Distinct()
-            .CountAsync(ct);
+        if (filters.MemberId is not null)
+            query = query.Where(t => t.MemberId == filters.MemberId);
 
-    public Task<PaymentMethod?> MostUsedPaymentMethod(
-        Guid congregationId,
-        TitheFilters filters,
-        CancellationToken ct = default
-    ) =>
-        _dbSet
-            .AsNoTracking()
-            .FilterDeleted()
-            .Where(t => t.CongregationId == congregationId)
-            .Filter(filters)
-            .GroupBy(t => t.PaymentMethod)
-            .OrderByDescending(g => g.Count())
-            .Select(g => (PaymentMethod?)g.Key)
-            .FirstOrDefaultAsync(ct);
+        if (filters.PaymentMethod is not null)
+            query = query.Where(t => t.PaymentMethod == filters.PaymentMethod);
 
-    public Task<decimal> AveragePerMember(
+        return await query.InMonths(first, last).MonthlyTotals().ToListAsync(ct);
+    }
+
+    public async Task<TitheStats> GetSummaryStats(
         Guid congregationId,
         TitheFilters filters,
         CancellationToken ct = default
-    ) =>
-        _dbSet
+    )
+    {
+        var tithes = _dbSet
             .AsNoTracking()
             .FilterDeleted()
             .Where(t => t.CongregationId == congregationId)
-            .Filter(filters)
-            .AverageAsync(t => (decimal?)t.Amount, ct)
-            .ContinueWith(t => t.Result ?? 0m, ct);
+            .Filter(filters);
+
+        var stats = await context.OneRow(congregationId).SummarizeTithes(tithes).FirstOrDefaultAsync(ct);
+        return stats ?? new TitheStats(0m, 0, 0m, null);
+    }
 
     public void Create(Tithe entity) => _dbSet.Add(entity);
 
@@ -121,6 +107,47 @@ public class TitheRepository(AppDbContext context)
 
 internal static class TitheQueryExtensions
 {
+    internal static IQueryable<TitheStats> SummarizeTithes(
+        this IQueryable<Congregation> oneRow,
+        IQueryable<Tithe> tithes
+    ) =>
+        oneRow.Select(_ => new TitheStats(
+            tithes.Sum(t => t.Amount),
+            tithes.Select(t => t.MemberId).Distinct().Count(),
+            tithes.Average(t => (decimal?)t.Amount) ?? 0m,
+            tithes
+                .GroupBy(t => t.PaymentMethod)
+                .OrderByDescending(g => g.Count())
+                .Select(g => (PaymentMethod?)g.Key)
+                .FirstOrDefault()
+        ));
+
+    // Tithes are charted by the month they are for (ForYear and ForMonth).
+    internal static IQueryable<Tithe> InMonths(
+        this IQueryable<Tithe> query,
+        YearMonth first,
+        YearMonth last
+    )
+    {
+        var firstIndex = first.Year * 12 + first.Month;
+        var lastIndex = last.Year * 12 + last.Month;
+        return query.Where(t =>
+            t.ForYear * 12 + (int)t.ForMonth >= firstIndex
+            && t.ForYear * 12 + (int)t.ForMonth <= lastIndex
+        );
+    }
+
+    internal static IQueryable<TitheMonthlyDto> MonthlyTotals(this IQueryable<Tithe> query) =>
+        query
+            .GroupBy(t => new { t.ForYear, t.ForMonth })
+            .Select(g => new TitheMonthlyDto
+            {
+                Year = g.Key.ForYear,
+                Month = (int)g.Key.ForMonth,
+                TotalCollected = g.Sum(t => t.Amount),
+                UniqueTithers = g.Select(t => t.MemberId).Distinct().Count(),
+            });
+
     internal static IQueryable<Tithe> Filter(
         this IQueryable<Tithe> query,
         TitheFilters filters

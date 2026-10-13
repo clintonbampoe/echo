@@ -83,3 +83,23 @@ public record TitheSummaryDto
     public decimal AveragePerMember { get; init; }
     public DateWindow? Window { get; init; }
 }
+
+/// <summary>
+/// Filters for the monthly summary. From and To choose the months to chart (any day in the first
+/// and last month); tithes are grouped by the month they are for, not by collection date.
+/// </summary>
+public record TitheMonthlyFilters
+{
+    public Guid? MemberId { get; init; }
+    public PaymentMethod? PaymentMethod { get; init; }
+    public DateOnly? From { get; init; }
+    public DateOnly? To { get; init; }
+}
+
+public record TitheMonthlyDto
+{
+    public int Year { get; init; }
+    public int Month { get; init; }
+    public decimal TotalCollected { get; init; }
+    public int UniqueTithers { get; init; }
+}

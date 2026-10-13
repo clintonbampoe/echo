@@ -228,37 +228,16 @@ public class SessionService(
         using var activity = instrumentation.ActivitySource.StartActivity("svc.session.summary");
 
         // Sequential — DbContext is not thread-safe and cannot serve concurrent queries.
-        var total = await repository.Count(congregationId, filters, ct);
-        var completed = await repository.CountByStatus(
-            congregationId,
-            SessionStatus.Completed,
-            filters,
-            ct
-        );
-        var cancelled = await repository.CountByStatus(
-            congregationId,
-            SessionStatus.Cancelled,
-            filters,
-            ct
-        );
-
-        var totalAttendance = await repository.SumAttendance(congregationId, filters, null, ct);
-        var completedAttendance = await repository.SumAttendance(
-            congregationId,
-            filters,
-            SessionStatus.Completed,
-            ct
-        );
-        var average = AverageAttendance(completedAttendance, completed);
+        var stats = await repository.GetSummaryStats(congregationId, filters, ct);
 
         var res = new SessionSummaryDto
         {
             Window = window,
-            TotalSessions = total,
-            CompletedSessions = completed,
-            CancelledSessions = cancelled,
-            TotalAttendance = totalAttendance,
-            AverageAttendance = average,
+            TotalSessions = stats.Total,
+            CompletedSessions = stats.Completed,
+            CancelledSessions = stats.Cancelled,
+            TotalAttendance = stats.TotalAttendance,
+            AverageAttendance = AverageAttendance(stats.CompletedAttendance, stats.Completed),
         };
 
         activity?.SetTag("session.summary.total", res.TotalSessions);

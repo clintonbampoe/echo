@@ -3,6 +3,7 @@ using Echo.Domain.Projects;
 using Echo.Domain.Transactions;
 using Echo.Shared.Query;
 using Microsoft.EntityFrameworkCore;
+using Echo.Domain.Congregations;
 
 namespace Echo.Application.Projects;
 
@@ -43,57 +44,24 @@ public class ProjectContributionRepository(AppDbContext context)
             .FirstOrDefaultAsync(ct);
     }
 
-    public Task<decimal> SumContributed(
+    public async Task<ContributionStats> GetSummaryStats(
         Guid congregationId,
         ProjectContributionFilters filters,
         CancellationToken ct = default
-    ) =>
-        _dbSet
+    )
+    {
+        var contributions = _dbSet
             .AsNoTracking()
             .FilterDeleted()
-            .Where(p => p.CongregationId == congregationId)
-            .Filter(filters)
-            .SumAsync(p => p.Amount, ct);
+            .Where(c => c.CongregationId == congregationId)
+            .Filter(filters);
 
-    public Task<int> Count(
-        Guid congregationId,
-        ProjectContributionFilters filters,
-        CancellationToken ct = default
-    ) =>
-        _dbSet
-            .AsNoTracking()
-            .FilterDeleted()
-            .Where(p => p.CongregationId == congregationId)
-            .Filter(filters)
-            .CountAsync(ct);
-
-    public Task<decimal> Average(
-        Guid congregationId,
-        ProjectContributionFilters filters,
-        CancellationToken ct = default
-    ) =>
-        _dbSet
-            .AsNoTracking()
-            .FilterDeleted()
-            .Where(p => p.CongregationId == congregationId)
-            .Filter(filters)
-            .AverageAsync(p => (decimal?)p.Amount, ct)
-            .ContinueWith(t => t.Result ?? 0m, ct);
-
-    public Task<PaymentMethod?> MostUsedPaymentMethod(
-        Guid congregationId,
-        ProjectContributionFilters filters,
-        CancellationToken ct = default
-    ) =>
-        _dbSet
-            .AsNoTracking()
-            .FilterDeleted()
-            .Where(p => p.CongregationId == congregationId)
-            .Filter(filters)
-            .GroupBy(p => p.PaymentMethod)
-            .OrderByDescending(g => g.Count())
-            .Select(g => (PaymentMethod?)g.Key)
+        var stats = await context
+            .OneRow(congregationId)
+            .SummarizeContributions(contributions)
             .FirstOrDefaultAsync(ct);
+        return stats ?? new ContributionStats(0m, 0, 0m, null);
+    }
 
     public void Create(ProjectContribution entity) => _dbSet.Add(entity);
 
@@ -102,6 +70,21 @@ public class ProjectContributionRepository(AppDbContext context)
 
 internal static class ProjectContributionQueryExtensions
 {
+    internal static IQueryable<ContributionStats> SummarizeContributions(
+        this IQueryable<Congregation> oneRow,
+        IQueryable<ProjectContribution> contributions
+    ) =>
+        oneRow.Select(_ => new ContributionStats(
+            contributions.Sum(c => c.Amount),
+            contributions.Count(),
+            contributions.Average(c => (decimal?)c.Amount) ?? 0m,
+            contributions
+                .GroupBy(c => c.PaymentMethod)
+                .OrderByDescending(g => g.Count())
+                .Select(g => (PaymentMethod?)g.Key)
+                .FirstOrDefault()
+        ));
+
     internal static IQueryable<ProjectContribution> Filter(
         this IQueryable<ProjectContribution> query,
         ProjectContributionFilters filters

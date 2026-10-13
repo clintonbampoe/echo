@@ -258,6 +258,49 @@ public static class EventEndpoints
 
         group
             .MapGet(
+                "/summary",
+                async (
+                    [AsParameters] EventFilters filters,
+                    EventService service,
+                    HttpContext context,
+                    CancellationToken ct
+                ) =>
+                {
+                    using var span = EndpointInstrumentation.StartSpan(
+                        context,
+                        instrumentation,
+                        "endpoint.event.summary"
+                    );
+                    var result = await service.Summary(
+                        context.User.GetCongregationId(),
+                        filters,
+                        ct
+                    );
+                    return result.ToResult();
+                }
+            )
+            .WithName("GetEventSummary")
+            .WithSummary("Returns aggregate summary metrics for events.")
+            .WithDescription(
+                """
+                Returns aggregated metrics for the caller's congregation, scoped by the same filters as the list endpoint.
+
+                ### Response fields
+                - `totalEvents` — events matching the filters.
+                - `upcomingEvents` — matching events that have not started yet.
+                - `totalRegistered` — registrations for the matching events.
+                - `totalAttended` — check-ins for the matching events.
+                - `window` — the date range that was applied.
+
+                ### Failure modes
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                """
+            )
+            .Produces<EventSummaryDto>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status401Unauthorized);
+
+        group
+            .MapGet(
                 "/search",
                 async (
                     [FromQuery, StringLength(100, MinimumLength = 1)] string q,

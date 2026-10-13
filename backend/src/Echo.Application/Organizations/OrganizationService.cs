@@ -241,20 +241,15 @@ public class OrganizationService(
             "svc.organization.summary"
         );
 
-        var countTask = repository.Count(congregationId, filters, ct);
-        var totalMembersTask = repository.CountTotalMembers(congregationId, filters, ct);
-        var averageTask = repository.AverageMembersPerOrganization(congregationId, filters, ct);
-        var largestTask = repository.LargestOrganization(congregationId, filters, ct);
-
-        await Task.WhenAll(countTask, totalMembersTask, averageTask, largestTask);
+        var stats = await repository.GetSummaryStats(congregationId, filters, ct);
 
         var res = new OrganizationSummaryDto
         {
             Window = window,
-            TotalOrganizations = countTask.Result,
-            TotalMembers = totalMembersTask.Result,
-            AverageMembersPerOrganization = averageTask.Result,
-            LargestOrganization = largestTask.Result,
+            TotalOrganizations = stats.Count,
+            TotalMembers = stats.TotalMembers,
+            AverageMembersPerOrganization = stats.AverageMembers,
+            LargestOrganization = stats.Largest,
         };
 
         activity?.SetTag("organization.summary.total", res.TotalOrganizations);

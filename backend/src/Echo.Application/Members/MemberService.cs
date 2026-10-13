@@ -227,22 +227,16 @@ public class MemberService(
 
         using var activity = instrumentation.ActivitySource.StartActivity("svc.member.summary");
 
-        var totalTask = repository.Count(congregationId, filters, ct);
-        var activeTask = repository.CountActive(congregationId, filters, ct);
-        var maleTask = repository.CountByGender(congregationId, Gender.Male, filters, ct);
-        var femaleTask = repository.CountByGender(congregationId, Gender.Female, filters, ct);
-        var avgAgeTask = repository.AverageAge(congregationId, filters, ct);
-
-        await Task.WhenAll(totalTask, activeTask, maleTask, femaleTask, avgAgeTask);
+        var stats = await repository.GetSummaryStats(congregationId, filters, ct);
 
         var res = new MemberSummaryDto
         {
             Window = window,
-            TotalMembers = totalTask.Result,
-            ActiveMembers = activeTask.Result,
-            MaleCount = maleTask.Result,
-            FemaleCount = femaleTask.Result,
-            AverageAge = avgAgeTask.Result,
+            TotalMembers = stats.Total,
+            ActiveMembers = stats.Active,
+            MaleCount = stats.Male,
+            FemaleCount = stats.Female,
+            AverageAge = stats.AverageAge,
         };
 
         activity?.SetTag("member.summary.total", res.TotalMembers);

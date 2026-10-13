@@ -243,20 +243,15 @@ public class ProjectContributionService(
             "svc.project_contribution.summary"
         );
 
-        var totalTask = repository.SumContributed(congregationId, filters, ct);
-        var countTask = repository.Count(congregationId, filters, ct);
-        var averageTask = repository.Average(congregationId, filters, ct);
-        var paymentMethodTask = repository.MostUsedPaymentMethod(congregationId, filters, ct);
-
-        await Task.WhenAll(totalTask, countTask, averageTask, paymentMethodTask);
+        var stats = await repository.GetSummaryStats(congregationId, filters, ct);
 
         var res = new ProjectContributionSummaryDto
         {
             Window = window,
-            TotalContributed = totalTask.Result,
-            TotalContributions = countTask.Result,
-            AverageAmount = averageTask.Result,
-            MostUsedPaymentMethod = paymentMethodTask.Result?.ToString(),
+            TotalContributed = stats.Total,
+            TotalContributions = stats.Count,
+            AverageAmount = stats.Average,
+            MostUsedPaymentMethod = stats.MostUsedPaymentMethod?.ToString(),
         };
 
         activity?.SetTag("project_contribution.summary.total", res.TotalContributed);

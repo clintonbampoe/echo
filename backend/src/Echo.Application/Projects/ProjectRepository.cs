@@ -2,6 +2,7 @@ using Echo.Data;
 using Echo.Domain.Projects;
 using Echo.Shared.Query;
 using Microsoft.EntityFrameworkCore;
+using Echo.Domain.Congregations;
 
 namespace Echo.Application.Projects;
 
@@ -54,55 +55,6 @@ public class ProjectRepository(AppDbContext context)
             .ToListAsync(ct);
     }
 
-    public Task<int> Count(
-        Guid congregationId,
-        ProjectFilters filters,
-        CancellationToken ct = default
-    ) =>
-        _dbSet
-            .AsNoTracking()
-            .FilterDeleted()
-            .Where(p => p.CongregationId == congregationId)
-            .Filter(filters)
-            .CountAsync(ct);
-
-    public Task<decimal> SumTarget(
-        Guid congregationId,
-        ProjectFilters filters,
-        CancellationToken ct = default
-    ) =>
-        _dbSet
-            .AsNoTracking()
-            .FilterDeleted()
-            .Where(p => p.CongregationId == congregationId)
-            .Filter(filters)
-            .SumAsync(p => p.TargetAmount, ct);
-
-    public Task<decimal> SumRaised(
-        Guid congregationId,
-        ProjectFilters filters,
-        CancellationToken ct = default
-    ) =>
-        _dbSet
-            .AsNoTracking()
-            .FilterDeleted()
-            .Where(p => p.CongregationId == congregationId)
-            .Filter(filters)
-            .SelectMany(p => _contributionDbSet.FilterDeleted().Where(c => c.ProjectId == p.Id))
-            .SumAsync(c => c.Amount, ct);
-
-    public Task<int> CountAtRisk(
-        Guid congregationId,
-        ProjectFilters filters,
-        CancellationToken ct = default
-    ) =>
-        _dbSet
-            .AsNoTracking()
-            .FilterDeleted()
-            .Where(p => p.CongregationId == congregationId && p.Status == ProjectStatus.AtRisk)
-            .Filter(filters)
-            .CountAsync(ct);
-
     public async Task<Dictionary<Guid, decimal>> GetRaisedAmounts(
         Guid congregationId,
         IReadOnlyList<Guid> projectIds,
@@ -119,6 +71,25 @@ public class ProjectRepository(AppDbContext context)
             .ToDictionaryAsync(x => x.Id, x => x.Amount, ct);
     }
 
+    public async Task<ProjectStats> GetSummaryStats(
+        Guid congregationId,
+        ProjectFilters filters,
+        CancellationToken ct = default
+    )
+    {
+        var projects = _dbSet
+            .AsNoTracking()
+            .FilterDeleted()
+            .Where(p => p.CongregationId == congregationId)
+            .Filter(filters);
+
+        var stats = await context
+            .OneRow(congregationId)
+            .SummarizeProjects(projects, _contributionDbSet.FilterDeleted())
+            .FirstOrDefaultAsync(ct);
+        return stats ?? new ProjectStats(0, 0m, 0m, 0);
+    }
+
     public void Create(Project entity) => _dbSet.Add(entity);
 
     public void SoftDelete(Project entity) => entity.DeletedAt = DateTime.UtcNow;
@@ -126,6 +97,18 @@ public class ProjectRepository(AppDbContext context)
 
 internal static class ProjectQueryExtensions
 {
+    internal static IQueryable<ProjectStats> SummarizeProjects(
+        this IQueryable<Congregation> oneRow,
+        IQueryable<Project> projects,
+        IQueryable<ProjectContribution> contributions
+    ) =>
+        oneRow.Select(_ => new ProjectStats(
+            projects.Count(),
+            projects.SelectMany(p => contributions.Where(c => c.ProjectId == p.Id)).Sum(c => c.Amount),
+            projects.Sum(p => p.TargetAmount),
+            projects.Count(p => p.Status == ProjectStatus.AtRisk)
+        ));
+
     internal static IQueryable<Project> Filter(
         this IQueryable<Project> query,
         ProjectFilters filters

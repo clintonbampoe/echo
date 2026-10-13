@@ -2,6 +2,7 @@ using Echo.Data;
 using Echo.Domain.Assets;
 using Echo.Shared.Query;
 using Microsoft.EntityFrameworkCore;
+using Echo.Domain.Congregations;
 
 namespace Echo.Application.Assets;
 
@@ -48,6 +49,22 @@ public class AssetRepository(AppDbContext context)
             .ToListAsync(ct);
     }
 
+    public async Task<AssetStats> GetSummaryStats(
+        Guid congregationId,
+        AssetFilters filters,
+        CancellationToken ct = default
+    )
+    {
+        var assets = _dbSet
+            .AsNoTracking()
+            .FilterDeleted()
+            .Where(a => a.CongregationId == congregationId)
+            .Filter(filters);
+
+        var stats = await context.OneRow(congregationId).SummarizeAssets(assets).FirstOrDefaultAsync(ct);
+        return stats ?? new AssetStats(0, 0m, 0m);
+    }
+
     public void Create(Asset entity)
     {
         _dbSet.Add(entity);
@@ -57,42 +74,6 @@ public class AssetRepository(AppDbContext context)
     {
         entity.DeletedAt = DateTime.UtcNow;
     }
-
-    public Task<int> Count(
-        Guid congregationId,
-        AssetFilters filters,
-        CancellationToken ct = default
-    ) =>
-        _dbSet
-            .AsNoTracking()
-            .FilterDeleted()
-            .Where(a => a.CongregationId == congregationId)
-            .Filter(filters)
-            .CountAsync(ct);
-
-    public Task<decimal> SumCurrentValue(
-        Guid congregationId,
-        AssetFilters filters,
-        CancellationToken ct = default
-    ) =>
-        _dbSet
-            .AsNoTracking()
-            .FilterDeleted()
-            .Where(a => a.CongregationId == congregationId)
-            .Filter(filters)
-            .SumAsync(a => a.CurrentValue, ct);
-
-    public Task<decimal> SumPurchaseCost(
-        Guid congregationId,
-        AssetFilters filters,
-        CancellationToken ct = default
-    ) =>
-        _dbSet
-            .AsNoTracking()
-            .FilterDeleted()
-            .Where(a => a.CongregationId == congregationId)
-            .Filter(filters)
-            .SumAsync(a => a.PurchaseCost, ct);
 
     public Task<int> CountByStatus(
         Guid congregationId,
@@ -109,6 +90,16 @@ public class AssetRepository(AppDbContext context)
 
 internal static class AssetQueryExtensions
 {
+    internal static IQueryable<AssetStats> SummarizeAssets(
+        this IQueryable<Congregation> oneRow,
+        IQueryable<Asset> assets
+    ) =>
+        oneRow.Select(_ => new AssetStats(
+            assets.Count(),
+            assets.Sum(a => a.CurrentValue),
+            assets.Sum(a => a.PurchaseCost)
+        ));
+
     internal static IQueryable<Asset> Filter(
         this IQueryable<Asset> query,
         AssetFilters filters
@@ -122,6 +113,8 @@ internal static class AssetQueryExtensions
 
         if (filters.Status is not null)
             query = query.Where(a => a.Status == filters.Status);
+        else if (filters.IncludeLiquidated == false)
+            query = query.Where(a => a.Status != AssetStatus.Liquidated);
 
         if (filters.From is not null)
             query = query.Where(a => a.PurchaseDate >= filters.From);

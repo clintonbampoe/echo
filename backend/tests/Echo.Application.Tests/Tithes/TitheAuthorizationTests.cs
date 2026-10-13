@@ -59,6 +59,7 @@ public class TitheAuthorizationTests
             ["GetTithesByMemberId"] = FinancePolicies.Manage,
             ["GetTitheById"] = FinancePolicies.Manage,
             ["GetTitheSummary"] = FinancePolicies.Manage,
+            ["GetTitheMonthlySummary"] = FinancePolicies.Manage,
             ["CreateTithe"] = FinancePolicies.Record,
             ["UpdateTithe"] = FinancePolicies.Manage,
             ["DeleteTithe"] = FinancePolicies.Manage,

@@ -3,6 +3,7 @@ using Echo.Domain.Events;
 using Echo.Shared.Query;
 using Echo.Shared.Utilities;
 using Microsoft.EntityFrameworkCore;
+using Echo.Domain.Congregations;
 
 namespace Echo.Application.Events;
 
@@ -55,59 +56,6 @@ public class EventRepository(AppDbContext context, TimeProvider timeProvider)
             .ToListAsync(ct);
     }
 
-    public Task<int> Count(
-        Guid congregationId,
-        EventFilters filters,
-        CancellationToken ct = default
-    ) =>
-        _dbSet
-            .AsNoTracking()
-            .FilterDeleted()
-            .Where(e => e.CongregationId == congregationId)
-            .Filter(filters)
-            .CountAsync(ct);
-
-    public Task<int> CountUpcoming(
-        Guid congregationId,
-        EventFilters filters,
-        CancellationToken ct = default
-    )
-    {
-        var today = DateUtils.GetDateToday(timeProvider);
-        return _dbSet
-            .AsNoTracking()
-            .FilterDeleted()
-            .Where(e => e.CongregationId == congregationId && e.StartDate >= today)
-            .Filter(filters)
-            .CountAsync(ct);
-    }
-
-    public Task<int> CountRegistrations(
-        Guid congregationId,
-        EventFilters filters,
-        CancellationToken ct = default
-    ) =>
-        _dbSet
-            .AsNoTracking()
-            .FilterDeleted()
-            .Where(e => e.CongregationId == congregationId)
-            .Filter(filters)
-            .SelectMany(e => _registrationDbSet.FilterDeleted().Where(r => r.EventId == e.Id))
-            .CountAsync(ct);
-
-    public Task<int> CountAttendees(
-        Guid congregationId,
-        EventFilters filters,
-        CancellationToken ct = default
-    ) =>
-        _dbSet
-            .AsNoTracking()
-            .FilterDeleted()
-            .Where(e => e.CongregationId == congregationId)
-            .Filter(filters)
-            .SelectMany(e => _attendanceDbSet.FilterDeleted().Where(a => a.EventId == e.Id))
-            .CountAsync(ct);
-
     public async Task<Dictionary<Guid, int>> GetRegistrationCounts(
         Guid congregationId,
         IReadOnlyList<Guid> eventIds,
@@ -125,6 +73,31 @@ public class EventRepository(AppDbContext context, TimeProvider timeProvider)
             .ToDictionaryAsync(x => x.Id, x => x.Count, ct);
     }
 
+    public async Task<EventStats> GetSummaryStats(
+        Guid congregationId,
+        EventFilters filters,
+        CancellationToken ct = default
+    )
+    {
+        var events = _dbSet
+            .AsNoTracking()
+            .FilterDeleted()
+            .Where(e => e.CongregationId == congregationId)
+            .Filter(filters);
+
+        var today = DateUtils.GetDateToday(timeProvider);
+        var stats = await context
+            .OneRow(congregationId)
+            .SummarizeEvents(
+                events,
+                _registrationDbSet.FilterDeleted(),
+                _attendanceDbSet.FilterDeleted(),
+                today
+            )
+            .FirstOrDefaultAsync(ct);
+        return stats ?? new EventStats(0, 0, 0, 0);
+    }
+
     public void Create(Event entity) => _dbSet.Add(entity);
 
     public void SoftDelete(Event entity) => entity.DeletedAt = DateTime.UtcNow;
@@ -132,6 +105,20 @@ public class EventRepository(AppDbContext context, TimeProvider timeProvider)
 
 internal static class EventQueryExtensions
 {
+    internal static IQueryable<EventStats> SummarizeEvents(
+        this IQueryable<Congregation> oneRow,
+        IQueryable<Event> events,
+        IQueryable<EventRegistration> registrations,
+        IQueryable<EventAttendance> attendance,
+        DateOnly today
+    ) =>
+        oneRow.Select(_ => new EventStats(
+            events.Count(),
+            events.Count(e => e.StartDate >= today),
+            events.SelectMany(e => registrations.Where(r => r.EventId == e.Id)).Count(),
+            events.SelectMany(e => attendance.Where(a => a.EventId == e.Id)).Count()
+        ));
+
     internal static IQueryable<Event> Filter(
         this IQueryable<Event> query,
         EventFilters filters

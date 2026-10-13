@@ -69,5 +69,24 @@ public record TransactionSummaryDto
     public decimal TotalExpenses { get; init; }
     public decimal Net { get; init; }
     public string? MostActiveCategory { get; init; }
+    public List<TransactionCategoryTotalDto> ByCategory { get; init; } = [];
     public DateWindow? Window { get; init; }
+}
+
+public record TransactionMonthlyDto
+{
+    public int Year { get; init; }
+    public int Month { get; init; }
+    public decimal TotalIncome { get; init; }
+    public decimal TotalExpenses { get; init; }
+    public decimal Net => TotalIncome - TotalExpenses;
+}
+
+public record TransactionCategoryTotalDto
+{
+    public int CategoryId { get; init; }
+    public required string CategoryName { get; init; }
+    public TransactionType Type { get; init; }
+    public decimal Total { get; init; }
+    public int Count { get; init; }
 }
