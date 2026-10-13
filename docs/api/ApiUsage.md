@@ -133,7 +133,18 @@ Errors follow the RFC 7807 standard.
   "traceId": "4bf92f3577b34da6a3ce929d0e0e4736"
 }
 ```
-Unexpected errors (`500`) and malformed requests (`400`) include a `traceId` that matches the trace in the logs. Quote it when reporting a problem. Requests that break a validation rule (for example a password shorter than 8 characters) return `400` with a validation problem listing each field under `errors`.
+Unexpected errors (`500`) and malformed requests (`400`) include a `traceId` that matches the trace in the logs. Quote it when reporting a problem. Requests that break a validation rule (for example a password shorter than 8 characters) return `400` with the same fields as other errors (`status`, `type`, `errorCode: "VALIDATION_ERROR"`, `traceId`) plus an `errors` map listing each rejected field:
+```json
+{
+  "type": "https://api.example.com/errors/validation-error",
+  "title": "One or more validation errors occurred.",
+  "status": 400,
+  "errorCode": "VALIDATION_ERROR",
+  "traceId": "4bf92f3577b34da6a3ce929d0e0e4736",
+  "errors": { "Token": ["The Token field is required."] }
+}
+```
+This applies to every endpoint, including the `/auth` ones.
 
 ---
 

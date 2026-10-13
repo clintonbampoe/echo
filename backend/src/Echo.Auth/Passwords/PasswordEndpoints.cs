@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -20,7 +21,7 @@ public static class PasswordEndpoints
             .MapPost(
                 "/forgot",
                 async (
-                    ForgotPasswordRequest request,
+                    [FromBody] ForgotPasswordRequest request,
                     PasswordResetService svc,
                     CancellationToken ct
                 ) =>
@@ -72,7 +73,7 @@ public static class PasswordEndpoints
             .MapPost(
                 "/reset",
                 async (
-                    PasswordResetRequest request,
+                    [FromBody] PasswordResetRequest request,
                     PasswordResetService svc,
                     CancellationToken ct
                 ) =>

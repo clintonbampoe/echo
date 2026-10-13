@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -16,7 +17,11 @@ public static class SessionEndpoints
         sessions
             .MapPost(
                 "/login",
-                async (LoginRequest request, SessionService sessionService, CancellationToken ct) =>
+                async (
+                    [FromBody] LoginRequest request,
+                    SessionService sessionService,
+                    CancellationToken ct
+                ) =>
                 {
                     using var span = instrumentation.ActivitySource.StartActivity(
                         "endpoint.session.login"
@@ -67,7 +72,7 @@ public static class SessionEndpoints
             .MapPost(
                 "/logout",
                 async (
-                    LogoutAllSessionsRequest request,
+                    [FromBody] LogoutAllSessionsRequest request,
                     SessionService sessionService,
                     CancellationToken ct
                 ) =>
@@ -119,7 +124,7 @@ public static class SessionEndpoints
             .MapPost(
                 "/refresh",
                 async (
-                    RefreshTokenRequest request,
+                    [FromBody] RefreshTokenRequest request,
                     SessionService sessionService,
                     CancellationToken ct
                 ) =>
@@ -173,7 +178,7 @@ public static class SessionEndpoints
             .MapPost(
                 "/revoke",
                 async (
-                    RefreshTokenRequest request,
+                    [FromBody] RefreshTokenRequest request,
                     SessionService sessionService,
                     CancellationToken ct
                 ) =>

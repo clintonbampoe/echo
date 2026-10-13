@@ -92,7 +92,7 @@ public static class ExceptionHandlingExtensions
     }
 
     // Matches the trace id in logs and OpenTelemetry, so support can find the failing request.
-    private static string GetTraceId(HttpContext context) =>
+    internal static string GetTraceId(HttpContext context) =>
         Activity.Current?.TraceId.ToString() ?? context.TraceIdentifier;
 
     private static string[] FlattenInnerExceptions(Exception exception)
@@ -107,5 +107,35 @@ public static class ExceptionHandlingExtensions
         }
 
         return [.. chain];
+    }
+}
+
+public static class ValidationProblemExtensions
+{
+    /// <summary>
+    /// Gives validation failures the same fields as every other problem response: status, type,
+    /// errorCode and traceId, next to the framework's errors map.
+    /// </summary>
+    public static IServiceCollection ConfigureValidationProblemDetails(
+        this IServiceCollection services
+    )
+    {
+        services.AddProblemDetails(options =>
+            options.CustomizeProblemDetails = context =>
+            {
+                if (context.ProblemDetails is not HttpValidationProblemDetails problem)
+                    return;
+
+                problem.Status = StatusCodes.Status400BadRequest;
+                problem.Type = ErrorTypes.ValidationError;
+                problem.Instance = context.HttpContext.Request.Path;
+                problem.Extensions["errorCode"] = "VALIDATION_ERROR";
+                problem.Extensions["traceId"] = ExceptionHandlingExtensions.GetTraceId(
+                    context.HttpContext
+                );
+            }
+        );
+
+        return services;
     }
 }
