@@ -24,9 +24,8 @@ builder
 
 builder
     .Services.ConfigureApiOptions()
-    .ConfigureInvalidModelStateResponse()
+    .ConfigureValidationProblemDetails()
     .ConfigureApiRouting()
-    .ConfigureControllerOptions()
     .ConfigureJsonSerializer()
     .ConfigureSwaggerDocs()
     .ConfigureDbContext(builder.Configuration)
@@ -42,9 +41,7 @@ var app = builder.Build();
 // Problem responses link their "type" to the API's base URL; the options are validated at startup.
 ErrorTypes.UseBaseUrl(app.Services.GetRequiredService<IOptions<ApiOptions>>().Value.BaseUrl);
 
-// Must run before anything that reads the client IP or scheme (the rate limiter, auth).
-app.UseForwardedHeaders();
-app.UseSecurityHeaders();
+app.UseApiPipeline();
 
 await Database.RunMigrationsOnStartup(app, builder.Configuration);
 
@@ -66,12 +63,6 @@ if (app.Environment.IsDevelopment())
     app.MapOpenApi().AllowAnonymous();
 }
 
-app.ConfigureExceptionHandler();
+app.MapHealthEndpoints();
 
-app.UseRouting();
-app.UseCors(Cors.FrontendPolicy);
-app.UseAuthentication();
-app.UseAuthorization();
-app.UseRateLimiter();
-app.MapControllers();
 app.Run();

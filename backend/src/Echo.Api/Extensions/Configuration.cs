@@ -28,16 +28,6 @@ public static class Configuration
         return services;
     }
 
-    public static IServiceCollection ConfigureControllerOptions(this IServiceCollection services)
-    {
-        services
-            .AddControllers()
-            .AddJsonOptions(options =>
-                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter())
-            );
-        return services;
-    }
-
     public static IServiceCollection ConfigureSwaggerDocs(this IServiceCollection services)
     {
         services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();

@@ -21,7 +21,7 @@ public static class EmailVerificationEndpoints
             .MapPost(
                 "/account",
                 async (
-                    EmailVerificationLinkRequest request,
+                    [FromBody] EmailVerificationLinkRequest request,
                     EmailVerificationService svc,
                     CancellationToken ct
                 ) =>

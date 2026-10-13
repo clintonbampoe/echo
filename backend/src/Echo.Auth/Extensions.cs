@@ -24,6 +24,10 @@ public static class Extensions
         IConfiguration configuration
     )
     {
+        // The validation source generator works per assembly: this call makes it cover the DTOs in
+        // Echo.Auth (the one in AddApplicationServices only covers Echo.Application).
+        services.AddValidation();
+
         services.AddResend(options =>
         {
             options.ApiToken = configuration["Resend:ApiKey"]!;

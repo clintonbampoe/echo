@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -19,7 +20,7 @@ public static class RegistrationEndpoints
         reg.MapPost(
                 "/congregation",
                 async (
-                    RegisterCongregationRequest request,
+                    [FromBody] RegisterCongregationRequest request,
                     RegistrationService svc,
                     CancellationToken ct
                 ) =>
@@ -95,7 +96,7 @@ public static class RegistrationEndpoints
         reg.MapPost(
                 "/member",
                 async (
-                    RegisterMemberRequest request,
+                    [FromBody] RegisterMemberRequest request,
                     RegistrationService svc,
                     CancellationToken ct
                 ) =>
