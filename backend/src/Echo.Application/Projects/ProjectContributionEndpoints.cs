@@ -2,6 +2,7 @@ using Echo.Shared.Extensions;
 using Echo.Shared.Pagination;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 
 namespace Echo.Application.Projects;
@@ -74,7 +75,7 @@ public static class ProjectContributionEndpoints
             .MapGet(
                 "/{id:guid}",
                 async (
-                    Guid id,
+                    [FromRoute] Guid id,
                     ProjectContributionService service,
                     HttpContext context,
                     CancellationToken ct
@@ -110,7 +111,7 @@ public static class ProjectContributionEndpoints
             .MapPost(
                 "/",
                 async (
-                    ProjectContributionCreateDto dto,
+                    [FromBody] ProjectContributionCreateDto dto,
                     ProjectContributionService service,
                     HttpContext context,
                     CancellationToken ct
@@ -170,8 +171,8 @@ public static class ProjectContributionEndpoints
             .MapPut(
                 "/{id:guid}",
                 async (
-                    Guid id,
-                    ProjectContributionUpdateDto dto,
+                    [FromRoute] Guid id,
+                    [FromBody] ProjectContributionUpdateDto dto,
                     ProjectContributionService service,
                     HttpContext context,
                     CancellationToken ct
@@ -224,7 +225,7 @@ public static class ProjectContributionEndpoints
             .MapDelete(
                 "/{id:guid}",
                 async (
-                    Guid id,
+                    [FromRoute] Guid id,
                     ProjectContributionService service,
                     HttpContext context,
                     CancellationToken ct

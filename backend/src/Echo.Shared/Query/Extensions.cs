@@ -15,8 +15,15 @@ public static class Extensions
         where T : ISearchable
     {
         return query
-            .Where(x => EF.Functions.ILike(x.Name, $"%{name}%"))
+            .Where(x => EF.Functions.ILike(x.Name, $"%{EscapeLike(name)}%"))
             .OrderByDescending(x => EF.Functions.TrigramsSimilarity(x.Name, name))
             .Take(5);
     }
+
+    /// <summary>
+    /// Escapes the characters that LIKE treats as wildcards (and the escape character itself),
+    /// so a search term is matched literally. PostgreSQL's default escape character is a backslash.
+    /// </summary>
+    public static string EscapeLike(string value) =>
+        value.Replace("\\", "\\\\").Replace("%", "\\%").Replace("_", "\\_");
 }

@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Echo.Shared.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -58,7 +59,7 @@ public static class TransactionCategoryEndpoints
             .MapGet(
                 "/{id:int}",
                 async (
-                    int id,
+                    [FromRoute] int id,
                     TransactionCategoryService service,
                     HttpContext context,
                     CancellationToken ct
@@ -92,7 +93,7 @@ public static class TransactionCategoryEndpoints
             .MapPost(
                 "/",
                 async (
-                    TransactionCategoryCreateDto dto,
+                    [FromBody] TransactionCategoryCreateDto dto,
                     TransactionCategoryService service,
                     HttpContext context,
                     CancellationToken ct
@@ -139,8 +140,8 @@ public static class TransactionCategoryEndpoints
             .MapPut(
                 "/{id:int}",
                 async (
-                    int id,
-                    TransactionCategoryUpdateDto dto,
+                    [FromRoute] int id,
+                    [FromBody] TransactionCategoryUpdateDto dto,
                     TransactionCategoryService service,
                     HttpContext context,
                     CancellationToken ct
@@ -189,7 +190,7 @@ public static class TransactionCategoryEndpoints
             .MapDelete(
                 "/{id:int}",
                 async (
-                    int id,
+                    [FromRoute] int id,
                     TransactionCategoryService service,
                     HttpContext context,
                     CancellationToken ct
@@ -233,7 +234,7 @@ public static class TransactionCategoryEndpoints
             .MapGet(
                 "/search",
                 async (
-                    [FromQuery] string q,
+                    [FromQuery, StringLength(100, MinimumLength = 1)] string q,
                     TransactionCategoryService service,
                     HttpContext context,
                     CancellationToken ct

@@ -2,6 +2,7 @@ using Echo.Shared.Extensions;
 using Echo.Shared.Pagination;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 
 namespace Echo.Application.Organizations;
@@ -71,7 +72,7 @@ public static class OrganizationMemberEndpoints
             .MapGet(
                 "/{id:guid}",
                 async (
-                    Guid id,
+                    [FromRoute] Guid id,
                     OrganizationMemberService service,
                     HttpContext context,
                     CancellationToken ct
@@ -107,7 +108,7 @@ public static class OrganizationMemberEndpoints
             .MapGet(
                 "/member/{id:guid}",
                 async (
-                    Guid id,
+                    [FromRoute] Guid id,
                     [AsParameters] OrganizationMemberFilters filters,
                     [AsParameters] PaginationRequest pagination,
                     OrganizationMemberService service,
@@ -155,7 +156,7 @@ public static class OrganizationMemberEndpoints
             .MapGet(
                 "/organization/{id:guid}",
                 async (
-                    Guid id,
+                    [FromRoute] Guid id,
                     [AsParameters] OrganizationMemberFilters filters,
                     [AsParameters] PaginationRequest pagination,
                     OrganizationMemberService service,
@@ -203,7 +204,7 @@ public static class OrganizationMemberEndpoints
             .MapPost(
                 "/",
                 async (
-                    OrganizationMemberCreateDto dto,
+                    [FromBody] OrganizationMemberCreateDto dto,
                     OrganizationMemberService service,
                     HttpContext context,
                     CancellationToken ct
@@ -259,8 +260,8 @@ public static class OrganizationMemberEndpoints
             .MapPut(
                 "/{id:guid}",
                 async (
-                    Guid id,
-                    OrganizationMemberUpdateDto dto,
+                    [FromRoute] Guid id,
+                    [FromBody] OrganizationMemberUpdateDto dto,
                     OrganizationMemberService service,
                     HttpContext context,
                     CancellationToken ct
@@ -311,7 +312,7 @@ public static class OrganizationMemberEndpoints
             .MapDelete(
                 "/{id:guid}",
                 async (
-                    Guid id,
+                    [FromRoute] Guid id,
                     OrganizationMemberService service,
                     HttpContext context,
                     CancellationToken ct

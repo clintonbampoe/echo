@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Echo.Shared.Extensions;
 using Echo.Shared.Pagination;
 using Microsoft.AspNetCore.Builder;
@@ -70,7 +71,7 @@ public static class OrganizationEndpoints
             .MapGet(
                 "/{id:guid}",
                 async (
-                    Guid id,
+                    [FromRoute] Guid id,
                     OrganizationService service,
                     HttpContext context,
                     CancellationToken ct
@@ -104,7 +105,7 @@ public static class OrganizationEndpoints
             .MapPost(
                 "/",
                 async (
-                    OrganizationCreateDto dto,
+                    [FromBody] OrganizationCreateDto dto,
                     OrganizationService service,
                     HttpContext context,
                     CancellationToken ct
@@ -155,8 +156,8 @@ public static class OrganizationEndpoints
             .MapPut(
                 "/{id:guid}",
                 async (
-                    Guid id,
-                    OrganizationUpdateDto dto,
+                    [FromRoute] Guid id,
+                    [FromBody] OrganizationUpdateDto dto,
                     OrganizationService service,
                     HttpContext context,
                     CancellationToken ct
@@ -208,7 +209,7 @@ public static class OrganizationEndpoints
             .MapDelete(
                 "/{id:guid}",
                 async (
-                    Guid id,
+                    [FromRoute] Guid id,
                     OrganizationService service,
                     HttpContext context,
                     CancellationToken ct
@@ -251,7 +252,7 @@ public static class OrganizationEndpoints
             .MapGet(
                 "/search",
                 async (
-                    [FromQuery] string q,
+                    [FromQuery, StringLength(100, MinimumLength = 1)] string q,
                     OrganizationService service,
                     HttpContext context,
                     CancellationToken ct

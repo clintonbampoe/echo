@@ -62,7 +62,7 @@ public class UserService(
         User? entity;
         using (instrumentation.ActivitySource.StartActivity("svc.user.fetch.by_id"))
         {
-            entity = await repository.GetById(id, ct);
+            entity = await repository.GetById(congregationId, id, ct);
         }
 
         if (entity is null)
@@ -129,7 +129,7 @@ public class UserService(
         User? entity;
         using (instrumentation.ActivitySource.StartActivity("svc.user.fetch.by_id"))
         {
-            entity = await repository.GetById(id, ct);
+            entity = await repository.GetById(congregationId, id, ct);
         }
 
         if (entity is null)
@@ -159,7 +159,7 @@ public class UserService(
         User? entity;
         using (instrumentation.ActivitySource.StartActivity("svc.user.fetch.by_id"))
         {
-            entity = await repository.GetById(id, ct);
+            entity = await repository.GetById(congregationId, id, ct);
         }
 
         if (entity is null)

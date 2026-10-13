@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using Echo.Shared.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -53,7 +54,7 @@ public static class ProjectCategoryEndpoints
             .MapGet(
                 "/{id:int}",
                 async (
-                    int id,
+                    [FromRoute] int id,
                     ProjectCategoryService service,
                     HttpContext context,
                     CancellationToken ct
@@ -90,7 +91,7 @@ public static class ProjectCategoryEndpoints
             .MapPost(
                 "/",
                 async (
-                    ProjectCategoryCreateDto dto,
+                    [FromBody] ProjectCategoryCreateDto dto,
                     ProjectCategoryService service,
                     HttpContext context,
                     CancellationToken ct
@@ -136,8 +137,8 @@ public static class ProjectCategoryEndpoints
             .MapPut(
                 "/{id:int}",
                 async (
-                    int id,
-                    ProjectCategoryUpdateDto dto,
+                    [FromRoute] int id,
+                    [FromBody] ProjectCategoryUpdateDto dto,
                     ProjectCategoryService service,
                     HttpContext context,
                     CancellationToken ct
@@ -182,7 +183,7 @@ public static class ProjectCategoryEndpoints
             .MapDelete(
                 "/{id:int}",
                 async (
-                    int id,
+                    [FromRoute] int id,
                     ProjectCategoryService service,
                     HttpContext context,
                     CancellationToken ct
@@ -226,7 +227,7 @@ public static class ProjectCategoryEndpoints
             .MapGet(
                 "/search",
                 async (
-                    [FromQuery] string q,
+                    [FromQuery, StringLength(100, MinimumLength = 1)] string q,
                     ProjectCategoryService service,
                     HttpContext context,
                     CancellationToken ct

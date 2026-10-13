@@ -2,6 +2,7 @@ using Echo.Shared.Extensions;
 using Echo.Shared.Pagination;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 
 namespace Echo.Application.Events;
@@ -69,7 +70,7 @@ public static class EventRegistrationEndpoints
             .MapGet(
                 "/{id:guid}",
                 async (
-                    Guid id,
+                    [FromRoute] Guid id,
                     EventRegistrationService service,
                     HttpContext context,
                     CancellationToken ct
@@ -105,7 +106,7 @@ public static class EventRegistrationEndpoints
             .MapGet(
                 "/event/{id:guid}",
                 async (
-                    Guid id,
+                    [FromRoute] Guid id,
                     [AsParameters] PaginationRequest pagination,
                     EventRegistrationService service,
                     HttpContext context,
@@ -154,7 +155,7 @@ public static class EventRegistrationEndpoints
             .MapGet(
                 "/member/{id:guid}",
                 async (
-                    Guid id,
+                    [FromRoute] Guid id,
                     [AsParameters] PaginationRequest pagination,
                     EventRegistrationService service,
                     HttpContext context,
@@ -200,7 +201,7 @@ public static class EventRegistrationEndpoints
             .MapPost(
                 "/",
                 async (
-                    EventRegistrationCreateDto dto,
+                    [FromBody] EventRegistrationCreateDto dto,
                     EventRegistrationService service,
                     HttpContext context,
                     CancellationToken ct
@@ -256,8 +257,8 @@ public static class EventRegistrationEndpoints
             .MapPut(
                 "/{id:guid}",
                 async (
-                    Guid id,
-                    EventRegistrationUpdateDto dto,
+                    [FromRoute] Guid id,
+                    [FromBody] EventRegistrationUpdateDto dto,
                     EventRegistrationService service,
                     HttpContext context,
                     CancellationToken ct
@@ -305,7 +306,7 @@ public static class EventRegistrationEndpoints
             .MapDelete(
                 "/{id:guid}",
                 async (
-                    Guid id,
+                    [FromRoute] Guid id,
                     EventRegistrationService service,
                     HttpContext context,
                     CancellationToken ct

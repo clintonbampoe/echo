@@ -2,6 +2,7 @@ using Echo.Shared.Extensions;
 using Echo.Shared.Pagination;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 
 namespace Echo.Application.Attendances;
@@ -77,7 +78,7 @@ public static class AttendanceEndpoints
             .MapGet(
                 "/{id:guid}",
                 async (
-                    Guid id,
+                    [FromRoute] Guid id,
                     AttendanceService service,
                     HttpContext context,
                     CancellationToken ct
@@ -113,7 +114,7 @@ public static class AttendanceEndpoints
             .MapPost(
                 "/",
                 async (
-                    AttendanceCreateDto dto,
+                    [FromBody] AttendanceCreateDto dto,
                     AttendanceService service,
                     HttpContext context,
                     CancellationToken ct
@@ -173,8 +174,8 @@ public static class AttendanceEndpoints
             .MapPut(
                 "/{id:guid}",
                 async (
-                    Guid id,
-                    AttendanceUpdateDto dto,
+                    [FromRoute] Guid id,
+                    [FromBody] AttendanceUpdateDto dto,
                     AttendanceService service,
                     HttpContext context,
                     CancellationToken ct
@@ -228,7 +229,7 @@ public static class AttendanceEndpoints
             .MapDelete(
                 "/{id:guid}",
                 async (
-                    Guid id,
+                    [FromRoute] Guid id,
                     AttendanceService service,
                     HttpContext context,
                     CancellationToken ct
