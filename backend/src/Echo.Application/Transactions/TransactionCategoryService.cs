@@ -207,4 +207,51 @@ public class TransactionCategoryService(
         var counts = await repository.GetTransactionCounts(congregationId, [entity.Id], ct);
         return mapper.ToDto(entity) with { TransactionCount = counts.GetValueOrDefault(entity.Id) };
     }
+
+    public async Task<IOperationResult> Reassign(
+        Guid congregationId,
+        int id,
+        ReassignCategoryDto dto,
+        CancellationToken ct
+    )
+    {
+        using var activity = instrumentation.ActivitySource.StartActivity(
+            "svc.transaction_category.reassign"
+        );
+        activity?.SetTag("transaction_category.id", id);
+        activity?.SetTag("transaction_category.target_id", dto.TargetCategoryId);
+
+        var sameError = ReassignRules.Check(id, dto.TargetCategoryId);
+        if (sameError is not null)
+            return new BadRequestResult(sameError);
+
+        var source = await repository.GetById(congregationId, id, ct);
+        if (source is null)
+            return new NotFoundResult(id.ToString());
+
+        var target = await repository.GetById(congregationId, dto.TargetCategoryId, ct);
+        if (target is null)
+            return new ForeignKeyEntityNotFound(nameof(target));
+
+        var typeError = ReassignRules.CheckTypes(source, target);
+        if (typeError is not null)
+            return new BadRequestResult(typeError);
+
+        int moved;
+        using (instrumentation.ActivitySource.StartActivity("svc.transaction_category.reassign.persist"))
+        {
+            moved = await repository.Reassign(
+                congregationId,
+                source,
+                target.Id,
+                dto.DeleteSource,
+                ct
+            );
+        }
+
+        activity?.SetTag("transaction_category.moved", moved);
+        return new SuccessResult<ReassignCategoryResponseDto>(
+            new ReassignCategoryResponseDto { Moved = moved, SourceDeleted = dto.DeleteSource }
+        );
+    }
 }

@@ -121,6 +121,9 @@ public class TransactionService(
         }
         TransactionLog.CreateCategoryFound(logger, congregationId, dto.CategoryId);
 
+        if (!TransactionRules.TypeMatches(dto.TransactionType, transactionCategory))
+            return new BadRequestResult(TypeMismatch(dto.TransactionType, transactionCategory));
+
         var entity = mapper.ToEntity(dto);
         entity.CongregationId = congregationId;
         entity.Id = idGenerator.Generate();
@@ -166,27 +169,30 @@ public class TransactionService(
             return new NotFoundResult(id.ToString());
         }
 
-        // Validate the NEW category, not the existing one.
-        if (dto.CategoryId.HasValue && dto.CategoryId.Value != entity.CategoryId)
+        // Check the category the transaction will end up in (the new one, else the current one)
+        // against the type it will end up with.
+        var categoryId = dto.CategoryId ?? entity.CategoryId;
+        TransactionCategory? category;
+        using (instrumentation.ActivitySource.StartActivity("svc.transaction.validate.category"))
         {
-            TransactionCategory? category;
-            using (
-                instrumentation.ActivitySource.StartActivity("svc.transaction.validate.category")
-            )
-            {
-                category = await categoryRepository.GetById(
-                    congregationId,
-                    dto.CategoryId.Value,
-                    ct
-                );
-            }
+            category = await categoryRepository.GetById(congregationId, categoryId, ct);
+        }
 
-            if (category is null)
+        if (category is null)
+        {
+            // An unchanged category may have been deleted since; only a new one is a bad reference.
+            if (dto.CategoryId.HasValue && dto.CategoryId.Value != entity.CategoryId)
             {
                 TransactionLog.UpdateCategoryNotFound(logger, congregationId, dto.CategoryId.Value);
                 return new ForeignKeyEntityNotFound(nameof(category));
             }
-            TransactionLog.UpdateCategoryFound(logger, congregationId, dto.CategoryId.Value);
+        }
+        else
+        {
+            TransactionLog.UpdateCategoryFound(logger, congregationId, categoryId);
+            var type = dto.TransactionType ?? entity.TransactionType;
+            if (!TransactionRules.TypeMatches(type, category))
+                return new BadRequestResult(TypeMismatch(type, category));
         }
 
         mapper.Patch(dto, entity);
@@ -324,4 +330,7 @@ public class TransactionService(
             ByCategory = byCategory.ToList(),
         };
     }
+
+    private static string TypeMismatch(TransactionType type, TransactionCategory category) =>
+        $"A {type} transaction cannot be filed under the {category.CategoryType} category '{category.Name}'.";
 }
