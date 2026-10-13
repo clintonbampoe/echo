@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using Echo.Domain.Projects;
+using Echo.Shared.Utilities;
 
 namespace Echo.Application.Projects;
 
@@ -73,6 +74,10 @@ public record ProjectCursor
     public Guid Id { get; init; }
 }
 
+/// <summary>
+/// Default window when From/To are omitted: this year. A project is in the window when it
+/// started on or before To and has not ended before From (open-ended projects stay visible).
+/// </summary>
 public record ProjectFilters
 {
     public string? Name { get; init; }
@@ -80,7 +85,7 @@ public record ProjectFilters
     public int? CategoryId { get; init; }
     public Guid? ManagerId { get; init; }
     public DateOnly? From { get; init; }
-    public DateOnly? To { get; init; } // on StartDate
+    public DateOnly? To { get; init; }
 }
 
 public record ProjectSummaryDto
@@ -89,4 +94,5 @@ public record ProjectSummaryDto
     public decimal TotalRaised { get; init; }
     public decimal TotalTarget { get; init; }
     public int AtRiskCount { get; init; }
+    public DateWindow? Window { get; init; }
 }

@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using Echo.Domain.Members;
+using Echo.Shared.Utilities;
 
 namespace Echo.Application.Members;
 
@@ -133,6 +134,10 @@ public record MemberSearchResultDto
     public required string PhoneNumber { get; init; }
 }
 
+/// <summary>
+/// Default window when From/To are omitted: this year (by JoinedDate).
+/// Members without a JoinedDate appear in every window.
+/// </summary>
 public record MemberFilters
 {
     public string? Name { get; init; }
@@ -151,6 +156,7 @@ public record MemberSummaryDto
     public int MaleCount { get; init; }
     public int FemaleCount { get; init; }
     public double AverageAge { get; init; }
+    public DateWindow? Window { get; init; }
 }
 
 public record MemberCursor

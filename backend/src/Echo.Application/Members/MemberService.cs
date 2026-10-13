@@ -7,6 +7,7 @@ using Echo.Shared.Services.Generators;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
+using Echo.Shared.Utilities;
 
 namespace Echo.Application.Members;
 
@@ -19,9 +20,17 @@ public class MemberService(
     IIdGenerator idGenerator,
     ApplicationInstrumentation instrumentation,
     LinkGenerator linker,
+    DateWindows dateWindows,
     ILogger<MemberService> logger
 )
 {
+    internal static DateWindow? ResolveWindow(MemberFilters filters, DateWindows dateWindows) =>
+        dateWindows.ThisYear(
+            filters.From,
+            filters.To,
+            hasParent: false
+        );
+
     public async Task<IOperationResult> List(
         Guid congregationId,
         MemberFilters filters,
@@ -29,6 +38,9 @@ public class MemberService(
         CancellationToken ct
     )
     {
+        var window = ResolveWindow(filters, dateWindows);
+        filters = filters with { From = window?.From, To = window?.To };
+
         using var activity = instrumentation.ActivitySource.StartActivity("svc.member.list");
 
         var cursor = encoder.Decode<MemberCursor>(pagination.Cursor);
@@ -55,7 +67,7 @@ public class MemberService(
         activity?.SetTag("member.count", data.Count);
         MemberLog.Listed(logger, congregationId, data.Count);
 
-        var res = new PagedResponse<MemberResponseDto>(hasMore, nextCursor, data);
+        var res = new PagedResponse<MemberResponseDto>(hasMore, nextCursor, data, window);
         return new SuccessResult<PagedResponse<MemberResponseDto>>(res);
     }
 
@@ -210,6 +222,9 @@ public class MemberService(
         CancellationToken ct
     )
     {
+        var window = ResolveWindow(filters, dateWindows);
+        filters = filters with { From = window?.From, To = window?.To };
+
         using var activity = instrumentation.ActivitySource.StartActivity("svc.member.summary");
 
         var totalTask = repository.Count(congregationId, filters, ct);
@@ -222,6 +237,7 @@ public class MemberService(
 
         var res = new MemberSummaryDto
         {
+            Window = window,
             TotalMembers = totalTask.Result,
             ActiveMembers = activeTask.Result,
             MaleCount = maleTask.Result,

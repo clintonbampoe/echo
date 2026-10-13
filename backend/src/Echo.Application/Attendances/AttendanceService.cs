@@ -6,6 +6,7 @@ using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
+using Echo.Shared.Utilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
@@ -20,11 +21,19 @@ public class AttendanceService(
     IAttendanceMapper mapper,
     IEncoder encoder,
     IIdGenerator idGenerator,
+    DateWindows dateWindows,
     ApplicationInstrumentation instrumentation,
     LinkGenerator linker,
     ILogger<AttendanceService> logger
 )
 {
+    internal static DateWindow? ResolveWindow(AttendanceFilters filters, DateWindows dateWindows) =>
+        dateWindows.ThisWeekToDate(
+            filters.From,
+            filters.To,
+            hasParent: filters.SessionId is not null || filters.PersonId is not null
+        );
+
     public async Task<IOperationResult> List(
         Guid congregationId,
         AttendanceFilters filters,
@@ -33,6 +42,9 @@ public class AttendanceService(
     )
     {
         using var activity = instrumentation.ActivitySource.StartActivity("svc.attendance.list");
+
+        var window = ResolveWindow(filters, dateWindows);
+        filters = filters with { From = window?.From, To = window?.To };
 
         var cursor = encoder.Decode<AttendanceCursor>(pagination.Cursor);
 
@@ -58,7 +70,7 @@ public class AttendanceService(
         activity?.SetTag("attendance.count", data.Count);
         AttendanceLog.Listed(logger, congregationId, data.Count);
 
-        var res = new PagedResponse<AttendanceResponseDto>(hasMore, nextCursor, data);
+        var res = new PagedResponse<AttendanceResponseDto>(hasMore, nextCursor, data, window);
         return new SuccessResult<PagedResponse<AttendanceResponseDto>>(res);
     }
 
@@ -229,6 +241,9 @@ public class AttendanceService(
     {
         using var activity = instrumentation.ActivitySource.StartActivity("svc.attendance.summary");
 
+        var window = ResolveWindow(filters, dateWindows);
+        filters = filters with { From = window?.From, To = window?.To };
+
         // Sequential — DbContext is not thread-safe and cannot serve concurrent queries.
         var total = await repository.CountTotal(congregationId, filters, ct);
         var members = await repository.CountByKindAtTime(
@@ -251,6 +266,7 @@ public class AttendanceService(
             MembersPresent = members,
             VisitorsPresent = visitors,
             FirstTimeVisitors = firstTime,
+            Window = window,
         };
 
         activity?.SetTag("attendance.summary.total", res.TotalPresent);

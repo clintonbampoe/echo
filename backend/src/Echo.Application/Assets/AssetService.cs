@@ -7,6 +7,7 @@ using Echo.Shared.Services.Generators;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
+using Echo.Shared.Utilities;
 
 namespace Echo.Application.Assets;
 
@@ -19,9 +20,17 @@ public class AssetService(
     IIdGenerator idGenerator,
     ApplicationInstrumentation instrumentation,
     LinkGenerator linker,
+    DateWindows dateWindows,
     ILogger<AssetService> logger
 )
 {
+    internal static DateWindow? ResolveWindow(AssetFilters filters, DateWindows dateWindows) =>
+        dateWindows.ThisYear(
+            filters.From,
+            filters.To,
+            hasParent: false
+        );
+
     public async Task<IOperationResult> List(
         Guid congregationId,
         AssetFilters filters,
@@ -29,6 +38,9 @@ public class AssetService(
         CancellationToken ct
     )
     {
+        var window = ResolveWindow(filters, dateWindows);
+        filters = filters with { From = window?.From, To = window?.To };
+
         using var activity = instrumentation.ActivitySource.StartActivity("svc.asset.list");
 
         var cursor = encoder.Decode<AssetCursor>(pagination.Cursor);
@@ -53,7 +65,7 @@ public class AssetService(
         AssetLog.Listed(logger, congregationId, data.Count);
         activity?.SetTag("asset.count", data.Count);
 
-        var res = new PagedResponse<AssetResponseDto>(hasMore, nextCursor, data);
+        var res = new PagedResponse<AssetResponseDto>(hasMore, nextCursor, data, window);
         return new SuccessResult<PagedResponse<AssetResponseDto>>(res);
     }
 
@@ -236,6 +248,9 @@ public class AssetService(
         CancellationToken ct
     )
     {
+        var window = ResolveWindow(filters, dateWindows);
+        filters = filters with { From = window?.From, To = window?.To };
+
         using var activity = instrumentation.ActivitySource.StartActivity("svc.asset.summary");
 
         var countTask = repository.Count(congregationId, filters, ct);
@@ -246,6 +261,7 @@ public class AssetService(
 
         var res = new AssetSummaryDto
         {
+            Window = window,
             TotalAssets = countTask.Result,
             TotalCurrentValue = currentValueTask.Result,
             TotalPurchaseCost = purchaseCostTask.Result,

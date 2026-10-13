@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Echo.Shared.Utilities;
 
 namespace Echo.Application.Members;
 
@@ -65,6 +66,10 @@ public record VisitorSearchResultDto
     public string? PhoneNumber { get; init; }
 }
 
+/// <summary>
+/// Default window when From/To are omitted: this year. The window applies to CreatedAt
+/// for the current (unconverted) view and to ConvertedAt when Converted = true.
+/// </summary>
 public record VisitorFilters
 {
     public string? Name { get; init; }
@@ -79,6 +84,7 @@ public record VisitorSummaryDto
     public int NewVisitors { get; init; }
     public int RecurringVisitors { get; init; }
     public int ConvertedVisitors { get; init; }
+    public DateWindow? Window { get; init; }
 }
 
 public record VisitorCursor

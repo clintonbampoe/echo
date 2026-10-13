@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using Echo.Domain.Attendances;
+using Echo.Shared.Utilities;
 
 namespace Echo.Application.Attendances;
 
@@ -70,6 +71,11 @@ public record SessionCursor
     public Guid Id { get; init; }
 }
 
+/// <summary>
+/// Default window when From/To are omitted: the whole current week (Sunday to Saturday),
+/// so sessions scheduled later this week are listed. Sessions scheduled beyond this week
+/// need an explicit From/To.
+/// </summary>
 public record SessionFilters
 {
     public int? SessionLabelId { get; init; }
@@ -86,4 +92,5 @@ public record SessionSummaryDto
     public int CancelledSessions { get; init; }
     public int TotalAttendance { get; init; }
     public double AverageAttendance { get; init; }
+    public DateWindow? Window { get; init; }
 }

@@ -13,6 +13,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Echo.Application.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Echo.Shared\Echo.Shared.csproj" />
     <ProjectReference Include="..\Echo.Data\Echo.Data.csproj" />
   </ItemGroup>

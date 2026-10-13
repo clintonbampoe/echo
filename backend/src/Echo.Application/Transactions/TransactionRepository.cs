@@ -1,12 +1,11 @@
 using Echo.Data;
 using Echo.Domain.Transactions;
 using Echo.Shared.Query;
-using Echo.Shared.Utilities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Application.Transactions;
 
-public class TransactionRepository(AppDbContext context, TimeProvider timeProvider)
+public class TransactionRepository(AppDbContext context)
 {
     private readonly DbSet<Transaction> _dbSet = context.Set<Transaction>();
 
@@ -23,7 +22,7 @@ public class TransactionRepository(AppDbContext context, TimeProvider timeProvid
             .FilterDeleted()
             .Where(t => t.CongregationId == congregationId)
             .Include(t => t.Category)
-            .Filter(filters, timeProvider)
+            .Filter(filters)
             .OrderByDescending(t => t.TransactionDate)
             .ThenBy(t => t.Id)
             .Paginate(cursor, pageSize)
@@ -50,7 +49,7 @@ public class TransactionRepository(AppDbContext context, TimeProvider timeProvid
             .Where(t =>
                 t.CongregationId == congregationId && t.TransactionType == TransactionType.Income
             )
-            .Filter(filters, timeProvider)
+            .Filter(filters)
             .SumAsync(t => t.Amount, ct);
 
     public Task<decimal> SumExpenses(
@@ -64,7 +63,7 @@ public class TransactionRepository(AppDbContext context, TimeProvider timeProvid
             .Where(t =>
                 t.CongregationId == congregationId && t.TransactionType == TransactionType.Expense
             )
-            .Filter(filters, timeProvider)
+            .Filter(filters)
             .SumAsync(t => t.Amount, ct);
 
     public Task<string?> MostActiveCategory(
@@ -76,7 +75,7 @@ public class TransactionRepository(AppDbContext context, TimeProvider timeProvid
             .AsNoTracking()
             .FilterDeleted()
             .Where(t => t.CongregationId == congregationId)
-            .Filter(filters, timeProvider)
+            .Filter(filters)
             .GroupBy(t => t.Category.Name)
             .OrderByDescending(g => g.Count())
             .Select(g => g.Key)
@@ -91,8 +90,7 @@ internal static class TransactionQueryExtensions
 {
     internal static IQueryable<Transaction> Filter(
         this IQueryable<Transaction> query,
-        TransactionFilters filters,
-        TimeProvider timeProvider
+        TransactionFilters filters
     )
     {
         if (filters.CategoryId is not null)
@@ -101,10 +99,11 @@ internal static class TransactionQueryExtensions
         if (filters.TransactionType is not null)
             query = query.Where(t => t.TransactionType == filters.TransactionType);
 
-        var from = filters.From ?? DateUtils.GetFirstDayOfWeek(timeProvider);
-        var to = filters.To ?? DateUtils.GetDateToday(timeProvider);
+        if (filters.From is not null)
+            query = query.Where(t => t.TransactionDate >= filters.From);
 
-        query = query.Where(t => t.TransactionDate >= from && t.TransactionDate <= to);
+        if (filters.To is not null)
+            query = query.Where(t => t.TransactionDate <= filters.To);
 
         return query;
     }

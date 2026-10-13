@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Echo.Shared.Utilities;
 
 namespace Echo.Application.Events;
 
@@ -78,6 +79,9 @@ public record EventCursor
     public Guid Id { get; init; }
 }
 
+/// <summary>
+/// Default window when From/To are omitted: this year (by StartDate).
+/// </summary>
 public record EventFilters
 {
     public string? Name { get; init; }
@@ -93,4 +97,5 @@ public record EventSummaryDto
     public int UpcomingEvents { get; init; }
     public int TotalRegistered { get; init; }
     public int TotalAttended { get; init; }
+    public DateWindow? Window { get; init; }
 }

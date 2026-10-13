@@ -27,7 +27,7 @@ public class EventRepository(AppDbContext context, TimeProvider timeProvider)
             .Include(e => e.Organization)
             .Include(e => e.Organizer)
                 .ThenInclude(o => o.Person)
-            .Filter(filters, timeProvider)
+            .Filter(filters)
             .OrderBy(e => e.StartDate)
             .ThenBy(e => e.Id)
             .Paginate(cursor, pageSize)
@@ -64,7 +64,7 @@ public class EventRepository(AppDbContext context, TimeProvider timeProvider)
             .AsNoTracking()
             .FilterDeleted()
             .Where(e => e.CongregationId == congregationId)
-            .Filter(filters, timeProvider)
+            .Filter(filters)
             .CountAsync(ct);
 
     public Task<int> CountUpcoming(
@@ -78,7 +78,7 @@ public class EventRepository(AppDbContext context, TimeProvider timeProvider)
             .AsNoTracking()
             .FilterDeleted()
             .Where(e => e.CongregationId == congregationId && e.StartDate >= today)
-            .Filter(filters, timeProvider)
+            .Filter(filters)
             .CountAsync(ct);
     }
 
@@ -91,7 +91,7 @@ public class EventRepository(AppDbContext context, TimeProvider timeProvider)
             .AsNoTracking()
             .FilterDeleted()
             .Where(e => e.CongregationId == congregationId)
-            .Filter(filters, timeProvider)
+            .Filter(filters)
             .SelectMany(e => _registrationDbSet.FilterDeleted().Where(r => r.EventId == e.Id))
             .CountAsync(ct);
 
@@ -104,7 +104,7 @@ public class EventRepository(AppDbContext context, TimeProvider timeProvider)
             .AsNoTracking()
             .FilterDeleted()
             .Where(e => e.CongregationId == congregationId)
-            .Filter(filters, timeProvider)
+            .Filter(filters)
             .SelectMany(e => _attendanceDbSet.FilterDeleted().Where(a => a.EventId == e.Id))
             .CountAsync(ct);
 
@@ -117,8 +117,7 @@ internal static class EventQueryExtensions
 {
     internal static IQueryable<Event> Filter(
         this IQueryable<Event> query,
-        EventFilters filters,
-        TimeProvider timeProvider
+        EventFilters filters
     )
     {
         if (filters.Name is not null)
@@ -130,10 +129,11 @@ internal static class EventQueryExtensions
         if (filters.OrganizationId is not null)
             query = query.Where(e => e.OrganizationId == filters.OrganizationId);
 
-        var from = filters.From ?? DateUtils.GetFirstDayOfYear(timeProvider);
-        var to = filters.To ?? DateUtils.GetLastDayOfYear(timeProvider);
+        if (filters.From is not null)
+            query = query.Where(e => e.StartDate >= filters.From);
 
-        query = query.Where(e => e.StartDate >= from && e.StartDate <= to);
+        if (filters.To is not null)
+            query = query.Where(e => e.StartDate <= filters.To);
 
         return query;
     }

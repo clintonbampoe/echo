@@ -1,12 +1,11 @@
 using Echo.Data;
 using Echo.Domain.Attendances;
 using Echo.Shared.Query;
-using Echo.Shared.Utilities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Application.Attendances;
 
-public class SessionRepository(AppDbContext context, TimeProvider timeProvider)
+public class SessionRepository(AppDbContext context)
 {
     private readonly DbSet<Session> _dbSet = context.Set<Session>();
 
@@ -24,7 +23,7 @@ public class SessionRepository(AppDbContext context, TimeProvider timeProvider)
             .Where(s => s.CongregationId == congregationId)
             .Include(s => s.SessionLabel)
             .Include(s => s.Creator)
-            .Filter(filters, timeProvider)
+            .Filter(filters)
             .OrderByDescending(s => s.Date)
             .ThenBy(s => s.Id)
             .Paginate(cursor, pageSize)
@@ -54,7 +53,7 @@ public class SessionRepository(AppDbContext context, TimeProvider timeProvider)
             .AsNoTracking()
             .FilterDeleted()
             .Where(s => s.CongregationId == congregationId)
-            .Filter(filters, timeProvider)
+            .Filter(filters)
             .CountAsync(ct);
 
     public Task<int> CountByStatus(
@@ -67,7 +66,7 @@ public class SessionRepository(AppDbContext context, TimeProvider timeProvider)
             .AsNoTracking()
             .FilterDeleted()
             .Where(s => s.CongregationId == congregationId && s.Status == status)
-            .Filter(filters, timeProvider)
+            .Filter(filters)
             .CountAsync(ct);
 
     /// <summary>
@@ -107,8 +106,7 @@ internal static class SessionQueryExtensions
 {
     internal static IQueryable<Session> Filter(
         this IQueryable<Session> query,
-        SessionFilters filters,
-        TimeProvider timeProvider
+        SessionFilters filters
     )
     {
         if (filters.SessionLabelId is not null)
@@ -122,10 +120,11 @@ internal static class SessionQueryExtensions
                 s.Name != null && EF.Functions.ILike(s.Name, $"%{filters.Name}%")
             );
 
-        var from = filters.From ?? DateUtils.GetFirstDayOfWeek(timeProvider);
-        var to = filters.To ?? DateUtils.GetDateToday(timeProvider);
+        if (filters.From is not null)
+            query = query.Where(s => s.Date >= filters.From);
 
-        query = query.Where(s => s.Date >= from && s.Date <= to);
+        if (filters.To is not null)
+            query = query.Where(s => s.Date <= filters.To);
 
         return query;
     }

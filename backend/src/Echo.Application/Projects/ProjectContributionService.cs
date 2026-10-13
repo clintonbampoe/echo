@@ -7,6 +7,7 @@ using Echo.Shared.Services.Generators;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
+using Echo.Shared.Utilities;
 
 namespace Echo.Application.Projects;
 
@@ -19,9 +20,17 @@ public class ProjectContributionService(
     IIdGenerator idGenerator,
     ApplicationInstrumentation instrumentation,
     LinkGenerator linker,
+    DateWindows dateWindows,
     ILogger<ProjectContributionService> logger
 )
 {
+    internal static DateWindow? ResolveWindow(ProjectContributionFilters filters, DateWindows dateWindows) =>
+        dateWindows.ThisMonthToDate(
+            filters.From,
+            filters.To,
+            hasParent: filters.ProjectId is not null
+        );
+
     public async Task<IOperationResult> List(
         Guid congregationId,
         ProjectContributionFilters filters,
@@ -29,6 +38,9 @@ public class ProjectContributionService(
         CancellationToken ct
     )
     {
+        var window = ResolveWindow(filters, dateWindows);
+        filters = filters with { From = window?.From, To = window?.To };
+
         using var activity = instrumentation.ActivitySource.StartActivity(
             "svc.project_contribution.list"
         );
@@ -57,7 +69,7 @@ public class ProjectContributionService(
         activity?.SetTag("project_contribution.count", data.Count);
         ProjectContributionLog.Listed(logger, congregationId, data.Count);
 
-        var res = new PagedResponse<ProjectContributionResponseDto>(hasMore, nextCursor, data);
+        var res = new PagedResponse<ProjectContributionResponseDto>(hasMore, nextCursor, data, window);
         return new SuccessResult<PagedResponse<ProjectContributionResponseDto>>(res);
     }
 
@@ -224,6 +236,9 @@ public class ProjectContributionService(
         CancellationToken ct
     )
     {
+        var window = ResolveWindow(filters, dateWindows);
+        filters = filters with { From = window?.From, To = window?.To };
+
         using var activity = instrumentation.ActivitySource.StartActivity(
             "svc.project_contribution.summary"
         );
@@ -237,6 +252,7 @@ public class ProjectContributionService(
 
         var res = new ProjectContributionSummaryDto
         {
+            Window = window,
             TotalContributed = totalTask.Result,
             TotalContributions = countTask.Result,
             AverageAmount = averageTask.Result,

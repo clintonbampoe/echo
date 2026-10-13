@@ -7,6 +7,7 @@ using Echo.Shared.Services.Generators;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
+using Echo.Shared.Utilities;
 
 namespace Echo.Application.Members;
 
@@ -21,9 +22,17 @@ public class VisitorService(
     IIdGenerator idGenerator,
     ApplicationInstrumentation instrumentation,
     LinkGenerator linker,
+    DateWindows dateWindows,
     ILogger<VisitorService> logger
 )
 {
+    internal static DateWindow? ResolveWindow(VisitorFilters filters, DateWindows dateWindows) =>
+        dateWindows.ThisYear(
+            filters.From,
+            filters.To,
+            hasParent: false
+        );
+
     public async Task<IOperationResult> List(
         Guid congregationId,
         VisitorFilters filters,
@@ -31,6 +40,9 @@ public class VisitorService(
         CancellationToken ct
     )
     {
+        var window = ResolveWindow(filters, dateWindows);
+        filters = filters with { From = window?.From, To = window?.To };
+
         using var activity = instrumentation.ActivitySource.StartActivity("svc.visitor.list");
 
         var cursor = encoder.Decode<VisitorCursor>(pagination.Cursor);
@@ -57,7 +69,7 @@ public class VisitorService(
         activity?.SetTag("visitor.count", data.Count);
         VisitorLog.Listed(logger, congregationId, data.Count);
 
-        var res = new PagedResponse<VisitorResponseDto>(hasMore, nextCursor, data);
+        var res = new PagedResponse<VisitorResponseDto>(hasMore, nextCursor, data, window);
         return new SuccessResult<PagedResponse<VisitorResponseDto>>(res);
     }
 
@@ -270,6 +282,9 @@ public class VisitorService(
         CancellationToken ct
     )
     {
+        var window = ResolveWindow(filters, dateWindows);
+        filters = filters with { From = window?.From, To = window?.To };
+
         using var activity = instrumentation.ActivitySource.StartActivity("svc.visitor.summary");
 
         var totalTask = repository.Count(congregationId, filters, ct);
@@ -281,6 +296,7 @@ public class VisitorService(
 
         var res = new VisitorSummaryDto
         {
+            Window = window,
             TotalVisitors = totalTask.Result,
             NewVisitors = newTask.Result,
             RecurringVisitors = recurringTask.Result,

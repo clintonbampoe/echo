@@ -2,12 +2,11 @@ using Echo.Data;
 using Echo.Domain.Attendances;
 using Echo.Domain.Members;
 using Echo.Shared.Query;
-using Echo.Shared.Utilities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Application.Members;
 
-public class VisitorRepository(AppDbContext context, TimeProvider timeProvider)
+public class VisitorRepository(AppDbContext context)
 {
     private readonly DbSet<Visitor> _dbSet = context.Set<Visitor>();
 
@@ -24,7 +23,7 @@ public class VisitorRepository(AppDbContext context, TimeProvider timeProvider)
             .FilterDeleted()
             .Where(v => v.CongregationId == congregationId)
             .Include(v => v.Person)
-            .Filter(filters, timeProvider)
+            .Filter(filters)
             .OrderBy(v => v.Person.Name)
             .ThenBy(v => v.PersonId)
             .Paginate(cursor, pageSize)
@@ -60,7 +59,7 @@ public class VisitorRepository(AppDbContext context, TimeProvider timeProvider)
             .AsNoTracking()
             .FilterDeleted()
             .Where(v => v.CongregationId == congregationId)
-            .Filter(filters, timeProvider)
+            .Filter(filters)
             .CountAsync(ct);
 
     public Task<int> CountConverted(
@@ -73,7 +72,7 @@ public class VisitorRepository(AppDbContext context, TimeProvider timeProvider)
             .FilterDeleted()
             .Where(v => v.CongregationId == congregationId)
             .Where(v => v.ConvertedAt != null)
-            .Filter(filters, timeProvider)
+            .Filter(filters)
             .CountAsync(ct);
 
     public Task<int> CountRecurring(
@@ -87,7 +86,7 @@ public class VisitorRepository(AppDbContext context, TimeProvider timeProvider)
             .AsNoTracking()
             .FilterDeleted()
             .Where(v => v.CongregationId == congregationId)
-            .Filter(filters, timeProvider)
+            .Filter(filters)
             .Where(v => attendanceDbSet.FilterDeleted().Count(a => a.PersonId == v.PersonId) > 1)
             .CountAsync(ct);
     }
@@ -101,8 +100,7 @@ internal static class VisitorQueryExtensions
 {
     internal static IQueryable<Visitor> Filter(
         this IQueryable<Visitor> query,
-        VisitorFilters filters,
-        TimeProvider timeProvider
+        VisitorFilters filters
     )
     {
         if (filters.Name is not null)
@@ -116,12 +114,26 @@ internal static class VisitorQueryExtensions
                 ? query.Where(v => v.ConvertedAt != null)
                 : query.Where(v => v.ConvertedAt == null);
 
-        var from = filters.From ?? DateUtils.GetFirstDayOfWeek(timeProvider);
-        var to = filters.To ?? DateUtils.GetDateToday(timeProvider);
+        if (filters.Converted == true)
+        {
+            if (filters.From is not null)
+                query = query.Where(v =>
+                    DateOnly.FromDateTime(v.ConvertedAt!.Value) >= filters.From
+                );
 
-        query = query.Where(v =>
-            DateOnly.FromDateTime(v.CreatedAt) >= from && DateOnly.FromDateTime(v.CreatedAt) <= to
-        );
+            if (filters.To is not null)
+                query = query.Where(v =>
+                    DateOnly.FromDateTime(v.ConvertedAt!.Value) <= filters.To
+                );
+        }
+        else
+        {
+            if (filters.From is not null)
+                query = query.Where(v => DateOnly.FromDateTime(v.CreatedAt) >= filters.From);
+
+            if (filters.To is not null)
+                query = query.Where(v => DateOnly.FromDateTime(v.CreatedAt) <= filters.To);
+        }
 
         return query;
     }

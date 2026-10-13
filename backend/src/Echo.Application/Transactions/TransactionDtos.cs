@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using Echo.Domain.Transactions;
+using Echo.Shared.Utilities;
 
 namespace Echo.Application.Transactions;
 
@@ -51,6 +52,9 @@ public record TransactionCursor
     public Guid Id { get; init; }
 }
 
+/// <summary>
+/// Default window when From/To are omitted: this week to today (by TransactionDate).
+/// </summary>
 public record TransactionFilters
 {
     public TransactionType? TransactionType { get; init; }
@@ -65,4 +69,5 @@ public record TransactionSummaryDto
     public decimal TotalExpenses { get; init; }
     public decimal Net { get; init; }
     public string? MostActiveCategory { get; init; }
+    public DateWindow? Window { get; init; }
 }

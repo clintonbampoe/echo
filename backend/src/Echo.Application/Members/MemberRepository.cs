@@ -23,7 +23,7 @@ public class MemberRepository(AppDbContext context, TimeProvider timeProvider)
             .FilterDeleted()
             .Where(m => m.CongregationId == congregationId)
             .Include(m => m.Person)
-            .Filter(filters, timeProvider)
+            .Filter(filters)
             .OrderBy(m => m.Person.Name)
             .ThenBy(m => m.PersonId)
             .Paginate(cursor, pageSize)
@@ -59,7 +59,7 @@ public class MemberRepository(AppDbContext context, TimeProvider timeProvider)
             .AsNoTracking()
             .FilterDeleted()
             .Where(m => m.CongregationId == congregationId)
-            .Filter(filters, timeProvider)
+            .Filter(filters)
             .CountAsync(ct);
 
     public Task<int> CountActive(
@@ -71,7 +71,7 @@ public class MemberRepository(AppDbContext context, TimeProvider timeProvider)
             .AsNoTracking()
             .FilterDeleted()
             .Where(m => m.CongregationId == congregationId && m.Status == MemberStatus.Active)
-            .Filter(filters, timeProvider)
+            .Filter(filters)
             .CountAsync(ct);
 
     public Task<int> CountByGender(
@@ -84,7 +84,7 @@ public class MemberRepository(AppDbContext context, TimeProvider timeProvider)
             .AsNoTracking()
             .FilterDeleted()
             .Where(m => m.CongregationId == congregationId && m.Gender == gender)
-            .Filter(filters, timeProvider)
+            .Filter(filters)
             .CountAsync(ct);
 
     public Task<double> AverageAge(
@@ -96,7 +96,7 @@ public class MemberRepository(AppDbContext context, TimeProvider timeProvider)
             .AsNoTracking()
             .FilterDeleted()
             .Where(m => m.CongregationId == congregationId)
-            .Filter(filters, timeProvider)
+            .Filter(filters)
             .AverageAsync(m => DateUtils.GetDateToday(timeProvider).Year - m.DateOfBirth.Year, ct);
 
     public void Create(Member entity) => _dbSet.Add(entity);
@@ -108,8 +108,7 @@ internal static class MemberQueryExtensions
 {
     internal static IQueryable<Member> Filter(
         this IQueryable<Member> query,
-        MemberFilters filters,
-        TimeProvider timeProvider
+        MemberFilters filters
     )
     {
         if (filters.Name is not null)
@@ -127,12 +126,12 @@ internal static class MemberQueryExtensions
         if (filters.MaritalStatus.HasValue)
             query = query.Where(m => m.MaritalStatus == filters.MaritalStatus.Value);
 
-        var from = filters.From ?? DateUtils.GetFirstDayOfYear(timeProvider);
-        var to = filters.To ?? DateUtils.GetLastDayOfYear(timeProvider);
+        // Members without a JoinedDate are kept in every window.
+        if (filters.From is not null)
+            query = query.Where(m => m.JoinedDate == null || m.JoinedDate >= filters.From);
 
-        query = query.Where(m =>
-            m.JoinedDate == null || (m.JoinedDate >= from && m.JoinedDate <= to)
-        );
+        if (filters.To is not null)
+            query = query.Where(m => m.JoinedDate == null || m.JoinedDate <= filters.To);
 
         return query;
     }

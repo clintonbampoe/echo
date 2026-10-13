@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using Echo.Domain.Projects;
 using Echo.Domain.Transactions;
+using Echo.Shared.Utilities;
 
 namespace Echo.Application.Projects;
 
@@ -48,6 +49,10 @@ public record ProjectContributionCursor
     public Guid Id { get; init; }
 }
 
+/// <summary>
+/// Default window when From/To are omitted: this month to today (by DateContributed).
+/// No default window when ProjectId is set.
+/// </summary>
 public record ProjectContributionFilters
 {
     public Guid? ProjectId { get; init; }
@@ -64,4 +69,5 @@ public record ProjectContributionSummaryDto
     public int TotalContributions { get; init; }
     public decimal AverageAmount { get; init; }
     public string? MostUsedPaymentMethod { get; init; }
+    public DateWindow? Window { get; init; }
 }

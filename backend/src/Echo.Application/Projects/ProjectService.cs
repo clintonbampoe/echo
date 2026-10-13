@@ -9,6 +9,7 @@ using Echo.Shared.Services.Generators;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
+using Echo.Shared.Utilities;
 
 namespace Echo.Application.Projects;
 
@@ -22,9 +23,17 @@ public class ProjectService(
     IIdGenerator idGenerator,
     ApplicationInstrumentation instrumentation,
     LinkGenerator linker,
+    DateWindows dateWindows,
     ILogger<ProjectService> logger
 )
 {
+    internal static DateWindow? ResolveWindow(ProjectFilters filters, DateWindows dateWindows) =>
+        dateWindows.ThisYear(
+            filters.From,
+            filters.To,
+            hasParent: false
+        );
+
     public async Task<IOperationResult> List(
         Guid congregationId,
         ProjectFilters filters,
@@ -32,6 +41,9 @@ public class ProjectService(
         CancellationToken ct
     )
     {
+        var window = ResolveWindow(filters, dateWindows);
+        filters = filters with { From = window?.From, To = window?.To };
+
         using var activity = instrumentation.ActivitySource.StartActivity("svc.project.list");
 
         var cursor = encoder.Decode<ProjectCursor>(pagination.Cursor);
@@ -58,7 +70,7 @@ public class ProjectService(
         activity?.SetTag("project.count", data.Count);
         ProjectLog.Listed(logger, congregationId, data.Count);
 
-        var res = new PagedResponse<ProjectResponseDto>(hasMore, nextCursor, data);
+        var res = new PagedResponse<ProjectResponseDto>(hasMore, nextCursor, data, window);
         return new SuccessResult<PagedResponse<ProjectResponseDto>>(res);
     }
 
@@ -271,6 +283,9 @@ public class ProjectService(
         CancellationToken ct
     )
     {
+        var window = ResolveWindow(filters, dateWindows);
+        filters = filters with { From = window?.From, To = window?.To };
+
         using var activity = instrumentation.ActivitySource.StartActivity("svc.project.summary");
 
         var countTask = repository.Count(congregationId, filters, ct);
@@ -282,6 +297,7 @@ public class ProjectService(
 
         var res = new ProjectSummaryDto
         {
+            Window = window,
             TotalProjects = countTask.Result,
             TotalRaised = raisedTask.Result,
             TotalTarget = targetTask.Result,

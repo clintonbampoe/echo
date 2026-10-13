@@ -9,6 +9,7 @@ using Echo.Application.Tithes;
 using Echo.Application.Transactions;
 using Echo.Application.Users;
 using Echo.Domain.Attendances;
+using Echo.Shared.Utilities;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using OpenTelemetry.Trace;
@@ -19,6 +20,9 @@ public static class Extensions
 {
     public static IServiceCollection AddApplicationServices(this IServiceCollection services)
     {
+        // Date windows
+        services.AddSingleton<DateWindows>();
+
         // Person
         services.AddScoped<PersonRepository>();
 

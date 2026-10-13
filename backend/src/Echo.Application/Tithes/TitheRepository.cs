@@ -2,12 +2,11 @@ using Echo.Data;
 using Echo.Domain.Tithes;
 using Echo.Domain.Transactions;
 using Echo.Shared.Query;
-using Echo.Shared.Utilities;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Application.Tithes;
 
-public class TitheRepository(AppDbContext context, TimeProvider timeProvider)
+public class TitheRepository(AppDbContext context)
 {
     private readonly DbSet<Tithe> _dbSet = context.Set<Tithe>();
 
@@ -25,9 +24,8 @@ public class TitheRepository(AppDbContext context, TimeProvider timeProvider)
             .Where(t => t.CongregationId == congregationId)
             .Include(t => t.Member)
                 .ThenInclude(m => m.Person)
-            .Filter(filters, timeProvider)
-            .OrderByDescending(t => t.CollectionDate)
-            .ThenBy(t => t.Id)
+            .Filter(filters)
+            .OrderForList()
             .Paginate(cursor, pageSize)
             .ToListAsync(ct);
     }
@@ -56,7 +54,8 @@ public class TitheRepository(AppDbContext context, TimeProvider timeProvider)
             .Where(t => t.MemberId == memberId && t.CongregationId == congregationId)
             .Include(t => t.Member)
                 .ThenInclude(t => t.Person)
-            .Filter(filters, timeProvider)
+            .Filter(filters)
+            .OrderForList()
             .Paginate(cursor, pageSize)
             .ToListAsync(ct);
     }
@@ -70,7 +69,7 @@ public class TitheRepository(AppDbContext context, TimeProvider timeProvider)
             .AsNoTracking()
             .FilterDeleted()
             .Where(t => t.CongregationId == congregationId)
-            .Filter(filters, timeProvider)
+            .Filter(filters)
             .SumAsync(t => t.Amount, ct);
 
     public Task<int> CountUniqueTithers(
@@ -82,7 +81,7 @@ public class TitheRepository(AppDbContext context, TimeProvider timeProvider)
             .AsNoTracking()
             .FilterDeleted()
             .Where(t => t.CongregationId == congregationId)
-            .Filter(filters, timeProvider)
+            .Filter(filters)
             .Select(t => t.MemberId)
             .Distinct()
             .CountAsync(ct);
@@ -96,7 +95,7 @@ public class TitheRepository(AppDbContext context, TimeProvider timeProvider)
             .AsNoTracking()
             .FilterDeleted()
             .Where(t => t.CongregationId == congregationId)
-            .Filter(filters, timeProvider)
+            .Filter(filters)
             .GroupBy(t => t.PaymentMethod)
             .OrderByDescending(g => g.Count())
             .Select(g => (PaymentMethod?)g.Key)
@@ -111,7 +110,7 @@ public class TitheRepository(AppDbContext context, TimeProvider timeProvider)
             .AsNoTracking()
             .FilterDeleted()
             .Where(t => t.CongregationId == congregationId)
-            .Filter(filters, timeProvider)
+            .Filter(filters)
             .AverageAsync(t => (decimal?)t.Amount, ct)
             .ContinueWith(t => t.Result ?? 0m, ct);
 
@@ -124,8 +123,7 @@ internal static class TitheQueryExtensions
 {
     internal static IQueryable<Tithe> Filter(
         this IQueryable<Tithe> query,
-        TitheFilters filters,
-        TimeProvider timeProvider
+        TitheFilters filters
     )
     {
         if (filters.MemberId is not null)
@@ -140,13 +138,18 @@ internal static class TitheQueryExtensions
         if (filters.Month is not null)
             query = query.Where(t => t.ForMonth == filters.Month);
 
-        var from = filters.From ?? DateUtils.GetFirstDayOfWeek(timeProvider);
-        var to = filters.To ?? DateUtils.GetDateToday(timeProvider);
+        if (filters.From is not null)
+            query = query.Where(t => t.CollectionDate >= filters.From);
 
-        query = query.Where(t => t.CollectionDate >= from && t.CollectionDate <= to);
+        if (filters.To is not null)
+            query = query.Where(t => t.CollectionDate <= filters.To);
 
         return query;
     }
+
+    // Paginate's cursor assumes exactly this order.
+    internal static IOrderedQueryable<Tithe> OrderForList(this IQueryable<Tithe> query) =>
+        query.OrderByDescending(t => t.CollectionDate).ThenBy(t => t.Id);
 
     internal static IQueryable<Tithe> Paginate(
         this IQueryable<Tithe> query,

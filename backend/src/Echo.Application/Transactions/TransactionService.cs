@@ -7,6 +7,7 @@ using Echo.Shared.Services.Generators;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
+using Echo.Shared.Utilities;
 
 namespace Echo.Application.Transactions;
 
@@ -19,9 +20,17 @@ public class TransactionService(
     IIdGenerator idGenerator,
     ApplicationInstrumentation instrumentation,
     LinkGenerator linker,
+    DateWindows dateWindows,
     ILogger<TransactionService> logger
 )
 {
+    internal static DateWindow? ResolveWindow(TransactionFilters filters, DateWindows dateWindows) =>
+        dateWindows.ThisWeekToDate(
+            filters.From,
+            filters.To,
+            hasParent: false
+        );
+
     public async Task<IOperationResult> List(
         Guid congregationId,
         TransactionFilters filters,
@@ -29,6 +38,9 @@ public class TransactionService(
         CancellationToken ct
     )
     {
+        var window = ResolveWindow(filters, dateWindows);
+        filters = filters with { From = window?.From, To = window?.To };
+
         using var activity = instrumentation.ActivitySource.StartActivity("svc.transaction.list");
 
         var cursor = encoder.Decode<TransactionCursor>(pagination.Cursor);
@@ -55,7 +67,7 @@ public class TransactionService(
         activity?.SetTag("transaction.count", data.Count);
         TransactionLog.Listed(logger, congregationId, data.Count);
 
-        var res = new PagedResponse<TransactionResponseDto>(hasMore, nextCursor, data);
+        var res = new PagedResponse<TransactionResponseDto>(hasMore, nextCursor, data, window);
         return new SuccessResult<PagedResponse<TransactionResponseDto>>(res);
     }
 
@@ -225,6 +237,9 @@ public class TransactionService(
         CancellationToken ct
     )
     {
+        var window = ResolveWindow(filters, dateWindows);
+        filters = filters with { From = window?.From, To = window?.To };
+
         using var activity = instrumentation.ActivitySource.StartActivity(
             "svc.transaction.summary"
         );
@@ -237,6 +252,7 @@ public class TransactionService(
 
         var res = new TransactionSummaryDto
         {
+            Window = window,
             TotalIncome = incomeTask.Result,
             TotalExpenses = expensesTask.Result,
             Net = incomeTask.Result - expensesTask.Result,
