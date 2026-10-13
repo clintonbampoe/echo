@@ -5,6 +5,17 @@ namespace Echo.Auth.Invitations;
 
 public static partial class InvitationLog
 {
+    // --- Revoke ---
+    [LoggerMessage(
+        Level = LogLevel.Information,
+        Message = "Invitation {InvitationId} revoked in congregation {CongregationId}"
+    )]
+    public static partial void InvitationRevoked(
+        ILogger logger,
+        Guid congregationId,
+        Guid invitationId
+    );
+
     // --- Create ---
     [LoggerMessage(
         Level = LogLevel.Information,

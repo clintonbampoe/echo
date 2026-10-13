@@ -351,14 +351,21 @@ namespace Echo.Data.Migrations
                     b.Property<bool>("IsRevoked")
                         .HasColumnType("boolean");
 
+                    b.Property<string>("Label")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
                     b.Property<string>("TokenHash")
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
 
-                    b.HasKey("Id");
+                    b.Property<int>("UseCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasDefaultValue(0);
 
-                    b.HasIndex("CongregationId");
+                    b.HasKey("Id");
 
                     b.HasIndex("CreatedAt");
 
@@ -366,6 +373,8 @@ namespace Echo.Data.Migrations
 
                     b.HasIndex("TokenHash")
                         .IsUnique();
+
+                    b.HasIndex("CongregationId", "CreatedAt");
 
                     b.ToTable("InvitationTokens");
                 });

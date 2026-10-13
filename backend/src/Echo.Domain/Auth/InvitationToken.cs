@@ -17,6 +17,13 @@ public class InvitationToken : ISoftDeletable
     public DateTime ExpiresAt { get; set; }
     public bool IsRevoked { get; set; }
 
+    // A name the admin gives the invitation ("Youth group link") so they can tell them apart. The
+    // code itself is only stored as a hash and is shown once.
+    public string? Label { get; set; }
+
+    // How many people have registered with this invitation. It stays valid until it expires or is revoked.
+    public int UseCount { get; set; }
+
     public DateTime CreatedAt { get; set; }
     public DateTime? DeletedAt { get; set; }
 }
