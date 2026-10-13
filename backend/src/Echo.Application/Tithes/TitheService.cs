@@ -26,11 +26,17 @@ public class TitheService(
     ILogger<TitheService> logger
 )
 {
+    // The average a tither gave over the period: the total over the people who gave.
+    internal static decimal AveragePerMember(decimal total, int uniqueTithers) =>
+        uniqueTithers == 0 ? 0m : total / uniqueTithers;
+
     internal static DateWindow? ResolveWindow(TitheFilters filters, DateWindows dateWindows) =>
         dateWindows.ThisWeekToDate(
             filters.From,
             filters.To,
             hasParent: filters.MemberId is not null
+                || filters.Year is not null
+                || filters.Month is not null
         );
 
     public async Task<IOperationResult> List(
@@ -281,7 +287,7 @@ public class TitheService(
             TotalCollected = stats.Total,
             UniqueTithers = stats.UniqueTithers,
             MostUsedPaymentMethod = stats.MostUsedPaymentMethod?.ToString(),
-            AveragePerMember = stats.Average,
+            AveragePerMember = AveragePerMember(stats.Total, stats.UniqueTithers),
         };
 
         activity?.SetTag("tithe.summary.total", res.TotalCollected);

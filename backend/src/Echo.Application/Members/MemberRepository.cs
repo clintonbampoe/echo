@@ -63,10 +63,10 @@ public class MemberRepository(AppDbContext context, TimeProvider timeProvider)
             .Where(m => m.CongregationId == congregationId)
             .Filter(filters);
 
-        var currentYear = DateUtils.GetDateToday(timeProvider).Year;
+        var today = DateUtils.GetDateToday(timeProvider);
         var stats = await context
             .OneRow(congregationId)
-            .SummarizeMembers(members, currentYear)
+            .SummarizeMembers(members, today)
             .FirstOrDefaultAsync(ct);
         return stats ?? new MemberStats(0, 0, 0, 0, 0d);
     }
@@ -81,15 +81,31 @@ internal static class MemberQueryExtensions
     internal static IQueryable<MemberStats> SummarizeMembers(
         this IQueryable<Congregation> oneRow,
         IQueryable<Member> members,
-        int currentYear
-    ) =>
-        oneRow.Select(_ => new MemberStats(
+        DateOnly today
+    )
+    {
+        var (year, month, day) = (today.Year, today.Month, today.Day);
+
+        // Age in whole years: the year difference, minus one if this year's birthday has not come yet.
+        return oneRow.Select(_ => new MemberStats(
             members.Count(),
             members.Count(m => m.Status == MemberStatus.Active),
             members.Count(m => m.Gender == Gender.Male),
             members.Count(m => m.Gender == Gender.Female),
-            members.Average(m => (double?)(currentYear - m.DateOfBirth.Year)) ?? 0d
+            members.Average(m =>
+                (double?)(
+                    year
+                    - m.DateOfBirth.Year
+                    - (
+                        m.DateOfBirth.Month > month
+                        || (m.DateOfBirth.Month == month && m.DateOfBirth.Day > day)
+                            ? 1
+                            : 0
+                    )
+                )
+            ) ?? 0d
         ));
+    }
 
     internal static IQueryable<Member> Filter(
         this IQueryable<Member> query,

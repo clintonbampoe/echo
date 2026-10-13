@@ -383,7 +383,6 @@ public static class TitheEndpoints
                 }
             )
             .WithName("GetTitheMonthlySummary")
-            .RequireAuthorization(FinancePolicies.Manage)
             .WithSummary("Returns tithes collected per month.")
             .WithDescription(
                 """
@@ -401,13 +400,11 @@ public static class TitheEndpoints
                 ### Failure modes
                 - `400 BAD_REQUEST` — the range covers more than 24 months, or `from` is after `to`.
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
-                - `403 FORBIDDEN` — the caller's role may not see giving data.
                 """
             )
             .Produces<List<TitheMonthlyDto>>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status400BadRequest)
-            .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status403Forbidden);
+            .ProducesProblem(StatusCodes.Status401Unauthorized);
 
         return app;
     }

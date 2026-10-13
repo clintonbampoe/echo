@@ -97,7 +97,7 @@ public class TitheRepository(AppDbContext context)
             .Filter(filters);
 
         var stats = await context.OneRow(congregationId).SummarizeTithes(tithes).FirstOrDefaultAsync(ct);
-        return stats ?? new TitheStats(0m, 0, 0m, null);
+        return stats ?? new TitheStats(0m, 0, null);
     }
 
     public void Create(Tithe entity) => _dbSet.Add(entity);
@@ -114,7 +114,6 @@ internal static class TitheQueryExtensions
         oneRow.Select(_ => new TitheStats(
             tithes.Sum(t => t.Amount),
             tithes.Select(t => t.MemberId).Distinct().Count(),
-            tithes.Average(t => (decimal?)t.Amount) ?? 0m,
             tithes
                 .GroupBy(t => t.PaymentMethod)
                 .OrderByDescending(g => g.Count())

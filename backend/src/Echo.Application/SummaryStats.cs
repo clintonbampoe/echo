@@ -11,7 +11,7 @@ public record AssetStats(int Count, decimal CurrentValue, decimal PurchaseCost);
 
 public record MemberStats(int Total, int Active, int Male, int Female, double AverageAge);
 
-public record VisitorStats(int Total, int Converted, int Recurring);
+public record VisitorStats(int Total, int New, int Converted, int Recurring);
 
 public record EventStats(int Total, int Upcoming, int Registrations, int Attendees);
 
@@ -27,7 +27,6 @@ public record ProjectStats(int Count, decimal Raised, decimal Target, int AtRisk
 public record TitheStats(
     decimal Total,
     int UniqueTithers,
-    decimal Average,
     PaymentMethod? MostUsedPaymentMethod
 );
 

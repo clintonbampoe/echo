@@ -86,13 +86,19 @@ public class EventRepository(AppDbContext context, TimeProvider timeProvider)
             .Filter(filters);
 
         var today = DateUtils.GetDateToday(timeProvider);
+        var upcoming = _dbSet
+            .AsNoTracking()
+            .FilterDeleted()
+            .Where(e => e.CongregationId == congregationId)
+            .Upcoming(filters, today);
+
         var stats = await context
             .OneRow(congregationId)
             .SummarizeEvents(
                 events,
+                upcoming,
                 _registrationDbSet.FilterDeleted(),
-                _attendanceDbSet.FilterDeleted(),
-                today
+                _attendanceDbSet.FilterDeleted()
             )
             .FirstOrDefaultAsync(ct);
         return stats ?? new EventStats(0, 0, 0, 0);
@@ -105,16 +111,24 @@ public class EventRepository(AppDbContext context, TimeProvider timeProvider)
 
 internal static class EventQueryExtensions
 {
+    // Upcoming means "starts today or later", whatever date window the list is showing. The other
+    // filters (name, organization, organizer) still apply.
+    internal static IQueryable<Event> Upcoming(
+        this IQueryable<Event> query,
+        EventFilters filters,
+        DateOnly today
+    ) => query.Filter(filters with { From = null, To = null }).Where(e => e.StartDate >= today);
+
     internal static IQueryable<EventStats> SummarizeEvents(
         this IQueryable<Congregation> oneRow,
         IQueryable<Event> events,
+        IQueryable<Event> upcoming,
         IQueryable<EventRegistration> registrations,
-        IQueryable<EventAttendance> attendance,
-        DateOnly today
+        IQueryable<EventAttendance> attendance
     ) =>
         oneRow.Select(_ => new EventStats(
             events.Count(),
-            events.Count(e => e.StartDate >= today),
+            upcoming.Count(),
             events.SelectMany(e => registrations.Where(r => r.EventId == e.Id)).Count(),
             events.SelectMany(e => attendance.Where(a => a.EventId == e.Id)).Count()
         ));

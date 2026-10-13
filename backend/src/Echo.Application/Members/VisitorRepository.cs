@@ -75,18 +75,23 @@ public class VisitorRepository(AppDbContext context)
         CancellationToken ct = default
     )
     {
-        var visitors = _dbSet
+        var everyone = _dbSet
             .AsNoTracking()
             .FilterDeleted()
-            .Where(v => v.CongregationId == congregationId)
-            .Filter(filters);
+            .Where(v => v.CongregationId == congregationId);
+        var named = everyone.WithName(filters.Name);
         var attendance = context.Set<Attendance>().Live();
 
         var stats = await context
             .OneRow(congregationId)
-            .SummarizeVisitors(visitors, attendance)
+            .SummarizeVisitors(
+                everyone.Filter(filters),
+                named.CreatedBetween(filters.From, filters.To),
+                named.ConvertedBetween(filters.From, filters.To),
+                attendance
+            )
             .FirstOrDefaultAsync(ct);
-        return stats ?? new VisitorStats(0, 0, 0);
+        return stats ?? new VisitorStats(0, 0, 0, 0);
     }
 
     public void Create(Visitor entity) => _dbSet.Add(entity);
@@ -96,14 +101,19 @@ public class VisitorRepository(AppDbContext context)
 
 internal static class VisitorQueryExtensions
 {
+    // visitors is the visitor list for the filters; created and converted are everyone created or
+    // converted in the window, whatever their current status.
     internal static IQueryable<VisitorStats> SummarizeVisitors(
         this IQueryable<Congregation> oneRow,
         IQueryable<Visitor> visitors,
+        IQueryable<Visitor> created,
+        IQueryable<Visitor> converted,
         IQueryable<Attendance> attendance
     ) =>
         oneRow.Select(_ => new VisitorStats(
             visitors.Count(),
-            visitors.Count(v => v.ConvertedAt != null),
+            created.Count(),
+            converted.Count(),
             visitors.Count(v => attendance.Count(a => a.PersonId == v.PersonId) > 1)
         ));
 
@@ -112,37 +122,49 @@ internal static class VisitorQueryExtensions
         VisitorFilters filters
     )
     {
-        if (filters.Name is not null)
-            query = query.Where(v => EF.Functions.ILike(v.Person.Name, $"%{filters.Name}%"));
+        query = query.WithName(filters.Name);
 
-        // Default is "current visitors only" (ConvertedAt IS NULL).
-        // Pass Converted = true for the historical/converted view.
-        // Converted = false is the same as the default — kept for explicit callers.
-        query =
-            filters.Converted == true
-                ? query.Where(v => v.ConvertedAt != null)
-                : query.Where(v => v.ConvertedAt == null);
+        // Default is "current visitors only" (ConvertedAt IS NULL), windowed by when they were created.
+        // Pass Converted = true for the historical view: converted visitors, windowed by when they
+        // were converted. Converted = false is the same as the default.
+        return filters.Converted == true
+            ? query.ConvertedBetween(filters.From, filters.To)
+            : query.Where(v => v.ConvertedAt == null).CreatedBetween(filters.From, filters.To);
+    }
 
-        if (filters.Converted == true)
-        {
-            if (filters.From is not null)
-                query = query.Where(v =>
-                    DateOnly.FromDateTime(v.ConvertedAt!.Value) >= filters.From
-                );
+    internal static IQueryable<Visitor> WithName(this IQueryable<Visitor> query, string? name) =>
+        name is null
+            ? query
+            : query.Where(v => EF.Functions.ILike(v.Person.Name, $"%{name}%"));
 
-            if (filters.To is not null)
-                query = query.Where(v =>
-                    DateOnly.FromDateTime(v.ConvertedAt!.Value) <= filters.To
-                );
-        }
-        else
-        {
-            if (filters.From is not null)
-                query = query.Where(v => DateOnly.FromDateTime(v.CreatedAt) >= filters.From);
+    internal static IQueryable<Visitor> CreatedBetween(
+        this IQueryable<Visitor> query,
+        DateOnly? from,
+        DateOnly? to
+    )
+    {
+        if (from is not null)
+            query = query.Where(v => DateOnly.FromDateTime(v.CreatedAt) >= from);
 
-            if (filters.To is not null)
-                query = query.Where(v => DateOnly.FromDateTime(v.CreatedAt) <= filters.To);
-        }
+        if (to is not null)
+            query = query.Where(v => DateOnly.FromDateTime(v.CreatedAt) <= to);
+
+        return query;
+    }
+
+    internal static IQueryable<Visitor> ConvertedBetween(
+        this IQueryable<Visitor> query,
+        DateOnly? from,
+        DateOnly? to
+    )
+    {
+        query = query.Where(v => v.ConvertedAt != null);
+
+        if (from is not null)
+            query = query.Where(v => DateOnly.FromDateTime(v.ConvertedAt!.Value) >= from);
+
+        if (to is not null)
+            query = query.Where(v => DateOnly.FromDateTime(v.ConvertedAt!.Value) <= to);
 
         return query;
     }

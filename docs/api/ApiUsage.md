@@ -213,7 +213,7 @@ List and summary endpoints that filter by date apply a default window when both 
 | Projects | this year; running projects stay visible | start and end date |
 | Members, Assets, Organizations, Events | this year | joined / purchase / created / start date |
 
-Attendance (`sessionId`, `personId`), tithes (`memberId`, including `GET /tithes/member/{memberId}`) and contributions (`projectId`) apply **no default window** when scoped to a parent record.
+Attendance (`sessionId`, `personId`), tithes (`memberId`, `year` or `month`, including `GET /tithes/member/{memberId}`) and contributions (`projectId`) apply **no default window** when scoped to a parent record.
 
 A project is in the window when it started on or before `to` and has not ended before `from`; open-ended projects (no end date) always stay visible once started. This applies to explicit `from`/`to` too.
 
@@ -237,7 +237,10 @@ For categories this is the same number that blocks deleting a category with `409
 **Summaries**
 Most modules have a `GET .../summary` that accepts the same filters as the list. Besides the totals, a few have extras:
 
-- `GET /events/summary` returns `totalEvents`, `upcomingEvents`, `totalRegistered` and `totalAttended`.
+- `GET /events/summary` returns `totalEvents`, `upcomingEvents`, `totalRegistered` and `totalAttended`. `upcomingEvents` counts events that start today or later (matching the name, organization and organizer filters) and is not limited by `from`/`to`.
+- `GET /visitors/summary`: `totalVisitors` and `recurringVisitors` describe the visitor list (people who have not converted). `newVisitors` is everyone created in the window and `convertedVisitors` is everyone converted in the window, whatever their current status.
+- `GET /tithes/summary`: `averagePerMember` is `totalCollected` divided by `uniqueTithers` (0 when nobody gave).
+- `GET /members/summary`: `averageAge` is computed from the full date of birth, so someone whose birthday has not come yet this year is a year younger.
 - `GET /transactions/summary` also returns `byCategory`: one row per category and type with `categoryId`, `categoryName`, `type`, `total` and `count`, largest total first. `mostActiveCategory` (by number of transactions) is unchanged.
 - `GET /assets/summary` leaves out liquidated assets by default, because its totals describe what the church owns now. Pass `includeLiquidated=true` to include them. The asset list still shows liquidated assets; `includeLiquidated=false` hides them, and `status=Liquidated` always shows them.
 - `GET /transactions/summary/monthly` and `GET /tithes/summary/monthly` return one row per calendar month so a chart needs a single request. Transactions return `{ year, month, totalIncome, totalExpenses, net }`; tithes return `{ year, month, totalCollected, uniqueTithers }`. Months with nothing in them are returned with zeros. `from` and `to` choose the months (any day in the first and last month); the default is the last 12 months, and the range may cover at most 24 months and `from` must not be after `to`, otherwise the API returns `400`. The first and last months are always counted whole, whichever day you pass. Tithes are grouped by the month they are **for**, not by the day they were collected.
