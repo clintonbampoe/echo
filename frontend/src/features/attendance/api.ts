@@ -52,6 +52,7 @@ export const RECENT = 16;
 export const listRecentSessions = (
   sessionLabelId: string,
   today: string,
+  size: number = RECENT,
   signal?: AbortSignal,
 ) =>
   api.get<Page<HeldSession>>("/v1/attendance/sessions", {
@@ -60,7 +61,7 @@ export const listRecentSessions = (
       status: "Completed",
       from: "2000-01-01",
       to: today,
-      pageSize: RECENT,
+      pageSize: size,
     },
     signal,
   });

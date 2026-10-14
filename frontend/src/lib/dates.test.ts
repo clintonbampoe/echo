@@ -1,4 +1,4 @@
-import { ageOn, monthsBefore, thisYear } from "./dates";
+import { ageOn, daysBetween, monthsBefore, thisYear } from "./dates";
 
 describe("monthsBefore", () => {
   it("goes back whole months, across a year", () => {
@@ -29,5 +29,16 @@ describe("ageOn", () => {
   });
   it("ignores a time part", () => {
     expect(ageOn("1988-02-14T00:00:00", "2026-10-14")).toBe(38);
+  });
+});
+
+describe("daysBetween", () => {
+  it("counts whole days, across months and years", () => {
+    expect(daysBetween("2026-10-01", "2026-10-14")).toBe(13);
+    expect(daysBetween("2025-12-30", "2026-01-02")).toBe(3);
+  });
+  it("ignores a time part and never goes below zero", () => {
+    expect(daysBetween("2026-10-14T18:00:00Z", "2026-10-14")).toBe(0);
+    expect(daysBetween("2026-10-20", "2026-10-14")).toBe(0);
   });
 });

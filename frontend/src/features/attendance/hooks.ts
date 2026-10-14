@@ -9,8 +9,8 @@ export const attendanceKeys = {
   count: (id: string, from: string, to: string) =>
     ["attendance", "count", id, from, to] as const,
   labels: ["attendance", "labels"] as const,
-  recent: (label: string, today: string) =>
-    ["attendance", "recent", label, today] as const,
+  recent: (label: string, today: string, size: number) =>
+    ["attendance", "recent", label, today, size] as const,
   held: (from: string, to: string) => ["attendance", "held", from, to] as const,
 };
 
@@ -41,11 +41,15 @@ export const useSessionLabels = () =>
     staleTime: 5 * 60_000,
   });
 
-export const useRecentSessions = (sessionLabelId: string, today: string) =>
+export const useRecentSessions = (
+  sessionLabelId: string,
+  today: string,
+  size: number = api.RECENT,
+) =>
   useQuery({
-    queryKey: attendanceKeys.recent(sessionLabelId, today),
+    queryKey: attendanceKeys.recent(sessionLabelId, today, size),
     queryFn: ({ signal }) =>
-      api.listRecentSessions(sessionLabelId, today, signal),
+      api.listRecentSessions(sessionLabelId, today, size, signal),
   });
 
 export const useHeldCount = (from: string, to: string) =>

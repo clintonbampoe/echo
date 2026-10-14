@@ -1,0 +1,49 @@
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  color: var(--text-2);
+  text-decoration: none;
+}
+.back:hover {
+  color: var(--text);
+}
+.flip {
+  transform: rotate(180deg);
+}
+
+/* Wide: who they are and their details in one card on the left, numbers and history on the right. */
+.layout {
+  display: grid;
+  grid-template-columns: 340px minmax(0, 1fr);
+  align-items: start;
+  gap: 24px;
+}
+.main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 24px;
+  min-width: 0;
+}
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.stack .main {
+  gap: 20px;
+}
+.main > :first-child {
+  margin-top: 0;
+}
+
+/* The identity card and the details card sit on top of each other as one. */
+.joined [data-profile="identity"] {
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+.joined [data-profile="details"] {
+  border-top: 0;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+}
