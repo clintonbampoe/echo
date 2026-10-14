@@ -1,0 +1,17 @@
+.frame {
+  fill: var(--surface-2);
+  stroke: var(--line-2);
+}
+.mark {
+  font-family: var(--font-sans);
+  fill: var(--text);
+}
+.wave {
+  fill: none;
+  stroke: var(--text);
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+.faint {
+  stroke-opacity: 0.55;
+}

@@ -1,0 +1,26 @@
+.prompt {
+  margin-top: 24px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-3);
+}
+.prompt + .prompt {
+  margin-top: 12px;
+}
+.strong {
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.back {
+  margin-top: 24px;
+  font-size: 14px;
+}
+.muted {
+  color: var(--text-3);
+  text-decoration: none;
+  transition: color var(--fast) ease;
+}
+.muted:hover {
+  color: var(--text);
+}

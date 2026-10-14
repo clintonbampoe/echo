@@ -1,0 +1,25 @@
+.closing {
+  position: relative;
+  padding-bottom: 120px;
+  text-align: center;
+}
+.glow {
+  position: absolute;
+  left: 50%;
+  bottom: -200px;
+  width: 1000px;
+  max-width: 140%;
+  height: 520px;
+  transform: translateX(-50%);
+  background: radial-gradient(
+    closest-side,
+    rgb(255 255 255 / 14%),
+    rgb(255 255 255 / 0%) 100%
+  );
+  filter: blur(40px);
+  pointer-events: none;
+}
+.cta {
+  position: relative;
+  margin-top: 48px;
+}

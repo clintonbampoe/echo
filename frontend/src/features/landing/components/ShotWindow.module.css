@@ -1,0 +1,25 @@
+.window {
+  padding: 10px;
+  background: var(--surface);
+  border: 1px solid var(--line-2);
+  border-radius: 18px;
+  box-shadow: 0 40px 120px rgb(255 255 255 / 5%);
+}
+.dots {
+  display: flex;
+  gap: 6px;
+  padding: 2px 6px 10px;
+}
+.dots i {
+  display: block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #262626;
+}
+.image {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+}

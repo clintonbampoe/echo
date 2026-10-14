@@ -1,67 +1,46 @@
-# .NET Build Output
-bin/
-obj/
+# Version control and tooling
+**/.git
+.github
+.claude
+.vscode
+.idea
+**/.vs
+**/*.user
+**/*.suo
+
+# Build output and dependencies (each image makes its own)
 **/bin
 **/obj
+**/node_modules
+**/dist
+**/coverage
+**/.vite
+**/*.tsbuildinfo
+**/npm-debug.log*
+**/yarn-debug.log*
+**/yarn-error.log*
 
-# IDE and Editor Files
-.idea/
-.vs/
-*.user
-*.suo
-*.userosscache
-*.sln.docstates
+# Secrets and local environment. Config reaches containers through compose, not files.
+**/.env*
+**/*.pem
+**/*.key
+**/appsettings.Development.json
+**/appsettings.Production.json
 
-# JetBrains Specific
-idea/
-/shelf/
-/workspace.xml
-/httpRequests/
-/queries/
-/dataSources/
-/dataSources.local.xml
+# Local database data. Backups and dumps can be large and are mounted as volumes, never copied.
+**/*.db
+**/*.db-shm
+**/*.db-wal
+infra/postgres/backup/dumps
+infra/postgres/backup/db_dumps
 
-# Node.js and React
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-dist/
-build/
-
-# Database and Environment
-*.db
-*.db-shm
-*.db-wal
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# VS Code Specific
-*.lscache
-
-# Operating System Files
-.DS_Store
-Thumbs.db
-
-# db.io data description tools
-*.dbdiagram
-
-# Obsidian boilerplate
-.obsidian/
-
-# Neovim artifacts
-*.vim
-
-# Docker-specific — not in .gitignore since git doesn't care about these
-.git/
-Dockerfile
+# Docker's own files, and things no image reads
+**/Dockerfile*
 docker-compose*.yml
 .dockerignore
+docs
+**/*.md
 
-# configuration files (.NET)
-appsettings.Development.json
-appsettings.Production.json
+# Operating system files
+.DS_Store
+Thumbs.db

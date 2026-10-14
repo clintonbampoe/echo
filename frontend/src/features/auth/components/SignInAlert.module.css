@@ -1,0 +1,14 @@
+.link {
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.link:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}

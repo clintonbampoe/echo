@@ -1,15 +1,6 @@
-FROM node:20-alpine AS deps
+# Development only: installs dependencies for the Vite dev server container
+# (see docker-compose.override.yml). The production build is in infra/nginx/Dockerfile.
+FROM node:24-alpine
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci 
-
-FROM deps AS build
-COPY . .
-RUN npm run lint
-RUN npm run build
-
-FROM nginx:alpine AS runtime
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-COPY --from=build /app/dist /usr/share/nginx/html
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+RUN npm ci

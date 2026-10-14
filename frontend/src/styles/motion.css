@@ -1,0 +1,68 @@
+/*
+ * Shared animations. Subtle on purpose: things settle into place, nothing bounces.
+ * Use the classes; do not copy keyframes into component CSS.
+ */
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes settle {
+  from {
+    opacity: 0;
+    transform: translate3d(-4%, 0, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Plays once when the element mounts. Stagger with style={{ '--delay': '120ms' }}. */
+.anim-rise {
+  animation: rise var(--slow) var(--ease) both;
+  animation-delay: var(--delay, 0ms);
+}
+.anim-fade {
+  animation: fade var(--slow) var(--ease) both;
+  animation-delay: var(--delay, 0ms);
+}
+.anim-settle {
+  animation: settle 2400ms var(--ease) both;
+}
+.anim-spin {
+  animation: spin 900ms linear infinite;
+  transform-origin: 50% 50%;
+}
+
+/* Plays when scrolled into view. See ui/Reveal. */
+.reveal {
+  opacity: 0;
+  transform: translate3d(0, 18px, 0);
+  transition:
+    opacity var(--slow) var(--ease),
+    transform var(--slow) var(--ease);
+  transition-delay: var(--delay, 0ms);
+}
+.reveal[data-visible="true"] {
+  opacity: 1;
+  transform: none;
+}

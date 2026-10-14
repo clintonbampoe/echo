@@ -1,0 +1,107 @@
+.field {
+  min-width: 0;
+}
+
+.labelRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+.label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-2);
+}
+
+.control {
+  display: block;
+  width: 100%;
+  height: 48px;
+  margin-top: 8px;
+  padding: 0 14px;
+  background: var(--surface-2);
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius);
+  font-size: 15px;
+  line-height: 1;
+  transition:
+    border-color var(--fast) ease,
+    box-shadow var(--fast) ease;
+}
+.control::placeholder {
+  color: var(--text-4, var(--text-3));
+}
+.control:hover {
+  border-color: var(--text-3);
+}
+.control:focus-visible {
+  outline: var(--focus);
+  outline-offset: 2px;
+}
+.control[aria-invalid="true"] {
+  border-color: var(--neg);
+}
+
+.padRight {
+  padding-right: 52px;
+}
+
+.select {
+  appearance: none;
+  padding-right: 40px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239A9A9A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+}
+
+.trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  text-align: left;
+  cursor: pointer;
+}
+.trigger[aria-expanded="true"] {
+  border-color: var(--text-3);
+}
+.trigger:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+.chevron {
+  flex: none;
+  color: var(--text-3);
+}
+
+.withButton {
+  position: relative;
+}
+.toggle {
+  position: absolute;
+  top: 12px;
+  right: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-3);
+  transition: color var(--fast) ease;
+}
+.toggle:hover,
+.toggle[aria-pressed="true"] {
+  color: var(--text);
+}
+
+.message {
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--text-3);
+}
+.error {
+  color: var(--neg);
+}

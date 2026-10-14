@@ -1,0 +1,30 @@
+.footer {
+  border-top: 1px solid var(--line);
+}
+.inner {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 28px 32px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
+}
+.note {
+  font-size: 14px;
+  color: var(--text-3);
+}
+.links {
+  display: flex;
+  gap: 24px;
+}
+.link {
+  font-size: 14px;
+  color: var(--text-3);
+  text-decoration: none;
+  transition: color var(--fast) ease;
+}
+.link:hover {
+  color: var(--text);
+}

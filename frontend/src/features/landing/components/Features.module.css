@@ -1,0 +1,57 @@
+.heading {
+  max-width: 640px;
+  margin: 0 auto;
+  text-align: center;
+  font-size: clamp(32px, 5vw, 48px);
+  line-height: 1.05;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+.left {
+  margin: 0;
+  text-align: left;
+  font-size: clamp(30px, 4.4vw, 44px);
+  line-height: 1.08;
+}
+.lead {
+  max-width: 520px;
+  margin: 20px auto 40px;
+  text-align: center;
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--text-3);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin-top: 40px;
+}
+.card {
+  height: 100%;
+  padding: 28px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  transition:
+    border-color 200ms ease,
+    background-color 200ms ease,
+    transform var(--base) var(--ease);
+}
+.card:hover {
+  border-color: var(--line-2);
+  background: var(--surface-2);
+  transform: translateY(-3px);
+}
+.cardTitle {
+  margin: 20px 0 8px;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.cardText {
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--text-3);
+}

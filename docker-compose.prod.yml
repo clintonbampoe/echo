@@ -9,5 +9,3 @@ services:
   nginx:
     restart: unless-stopped
     ports: [80:80]
-  client:
-    restart: unless-stopped
