@@ -10,6 +10,8 @@ type Props = {
   typeName?: string;
   loading: boolean;
   failed: boolean;
+  // How many squares: the latest sessions held.
+  size?: number;
 };
 
 const say = (s: Slot) =>
@@ -23,7 +25,13 @@ const toCell = (s: Slot): Cell => ({
 
 // The last few sessions as a row of squares, oldest to newest: ticked where the person was there, empty
 // where they were not. Each square opens that session. Nothing at all when none have been held.
-export function AttendanceStrip({ slots, typeName, loading, failed }: Props) {
+export function AttendanceStrip({
+  slots,
+  typeName,
+  loading,
+  failed,
+  size = RECENT,
+}: Props) {
   const waiting = loading || failed;
   if (!waiting && slots.length === 0) return null;
   const present = slots.filter((s) => s.present).length;
@@ -33,10 +41,10 @@ export function AttendanceStrip({ slots, typeName, loading, failed }: Props) {
   return (
     <CellStrip
       label="Recent sessions"
-      title={`Last ${RECENT} ${typeName ? `${typeName} ` : ""}sessions`}
+      title={`Last ${size} ${typeName ? `${typeName} ` : ""}sessions`}
       summary={`${present} of ${slots.length} attended`}
       cells={slots.map(toCell)}
-      slots={RECENT}
+      slots={size}
       status={loading ? "loading" : failed ? "failed" : "ready"}
       ends={
         first && last

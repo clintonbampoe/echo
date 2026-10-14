@@ -1,6 +1,7 @@
 import { createBrowserRouter, type RouteObject } from "react-router-dom";
 import { authRoutes } from "@/features/auth";
 import { memberRoutes } from "@/features/members";
+import { visitorRoutes } from "@/features/visitors";
 import { ComingSoon } from "./ComingSoon";
 import { Dashboard } from "./Dashboard";
 import { NotFound } from "./NotFound";
@@ -50,6 +51,7 @@ const routes: RouteObject[] = [
             children: [
               { path: "dashboard", Component: Dashboard },
               ...memberRoutes,
+              ...visitorRoutes,
               ...placeholders,
             ],
           },

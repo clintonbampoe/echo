@@ -30,7 +30,7 @@ export const useMemberSummary = (filters: api.MemberFilters) =>
   });
 
 // Adding or changing a member changes the lists and the summary numbers, so refetch them all.
-function useRefreshMembers() {
+export function useRefreshMembers() {
   const client = useQueryClient();
   return () => client.invalidateQueries({ queryKey: memberKeys.all });
 }

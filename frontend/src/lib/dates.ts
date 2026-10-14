@@ -51,3 +51,15 @@ export function ageOn(birth: string, today: string): number {
   const [ty, tm, td] = dayParts(today);
   return ty - by - (tm < bm || (tm === bm && td < bd) ? 1 : 0);
 }
+
+// Whole days from one plain day to a later one ("2026-10-01" to "2026-10-14" is 13). Never below 0.
+export function daysBetween(from: string, to: string): number {
+  const [fy, fm, fd] = dayParts(from);
+  const [ty, tm, td] = dayParts(to);
+  return Math.max(
+    0,
+    Math.round(
+      (Date.UTC(ty, tm - 1, td) - Date.UTC(fy, fm - 1, fd)) / 86_400_000,
+    ),
+  );
+}
