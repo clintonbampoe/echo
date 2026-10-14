@@ -14,6 +14,7 @@ public partial class EventRegistrationMapper : IEventRegistrationMapper
             MemberName = entity.Member.Person.Name,
             EventId = entity.EventId,
             EventName = entity.Event.Name,
+            EventStartDate = entity.Event.StartDate,
             RegistrationDate = entity.RegistrationDate,
             CreatedAt = entity.CreatedAt,
         };

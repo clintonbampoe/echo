@@ -1,0 +1,50 @@
+.alert {
+  margin-top: 16px;
+}
+
+/* Desktop: Cancel on the left, the saving buttons on the right. */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.cancel {
+  margin-right: auto;
+}
+.problem,
+.note {
+  flex: 1 0 100%;
+  order: -1;
+  font-size: 13px;
+}
+.problem {
+  color: var(--neg);
+}
+.note {
+  color: var(--pos);
+}
+
+/* Phone and tablet: big full-width buttons, the main one first. */
+@media (max-width: 900px) {
+  .actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .actions > button {
+    width: 100%;
+    height: 48px;
+    margin: 0;
+    font-size: 15px;
+  }
+  .primary {
+    order: 0;
+  }
+  .another {
+    order: 1;
+  }
+  .cancel {
+    order: 2;
+  }
+}

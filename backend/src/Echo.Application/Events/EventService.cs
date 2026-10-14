@@ -8,10 +8,10 @@ using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
+using Echo.Shared.Utilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
-using Echo.Shared.Utilities;
 
 namespace Echo.Application.Events;
 
@@ -30,11 +30,7 @@ public class EventService(
 )
 {
     internal static DateWindow? ResolveWindow(EventFilters filters, DateWindows dateWindows) =>
-        dateWindows.ThisYear(
-            filters.From,
-            filters.To,
-            hasParent: false
-        );
+        dateWindows.ThisYear(filters.From, filters.To, hasParent: filters.OrganizerId is not null);
 
     public async Task<IOperationResult> List(
         Guid congregationId,
@@ -66,7 +62,9 @@ public class EventService(
         if (hasMore)
             entities.RemoveAt(entities.Count - 1);
 
-        var nextCursor = hasMore ? encoder.Encode(BuildCursor(entities.Last(), filters.Order)) : null;
+        var nextCursor = hasMore
+            ? encoder.Encode(BuildCursor(entities.Last(), filters.Order))
+            : null;
 
         var counts = await repository.GetRegistrationCounts(
             congregationId,
@@ -74,7 +72,12 @@ public class EventService(
             ct
         );
         var data = entities
-            .Select(x => mapper.ToDto(x) with { RegistrationCount = counts.GetValueOrDefault(x.Id) })
+            .Select(x =>
+                mapper.ToDto(x) with
+                {
+                    RegistrationCount = counts.GetValueOrDefault(x.Id),
+                }
+            )
             .ToList();
         activity?.SetTag("event.count", data.Count);
         EventLog.Listed(logger, congregationId, data.Count);
@@ -339,9 +342,16 @@ public class EventService(
     internal static EventCursor? UsableCursor(EventCursor? cursor, SortDirection order) =>
         cursor is not null && cursor.Order == order ? cursor : null;
 
-    private async Task<EventResponseDto> WithCount(Event entity, Guid congregationId, CancellationToken ct)
+    private async Task<EventResponseDto> WithCount(
+        Event entity,
+        Guid congregationId,
+        CancellationToken ct
+    )
     {
         var counts = await repository.GetRegistrationCounts(congregationId, [entity.Id], ct);
-        return mapper.ToDto(entity) with { RegistrationCount = counts.GetValueOrDefault(entity.Id) };
+        return mapper.ToDto(entity) with
+        {
+            RegistrationCount = counts.GetValueOrDefault(entity.Id),
+        };
     }
 }

@@ -1,14 +1,8 @@
-// Fixed lists for dropdowns (design rule S2). Values are what the API expects.
-import type { Option } from "@/ui";
+// The sixteen regions of Ghana. Values are what the API expects. Used by the church form,
+// the invitation card and the members list.
+export type Region = { value: string; label: string };
 
-export const congregationTypes: readonly Option[] = [
-  { value: "Church", label: "Church" },
-  { value: "Mosque", label: "Mosque" },
-  { value: "NonProfit", label: "Non-profit" },
-  { value: "Other", label: "Other" },
-];
-
-export const regions: readonly Option[] = [
+export const regions: readonly Region[] = [
   { value: "GreaterAccra", label: "Greater Accra" },
   { value: "Ashanti", label: "Ashanti" },
   { value: "Central", label: "Central" },

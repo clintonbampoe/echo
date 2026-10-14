@@ -19,6 +19,7 @@ public record EventRegistrationResponseDto
     public required string MemberName { get; init; }
     public Guid EventId { get; init; }
     public required string EventName { get; init; }
+    public DateOnly EventStartDate { get; init; }
     public DateOnly RegistrationDate { get; init; }
     public DateTime CreatedAt { get; init; }
 }

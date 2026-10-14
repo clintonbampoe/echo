@@ -11,7 +11,14 @@ type Props = Shared &
 // A field whose value comes from a fixed list (design rule S2).
 // With a mouse or trackpad it shows our own menu. On a touch screen it uses the phone's own
 // picker, which is what people expect there and is easier to use than a small popup.
-export function SelectField({ label, hint, error, aside, ...rest }: Props) {
+export function SelectField({
+  label,
+  hint,
+  error,
+  aside,
+  optional,
+  ...rest
+}: Props) {
   const id = useId();
   const control = {
     ...rest,
@@ -20,7 +27,14 @@ export function SelectField({ label, hint, error, aside, ...rest }: Props) {
     describedBy: error || hint ? `${id}-msg` : undefined,
   };
   return (
-    <Shell id={id} label={label} hint={hint} error={error} aside={aside}>
+    <Shell
+      id={id}
+      label={label}
+      hint={hint}
+      error={error}
+      aside={aside}
+      optional={optional}
+    >
       {useFinePointer() ? (
         <Listbox {...control} />
       ) : (

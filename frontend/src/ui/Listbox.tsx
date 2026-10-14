@@ -1,7 +1,8 @@
 import { useId, type FocusEvent } from "react";
 import fieldStyles from "./Field.module.css";
 import { Icon } from "./Icon";
-import type { ControlProps, Option } from "./selectTypes";
+import { OptionList } from "./OptionList";
+import type { ControlProps } from "./selectTypes";
 import styles from "./Select.module.css";
 import { useListbox } from "./useListbox";
 
@@ -65,58 +66,5 @@ export function Listbox({
         />
       )}
     </div>
-  );
-}
-
-function scrollIntoView(el: HTMLElement | null) {
-  el?.scrollIntoView?.({ block: "nearest" });
-}
-
-type ListProps = {
-  id: string;
-  labelId: string;
-  options: readonly Option[];
-  selected: number;
-  active: number;
-  onActive: (index: number) => void;
-  onPick: (index: number) => void;
-};
-
-function OptionList({
-  id,
-  labelId,
-  options,
-  selected,
-  active,
-  onActive,
-  onPick,
-}: ListProps) {
-  return (
-    <ul
-      id={id}
-      role="listbox"
-      aria-labelledby={labelId}
-      className={styles.menu}
-    >
-      {options.map((o, i) => (
-        <li
-          key={o.value}
-          id={`${id}-${i}`}
-          role="option"
-          aria-selected={i === selected}
-          ref={i === active ? scrollIntoView : undefined}
-          className={`${styles.option} ${i === active ? styles.active : ""} ${i === selected ? styles.selected : ""}`}
-          // Keep focus on the button while the pointer is on the menu.
-          onMouseDown={(e) => e.preventDefault()}
-          onMouseMove={() => onActive(i)}
-          onClick={() => onPick(i)}
-        >
-          <span>{o.label}</span>
-          {i === selected && (
-            <Icon name="check" size={16} className={styles.check} />
-          )}
-        </li>
-      ))}
-    </ul>
   );
 }

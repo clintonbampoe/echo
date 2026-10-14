@@ -7,19 +7,29 @@ export type Shared = {
   error?: string;
   // Shown on the label row, right-aligned (e.g. "Forgot password?").
   aside?: ReactNode;
+  // Marks a field people may leave empty. Shown on the label row.
+  optional?: boolean;
 };
 
 type ShellProps = Shared & { id: string; children: ReactNode };
 
 // The label, hint and error that every field shares. The control goes in the middle.
-export function Shell({ id, label, hint, error, aside, children }: ShellProps) {
+export function Shell({
+  id,
+  label,
+  hint,
+  error,
+  aside,
+  optional,
+  children,
+}: ShellProps) {
   return (
     <div className={styles.field}>
       <div className={styles.labelRow}>
         <label id={`${id}-label`} htmlFor={id} className={styles.label}>
           {label}
         </label>
-        {aside}
+        {optional ? <span className={styles.optional}>Optional</span> : aside}
       </div>
       {children}
       {error ? (

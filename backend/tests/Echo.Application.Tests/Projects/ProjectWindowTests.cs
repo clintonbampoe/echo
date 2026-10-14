@@ -32,9 +32,30 @@ public class ProjectWindowTests
     {
         var w = ProjectService.ResolveWindow(new ProjectFilters(), _windows);
 
+        Assert.Equal(new DateWindow(new DateOnly(2026, 1, 1), new DateOnly(2026, 12, 31), true), w);
+    }
+
+    [Fact]
+    public void ResolveWindow_ManagerIdSet_ReturnsNull()
+    {
+        var filters = new ProjectFilters { ManagerId = Guid.NewGuid() };
+
+        Assert.Null(ProjectService.ResolveWindow(filters, _windows));
+    }
+
+    [Fact]
+    public void ResolveWindow_ManagerIdSetWithDates_UsesTheDates()
+    {
+        var filters = new ProjectFilters
+        {
+            ManagerId = Guid.NewGuid(),
+            From = new DateOnly(2000, 1, 1),
+            To = new DateOnly(2100, 12, 31),
+        };
+
         Assert.Equal(
-            new DateWindow(new DateOnly(2026, 1, 1), new DateOnly(2026, 12, 31), true),
-            w
+            new DateWindow(new DateOnly(2000, 1, 1), new DateOnly(2100, 12, 31), false),
+            ProjectService.ResolveWindow(filters, _windows)
         );
     }
 

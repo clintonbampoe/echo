@@ -3,190 +3,123 @@
 **Written by:** @clintonbampoe
 **Last updated:** 2026-10-14 by @clintonbampoe
 
-This page explains how the Echo web app is organised and the rules that keep it easy to read. Every
-file should be small, do one thing, and be easy to find. The rules below are checked automatically
-where possible, so a build fails when one is broken.
+How the Echo web app is organised. The goal is low cognitive load: open a file and know what it is,
+what it may import, and that it fits on a screen or two.
 
-## Overview
+## Layers
 
-- React 19, TypeScript, Vite.
-- Server data is handled by TanStack Query, forms by React Hook Form and Zod, routing by React Router.
-- Styling is CSS Modules plus one file of design tokens.
-- Tests use Vitest and Testing Library.
+Dependencies point down, never up. ESLint fails the build if they don't.
 
-## The four layers
-
-The code is split into four layers. A layer may import from the layers below it, never from the
-ones above. ESLint fails the build if this is broken.
-
-```
-app        wiring: providers, router, page shell
+```text
+app        wiring: providers, router, shell
  ↓
-features   one folder per area of the product (auth, members, finance, ...)
+features   one folder per area of the product
  ↓
-ui         shared building blocks: props in, markup out
+ui         dumb components: props in, markup out
  ↓
-lib        plain TypeScript: API client, config, helpers
+lib        plain TypeScript: API client, dates, formatting
 ```
 
-| Layer | May import from | Notes |
-|---|---|---|
-| `lib/` | nothing in the app | No React components. |
-| `ui/` | `lib/` | No data, no routes, no API calls. If a component needs data, it belongs in a feature. |
-| `features/` | `ui/`, `lib/` | A feature may use another feature only through that feature's `index.ts`. No cycles. |
-| `app/` | everything | Nothing imports from `app/`. |
+- `lib/` has no components. `ui/` imports only `lib/`. A component that needs data isn't a `ui/` component.
+- `features/` import `ui/` and `lib/`. Another feature is imported only through its `index.ts`.
+- Nothing imports `app/`.
 
-## Folder layout
+## Who owns what
 
-```
-frontend/src/
-  app/         App.tsx, routes.tsx, queryClient.ts, the page shell (sidebar, top bar)
-  features/    landing/  auth/  dashboard/  members/  visitors/  organizations/
-               attendance/  events/  tithes/  finance/  projects/  assets/  invitations/
-  ui/          Button, Field, Icon, Logo, Quote, Reveal, Alert ... and index.ts
-  lib/         config.ts  tokens.ts  api/ (client, errors, page)  verses.ts ...
-  styles/      tokens.css  reset.css  motion.css  fonts.css  index.css
-  test/        setup.ts
-```
+1. **A feature owns its tables, numbers, labels and types.** Others only consume them through its
+   `index.ts`. The member profile shows attendance, tithes, events, organizations and projects, but each
+   is built and owned by its own feature.
+2. **Code goes where it belongs, even if that feature isn't built yet.** Some boilerplate now beats a
+   misplaced file later.
+3. **A concept several features share gets its own home.** Payment methods serve tithes, contributions
+   and offerings, so they live in `features/transactions`, mirroring the backend.
+4. **One owner per record.** It is created, edited and deleted only on its own page. Other pages read
+   it and link to it (`lib/paths.ts`).
+5. **Generic code moves to `ui/` or `lib/` the second time it's needed.**
 
 ## Inside a feature
 
+```text
+features/tithes/
+  api.ts       HTTP calls and API types. No React.
+  hooks.ts     TanStack Query hooks and keys. The only file that knows the cache.
+  labels.ts    words and chip colours for a status or kind
+  options.ts   dropdown lists
+  view.ts      pure logic for what is shown     stat.ts + useStat.ts   profile card numbers
+  schema.ts    zod form schema
+  components/  pieces it draws, including ones other features embed
+  index.ts     what other features may use
 ```
-features/members/
-  api.ts         HTTP calls. Plain async functions, no React.
-  hooks.ts       TanStack Query hooks and the query keys. The only file that touches the cache.
-  schema.ts      Zod schemas for forms.
-  columns.ts     How a row is shown in the list.
-  format.ts      Small formatting helpers.
-  options.ts     Fixed dropdown lists.
-  pages/         One file per route. Pages only put pieces together (about 30-60 lines).
-  components/    Pieces used by this feature's pages.
-  index.ts       What other features may import (often nothing).
-```
 
-Read a feature in this order: `api` → `hooks` → `pages`. A page calls hooks and renders components.
-It never calls `fetch` directly, and a component never decides what to fetch.
+Not every feature has every file. Read top to bottom: `api` → `hooks` → `components`.
 
-## Where state lives
+## Shared pieces
 
-State has exactly three homes.
+Use these before writing your own. A new list page is about 40 lines made from them.
 
-| Kind of state | Home | Example |
-|---|---|---|
-| Server data | TanStack Query cache | the members list |
-| What the user is looking at | the URL (route and search params) | filters, date range, selected tab |
-| Short-lived UI state | `useState` | is this menu open, is the password visible |
+| Where | Pieces | For |
+| --- | --- | --- |
+| `lib` | `api`, `usePagedList` | requests, cursor paging |
+| `lib` | `urlFilters`, `useUrlFilters`, `windows` | filters and date ranges kept in the URL |
+| `lib` | `dates`, `format`, `validation`, `regions`, `paths` | days, money, required fields, links |
+| `ui` | `PageHeader`, `FilterBar`, `SearchBox`, `ListBody` | the shell of a list page |
+| `ui` | `RecordTable`, `Section`, `StatStrip`, `CellStrip`, `EmptyState` | tables and numbers |
+| `ui` | `FormSheet`, `FormSection`, `Field`, `ControlledSelect`, `DeleteDialog` | forms and delete |
+| `ui` | `Chip` + `ChipTone`, `plainOptions`, `withAny` | status labels, dropdown lists |
 
-There is no global store. If two distant components need the same thing, it is either server data
-(read it from the cache) or URL state.
+Features import `ui` only through `ui/index.ts`, which stays alphabetical.
 
-## Lists and pagination
+## State, errors and styling
 
-Lists are cursor-paged. A response looks like `{ data, hasMore, next }` and has **no total**.
+| Kind of state | Home |
+| --- | --- |
+| Server data | TanStack Query cache |
+| What the user is looking at (filters, date range, `?tab=`) | the URL |
+| Throwaway (is a menu open) | `useState` |
 
-- Use `useInfiniteQuery` with `nextCursor` from `lib/api`.
-- The footer counts what has loaded: "Showing 50 members. Scroll to load more." When `hasMore` is
-  false: "Showing all 50 members."
-- A real total (such as a headline "1,284 members") comes from the module's `/summary` endpoint.
-  Never count rows or add up money in the browser.
+- No global store. Lists have no total: count what is loaded, and take any real total from `/summary`.
+  Never count or sum in the browser.
+- Failed requests become an `ApiError`. Screens branch on `errorCode`, never on message text. Forms put
+  `fieldErrors` on their fields. Never show a raw server error to a user.
+- Every data screen has four states: loading, empty, no results, error.
+- Colours and radii are tokens (`var(--text)`, never a hex). Each component has its own `X.module.css`.
+  The app is light; landing and auth are dark.
 
-## Errors and screen states
+## Code conventions
 
-- Every failed request becomes an `ApiError` (`lib/api/errors.ts`) with `status`, `errorCode`,
-  `message` and `fieldErrors`. Screens check `errorCode`, never the message text.
-- Forms show `fieldErrors` under their fields. Every other error appears in an `Alert`.
-- A screen that shows data has four states: loading (skeleton), empty, no results, and error.
-  Leaving one out is a bug.
+- Plain functions, named exports, `type` not `interface`, string unions not enums, no classes, no `any`.
+- No semicolons, single quotes. Don't reformat files you aren't changing.
+- Early returns. Derive values instead of syncing them with `useEffect`.
+- No `useMemo` or `useCallback` unless a measurement says so.
+- Dates stay `YYYY-MM-DD` text. Don't round-trip them through `new Date()`.
+- Comments say why, in plain words. Components aim for 150 lines; past that, split.
 
-## Styling
+## Enforced by
 
-- Colours, radii and durations are tokens in `styles/tokens.css`. Components use `var(--text)`,
-  never a hex value.
-- Each component has its own `Name.module.css` next to it, about 100 lines at most. There are no
-  global component classes. Shared animations are in `styles/motion.css` (`anim-rise`, `anim-fade`,
-  and the `Reveal` component).
-- There are two surfaces. The signed-in app is light. Public pages (landing and auth) are dark,
-  requested with `useSurface('dark')`. Dark mode for the app itself is not planned yet.
-- Motion is subtle: things settle into place and nothing bounces. `prefers-reduced-motion` turns
-  all motion off with one rule in `reset.css`, so never add animation that bypasses it.
+| Rule | Enforced by |
+| --- | --- |
+| Layer direction; other features only via `index.ts` | ESLint `no-restricted-imports` |
+| File ≤ 250 lines, function ≤ 60 (warn), complexity ≤ 10 | ESLint |
+| No classes, `console.log`, `useMemo`/`useCallback` | ESLint `no-restricted-syntax` |
+| Strict types, no unchecked index access | `tsconfig.app.json` |
+| Config present and valid at startup | `lib/config.ts` |
 
-## Code rules
+## Routing, security, tests
 
-- Plain functions and named exports. No default exports.
-- `type` instead of `interface`, string unions instead of enums, no classes (`ApiError` is the one
-  exception), no `any`.
-- Return early instead of nesting. Work values out while rendering instead of syncing them with
-  `useEffect`. Do not use `useMemo` or `useCallback` unless a measurement shows they help.
-- Dates stay as `YYYY-MM-DD` strings. Do not convert them through `new Date()`.
-- Aim for components of 150 lines or fewer. Past that, split them.
-
-| Rule | Checked by |
-|---|---|
-| Layer direction, features import each other only through `index.ts` | ESLint `no-restricted-imports` |
-| File under 250 lines (error), function under 100 lines (warning), complexity at most 10 (error) | ESLint |
-| No default exports, enums, classes, `console.log`, `dangerouslySetInnerHTML`, `useMemo`, `useCallback` | ESLint `no-restricted-syntax` |
-| Strict types, no unchecked array access | `tsconfig.app.json` |
-| Config is present and valid at startup | `lib/config.ts` (Zod) |
-| `lib/` and `ui/` behaviour | Vitest tests next to the code |
-
-"Complexity" counts the branches in a function (`if`, `&&`, `?:`, loops, `case`). More than 10 usually
-means the function should be split.
-
-## Routing
-
-- All URLs are listed in `app/routes.tsx`. Each feature owns its own routes and exports them.
-- Pages load on demand (`lazy`). The whole list sits under one root route that supplies an empty
-  `HydrateFallback`, because React Router warns without one when the first page is lazy-loaded.
-- Create and edit forms are routes (`/members/new`, `/members/:id/edit`). They show as a drawer on
-  desktop and a full screen on small screens. Confirm dialogs and row menus are local state.
-- `/` is the landing page for everyone. Signed-in people see "Open Echo" instead of "Sign in".
-  The app itself lives under `/dashboard`.
-
-### Auth routes
-
-Auth owns `/signin`, `/signup`, `/signup/church`, `/verify`, `/verify-email`, `/forgot`,
-`/reset-password`, `/join` and `/join/:code`.
-
-- The two links sent by email, `/verify-email` and `/reset-password`, are built by the backend. Their
-  paths cannot change without changing the backend too.
-- Signed-in pages sit under `RequireAuth` in `app/routes.tsx`. A signed-out visitor is sent to
-  `/signin` and returned to the page they asked for.
-- Gotcha: `AuthLayout` re-keys its card on every path so each page replays its entrance animation.
-  That remounts everything inside the card. Anything that must survive from one auth page to the
-  next (such as sign-up step 1) is held in `AuthShell`, which sits outside the keyed element.
-
-## Security and config
-
-- `VITE_API_URL` is read once in `lib/config.ts`. In production it is `/api` (same origin, behind
-  nginx), which is why the Content Security Policy can say `connect-src 'self'`.
-- Tokens are stored in `localStorage` (`lib/tokens.ts`) so a session survives a reload. The cost is
-  that an injected script could read them. The Content Security Policy in
-  `infra/nginx/spa-headers.conf` and the ban on `dangerouslySetInnerHTML` are the defences.
-- Never log tokens or personal data.
-
-## Testing
-
-- Use Vitest and Testing Library.
-- Test what a user or caller can see: a disabled button, an error message, a retry after a 401.
-  Do not test implementation details. No snapshot tests.
-- Tests sit next to the file they test.
+- Every URL is in `app/routes.tsx`; features export their own routes. A page not built yet is a
+  placeholder, so links never 404. Signed-in pages sit under `RequireAuth`.
+- The emailed links `/verify-email` and `/reset-password` are built by the backend; their paths can't
+  change without changing it too.
+- Gotcha: `AuthLayout` re-keys its card on every path, which remounts everything inside. Anything that
+  must survive between auth pages lives in `AuthShell`, outside the keyed element.
+- `VITE_API_URL` is read once in `lib/config.ts`. Tokens live in `localStorage`; the CSP and the ban on
+  `dangerouslySetInnerHTML` defend them. Never log tokens or personal data.
+- Vitest + Testing Library. Test what a user can see, not implementation. Tests sit beside their file.
 
 ## Adding a feature
 
-1. Create `features/<name>/` with `api.ts`, `hooks.ts` and `pages/`.
-2. Export its routes from `index.ts` and add them to `app/routes.tsx`.
-3. Build pages from `ui/` pieces. If a piece is missing, add it to `ui/`, not to the feature.
-4. Handle all four screen states.
-5. Run `npm run check` (lint, types, tests, build) before pushing.
-
-## Dependencies
-
-Each new runtime dependency needs a one-line reason in its pull request. The current set:
-
-- React and React Router
-- TanStack Query (server data)
-- React Hook Form and Zod (forms)
-- `@fontsource` (self-hosted fonts)
-- Radix Dialog and DropdownMenu (accessible overlays), to be added when the first feature needs them
-
-There is no chart library. Charts are small custom SVG.
+1. Create `features/<name>/` with `api.ts`, `hooks.ts`, `components/`, `index.ts`.
+2. Check the shared pieces first. If something generic is missing, add it to `ui/` or `lib/`.
+3. Export its routes and add them to `app/routes.tsx`.
+4. Handle all four states.
+5. Run `npm run check` before pushing.

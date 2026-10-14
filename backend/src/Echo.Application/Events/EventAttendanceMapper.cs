@@ -14,6 +14,7 @@ public partial class EventAttendanceMapper : IEventAttendanceMapper
             MemberName = entity.Member.Person.Name,
             EventId = entity.EventId,
             EventName = entity.Event.Name,
+            EventStartDate = entity.Event.StartDate,
             CheckInTime = entity.CheckInTime,
             CreatedAt = entity.CreatedAt,
         };

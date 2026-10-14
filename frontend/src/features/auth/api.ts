@@ -1,10 +1,9 @@
 // Every call here is anonymous: nothing in auth needs a token to start. No React in this file.
+import type { CongregationType } from "@/features/account";
 import { api } from "@/lib/api";
 import type { TokenPair } from "@/lib/tokens";
 
 const anon = { auth: false } as const;
-
-export type CongregationType = "Church" | "Mosque" | "NonProfit" | "Other";
 
 export type RegisterCongregationInput = {
   congregationDto: {

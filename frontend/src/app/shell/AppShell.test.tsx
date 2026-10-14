@@ -71,7 +71,12 @@ describe("app shell", () => {
     const sidebar = screen.getByRole("complementary", { name: "Sidebar" });
     const current = within(sidebar).getByRole("link", { name: "Dashboard" });
     expect(current).toHaveAttribute("aria-current", "page");
-    expect(within(sidebar).queryByRole("link", { name: /Members/ })).toBeNull();
+    expect(
+      within(sidebar).getByRole("link", { name: "Members" }),
+    ).toHaveAttribute("href", "/members");
+    expect(
+      within(sidebar).queryByRole("link", { name: /Visitors/ }),
+    ).toBeNull();
     expect(
       within(sidebar).getByText("Reports").closest("[aria-disabled]"),
     ).toHaveAttribute("aria-disabled", "true");

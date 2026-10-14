@@ -19,6 +19,7 @@ public record EventAttendanceResponseDto
     public required string MemberName { get; init; }
     public Guid EventId { get; init; }
     public required string EventName { get; init; }
+    public DateOnly EventStartDate { get; init; }
     public TimeOnly CheckInTime { get; init; }
     public DateTime CreatedAt { get; init; }
 }

@@ -6,10 +6,10 @@ using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
+using Echo.Shared.Utilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
-using Echo.Shared.Utilities;
 
 namespace Echo.Application.Projects;
 
@@ -28,11 +28,7 @@ public class ProjectService(
 )
 {
     internal static DateWindow? ResolveWindow(ProjectFilters filters, DateWindows dateWindows) =>
-        dateWindows.ThisYear(
-            filters.From,
-            filters.To,
-            hasParent: false
-        );
+        dateWindows.ThisYear(filters.From, filters.To, hasParent: filters.ManagerId is not null);
 
     public async Task<IOperationResult> List(
         Guid congregationId,
@@ -317,7 +313,11 @@ public class ProjectService(
         return new ProjectCursor { StartDate = last.StartDate, Id = last.Id };
     }
 
-    private async Task<ProjectResponseDto> WithCount(Project entity, Guid congregationId, CancellationToken ct)
+    private async Task<ProjectResponseDto> WithCount(
+        Project entity,
+        Guid congregationId,
+        CancellationToken ct
+    )
     {
         var counts = await repository.GetRaisedAmounts(congregationId, [entity.Id], ct);
         return mapper.ToDto(entity) with { RaisedAmount = counts.GetValueOrDefault(entity.Id) };

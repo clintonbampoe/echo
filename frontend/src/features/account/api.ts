@@ -1,13 +1,16 @@
 // Who is signed in, and which church they belong to. No React in this file.
 import { api } from "@/lib/api";
 
-export type Role = "Admin" | "Accountant" | "Clerk" | "Member";
+// What someone may do in the app. (Not the same as a role inside an organization.)
+export type UserRole = "Admin" | "Accountant" | "Clerk" | "Member";
+
+export type CongregationType = "Church" | "Mosque" | "NonProfit" | "Other";
 
 export type Me = {
   id: string;
   name: string;
   emailAddress: string;
-  role: Role;
+  role: UserRole;
 };
 
 export type Congregation = {

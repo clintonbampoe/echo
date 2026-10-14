@@ -1,0 +1,39 @@
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+.group {
+  padding: 18px 20px;
+  border-top: 1px solid var(--line);
+}
+.group:first-child {
+  border-top: 0;
+}
+.title {
+  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-2);
+}
+.list {
+  margin: 0;
+}
+.row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 0;
+  font-size: 14px;
+}
+.row dt {
+  flex: none;
+  color: var(--text-3);
+}
+.row dd {
+  margin: 0;
+  min-width: 0;
+  text-align: right;
+  overflow-wrap: anywhere;
+}

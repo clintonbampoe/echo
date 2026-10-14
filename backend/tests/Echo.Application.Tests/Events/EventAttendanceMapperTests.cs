@@ -41,6 +41,7 @@ public class EventAttendanceMapperTests
         Assert.Equal(dto.EventId, entity.EventId);
         Assert.Equal(dto.MemberName, entity.Member.Person.Name);
         Assert.Equal(dto.EventName, entity.Event.Name);
+        Assert.Equal(dto.EventStartDate, entity.Event.StartDate);
         Assert.Equal(dto.CheckInTime, entity.CheckInTime);
         Assert.Equal(dto.CreatedAt, entity.CreatedAt);
     }

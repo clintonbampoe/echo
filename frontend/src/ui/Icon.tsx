@@ -15,6 +15,7 @@ const shapes = {
   'copy': <><rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M15.5 8.5V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v7.5a2 2 0 0 0 2 2h2.5"/></>,
   'dashboard': <><rect x="3.5" y="3.5" width="7" height="7" rx="1.8"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.8"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.8"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.8"/></>,
   'eye': <><path d="M2 12s3.6-6.5 10-6.5S22 12 22 12s-3.6 6.5-10 6.5S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></>,
+  'filter': <><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></>,
   'finance': <><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></>,
   'key': <><circle cx="8" cy="15" r="4"/><path d="m11 12 8-8m-3 3 3 3"/></>,
   'link': <><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></>,
@@ -31,6 +32,7 @@ const shapes = {
   'tithes': <><path d="M12 21s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.6-7 10-7 10z"/></>,
   'user': <><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.5-3.5 3-5.5 6.5-5.5s6 2 6.5 5.5"/><path d="M16 4.7a3.5 3.5 0 0 1 0 6.6M18.5 14.8c1.7.7 2.8 2.4 3 5.2"/></>,
   'visitor': <><circle cx="10" cy="8" r="3.5"/><path d="M3 20c.5-3.5 3-5.5 7-5.5M17 14v6M14 17h6"/></>,
+  'x': <><path d="M6 6l12 12M18 6 6 18"/></>,
 } satisfies Record<string, ReactNode>
 
 export type IconName = keyof typeof shapes

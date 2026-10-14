@@ -1,4 +1,5 @@
-import { firstName, useCongregation, useMe } from "@/features/account";
+import { useCongregation, useMe } from "@/features/account";
+import { firstName } from "@/lib/format";
 import { greetingFor } from "./greeting";
 import styles from "./Dashboard.module.css";
 
