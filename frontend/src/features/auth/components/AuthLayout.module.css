@@ -1,4 +1,5 @@
 .page {
+  position: relative;
   display: flex;
   min-height: 100vh;
   background: var(--bg);
@@ -32,7 +33,9 @@
     rgb(255 255 255 / 0%) 100%
   );
   filter: blur(36px);
-  animation: drift 18s ease-in-out infinite alternate;
+  animation:
+    drift 18s ease-in-out infinite alternate,
+    breathe 8s ease-in-out infinite;
 }
 .glowB {
   position: absolute;
@@ -46,6 +49,7 @@
     rgb(255 255 255 / 0%) 100%
   );
   filter: blur(36px);
+  animation: breathe 11s ease-in-out -4s infinite;
 }
 .vignette {
   position: absolute;
@@ -67,6 +71,20 @@
 }
 .verse {
   position: relative;
+}
+
+/* The glows breathe: brighter and a little larger, then softer. Uses `scale` rather than
+   `transform` so it combines with the drift below instead of fighting it. */
+@keyframes breathe {
+  0%,
+  100% {
+    opacity: 0.55;
+    scale: 0.94;
+  }
+  50% {
+    opacity: 1;
+    scale: 1.08;
+  }
 }
 
 @keyframes drift {
@@ -92,12 +110,40 @@
   max-width: 380px;
 }
 
+/* A way back to the landing page, in the top-left corner of every auth screen. */
+.home {
+  position: absolute;
+  top: 32px;
+  left: 52px;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  color: var(--text-2);
+  text-decoration: none;
+  transition: color var(--fast) ease;
+}
+.home:hover {
+  color: var(--text);
+}
+.home:focus-visible {
+  outline: var(--focus);
+  outline-offset: 2px;
+}
+.flip {
+  transform: scaleX(-1);
+}
+
 /* Below 1024px the verse is dropped and the card is centred on the plain page. */
 @media (max-width: 1023px) {
   .visual {
     display: none;
   }
   .main {
+    padding-top: 96px;
     background: var(--bg);
     border-left: 0;
   }
@@ -106,7 +152,11 @@
   }
 }
 @media (max-width: 480px) {
+  .home {
+    top: 24px;
+    left: 16px;
+  }
   .main {
-    padding: 32px 20px;
+    padding: 88px 20px 32px;
   }
 }

@@ -3,6 +3,7 @@ import { authRoutes } from "@/features/auth";
 import { Dashboard } from "./Dashboard";
 import { NotFound } from "./NotFound";
 import { RequireAuth } from "./RequireAuth";
+import { AppShell } from "./shell";
 
 // One list, top to bottom, of every URL in the app. Each feature owns its own routes and
 // hands them over here; this file only decides where they sit. Pages load on demand.
@@ -21,7 +22,12 @@ const routes: RouteObject[] = [
       ...authRoutes,
       {
         Component: RequireAuth,
-        children: [{ path: "dashboard", Component: Dashboard }],
+        children: [
+          {
+            Component: AppShell,
+            children: [{ path: "dashboard", Component: Dashboard }],
+          },
+        ],
       },
       { path: "*", Component: NotFound },
     ],

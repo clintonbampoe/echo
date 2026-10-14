@@ -1,32 +1,26 @@
-import { useNavigate } from "react-router-dom";
-import { useSignOut } from "@/features/auth";
-import { Button, Logo } from "@/ui";
+import { firstName, useCongregation, useMe } from "@/features/account";
+import { greetingFor } from "./greeting";
 import styles from "./Dashboard.module.css";
 
-// Placeholder until the app shell exists. It proves the signed-in flow works end to end.
+const today = () =>
+  new Intl.DateTimeFormat("en-GB", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  }).format(new Date());
+
+// Placeholder until the real dashboard is built. The shell around it is already final.
 export function Dashboard() {
-  const signOut = useSignOut();
-  const navigate = useNavigate();
-  async function onSignOut() {
-    await signOut.mutateAsync();
-    navigate("/", { replace: true });
-  }
+  const me = useMe().data;
+  const church = useCongregation().data;
+  const greeting = `${greetingFor(new Date().getHours())}${me ? `, ${firstName(me.name)}` : ""}`;
   return (
-    <main className={styles.page}>
-      <div className={`${styles.card} anim-rise`}>
-        <Logo />
-        <h1 className={styles.title}>You are signed in</h1>
-        <p className={styles.text}>The dashboard is coming next.</p>
-        <Button
-          variant="secondary"
-          size="lg"
-          block
-          loading={signOut.isPending}
-          onClick={onSignOut}
-        >
-          Sign out
-        </Button>
-      </div>
-    </main>
+    <div className="anim-rise">
+      <h1 className={styles.title}>{greeting}</h1>
+      <p className={styles.text}>
+        {today()}.{church ? ` Here is how ${church.name} is doing.` : ""}
+      </p>
+      <p className={styles.soon}>Your numbers will appear here soon.</p>
+    </div>
   );
 }

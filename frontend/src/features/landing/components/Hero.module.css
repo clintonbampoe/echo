@@ -6,7 +6,7 @@
   text-align: center;
 }
 
-/* A soft light behind the headline. It fades in, then drifts very slowly. */
+/* A soft light behind the headline. It fades in, then breathes: brighter and a little larger, then softer, in a slow cycle. */
 .glow {
   position: absolute;
   left: 50%;
@@ -25,17 +25,18 @@
   pointer-events: none;
   animation:
     fade 2400ms ease-out both,
-    breathe 14s ease-in-out 2400ms infinite;
+    breathe 8s ease-in-out 2400ms infinite;
 }
+/* `scale`, not `transform`, so it combines with the translateX that centres the glow. */
 @keyframes breathe {
   0%,
   100% {
-    opacity: 1;
-    transform: translateX(-50%) scale(1);
+    opacity: 0.55;
+    scale: 0.94;
   }
   50% {
-    opacity: 0.78;
-    transform: translateX(-50%) scale(1.06);
+    opacity: 1;
+    scale: 1.08;
   }
 }
 

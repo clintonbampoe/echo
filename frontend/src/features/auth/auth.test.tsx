@@ -162,3 +162,22 @@ describe("invitations", () => {
     expect(screen.getByText(/Osu, Greater Accra/)).toBeInTheDocument();
   });
 });
+
+describe("links on auth screens", () => {
+  it("offers a way back to the landing page", async () => {
+    renderAt("/signin");
+    expect(
+      await screen.findByRole("link", { name: "Back to home" }),
+    ).toHaveAttribute("href", "/");
+  });
+
+  it("offers the other ways in as plain links under the sign-in form", async () => {
+    renderAt("/signin");
+    expect(
+      await screen.findByRole("link", { name: "Create a church account" }),
+    ).toHaveAttribute("href", "/signup");
+    expect(
+      screen.getByRole("link", { name: "Join with an invitation code" }),
+    ).toHaveAttribute("href", "/join");
+  });
+});

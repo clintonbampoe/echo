@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { getVerse } from "@/lib/verses";
-import { Quote, useSurface } from "@/ui";
+import { Icon, Quote, useSurface } from "@/ui";
 import styles from "./AuthLayout.module.css";
 
 // Every auth screen sits in this frame: a quiet verse on the left (large screens only) and
@@ -12,6 +12,10 @@ export function AuthLayout({ children }: { children: ReactNode }) {
   const verse = getVerse();
   return (
     <div className={styles.page}>
+      <Link to="/" className={styles.home}>
+        <Icon name="arrow-right" size={16} className={styles.flip} />
+        Back to home
+      </Link>
       <section className={styles.visual}>
         <div className={`${styles.light} anim-settle`} aria-hidden="true">
           <div className={styles.glowA} />

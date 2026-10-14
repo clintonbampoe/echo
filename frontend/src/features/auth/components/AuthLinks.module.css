@@ -1,26 +1,31 @@
-.prompt {
-  margin-top: 24px;
-  font-size: 14px;
-  line-height: 1.5;
-  color: var(--text-3);
+.links {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
 }
-.prompt + .prompt {
-  margin-top: 12px;
-}
-.strong {
-  color: var(--text);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
+
 .back {
   margin-top: 24px;
-  font-size: 14px;
+  text-align: center;
 }
-.muted {
-  color: var(--text-3);
+
+.link {
+  font-size: 14px;
+  color: var(--text-2);
   text-decoration: none;
+  text-underline-offset: 3px;
   transition: color var(--fast) ease;
 }
-.muted:hover {
+.link:hover {
   color: var(--text);
+  text-decoration: underline;
+}
+.link:focus-visible {
+  outline: var(--focus);
+  outline-offset: 3px;
+  border-radius: 4px;
 }
