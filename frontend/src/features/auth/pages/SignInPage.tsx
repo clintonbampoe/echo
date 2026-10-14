@@ -6,7 +6,7 @@ import type { ApiError } from "@/lib/api";
 import { handleSubmitError } from "@/lib/forms";
 import { Button, Field, PasswordField } from "@/ui";
 import { AuthHeading } from "../components/AuthHeading";
-import { AuthPrompt } from "../components/AuthLinks";
+import { AuthLinks } from "../components/AuthLinks";
 import { SignInAlert } from "../components/SignInAlert";
 import { useSignIn } from "../hooks";
 import { signInSchema, type SignInValues } from "../schema";
@@ -97,12 +97,12 @@ export function SignInPage() {
           Sign in
         </Button>
       </form>
-      <AuthPrompt to="/signup" action="Create your church account">
-        New to Echo?
-      </AuthPrompt>
-      <AuthPrompt to="/join" action="Enter your invitation code">
-        Invited to a church?
-      </AuthPrompt>
+      <AuthLinks
+        items={[
+          { to: "/signup", label: "Create a church account" },
+          { to: "/join", label: "Join with an invitation code" },
+        ]}
+      />
     </>
   );
 }

@@ -2,23 +2,19 @@ import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import styles from "./AuthLinks.module.css";
 
-// "Already have an account? Sign in" style line under a form.
-export function AuthPrompt({
-  children,
-  to,
-  action,
-}: {
-  children: ReactNode;
-  to: string;
-  action: string;
-}) {
+type Item = { to: string; label: string };
+
+// The other places someone on this screen might want to go, centred under a form.
+// Plain statements, not questions: "Create a church account", not "New to Echo?".
+export function AuthLinks({ items }: { items: Item[] }) {
   return (
-    <p className={styles.prompt}>
-      {children}{" "}
-      <Link to={to} className={styles.strong}>
-        {action}
-      </Link>
-    </p>
+    <nav aria-label="Other options" className={styles.links}>
+      {items.map((item) => (
+        <Link key={item.to} to={item.to} className={styles.link}>
+          {item.label}
+        </Link>
+      ))}
+    </nav>
   );
 }
 
@@ -32,7 +28,7 @@ export function BackLink({
 }) {
   return (
     <p className={styles.back}>
-      <Link to={to} className={styles.muted}>
+      <Link to={to} className={styles.link}>
         {children}
       </Link>
     </p>

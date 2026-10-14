@@ -1,0 +1,16 @@
+.avatar {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-pill);
+  background: var(--sel);
+  color: var(--text);
+  font-weight: 600;
+  line-height: 1;
+}
+.square {
+  border-radius: 9px;
+  background: var(--accent);
+  color: var(--on-accent);
+}

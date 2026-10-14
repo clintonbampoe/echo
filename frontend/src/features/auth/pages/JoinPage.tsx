@@ -6,7 +6,7 @@ import type { ApiError } from "@/lib/api";
 import { handleSubmitError } from "@/lib/forms";
 import { Alert, Button, Field, LinkButton, PasswordField } from "@/ui";
 import { AuthHeading } from "../components/AuthHeading";
-import { AuthPrompt } from "../components/AuthLinks";
+import { AuthLinks, BackLink } from "../components/AuthLinks";
 import { InvitationCard } from "../components/InvitationCard";
 import { StatusScreen } from "../components/StatusScreen";
 import type { InvitationInfo } from "../api";
@@ -90,9 +90,7 @@ function JoinForm({
         You have been invited to join:
       </AuthHeading>
       <InvitationCard invitation={invitation} />
-      <AuthPrompt to="/join" action="Use a different code">
-        Not your church?
-      </AuthPrompt>
+      <BackLink to="/join">Use a different code</BackLink>
       {problem && (
         <div className={styles.alert}>
           <JoinProblem problem={problem} />
@@ -147,9 +145,9 @@ function JoinForm({
           Create account
         </Button>
       </form>
-      <AuthPrompt to="/signin" action="Sign in">
-        Already have an account?
-      </AuthPrompt>
+      <AuthLinks
+        items={[{ to: "/signin", label: "Sign in to an existing account" }]}
+      />
     </>
   );
 }

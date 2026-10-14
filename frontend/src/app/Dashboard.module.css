@@ -1,28 +1,16 @@
-.page {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 32px;
-  background: var(--bg);
-}
-.card {
-  width: 100%;
-  max-width: 380px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
 .title {
-  margin-top: 16px;
-  font-size: 30px;
+  font-size: 26px;
   line-height: 1.15;
   font-weight: 600;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
 }
 .text {
-  margin-bottom: 20px;
+  margin-top: 6px;
   font-size: 15px;
-  line-height: 1.5;
+  color: var(--text-2);
+}
+.soon {
+  margin-top: 32px;
+  font-size: 14px;
   color: var(--text-3);
 }

@@ -1,5 +1,6 @@
 import { QueryClient } from "@tanstack/react-query";
 import { isApiError } from "@/lib/api";
+import { getTokens, onTokensChange } from "@/lib/tokens";
 
 // Retrying a 4xx (bad input, not allowed, not found) can never help. Network and 5xx get two retries.
 function shouldRetry(failureCount: number, error: unknown): boolean {
@@ -16,4 +17,10 @@ export const queryClient = new QueryClient({
       refetchOnWindowFocus: false,
     },
   },
+});
+
+// Signing out, or being signed out when a session expires, must not leave one person's data in
+// memory for the next person on the same browser.
+onTokensChange(() => {
+  if (getTokens() === null) queryClient.clear();
 });

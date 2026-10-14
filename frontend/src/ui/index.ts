@@ -1,6 +1,8 @@
 // The only way features import ui. Keep this list alphabetical.
 export { Alert } from "./Alert";
+export { Avatar } from "./Avatar";
 export { Button, LinkButton } from "./Button";
+export { Drawer } from "./Drawer";
 export { Field, PasswordField } from "./Field";
 export { Icon, type IconName } from "./Icon";
 export { Logo } from "./Logo";

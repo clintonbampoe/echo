@@ -18,7 +18,21 @@
   );
   filter: blur(40px);
   pointer-events: none;
+  animation: breathe 9s ease-in-out infinite;
 }
+/* `scale`, not `transform`, so it combines with the translateX that centres the glow. */
+@keyframes breathe {
+  0%,
+  100% {
+    opacity: 0.55;
+    scale: 0.94;
+  }
+  50% {
+    opacity: 1;
+    scale: 1.08;
+  }
+}
+
 .cta {
   position: relative;
   margin-top: 48px;

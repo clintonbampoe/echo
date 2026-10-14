@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { Button, Field, PasswordField } from "@/ui";
 import { AuthHeading } from "../components/AuthHeading";
-import { AuthPrompt } from "../components/AuthLinks";
+import { AuthLinks } from "../components/AuthLinks";
 import { StepBar } from "../components/StepBar";
 import { accountSchema, type AccountValues } from "../schema";
 import { useSignUp } from "./signUpContext";
@@ -71,9 +71,9 @@ export function SignUpAccountPage() {
           Continue
         </Button>
       </form>
-      <AuthPrompt to="/signin" action="Sign in">
-        Already have an account?
-      </AuthPrompt>
+      <AuthLinks
+        items={[{ to: "/signin", label: "Sign in to an existing account" }]}
+      />
     </>
   );
 }
