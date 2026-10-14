@@ -1,7 +1,7 @@
 # Infrastructure
 
 **Written by:** @clintonbampoe
-**Last updated:** 2026-09-15 by @clintonbampoe
+**Last updated:** 2026-10-14 by @clintonbampoe
 
 ---
 
@@ -23,14 +23,15 @@ and update this doc if you're the one making the change. If not flag this to the
 step on every change. In prod, it runs the final, compiled version. Nginx only
 sends it traffic once it's confirmed healthy.
 
-**`client`** — the frontend React application. In dev, it runs Vite's hot-reloading
-server directly on port 5173 (bypassing Nginx). In prod, it is a lightweight Nginx
-container serving static files, which the edge Nginx proxies to.
+**`client`** — the frontend React application, **dev only**. It runs Vite's hot-reloading
+server on port 5173. Nginx passes the web app through to it (port 8080), and you can also
+open it directly on 5173. In prod there is no `client` container: the built app is inside
+the `nginx` image.
 
 **`db`** — Postgres 18. Data is stored in a volume so it survives restarts. In
 prod, only `api` can reach it — it's not open to the outside world.
 
-**`nginx`** — sits in front as the edge proxy. In prod, it routes `/api` (which covers the health endpoints at `/api/health/*`), `/scalar`, and `/swagger` to the `api` container, and all other traffic `/` to the `client` container. In dev, it only routes API traffic.
+**`nginx`** — the single front door, in both environments. It routes `/api` (which covers the health endpoints at `/api/health/*`), `/scalar`, and `/swagger` to the `api` container; everything else is the web app. In dev it passes the web app through to the `client` container (Vite). In prod it serves the built files itself, with the security headers (CSP) that protect the session tokens. See [How the web app is built and served](#how-the-web-app-is-built-and-served).
 
 **`migrator`** — runs database migrations. This is used for controlled updates in CI/CD or when the API is not yet online.
 
@@ -71,9 +72,9 @@ docker compose up
 
 - prod
 
-  ```bash
-  docker compose -f docker-compose.yml -f docker-compose,prod.yml build up
-  ```
+```bash
+  docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+```
 
 That last part matters: asking for a specific file by name switches off the automatic dev file entirely, so dev settings and prod settings can never both apply at once by accident.
 
@@ -88,6 +89,28 @@ Building the app happens in four steps:
 - **Publish** — package the app to run.
 - **Runtime** — the final image. Only pulls the slim ASP.NET runtime to run the compiled package. No build tools included, just what's needed to run the app. This is what actually ships to prod.
 
+## How the web app is built and served
+
+There is one nginx for the whole app. Its image (`infra/nginx/Dockerfile`) has two targets:
+
+- **`dev`**: nginx and its config only. The web app is not in it; nginx passes it through to Vite in the `client` container. The Node build stages are skipped, so this builds fast.
+- **`web`**: the default, so what prod builds. A Node stage installs dependencies, runs lint and `npm run build`, and only the output (`dist/`) is copied into the final image. No Node and no source code ship.
+
+| File (in `infra/nginx/`) | Used by | What it holds |
+| ------------------------ | ------- | ------------- |
+| `nginx.conf`             | both    | http-level settings: mime types, gzip, upload cap, the rate-limit zone, the API upstream |
+| `api-locations.conf`     | both    | `/api`, `/scalar`, `/swagger` → the API |
+| `site.conf`              | prod    | serves the built app; any unknown path returns `index.html` so client-side routes work |
+| `site.dev.conf`          | dev     | everything else → Vite, with the WebSocket headers hot reload needs |
+| `spa-headers.conf`       | prod    | CSP and other security headers, applied only to the web app's own files, never to `/api` |
+
+Things worth knowing:
+
+- `VITE_API_URL` is baked into the bundle at build time (`ARG VITE_API_URL=/api`). The API is on the same origin, which is why the production CSP can say `connect-src 'self'`.
+- The security headers are not set for the whole server because the API sends its own, and the strict policy would stop the Scalar docs from loading.
+- In dev, nginx looks up `client:5173` when it starts and refuses to start if the name doesn't resolve. That is why the dev override makes `nginx` wait for `client`.
+- The topology diagram above still shows a `client` container in production and needs redrawing.
+
 ## Ports
 
 | Port | Service | Reachable from outside?            | Dev | Prod |
@@ -98,7 +121,7 @@ Building the app happens in four steps:
 | 5025 | api     | YES (dev convenience, skips nginx) | YES | —    |
 | 5432 | db      | YES in dev, no in prod             | YES | --   |
 
-Requests in production always flow the same way: **edge nginx → api (or client)**. Nothing else is open.
+Requests in production always flow the same way: **nginx → api** for `/api`, and nginx serves the web app itself. Nothing else is open.
 
 ## How data persists
 
@@ -125,14 +148,14 @@ The database schema is updated through two primary paths:
 
 - **Automatic**: When `RunMigrationsOnStartup` is set to `true`, the API applies pending migrations automatically during startup.
 - **Manual**: The `migrator` container can be run independently to apply migrations:
-  ```bash
+```bash
   docker compose run --rm migrator
-  ```
+```
 - **Local Development**: To manage migrations during development, use the following .NET EF commands:
-  ```bash
+```bash
   dotnet ef migrations add "MigrationName" --project backend/src/Echo.Infrastructure --startup-project backend/src/Echo.Api
   dotnet ef database update --project backend/src/Echo.Infrastructure --startup-project backend/src/Echo.Api
-  ```
+```
 
 ## Configuration
 
@@ -175,15 +198,15 @@ Two things to know:
   container is created, so anything started before this change still has no cap.
   Recreate to pick it up:
 
-  ```bash
+```bash
   docker compose up -d --force-recreate
-  ```
+```
 
   To check what a container actually got:
 
-  ```bash
+```bash
   docker inspect echo-api-1 --format '{{json .HostConfig.LogConfig}}'
-  ```
+```
 
 If you add a new service, give it `logging: *default-logging`. Nothing enforces
 this — a service without it silently falls back to uncapped logs.
@@ -214,7 +237,7 @@ The following table lists all available configuration variables. If you add a ne
 
 Because the frontend interacts with the API in two fundamentally different ways, we use two distinct configuration paths. **It is critical not to confuse the two.**
 
-**1. Frontend Identity (`Frontend__PublicUrl`)**
+**1. Frontend Identity (`Frontend__BaseUrl`)**
 This is the "Public Face" of the application—a single, absolute URL (e.g., `https://app.echo.church`). The API uses this value to generate absolute links for password resets, email verifications, and invitation links. For security, this must be an HTTPS URL in all environments except Development.
 
 **2. CORS Security (`Cors__AllowedOrigins`)**
@@ -245,9 +268,9 @@ already generous. A day is comfortable.
 
 1. **Generate a new pair, keeping the old public key.**
 
-   ```bash
+```bash
    sh backend/tools/jwt-key-setup/SetupJwtKeys.sh env --rotate
-   ```
+```
 
    This moves the current `Jwt__PublicKey` into `Jwt__PreviousPublicKey` and writes a fresh pair into `Jwt__PrivateKey` / `Jwt__PublicKey`. For local dev, swap `env` for `user-secrets`.
 
@@ -267,9 +290,9 @@ Skip the grace period entirely — that's the one case where a forced logout is 
 
 1. Generate a new pair **without** keeping the old public key:
 
-   ```bash
+```bash
    sh backend/tools/jwt-key-setup/SetupJwtKeys.sh env
-   ```
+```
 
    Confirm `Jwt__PreviousPublicKey` is empty.
 

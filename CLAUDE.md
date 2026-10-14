@@ -60,17 +60,17 @@ Load only the skill that matches the task; don't preload.
 ```bash
 cd frontend
 npm install
+cp .env.example .env.local
 npm run dev       # http://localhost:5173
-npm run build     # tsc -b && vite build
-npm run lint      # ESLint
-npm run preview   # serve dist/
+npm run check     # lint + typecheck + tests + build (run before pushing)
+npm test          # Vitest
 ```
 
-API base URL is read from `VITE_API_URL` env var, defaulting to `http://localhost:5000/api` (see `frontend/src/services/api.ts`).
+API base URL is read once at startup by `frontend/src/lib/config.ts` from `VITE_API_URL` (a full URL in dev, `/api` in production).
 
 ### Docker
 
-`docker-compose.yml` defines `api`, `db` (postgres:18), `nginx`, `client`, `backup`, and a `migrator` (profile: `tools`). Override files: `docker-compose.override.yml` (dev), `docker-compose.prod.yml` (prod).
+`docker-compose.yml` defines `api`, `db` (postgres:18), `nginx`, `backup`, and a `migrator` (profile: `tools`). `nginx` is the single front door: it proxies `/api` and serves the web app. In prod the built app is inside the nginx image (`infra/nginx/Dockerfile`, target `web`); in dev nginx (target `dev`) passes the web app through to the dev-only `client` container (Vite, hot reload). Override files: `docker-compose.override.yml` (dev, adds `client`), `docker-compose.prod.yml` (prod). Prod: `docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build`.
 
 ### Env / Secrets
 
@@ -123,25 +123,22 @@ Each module exposes **one extension method** called from `Echo.Api/Program.cs` (
 
 ## Frontend Architecture
 
-Entry: `frontend/src/main.tsx` → `App.tsx`. Top-level state via React Context (`AuthContext`, `LayoutContext`) wrapped by `App`. Single-page tabbed UI (Sidebar + Topbar + page content). Tabs: Dashboard, Finance, Attendance, Tithe, Projects, Contributions, Events, Members.
+Full rules: `docs/frontend/Architecture.md`. In short: four layers, dependencies point down (`app → features → ui → lib`), enforced by ESLint.
 
 ```
 frontend/src/
-  components/         Page-level + presentational components (Dashboard, Finance, ...)
-    common/           Shared UI (DeleteConfirmModal, etc.)
-  context/            AuthContext, LayoutContext
-  services/           api.ts (apiFetch wrapper), titheService, attendanceService
-  types/              Domain TypeScript types
-  utils/              exportUtils
-  styles/             CSS
-  assets/             Static assets
+  app/        providers, router, shell
+  features/   one folder per product area: api.ts, hooks.ts, pages/, components/
+  ui/         dumb components (props in, markup out)
+  lib/        config, token store, API client (ApiError), plain TypeScript
+  styles/     tokens.css and shared CSS
 ```
 
-`api.ts` centralizes fetch with `Content-Type: application/json` and surfaces `errorData.message` on non-2xx responses.
+State lives in three places only: server data in the TanStack Query cache, filters/tabs in the URL, throwaway UI state in `useState`. Lists are cursor-paged (no total in the response). Files stay under 250 lines.
 
 ## CI
 
-`.github/workflows/ci.yml` runs on push/PR to `main` for paths under `backend/**`: restore → build → test against `dotnet 10.0.x`. Dependabot is configured in `.github/dependabot.yml`. No CI for `frontend/**` yet.
+`.github/workflows/ci.yml` runs on push/PR to `main` for paths under `backend/**` and `frontend/**`. The `api` job: restore → build → unit tests (dotnet 10.0.x). The `frontend` job: lint → typecheck → test → build (Node 24). Dependabot is configured in `.github/dependabot.yml`.
 
 ## Conventions
 

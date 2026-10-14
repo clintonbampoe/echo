@@ -1,0 +1,12 @@
+/*
+ * Self-hosted, so there are no third-party requests and the CSP stays tight.
+ * latin covers English; latin-ext covers Ghanaian names (e.g. Ɛ, Ɔ). Other scripts are left out on purpose.
+ */
+@import "@fontsource/geist/latin-400.css";
+@import "@fontsource/geist/latin-500.css";
+@import "@fontsource/geist/latin-600.css";
+@import "@fontsource/geist/latin-ext-400.css";
+@import "@fontsource/geist/latin-ext-500.css";
+@import "@fontsource/geist/latin-ext-600.css";
+@import "@fontsource/eb-garamond/latin-400.css";
+@import "@fontsource/eb-garamond/latin-ext-400.css";

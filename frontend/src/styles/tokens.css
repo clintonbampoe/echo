@@ -1,0 +1,72 @@
+/*
+ * Design tokens. The only place raw colours, radii and durations are defined.
+ * Components use var(--name); they never write a hex value.
+ *
+ * Two surfaces:
+ *   default            the signed-in app (light)
+ *   [data-surface=dark] the public pages: landing and auth (dark)
+ * Dark mode for the app itself is on hold, so there are no app dark tokens.
+ */
+:root {
+  /* App surface (light) */
+  --bg: #f4f4f3;
+  --surface: #ffffff;
+  --surface-2: #fafaf9;
+  --line: #e7e7e4;
+  --line-2: #d6d6d2;
+  --text: #0a0a0a;
+  --text-2: #52525b;
+  --text-3: #686870;
+  --accent: #0a0a0a;
+  --on-accent: #ffffff;
+  --accent-hover: #262626;
+  --hover: #ededeb;
+  --sel: #e8e8e5;
+  --pos: #15803d;
+  --pos-bg: #ecfdf3;
+  --neg: #b91c1c;
+  --neg-bg: #fef2f2;
+  --warn: #b45309;
+  --warn-bg: #fff7e6;
+  --shadow: 0 1px 2px rgb(10 10 10 / 4%);
+
+  /* Type */
+  --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "EB Garamond", Georgia, serif;
+
+  /* Shape */
+  --radius-sm: 8px;
+  --radius: 12px;
+  --radius-lg: 14px;
+  --radius-pill: 999px;
+
+  /* Motion. One curve, three speeds. */
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --fast: 160ms;
+  --base: 280ms;
+  --slow: 700ms;
+
+  /* Focus */
+  --focus: 2px solid var(--text);
+}
+
+[data-surface="dark"] {
+  --bg: #0a0a0a;
+  --surface: #0f0f0f;
+  --surface-2: #161616;
+  --line: #1f1f1f;
+  --line-2: #2c2c2c;
+  --text: #f5f5f5;
+  --text-2: #cfcfcf;
+  --text-3: #9a9a9a;
+  --text-4: #7a7a7a;
+  --accent: #f5f5f5;
+  --on-accent: #0a0a0a;
+  --accent-hover: #ffffff;
+  --hover: #1a1a1a;
+  --neg: #f28b82;
+  --neg-bg: #1c1414;
+  --neg-line: #3f2626;
+  --focus: 2px solid var(--text);
+  color-scheme: dark;
+}

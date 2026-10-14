@@ -1,0 +1,84 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    background-color var(--fast) ease,
+    border-color var(--fast) ease,
+    transform var(--fast) ease;
+}
+.button:active:not(:disabled) {
+  transform: translateY(1px) scale(0.995);
+}
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.primary {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+.primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.secondary {
+  background: transparent;
+  border-color: var(--line-2);
+  color: var(--text);
+  font-weight: 500;
+}
+.secondary:hover:not(:disabled) {
+  background: var(--hover);
+}
+
+.ghost {
+  background: transparent;
+  color: var(--text-2);
+  font-weight: 500;
+}
+.ghost:hover:not(:disabled) {
+  background: var(--hover);
+  color: var(--text);
+}
+
+.sm {
+  height: 32px;
+  padding: 0 12px;
+  font-size: 13px;
+}
+.md {
+  height: 40px;
+  padding: 0 18px;
+  font-size: 14px;
+}
+.lg {
+  height: 48px;
+  padding: 0 20px;
+  font-size: 15px;
+}
+.xl {
+  height: 52px;
+  padding: 0 28px;
+  font-size: 16px;
+}
+
+.pill {
+  border-radius: var(--radius-pill);
+}
+.block {
+  display: flex;
+  width: 100%;
+}
+
+.spinner {
+  flex: none;
+}

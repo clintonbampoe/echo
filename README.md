@@ -23,20 +23,13 @@ It is designed to be modular, containerized and ready for multiple clients.
 ## Tech Stack
 
 - **Database**: PostgreSQL 18
-
 - **ORM**: Entity Framework Core
-
 - **API**: ASP.NET Core Web API
-
 - **Presentation Layer**:
-
-  - React: Frontend SPA (Vite for dev hot-reload, static Nginx serving in production).
-
+  - React: Frontend SPA (Vite for dev hot-reload, built into the Nginx image in production).
 - **Infrastructure & Orchestration**:
-
   - Containerization: Docker
-  - Reverse Proxy: Nginx
-
+  - Nginx: the single front door (reverse proxy for the API, and static host for the web app in production)
 - **Testing & QA**: xUnit / Moq
 
 ---

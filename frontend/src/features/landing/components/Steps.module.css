@@ -1,0 +1,33 @@
+.heading {
+  max-width: 640px;
+  font-size: clamp(30px, 4.4vw, 48px);
+  line-height: 1.08;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+.list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  margin: 56px 0 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
+  list-style: none;
+}
+.item {
+  padding: 32px 32px 8px 0;
+}
+.number {
+  font-size: 14px;
+  color: var(--text-4);
+}
+.title {
+  margin: 16px 0 8px;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.text {
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--text-3);
+}

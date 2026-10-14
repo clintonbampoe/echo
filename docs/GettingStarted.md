@@ -32,9 +32,9 @@ git clone https://github.com/clintonbampoe/echo.git
 - To set up a **JWT Key** pair on your device, Navigate to the the `/backend/tools/jwt-key-setup` directory in the repository.
   And run this command:
 
-  ```bash
+```bash
   sh setup-jwt-keys.sh env
-  ```
+```
 
   The script would then check the `.env` file at the repo root to see if the public and private keys for JWT have been configured. It would then ask user permission to override if yes, or it would just continue if the key pair have not been generated yet.
 
@@ -81,17 +81,17 @@ Navigate to the repository root to run the following commands.
 
 - **For Development**:
 
-  ```bash
+```bash
   docker compose up
-  ```
+```
 
   with no flags
 
 - **For Production**:
 
-  ```bash
+```bash
   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
-  ```
+```
 
 > **Note**: The `-d` flag is to run it detached mode.
 
@@ -101,26 +101,26 @@ Navigate to the repository root to run the following commands.
 - To disable automatic migrations and run them manually instead, set that
   value to `false` in `.env`, then run:
 
-  ```bash
+```bash
   docker-compose run --rm migrator
-  ```
+```
 
 ---
 
 ## 5. Verify
 
-Once the containers are up, the API is reachable at:
+Once the containers are up, the web app and the API are reachable at:
 
-- **Dev** `http://localhost:5025` (directly) or `http://localhost:8080` (through Nginx)
-- **Prod** `http://localhost:80` (through Nginx only -- the API isn't exposed directly)
+- **Dev** the web app at `http://localhost:8080` (through Nginx) or `http://localhost:5173` (Vite directly); the API at `http://localhost:5025` (directly) or `http://localhost:8080/api` (through Nginx)
+- **Prod** `http://localhost:80` (through Nginx only -- Nginx serves the web app, and the API isn't exposed directly)
 
 To confirm it's working, you can test the health endpoint by using:
 
 - Curl
 
-  ```bash
+```bash
   curl http://localhost:8080/api/health/ready
-  ```
+```
 
 - Or you can type this in the browser url bar `http://localhost:8080/api/health/ready`
 
