@@ -1,8 +1,8 @@
 // What each auth form accepts, and the words shown when it does not. Server rules are the
 // final say; these only catch the obvious mistakes before a round trip.
 import { z } from "zod";
+import { required } from "@/lib/validation";
 
-const required = (message: string) => z.string().trim().min(1, message);
 const email = required("Enter your email address.").pipe(
   z.email("Enter a valid email address."),
 );

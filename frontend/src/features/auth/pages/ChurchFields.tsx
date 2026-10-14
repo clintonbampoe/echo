@@ -1,10 +1,11 @@
-import { Controller, type UseFormReturn } from "react-hook-form";
-import { Field, SelectField } from "@/ui";
-import { congregationTypes, regions } from "../options";
+import type { UseFormReturn } from "react-hook-form";
+import { congregationTypes } from "@/features/account";
+import { regions } from "@/lib/regions";
+import { ControlledSelect, Field } from "@/ui";
 import type { ChurchValues } from "../schema";
 import styles from "./form.module.css";
 
-// The church form's inputs. Type and Region use Controller because SelectField is a controlled field.
+// The church form's inputs.
 export function ChurchFields({ form }: { form: UseFormReturn<ChurchValues> }) {
   const {
     register,
@@ -20,17 +21,11 @@ export function ChurchFields({ form }: { form: UseFormReturn<ChurchValues> }) {
         error={errors.name?.message}
         {...register("name")}
       />
-      <Controller
-        name="orgType"
+      <ControlledSelect
         control={control}
-        render={({ field, fieldState }) => (
-          <SelectField
-            label="Type"
-            options={congregationTypes}
-            error={fieldState.error?.message}
-            {...field}
-          />
-        )}
+        name="orgType"
+        label="Type"
+        options={congregationTypes}
       />
       <div className={styles.row}>
         <Field
@@ -51,17 +46,11 @@ export function ChurchFields({ form }: { form: UseFormReturn<ChurchValues> }) {
           {...register("churchEmail")}
         />
       </div>
-      <Controller
-        name="region"
+      <ControlledSelect
         control={control}
-        render={({ field, fieldState }) => (
-          <SelectField
-            label="Region"
-            options={regions}
-            error={fieldState.error?.message}
-            {...field}
-          />
-        )}
+        name="region"
+        label="Region"
+        options={regions}
       />
       <div className={styles.row}>
         <Field

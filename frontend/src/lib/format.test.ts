@@ -1,0 +1,42 @@
+import {
+  firstName,
+  formatClock,
+  formatDate,
+  formatMoney,
+  formatNumber,
+  formatTime,
+} from "./format";
+
+describe("format", () => {
+  it("writes a plain date the same way in every browser", () => {
+    expect(formatDate("2019-03-12")).toBe("12 Mar 2019");
+    expect(formatDate("2022-09-18T00:00:00")).toBe("18 Sep 2022");
+  });
+
+  it("groups thousands", () => {
+    expect(formatNumber(1284)).toBe("1,284");
+  });
+
+  it("writes a time of day the short way", () => {
+    expect(formatTime("2026-10-11T09:04:00")).toBe("9:04 am");
+    expect(formatTime("2026-10-07T18:12:00")).toBe("6:12 pm");
+  });
+
+  it("writes a bare time of day", () => {
+    expect(formatClock("08:42:00")).toBe("8:42 am");
+    expect(formatClock("22:05:00")).toBe("10:05 pm");
+    expect(formatClock("00:15:00")).toBe("12:15 am");
+    expect(formatClock("12:00:00")).toBe("12:00 pm");
+  });
+
+  it("writes money in cedis", () => {
+    expect(formatMoney(6400)).toBe("GH₵ 6,400");
+    expect(formatMoney(1250.5)).toBe("GH₵ 1,250.50");
+  });
+
+  it("takes the first word of a name", () => {
+    expect(firstName("Ama Mensah")).toBe("Ama");
+    expect(firstName("  Kofi  ")).toBe("Kofi");
+    expect(firstName("")).toBe("");
+  });
+});

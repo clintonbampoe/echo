@@ -11,7 +11,12 @@ namespace Echo.Application.Tests;
 [Trait("Category", "Unit")]
 public class MonthlySummaryTests
 {
-    private static Transaction Txn(DateOnly date, TransactionType type, decimal amount, string category = "General")
+    private static Transaction Txn(
+        DateOnly date,
+        TransactionType type,
+        decimal amount,
+        string category = "General"
+    )
     {
         var t = TransactionFactory.NewEntity();
         t.Id = Guid.NewGuid();
@@ -23,7 +28,13 @@ public class MonthlySummaryTests
         return t;
     }
 
-    private static Tithe NewTithe(int forYear, MonthOfYear forMonth, DateOnly collected, Guid memberId, decimal amount)
+    private static Tithe NewTithe(
+        int forYear,
+        MonthOfYear forMonth,
+        DateOnly collected,
+        Guid memberId,
+        decimal amount
+    )
     {
         var t = TitheFactory.NewEntity();
         t.Id = Guid.NewGuid();
@@ -49,15 +60,25 @@ public class MonthlySummaryTests
         var res = rows.AsQueryable().MonthlyTotals().ToList().OrderBy(m => m.Month).ToList();
 
         Assert.Equal(2, res.Count);
-        Assert.Equal((2026, 9, 150m, 30m, 120m), (res[0].Year, res[0].Month, res[0].TotalIncome, res[0].TotalExpenses, res[0].Net));
-        Assert.Equal((2026, 10, 0m, 70m, -70m), (res[1].Year, res[1].Month, res[1].TotalIncome, res[1].TotalExpenses, res[1].Net));
+        Assert.Equal(
+            (2026, 9, 150m, 30m, 120m),
+            (res[0].Year, res[0].Month, res[0].TotalIncome, res[0].TotalExpenses, res[0].Net)
+        );
+        Assert.Equal(
+            (2026, 10, 0m, 70m, -70m),
+            (res[1].Year, res[1].Month, res[1].TotalIncome, res[1].TotalExpenses, res[1].Net)
+        );
     }
 
     [Fact]
     public void Transactions_WholeMonths_KeepsTransactionsEarlierInTheFirstMonthAndLaterInTheLast()
     {
         var months = MonthRange.Between(new DateOnly(2026, 1, 15), new DateOnly(2026, 3, 10));
-        var requested = new TransactionFilters { From = new DateOnly(2026, 1, 15), To = new DateOnly(2026, 3, 10) };
+        var requested = new TransactionFilters
+        {
+            From = new DateOnly(2026, 1, 15),
+            To = new DateOnly(2026, 3, 10),
+        };
         var rows = new[]
         {
             Txn(new DateOnly(2025, 12, 31), TransactionType.Income, 1m),
@@ -67,7 +88,11 @@ public class MonthlySummaryTests
         };
 
         var filters = TransactionService.WholeMonths(requested, months);
-        var kept = rows.AsQueryable().Filter(filters).Select(t => t.TransactionDate).OrderBy(d => d).ToList();
+        var kept = rows.AsQueryable()
+            .Filter(filters)
+            .Select(t => t.TransactionDate)
+            .OrderBy(d => d)
+            .ToList();
 
         Assert.Equal([new DateOnly(2026, 1, 5), new DateOnly(2026, 3, 31)], kept);
     }
@@ -78,7 +103,13 @@ public class MonthlySummaryTests
         var months = MonthRange.Between(new DateOnly(2026, 8, 1), new DateOnly(2026, 10, 31));
         var rows = new List<TransactionMonthlyDto>
         {
-            new() { Year = 2026, Month = 9, TotalIncome = 150m, TotalExpenses = 30m },
+            new()
+            {
+                Year = 2026,
+                Month = 9,
+                TotalIncome = 150m,
+                TotalExpenses = 30m,
+            },
         };
 
         var res = TransactionService.FillMonths(months, rows);
@@ -104,7 +135,10 @@ public class MonthlySummaryTests
 
         Assert.Equal(["Building", "Offerings", "Utilities"], res.Select(c => c.CategoryName));
         var utilities = res.Single(c => c.CategoryName == "Utilities");
-        Assert.Equal((100m, 2, TransactionType.Expense), (utilities.Total, utilities.Count, utilities.Type));
+        Assert.Equal(
+            (100m, 2, TransactionType.Expense),
+            (utilities.Total, utilities.Count, utilities.Type)
+        );
     }
 
     [Fact]
@@ -118,7 +152,9 @@ public class MonthlySummaryTests
             NewTithe(2026, MonthOfYear.December, new DateOnly(2026, 12, 5), member, 10m),
         };
 
-        var res = rows.AsQueryable().InMonths(new YearMonth(2026, 9), new YearMonth(2026, 11)).ToList();
+        var res = rows.AsQueryable()
+            .InMonths(new YearMonth(2026, 9), new YearMonth(2026, 11))
+            .ToList();
 
         Assert.Single(res);
         Assert.Equal(MonthOfYear.October, res[0].ForMonth);
@@ -138,11 +174,23 @@ public class MonthlySummaryTests
             NewTithe(2027, MonthOfYear.January, new DateOnly(2027, 1, 10), b, 10m),
         };
 
-        var res = rows.AsQueryable().MonthlyTotals().ToList().OrderBy(m => m.Year).ThenBy(m => m.Month).ToList();
+        var res = rows.AsQueryable()
+            .MonthlyTotals()
+            .ToList()
+            .Select(m => m.ToDto())
+            .OrderBy(m => m.Year)
+            .ThenBy(m => m.Month)
+            .ToList();
 
         Assert.Equal(2, res.Count);
-        Assert.Equal((2026, 12, 175m, 2), (res[0].Year, res[0].Month, res[0].TotalCollected, res[0].UniqueTithers));
-        Assert.Equal((2027, 1, 10m, 1), (res[1].Year, res[1].Month, res[1].TotalCollected, res[1].UniqueTithers));
+        Assert.Equal(
+            (2026, 12, 175m, 2),
+            (res[0].Year, res[0].Month, res[0].TotalCollected, res[0].UniqueTithers)
+        );
+        Assert.Equal(
+            (2027, 1, 10m, 1),
+            (res[1].Year, res[1].Month, res[1].TotalCollected, res[1].UniqueTithers)
+        );
     }
 
     [Fact]
@@ -151,7 +199,13 @@ public class MonthlySummaryTests
         var months = MonthRange.Between(new DateOnly(2026, 11, 1), new DateOnly(2027, 1, 31));
         var rows = new List<TitheMonthlyDto>
         {
-            new() { Year = 2026, Month = 12, TotalCollected = 175m, UniqueTithers = 2 },
+            new()
+            {
+                Year = 2026,
+                Month = 12,
+                TotalCollected = 175m,
+                UniqueTithers = 2,
+            },
         };
 
         var res = TitheService.FillMonths(months, rows);

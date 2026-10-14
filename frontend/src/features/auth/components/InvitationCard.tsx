@@ -1,4 +1,4 @@
-import { regionLabel } from "../options";
+import { regionLabel } from "@/lib/regions";
 import type { InvitationInfo } from "../api";
 import styles from "./InvitationCard.module.css";
 

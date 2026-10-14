@@ -20,7 +20,7 @@ export const navGroups: NavGroup[] = [
   {
     title: "People",
     items: [
-      { label: "Members", to: "/members", icon: "user", ready: false },
+      { label: "Members", to: "/members", icon: "user", ready: true },
       { label: "Visitors", to: "/visitors", icon: "visitor", ready: false },
       {
         label: "Organizations",

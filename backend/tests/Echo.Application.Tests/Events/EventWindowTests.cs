@@ -24,9 +24,30 @@ public class EventWindowTests
     {
         var w = EventService.ResolveWindow(new EventFilters(), _windows);
 
+        Assert.Equal(new DateWindow(new DateOnly(2026, 1, 1), new DateOnly(2026, 12, 31), true), w);
+    }
+
+    [Fact]
+    public void ResolveWindow_OrganizerIdSet_ReturnsNull()
+    {
+        var filters = new EventFilters { OrganizerId = Guid.NewGuid() };
+
+        Assert.Null(EventService.ResolveWindow(filters, _windows));
+    }
+
+    [Fact]
+    public void ResolveWindow_OrganizerIdSetWithDates_UsesTheDates()
+    {
+        var filters = new EventFilters
+        {
+            OrganizerId = Guid.NewGuid(),
+            From = new DateOnly(2000, 1, 1),
+            To = new DateOnly(2100, 12, 31),
+        };
+
         Assert.Equal(
-            new DateWindow(new DateOnly(2026, 1, 1), new DateOnly(2026, 12, 31), true),
-            w
+            new DateWindow(new DateOnly(2000, 1, 1), new DateOnly(2100, 12, 31), false),
+            EventService.ResolveWindow(filters, _windows)
         );
     }
 

@@ -1,0 +1,108 @@
+.back {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 16px;
+  font-size: 14px;
+  color: var(--text-2);
+  text-decoration: none;
+}
+.back:hover {
+  color: var(--text);
+}
+.flip {
+  transform: rotate(180deg);
+}
+
+/* Wide: who they are and their details in one card on the left, numbers and history on the right. */
+.layout {
+  display: grid;
+  grid-template-columns: 340px minmax(0, 1fr);
+  align-items: start;
+  gap: 24px;
+}
+.main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 24px;
+  min-width: 0;
+}
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.stack .main {
+  gap: 20px;
+}
+.main > :first-child {
+  margin-top: 0;
+}
+
+.identity {
+  padding: 20px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+.joined .identity {
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+.joined > div > section {
+  border-top: 0;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.who {
+  min-width: 0;
+  flex: 1;
+}
+.name {
+  font-size: 20px;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+}
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  margin-top: 6px;
+  font-size: 14px;
+  color: var(--text-2);
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+.actions > button {
+  flex: 1;
+}
+.danger {
+  color: var(--neg);
+}
+
+.note {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 24px 0;
+  color: var(--text-3);
+}
+
+@media (max-width: 900px) {
+  .actions > button {
+    height: 44px;
+  }
+}
