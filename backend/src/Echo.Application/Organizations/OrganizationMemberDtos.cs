@@ -37,4 +37,5 @@ public record OrganizationMemberCursor
 public record OrganizationMemberFilters
 {
     public MemberRole? Role { get; init; }
+    public string? Name { get; init; }
 }

@@ -1,7 +1,7 @@
 # Frontend Architecture
 
 **Written by:** @clintonbampoe
-**Last updated:** 2026-10-14 by @clintonbampoe
+**Last updated:** 2026-10-15 by @clintonbampoe
 
 How the Echo web app is organised. The goal is low cognitive load: open a file and know what it is,
 what it may import, and that it fits on a screen or two.
@@ -36,6 +36,9 @@ lib        plain TypeScript: API client, dates, formatting
 4. **One owner per record.** It is created, edited and deleted only on its own page. Other pages read
    it and link to it (`lib/paths.ts`).
 5. **Generic code moves to `ui/` or `lib/` the second time it's needed.**
+6. **A person shown inside another record opens a panel about that record**, with a deliberate "View
+   profile" link to the member page. Only the Members and Visitors lists link a person straight to
+   their page.
 
 ## Inside a feature
 
@@ -60,9 +63,9 @@ Use these before writing your own. A new list page is about 40 lines made from t
 | Where | Pieces | For |
 | --- | --- | --- |
 | `lib` | `api`, `usePagedList` | requests, cursor paging |
-| `lib` | `urlFilters`, `useUrlFilters`, `windows` | filters and date ranges kept in the URL |
+| `lib` | `urlFilters`, `useUrlFilters`, `windows` | filters and date ranges kept in the URL. `resetKey` empties a search box after Clear |
 | `lib` | `dates`, `format`, `validation`, `regions`, `paths` | days, money, required fields, links |
-| `ui` | `PageHeader`, `FilterBar`, `SearchBox`, `ListBody` | the shell of a list page |
+| `ui` | `PageHeader`, `FilterBar`, `SearchBox`, `ListBody` | the shell of a list page. `FilterBar` folds filters behind a "Filters" button on a phone or tablet, even for one filter |
 | `ui` | `RecordTable`, `Section`, `StatStrip`, `CellStrip`, `EmptyState` | tables and numbers |
 | `ui` | `FormSheet`, `FormSection`, `Field`, `ControlledSelect`, `DeleteDialog` | forms and delete |
 | `ui` | `Chip` + `ChipTone`, `plainOptions`, `withAny` | status labels, dropdown lists |
@@ -82,6 +85,8 @@ Features import `ui` only through `ui/index.ts`, which stays alphabetical.
 - Failed requests become an `ApiError`. Screens branch on `errorCode`, never on message text. Forms put
   `fieldErrors` on their fields. Never show a raw server error to a user.
 - Every data screen has four states: loading, empty, no results, error.
+- Clearing filters clears the search box too. A box is emptied by giving it a new `key` (`resetKey`), never
+  by writing into it.
 - Colours and radii are tokens (`var(--text)`, never a hex). Each component has its own `X.module.css`.
   The app is light; landing and auth are dark.
 

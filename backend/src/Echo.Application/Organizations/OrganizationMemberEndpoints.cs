@@ -190,6 +190,7 @@ public static class OrganizationMemberEndpoints
 
                 ### Filtering
                 - `role` — filter to members with a specific role within the organization.
+                - `name` — keep only members whose name contains this text (case-insensitive, matched anywhere in the name). Blank is ignored. Combines with `role`.
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.

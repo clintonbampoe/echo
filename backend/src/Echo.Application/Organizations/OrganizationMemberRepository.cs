@@ -133,6 +133,12 @@ internal static class OrganizationMemberQueryExtensions
         if (filters.Role is not null)
             query = query.Where(o => o.Role == filters.Role);
 
+        if (!string.IsNullOrWhiteSpace(filters.Name))
+        {
+            var pattern = $"%{Shared.Query.Extensions.EscapeLike(filters.Name.Trim())}%";
+            query = query.Where(o => EF.Functions.ILike(o.Member.Person.Name, pattern));
+        }
+
         return query;
     }
 

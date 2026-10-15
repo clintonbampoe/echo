@@ -19,7 +19,7 @@ Counts are the number of desktop boards that use each pattern. Class names are t
 | Segmented | seg, sw | 30 | 2-3 equal-width options (rule S2). Built: SegmentedField |
 | Tabs | tabs, tab | 41 | |
 | Checkbox | box | 22 | inside menus and lists |
-| Pill (filter) | pill, win, wp, fb, rst | 90 | the date-window pill, its popover (wp) and the filter bar (fb) |
+| Pill (filter) | pill, win, wp, fb, rst | 90 | the date-window pill, its popover (wp) and the filter bar (fb). Built: `FilterBar` (see Patterns) |
 | Menu / RowMenu | menu, opt | 22 | |
 | Drawer | scrim, drawer, dh, db, df | 53 | desktop form overlay; header / body / footer |
 | Modal / ConfirmDialog | modal, scrim | 28 | |
@@ -50,14 +50,23 @@ Every feature imports these through `ui/index.ts` only. Each one holds no data, 
 | Field, PasswordField, SelectField, ControlledSelect, TextAreaField | form inputs | auth, members, visitors, organizations |
 | SegmentedField | a few choices side by side, one picked (real radio buttons) | organizations (role) |
 | FormSheet, FormSection | a sheet with the shared footer, and a titled group of fields | add and edit forms |
-| PageHeader, FilterBar, FilterSelect, SearchBox, SearchField | the top of a list page | members, visitors |
+| PageHeader, FilterBar, FilterSelect, SearchBox, SearchField | the top of a list page. `FilterBar` is the search, the filter pills and the scope pill, and folds the filters behind a "Filters" button on a phone or tablet | members, visitors, organizations (list and members tab) |
 | ListBody | loading, empty, error and "load more" around a list | members, visitors |
-| PersonList | a list of people: avatar, name link, columns, ⋯ menu, cards on a phone | members, visitors, organizations |
+| PersonList | a list of people: avatar, name, columns, ⋯ menu, cards on a phone. The name opens a page (`href`) or, in another record's list, a panel on the same page (`onOpen`) | members, visitors, organizations |
 | RecordTable | a table of records (a row can link), cards on a phone | attendance, tithes, events, organizations |
-| Section, StatStrip, CellStrip, Tabs | a titled block, the numbers, the strip of squares, the tabs | profile pages |
+| Section, StatStrip, CellStrip, Tabs | a titled block, the numbers (a value or note too long for its tile is cut with an ellipsis, full text on hover), the strip of squares, the tabs | profile pages, organizations |
 | ProfileLayout, BackLink, ProfileIdentity | a record's page: back link, name card, numbers and history | member and visitor pages |
 | DetailCard, DetailGroup, DetailBlock | the details card with titled blocks | member and visitor pages |
 | useMedia, useNarrowProfile, useSurface | screen-size and surface hooks | app, profile pages |
+
+## Patterns
+
+Rules every screen follows. They are about how pieces are put together, not about one piece.
+
+- **People inside another record open a panel, not a profile.** A list of members on an organization, an event, an attendance session, a project or a tithe is about that record. Clicking a person opens a panel about their part in it (role, joined date, the check-in). The panel has a deliberate "View profile" link to the member page. Only the Members and Visitors lists link a person straight to their page. Built: `MembershipSheet` in `features/organizations`; the list uses `PersonList` with `onOpen`.
+- **Search and filters share one bar.** Search comes first, then the filters, then the scope pill (the time range) at the far right on a wide screen. On a phone or tablet the search sits beside a "Filters" button, and every filter and the scope pill live behind it, even when there is only one, so adding a filter later changes nothing people are used to.
+- **Clear filters empties the search box too**, from the "Clear all" link and from an empty list's button alike.
+- **Searching a record's own people is scoped to it.** The members tab on an organization searches only that group's members (`name` on the organization-members endpoint).
 
 ## app/ shell
 
