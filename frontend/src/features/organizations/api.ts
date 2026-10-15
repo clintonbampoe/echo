@@ -97,7 +97,11 @@ export type OrganizationMember = Membership & {
   createdAt: string;
 };
 
-export type OrganizationMemberFilters = { role?: OrganizationRole };
+// `name` matches anywhere in the person's name, in any case.
+export type OrganizationMemberFilters = {
+  role?: OrganizationRole;
+  name?: string;
+};
 
 export const listOrganizationMembers = (
   organizationId: string,
