@@ -1,8 +1,11 @@
 import {
   firstName,
+  formatAgo,
   formatClock,
   formatDate,
+  formatDayTime,
   formatMoney,
+  formatMonth,
   formatNumber,
   formatTime,
 } from "./format";
@@ -38,5 +41,26 @@ describe("format", () => {
     expect(firstName("Ama Mensah")).toBe("Ama");
     expect(firstName("  Kofi  ")).toBe("Kofi");
     expect(firstName("")).toBe("");
+  });
+
+  it("writes the month someone joined", () => {
+    expect(formatMonth("2016-01-05")).toBe("Jan 2016");
+    expect(formatMonth("2025-10-31T00:00:00")).toBe("Oct 2025");
+  });
+
+  it("writes the day and time of an event", () => {
+    expect(formatDayTime("2026-11-14", "17:00:00")).toBe("Sat 14 Nov, 5:00 pm");
+    expect(formatDayTime("2026-12-20")).toBe("Sun 20 Dec");
+  });
+
+  it("says how long ago in the biggest whole unit", () => {
+    const today = "2026-10-14";
+    expect(formatAgo("2016-02-03", today)).toBe("10 years ago");
+    expect(formatAgo("2025-10-15", today)).toBe("11 months ago");
+    expect(formatAgo("2025-10-14", today)).toBe("1 year ago");
+    expect(formatAgo("2026-09-14", today)).toBe("1 month ago");
+    expect(formatAgo("2026-09-15", today)).toBe("29 days ago");
+    expect(formatAgo("2026-10-13", today)).toBe("Yesterday");
+    expect(formatAgo("2026-10-14", today)).toBe("Today");
   });
 });

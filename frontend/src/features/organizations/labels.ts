@@ -7,9 +7,9 @@ export const roleLabel: Record<OrganizationRole, string> = {
   Leader: "Leader",
 };
 
-// The leader stands out, the secretary is marked, an ordinary member is quiet.
+// The leader stands out, the secretary is marked in green, an ordinary member is quiet.
 export const roleTone: Record<OrganizationRole, ChipTone> = {
   Leader: "strong",
-  Secretary: "outline",
+  Secretary: "positive",
   Member: "neutral",
 };

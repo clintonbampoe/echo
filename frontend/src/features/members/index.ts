@@ -6,6 +6,7 @@ export {
   useRefreshMembers,
 } from "./hooks";
 export { MemberFields } from "./MemberFields";
+export { MemberPicker } from "./MemberPicker";
 export { memberRoutes } from "./routes";
 export {
   emptyMember,
@@ -16,6 +17,7 @@ export {
 } from "./schema";
 export type {
   Gender,
+  MemberMatch,
   MaritalStatus,
   Member,
   MemberFilters,

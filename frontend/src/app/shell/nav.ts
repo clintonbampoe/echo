@@ -26,7 +26,7 @@ export const navGroups: NavGroup[] = [
         label: "Organizations",
         to: "/organizations",
         icon: "organizations",
-        ready: false,
+        ready: true,
       },
     ],
   },

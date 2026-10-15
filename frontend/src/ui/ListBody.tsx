@@ -13,6 +13,8 @@ type Props<T> = {
   emptyText: string;
   // True when a search or filter is narrowing the list, so "nothing" means "nothing matches".
   filtered: boolean;
+  // What to suggest when nothing matches, if "a different search, or a wider time range" does not fit this list.
+  noMatchText?: string;
   onClear: () => void;
   // Draws the rows once there are some.
   children: (rows: T[]) => ReactNode;
@@ -25,6 +27,7 @@ export function ListBody<T>({
   noun,
   emptyText,
   filtered,
+  noMatchText = "Try a different search, or a wider time range.",
   onClear,
   children,
 }: Props<T>) {
@@ -51,9 +54,7 @@ export function ListBody<T>({
     return filtered ? (
       <div role="status" className={styles.note}>
         <p className={styles.title}>No {many} match</p>
-        <p className={styles.text}>
-          Try a different search, or a wider time range.
-        </p>
+        <p className={styles.text}>{noMatchText}</p>
         <Button variant="secondary" onClick={onClear}>
           Clear filters
         </Button>

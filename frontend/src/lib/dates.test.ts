@@ -1,4 +1,4 @@
-import { ageOn, daysBetween, monthsBefore, thisYear } from "./dates";
+import { ageOn, daysAfter, daysBetween, monthsBefore, thisYear } from "./dates";
 
 describe("monthsBefore", () => {
   it("goes back whole months, across a year", () => {
@@ -40,5 +40,13 @@ describe("daysBetween", () => {
   it("ignores a time part and never goes below zero", () => {
     expect(daysBetween("2026-10-14T18:00:00Z", "2026-10-14")).toBe(0);
     expect(daysBetween("2026-10-20", "2026-10-14")).toBe(0);
+  });
+});
+
+describe("daysAfter", () => {
+  it("adds days across months and years", () => {
+    expect(daysAfter("2026-10-14", 60)).toBe("2026-12-13");
+    expect(daysAfter("2026-12-30", 3)).toBe("2027-01-02");
+    expect(daysAfter("2028-02-28", 1)).toBe("2028-02-29");
   });
 });

@@ -1,6 +1,7 @@
 import { createBrowserRouter, type RouteObject } from "react-router-dom";
 import { authRoutes } from "@/features/auth";
 import { memberRoutes } from "@/features/members";
+import { organizationRoutes } from "@/features/organizations";
 import { visitorRoutes } from "@/features/visitors";
 import { ComingSoon } from "./ComingSoon";
 import { Dashboard } from "./Dashboard";
@@ -13,10 +14,6 @@ const placeholders: RouteObject[] = [
   {
     path: "events/:id",
     element: <ComingSoon icon="calendar" title="Event page" />,
-  },
-  {
-    path: "organizations/:id",
-    element: <ComingSoon icon="organizations" title="Organization page" />,
   },
   {
     path: "attendance/sessions/:id",
@@ -52,6 +49,7 @@ const routes: RouteObject[] = [
               { path: "dashboard", Component: Dashboard },
               ...memberRoutes,
               ...visitorRoutes,
+              ...organizationRoutes,
               ...placeholders,
             ],
           },

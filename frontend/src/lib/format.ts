@@ -1,4 +1,4 @@
-import { monthNames } from "./dates";
+import { ageOn, dayParts, daysBetween, monthNames } from "./dates";
 
 const months = monthNames.map((name) => name.slice(0, 3));
 
@@ -38,3 +38,35 @@ export function formatClock(value: string): string {
 
 // "Ama Mensah" -> "Ama". Used to greet people.
 export const firstName = (name: string) => name.trim().split(/\s+/)[0] ?? "";
+
+// "2016-01-05" -> "Jan 2016". For when only the month matters, like the day someone joined a group.
+export function formatMonth(value: string): string {
+  const [year, month] = dayParts(value);
+  return `${months[month - 1] ?? ""} ${year}`;
+}
+
+// "2026-11-14", "17:00:00" -> "Sat 14 Nov, 5:00 pm". With no time of day, "Sat 14 Nov".
+export function formatDayTime(day: string, time?: string | null): string {
+  const [year, month, date] = dayParts(day);
+  const weekday = new Date(Date.UTC(year, month - 1, date)).toLocaleDateString(
+    "en-GB",
+    { weekday: "short", timeZone: "UTC" },
+  );
+  const when = `${weekday} ${date} ${months[month - 1] ?? ""}`;
+  return time ? `${when}, ${formatClock(time)}` : when;
+}
+
+// How long ago a plain day was, in the biggest whole unit: "10 years ago", "3 months ago", "5 days ago".
+export function formatAgo(day: string, today: string): string {
+  const plural = (n: number, unit: string) =>
+    `${n} ${unit}${n === 1 ? "" : "s"} ago`;
+  const years = ageOn(day, today);
+  if (years >= 1) return plural(years, "year");
+  const [fy, fm, fd] = dayParts(day);
+  const [ty, tm, td] = dayParts(today);
+  const whole = (ty - fy) * 12 + (tm - fm) - (td < fd ? 1 : 0);
+  if (whole >= 1) return plural(whole, "month");
+  const days = daysBetween(day, today);
+  if (days === 0) return "Today";
+  return days === 1 ? "Yesterday" : plural(days, "day");
+}

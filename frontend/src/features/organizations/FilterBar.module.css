@@ -1,0 +1,21 @@
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 20px;
+}
+.search {
+  flex: 0 1 280px;
+}
+
+/* Phone: the search takes the whole line and the time range sits under it, as in the design. */
+@media (max-width: 600px) {
+  .bar {
+    justify-content: flex-end;
+  }
+  .search {
+    flex: 1 0 100%;
+  }
+}

@@ -8,6 +8,7 @@ export const memberKeys = {
   list: (filters: api.MemberFilters) => ["members", "list", filters] as const,
   summary: (filters: api.MemberFilters) =>
     ["members", "summary", filters] as const,
+  search: (q: string) => ["members", "search", q] as const,
   one: (id: string) => ["members", "one", id] as const,
 };
 
@@ -21,6 +22,14 @@ export const useMember = (id: string) =>
   useQuery({
     queryKey: memberKeys.one(id),
     queryFn: ({ signal }) => api.getMember(id, signal),
+  });
+
+// People whose name or phone matches `q`. Waits for at least two letters; the caller debounces typing.
+export const useMemberSearch = (q: string) =>
+  useQuery({
+    queryKey: memberKeys.search(q),
+    queryFn: ({ signal }) => api.searchMembers(q, signal),
+    enabled: q.length >= 2,
   });
 
 export const useMemberSummary = (filters: api.MemberFilters) =>
