@@ -15,6 +15,12 @@ export type MenuItem = {
   onSelect: () => void;
   // Marks an action that removes something.
   danger?: boolean;
+  // For a choice among several (a role, say): true for the one that is current. Shows a radio mark.
+  checked?: boolean;
+  // A heading shown above this item, and above the next ones until another heading comes.
+  group?: string;
+  // A line above this item, to set it apart from the ones before it.
+  separated?: boolean;
 };
 
 type Props = {
@@ -52,7 +58,7 @@ function navigate(
   if (e.key === "Escape") return close();
   if (e.key === "Tab") return leave();
   const buttons = [
-    ...(menu?.querySelectorAll<HTMLElement>("[role=menuitem]") ?? []),
+    ...(menu?.querySelectorAll<HTMLElement>("[role^=menuitem]") ?? []),
   ];
   const at = buttons.indexOf(document.activeElement as HTMLElement);
   const next = {
@@ -76,7 +82,7 @@ function useDismissOnMove(
     if (!open) return;
     // preventScroll: moving focus must not scroll the page, or the scroll handler below would close the menu.
     menu.current
-      ?.querySelector<HTMLElement>("[role=menuitem]")
+      ?.querySelector<HTMLElement>("[role^=menuitem]")
       ?.focus({ preventScroll: true });
     const width = window.innerWidth;
     // The menu is fixed to the screen, so it would drift away from its row if the page moved.
@@ -95,6 +101,39 @@ function useDismissOnMove(
       window.removeEventListener("resize", onResize);
     };
   }, [open, menu, setOpen]);
+}
+
+type RowProps = {
+  item: MenuItem;
+  newGroup: boolean;
+  onChoose: (item: MenuItem) => void;
+};
+
+// One line of the menu: its heading and separator when it has them, then the button.
+function MenuRow({ item, newGroup, onChoose }: RowProps) {
+  return (
+    <>
+      {newGroup && <p className={styles.group}>{item.group}</p>}
+      {item.separated && <hr className={styles.rule} />}
+      <button
+        type="button"
+        role={item.checked === undefined ? "menuitem" : "menuitemradio"}
+        aria-checked={item.checked}
+        className={`${styles.item} ${item.danger ? styles.danger : ""}`}
+        onClick={() => onChoose(item)}
+      >
+        {item.checked !== undefined && (
+          <span
+            className={`${styles.radio} ${item.checked ? styles.on : ""}`}
+            aria-hidden="true"
+          >
+            {item.checked && <Icon name="check" size={12} />}
+          </span>
+        )}
+        {item.label}
+      </button>
+    </>
+  );
 }
 
 // A ⋯ button that opens a short list of actions for one row. A dropdown with a mouse, a sheet
@@ -153,16 +192,13 @@ export function ActionMenu({ label, title, items }: Props) {
               <p id={titleId} className={styles.title}>
                 {title}
               </p>
-              {items.map((item) => (
-                <button
+              {items.map((item, i) => (
+                <MenuRow
                   key={item.label}
-                  type="button"
-                  role="menuitem"
-                  className={`${styles.item} ${item.danger ? styles.danger : ""}`}
-                  onClick={() => choose(item)}
-                >
-                  {item.label}
-                </button>
+                  item={item}
+                  newGroup={!!item.group && item.group !== items[i - 1]?.group}
+                  onChoose={choose}
+                />
               ))}
             </div>
           </div>,

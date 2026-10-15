@@ -15,7 +15,13 @@ export type PersonColumn<T> = {
   chip?: boolean;
 };
 
-export type Person = { name: string; email?: string | null; href: string };
+// `plain` leaves out the line under the name, for rows that have nothing to put there (no "No email").
+export type Person = {
+  name: string;
+  email?: string | null;
+  href: string;
+  plain?: boolean;
+};
 
 type Props<T> = {
   // Names the list for screen readers, e.g. "Members".
@@ -32,8 +38,8 @@ type Props<T> = {
 const NAME = "minmax(220px, 2.4fr)";
 const ACTIONS = "32px";
 
-// People as rows: an avatar, a name and email, then the columns the feature chose. A table row on a
-// wide screen and a card on a phone, from the same markup, so the layout never depends on the data
+// People as rows: an avatar, a name and email, then the columns the feature chose. A table row on a wide
+// screen and a card on a phone, from the same markup, so the layout never depends on the data
 // inside it (design rule S1).
 export function PersonList<T>({
   label,
@@ -95,7 +101,7 @@ function Row<T>({ row, person: p, columns, items, grid }: RowProps<T>) {
               {p.name}
             </Link>
           </p>
-          <p className={styles.email}>{p.email || "No email"}</p>
+          {!p.plain && <p className={styles.email}>{p.email || "No email"}</p>}
         </div>
       </div>
       {columns.map((c) => (

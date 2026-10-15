@@ -3,6 +3,7 @@
 export const paths = {
   members: "/members",
   visitors: "/visitors",
+  organizations: "/organizations",
   member: (id: string) => `/members/${id}`,
   visitor: (id: string) => `/visitors/${id}`,
   event: (id: string) => `/events/${id}`,

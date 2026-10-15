@@ -6,6 +6,8 @@ export const eventKeys = {
   registrations: (id: string) => ["events", "registrations", id] as const,
   checkIns: (id: string) => ["events", "check-ins", id] as const,
   organized: (id: string) => ["events", "organized", id] as const,
+  upcoming: (organizationId: string, from: string) =>
+    ["events", "upcoming", organizationId, from] as const,
 };
 
 export const usePersonRegistrations = (personId: string) =>
@@ -21,4 +23,10 @@ export const usePersonCheckIns = (personId: string) =>
 export const useOrganizedEvents = (organizerId: string) =>
   usePagedList(eventKeys.organized(organizerId), (c, s) =>
     api.listOrganizedEvents(organizerId, c, s),
+  );
+
+// The events an organization is hosting from `today` on.
+export const useUpcomingEvents = (organizationId: string, today: string) =>
+  usePagedList(eventKeys.upcoming(organizationId, today), (c, s) =>
+    api.listUpcomingEvents(organizationId, today, c, s),
   );

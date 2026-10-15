@@ -11,6 +11,9 @@ type Props = {
   onClose: () => void;
   // Runs after a successful delete (a detail page uses it to go back to the list).
   onDeleted?: () => void;
+  // The buttons, when "Delete {noun}" and "Keep {noun}" are not the right words (removing from a group, say).
+  confirmLabel?: string;
+  cancelLabel?: string;
   // What happens to the record and what is kept.
   children: ReactNode;
 };
@@ -22,6 +25,8 @@ export function DeleteDialog({
   onDelete,
   onClose,
   onDeleted,
+  confirmLabel,
+  cancelLabel,
   children,
 }: Props) {
   const [busy, setBusy] = useState(false);
@@ -44,8 +49,8 @@ export function DeleteDialog({
   return (
     <ConfirmDialog
       title={title}
-      confirmLabel={`Delete ${noun}`}
-      cancelLabel={`Keep ${noun}`}
+      confirmLabel={confirmLabel ?? `Delete ${noun}`}
+      cancelLabel={cancelLabel ?? `Keep ${noun}`}
       busy={busy}
       error={
         failed ? `We could not delete this ${noun}. Try again.` : undefined

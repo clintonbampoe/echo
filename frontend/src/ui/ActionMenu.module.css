@@ -68,6 +68,37 @@
   color: var(--neg);
 }
 
+/* A choice among several: a heading, then a radio mark in front of each. */
+.group {
+  margin: 0;
+  padding: 6px 10px 4px;
+  font-size: 12px;
+  text-align: right;
+  color: var(--text-3);
+}
+.radio {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-right: 10px;
+  border: 1.5px solid var(--line-2);
+  border-radius: 50%;
+  color: var(--on-accent);
+}
+.on {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.rule {
+  height: 0;
+  margin: 6px -6px;
+  border: 0;
+  border-top: 1px solid var(--line);
+}
+
 @keyframes open {
   from {
     opacity: 0;
@@ -115,6 +146,14 @@
     height: 52px;
     padding: 0 4px;
     font-size: 16px;
+  }
+  .group {
+    padding: 8px 4px 4px;
+    text-align: left;
+    font-size: 13px;
+  }
+  .rule {
+    margin-inline: -16px;
   }
 }
 @keyframes lift {

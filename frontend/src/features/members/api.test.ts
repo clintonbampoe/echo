@@ -1,4 +1,4 @@
-import { getMemberSummary, listMembers } from "./api";
+import { getMemberSummary, listMembers, searchMembers } from "./api";
 
 const page = {
   data: [],
@@ -42,5 +42,22 @@ describe("members api", () => {
     expect(url.searchParams.get("gender")).toBe("Female");
     expect(url.searchParams.get("from")).toBe("2026-01-01");
     expect(url.searchParams.has("pageSize")).toBe(false);
+  });
+
+  it("searches by text and gets a plain list back", async () => {
+    fetchMock.mockImplementation(
+      async () =>
+        new Response(
+          JSON.stringify([
+            { id: "m1", name: "Kofi Mensah", phoneNumber: "024 412 0098" },
+          ]),
+          { status: 200 },
+        ),
+    );
+    const found = await searchMembers("kof");
+    const url = new URL((fetchMock.mock.calls[0] as [string])[0]);
+    expect(url.pathname).toMatch(/\/v1\/members\/search$/);
+    expect(url.searchParams.get("q")).toBe("kof");
+    expect(found[0]?.name).toBe("Kofi Mensah");
   });
 });

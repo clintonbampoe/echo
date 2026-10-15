@@ -63,3 +63,9 @@ export function daysBetween(from: string, to: string): number {
     ),
   );
 }
+
+// The plain day some days after another ("2026-10-14" plus 60 is "2026-12-13").
+export function daysAfter(day: string, days: number): string {
+  const [y, m, d] = dayParts(day);
+  return new Date(Date.UTC(y, m - 1, d + days)).toISOString().slice(0, 10);
+}

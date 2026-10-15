@@ -1,0 +1,66 @@
+.header {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 4px 16px;
+  margin-top: 16px;
+}
+.who {
+  min-width: 0;
+  padding-top: 2px;
+}
+.name {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+.text {
+  margin: 6px 0 0;
+  color: var(--text-2);
+}
+
+/* On a wide screen the primary button comes last, at the right edge; on a narrow one it comes first. */
+.actions {
+  display: flex;
+  gap: 8px;
+}
+.add {
+  order: 1;
+}
+
+/* Tablet: the buttons move under the name, left-aligned. */
+@media (max-width: 900px) {
+  .header {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 16px;
+  }
+  .actions {
+    grid-column: 1 / -1;
+  }
+  .add {
+    order: -1;
+  }
+  .name {
+    font-size: 26px;
+  }
+}
+
+/* Phone: the tile sits above the name, the main button takes the whole line, Edit and Delete share the next. */
+@media (max-width: 600px) {
+  .header {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+  .actions {
+    flex-wrap: wrap;
+  }
+  .actions > * {
+    flex: 1 1 0;
+  }
+  .add {
+    flex-basis: 100%;
+  }
+}

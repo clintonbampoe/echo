@@ -66,3 +66,34 @@ export const listOrganizedEvents = (
     },
     signal,
   });
+
+// An event as an organization's page lists it: when, where and who is running it.
+export type HostedEvent = {
+  id: string;
+  name: string;
+  startDate: string;
+  startTime?: string | null;
+  location?: string | null;
+  organizerId: string;
+  organizerName: string;
+};
+
+// The events an organization is hosting from `from` on, soonest first. With no dates the server answers
+// for this year only, so the far end is wide. Enums bind case-sensitively: "Asc", not "asc".
+export const listUpcomingEvents = (
+  organizationId: string,
+  from: string,
+  cursor?: string,
+  signal?: AbortSignal,
+) =>
+  api.get<Page<HostedEvent>>("/v1/events", {
+    query: {
+      organizationId,
+      from,
+      to: ALL_TIME.to,
+      order: "Asc",
+      cursor,
+      pageSize: PAGE_SIZE,
+    },
+    signal,
+  });

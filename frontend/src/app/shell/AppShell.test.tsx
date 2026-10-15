@@ -78,7 +78,10 @@ describe("app shell", () => {
       within(sidebar).getByRole("link", { name: "Visitors" }),
     ).toHaveAttribute("href", "/visitors");
     expect(
-      within(sidebar).queryByRole("link", { name: /Organizations/ }),
+      within(sidebar).getByRole("link", { name: "Organizations" }),
+    ).toHaveAttribute("href", "/organizations");
+    expect(
+      within(sidebar).queryByRole("link", { name: /Attendance/ }),
     ).toBeNull();
     expect(
       within(sidebar).getByText("Reports").closest("[aria-disabled]"),

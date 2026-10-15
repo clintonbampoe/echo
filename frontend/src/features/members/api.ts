@@ -61,6 +61,13 @@ export const listMembers = (
     signal,
   });
 
+// A person found by the quick search: just enough to pick them.
+export type MemberMatch = { id: string; name: string; phoneNumber: string };
+
+// Best matches first. The server sends a plain array (no paging) and limits how often it can be called.
+export const searchMembers = (q: string, signal?: AbortSignal) =>
+  api.get<MemberMatch[]>("/v1/members/search", { query: { q }, signal });
+
 export const getMember = (id: string, signal?: AbortSignal) =>
   api.get<Member>(`/v1/members/${id}`, { signal });
 
