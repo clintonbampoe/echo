@@ -15,13 +15,13 @@ public static class EventsCopy
     {
         await using var writer = await conn.BeginBinaryImportAsync(
             """
-            COPY "Events" (
-                "Id", "CongregationId",
-                "OrganizationId", "OrganizerId",
-                "Name", "StartDate", "EndDate",
-                "StartTime", "EndTime",
-                "Location", "Capacity", "Description",
-                "CreatedAt"
+            COPY events (
+                id, congregation_id,
+                organization_id, organizer_id,
+                name, start_date, end_date,
+                start_time, end_time,
+                location, capacity, description,
+                created_at
             ) FROM STDIN (FORMAT BINARY)
             """,
             ct
@@ -56,10 +56,10 @@ public static class EventsCopy
     {
         await using var writer = await conn.BeginBinaryImportAsync(
             """
-            COPY "EventRegistrations" (
-                "Id", "CongregationId",
-                "MemberId", "EventId",
-                "RegistrationDate", "CreatedAt"
+            COPY event_registrations (
+                id, congregation_id,
+                member_id, event_id,
+                registration_date, created_at
             ) FROM STDIN (FORMAT BINARY)
             """,
             ct
@@ -87,10 +87,10 @@ public static class EventsCopy
     {
         await using var writer = await conn.BeginBinaryImportAsync(
             """
-            COPY "EventAttendances" (
-                "Id", "CongregationId",
-                "MemberId", "EventId",
-                "CheckInTime", "CreatedAt"
+            COPY event_attendances (
+                id, congregation_id,
+                member_id, event_id,
+                check_in_time, created_at
             ) FROM STDIN (FORMAT BINARY)
             """,
             ct

@@ -50,6 +50,7 @@ public static class TitheEndpoints
                 ### Filtering
                 All filters are optional and combinable:
                 - `memberId` — tithes given by one member.
+                - `memberName` — keep only tithes from members whose name contains this text (case-insensitive, matched anywhere in the name). Blank is ignored. Also narrows `/tithes/summary`.
                 - `paymentMethod` — `Cash`, `Cheque`, `CreditCard`, `MobileMoney`, `BankTransfer`.
                 - `year` — the year the tithe is *for* (1900–2100).
                 - `month` — the month the tithe is *for* (enum of month names).
@@ -211,6 +212,9 @@ public static class TitheEndpoints
                 ### On success
                 Returns `201 Created` with the full `TitheResponseDto` and a `Location` header pointing to `GET /tithes/{id}`.
 
+                ### One tithe per member per month
+                A member has at most one tithe for any `forYear` + `forMonth`. A second one is refused with `409`; to top up, update the existing tithe to the new total instead. A deleted tithe does not count, so a mistaken one can be deleted and recorded again. This is enforced by a unique index in the database as well as by a check before saving, so two requests at the same moment cannot both succeed.
+
                 ### Side effects
                 - The tithe is recorded. `GET /tithes/summary` reflects it on next call.
 
@@ -219,12 +223,14 @@ public static class TitheEndpoints
                 - `400 VALIDATION_ERROR` — one or more fields failed validation.
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
                 - `404 FOREIGN_KEY_NOT_FOUND` — the referenced member does not exist in this congregation.
+                - `409 CONFLICT` (`errorCode` `TITHE_DUPLICATE`) — the member already has a tithe for that month.
                 """
             )
             .Produces<TitheResponseDto>(StatusCodes.Status201Created)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
-            .ProducesProblem(StatusCodes.Status404NotFound);
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict);
 
         group
             .MapPut(
@@ -258,9 +264,9 @@ public static class TitheEndpoints
                 Updates the supplied fields on an existing Tithe. Partial update.
 
                 ### Request body
-                All fields optional: `memberId`, `amount`, `forYear`, `forMonth`, `paymentMethod`, `collectionDate`, `description`.
+                All fields optional: `amount`, `forYear`, `forMonth`, `paymentMethod`, `collectionDate`, `description`.
 
-                If `memberId` is supplied, the new member is validated against the caller's congregation.
+                The member cannot be changed: a tithe stays with the member it was recorded for. If it was recorded for the wrong member, delete it and record it again. A `memberId` in the body is ignored.
 
                 ### On success
                 Returns `200 OK` with the full updated `TitheResponseDto`.
@@ -273,13 +279,14 @@ public static class TitheEndpoints
                 - `400 VALIDATION_ERROR` — one or more fields failed validation.
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
                 - `404 NOT_FOUND` — no tithe exists with the given ID in this congregation, or the record has been soft-deleted.
-                - `404 FOREIGN_KEY_NOT_FOUND` — the referenced member does not exist in this congregation.
+                - `409 CONFLICT` (`errorCode` `TITHE_DUPLICATE`) — `forYear`/`forMonth` would move the tithe to a month the member already has a tithe for.
                 """
             )
             .Produces<TitheResponseDto>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status404NotFound)
-            .ProducesProblem(StatusCodes.Status401Unauthorized);
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status409Conflict);
 
         group
             .MapDelete(
@@ -307,6 +314,7 @@ public static class TitheEndpoints
                 ### Side effects
                 - The tithe is marked as deleted.
                 - **Summary totals reflect the deletion.** `GET /tithes/summary` recalculates from live records only.
+                - The member can have a new tithe for that month again.
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
@@ -392,7 +400,7 @@ public static class TitheEndpoints
 
                 ### Query parameters
                 - `from`, `to` — the months to chart; any day in the first and last month. Defaults to the last 12 months, ending with the current month. The range may cover at most 24 months.
-                - `memberId`, `paymentMethod` — same meaning as on the list endpoint.
+                - `memberId`, `memberName`, `paymentMethod` — same meaning as on the list endpoint.
 
                 ### Response
                 A list of `{ year, month, totalCollected, uniqueTithers }`, oldest month first. Months with no tithes are returned with zeros, so there are no gaps.

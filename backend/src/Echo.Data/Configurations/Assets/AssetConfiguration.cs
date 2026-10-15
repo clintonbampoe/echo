@@ -30,8 +30,6 @@ public class AssetConfiguration : IEntityTypeConfiguration<Asset>
         builder.HasIndex(a => new { a.CongregationId, a.Name }).IsUnique();
         builder.HasIndex(a => a.Name).HasMethod("GIN").HasOperators("gin_trgm_ops");
 
-        builder
-            .HasIndex(a => new { a.Name, a.Id })
-            .HasFilter($"\"{nameof(Asset.DeletedAt)}\" IS NULL");
+        builder.HasIndex(a => new { a.Name, a.Id }).HasFilter("deleted_at IS NULL");
     }
 }

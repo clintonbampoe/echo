@@ -36,10 +36,8 @@ public class OrganizationMemberConfiguration : IEntityTypeConfiguration<Organiza
         builder
             .HasIndex(om => new { om.MemberId, om.OrganizationId })
             .IsUnique()
-            .HasFilter($"\"{nameof(OrganizationMember.DeletedAt)}\" IS NULL");
+            .HasFilter("deleted_at IS NULL");
 
-        builder
-            .HasIndex(om => new { om.CreatedAt, om.Id })
-            .HasFilter($"\"{nameof(Project.DeletedAt)}\" IS NULL");
+        builder.HasIndex(om => new { om.CreatedAt, om.Id }).HasFilter("deleted_at IS NULL");
     }
 }

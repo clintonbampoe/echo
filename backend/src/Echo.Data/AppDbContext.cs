@@ -1,3 +1,4 @@
+using System;
 using System.Reflection;
 using Echo.Domain.Assets;
 using Echo.Domain.Attendances;
@@ -56,6 +57,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         base.OnModelCreating(modelBuilder);
         modelBuilder.HasPostgresExtension("pg_trgm");
 
-        modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+        // FIX: Explicitly point to the Echo.Data assembly by referencing the context type
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
     }
 }

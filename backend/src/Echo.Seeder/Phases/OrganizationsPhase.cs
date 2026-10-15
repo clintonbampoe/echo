@@ -1,29 +1,36 @@
+using Echo.Domain.Members;
 using Echo.Domain.Organizations;
 using Echo.Seeder.Copy;
 using Echo.Seeder.Core;
+using Echo.Seeder.Simulation;
 
 namespace Echo.Seeder.Phases;
 
 /// <summary>
-/// Creates organizations and assigns members to them.
-/// <br/> <br/>
-/// Each org gets one Leader, one optional Secretary, and the rest are Members.
-/// A member can belong to more than one org.
-///
+/// Creates the congregation's ministries and decides who belongs to each.
 /// <br/><br/>
-/// Output written to state: OrganizationIds on each CongregationSeed.
+/// Ministries come from <see cref="OrganizationCatalog"/>: every congregation
+/// has the core ones (choir, ushers, children, youth, women, men, prayer) and
+/// the big one has most of the rest. Core ministries start early in the
+/// congregation's history; the others are added later.
+/// <br/><br/>
+/// Membership follows the audience (a women's fellowship has women, the
+/// children's ministry has children), the ministry's usual reach, and each
+/// person's commitment: committed people join more. Nobody joins before they
+/// joined the congregation or before the ministry existed. The leader and
+/// secretary are committed adults who are still around.
+/// <br/><br/>
+/// Output written to state: Organizations (with member ids) and OrganizationIds.
 /// </summary>
-public sealed class OrganizationsPhase() : ISeedPhase
+public sealed class OrganizationsPhase : ISeedPhase
 {
     public string Name => "Organizations";
 
     public async Task RunAsync(SeederContext ctx, CancellationToken ct)
     {
-        var rng = ctx.RngFor(Name);
-
         foreach (var seed in ctx.State)
         {
-            if (seed.MemberIds.Count == 0)
+            if (seed.Members.Count == 0)
             {
                 ctx.Logger.LogWarning(
                     "{Congregation}: no members, skipping organizations.",
@@ -32,83 +39,57 @@ public sealed class OrganizationsPhase() : ISeedPhase
                 continue;
             }
 
-            var orgCount = seed.IsBig ? rng.Next(50, 100) : rng.Next(5, 50);
-            var membersPerOrg = seed.IsBig ? rng.Next(50, 20000) : rng.Next(10, 500);
-            var memberList = seed.MemberIds.ToList(); // snapshot for shuffling
+            var rng = ctx.RngFor(Name, seed.Congregation.Name);
+            var kinds = ChooseKinds(seed, rng);
 
-            if (orgCount > _orgNamePool.Count)
+            var organizations = new List<Organization>(kinds.Count);
+            var memberships = new List<OrganizationMember>();
+
+            foreach (var kind in kinds)
             {
-                throw new InvalidOperationException(
-                    $"Requested {orgCount} organizations but the name pool only has "
-                        + $"{_orgNamePool.Count} combinations. Add more names or suffixes."
-                );
-            }
+                var founded = FoundedOn(ctx, seed, kind, rng);
 
-            // ── Organizations ─────────────────────────────────────────────
-            // Draw names without replacement — uniqueness by construction.
-            // Shuffle gets a mutable copy so the static pool stays untouched.
-            var orgNames = rng.Shuffle(_orgNamePool.ToList()).Take(orgCount).ToList();
+                // A congregation with nobody the right age skips that ministry.
+                var roster = BuildRoster(ctx, seed, kind, founded, rng);
+                if (roster.Count == 0)
+                    continue;
 
-            var orgs = orgNames
-                .Select(name => new Organization
+                var organization = new Organization
                 {
-                    Id = Guid.NewGuid(),
+                    Id = rng.NewGuid(),
                     CongregationId = seed.Id,
-                    Name = name,
-                    Description = rng.Chance(0.5) ? rng.Pick(_orgPurposes) : null,
-                    CreatedAt = ctx.Now,
-                })
-                .ToList();
+                    Name = kind.Name,
+                    Description = kind.Description,
+                    CreatedAt = Stamps.On(founded, rng, ctx.Now),
+                };
+                organizations.Add(organization);
+
+                memberships.AddRange(ToRows(ctx, seed, organization, roster, rng));
+
+                seed.Organizations.Add(
+                    new OrganizationProfile(
+                        organization.Id,
+                        organization.Name,
+                        founded,
+                        roster[0].Member.Id,
+                        [.. roster.Select(r => r.Member.Id)]
+                    )
+                );
+                seed.OrganizationIds.Add(organization.Id);
+            }
 
             await CopyBatch.WriteAsync(
                 ctx.Connection,
-                orgs,
+                organizations,
                 ctx.Options.BatchSize,
                 OrganizationsCopy.WriteOrganizationsAsync,
                 null,
                 ct
             );
 
-            foreach (var org in orgs)
-                seed.OrganizationIds.Add(org.Id);
-
-            // ── OrganizationMembers ───────────────────────────────────────
-            var assignments = new List<OrganizationMember>();
-
-            foreach (var org in orgs)
-            {
-                // Fresh copy per org so Shuffle doesn't mutate the shared list
-                // (and so each org draws from the same full pool).
-                var chosen = rng.Shuffle(memberList.ToList())
-                    .Take(Math.Min(membersPerOrg, memberList.Count));
-
-                var first = true;
-                foreach (var memberId in chosen)
-                {
-                    var role =
-                        first ? MemberRole.Leader
-                        : rng.Chance(0.10) ? MemberRole.Secretary
-                        : MemberRole.Member;
-                    first = false;
-
-                    assignments.Add(
-                        new OrganizationMember
-                        {
-                            Id = Guid.NewGuid(),
-                            CongregationId = seed.Id,
-                            OrganizationId = org.Id,
-                            MemberId = memberId,
-                            Role = role,
-                            JoinedAt = rng.RecentDate(ctx.Now, 1000),
-                            CreatedAt = ctx.Now,
-                        }
-                    );
-                }
-            }
-
             await CopyBatch.WriteAsync(
                 ctx.Connection,
-                assignments,
+                memberships,
                 ctx.Options.BatchSize,
                 OrganizationsCopy.WriteOrganizationMembersAsync,
                 null,
@@ -116,118 +97,159 @@ public sealed class OrganizationsPhase() : ISeedPhase
             );
 
             ctx.Logger.LogInformation(
-                "{Congregation}: {Orgs} orgs, {Assignments} memberships.",
+                "{Congregation}: {Orgs} organizations, {Memberships} memberships.",
                 seed.Congregation.Name,
-                orgs.Count,
-                assignments.Count
+                organizations.Count,
+                memberships.Count
             );
         }
     }
 
-    // ── Reference data ────────────────────────────────────────────────────
+    private sealed record Placement(PersonProfile Member, MemberRole Role, DateOnly JoinedAt);
 
-    private static readonly IReadOnlyList<string> _orgNames =
-    [
-        // Worship & music
-        "Choir",
-        "Praise Team",
-        "Worship Team",
-        "Music",
-        "Instrumentalists",
-        "Drama",
-        "Dance",
-        "Media",
-        "Sound",
-        "Audio-Visual",
-        // Welcome & care
-        "Ushering",
-        "Protocol",
-        "Welcome",
-        "Hospitality",
-        "Welfare",
-        "Member Care",
-        "Visitation",
-        "Bereavement",
-        "Counseling",
-        // Teaching & discipleship
-        "Children's",
-        "Sunday School",
-        "Teens",
-        "Youth",
-        "Young Adults",
-        "Adults",
-        "Bible Study",
-        "Discipleship",
-        "Catechism",
-        "Training",
-        // Prayer & spiritual
-        "Prayer",
-        "Intercession",
-        "Deliverance",
-        "Fasting",
-        "Prophetic",
-        "Healing",
-        // Outreach & missions
-        "Evangelism",
-        "Missions",
-        "Outreach",
-        "Community Service",
-        "Charity",
-        "Street Ministry",
-        "Prison Ministry",
-        "Hospital Ministry",
-        // Fellowship groups
-        "Men's Fellowship",
-        "Women's Fellowship",
-        "Marriage",
-        "Singles",
-        "Elders",
-        "Deacons",
-        // Operations
-        "Finance",
-        "Stewardship",
-        "Logistics",
-        "Maintenance",
-        "Security",
-        "Transport",
-        "Events",
-        "Publicity",
-    ];
+    // The core ministries first, then as many others as the congregation's size supports.
+    private static List<OrganizationKind> ChooseKinds(CongregationSeed seed, Rng rng)
+    {
+        var core = OrganizationCatalog.All.Where(k => k.Core).ToList();
+        var others = OrganizationCatalog.All.Where(k => !k.Core).ToList();
 
-    private static readonly IReadOnlyList<string> _orgSuffixes =
-    [
-        "Team",
-        "Ministry",
-        "Department",
-        "Committee",
-        "Group",
-        "Unit",
-        "Board",
-        "Council",
-        "Fellowship",
-        "Circle",
-        "Band",
-    ];
+        var wanted = seed.IsBig
+            ? rng.Next(30, 37)
+            : Math.Clamp(6 + seed.Members.Count / 120 + rng.Next(-2, 3), core.Count, 22);
 
-    /// <summary>
-    /// The full cartesian product of (_orgNames × _orgSuffixes).
-    /// Current size: 57 × 11 = 627 unique combinations.
-    /// Names are drawn from this pool WITHOUT replacement, so uniqueness
-    /// within a congregation is guaranteed by construction.
-    /// If orgCount ever approaches this size, add another dimension
-    /// (e.g. themes) or split into separate pools.
-    /// </summary>
-    private static readonly IReadOnlyList<string> _orgNamePool =
-    [
-        .. (from name in _orgNames from suffix in _orgSuffixes select $"{name} {suffix}"),
-    ];
+        var extra = rng.Shuffle(others).Take(Math.Max(0, wanted - core.Count));
+        return [.. core, .. extra];
+    }
 
-    private static readonly IReadOnlyList<string> _orgPurposes =
-    [
-        "Coordinates Sunday worship.",
-        "Handles visitor welcome.",
-        "Runs congregation events.",
-        "Provides member care.",
-        "Organizes outreach activities.",
-    ];
+    // Core ministries are as old as the congregation; the others come later.
+    private static DateOnly FoundedOn(
+        SeederContext ctx,
+        CongregationSeed seed,
+        OrganizationKind kind,
+        Rng rng
+    )
+    {
+        var latest = ctx.Today.AddDays(-90);
+        var earliest = seed.Founded.AddDays(kind.Core ? 0 : 365);
+        if (earliest >= latest)
+            return seed.Founded;
+
+        var span = latest.DayNumber - earliest.DayNumber;
+        var skew = kind.Core ? 3.0 : 1.0;
+        var offset = (int)(span * Math.Pow(rng.NextDouble(), skew));
+        return earliest.AddDays(offset);
+    }
+
+    // Picks the members, leader first, then the secretary, then everyone else.
+    private static List<Placement> BuildRoster(
+        SeederContext ctx,
+        CongregationSeed seed,
+        OrganizationKind kind,
+        DateOnly founded,
+        Rng rng
+    )
+    {
+        var today = ctx.Today;
+        var candidates = new List<(PersonProfile Member, DateOnly JoinedAt, double Key)>();
+        var activeEligible = 0;
+
+        foreach (var member in seed.Members)
+        {
+            var age = member.AgeOn(today);
+            if (!OrganizationCatalog.Fits(kind.Audience, age, member.Gender))
+                continue;
+
+            var joinedAt = Later(founded, member.JoinedOn.AddDays(rng.Next(14, 500)));
+            if (joinedAt > today || (member.LeftOn is { } left && joinedAt >= left))
+                continue;
+
+            if (member.LeftOn is null)
+                activeEligible++;
+
+            // Committed people join more; people who have left count for less.
+            var weight =
+                (0.15 + 2.0 * member.Commitment * member.Commitment)
+                * (member.LeftOn is null ? 1.0 : 0.4);
+            candidates.Add((member, joinedAt, Math.Pow(rng.NextDouble(), 1.0 / weight)));
+        }
+
+        var target = (int)Math.Round(activeEligible * kind.Reach * 1.1);
+        target = Math.Clamp(target, Math.Min(3, candidates.Count), candidates.Count);
+
+        if (candidates.Count == 0)
+            return [];
+
+        var chosen = candidates.OrderByDescending(c => c.Key).Take(target).ToList();
+        return Assign(ctx, seed, kind, founded, chosen, rng);
+    }
+
+    private static List<Placement> Assign(
+        SeederContext ctx,
+        CongregationSeed seed,
+        OrganizationKind kind,
+        DateOnly founded,
+        List<(PersonProfile Member, DateOnly JoinedAt, double Key)> chosen,
+        Rng rng
+    )
+    {
+        var today = ctx.Today;
+
+        // Leaders of children's and teens' ministries are adults from outside the audience.
+        var leadersPool = kind.Audience is Audience.Children or Audience.Teens
+            ? seed
+                .Members.Where(m => m.LeftOn is null && m.AgeOn(today) >= 25)
+                .OrderByDescending(m => m.Commitment + rng.Gaussian(0, 0.05))
+                .Take(20)
+                .Select(m => (Member: m, JoinedAt: Later(founded, m.JoinedOn)))
+                .ToList()
+            : chosen
+                .Where(c => c.Member.LeftOn is null && c.Member.AgeOn(today) >= 21)
+                .OrderByDescending(c => c.Member.Commitment + rng.Gaussian(0, 0.05))
+                .Take(20)
+                .Select(c => (c.Member, c.JoinedAt))
+                .ToList();
+
+        if (leadersPool.Count == 0)
+            leadersPool = [(chosen[0].Member, chosen[0].JoinedAt)];
+
+        var leader = leadersPool[rng.Next(Math.Min(5, leadersPool.Count))];
+        var secretary = leadersPool.FirstOrDefault(p => p.Member.Id != leader.Member.Id);
+
+        var roster = new List<Placement>(chosen.Count + 2)
+        {
+            new(leader.Member, MemberRole.Leader, leader.JoinedAt),
+        };
+
+        if (secretary.Member is not null)
+            roster.Add(new Placement(secretary.Member, MemberRole.Secretary, secretary.JoinedAt));
+
+        var taken = roster.Select(r => r.Member.Id).ToHashSet();
+        roster.AddRange(
+            chosen
+                .Where(c => !taken.Contains(c.Member.Id))
+                .Select(c => new Placement(c.Member, MemberRole.Member, c.JoinedAt))
+        );
+
+        return roster;
+    }
+
+    private static IEnumerable<OrganizationMember> ToRows(
+        SeederContext ctx,
+        CongregationSeed seed,
+        Organization organization,
+        List<Placement> roster,
+        Rng rng
+    ) =>
+        roster.Select(p => new OrganizationMember
+        {
+            Id = rng.NewGuid(),
+            CongregationId = seed.Id,
+            OrganizationId = organization.Id,
+            MemberId = p.Member.Id,
+            Role = p.Role,
+            JoinedAt = p.JoinedAt,
+            CreatedAt = Stamps.On(p.JoinedAt, rng, ctx.Now),
+        });
+
+    private static DateOnly Later(DateOnly a, DateOnly b) => a > b ? a : b;
 }

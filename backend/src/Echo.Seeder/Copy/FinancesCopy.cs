@@ -18,11 +18,11 @@ public static class FinancesCopy
     {
         await using var writer = await conn.BeginBinaryImportAsync(
             """
-            COPY "Tithes" (
-                "Id", "CongregationId", "MemberId",
-                "Amount", "ForYear", "ForMonth",
-                "PaymentMethod", "CollectionDate",
-                "Description", "CreatedAt"
+            COPY tithes (
+                id, congregation_id, member_id,
+                amount, for_year, for_month,
+                payment_method, collection_date,
+                description, created_at
             ) FROM STDIN (FORMAT BINARY)
             """,
             ct
@@ -54,10 +54,10 @@ public static class FinancesCopy
     {
         await using var writer = await conn.BeginBinaryImportAsync(
             """
-            COPY "Transactions" (
-                "Id", "CongregationId", "CategoryId",
-                "TransactionType", "TransactionDate",
-                "Amount", "Description", "CreatedAt"
+            COPY transactions (
+                id, congregation_id, category_id,
+                transaction_type, transaction_date,
+                amount, description, created_at
             ) FROM STDIN (FORMAT BINARY)
             """,
             ct
@@ -87,11 +87,11 @@ public static class FinancesCopy
     {
         await using var writer = await conn.BeginBinaryImportAsync(
             """
-            COPY "Projects" (
-                "Id", "CongregationId", "CategoryId", "ManagerId",
-                "Name", "TargetAmount", "Status",
-                "StartDate", "EndDate",
-                "Description", "CreatedAt"
+            COPY projects (
+                id, congregation_id, category_id, manager_id,
+                name, target_amount, status,
+                start_date, end_date,
+                description, created_at
             ) FROM STDIN (FORMAT BINARY)
             """,
             ct
@@ -124,10 +124,10 @@ public static class FinancesCopy
     {
         await using var writer = await conn.BeginBinaryImportAsync(
             """
-            COPY "ProjectContributions" (
-                "Id", "CongregationId", "ProjectId",
-                "Amount", "DateContributed",
-                "PaymentMethod", "Description", "CreatedAt"
+            COPY project_contributions (
+                id, congregation_id, project_id,
+                amount, date_contributed,
+                payment_method, description, created_at
             ) FROM STDIN (FORMAT BINARY)
             """,
             ct
@@ -157,11 +157,11 @@ public static class FinancesCopy
     {
         await using var writer = await conn.BeginBinaryImportAsync(
             """
-            COPY "Assets" (
-                "Id", "CongregationId", "CategoryId",
-                "Name", "SerialNumber",
-                "PurchaseDate", "PurchaseCost", "CurrentValue",
-                "Status", "Description", "CreatedAt"
+            COPY assets (
+                id, congregation_id, category_id,
+                name, serial_number,
+                purchase_date, purchase_cost, current_value,
+                status, description, created_at
             ) FROM STDIN (FORMAT BINARY)
             """,
             ct

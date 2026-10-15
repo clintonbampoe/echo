@@ -9,6 +9,8 @@
 **/*.suo
 
 # Build output and dependencies (each image makes its own)
+**/*/bin/
+**/*/obj/
 **/bin
 **/obj
 **/node_modules

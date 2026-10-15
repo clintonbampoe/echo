@@ -2,6 +2,7 @@
 export { ActionMenu, type MenuItem } from "./ActionMenu";
 export { Alert } from "./Alert";
 export { Avatar } from "./Avatar";
+export { BottomSheet } from "./BottomSheet";
 export { Button, LinkButton } from "./Button";
 export { CellStrip, type Cell } from "./CellStrip";
 export { Chip, type ChipTone } from "./Chip";
@@ -20,6 +21,9 @@ export { Icon, type IconName } from "./Icon";
 export { initials } from "./initials";
 export { ListBody } from "./ListBody";
 export { Logo } from "./Logo";
+export { MonthBars, type MonthBar } from "./MonthBars";
+export { MonthYearPill } from "./MonthYearPill";
+export { Notice } from "./Notice";
 export { plainOptions, withAny } from "./options";
 export { PageHeader } from "./PageHeader";
 export { PersonList, type Person, type PersonColumn } from "./PersonList";

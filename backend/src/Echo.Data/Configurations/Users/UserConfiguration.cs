@@ -8,13 +8,12 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 {
     public void Configure(EntityTypeBuilder<User> builder)
     {
-        builder.HasIndex(u => u.EmailAddress).IsUnique().HasFilter("\"DeletedAt\" IS NULL");
+        builder.HasIndex(u => u.EmailAddress).IsUnique().HasFilter("deleted_at IS NULL");
 
-        // Using immutable string concatenation (||) and COALESCE to handle nulls safely
         builder
             .Property(m => m.Name)
             .HasComputedColumnSql(
-                $"TRIM(COALESCE(\"{nameof(User.LastName)}\", '') || ' ' || COALESCE(\"{nameof(User.FirstName)}\", '') || ' ' || COALESCE(\"{nameof(User.OtherNames)}\", ''))",
+                "TRIM(COALESCE(last_name, '') || ' ' || COALESCE(first_name, '') || ' ' || COALESCE(other_names, ''))",
                 stored: true
             )
             .ValueGeneratedOnAddOrUpdate();
@@ -29,12 +28,8 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
         builder.HasIndex(u => u.Name).HasMethod("GIN").HasOperators("gin_trgm_ops");
 
-        builder
-            .HasIndex(u => new { u.Name, u.Id })
-            .HasFilter($"\"{nameof(User.DeletedAt)}\" IS NULL");
+        builder.HasIndex(u => new { u.Name, u.Id }).HasFilter("deleted_at IS NULL");
 
-        builder
-            .HasIndex(u => new { u.EmailAddress, u.Id })
-            .HasFilter($"\"{nameof(User.DeletedAt)}\" IS NULL");
+        builder.HasIndex(u => new { u.EmailAddress, u.Id }).HasFilter("deleted_at IS NULL");
     }
 }

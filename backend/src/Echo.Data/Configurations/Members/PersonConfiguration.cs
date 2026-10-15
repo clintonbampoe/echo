@@ -23,19 +23,19 @@ public class PersonConfiguration : IEntityTypeConfiguration<Person>
         builder.Property(p => p.FirstName).IsRequired();
         builder.Property(p => p.LastName).IsRequired();
 
+        // Computed column syntax updated to native PostgreSQL snake_case columns
         builder
             .Property(p => p.Name)
             .HasComputedColumnSql(
-                $"TRIM(COALESCE(\"{nameof(Person.LastName)}\", '') || ' ' || COALESCE(\"{nameof(Person.FirstName)}\", '') || ' ' || COALESCE(\"{nameof(Person.OtherNames)}\", ''))",
+                "TRIM(COALESCE(last_name, '') || ' ' || COALESCE(first_name, '') || ' ' || COALESCE(other_names, ''))",
                 stored: true
             )
             .ValueGeneratedOnAddOrUpdate();
 
         builder.HasIndex(p => p.Name).HasMethod("GIN").HasOperators("gin_trgm_ops");
 
-        builder
-            .HasIndex(p => new { p.Name, p.Id })
-            .HasFilter($"\"{nameof(Person.DeletedAt)}\" IS NULL");
+        // Partial filter updated to drop manual double quotes
+        builder.HasIndex(p => new { p.Name, p.Id }).HasFilter("deleted_at IS NULL");
 
         builder.HasIndex(p => new { p.CongregationId, p.Kind });
     }

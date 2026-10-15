@@ -19,7 +19,7 @@ export function TitheYearStrip({
   today: string;
 }) {
   const { year, from, to } = thisYear(today);
-  const months = useTitheMonths(memberId, from, to);
+  const months = useTitheMonths({ memberId }, from, to);
   const rows = months.data ?? [];
   const { given, elapsed } = titheMonths(rows, today);
 

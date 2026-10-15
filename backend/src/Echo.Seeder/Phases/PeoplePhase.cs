@@ -1,165 +1,137 @@
-using Echo.Domain.Members;
+using Bogus;
 using Echo.Seeder.Copy;
 using Echo.Seeder.Core;
-using Echo.Seeder.Fakers;
+using Echo.Seeder.Simulation;
 
 namespace Echo.Seeder.Phases;
 
 /// <summary>
-/// Generates Person, Member, and Visitor rows for every congregation.
+/// Simulates the people of every congregation: who joined when, in which
+/// household, who left, who visited and who of those visitors became members.
 ///
-/// Table layout:
-///   persons   — shared identity (name, phone, email, kind)
-///   members   — extra columns for members (shared PK = PersonId)
-///   visitors  — extra columns for visitors (shared PK = PersonId)
+/// <br/><br/>
+/// The simulation runs in memory (see <see cref="PeopleFactory"/>) and the
+/// result is written with COPY: persons first, then the members and visitors
+/// that reference them, in one transaction per batch.
 ///
-/// Each person row is written first, then the corresponding member or visitor
-/// side-table row. Both writes are in the same batch transaction.
+/// <br/><br/>
+/// Reads Founded, which SetupPhase decided. Output written to state: Members
+/// and Visitors (the profiles that later phases read), MemberIds, VisitorIds
+/// and ConvertedVisitorDates.
 ///
-/// Output written to state: MemberIds and VisitorIds on each CongregationSeed.
-/// These are HashSet&lt;Guid&gt; so later phases can do O(1) membership checks.
+/// <br/><br/>
+/// BigMembers and SmallMembers count the members from households.
+/// Visitors who converted are extra, so a congregation ends up with slightly
+/// more members than configured.
 /// </summary>
-public sealed class PeoplePhase(SeedFakers fakers) : ISeedPhase
+public sealed class PeoplePhase : ISeedPhase
 {
     public string Name => "People";
 
     public async Task RunAsync(SeederContext ctx, CancellationToken ct)
     {
-        var rng = ctx.RngFor(Name);
-
         foreach (var seed in ctx.State)
         {
-            var memberCount = seed.IsBig ? ctx.Options.BigMembers : ctx.Options.SmallMembers;
-            var visitorCount = seed.IsBig ? ctx.Options.BigVisitors : ctx.Options.SmallVisitors;
+            // One stream per congregation, so changing one congregation's size
+            // never changes the people of another.
+            var rng = ctx.RngFor(Name, seed.Congregation.Name);
+
+            var (memberCount, visitorCount) = SizeFor(ctx.Options, seed, rng);
+            var growth = GrowthFor(ctx, rng, seed);
+            var faker = new Faker("en") { Random = new Randomizer(rng.Next(int.MaxValue)) };
+            var factory = new PeopleFactory(rng, faker, seed.Congregation, growth, ctx.Now);
 
             ctx.Logger.LogInformation(
-                "{Congregation}: generating {M} members and {V} visitors.",
+                "{Congregation}: founded {Founded}, simulating {M} members and {V} visitors.",
                 seed.Congregation.Name,
+                seed.Founded,
                 memberCount,
                 visitorCount
             );
 
-            await GenerateMembersAsync(ctx, rng, seed, memberCount, ct);
-            await GenerateVisitorsAsync(ctx, rng, seed, visitorCount, ct);
+            await WriteMembersAsync(ctx, factory, seed, memberCount, ct);
+            await WriteVisitorsAsync(ctx, factory, seed, visitorCount, ct);
+
+            var active = seed.Members.Count(m => m.LeftOn is null);
+            var converted = seed.Visitors.Count(v => v.ConvertedOn is not null);
 
             ctx.Logger.LogInformation(
-                "{Congregation}: people done — {M} members, {V} visitors.",
+                "{Congregation}: people done — {M} members ({Active} active), {V} visitors ({Converted} converted).",
                 seed.Congregation.Name,
-                seed.MemberIds.Count,
-                seed.VisitorIds.Count
+                seed.Members.Count,
+                active,
+                seed.Visitors.Count,
+                converted
             );
         }
     }
 
-    private async Task GenerateMembersAsync(
+    // Small congregations differ in size, so the data does not look cloned.
+    private static (int Members, int Visitors) SizeFor(
+        SeederOptions options,
+        CongregationSeed seed,
+        Rng rng
+    )
+    {
+        if (seed.IsBig)
+            return (options.BigMembers, options.BigVisitors);
+
+        var scale = rng.Range(1 - options.SmallSizeSpread, 1 + options.SmallSizeSpread);
+        var members = (int)Math.Max(20, Math.Round(options.SmallMembers * scale));
+        var visitors = (int)Math.Round(options.SmallVisitors * scale);
+        return (members, visitors);
+    }
+
+    // Founded is decided in SetupPhase, so the congregation and its admin are as
+    // old as its members. A small congregation grows at its own pace.
+    private static GrowthCurve GrowthFor(SeederContext ctx, Rng rng, CongregationSeed seed)
+    {
+        var growth = seed.IsBig ? 0.14 : rng.Range(0.08, 0.2);
+        return new GrowthCurve(seed.Founded, ctx.Today, growth);
+    }
+
+    private static async Task WriteMembersAsync(
         SeederContext ctx,
-        Rng rng,
+        PeopleFactory factory,
         CongregationSeed seed,
         int count,
         CancellationToken ct
     )
     {
-        // Build persons and members in parallel lists so one batch covers both tables.
-        var persons = new List<Person>(ctx.Options.BatchSize);
-        var members = new List<Member>(ctx.Options.BatchSize);
-
-        var source = Enumerable
-            .Range(0, count)
-            .Select(_ =>
-            {
-                var person = fakers.Person.Generate();
-                person.CongregationId = seed.Id;
-                person.Kind = PersonKind.Member;
-                person.CreatedAt = ctx.Now;
-
-                var member = fakers.Member.Generate();
-                member.PersonId = person.Id;
-                member.CongregationId = seed.Id;
-                // JoinedDate must be on or before ReferenceNow
-                member.JoinedDate = rng.RecentDate(ctx.Now, 3650);
-                member.CreatedAt = ctx.Now;
-
-                return (person, member);
-            });
-
         await CopyBatch.WriteAsync(
             ctx.Connection,
-            source,
+            MembersOf(factory, count),
             ctx.Options.BatchSize,
             async (conn, batch, innerCt) =>
             {
-                var batchPersons = batch.Select(x => x.person).ToList();
-                var batchMembers = batch.Select(x => x.member).ToList();
+                await PeopleCopy.WritePersonsAsync(
+                    conn,
+                    batch.Select(x => x.Person).ToList(),
+                    innerCt
+                );
+                await PeopleCopy.WriteMembersAsync(
+                    conn,
+                    batch.Select(x => x.Member).ToList(),
+                    innerCt
+                );
 
-                await PeopleCopy.WritePersonsAsync(conn, batchPersons, innerCt);
-                await PeopleCopy.WriteMembersAsync(conn, batchMembers, innerCt);
-
-                foreach (var p in batchPersons)
-                    seed.MemberIds.Add(p.Id);
+                foreach (var created in batch)
+                    Register(seed, created.Profile);
             },
             total => ctx.Logger.LogInformation("  members: {N}/{Total}", total, count),
             ct
         );
     }
 
-    private async Task GenerateVisitorsAsync(
+    private static async Task WriteVisitorsAsync(
         SeederContext ctx,
-        Rng rng,
+        PeopleFactory factory,
         CongregationSeed seed,
         int count,
         CancellationToken ct
     )
     {
-        var source = Enumerable
-            .Range(0, count)
-            .Select(_ =>
-            {
-                // How long ago they first visited. 0–5 years back.
-                var visitDaysAgo = rng.Next(0, 365 * 5);
-                var firstVisitAt = ctx.Now.AddDays(-visitDaysAgo);
-
-                // First visit is always in the past.
-                var person = fakers.Person.Generate();
-                person.CongregationId = seed.Id;
-                person.CreatedAt = firstVisitAt;
-
-                var converted = rng.Chance(0.10);
-
-                Member? member = null;
-                DateTime? convertedAt = null;
-
-                if (converted)
-                {
-                    // They converted somewhere between their first visit and now.
-                    // If they visited 10 days ago, conversion happened in [0, 10] days ago.
-                    var conversionDaysAgo = rng.Next(0, visitDaysAgo + 1);
-                    convertedAt = ctx.Now.AddDays(-conversionDaysAgo);
-
-                    seed.ConvertedVisitorDates[person.Id] = convertedAt.Value;
-                    person.Kind = PersonKind.Member;
-
-                    member = fakers.Member.Generate();
-                    member.PersonId = person.Id;
-                    member.CongregationId = seed.Id;
-                    member.CreatedAt = convertedAt.Value;
-                    member.JoinedDate = DateOnly.FromDateTime(convertedAt.Value);
-                }
-                else
-                {
-                    person.Kind = PersonKind.Visitor;
-                }
-
-                var visitor = new Visitor
-                {
-                    PersonId = person.Id,
-                    CongregationId = seed.Id,
-                    Notes = null,
-                    ConvertedAt = convertedAt,
-                    CreatedAt = firstVisitAt,
-                };
-
-                return (person, member, visitor);
-            });
+        var source = Enumerable.Range(0, count).Select(_ => factory.BuildVisitor());
 
         await CopyBatch.WriteAsync(
             ctx.Connection,
@@ -167,29 +139,68 @@ public sealed class PeoplePhase(SeedFakers fakers) : ISeedPhase
             ctx.Options.BatchSize,
             async (conn, batch, innerCt) =>
             {
-                var batchPersons = batch.Select(x => x.person).ToList();
-                var batchMembers = batch
-                    .Where(x => x.member is not null)
-                    .Select(x => x.member!)
-                    .ToList();
-                var batchVisitors = batch.Select(x => x.visitor).ToList();
-
                 // Order matters: Person first (shared PK), then the side tables.
-                await PeopleCopy.WritePersonsAsync(conn, batchPersons, innerCt);
+                await PeopleCopy.WritePersonsAsync(
+                    conn,
+                    batch.Select(x => x.Person).ToList(),
+                    innerCt
+                );
 
-                if (batchMembers.Count > 0)
-                    await PeopleCopy.WriteMembersAsync(conn, batchMembers, innerCt);
+                var members = batch
+                    .Where(x => x.Member is not null)
+                    .Select(x => x.Member!)
+                    .ToList();
+                if (members.Count > 0)
+                    await PeopleCopy.WriteMembersAsync(conn, members, innerCt);
 
-                await PeopleCopy.WriteVisitorsAsync(conn, batchVisitors, innerCt);
+                await PeopleCopy.WriteVisitorsAsync(
+                    conn,
+                    batch.Select(x => x.Visitor).ToList(),
+                    innerCt
+                );
 
-                foreach (var p in batchPersons)
-                    seed.VisitorIds.Add(p.Id);
+                foreach (var created in batch)
+                {
+                    seed.Visitors.Add(created.Story);
+                    seed.VisitorIds.Add(created.Story.Id);
 
-                foreach (var m in batchMembers)
-                    seed.MemberIds.Add(m.PersonId);
+                    if (created.Profile is null)
+                        continue;
+
+                    Register(seed, created.Profile);
+                    seed.ConvertedVisitorDates[created.Story.Id] = created
+                        .Visitor
+                        .ConvertedAt!
+                        .Value;
+                }
             },
             total => ctx.Logger.LogInformation("  visitors: {N}/{Total}", total, count),
             ct
         );
+    }
+
+    // Households are generated whole and the last one is cut off at the target
+    // count, so the number of members is exactly what was asked for.
+    private static IEnumerable<NewMember> MembersOf(PeopleFactory factory, int count)
+    {
+        var made = 0;
+
+        while (made < count)
+        {
+            foreach (var member in factory.BuildHousehold())
+            {
+                if (made == count)
+                    yield break;
+
+                made++;
+                yield return member;
+            }
+        }
+    }
+
+    private static void Register(CongregationSeed seed, PersonProfile profile)
+    {
+        seed.Members.Add(profile);
+        seed.MemberIds.Add(profile.Id);
     }
 }

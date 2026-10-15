@@ -13,6 +13,8 @@ export type PersonColumn<T> = {
   low?: boolean;
   // A status chip. On a phone it sits on its own line under the name.
   chip?: boolean;
+  // Numbers line up on the right (on a phone the cards read left to right as usual).
+  end?: boolean;
 };
 
 // `plain` leaves out the line under the name, for rows that have nothing to put there (no "No email").
@@ -60,7 +62,14 @@ export function PersonList<T>({
       <div className={styles.head} aria-hidden="true" style={grid}>
         <span>Name</span>
         {columns.map((c) => (
-          <span key={c.header} className={c.low ? styles.low : undefined}>
+          <span
+            key={c.header}
+            className={
+              [c.low && styles.low, c.end && styles.end]
+                .filter(Boolean)
+                .join(" ") || undefined
+            }
+          >
             {c.header}
           </span>
         ))}
@@ -113,7 +122,12 @@ function Row<T>({ row, person: p, columns, items, grid }: RowProps<T>) {
       {columns.map((c) => (
         <div
           key={c.header}
-          className={[styles.cell, c.low && styles.low, c.chip && styles.chip]
+          className={[
+            styles.cell,
+            c.low && styles.low,
+            c.chip && styles.chip,
+            c.end && styles.end,
+          ]
             .filter(Boolean)
             .join(" ")}
           data-label={c.header}

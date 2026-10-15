@@ -24,7 +24,17 @@ public class MemberConfiguration : IEntityTypeConfiguration<Member>
             .HasForeignKey(m => m.CongregationId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasIndex(m => m.CongregationId);
+        // Composite covering index optimizing dashboard analytics
+        builder
+            .HasIndex(m => new { m.CongregationId, m.JoinedDate })
+            .HasFilter("deleted_at IS NULL")
+            .IncludeProperties(m => new
+            {
+                m.Status,
+                m.Gender,
+                m.DateOfBirth,
+            });
+
         builder.HasIndex(m => m.Status);
     }
 }

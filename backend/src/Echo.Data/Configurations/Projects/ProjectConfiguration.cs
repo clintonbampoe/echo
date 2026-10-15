@@ -37,8 +37,6 @@ public class ProjectConfiguration : IEntityTypeConfiguration<Project>
         builder.HasIndex(p => p.Name);
         builder.HasIndex(p => p.Name).HasMethod("GIN").HasOperators("gin_trgm_ops");
 
-        builder
-            .HasIndex(p => new { p.StartDate, p.Id })
-            .HasFilter($"\"{nameof(Project.DeletedAt)}\" IS NULL");
+        builder.HasIndex(p => new { p.StartDate, p.Id }).HasFilter("deleted_at IS NULL");
     }
 }

@@ -50,6 +50,8 @@ features/tithes/
   options.ts   dropdown lists
   view.ts      pure logic for what is shown     stat.ts + useStat.ts   profile card numbers
   schema.ts    zod form schema
+  filters.ts   the list's URL filters, and the API query built from them
+  titheForm.ts form values, and mapping to and from the API (named for the form)
   components/  pieces it draws, including ones other features embed
   index.ts     what other features may use
 ```
@@ -67,7 +69,8 @@ Use these before writing your own. A new list page is about 40 lines made from t
 | `lib` | `dates`, `format`, `validation`, `regions`, `paths` | days, money, required fields, links |
 | `ui` | `PageHeader`, `FilterBar`, `SearchBox`, `ListBody` | the shell of a list page. `FilterBar` folds filters behind a "Filters" button on a phone or tablet, even for one filter |
 | `ui` | `RecordTable`, `Section`, `StatStrip`, `CellStrip`, `EmptyState` | tables and numbers |
-| `ui` | `FormSheet`, `FormSection`, `Field`, `ControlledSelect`, `DeleteDialog` | forms and delete |
+| `ui` | `FormSheet`, `FormSection`, `Field`, `ControlledSelect`, `DeleteDialog`, `Notice` | forms, delete and notes inside a form |
+| `ui` | `MonthYearPill`, `MonthBars` | picking a month, and a month-by-month chart |
 | `ui` | `Chip` + `ChipTone`, `plainOptions`, `withAny` | status labels, dropdown lists |
 
 Features import `ui` only through `ui/index.ts`, which stays alphabetical.

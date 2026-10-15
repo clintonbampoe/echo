@@ -46,6 +46,7 @@ export function VisitorsPage() {
       />
       <ListBody
         list={list}
+        icon="visitor"
         noun={["visitor", "visitors"]}
         emptyText="Visitors you add will appear here."
         filtered={visitorFilters.isFiltered(filters)}

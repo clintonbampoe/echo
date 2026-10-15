@@ -28,6 +28,7 @@
   --neg-bg: #fef2f2;
   --warn: #b45309;
   --warn-bg: #fff7e6;
+  --warn-line: #f0d9a8;
   --shadow: 0 1px 2px rgb(10 10 10 / 4%);
 
   /* Type */
@@ -67,6 +68,9 @@
   --neg: #f28b82;
   --neg-bg: #1c1414;
   --neg-line: #3f2626;
+  --warn: #f5b454;
+  --warn-bg: #1f1a10;
+  --warn-line: #4a3a1a;
   --focus: 2px solid var(--text);
   color-scheme: dark;
 }

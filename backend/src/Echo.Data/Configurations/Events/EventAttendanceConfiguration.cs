@@ -15,11 +15,9 @@ public class EventAttendanceConfiguration : IEntityTypeConfiguration<EventAttend
         builder
             .HasIndex(ea => new { ea.EventId, ea.MemberId })
             .IsUnique()
-            .HasFilter($"\"{nameof(EventAttendance.DeletedAt)}\" IS NULL");
+            .HasFilter("deleted_at IS NULL");
 
-        builder
-            .HasIndex(ea => new { ea.CheckInTime, ea.Id })
-            .HasFilter($"\"{nameof(EventAttendance.DeletedAt)}\" IS NULL");
+        builder.HasIndex(ea => new { ea.CheckInTime, ea.Id }).HasFilter("deleted_at IS NULL");
 
         builder
             .HasOne(e => e.Congregation)

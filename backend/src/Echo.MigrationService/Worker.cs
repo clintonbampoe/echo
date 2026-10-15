@@ -34,10 +34,13 @@ public class Worker(
 
     private static async Task RunMigrationAsync(AppDbContext dbContext, CancellationToken ct)
     {
+        // The execution strategy handles transient network retries safely.
         var strategy = dbContext.Database.CreateExecutionStrategy();
+
         await strategy.ExecuteAsync(async () =>
         {
-            // Run migration in a transaction to avoid partial migration if it fails.
+            // EF Core internally handles transactions per-migration step.
+            // Do not wrap this in a separate manual transaction block.
             await dbContext.Database.MigrateAsync(ct);
         });
     }

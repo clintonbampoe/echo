@@ -23,10 +23,10 @@ public record TitheCreateDto
     public string? Description { get; init; }
 }
 
+// The member a tithe belongs to is fixed when it is recorded, so an update has no member. A tithe recorded
+// against the wrong member is deleted and recorded again.
 public record TitheUpdateDto
 {
-    public Guid? MemberId { get; init; }
-
     [Range(0.01, 1_000_000)]
     public decimal? Amount { get; init; }
 
@@ -68,6 +68,7 @@ public record TitheCursor
 public record TitheFilters
 {
     public Guid? MemberId { get; init; }
+    public string? MemberName { get; init; } // partial, case-insensitive match on the member's name
     public PaymentMethod? PaymentMethod { get; init; }
     public int? Year { get; init; }
     public MonthOfYear? Month { get; init; }
@@ -91,6 +92,7 @@ public record TitheSummaryDto
 public record TitheMonthlyFilters
 {
     public Guid? MemberId { get; init; }
+    public string? MemberName { get; init; } // partial, case-insensitive match on the member's name
     public PaymentMethod? PaymentMethod { get; init; }
     public DateOnly? From { get; init; }
     public DateOnly? To { get; init; }

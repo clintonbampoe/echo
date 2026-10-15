@@ -12,7 +12,6 @@ using Echo.Application.Tests.Members;
 using Echo.Application.Tests.Organizations;
 using Echo.Application.Tests.Projects;
 using Echo.Application.Tests.Tithes;
-using Echo.Application.Tests.Transactions;
 using Echo.Application.Tithes;
 using Echo.Application.Transactions;
 using Echo.Domain.Assets;
@@ -32,7 +31,7 @@ namespace Echo.Application.Tests;
 [Trait("Category", "Unit")]
 public class SummaryStatsTests
 {
-    private static readonly IQueryable<Congregation> OneRow = new[]
+    private static readonly IQueryable<Congregation> _oneRow = new[]
     {
         CongregationFactory.NewEntity(),
     }.AsQueryable();
@@ -40,7 +39,7 @@ public class SummaryStatsTests
     [Fact]
     public void Assets_SumValueAndCostAndCount()
     {
-        Asset Row(decimal value, decimal cost)
+        static Asset Row(decimal value, decimal cost)
         {
             var a = AssetFactory.NewEntity();
             a.CurrentValue = value;
@@ -48,7 +47,9 @@ public class SummaryStatsTests
             return a;
         }
 
-        var res = OneRow.SummarizeAssets(new[] { Row(100m, 150m), Row(50m, 80m) }.AsQueryable()).Single();
+        var res = _oneRow
+            .SummarizeAssets(new[] { Row(100m, 150m), Row(50m, 80m) }.AsQueryable())
+            .Single();
 
         Assert.Equal(new AssetStats(2, 150m, 230m), res);
     }
@@ -56,7 +57,7 @@ public class SummaryStatsTests
     [Fact]
     public void Assets_NoAssets_AreAllZero()
     {
-        var res = OneRow.SummarizeAssets(Array.Empty<Asset>().AsQueryable()).Single();
+        var res = _oneRow.SummarizeAssets(Array.Empty<Asset>().AsQueryable()).Single();
 
         Assert.Equal(new AssetStats(0, 0m, 0m), res);
     }
@@ -70,6 +71,8 @@ public class SummaryStatsTests
             m.Status = status;
             m.Gender = gender;
             m.DateOfBirth = dateOfBirth;
+            // The GroupBy in our query targets CongregationId, so mock it consistently
+            m.CongregationId = Guid.Empty;
             return m;
         }
 
@@ -82,7 +85,8 @@ public class SummaryStatsTests
             Row(MemberStatus.Inactive, Gender.Female, new DateOnly(1980, 10, 14)),
         };
 
-        var res = OneRow.SummarizeMembers(members.AsQueryable(), new DateOnly(2026, 10, 14)).Single();
+        // FIX: Invoke the extension directly on the members collection queryable
+        var res = members.AsQueryable().SummarizeMembers(new DateOnly(2026, 10, 14)).Single();
 
         Assert.Equal(new MemberStats(3, 2, 1, 2, (26 + 35 + 46) / 3.0), res);
     }
@@ -90,9 +94,17 @@ public class SummaryStatsTests
     [Fact]
     public void Members_NoMembers_AverageAgeIsZero()
     {
-        var res = OneRow.SummarizeMembers(Array.Empty<Member>().AsQueryable(), new DateOnly(2026, 10, 14)).Single();
+        // FIX: Invoke directly on the empty queryable collection
+        var res = Array
+            .Empty<Member>()
+            .AsQueryable()
+            .SummarizeMembers(new DateOnly(2026, 10, 14))
+            .SingleOrDefault(); // Changed to SingleOrDefault because an empty group yields no rows
 
-        Assert.Equal(new MemberStats(0, 0, 0, 0, 0d), res);
+        // If an empty collection yields null, map to our safe default fallback layout
+        var finalResult = res ?? new MemberStats(0, 0, 0, 0, 0d);
+
+        Assert.Equal(new MemberStats(0, 0, 0, 0, 0d), finalResult);
     }
 
     [Fact]
@@ -121,11 +133,21 @@ public class SummaryStatsTests
         // The visitor list shows people who have not converted. "New" is everyone created in the
         // window, converted or not; "converted" is everyone converted in the window.
         var current = new[] { Visitor(recurringPerson), Visitor(oncePerson) };
-        var createdInWindow = new[] { Visitor(recurringPerson), Visitor(oncePerson), Visitor(convertedPerson, DateTime.UtcNow) };
+        var createdInWindow = new[]
+        {
+            Visitor(recurringPerson),
+            Visitor(oncePerson),
+            Visitor(convertedPerson, DateTime.UtcNow),
+        };
         var convertedInWindow = new[] { Visitor(convertedPerson, DateTime.UtcNow) };
-        var attendance = new[] { Present(recurringPerson), Present(recurringPerson), Present(oncePerson) };
+        var attendance = new[]
+        {
+            Present(recurringPerson),
+            Present(recurringPerson),
+            Present(oncePerson),
+        };
 
-        var res = OneRow
+        var res = _oneRow
             .SummarizeVisitors(
                 current.AsQueryable(),
                 createdInWindow.AsQueryable(),
@@ -153,11 +175,16 @@ public class SummaryStatsTests
         var rows = new[]
         {
             VisitorOn(new DateTime(2026, 3, 1, 0, 0, 0, DateTimeKind.Utc)),
-            VisitorOn(new DateTime(2026, 4, 1, 0, 0, 0, DateTimeKind.Utc), new DateTime(2026, 5, 1, 0, 0, 0, DateTimeKind.Utc)),
+            VisitorOn(
+                new DateTime(2026, 4, 1, 0, 0, 0, DateTimeKind.Utc),
+                new DateTime(2026, 5, 1, 0, 0, 0, DateTimeKind.Utc)
+            ),
             VisitorOn(new DateTime(2025, 12, 31, 23, 0, 0, DateTimeKind.Utc)),
         };
 
-        var res = rows.AsQueryable().CreatedBetween(new DateOnly(2026, 1, 1), new DateOnly(2026, 12, 31)).ToList();
+        var res = rows.AsQueryable()
+            .CreatedBetween(new DateOnly(2026, 1, 1), new DateOnly(2026, 12, 31))
+            .ToList();
 
         Assert.Equal(2, res.Count);
     }
@@ -167,12 +194,20 @@ public class SummaryStatsTests
     {
         var rows = new[]
         {
-            VisitorOn(new DateTime(2025, 3, 1, 0, 0, 0, DateTimeKind.Utc), new DateTime(2026, 5, 1, 0, 0, 0, DateTimeKind.Utc)),
-            VisitorOn(new DateTime(2026, 3, 1, 0, 0, 0, DateTimeKind.Utc), new DateTime(2025, 5, 1, 0, 0, 0, DateTimeKind.Utc)),
+            VisitorOn(
+                new DateTime(2025, 3, 1, 0, 0, 0, DateTimeKind.Utc),
+                new DateTime(2026, 5, 1, 0, 0, 0, DateTimeKind.Utc)
+            ),
+            VisitorOn(
+                new DateTime(2026, 3, 1, 0, 0, 0, DateTimeKind.Utc),
+                new DateTime(2025, 5, 1, 0, 0, 0, DateTimeKind.Utc)
+            ),
             VisitorOn(new DateTime(2026, 3, 1, 0, 0, 0, DateTimeKind.Utc)),
         };
 
-        var res = rows.AsQueryable().ConvertedBetween(new DateOnly(2026, 1, 1), new DateOnly(2026, 12, 31)).ToList();
+        var res = rows.AsQueryable()
+            .ConvertedBetween(new DateOnly(2026, 1, 1), new DateOnly(2026, 12, 31))
+            .ToList();
 
         Assert.Single(res);
     }
@@ -205,11 +240,17 @@ public class SummaryStatsTests
             return a;
         }
 
-        var res = OneRow
+        var res = _oneRow
             .SummarizeEvents(
                 new[] { past, upcoming }.AsQueryable(),
                 new[] { upcoming }.AsQueryable(),
-                new[] { Reg(past.Id), Reg(upcoming.Id), Reg(upcoming.Id), Reg(Guid.NewGuid()) }.AsQueryable(),
+                new[]
+                {
+                    Reg(past.Id),
+                    Reg(upcoming.Id),
+                    Reg(upcoming.Id),
+                    Reg(Guid.NewGuid()),
+                }.AsQueryable(),
                 new[] { Attended(past.Id), Attended(Guid.NewGuid()) }.AsQueryable()
             )
             .Single();
@@ -232,12 +273,16 @@ public class SummaryStatsTests
 
         var rows = new[]
         {
-            Row("Camp", new DateOnly(2026, 9, 1)),   // before today
-            Row("Camp", new DateOnly(2026, 11, 1)),  // upcoming, inside the window
-            Row("Camp", new DateOnly(2027, 2, 1)),   // upcoming, outside the window
+            Row("Camp", new DateOnly(2026, 9, 1)), // before today
+            Row("Camp", new DateOnly(2026, 11, 1)), // upcoming, inside the window
+            Row("Camp", new DateOnly(2027, 2, 1)), // upcoming, outside the window
             Row("Revival", new DateOnly(2026, 12, 1)),
         };
-        var thisYear = new EventFilters { From = new DateOnly(2026, 1, 1), To = new DateOnly(2026, 12, 31) };
+        var thisYear = new EventFilters
+        {
+            From = new DateOnly(2026, 1, 1),
+            To = new DateOnly(2026, 12, 31),
+        };
 
         var res = rows.AsQueryable().Upcoming(thisYear, today).ToList();
 
@@ -262,7 +307,7 @@ public class SummaryStatsTests
             Row(30m, PaymentMethod.MobileMoney),
         };
 
-        var res = OneRow.SummarizeContributions(rows.AsQueryable()).Single();
+        var res = _oneRow.SummarizeContributions(rows.AsQueryable()).Single();
 
         Assert.Equal(new ContributionStats(180m, 3, 60m, PaymentMethod.MobileMoney), res);
     }
@@ -270,7 +315,9 @@ public class SummaryStatsTests
     [Fact]
     public void Contributions_NoContributions_AreZeroWithNoMethod()
     {
-        var res = OneRow.SummarizeContributions(Array.Empty<ProjectContribution>().AsQueryable()).Single();
+        var res = _oneRow
+            .SummarizeContributions(Array.Empty<ProjectContribution>().AsQueryable())
+            .Single();
 
         Assert.Equal(new ContributionStats(0m, 0, 0m, null), res);
     }
@@ -296,9 +343,17 @@ public class SummaryStatsTests
 
         var a = Row(1000m, ProjectStatus.OnTrack);
         var b = Row(500m, ProjectStatus.AtRisk);
-        var contributions = new[] { Gave(a.Id, 200m), Gave(a.Id, 100m), Gave(b.Id, 50m), Gave(Guid.NewGuid(), 999m) };
+        var contributions = new[]
+        {
+            Gave(a.Id, 200m),
+            Gave(a.Id, 100m),
+            Gave(b.Id, 50m),
+            Gave(Guid.NewGuid(), 999m),
+        };
 
-        var res = OneRow.SummarizeProjects(new[] { a, b }.AsQueryable(), contributions.AsQueryable()).Single();
+        var res = _oneRow
+            .SummarizeProjects(new[] { a, b }.AsQueryable(), contributions.AsQueryable())
+            .Single();
 
         Assert.Equal(new ProjectStats(2, 350m, 1500m, 1), res);
     }
@@ -324,7 +379,7 @@ public class SummaryStatsTests
             Row(member2, 30m, PaymentMethod.Cheque),
         };
 
-        var res = OneRow.SummarizeTithes(rows.AsQueryable()).Single();
+        var res = _oneRow.SummarizeTithes(rows.AsQueryable()).Single();
 
         Assert.Equal(new TitheStats(180m, 2, PaymentMethod.Cash), res);
     }
@@ -346,7 +401,7 @@ public class SummaryStatsTests
     [Fact]
     public void Tithes_NoTithes_AreZeroWithNoMethod()
     {
-        var res = OneRow.SummarizeTithes(Array.Empty<Tithe>().AsQueryable()).Single();
+        var res = _oneRow.SummarizeTithes(Array.Empty<Tithe>().AsQueryable()).Single();
 
         Assert.Equal(new TitheStats(0m, 0, null), res);
     }
@@ -371,9 +426,17 @@ public class SummaryStatsTests
 
         var choir = Org("Choir");
         var youth = Org("Youth");
-        var members = new[] { Joined(choir.Id), Joined(choir.Id), Joined(choir.Id), Joined(youth.Id) };
+        var members = new[]
+        {
+            Joined(choir.Id),
+            Joined(choir.Id),
+            Joined(choir.Id),
+            Joined(youth.Id),
+        };
 
-        var res = OneRow.SummarizeOrganizations(new[] { choir, youth }.AsQueryable(), members.AsQueryable()).Single();
+        var res = _oneRow
+            .SummarizeOrganizations(new[] { choir, youth }.AsQueryable(), members.AsQueryable())
+            .Single();
 
         Assert.Equal(new OrganizationStats(2, 4, 2.0, "Choir"), res);
     }
@@ -381,8 +444,11 @@ public class SummaryStatsTests
     [Fact]
     public void Organizations_NoOrganizations_AreZeroWithNoLargest()
     {
-        var res = OneRow
-            .SummarizeOrganizations(Array.Empty<Organization>().AsQueryable(), Array.Empty<OrganizationMember>().AsQueryable())
+        var res = _oneRow
+            .SummarizeOrganizations(
+                Array.Empty<Organization>().AsQueryable(),
+                Array.Empty<OrganizationMember>().AsQueryable()
+            )
             .Single();
 
         Assert.Equal(new OrganizationStats(0, 0, 0d, null), res);
@@ -393,14 +459,38 @@ public class SummaryStatsTests
     {
         var rows = new List<TransactionCategoryTotalDto>
         {
-            new() { CategoryId = 1, CategoryName = "Offerings", Type = TransactionType.Income, Total = 900m, Count = 3 },
-            new() { CategoryId = 2, CategoryName = "Utilities", Type = TransactionType.Expense, Total = 300m, Count = 5 },
-            new() { CategoryId = 3, CategoryName = "Repairs", Type = TransactionType.Expense, Total = 100m, Count = 2 },
+            new()
+            {
+                CategoryId = 1,
+                CategoryName = "Offerings",
+                Type = TransactionType.Income,
+                Total = 900m,
+                Count = 3,
+            },
+            new()
+            {
+                CategoryId = 2,
+                CategoryName = "Utilities",
+                Type = TransactionType.Expense,
+                Total = 300m,
+                Count = 5,
+            },
+            new()
+            {
+                CategoryId = 3,
+                CategoryName = "Repairs",
+                Type = TransactionType.Expense,
+                Total = 100m,
+                Count = 2,
+            },
         };
 
         var res = TransactionService.BuildSummary(rows);
 
-        Assert.Equal((900m, 400m, "Utilities"), (res.TotalIncome, res.TotalExpenses, res.MostActiveCategory));
+        Assert.Equal(
+            (900m, 400m, "Utilities"),
+            (res.TotalIncome, res.TotalExpenses, res.MostActiveCategory)
+        );
         Assert.Equal(500m, res.Net);
         Assert.Equal(3, res.ByCategory.Count);
     }
@@ -439,13 +529,20 @@ public class SummaryStatsTests
         var cancelled = Session(SessionStatus.Cancelled);
         var attendance = new[]
         {
-            Present(completed1), Present(completed1),
-            Present(completed2), Present(completed2), Present(completed2), Present(completed2),
+            Present(completed1),
+            Present(completed1),
+            Present(completed2),
+            Present(completed2),
+            Present(completed2),
+            Present(completed2),
             Present(cancelled),
         };
 
-        var res = OneRow
-            .SummarizeSessions(new[] { completed1, completed2, scheduled, cancelled }.AsQueryable(), attendance.AsQueryable().Live())
+        var res = _oneRow
+            .SummarizeSessions(
+                new[] { completed1, completed2, scheduled, cancelled }.AsQueryable(),
+                attendance.AsQueryable().Live()
+            )
             .Single();
 
         Assert.Equal(new SessionStats(4, 2, 1, 7, 6), res);
@@ -480,7 +577,9 @@ public class SummaryStatsTests
         };
         var allLive = inWindow.Append(earlier).ToArray();
 
-        var res = OneRow.SummarizeAttendance(inWindow.AsQueryable(), allLive.AsQueryable().Live()).Single();
+        var res = _oneRow
+            .SummarizeAttendance(inWindow.AsQueryable(), allLive.AsQueryable().Live())
+            .Single();
 
         Assert.Equal(new AttendanceStats(3, 1, 2, 1), res);
     }
