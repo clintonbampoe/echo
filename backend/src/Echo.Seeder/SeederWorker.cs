@@ -11,13 +11,11 @@ using Npgsql;
 namespace Echo.Seeder;
 
 /// <summary>
-/// Orchestrates the seed pipeline.
+/// Runs the seed pipeline, once, then stops the host.
 ///
-/// Phase order matters — each phase depends on state produced by the ones before it:
-/// <br/> <br/>
-///
-/// The seeder stops on the first failure. Phases that fail partway through
-/// leave partial data — run with --reset to clean up before retrying.
+/// Phase order matters: each phase reads what the earlier ones left in
+/// <c>ctx.State</c>. The seeder stops on the first failure. A phase that fails
+/// partway leaves partial data, so run again with Reset=true.
 /// </summary>
 public sealed class SeederWorker(
     IServiceProvider services,
@@ -41,21 +39,20 @@ public sealed class SeederWorker(
             var timeProvider = scope.ServiceProvider.GetRequiredService<TimeProvider>();
             var opts = options.Value;
 
-            Log.StartingSeeder(logger, opts.Seed, opts.Reset, opts.BatchSize, opts.ReferenceNow);
+            logger.Starting(opts.Seed, opts.Reset, opts.BatchSize, opts.ReferenceNow);
 
             if (opts.Reset)
             {
-                logger.LogInformation("Reset requested — truncating all seeded tables.");
-                await ResetAsync(db, ct);
+                logger.Resetting();
+                await SeedDatabase.ResetAsync(db, ct);
             }
             else
             {
-                await GuardAgainstExistingDataAsync(db, ct);
+                await SeedDatabase.EnsureEmptyAsync(db, ct);
             }
 
-            // Open one connection for the whole run. All COPY phases share it.
-            // EF (SetupPhase) uses db.Database.GetDbConnection() which returns
-            // the same underlying connection, so there's no conflict.
+            // One connection for the whole run. The COPY phases share it, and
+            // EF (SetupPhase) uses the same underlying connection.
             var conn = (NpgsqlConnection)db.Database.GetDbConnection();
             if (conn.State != ConnectionState.Open)
                 await conn.OpenAsync(ct);
@@ -67,13 +64,13 @@ public sealed class SeederWorker(
             ISeedPhase[] phases =
             [
                 new SetupPhase(fakers),
-                new PeoplePhase(fakers),
+                new PeoplePhase(),
                 new OrganizationsPhase(),
                 new SessionsPhase(),
                 new EventsPhase(),
                 new AttendancePhase(),
                 new FinancesPhase(),
-                new AssetsPhase(fakers),
+                new AssetsPhase(),
             ];
 
             foreach (var phase in phases)
@@ -81,16 +78,16 @@ public sealed class SeederWorker(
                 using var phaseActivity = _source.StartActivity($"seeder.phase.{phase.Name}");
                 var phaseSw = Stopwatch.StartNew();
 
-                Log.PhaseStart(logger, phase.Name);
+                logger.PhaseStarted(phase.Name);
                 await phase.RunAsync(ctx, ct);
-                Log.PhaseComplete(logger, phase.Name, phaseSw.Elapsed.TotalSeconds);
+                logger.PhaseDone(phase.Name, phaseSw.Elapsed.TotalSeconds);
             }
 
-            Log.SeederComplete(logger, sw.Elapsed.TotalSeconds);
+            logger.Complete(sw.Elapsed.TotalSeconds);
         }
         catch (Exception ex)
         {
-            Log.SeederError(logger, ex, sw.Elapsed.TotalSeconds);
+            logger.Failed(ex, sw.Elapsed.TotalSeconds);
             activity?.AddException(ex);
             Environment.ExitCode = 1;
         }
@@ -99,78 +96,4 @@ public sealed class SeederWorker(
             lifetime.StopApplication();
         }
     }
-
-    private static async Task GuardAgainstExistingDataAsync(AppDbContext db, CancellationToken ct)
-    {
-        var count = await db.Congregations.CountAsync(ct);
-        if (count > 0)
-            throw new InvalidOperationException(
-                $"Database already has {count} congregation(s). Pass Reset=true to clear before seeding."
-            );
-    }
-
-    private static async Task ResetAsync(AppDbContext db, CancellationToken ct)
-    {
-        // TRUNCATE CASCADE clears each named table and all tables that
-        // reference it via FK, recursively. Order doesn't matter with CASCADE
-        // but listing leaf tables first avoids surprise if CASCADE is removed.
-        await db.Database.ExecuteSqlRawAsync(
-            """
-            TRUNCATE TABLE
-                "Assets",
-                "AssetCategories",
-                "ProjectContributions",
-                "Projects",
-                "ProjectCategories",
-                "Tithes",
-                "Transactions",
-                "TransactionCategories",
-                "EventAttendances",
-                "EventRegistrations",
-                "Events",
-                "Attendance",
-                "Sessions",
-                "SessionLabels",
-                "OrganizationMembers",
-                "Organizations",
-                "Visitors",
-                "Members",
-                "People",
-                "Users",
-                "Congregations"
-            RESTART IDENTITY CASCADE
-            """,
-            ct
-        );
-    }
-}
-
-public static partial class Log
-{
-    [LoggerMessage(
-        Level = LogLevel.Information,
-        Message = "Seeder starting — Seed={Seed} Reset={Reset} BatchSize={Batch} ReferenceNow={Now:o}"
-    )]
-    public static partial void StartingSeeder(
-        this ILogger logger,
-        int seed,
-        bool reset,
-        int batch,
-        DateTimeOffset now
-    );
-
-    [LoggerMessage(Level = LogLevel.Information, Message = "── Phase: {Phase} ──")]
-    public static partial void PhaseStart(this ILogger logger, string phase);
-
-    [LoggerMessage(
-        Level = LogLevel.Information,
-        Message = "── Phase: {Phase} completed in {Elapsed:F1}s ──"
-    )]
-    public static partial void PhaseComplete(this ILogger logger, string phase, double elapsed);
-
-    [LoggerMessage(Level = LogLevel.Information, Message = "Seeder completed in {Elapsed:F1}s.")]
-    public static partial void SeederComplete(this ILogger logger, double elapsed);
-
-    [LoggerMessage(Level = LogLevel.Error, Message = "Seeder failed after {Elapsed:F1}s.")]
-    public static partial void SeederError(this ILogger logger, Exception ex, double elapsed);
 }

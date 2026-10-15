@@ -35,10 +35,8 @@ public class EventRegistrationConfiguration : IEntityTypeConfiguration<EventRegi
         builder
             .HasIndex(er => new { er.EventId, er.MemberId })
             .IsUnique()
-            .HasFilter($"\"{nameof(EventRegistration.DeletedAt)}\" IS NULL");
+            .HasFilter("deleted_at IS NULL");
 
-        builder
-            .HasIndex(er => new { er.RegistrationDate, er.Id })
-            .HasFilter($"\"{nameof(EventRegistration.DeletedAt)}\" IS NULL");
+        builder.HasIndex(er => new { er.RegistrationDate, er.Id }).HasFilter("deleted_at IS NULL");
     }
 }

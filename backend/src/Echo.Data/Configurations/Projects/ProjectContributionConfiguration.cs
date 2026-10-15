@@ -28,8 +28,6 @@ public class ProjectContributionConfiguration : IEntityTypeConfiguration<Project
 
         builder.HasIndex(pc => pc.ProjectId);
 
-        builder
-            .HasIndex(pc => new { pc.DateContributed, pc.Id })
-            .HasFilter($"\"{nameof(ProjectContribution.DeletedAt)}\" IS NULL");
+        builder.HasIndex(pc => new { pc.DateContributed, pc.Id }).HasFilter("deleted_at IS NULL");
     }
 }

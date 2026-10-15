@@ -28,8 +28,6 @@ public class TransactionConfiguration : IEntityTypeConfiguration<Transaction>
 
         builder.HasIndex(t => t.CategoryId);
 
-        builder
-            .HasIndex(t => new { t.TransactionDate, t.Id })
-            .HasFilter($"\"{nameof(Transaction.DeletedAt)}\" IS NULL");
+        builder.HasIndex(t => new { t.TransactionDate, t.Id }).HasFilter("deleted_at IS NULL");
     }
 }

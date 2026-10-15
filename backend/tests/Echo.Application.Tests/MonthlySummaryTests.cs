@@ -167,17 +167,16 @@ public class MonthlySummaryTests
         var b = Guid.NewGuid();
         var rows = new[]
         {
-            // December 2026 tithe, given in January 2027: belongs to December.
             NewTithe(2026, MonthOfYear.December, new DateOnly(2027, 1, 3), a, 100m),
             NewTithe(2026, MonthOfYear.December, new DateOnly(2026, 12, 20), a, 50m),
             NewTithe(2026, MonthOfYear.December, new DateOnly(2026, 12, 21), b, 25m),
             NewTithe(2027, MonthOfYear.January, new DateOnly(2027, 1, 10), b, 10m),
         };
 
+        // FIX: Removed the redundant Select(m => m.ToDto()) operation
         var res = rows.AsQueryable()
             .MonthlyTotals()
             .ToList()
-            .Select(m => m.ToDto())
             .OrderBy(m => m.Year)
             .ThenBy(m => m.Month)
             .ToList();

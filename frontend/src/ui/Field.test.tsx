@@ -30,6 +30,14 @@ describe("Field", () => {
   });
 });
 
+describe("Field unit", () => {
+  it("shows the unit beside the input without making it part of the label", () => {
+    render(<Field label="Amount" unit="GH₵" />);
+    expect(screen.getByLabelText("Amount")).toBeInTheDocument();
+    expect(screen.getByText("GH₵")).toBeInTheDocument();
+  });
+});
+
 describe("PasswordField", () => {
   it("hides the password and reveals it on request", async () => {
     render(<PasswordField label="Password" />);

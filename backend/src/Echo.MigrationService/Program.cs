@@ -5,7 +5,13 @@ using Echo.ServiceDefaults;
 var builder = Host.CreateApplicationBuilder(args);
 
 builder.AddServiceDefaults();
-builder.AddNpgsqlDbContext<AppDbContext>("echodb");
+builder.AddNpgsqlDbContext<AppDbContext>(
+    "echodb",
+    configureDbContextOptions: options =>
+    {
+        options.ConfigureEchoDatabase();
+    }
+);
 builder.Services.AddHostedService<Worker>();
 builder
     .Services.AddOpenTelemetry()

@@ -15,8 +15,6 @@ public class CongregationConfiguration : IEntityTypeConfiguration<Congregation>
         builder.HasIndex(c => c.Name).HasMethod("GIN").HasOperators("gin_trgm_ops");
         builder.HasIndex(c => c.Name);
 
-        builder
-            .HasIndex(c => new { c.CreatedAt, c.Id })
-            .HasFilter($"\"{nameof(Congregation.DeletedAt)}\" IS NULL");
+        builder.HasIndex(c => new { c.CreatedAt, c.Id }).HasFilter("deleted_at IS NULL");
     }
 }

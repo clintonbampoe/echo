@@ -50,6 +50,24 @@
   padding-right: 52px;
 }
 
+.unitWrap {
+  position: relative;
+}
+.unit {
+  position: absolute;
+  top: 0;
+  left: 14px;
+  display: flex;
+  align-items: center;
+  height: var(--control-height, 48px);
+  font-size: var(--control-font, 15px);
+  color: var(--text-3);
+  pointer-events: none;
+}
+.withUnit {
+  padding-left: 52px;
+}
+
 .select {
   appearance: none;
   padding-right: 40px;

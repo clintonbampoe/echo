@@ -16,7 +16,7 @@ public class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken>
 
         builder
             .HasIndex(x => new { x.UserId, x.RevokedAt })
-            .HasFilter("\"RevokedAt\" IS NULL AND \"DeletedAt\" IS NULL");
+            .HasFilter("revoked_at IS NULL AND deleted_at IS NULL");
 
         builder
             .HasOne(x => x.User)

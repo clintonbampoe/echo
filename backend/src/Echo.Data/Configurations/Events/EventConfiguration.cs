@@ -36,8 +36,6 @@ public class EventConfiguration : IEntityTypeConfiguration<Event>
 
         builder.HasIndex(e => e.Name).HasMethod("GIN").HasOperators("gin_trgm_ops");
 
-        builder
-            .HasIndex(e => new { e.StartDate, e.Id })
-            .HasFilter($"\"{nameof(Event.DeletedAt)}\" IS NULL");
+        builder.HasIndex(e => new { e.StartDate, e.Id }).HasFilter("deleted_at IS NULL");
     }
 }

@@ -21,12 +21,15 @@ public sealed class SeederContext(
     public NpgsqlConnection Connection { get; } = connection;
     public SeederOptions Options { get; } = options;
     public DateTime Now { get; } = timeProvider.GetUtcNow().UtcDateTime;
+    public DateOnly Today => DateOnly.FromDateTime(Now);
     public List<CongregationSeed> State { get; } = [];
     public ILogger Logger { get; } = logger;
 
     /// <summary>
-    /// Creates a fresh Rng for a named phase. Same global seed + same phase
-    /// name always produces the same sequence, independent of other phases.
+    /// Creates a fresh Rng for a named phase, optionally narrowed to a scope
+    /// (usually a congregation name). Same global seed + same phase + same
+    /// scope always produces the same sequence, independent of everything else.
     /// </summary>
-    public Rng RngFor(string phaseName) => Rng.ForPhase(Options.Seed, phaseName);
+    public Rng RngFor(string phaseName, string? scope = null) =>
+        Rng.ForPhase(Options.Seed, phaseName, scope);
 }

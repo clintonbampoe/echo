@@ -52,6 +52,7 @@ export function OrganizationsPage() {
           />
           <ListBody
             list={list}
+            icon="organizations"
             noun={["organization", "organizations"]}
             emptyText="Organizations you add will appear here."
             filtered={filtered}

@@ -20,9 +20,7 @@ public class EmailVerificationTokenConfigurations : IEntityTypeConfiguration<Ema
         // 3. is not deleted
         builder
             .HasIndex(t => new { t.UserId, t.CreatedAt })
-            .HasFilter(
-                "\"UsedAt\" IS NULL AND \"InvalidatedAt\" IS NULL AND \"DeletedAt\" IS NULL"
-            );
+            .HasFilter("used_at IS NULL AND invalidated_at IS NULL AND deleted_at IS NULL");
 
         builder
             .HasOne(e => e.User)

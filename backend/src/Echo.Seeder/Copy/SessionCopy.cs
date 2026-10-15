@@ -15,11 +15,11 @@ public static class SessionsCopy
     {
         await using var writer = await conn.BeginBinaryImportAsync(
             """
-            COPY "Sessions" (
-                "Id", "CongregationId", "SessionLabelId",
-                "Date", "Name", "Topic", "Notes",
-                "StartsAt", "EndsAt",
-                "Status", "CreatedBy", "CreatedAt"
+            COPY sessions (
+                id, congregation_id, session_label_id,
+                date, name, topic, notes,
+                starts_at, ends_at,
+                status, created_by, created_at
             ) FROM STDIN (FORMAT BINARY)
             """,
             ct

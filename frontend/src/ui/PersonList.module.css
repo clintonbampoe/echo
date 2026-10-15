@@ -101,6 +101,9 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.end {
+  text-align: right;
+}
 .cell {
   min-width: 0;
   overflow: hidden;
@@ -163,6 +166,9 @@
   .cell {
     order: 2;
     white-space: normal;
+  }
+  .end {
+    text-align: left;
   }
   .chip {
     grid-column: 1 / -1;

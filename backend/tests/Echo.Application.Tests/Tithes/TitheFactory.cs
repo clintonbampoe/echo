@@ -44,7 +44,6 @@ public static class TitheFactory
     {
         return new TitheUpdateDto()
         {
-            MemberId = Constants.DefaultGuid,
             Amount = 100.0m,
             ForYear = 2026,
             ForMonth = MonthOfYear.January,
@@ -58,7 +57,6 @@ public static class TitheFactory
     {
         return new TitheUpdateDto()
         {
-            MemberId = null,
             Amount = null,
             ForYear = null,
             ForMonth = null,

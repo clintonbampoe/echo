@@ -65,13 +65,24 @@ public class TitheMapperTests
 
         _mapper.Patch(dto, entity);
 
-        Assert.Equal(dto.MemberId, entity.MemberId);
         Assert.Equal(dto.Amount, entity.Amount);
         Assert.Equal(dto.ForYear, entity.ForYear);
         Assert.Equal(dto.ForMonth, entity.ForMonth);
         Assert.Equal(dto.PaymentMethod, entity.PaymentMethod);
         Assert.Equal(dto.CollectionDate, entity.CollectionDate);
         Assert.Equal(dto.Description, entity.Description);
+    }
+
+    [Fact]
+    public void PatchEntity_ShouldKeepTheMember()
+    {
+        var dto = TitheFactory.NewUpdateDto();
+        var entity = TitheFactory.NewEntity();
+        var member = entity.MemberId;
+
+        _mapper.Patch(dto, entity);
+
+        Assert.Equal(member, entity.MemberId);
     }
 
     [Fact]

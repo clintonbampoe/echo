@@ -56,25 +56,29 @@ public static partial class TitheLog
         Guid memberId
     );
 
-    // --- Update dependencies ---
+    // --- Duplicates ---
     [LoggerMessage(
-        Level = LogLevel.Information,
-        Message = "Tithe update: member {MemberId} found in congregation {CongregationId}"
+        Level = LogLevel.Warning,
+        Message = "Tithe create refused: member {MemberId} already has a tithe for {Month} {Year} in congregation {CongregationId}"
     )]
-    public static partial void UpdateMemberFound(
+    public static partial void CreateDuplicate(
         ILogger logger,
         Guid congregationId,
-        Guid memberId
+        Guid memberId,
+        string month,
+        int year
     );
 
     [LoggerMessage(
         Level = LogLevel.Warning,
-        Message = "Tithe update failed: member {MemberId} not found in congregation {CongregationId}"
+        Message = "Tithe update refused: member {MemberId} already has a tithe for {Month} {Year} in congregation {CongregationId}"
     )]
-    public static partial void UpdateMemberNotFound(
+    public static partial void UpdateDuplicate(
         ILogger logger,
         Guid congregationId,
-        Guid memberId
+        Guid memberId,
+        string month,
+        int year
     );
 
     // --- Outcomes ---

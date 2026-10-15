@@ -9,6 +9,8 @@ export default defineConfig({
   },
   test: {
     environment: "jsdom",
+    // One jsdom per worker instead of one per file, with each file still isolated.
+    pool: "vmThreads",
     globals: true,
     setupFiles: ["./src/test/setup.ts"],
     css: false,

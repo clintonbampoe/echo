@@ -20,6 +20,8 @@ type Props = {
   note?: string;
   // A server error that has no field to sit on.
   problem?: { title: string; message: string } | null;
+  // True when saving would be refused (say, a duplicate that is already known), so the save buttons are off.
+  blocked?: boolean;
   // A second way to save, e.g. "Save and add another".
   another?: { label: string; onClick: () => void };
   // The fields.
@@ -38,6 +40,7 @@ export function FormSheet({
   pending,
   failures,
   note,
+  blocked,
   problem,
   another,
   children,
@@ -60,7 +63,7 @@ export function FormSheet({
       {another && (
         <Button
           variant="secondary"
-          disabled={pending}
+          disabled={pending || blocked}
           onClick={another.onClick}
           className={styles.another}
         >
@@ -71,6 +74,7 @@ export function FormSheet({
         type="submit"
         form={formId}
         loading={pending}
+        disabled={blocked}
         className={styles.primary}
       >
         {submitLabel}

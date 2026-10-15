@@ -29,11 +29,11 @@ public static class PeopleCopy
     {
         await using var writer = await conn.BeginBinaryImportAsync(
             """
-            COPY "People" (
-                "Id", "CongregationId", "Kind",
-                "FirstName", "LastName", "OtherNames",
-                "PhoneNumber", "EmailAddress",
-                "CreatedAt"
+            COPY people (
+                id, congregation_id, kind,
+                first_name, last_name, other_names,
+                phone_number, email_address,
+                created_at
             ) FROM STDIN (FORMAT BINARY)
             """,
             ct
@@ -64,13 +64,13 @@ public static class PeopleCopy
     {
         await using var writer = await conn.BeginBinaryImportAsync(
             """
-            COPY "Members" (
-                "PersonId", "CongregationId",
-                "DateOfBirth", "JoinedDate", "Gender",
-                "ResidentialAddress", "City", "Hometown", "Region", "GpsAddress",
-                "MaritalStatus", "NextOfKin",
-                "EmergencyContactName", "EmergencyContactPhoneNumber",
-                "Status", "CreatedAt"
+            COPY members (
+                person_id, congregation_id,
+                date_of_birth, joined_date, gender,
+                residential_address, city, hometown, region, gps_address,
+                marital_status, next_of_kin,
+                emergency_contact_name, emergency_contact_phone_number,
+                status, created_at
             ) FROM STDIN (FORMAT BINARY)
             """,
             ct
@@ -108,10 +108,10 @@ public static class PeopleCopy
     {
         await using var writer = await conn.BeginBinaryImportAsync(
             """
-            COPY "Visitors" (
-                "PersonId", "CongregationId",
-                "Notes", "ConvertedAt",
-                "CreatedAt"
+            COPY visitors (
+                person_id, congregation_id,
+                notes, converted_at,
+                created_at
             ) FROM STDIN (FORMAT BINARY)
             """,
             ct

@@ -1,16 +1,17 @@
 # Echo.Seeder
 
-Development data seeder for Echo. Deterministic — same seed produces identical
-data on every machine, every run.
+Development data seeder for Echo. It simulates congregations over many years,
+so the data looks lived in: people join, give, attend, move away. The same
+seed gives the same data on every machine, every run.
 
-See `SEED.md` for admin logins, volume config, and verification queries.
+See `Seed.md` for logins, options and verification queries.
 
 ---
 
 ## Where it runs
 
 The seeder runs as part of the Aspire AppHost, or as a one-shot container
-under Docker Compose. It is not intended to run directly on the host.
+under Docker Compose. It is not meant to run directly on the host.
 
 ### Aspire
 
@@ -29,178 +30,203 @@ docker compose up -d db
 docker compose run --rm seeder
 ```
 
-First run takes roughly 30 to 60 seconds for the big congregation. Later runs
-are faster because Postgres has warmed its caches.
+The big congregation has about 50,000 members and a year of attendance, so
+expect a few minutes on the first run.
 
 ---
 
 ## Architecture
 
-```
+```text
 Program.cs
-└── SeederWorker (BackgroundService)
-    ├── SeederContext      — shared state for the whole run
-    ├── SeedFakers         — Bogus fakers, seeded for determinism
-    └── Phases (in order)
-        ├── SetupPhase         → congregations, users, lookup tables  [EF]
-        ├── PeoplePhase        → persons, members, visitors           [COPY]
-        ├── OrganizationsPhase → organizations, memberships           [COPY]
-        ├── EventsPhase        → events, registrations, attendance    [COPY]
-        ├── AttendancePhase    → service attendance                   [COPY]
-        ├── FinancesPhase      → tithes, transactions, projects       [COPY]
-        └── AssetsPhase        → assets                               [COPY]
+└── SeederWorker              runs the phases once, then stops the host
+    ├── SeedDatabase          reset, or refuse to run on a database with data
+    ├── SeederContext         shared state for the run
+    └── Phases, in order
+        ├── SetupPhase          congregations, admins, lookups   [EF]
+        ├── PeoplePhase         people, members, visitors        [COPY]
+        ├── OrganizationsPhase  organizations, memberships       [COPY]
+        ├── SessionsPhase       sessions                         [COPY]
+        ├── EventsPhase         events, registrations            [COPY]
+        ├── AttendancePhase     attendance                       [COPY]
+        ├── FinancesPhase       tithes, projects, transactions   [COPY]
+        └── AssetsPhase         assets                           [COPY]
 ```
+
+Folders:
+
+| Folder | What lives there |
+|---|---|
+| `Phases/` | One class per phase. Loops over congregations, calls the simulation, writes the result. |
+| `Simulation/` | The rules: growth, attendance, giving, calendars, catalogs. No database. |
+| `Copy/` | One COPY writer per table. The column list lives here and nowhere else. |
+| `Core/` | Options, `Rng`, context, `CongregationSeed`, `CopyBatch`, logging. |
+| `Fakers/` | Bogus fakers for names, addresses and the admin account. |
+
+A phase decides what to write. `Simulation/` decides what the data looks
+like. `Copy/` decides how it reaches Postgres. Keep it that way: simulation
+code takes an `Rng` and a date and returns plain objects, so it can be tested
+without a database.
+
+---
+
+## The simulation
+
+Each congregation has a founding date (`Founding.FoundedOn`). The big one is
+`HistoryYears` old. Small ones are between 3 years and `HistoryYears - 3`
+old. Nothing is dated before it was founded.
+
+- **People** come in households. Joins follow a growth curve, so most members
+  joined in the last few years. Each person has a commitment from 0 to 1 that
+  drives how often they attend and give.
+- **Visitors** come, and some of them become members.
+- **Attendance** is a chance per person per session: commitment, season
+  (Easter, Christmas, the rains), household (families come together), newcomer
+  enthusiasm, and fading before someone leaves.
+- **Tithes**: at most one per member per month, with catch-up payments and a
+  Christmas bump. Projects, offerings and expenses are sized from the tithe
+  income so the books agree with each other.
+- **Events and assets** follow yearly templates. Assets are priced by age.
+
+The pure rules (`AttendanceModel`, `GrowthCurve`, `Calendar`, `Money`,
+`FinanceWindow`, `Founding`, `GivingFactory`) have unit tests in
+`tests/Echo.Seeder.Tests`.
 
 ---
 
 ## The two write paths
 
-**EF Core** is used only in `SetupPhase`, for small structural data where the
-DB generates integer primary keys (`AttendanceType`, `AssetCategory`, and so
-on) and we need those IDs back. EF populates the IDs on the entities after
-`SaveChangesAsync`, and later phases use them as foreign keys.
+**EF Core** is used only in `SetupPhase`. Those tables have integer primary
+keys generated by the database, and later phases need the IDs back. The volume
+is a few dozen rows.
 
-**Npgsql binary COPY** is used for everything with volume. It bypasses EF's
-change tracker and writes directly to Postgres. The column order in each
-`COPY` statement is the contract between the seeder and the database. If you
-add a column in a migration, update the matching file in `Copy/`.
+**Npgsql binary COPY** is used for everything with volume. It skips EF's change
+tracker and writes straight to Postgres. The column order in each COPY
+statement is the contract between the seeder and the table. If a migration
+adds a column, update the matching file in `Copy/`.
 
-Each COPY batch runs inside its own transaction. If a batch fails, only that
-batch rolls back. The exception propagates and the seeder stops.
+`CopyBatch.WriteAsync` runs each batch in its own transaction. If a batch
+fails, only that batch rolls back and the seeder stops.
 
 ---
 
 ## State flows through CongregationSeed
 
-`SeederContext.State` is a `List<CongregationSeed>`. Each phase iterates over
-it, reads what it needs, and writes its output back into the same object.
+`SeederContext.State` is a list with one `CongregationSeed` per congregation.
+Each phase reads what it needs and writes its output back.
 
 | Phase | Fills |
 |---|---|
-| `SetupPhase` | `Congregation`, `Admin`, `AttendanceTypes`, `AssetCategories`, `ProjectCategories`, `TransactionCategories` |
-| `PeoplePhase` | `MemberIds`, `VisitorIds` |
-| `OrganizationsPhase` | `OrganizationIds` |
+| `SetupPhase` | `Congregation`, `Admin`, `Founded`, `SessionLabels`, `AssetCategories`, `ProjectCategories`, `TransactionCategories` |
+| `PeoplePhase` | `Members`, `Visitors` |
+| `OrganizationsPhase` | `Organizations` |
+| `SessionsPhase` | `Sessions`, `ServiceSlots` |
 | `EventsPhase` | `EventIds` |
+| `AttendancePhase` | nothing; it only reads |
 | `FinancesPhase` | `ProjectIds` |
 | `AssetsPhase` | `AssetIds` |
 
-If a phase runs before the phase that populates something it depends on,
-you'll get an empty collection and a warning log. The ordering in
-`SeederWorker` is the correct one. Don't rearrange phases without checking
-their dependencies.
+A phase that runs before the one it depends on sees an empty list and logs a
+warning. Check the dependencies before you reorder phases.
 
 ---
 
 ## Determinism
 
-Every random value comes from `Rng`, which wraps `System.Random` with a fixed
-seed. Each phase gets its own `Rng` instance, seeded with
-`HashCode.Combine(globalSeed, phaseName)`. This means:
+Every random value comes from `Rng`. `Rng.ForPhase(seed, phase, scope)` hashes
+the seed, the phase name and an optional scope (usually the congregation name)
+with FNV-1a, so each phase and each congregation has its own stream. We do not
+use `HashCode.Combine` or `string.GetHashCode`: .NET randomizes those for every
+process, which would change the data on every run.
 
-- Same global seed produces the same data every time, on any machine.
-- Editing one phase doesn't shift another phase's data.
-- Adding a new phase doesn't shift existing phases.
+This means:
 
-Bogus fakers are also seeded from the global seed (`UseSeed(opts.Seed)`).
-`FixedTimeProvider` pins "now" to `ReferenceNow` so all timestamps are stable.
+- The same seed gives the same data, on any machine.
+- Changing one phase does not move another phase's data.
+- Adding or removing a congregation does not change the others.
+
+`FixedTimeProvider` pins "now" to `ReferenceNow`, so timestamps are stable.
 
 ### Rules for new code
 
-- Never call `DateTime.UtcNow` or `DateTime.Now` in a phase. Use `ctx.Now`.
-- Never call `new Random()` or `Random.Shared`. Use `rng`.
-- Never use `Guid.NewGuid()` inside a phase that could be re-run with the
-  same seed. Use `rng.NewGuid()` if it exists, or derive from existing IDs.
+- Never call `DateTime.UtcNow`, `DateTime.Now` or `DateOnly.FromDateTime(DateTime.Now)`.
+  Use `ctx.Now` or `ctx.Today`.
+- Never use `new Random()` or `Random.Shared`. Use the `Rng` you were given.
+- Never use `Guid.NewGuid()`. Use `rng.NewGuid()`.
+- Never rely on `Dictionary` or `HashSet` order for anything that reaches the
+  database. Sort first.
+- Never date anything before the congregation's `Founded` day or before the
+  person's `JoinedOn`.
 
 ---
 
 ## Configuration
 
-All options live in the `Seeder` section of `appsettings.json`:
+All options live in the `Seeder` section of `appsettings.json`. `Seed.md` has
+the full table. Override them with environment variables:
 
-```json
-{
-  "Seeder": {
-    "Seed": 42,
-    "Reset": false,
-    "BatchSize": 2000,
-    "ReferenceNow": "2026-10-10T00:00:00+00:00",
-    "SmallCount": 10,
-    "BigMembers": 50000,
-    "BigVisitors": 5000,
-    "SmallMembers": 200,
-    "SmallVisitors": 50
-  }
-}
-```
-
-Override with environment variables:
-
-```
+```text
 Seeder__Reset=true
 Seeder__Seed=99
-Seeder__BatchSize=500
 Seeder__BigMembers=1000
 ```
 
-In Aspire, add these to the seeder resource's environment in `AppHost.cs`.
-In Docker Compose, add them under the `seeder` service's `environment` key,
-or pass them on the command line:
+In Aspire, add them to the seeder resource's environment in `AppHost.cs`. In
+Docker Compose, use the `environment` key or pass them as arguments:
 
 ```bash
 docker compose run --rm seeder Seeder:Reset=true Seeder:Seed=99
 ```
 
+Options are validated at startup. A value outside its range stops the seeder
+with a message that names the option.
+
 ---
 
 ## Adding a new phase
 
-1. Create `Phases/YourPhase.cs` implementing `ISeedPhase`.
-2. If it produces volume data, add a `Copy/YourCopy.cs` with the COPY writer.
-3. If it needs new state, add a property to `CongregationSeed`.
-4. Add it to the phases array in `SeederWorker` at the right position.
-
-That's it. No registration, no DI wiring beyond constructor injection.
+1. Put the rules in `Simulation/` and cover them with a unit test.
+2. Create `Phases/YourPhase.cs` implementing `ISeedPhase`. Get your random
+   stream from `ctx.RngFor(Name, congregation.Name)`.
+3. If it writes a table, add `Copy/YourCopy.cs`.
+4. If later phases need its output, add a property to `CongregationSeed`.
+5. Add it to the phases array in `SeederWorker`, after what it depends on.
+6. Add the new table to the list in `SeedDatabase.ResetAsync`.
 
 ---
 
 ## When the schema changes
 
-The COPY writers in `Copy/*.cs` are the only files that need updating. Each
-file maps exactly one entity to its table. The column list in the `COPY`
-statement and the `WriteAsync` calls below it must stay in sync. They are
-intentionally explicit and verbose so a mismatch is obvious.
-
-The TRUNCATE list in `SeederWorker.ResetAsync` also needs updating when
-tables are added or renamed.
+Update the files in `Copy/` that write the changed table, and the TRUNCATE list
+in `SeedDatabase.ResetAsync` if a table was added or renamed. The COPY column
+list and the `WriteAsync` calls below it must match. They are written out in
+full so a mismatch is easy to see.
 
 ---
 
 ## Common pitfalls
 
-**DateTimeKind must match the column type.**
-Audit columns (`CreatedAt`, `DeletedAt`, `ConvertedAt`) are `timestamptz` and
-require `Kind = Utc`. Calendar columns (`DateOfBirth`, `JoinedDate`) are
-`date` and require `Kind = Unspecified`, or use `DateOnly`, which has no Kind
-at all. The COPY writers must also declare `NpgsqlDbType.TimestampTz` for
-`timestamptz` columns. `NpgsqlDbType.Timestamp` (without `Tz`) means
-`timestamp without time zone` and will be rejected.
+**DateTimeKind must match the column.** `timestamptz` columns (`CreatedAt`,
+`DeletedAt`) need `Kind = Utc`, and the COPY writer must declare
+`NpgsqlDbType.TimestampTz`. `date` columns use `DateOnly`.
 
-**Faker date rules return Local by default.**
-`f.Date.Past(...)`, `f.Date.Recent(...)`, and friends always produce
-`DateTimeKind.Local`. Wrap with `DateTime.SpecifyKind(..., DateTimeKind.Utc)`
-when the target is an audit column. Do not use `.ToUniversalTime()` — it
-shifts the value by the machine's UTC offset and breaks seed reproducibility.
+**Faker dates are Local.** `f.Date.Past(...)` and friends return
+`DateTimeKind.Local`. Do not use them for seeded data. Take dates from the
+simulation. Never call `.ToUniversalTime()`: it shifts the value by the
+machine's offset and breaks reproducibility.
 
-**Unique-indexed fields need to be unique by construction.**
-Random draws from a finite pool collide. This is the birthday paradox, and it
-happens faster than you'd expect. Use `rng.Shuffle(pool).Take(n)` or
-`rng.PickSubset(pool, n)` to sample without replacement. Appending a
-per-congregation index is also fine.
+**Unique indexes must hold by construction.** Random draws from a finite pool
+collide faster than you expect. Sample without replacement
+(`rng.Shuffle(pool).Take(n)`, `rng.PickSubset`). The indexes that matter:
 
-**Foreign key ordering matters within a batch.**
-Write `People` before `Members` and `Visitors`. Write `Organizations` before
-`OrganizationMembers`. Converted visitors need their `Members` row written
-before their `Visitors` row, or the FK will fail.
+- Organizations, events and assets: name within a congregation.
+- Organization members: member and organization.
+- Attendance: session and person.
+- Tithes: member, year and month.
+
+**Write parents before children.** `People` before `Members` and `Visitors`,
+`Members` before `Visitors` for converted visitors, `Organizations` before
+`OrganizationMembers`, `Events` before registrations.
 
 ---
 
@@ -208,12 +234,12 @@ before their `Visitors` row, or the FK will fail.
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| `duplicate key value violates unique constraint` on a rerun | Existing data without `Reset=true` | `docker compose run --rm seeder Seeder:Reset=true` |
-| `DateTime with Kind=... cannot be written` | Kind mismatch or wrong `NpgsqlDbType` | Check `Copy/*.cs` and the faker rule |
-| FK violation on `Visitors` or `Members` | Bad FK target | Fix the faker to reference a real member |
-| FK violation on `OrganizationMembers` | Batch ordering | Write `Organizations` before `OrganizationMembers` |
+| `Database already has N congregation(s)` | Data exists and `Reset` is false | Run with `Seeder:Reset=true` |
+| `duplicate key value violates unique constraint` | A rule above was broken | Fix the generator; do not retry |
+| `DateTime with Kind=... cannot be written` | Kind mismatch or wrong `NpgsqlDbType` | Check the file in `Copy/` |
+| FK violation | A child written before its parent, or a bad ID | Check phase order and `CongregationSeed` |
 | Seeder hangs | Batch size too large | Set `Seeder__BatchSize=500` |
-| `Cannot load library libgssapi_krb5.so.2` | Npgsql Kerberos warning | Harmless if the DB is reachable |
+| `Cannot load library libgssapi_krb5.so.2` | Npgsql Kerberos warning | Harmless if the database is reachable |
 
 Last resort (Docker):
 

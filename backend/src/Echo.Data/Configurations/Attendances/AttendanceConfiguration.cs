@@ -41,13 +41,10 @@ public class AttendanceConfiguration : IEntityTypeConfiguration<Attendance>
         // reflect what was true when the row was written.
         builder.Property(a => a.PersonKindAtTime).IsRequired();
 
-        // A person can only be marked present once per session. Blocks
-        // duplicate QR scans, retries, and races. Filtered to live rows so
-        // a soft-delete followed by a re-mark is allowed.
         builder
             .HasIndex(a => new { a.SessionId, a.PersonId })
             .IsUnique()
-            .HasFilter($"\"{nameof(Attendance.DeletedAt)}\" IS NULL");
+            .HasFilter("deleted_at IS NULL");
 
         // Summary queries ("how many visitors attended this period") now hit
         // this index directly instead of joining to People and reading the

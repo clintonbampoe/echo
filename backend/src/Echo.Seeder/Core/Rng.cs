@@ -3,23 +3,67 @@ namespace Echo.Seeder.Core;
 /// <summary>
 /// A thin wrapper around System.Random with a fixed seed.
 /// <br/><br/>
-/// One Rng instance is created per phase, seeded from the global seed plus
-/// the phase name.
+/// Every phase (and every congregation inside a phase) gets its own Rng, so
+/// the data one phase produces never shifts when another changes.
 /// </summary>
 public sealed class Rng
 {
     private readonly Random _random;
+    private readonly int _seed;
 
-    private Rng(int seed) => _random = new Random(seed);
+    private Rng(int seed)
+    {
+        _seed = seed;
+        _random = new Random(seed);
+    }
 
     /// <summary>
-    /// Creates an Rng for a named phase. The phase name is hashed together
-    /// with the global seed so each phase gets an independent sequence.
+    /// Creates an Rng for a named phase, optionally narrowed to a scope such
+    /// as a congregation name. The same inputs always give the same sequence.
     /// </summary>
-    public static Rng ForPhase(int globalSeed, string phaseName)
+    public static Rng ForPhase(int globalSeed, string phaseName, string? scope = null) =>
+        new(StableSeed(globalSeed, phaseName, scope));
+
+    /// <summary>
+    /// A new independent Rng derived from this one's seed and a name.
+    /// Does not consume any numbers from this Rng.
+    /// </summary>
+    public Rng Fork(string name) => new(StableSeed(_seed, name, null));
+
+    // FNV-1a over the seed bytes and the names. string.GetHashCode and
+    // HashCode.Combine are randomised per process in .NET, so they would give
+    // different data on every run.
+    private static int StableSeed(int globalSeed, string phase, string? scope)
     {
-        var combined = HashCode.Combine(globalSeed, phaseName);
-        return new Rng(combined);
+        unchecked
+        {
+            var hash = 2166136261u;
+
+            for (var shift = 0; shift < 32; shift += 8)
+                hash = (hash ^ (byte)(globalSeed >> shift)) * 16777619u;
+
+            foreach (var c in phase)
+                hash = (hash ^ c) * 16777619u;
+
+            if (scope is not null)
+            {
+                hash = (hash ^ 0x1F) * 16777619u;
+                foreach (var c in scope)
+                    hash = (hash ^ c) * 16777619u;
+            }
+
+            return (int)(hash & 0x7FFFFFFF);
+        }
+    }
+
+    /// <summary>A random v4-shaped Guid that is the same on every run.</summary>
+    public Guid NewGuid()
+    {
+        Span<byte> bytes = stackalloc byte[16];
+        _random.NextBytes(bytes);
+        bytes[7] = (byte)((bytes[7] & 0x0F) | 0x40);
+        bytes[8] = (byte)((bytes[8] & 0x3F) | 0x80);
+        return new Guid(bytes);
     }
 
     /// <summary>Returns a non-negative integer in [0, maxExclusive).</summary>
@@ -31,8 +75,30 @@ public sealed class Rng
     /// <summary>Returns a double in [0.0, 1.0).</summary>
     public double NextDouble() => _random.NextDouble();
 
+    /// <summary>Returns a double in [min, max).</summary>
+    public double Range(double min, double max) => min + _random.NextDouble() * (max - min);
+
     /// <summary>Returns true with the given probability (0.0–1.0).</summary>
     public bool Chance(double probability) => _random.NextDouble() < probability;
+
+    /// <summary>A normally distributed value (Box-Muller).</summary>
+    public double Gaussian(double mean, double standardDeviation)
+    {
+        var u1 = 1.0 - _random.NextDouble();
+        var u2 = _random.NextDouble();
+        var standard = Math.Sqrt(-2.0 * Math.Log(u1)) * Math.Cos(2.0 * Math.PI * u2);
+        return mean + standard * standardDeviation;
+    }
+
+    /// <summary>
+    /// A log-normally distributed value: always positive, most values near
+    /// <paramref name="median"/>, with a long tail of large ones. This is the
+    /// shape of money amounts.
+    /// </summary>
+    public double LogNormal(double median, double sigma) => median * Math.Exp(Gaussian(0, sigma));
+
+    /// <summary>An exponentially distributed value with the given mean.</summary>
+    public double Exponential(double mean) => -mean * Math.Log(1.0 - _random.NextDouble());
 
     /// <summary>Picks a random element from a list.</summary>
     public T Pick<T>(IReadOnlyList<T> items)

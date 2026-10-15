@@ -27,9 +27,7 @@ public class SessionLabelConfiguration : IEntityTypeConfiguration<SessionLabel>
 
         builder.HasIndex(st => st.CongregationId);
 
-        builder
-            .HasIndex(st => new { st.CongregationId, st.Name })
-            .HasFilter($"\"{nameof(SessionLabel.DeletedAt)}\" IS NULL");
+        builder.HasIndex(st => new { st.CongregationId, st.Name }).HasFilter("deleted_at IS NULL");
 
         // SessionType names are unique per congregation
         builder.HasIndex(st => new { st.CongregationId, st.Name }).IsUnique();

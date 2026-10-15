@@ -4,8 +4,10 @@ using Echo.Domain.Congregations;
 using Echo.Domain.Members;
 using Echo.Domain.Projects;
 using Echo.Domain.Transactions;
+using Echo.Domain.Users;
 using Echo.Seeder.Core;
 using Echo.Seeder.Fakers;
+using Echo.Seeder.Simulation;
 
 namespace Echo.Seeder.Phases;
 
@@ -19,40 +21,43 @@ namespace Echo.Seeder.Phases;
 ///   to do this with raw COPY without a second round-trip to read the IDs back.
 ///   Volume is tiny (a handful of rows per congregation) so EF is fine.
 /// <br/><br/>
+/// This phase also decides when each congregation began (<c>Founded</c>). The
+/// congregation, its admin and its lookup tables are created on that day, so
+/// the oldest record in the database is as old as the oldest member.
+/// <br/><br/>
 /// What this produces (written into each CongregationSeed):
-///   Congregation, Admin, SessionLabels, AssetCategories,
+///   Congregation, Admin, Founded, SessionLabels, AssetCategories,
 ///   ProjectCategories, TransactionCategories
 /// <br/><br/>
 /// Lookup defaults come from CongregationDefaults, the same source the
 /// application's registration flow uses. Seeded congregations and
 /// newly-registered ones therefore start from identical lookup sets.
+/// <br/><br/>
+/// Admin accounts are predictable so they are easy to sign in with:
+/// <c>admin@{congregation name without spaces}.org</c>, all with the same password.
 /// </summary>
 public sealed class SetupPhase(SeedFakers fakers) : ISeedPhase
 {
+    private const string _bigName = "Grace Chapel International";
+
     public string Name => "Setup";
+
+    // One congregation before it is saved, with the random stream that made it.
+    private sealed record Plan(Congregation Congregation, DateOnly Founded, bool IsBig, Rng Rng);
 
     public async Task RunAsync(SeederContext ctx, CancellationToken ct)
     {
-        var rng = ctx.RngFor(Name);
-        var now = ctx.Now;
-
-        // Congregations
-
-        var big = MakeCongregation(fakers, rng, "Grace Chapel International", isBig: true, now);
-        var congregations = new List<Congregation> { big };
-
-        for (var i = 1; i <= ctx.Options.SmallCount; i++)
-            congregations.Add(MakeCongregation(fakers, rng, SmallName(rng, i), isBig: false, now));
+        var plans = PlanCongregations(ctx);
+        var congregations = plans.Select(p => p.Congregation).ToList();
 
         await ctx.Db.Congregations.AddRangeAsync(congregations, ct);
         await ctx.Db.SaveChangesAsync(ct);
-        Log.CreatedCongregations(ctx.Logger, congregations.Count, ctx.Options.SmallCount);
+        ctx.Logger.CreatedCongregations(congregations.Count, ctx.Options.SmallCount);
 
-        // Admins
-        var admins = congregations.Select(c => MakeAdmin(fakers, c.Id, now)).ToList();
+        var admins = plans.Select(p => MakeAdmin(p, ctx.Now)).ToList();
         await ctx.Db.Users.AddRangeAsync(admins, ct);
         await ctx.Db.SaveChangesAsync(ct);
-        Log.CreatedAdmins(ctx.Logger, admins.Count);
+        ctx.Logger.CreatedAdmins(admins.Count);
 
         // Lookup tables
         // Every congregation gets the same defaults, sourced from
@@ -66,6 +71,8 @@ public sealed class SetupPhase(SeedFakers fakers) : ISeedPhase
 
         foreach (var congregation in congregations)
         {
+            var createdAt = congregation.CreatedAt;
+
             foreach (var (name, category) in CongregationDefaults.SessionLabels)
                 sessionLabels.Add(
                     new SessionLabel
@@ -73,7 +80,7 @@ public sealed class SetupPhase(SeedFakers fakers) : ISeedPhase
                         CongregationId = congregation.Id,
                         Name = name,
                         Category = category,
-                        CreatedAt = now,
+                        CreatedAt = createdAt,
                     }
                 );
 
@@ -83,7 +90,7 @@ public sealed class SetupPhase(SeedFakers fakers) : ISeedPhase
                     {
                         CongregationId = congregation.Id,
                         Name = name,
-                        CreatedAt = now,
+                        CreatedAt = createdAt,
                     }
                 );
 
@@ -93,7 +100,7 @@ public sealed class SetupPhase(SeedFakers fakers) : ISeedPhase
                     {
                         CongregationId = congregation.Id,
                         Name = name,
-                        CreatedAt = now,
+                        CreatedAt = createdAt,
                     }
                 );
 
@@ -104,7 +111,7 @@ public sealed class SetupPhase(SeedFakers fakers) : ISeedPhase
                         CongregationId = congregation.Id,
                         Name = name,
                         CategoryType = type,
-                        CreatedAt = now,
+                        CreatedAt = createdAt,
                     }
                 );
         }
@@ -115,8 +122,7 @@ public sealed class SetupPhase(SeedFakers fakers) : ISeedPhase
         await ctx.Db.TransactionCategories.AddRangeAsync(transactionCategories, ct);
         await ctx.Db.SaveChangesAsync(ct);
 
-        Log.CreatedReferenceEntities(
-            ctx.Logger,
+        ctx.Logger.CreatedReferenceEntities(
             sessionLabels.Count,
             assetCategories.Count,
             projectCategories.Count,
@@ -124,14 +130,15 @@ public sealed class SetupPhase(SeedFakers fakers) : ISeedPhase
         );
 
         // Populate state
-        for (var i = 0; i < congregations.Count; i++)
+        for (var i = 0; i < plans.Count; i++)
         {
             var congregation = congregations[i];
             var seed = new CongregationSeed
             {
                 Congregation = congregation,
-                IsBig = congregation.Id == big.Id,
+                IsBig = plans[i].IsBig,
                 Admin = admins[i],
+                Founded = plans[i].Founded,
             };
 
             seed.SessionLabels.AddRange(
@@ -151,61 +158,147 @@ public sealed class SetupPhase(SeedFakers fakers) : ISeedPhase
         }
     }
 
-    // Factories
+    // ── Congregations ─────────────────────────────────────────────────────
 
-    private static Congregation MakeCongregation(
-        SeedFakers fakers,
+    private List<Plan> PlanCongregations(SeederContext ctx)
+    {
+        var names = new List<(string Name, bool IsBig)> { (_bigName, true) };
+        names.AddRange(
+            SmallNames(ctx.RngFor(Name), ctx.Options.SmallCount).Select(n => (n, false))
+        );
+
+        return
+        [
+            .. names.Select(n =>
+            {
+                // One stream per congregation, so adding or removing one never
+                // changes the others.
+                var rng = ctx.RngFor(Name, n.Name);
+                var founded = Founding.FoundedOn(rng, ctx.Options, ctx.Today, n.IsBig);
+                var congregation = MakeCongregation(rng, n.Name, n.IsBig, founded, ctx.Now);
+                return new Plan(congregation, founded, n.IsBig, rng);
+            }),
+        ];
+    }
+
+    private Congregation MakeCongregation(
         Rng rng,
         string name,
         bool isBig,
+        DateOnly founded,
         DateTime now
     )
     {
-        var slug = name.ToLowerInvariant().Replace(" ", "").Replace("'", "");
+        var slug = Slug(name);
+        var region = rng.Weighted(_weightedRegions);
+
         return new Congregation
         {
-            Id = Guid.NewGuid(),
+            Id = rng.NewGuid(),
             Name = name,
             OrgType = CongregationType.Church,
-            PhoneNumber = fakers.Raw.Phone.PhoneNumber("0##-###-####"),
+            PhoneNumber = GhanaPhone(rng),
             EmailAddress = $"info@{slug}.org",
-            Region = rng.Weighted(_weightedRegions),
+            Region = region,
             City = fakers.Raw.Address.City(),
             Town = fakers.Raw.Address.City(),
-            GpsAddress = fakers.Raw.Address.Latitude().ToString("F4"),
-            PostalAddress = isBig ? $"P.O. Box {rng.Next(1000, 9999)}" : null,
-            WebsiteUrl = isBig ? $"https://www.{slug}.org" : null,
-            CreatedAt = now,
+            GpsAddress = GpsAddress(rng, region),
+            PostalAddress = isBig || rng.Chance(0.35) ? $"P.O. Box {rng.Next(100, 9999)}" : null,
+            WebsiteUrl = isBig || rng.Chance(0.3) ? $"https://www.{slug}.org" : null,
+            CreatedAt = Stamps.On(founded, rng, now),
         };
     }
 
-    private static Domain.Users.User MakeAdmin(SeedFakers fakers, Guid congregationId, DateTime now)
+    // The admin signed up with the congregation and verified their email soon after.
+    private User MakeAdmin(Plan plan, DateTime now)
     {
         var user = fakers.User.Generate();
-        user.CongregationId = congregationId;
-        user.CreatedAt = now;
+        var createdAt = plan.Congregation.CreatedAt.AddMinutes(2);
+
+        user.Id = plan.Rng.NewGuid();
+        user.CongregationId = plan.Congregation.Id;
+        user.EmailAddress = $"admin@{Slug(plan.Congregation.Name)}.org";
+        user.CreatedAt = createdAt;
+
+        var verifiedAt = createdAt.AddMinutes(plan.Rng.Next(3, 90));
+        user.EmailVerifiedAt = verifiedAt > now ? now : verifiedAt;
+
         return user;
     }
 
-    private static string SmallName(Rng rng, int index)
+    // Every name is different: a stem and a suffix, each pair used at most once.
+    private static List<string> SmallNames(Rng rng, int count)
     {
-        var stem = rng.Pick([
-            "Cornerstone",
-            "Redeemer",
-            "Zoe",
-            "Living Faith",
-            "Harvest",
-            "Bethel",
-            "Shalom",
-            "Trinity",
-            "Rock of Ages",
-            "New Covenant",
-        ]);
-        var suffix = rng.Pick(["Chapel", "Assembly", "Fellowship"]);
-        return $"{stem} {suffix} {index}";
+        var all = _stems
+            .SelectMany(stem => _suffixes.Select(suffix => $"{stem} {suffix}"))
+            .ToList();
+        return [.. rng.Shuffle(all).Take(count)];
     }
 
-    // Reference data
+    private static string Slug(string name) =>
+        string.Concat(name.Where(char.IsLetterOrDigit).Select(char.ToLowerInvariant));
+
+    // Mobile numbers in the style of the Ghanaian networks: 024-123-4567.
+    private static string GhanaPhone(Rng rng) =>
+        $"{rng.Pick(_phonePrefixes)}-{rng.Next(100, 1000)}-{rng.Next(1000, 10000)}";
+
+    // Digital addresses look like GA-123-4567: a region code, then two groups of digits.
+    private static string GpsAddress(Rng rng, Region region) =>
+        $"{RegionCode(region)}-{rng.Next(100, 1000)}-{rng.Next(1000, 10000)}";
+
+    private static string RegionCode(Region region) =>
+        region switch
+        {
+            Region.GreaterAccra => "GA",
+            Region.Ashanti => "AK",
+            Region.Eastern => "ER",
+            Region.Central => "CR",
+            Region.Western => "WR",
+            Region.Northern => "NR",
+            Region.Volta => "VR",
+            Region.Bono => "BR",
+            Region.BonoEast => "BE",
+            Region.WesternNorth => "WN",
+            Region.UpperEast => "UE",
+            Region.UpperWest => "UW",
+            Region.Ahafo => "AH",
+            Region.Oti => "OT",
+            Region.Savannah => "SV",
+            Region.NorthEast => "NE",
+            _ => "GA",
+        };
+
+    // ── Reference data ────────────────────────────────────────────────────
+
+    private static readonly string[] _stems =
+    [
+        "Cornerstone",
+        "Redeemer",
+        "Zoe",
+        "Living Faith",
+        "Harvest",
+        "Bethel",
+        "Shalom",
+        "Trinity",
+        "Rock of Ages",
+        "New Covenant",
+    ];
+
+    private static readonly string[] _suffixes = ["Chapel", "Assembly", "Fellowship"];
+
+    private static readonly string[] _phonePrefixes =
+    [
+        "024",
+        "054",
+        "055",
+        "059",
+        "020",
+        "050",
+        "027",
+        "057",
+        "026",
+        "056",
+    ];
 
     private static readonly IReadOnlyList<(Region Value, double Weight)> _weightedRegions =
     [
@@ -226,28 +319,4 @@ public sealed class SetupPhase(SeedFakers fakers) : ISeedPhase
         (Region.Savannah, 1.5),
         (Region.NorthEast, 1.5),
     ];
-}
-
-public static partial class Log
-{
-    [LoggerMessage(
-        Level = LogLevel.Information,
-        Message = "Created {Count} congregation(s) (1 big, {Small} small)."
-    )]
-    public static partial void CreatedCongregations(this ILogger logger, int count, int small);
-
-    [LoggerMessage(Level = LogLevel.Information, Message = "Created {Count} admin user(s).")]
-    public static partial void CreatedAdmins(this ILogger logger, int count);
-
-    [LoggerMessage(
-        Level = LogLevel.Information,
-        Message = "Created lookup entities — labels={sessionLabelCount} assets={assetCategoriesCount} projects={projectCategoriesCount} transactions={transactionCategoriesCount}."
-    )]
-    public static partial void CreatedReferenceEntities(
-        this ILogger logger,
-        int sessionLabelCount,
-        int assetCategoriesCount,
-        int projectCategoriesCount,
-        int transactionCategoriesCount
-    );
 }

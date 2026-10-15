@@ -62,6 +62,7 @@ export function OrganizationMembers({
       )}
       <ListBody
         list={list}
+        icon="user"
         noun={["member", "members"]}
         emptyText="People you add to this group will appear here."
         filtered={f.filtered}

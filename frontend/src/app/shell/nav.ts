@@ -45,7 +45,7 @@ export const navGroups: NavGroup[] = [
   {
     title: "Money",
     items: [
-      { label: "Tithes", to: "/tithes", icon: "tithes", ready: false },
+      { label: "Tithes", to: "/tithes", icon: "tithes", ready: true },
       { label: "Finance", to: "/finance", icon: "finance", ready: false },
       { label: "Projects", to: "/projects", icon: "projects", ready: false },
     ],

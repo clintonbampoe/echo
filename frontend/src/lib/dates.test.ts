@@ -1,4 +1,12 @@
-import { ageOn, daysAfter, daysBetween, monthsBefore, thisYear } from "./dates";
+import {
+  ageOn,
+  daysAfter,
+  daysBetween,
+  monthStart,
+  monthsBefore,
+  thisYear,
+  weekStart,
+} from "./dates";
 
 describe("monthsBefore", () => {
   it("goes back whole months, across a year", () => {
@@ -48,5 +56,14 @@ describe("daysAfter", () => {
     expect(daysAfter("2026-10-14", 60)).toBe("2026-12-13");
     expect(daysAfter("2026-12-30", 3)).toBe("2027-01-02");
     expect(daysAfter("2028-02-28", 1)).toBe("2028-02-29");
+  });
+});
+
+describe("weekStart and monthStart", () => {
+  it("finds the Sunday a week starts on, and the first of the month", () => {
+    expect(weekStart("2026-10-14")).toBe("2026-10-11");
+    expect(weekStart("2026-10-11")).toBe("2026-10-11");
+    expect(weekStart("2026-10-03")).toBe("2026-09-27");
+    expect(monthStart("2026-10-14")).toBe("2026-10-01");
   });
 });
