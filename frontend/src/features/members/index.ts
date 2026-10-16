@@ -1,5 +1,6 @@
 // What other features and the app shell may use from members.
 export {
+  useActiveMemberCount,
   useMember,
   useMembers,
   useMemberSummary,

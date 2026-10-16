@@ -15,12 +15,12 @@ public static class AttendanceCopy
     {
         await using var writer = await conn.BeginBinaryImportAsync(
             """
-            COPY "Attendance" (
-                "Id", "CongregationId",
-                "SessionId", "PersonId",
-                "PersonKindAtTime",
-                "CheckedInAt", "RecordedBy",
-                "CreatedAt"
+            COPY attendance (
+                id, congregation_id,
+                session_id, person_id,
+                person_kind_at_time,
+                checked_in_at, recorded_by,
+                created_at
             ) FROM STDIN (FORMAT BINARY)
             """,
             ct

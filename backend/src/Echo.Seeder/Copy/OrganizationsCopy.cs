@@ -15,8 +15,8 @@ public static class OrganizationsCopy
     {
         await using var writer = await conn.BeginBinaryImportAsync(
             """
-            COPY "Organizations" (
-                "Id", "CongregationId", "Name", "Description", "CreatedAt"
+            COPY organizations (
+                id, congregation_id, name, description, created_at
             ) FROM STDIN (FORMAT BINARY)
             """,
             ct
@@ -43,10 +43,10 @@ public static class OrganizationsCopy
     {
         await using var writer = await conn.BeginBinaryImportAsync(
             """
-            COPY "OrganizationMembers" (
-                "Id", "CongregationId",
-                "MemberId", "OrganizationId",
-                "Role", "JoinedAt", "CreatedAt"
+            COPY organization_members (
+                id, congregation_id,
+                member_id, organization_id,
+                role, joined_at, created_at
             ) FROM STDIN (FORMAT BINARY)
             """,
             ct

@@ -3,7 +3,11 @@ import { Icon } from "./Icon";
 import { Shell, type Shared } from "./FieldShell";
 import styles from "./Field.module.css";
 
-type FieldProps = Shared & ComponentProps<"input">;
+type FieldProps = Shared &
+  ComponentProps<"input"> & {
+    // A short mark shown inside the left edge, e.g. a currency like "GH₵".
+    unit?: string;
+  };
 
 export function Field({
   label,
@@ -11,10 +15,20 @@ export function Field({
   error,
   aside,
   optional,
+  unit,
   ...input
 }: FieldProps) {
   const id = useId();
   const described = error || hint ? `${id}-msg` : undefined;
+  const control = (
+    <input
+      {...input}
+      id={id}
+      aria-invalid={error ? true : undefined}
+      aria-describedby={described}
+      className={`${styles.control} ${unit ? styles.withUnit : ""}`}
+    />
+  );
   return (
     <Shell
       id={id}
@@ -24,13 +38,16 @@ export function Field({
       aside={aside}
       optional={optional}
     >
-      <input
-        {...input}
-        id={id}
-        aria-invalid={error ? true : undefined}
-        aria-describedby={described}
-        className={styles.control}
-      />
+      {unit ? (
+        <div className={styles.unitWrap}>
+          <span className={styles.unit} aria-hidden="true">
+            {unit}
+          </span>
+          {control}
+        </div>
+      ) : (
+        control
+      )}
     </Shell>
   );
 }

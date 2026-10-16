@@ -4,6 +4,7 @@ import type { ReactNode } from 'react'
 const shapes = {
   'alert': <><path d="M12 4 2.8 19.5h18.4L12 4z"/><path d="M12 10v4.5M12 17.2v.1"/></>,
   'arrow-down': <><path d="M12 5v14M6 13l6 6 6-6"/></>,
+  'arrow-left': <><path d="M19 12H5M11 6l-6 6 6 6"/></>,
   'arrow-right': <><path d="M5 12h14M13 6l6 6-6 6"/></>,
   'arrow-up': <><path d="M12 19V5M6 11l6-6 6 6"/></>,
   'assets': <><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3z"/><path d="M12 12 4.5 7.8M12 12l7.5-4.2M12 12v9"/></>,

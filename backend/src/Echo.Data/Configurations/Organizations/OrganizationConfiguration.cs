@@ -23,8 +23,6 @@ public class OrganizationConfiguration : IEntityTypeConfiguration<Organization>
 
         builder.HasIndex(o => o.Name).HasMethod("GIN").HasOperators("gin_trgm_ops");
 
-        builder
-            .HasIndex(p => new { p.Name, p.Id })
-            .HasFilter($"\"{nameof(Organization.DeletedAt)}\" IS NULL");
+        builder.HasIndex(p => new { p.Name, p.Id }).HasFilter("deleted_at IS NULL");
     }
 }

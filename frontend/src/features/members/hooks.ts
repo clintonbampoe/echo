@@ -1,5 +1,6 @@
 // The only file in members that knows about TanStack Query.
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { ALL_TIME } from "@/lib/dates";
 import { usePagedList } from "@/lib/paged";
 import * as api from "./api";
 
@@ -37,6 +38,10 @@ export const useMemberSummary = (filters: api.MemberFilters) =>
     queryKey: memberKeys.summary(filters),
     queryFn: ({ signal }) => api.getMemberSummary(filters, signal),
   });
+
+// How many members are active today, whenever they joined (a summary with no dates counts only this year's joiners).
+export const useActiveMemberCount = () =>
+  useMemberSummary(ALL_TIME).data?.activeMembers;
 
 // Adding or changing a member changes the lists and the summary numbers, so refetch them all.
 export function useRefreshMembers() {

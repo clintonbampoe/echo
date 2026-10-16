@@ -43,6 +43,7 @@ export function MembersPage() {
       />
       <ListBody
         list={list}
+        icon="user"
         noun={["member", "members"]}
         emptyText="Members you add will appear here."
         filtered={memberFilters.isFiltered(filters)}

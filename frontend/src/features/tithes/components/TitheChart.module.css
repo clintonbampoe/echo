@@ -1,0 +1,45 @@
+.card {
+  margin-top: 16px;
+  padding: 16px 20px 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 6px 24px;
+  margin-bottom: 14px;
+}
+.title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+/* The details sit at the top right, stacked and right-aligned; on a narrow screen they drop under the title. */
+.details {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: right;
+}
+.line {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-3);
+}
+/* The figures worth reading at a glance stand out from the sentence around them. */
+.line strong {
+  font-weight: 600;
+  color: var(--text);
+}
+@media (max-width: 560px) {
+  .card {
+    padding: 14px 14px 10px;
+  }
+  .details {
+    text-align: left;
+  }
+}

@@ -1,0 +1,66 @@
+.body {
+  display: grid;
+  gap: 24px;
+  padding-top: 8px;
+}
+
+.who {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--line);
+}
+.names {
+  display: grid;
+  gap: 6px;
+  justify-items: start;
+  flex: 1;
+  min-width: 0;
+}
+.name {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+}
+
+/* The form sits in a sheet, so its controls are a little smaller than a full page form's. */
+.fields {
+  display: grid;
+  gap: 16px;
+  --control-height: 40px;
+  --control-gap: 6px;
+  --control-font: 14px;
+}
+.added {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-3);
+}
+
+.remove {
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+}
+.removeText {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+/* Phone and tablet: full-size touch controls. 16px text stops iPhones zooming in on a field. */
+@media (max-width: 900px) {
+  .fields {
+    --control-height: 48px;
+    --control-gap: 8px;
+    --control-font: 16px;
+  }
+  .who {
+    flex-wrap: wrap;
+  }
+}

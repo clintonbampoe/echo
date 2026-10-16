@@ -44,9 +44,15 @@ export function OrganizationsPage() {
       ) : (
         <>
           <SummaryStrip summary={summary.data} />
-          <FilterBar filters={filters} onChange={update} resetKey={resetKey} />
+          <FilterBar
+            filters={filters}
+            onChange={update}
+            resetKey={resetKey}
+            onClear={clear}
+          />
           <ListBody
             list={list}
+            icon="organizations"
             noun={["organization", "organizations"]}
             emptyText="Organizations you add will appear here."
             filtered={filtered}

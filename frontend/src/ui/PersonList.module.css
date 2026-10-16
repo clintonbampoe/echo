@@ -69,8 +69,14 @@
 /* The name is the real link (keyboard, screen readers, open in a new tab). Its ::after stretches over the
    whole row, so clicking anywhere on the row opens the person. */
 .link {
+  padding: 0;
+  background: none;
+  border: 0;
+  font: inherit;
+  text-align: left;
   color: inherit;
   text-decoration: none;
+  cursor: pointer;
 }
 .link::after {
   content: "";
@@ -94,6 +100,9 @@
   color: var(--text-3);
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+.end {
+  text-align: right;
 }
 .cell {
   min-width: 0;
@@ -157,6 +166,9 @@
   .cell {
     order: 2;
     white-space: normal;
+  }
+  .end {
+    text-align: left;
   }
   .chip {
     grid-column: 1 / -1;

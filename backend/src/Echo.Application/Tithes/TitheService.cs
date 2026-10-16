@@ -6,10 +6,11 @@ using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
+using Echo.Shared.Utilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
-using Echo.Shared.Utilities;
 
 namespace Echo.Application.Tithes;
 
@@ -38,6 +39,13 @@ public class TitheService(
                 || filters.Year is not null
                 || filters.Month is not null
         );
+
+    // A member has one tithe per month; topping up is an update of that tithe. The check below gives the friendly
+    // answer, and the unique index in the database is what makes it hold when two requests race.
+    internal const string DuplicateCode = "TITHE_DUPLICATE";
+
+    internal static string DuplicateDetail(string memberName, MonthOfYear month, int year) =>
+        $"{memberName} already has a tithe for {month} {year}. Update that tithe instead.";
 
     public async Task<IOperationResult> List(
         Guid congregationId,
@@ -164,6 +172,33 @@ public class TitheService(
         }
         TitheLog.CreateMemberFound(logger, congregationId, dto.MemberId);
 
+        bool exists;
+        using (instrumentation.ActivitySource.StartActivity("svc.tithe.validate.duplicate"))
+        {
+            exists = await repository.ExistsForMonth(
+                congregationId,
+                dto.MemberId,
+                dto.ForYear,
+                dto.ForMonth,
+                null,
+                ct
+            );
+        }
+        if (exists)
+        {
+            TitheLog.CreateDuplicate(
+                logger,
+                congregationId,
+                dto.MemberId,
+                dto.ForMonth.ToString(),
+                dto.ForYear
+            );
+            return new ConflictResult(
+                DuplicateDetail(member.Person.Name, dto.ForMonth, dto.ForYear),
+                DuplicateCode
+            );
+        }
+
         var entity = mapper.ToEntity(dto);
         entity.CongregationId = congregationId;
         entity.Id = idGenerator.Generate();
@@ -172,7 +207,25 @@ public class TitheService(
         using (instrumentation.ActivitySource.StartActivity("svc.tithe.persist"))
         {
             repository.Create(entity);
-            await unitOfWork.CommitAsync(ct);
+            try
+            {
+                await unitOfWork.CommitAsync(ct);
+            }
+            catch (DbUpdateException ex) when (ex.IsUniqueViolation())
+            {
+                // Another request recorded this member's tithe for the month between the check above and the save.
+                TitheLog.CreateDuplicate(
+                    logger,
+                    congregationId,
+                    dto.MemberId,
+                    dto.ForMonth.ToString(),
+                    dto.ForYear
+                );
+                return new ConflictResult(
+                    DuplicateDetail(member.Person.Name, dto.ForMonth, dto.ForYear),
+                    DuplicateCode
+                );
+            }
         }
 
         activity?.SetTag("tithe.id", entity.Id);
@@ -209,28 +262,57 @@ public class TitheService(
             return new NotFoundResult(id.ToString());
         }
 
-        // Validate the NEW member, not the existing one.
-        if (dto.MemberId.HasValue && dto.MemberId.Value != entity.MemberId)
+        // Moving a tithe to another month can land on one the member already has.
+        var year = dto.ForYear ?? entity.ForYear;
+        var month = dto.ForMonth ?? entity.ForMonth;
+        var moved = year != entity.ForYear || month != entity.ForMonth;
+        if (
+            moved
+            && await repository.ExistsForMonth(
+                congregationId,
+                entity.MemberId,
+                year,
+                month,
+                entity.Id,
+                ct
+            )
+        )
         {
-            Member? member;
-            using (instrumentation.ActivitySource.StartActivity("svc.tithe.validate.member"))
-            {
-                member = await memberRepository.GetById(congregationId, dto.MemberId.Value, ct);
-            }
-
-            if (member is null)
-            {
-                TitheLog.UpdateMemberNotFound(logger, congregationId, dto.MemberId.Value);
-                return new ForeignKeyEntityNotFound(nameof(member));
-            }
-            TitheLog.UpdateMemberFound(logger, congregationId, dto.MemberId.Value);
+            TitheLog.UpdateDuplicate(
+                logger,
+                congregationId,
+                entity.MemberId,
+                month.ToString(),
+                year
+            );
+            return new ConflictResult(
+                DuplicateDetail(entity.Member.Person.Name, month, year),
+                DuplicateCode
+            );
         }
 
         mapper.Patch(dto, entity);
 
         using (instrumentation.ActivitySource.StartActivity("svc.tithe.persist"))
         {
-            await unitOfWork.CommitAsync(ct);
+            try
+            {
+                await unitOfWork.CommitAsync(ct);
+            }
+            catch (DbUpdateException ex) when (ex.IsUniqueViolation())
+            {
+                TitheLog.UpdateDuplicate(
+                    logger,
+                    congregationId,
+                    entity.MemberId,
+                    month.ToString(),
+                    year
+                );
+                return new ConflictResult(
+                    DuplicateDetail(entity.Member.Person.Name, month, year),
+                    DuplicateCode
+                );
+            }
         }
 
         TitheLog.Updated(logger, congregationId, id);
@@ -307,9 +389,13 @@ public class TitheService(
         CancellationToken ct
     )
     {
-        using var activity = instrumentation.ActivitySource.StartActivity("svc.tithe.monthly_summary");
+        using var activity = instrumentation.ActivitySource.StartActivity(
+            "svc.tithe.monthly_summary"
+        );
 
-        var window = dateWindows.LastTwelveMonths(filters.From, filters.To, hasParent: false)!.Value;
+        var window = dateWindows
+            .LastTwelveMonths(filters.From, filters.To, hasParent: false)!
+            .Value;
         var months = MonthRange.Between(window.From, window.To);
         if (MonthRange.Problem(months) is { } problem)
             return new BadRequestResult(problem);
@@ -330,10 +416,10 @@ public class TitheService(
         IReadOnlyList<YearMonth> months,
         IReadOnlyList<TitheMonthlyDto> rows
     ) =>
-        months
-            .Select(m =>
+        [
+            .. months.Select(m =>
                 rows.FirstOrDefault(r => r.Year == m.Year && r.Month == m.Month)
                 ?? new TitheMonthlyDto { Year = m.Year, Month = m.Month }
-            )
-            .ToList();
+            ),
+        ];
 }

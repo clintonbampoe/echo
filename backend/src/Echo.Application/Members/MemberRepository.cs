@@ -1,9 +1,9 @@
 using Echo.Data;
+using Echo.Domain.Congregations;
 using Echo.Domain.Members;
 using Echo.Shared.Query;
 using Echo.Shared.Utilities;
 using Microsoft.EntityFrameworkCore;
-using Echo.Domain.Congregations;
 
 namespace Echo.Application.Members;
 
@@ -64,10 +64,10 @@ public class MemberRepository(AppDbContext context, TimeProvider timeProvider)
             .Filter(filters);
 
         var today = DateUtils.GetDateToday(timeProvider);
-        var stats = await context
-            .OneRow(congregationId)
-            .SummarizeMembers(members, today)
-            .FirstOrDefaultAsync(ct);
+
+        // Clean, readable entry point
+        var stats = await members.SummarizeMembers(today).FirstOrDefaultAsync(ct);
+
         return stats ?? new MemberStats(0, 0, 0, 0, 0d);
     }
 
@@ -81,38 +81,35 @@ public record MemberStats(int Total, int Active, int Male, int Female, double Av
 internal static class MemberQueryExtensions
 {
     internal static IQueryable<MemberStats> SummarizeMembers(
-        this IQueryable<Congregation> oneRow,
-        IQueryable<Member> members,
+        this IQueryable<Member> query,
         DateOnly today
     )
     {
         var (year, month, day) = (today.Year, today.Month, today.Day);
 
-        // Age in whole years: the year difference, minus one if this year's birthday has not come yet.
-        return oneRow.Select(_ => new MemberStats(
-            members.Count(),
-            members.Count(m => m.Status == MemberStatus.Active),
-            members.Count(m => m.Gender == Gender.Male),
-            members.Count(m => m.Gender == Gender.Female),
-            members.Average(m =>
-                (double?)(
-                    year
-                    - m.DateOfBirth.Year
-                    - (
-                        m.DateOfBirth.Month > month
-                        || (m.DateOfBirth.Month == month && m.DateOfBirth.Day > day)
-                            ? 1
-                            : 0
+        return query
+            .GroupBy(m => m.CongregationId)
+            .Select(group => new MemberStats(
+                group.Count(),
+                group.Count(m => m.Status == MemberStatus.Active),
+                group.Count(m => m.Gender == Gender.Male),
+                group.Count(m => m.Gender == Gender.Female),
+                group.Average(m =>
+                    (double?)(
+                        year
+                        - m.DateOfBirth.Year
+                        - (
+                            m.DateOfBirth.Month > month
+                            || (m.DateOfBirth.Month == month && m.DateOfBirth.Day > day)
+                                ? 1
+                                : 0
+                        )
                     )
-                )
-            ) ?? 0d
-        ));
+                ) ?? 0d
+            ));
     }
 
-    internal static IQueryable<Member> Filter(
-        this IQueryable<Member> query,
-        MemberFilters filters
-    )
+    internal static IQueryable<Member> Filter(this IQueryable<Member> query, MemberFilters filters)
     {
         if (filters.Name is not null)
             query = query.Where(m => EF.Functions.ILike(m.Person.Name, $"%{filters.Name}%"));

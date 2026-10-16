@@ -1,4 +1,3 @@
-using System.Linq.Expressions;
 using Echo.Data;
 using Echo.Domain.Congregations;
 using Echo.Domain.Tithes;
@@ -63,6 +62,30 @@ public class TitheRepository(AppDbContext context)
             .ToListAsync(ct);
     }
 
+    // True when the member already has a (not deleted) tithe for that month. `exceptId` leaves out the tithe being
+    // edited, so saving it again without moving it is not a clash with itself.
+    public async Task<bool> ExistsForMonth(
+        Guid congregationId,
+        Guid memberId,
+        int year,
+        MonthOfYear month,
+        Guid? exceptId,
+        CancellationToken ct
+    )
+    {
+        return await _dbSet
+            .FilterDeleted()
+            .AnyAsync(
+                t =>
+                    t.CongregationId == congregationId
+                    && t.MemberId == memberId
+                    && t.ForYear == year
+                    && t.ForMonth == month
+                    && (exceptId == null || t.Id != exceptId),
+                ct
+            );
+    }
+
     public async Task<List<TitheMonthlyDto>> GetMonthlyTotals(
         Guid congregationId,
         TitheMonthlyFilters filters,
@@ -79,11 +102,17 @@ public class TitheRepository(AppDbContext context)
         if (filters.MemberId is not null)
             query = query.Where(t => t.MemberId == filters.MemberId);
 
+        if (!string.IsNullOrWhiteSpace(filters.MemberName))
+        {
+            var pattern = $"%{Echo.Shared.Query.Extensions.EscapeLike(filters.MemberName.Trim())}%";
+            query = query.Where(t => EF.Functions.ILike(t.Member.Person.Name, pattern));
+        }
+
         if (filters.PaymentMethod is not null)
             query = query.Where(t => t.PaymentMethod == filters.PaymentMethod);
 
-        var totals = await query.InMonths(first, last).MonthlyTotals().ToListAsync(ct);
-        return totals.Select(t => t.ToDto()).ToList();
+        var rows = await query.InYears(first, last).MonthlyTotals().ToListAsync(ct);
+        return rows.Select(r => r.ToDto()).ToList();
     }
 
     public async Task<TitheStats> GetSummaryStats(
@@ -110,14 +139,9 @@ public class TitheRepository(AppDbContext context)
     public void SoftDelete(Tithe entity) => entity.DeletedAt = DateTime.UtcNow;
 }
 
-public record TitheStats(decimal Total, int UniqueTithers, PaymentMethod? MostUsedPaymentMethod);
+internal record TitheMonthRow(int Year, MonthOfYear Month, decimal Total, int UniqueTithers);
 
-internal record TitheMonthTotal(
-    int Year,
-    MonthOfYear Month,
-    decimal TotalCollected,
-    int UniqueTithers
-);
+public record TitheStats(decimal Total, int UniqueTithers, PaymentMethod? MostUsedPaymentMethod);
 
 internal static class TitheQueryExtensions
 {
@@ -135,63 +159,44 @@ internal static class TitheQueryExtensions
                 .FirstOrDefault()
         ));
 
-    // Tithes are charted by the month they are for (ForYear and ForMonth).
-    // ForMonth is stored as the month's name, so the database cannot do arithmetic on it. Each wanted
-    // month is matched on its own (year equals, month equals), which works in SQL and in memory alike.
-    internal static IQueryable<Tithe> InMonths(
+    // Narrows to the years the chart covers. The month is stored as text, so it cannot be compared or added to a
+    // number in SQL; months outside the range come back as extra rows and FillMonths leaves them out.
+    internal static IQueryable<Tithe> InYears(
         this IQueryable<Tithe> query,
         YearMonth first,
         YearMonth last
-    )
-    {
-        var firstIndex = first.Year * 12 + first.Month - 1;
-        var lastIndex = last.Year * 12 + last.Month - 1;
+    ) => query.Where(t => t.ForYear >= first.Year && t.ForYear <= last.Year);
 
-        var t = Expression.Parameter(typeof(Tithe), "t");
-        Expression wanted = Enumerable
-            .Range(firstIndex, Math.Max(0, lastIndex - firstIndex + 1))
-            .Select(index =>
-                (Expression)
-                    Expression.AndAlso(
-                        Expression.Equal(
-                            Expression.Property(t, nameof(Tithe.ForYear)),
-                            Expression.Constant(index / 12)
-                        ),
-                        Expression.Equal(
-                            Expression.Property(t, nameof(Tithe.ForMonth)),
-                            Expression.Constant((MonthOfYear)(index % 12 + 1))
-                        )
-                    )
-            )
-            .Aggregate((Expression)Expression.Constant(false), Expression.OrElse);
-
-        return query.Where(Expression.Lambda<Func<Tithe, bool>>(wanted, t));
-    }
-
-    // The month stays an enum until the rows are read: turning it into its number is done in memory.
-    internal static IQueryable<TitheMonthTotal> MonthlyTotals(this IQueryable<Tithe> query) =>
+    // The month stays an enum here: it is stored as text, so turning it into a number happens after the query (ToDto).
+    internal static IQueryable<TitheMonthRow> MonthlyTotals(this IQueryable<Tithe> query) =>
         query
             .GroupBy(t => new { t.ForYear, t.ForMonth })
-            .Select(g => new TitheMonthTotal(
+            .Select(g => new TitheMonthRow(
                 g.Key.ForYear,
                 g.Key.ForMonth,
                 g.Sum(t => t.Amount),
                 g.Select(t => t.MemberId).Distinct().Count()
             ));
 
-    internal static TitheMonthlyDto ToDto(this TitheMonthTotal total) =>
+    internal static TitheMonthlyDto ToDto(this TitheMonthRow row) =>
         new()
         {
-            Year = total.Year,
-            Month = (int)total.Month,
-            TotalCollected = total.TotalCollected,
-            UniqueTithers = total.UniqueTithers,
+            Year = row.Year,
+            Month = (int)row.Month,
+            TotalCollected = row.Total,
+            UniqueTithers = row.UniqueTithers,
         };
 
     internal static IQueryable<Tithe> Filter(this IQueryable<Tithe> query, TitheFilters filters)
     {
         if (filters.MemberId is not null)
             query = query.Where(t => t.MemberId == filters.MemberId);
+
+        if (!string.IsNullOrWhiteSpace(filters.MemberName))
+        {
+            var pattern = $"%{Echo.Shared.Query.Extensions.EscapeLike(filters.MemberName.Trim())}%";
+            query = query.Where(t => EF.Functions.ILike(t.Member.Person.Name, pattern));
+        }
 
         if (filters.PaymentMethod is not null)
             query = query.Where(t => t.PaymentMethod == filters.PaymentMethod);

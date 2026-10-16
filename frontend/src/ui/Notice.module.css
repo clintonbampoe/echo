@@ -1,0 +1,42 @@
+.notice {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px 14px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius);
+  background: var(--surface-2);
+}
+.warning {
+  border-color: var(--warn-line);
+  background: var(--warn-bg);
+}
+.icon {
+  flex: none;
+  margin-top: 1px;
+  color: var(--warn);
+}
+.content {
+  min-width: 0;
+}
+.title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+}
+.body {
+  margin-top: 4px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-2);
+}
+.body p {
+  margin: 0;
+}
+.action {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}

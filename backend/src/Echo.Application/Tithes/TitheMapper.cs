@@ -7,7 +7,7 @@ namespace Echo.Application.Tithes;
 public partial class TitheMapper : ITitheMapper
 {
     public TitheResponseDto ToDto(Tithe entity) =>
-        new TitheResponseDto
+        new()
         {
             Id = entity.Id,
             MemberId = entity.MemberId,
@@ -33,8 +33,6 @@ public partial class TitheMapper : ITitheMapper
 
     public void Patch(TitheUpdateDto dto, Tithe entity)
     {
-        if (dto.MemberId.HasValue)
-            entity.MemberId = dto.MemberId.Value;
         if (dto.Amount.HasValue)
             entity.Amount = dto.Amount.Value;
         if (dto.ForYear.HasValue)

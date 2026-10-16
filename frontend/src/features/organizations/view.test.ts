@@ -9,9 +9,23 @@ describe("organization view", () => {
   });
 
   it("turns the role filter into what the API takes, ignoring anything that is not a role", () => {
-    expect(toMemberFilters("Leader")).toEqual({ role: "Leader" });
-    expect(toMemberFilters("")).toEqual({ role: undefined });
-    expect(toMemberFilters("Pastor")).toEqual({ role: undefined });
+    expect(toMemberFilters("Leader")).toEqual({
+      role: "Leader",
+      name: undefined,
+    });
+    expect(toMemberFilters("")).toEqual({ role: undefined, name: undefined });
+    expect(toMemberFilters("Pastor")).toEqual({
+      role: undefined,
+      name: undefined,
+    });
+    expect(toMemberFilters("", "  ko ")).toEqual({
+      role: undefined,
+      name: "ko",
+    });
+    expect(toMemberFilters("", "   ")).toEqual({
+      role: undefined,
+      name: undefined,
+    });
     expect(roles).toEqual(["Leader", "Secretary", "Member"]);
   });
 });

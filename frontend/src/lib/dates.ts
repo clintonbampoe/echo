@@ -26,6 +26,15 @@ export const thisYear = (today: string) => ({
   to: today,
 });
 
+// The first day of the week (Sunday, as on the server) that a plain day falls in, and of its month.
+export function weekStart(day: string): string {
+  const [y, m, d] = dayParts(day);
+  const weekday = new Date(Date.UTC(y, m - 1, d)).getUTCDay();
+  return daysAfter(day, -weekday);
+}
+
+export const monthStart = (day: string) => `${day.slice(0, 7)}-01`;
+
 // The same day some months earlier ("2026-10-31" minus 3 -> "2026-07-31"), or the month's last day when
 // that month is shorter ("2026-05-31" minus 3 -> "2026-02-28").
 export function monthsBefore(day: string, months: number): string {

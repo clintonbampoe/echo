@@ -7,7 +7,10 @@ using Microsoft.Extensions.Options;
 var builder = Host.CreateApplicationBuilder(args);
 
 builder.AddServiceDefaults();
-builder.AddNpgsqlDbContext<AppDbContext>("echodb");
+builder.AddNpgsqlDbContext<AppDbContext>(
+    "echodb",
+    configureDbContextOptions: options => options.ConfigureEchoDatabase()
+);
 
 // Bind SeederOptions from the "Seeder" config section.
 // ValidateDataAnnotations enforces the [Range] attributes at startup.

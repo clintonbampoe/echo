@@ -13,7 +13,12 @@ export const roles: readonly OrganizationRole[] = [
   "Member",
 ];
 
-// The members list's role filter holds text ('' for any role); the API wants a role or nothing.
-export const toMemberFilters = (role: string): OrganizationMemberFilters => ({
+// The members list's role filter holds text ('' for any role) and so does its search; the API wants a role or a
+// name, or nothing.
+export const toMemberFilters = (
+  role: string,
+  name = "",
+): OrganizationMemberFilters => ({
   role: roles.find((r) => r === role),
+  name: name.trim() || undefined,
 });

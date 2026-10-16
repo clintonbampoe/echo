@@ -1,34 +1,38 @@
-import { FilterSelect, SearchBox } from "@/ui";
+import { FilterBar as Bar, FilterSelect } from "@/ui";
 import { windowOptions } from "@/lib/windows";
-import type { ListFilters } from "./filters";
-import styles from "./FilterBar.module.css";
+import { countActive, organizationFilters, type ListFilters } from "./filters";
 
 type Props = {
   filters: ListFilters;
   onChange: (change: Partial<ListFilters>) => void;
   // Changes when the filters are cleared, so the search box empties too.
   resetKey: number;
+  onClear: () => void;
 };
 
-// Search and the time range, side by side at every width. The shared filter bar folds its pills behind a
-// "Filters" button on a phone; with only one pill that would hide it for nothing.
-export function FilterBar({ filters, onChange, resetKey }: Props) {
+// The organizations list's search and time range: the shared bar. The time range is this list's only filter,
+// so it sits at the far right on a wide screen and behind the "Filters" button on a phone or tablet.
+export function FilterBar({ filters, onChange, resetKey, onClear }: Props) {
   return (
-    <div className={styles.bar}>
-      <SearchBox
-        key={resetKey}
-        label="Search organizations"
-        value={filters.name}
-        onCommit={(name) => onChange({ name })}
-        className={styles.search}
-      />
-      <FilterSelect
-        label="All time"
-        options={windowOptions}
-        value={filters.window}
-        quiet
-        onChange={(window) => onChange({ window })}
-      />
-    </div>
+    <Bar
+      searchLabel="Search organizations"
+      search={filters.name}
+      onSearch={(name) => onChange({ name })}
+      resetKey={resetKey}
+      active={countActive(filters)}
+      filtered={organizationFilters.isFiltered(filters)}
+      onClear={onClear}
+      trailing={
+        <FilterSelect
+          label="All time"
+          options={windowOptions}
+          value={filters.window}
+          quiet
+          onChange={(window) => onChange({ window })}
+        />
+      }
+    >
+      {null}
+    </Bar>
   );
 }

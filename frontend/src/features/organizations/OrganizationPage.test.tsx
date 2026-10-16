@@ -72,7 +72,14 @@ function server(status = 200) {
         : json({ title: "Not found" }, status);
     if (path === "/v1/organization-members/organization/o1") {
       const role = u.searchParams.get("role");
-      return page(role ? people.filter((p) => p.role === role) : people);
+      const name = u.searchParams.get("name")?.toLowerCase();
+      return page(
+        people.filter(
+          (p) =>
+            (!role || p.role === role) &&
+            (!name || p.memberName.toLowerCase().includes(name)),
+        ),
+      );
     }
     if (path === "/v1/events") return page([event]);
     return page([]);
@@ -110,15 +117,15 @@ function show(handler: (url: string, init?: RequestInit) => Promise<Response>) {
 }
 
 describe("organization page", () => {
-  it("shows the group, who leads it and its members, each linking to their page", async () => {
+  it("shows the group, who leads it and its members", async () => {
     show(server());
     expect(
       await screen.findByRole("heading", { name: "Church Choir" }),
     ).toBeInTheDocument();
     expect(screen.getByText("Leads worship on Sundays.")).toBeInTheDocument();
     expect(
-      await screen.findByRole("link", { name: "Comfort Addo" }),
-    ).toHaveAttribute("href", "/members/m2");
+      await screen.findByRole("button", { name: /^Comfort Addo$/ }),
+    ).toBeInTheDocument();
     expect(screen.getByText("Jan 2016")).toBeInTheDocument();
     expect(screen.getByText("Secretary")).toBeInTheDocument();
     const strip = screen.getByRole("region", { name: "Organization numbers" });
@@ -130,20 +137,68 @@ describe("organization page", () => {
   it("asks only for the people with the role chosen in the filter", async () => {
     const user = userEvent.setup();
     const fetchMock = show(server());
-    await screen.findByRole("link", { name: "Kwame Asante" });
+    await screen.findByRole("button", { name: /^Kwame Asante$/ });
     await user.click(screen.getByRole("button", { name: /Role/ }));
     await user.click(await screen.findByRole("option", { name: "Secretary" }));
     await waitFor(() =>
-      expect(screen.queryByRole("link", { name: "Kwame Asante" })).toBeNull(),
+      expect(
+        screen.queryByRole("button", { name: /^Kwame Asante$/ }),
+      ).toBeNull(),
     );
     expect(
-      screen.getByRole("link", { name: "Comfort Addo" }),
+      screen.getByRole("button", { name: /^Comfort Addo$/ }),
     ).toBeInTheDocument();
     expect(
       fetchMock.mock.calls.some(
         ([u]) => new URL(u as string).searchParams.get("role") === "Secretary",
       ),
     ).toBe(true);
+  });
+
+  it("searches the group’s members by name", async () => {
+    const user = userEvent.setup();
+    const fetchMock = show(server());
+    await screen.findByRole("button", { name: /^Kwame Asante$/ });
+    await user.type(
+      screen.getByRole("searchbox", { name: "Search this group" }),
+      "comf",
+    );
+    expect(
+      await screen.findByRole("button", { name: /^Comfort Addo$/ }),
+    ).toBeInTheDocument();
+    await waitFor(() =>
+      expect(
+        screen.queryByRole("button", { name: /^Kwame Asante$/ }),
+      ).toBeNull(),
+    );
+    await waitFor(() =>
+      expect(
+        fetchMock.mock.calls.some(
+          ([u]) =>
+            new URL(u as string, "http://x").searchParams.get("name") ===
+            "comf",
+        ),
+      ).toBe(true),
+    );
+  });
+
+  it("empties the search box as well as the role when the filters are cleared", async () => {
+    const user = userEvent.setup();
+    show(server());
+    await screen.findByRole("button", { name: /^Kwame Asante$/ });
+    await user.type(
+      screen.getByRole("searchbox", { name: "Search this group" }),
+      "zzz",
+    );
+    await user.click(
+      await screen.findByRole("button", { name: /Clear filters/ }),
+    );
+    expect(
+      screen.getByRole("searchbox", { name: "Search this group" }),
+    ).toHaveValue("");
+    expect(
+      await screen.findByRole("button", { name: /^Kwame Asante$/ }),
+    ).toBeInTheDocument();
   });
 
   it("lists the events the group is hosting on the Events tab, each linking to its page", async () => {
@@ -293,5 +348,70 @@ describe("organization page", () => {
         ),
       ).toBe(true),
     );
+  });
+
+  it("opens the membership panel from a name, with a link to the profile as the only way out", async () => {
+    const user = userEvent.setup();
+    show(server());
+    await user.click(
+      await screen.findByRole("button", { name: /^Comfort Addo$/ }),
+    );
+    const panel = await screen.findByRole("dialog", { name: "Membership" });
+    expect(within(panel).getByText("In Church Choir")).toBeInTheDocument();
+    expect(
+      within(panel).getByRole("link", { name: "View profile" }),
+    ).toHaveAttribute("href", "/members/m2?tab=organizations");
+    expect(
+      within(panel).getByRole("radio", { name: "Secretary" }),
+    ).toBeChecked();
+  });
+
+  it("saves a role changed in the membership panel", async () => {
+    const user = userEvent.setup();
+    const fetchMock = show(server());
+    await user.click(
+      await screen.findByRole("button", { name: /^Kwame Asante$/ }),
+    );
+    const panel = await screen.findByRole("dialog", { name: "Membership" });
+    await user.click(within(panel).getByRole("radio", { name: "Leader" }));
+    await user.click(
+      within(panel).getByRole("button", { name: "Save changes" }),
+    );
+    await waitFor(() =>
+      expect(
+        fetchMock.mock.calls.some(
+          ([u, i]) =>
+            (i as RequestInit | undefined)?.method === "PUT" &&
+            String(u).includes("/v1/organization-members/om-m3"),
+        ),
+      ).toBe(true),
+    );
+    const put = fetchMock.mock.calls.find(
+      ([, i]) => (i as RequestInit | undefined)?.method === "PUT",
+    ) as [string, RequestInit];
+    expect(JSON.parse(put[1].body as string)).toEqual({
+      role: "Leader",
+      joinedAt: "2020-01-12",
+    });
+    await waitFor(() =>
+      expect(screen.queryByRole("dialog", { name: "Membership" })).toBeNull(),
+    );
+  });
+
+  it("closes the panel and asks before removing when Remove from group is chosen in it", async () => {
+    const user = userEvent.setup();
+    show(server());
+    await user.click(
+      await screen.findByRole("button", { name: /^Kwame Asante$/ }),
+    );
+    await user.click(
+      within(
+        await screen.findByRole("dialog", { name: "Membership" }),
+      ).getByRole("button", { name: "Remove from group" }),
+    );
+    expect(
+      await screen.findByText("Remove Kwame Asante from Church Choir?"),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("dialog", { name: "Membership" })).toBeNull();
   });
 });

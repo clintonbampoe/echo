@@ -1,3 +1,4 @@
+using System.IO;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
@@ -19,7 +20,9 @@ namespace Echo.Data
             var connectionString = configuration.GetConnectionString("Default");
 
             var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
-            optionsBuilder.UseNpgsql(connectionString, x => x.MigrationsAssembly("Echo.Data"));
+            optionsBuilder
+                .UseNpgsql(connectionString, x => x.MigrationsAssembly("Echo.Data"))
+                .ConfigureEchoDatabase();
 
             return new AppDbContext(optionsBuilder.Options);
         }
