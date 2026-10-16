@@ -66,6 +66,12 @@ const forMember = (all: Tithe[], u: URL) =>
       r.memberId === u.searchParams.get("memberId"),
   );
 
+// One tithe by its id, and a delete.
+const byId = (u: URL, init?: RequestInit) => {
+  if (init?.method === "DELETE") return new Response(null, { status: 204 });
+  return /\/tithes\/t1$/.test(u.pathname) ? json(kofi) : null;
+};
+
 let rows: Tithe[];
 let refuseRecording: boolean;
 let fetchMock: ReturnType<typeof vi.fn>;
@@ -90,7 +96,8 @@ beforeEach(() => {
       ]);
     if (u.pathname.endsWith("/tithes") && init?.method === "POST")
       return recorded(refuseRecording);
-    if (init?.method === "DELETE") return new Response(null, { status: 204 });
+    const other = byId(u, init);
+    if (other) return other;
     return json({ data: forMember(rows, u), hasMore: false, next: null });
   });
   vi.stubGlobal("fetch", fetchMock);
@@ -129,7 +136,13 @@ describe("tithes page", () => {
     expect(
       screen.getByText("Collected this week", { selector: "p" }),
     ).toBeInTheDocument();
-    expect(screen.getByText(/^Highest: GH₵ 900 in/)).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        (_, el) =>
+          el?.tagName === "P" &&
+          /Highest: GH₵ 900 in/.test(el.textContent ?? ""),
+      ),
+    ).toBeInTheDocument();
   });
 
   it("asks for this week unless told otherwise", async () => {
@@ -160,6 +173,13 @@ describe("tithes page", () => {
     expect(last?.searchParams.get("year")).toBeTruthy();
     expect(last?.searchParams.get("month")).toBeTruthy();
     expect(last?.searchParams.get("from")).toBe("2000-01-01");
+  });
+
+  it("opens the tithe a link points to", async () => {
+    open("/tithes?tithe=t1");
+    const sheet = await screen.findByRole("dialog");
+    expect(within(sheet).getByText("Edit tithe")).toBeInTheDocument();
+    expect(within(sheet).getByText("GH₵ 500")).toBeInTheDocument();
   });
 
   it("says so, with an icon card, when nothing was collected", async () => {
@@ -287,27 +307,38 @@ describe("tithes page", () => {
     ).toBeInTheDocument();
   });
 
-  it("shows the member of an existing tithe without a way to change them", async () => {
+  it("opens a tithe to read, with its member, and without a way to change them", async () => {
     const user = userEvent.setup();
     open();
-    await screen.findByRole("button", { name: "Kofi Mensah" });
-    await user.click(screen.getByRole("button", { name: "Kofi Mensah" }));
+    await user.click(
+      await screen.findByRole("button", { name: "Kofi Mensah" }),
+    );
     const sheet = await screen.findByRole("dialog");
-    expect(within(sheet).getByText("Kofi Mensah")).toBeInTheDocument();
+    expect(within(sheet).getByText("GH₵ 500")).toBeInTheDocument();
     expect(
       within(sheet).getByRole("link", { name: "View profile" }),
-    ).toHaveAttribute("href", "/members/m1");
+    ).toHaveAttribute("href", "/members/m1?tab=tithes");
     expect(
-      within(sheet).queryByRole("button", { name: "Change" }),
-    ).not.toBeInTheDocument();
+      within(sheet).getByRole("button", { name: "Edit tithe" }),
+    ).toBeInTheDocument();
+    expect(
+      within(sheet).getByRole("button", { name: "Delete tithe" }),
+    ).toBeInTheDocument();
     expect(within(sheet).queryByRole("searchbox")).not.toBeInTheDocument();
+    expect(within(sheet).queryByLabelText("Amount")).not.toBeInTheDocument();
   });
 
   it("saves changes to a tithe without sending a member", async () => {
     const user = userEvent.setup();
     open();
-    await screen.findByRole("button", { name: "Kofi Mensah" });
-    await user.click(screen.getByRole("button", { name: "Kofi Mensah" }));
+    await user.click(
+      await screen.findByRole("button", { name: "Kofi Mensah" }),
+    );
+    await user.click(
+      within(await screen.findByRole("dialog")).getByRole("button", {
+        name: "Edit tithe",
+      }),
+    );
     const sheet = await screen.findByRole("dialog");
     const amount = within(sheet).getByLabelText("Amount");
     await user.clear(amount);

@@ -2,7 +2,7 @@ import { formatMoney } from "@/lib/format";
 import { MonthBars } from "@/ui";
 import { methodOf, type ListFilters } from "../filters";
 import { useTitheMonths } from "../hooks";
-import { chartBars, chartRange, highestMonth } from "../view";
+import { chartBars, chartSummary } from "../view";
 import styles from "./TitheChart.module.css";
 
 type Props = {
@@ -19,7 +19,7 @@ export function TitheChart({ filters, today, onPick }: Props) {
     paymentMethod: methodOf(filters.method),
   });
   const bars = chartBars(months.data ?? []);
-  const highest = highestMonth(bars);
+  const summary = chartSummary(bars);
   const chosen = /^\d{4}-\d{2}$/.test(filters.forMonth)
     ? filters.forMonth
     : today.slice(0, 7);
@@ -29,15 +29,27 @@ export function TitheChart({ filters, today, onPick }: Props) {
       aria-busy={months.isPending}
       className={styles.card}
     >
-      <h2 className={styles.title}>Collected per month</h2>
-      <p className={styles.sub}>
-        <span>
-          {months.isError
-            ? "We could not load the months. Try again in a moment."
-            : chartRange(bars)}
-        </span>
-        {highest && <strong className={styles.top}>{highest}</strong>}
-      </p>
+      <header className={styles.head}>
+        <h2 className={styles.title}>Collected per month</h2>
+        <div className={styles.details}>
+          {months.isError && (
+            <p className={styles.line}>
+              We could not load the months. Try again in a moment.
+            </p>
+          )}
+          {summary && (
+            <p className={styles.line}>
+              Last 12 months: <strong>{summary.range}</strong>
+            </p>
+          )}
+          {summary?.highest && (
+            <p className={styles.line}>
+              Highest: <strong>{summary.highest.amount}</strong> in{" "}
+              <strong>{summary.highest.month}</strong>
+            </p>
+          )}
+        </div>
+      </header>
       {bars.length > 0 && (
         <MonthBars
           label="Collected per month"

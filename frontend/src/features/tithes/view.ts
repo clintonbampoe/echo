@@ -1,4 +1,4 @@
-// What a member's tithes look like across a year. Pure, so the tests can pass "today".
+// What a member's tithes look like, and what the page shows of them. Pure, so the tests can pass "today".
 import { paymentLabel, type PaymentMethod } from "@/features/transactions";
 import { monthNames } from "@/lib/dates";
 import { formatMoney, formatNumber } from "@/lib/format";
@@ -37,7 +37,13 @@ export function yearSlots(rows: Month[], today: string): YearSlot[] {
 }
 
 // One bar of the "Collected per month" chart. `key` is '2026-10', `label` the short month, `name` the full one.
-export type Bar = { key: string; label: string; name: string; value: number };
+export type Bar = {
+  key: string;
+  label: string;
+  name: string;
+  tip: string;
+  value: number;
+};
 
 export const chartBars = (
   rows: Pick<TitheMonth, "year" | "month" | "totalCollected">[],
@@ -46,27 +52,30 @@ export const chartBars = (
     key: `${r.year}-${String(r.month).padStart(2, "0")}`,
     label: (monthNames[r.month - 1] ?? "").slice(0, 3),
     name: `${monthNames[r.month - 1] ?? ""} ${r.year}`,
+    tip: `${(monthNames[r.month - 1] ?? "").slice(0, 3)} ${r.year}`,
     value: r.totalCollected,
   }));
 
-// "Nov 2025 to Oct 2026": the months the chart covers. Nothing when there are no bars.
-export function chartRange(bars: Bar[]): string {
-  const first = bars[0];
-  const last = bars[bars.length - 1];
-  if (!first || !last) return "";
-  const short = (b: Bar) => `${b.label} ${b.key.slice(0, 4)}`;
-  return `${short(first)} to ${short(last)}`;
-}
+// What the chart says above its bars: the months it covers, and the highest one (nothing when none has a tithe).
+export type ChartSummary = {
+  range: string;
+  highest?: { amount: string; month: string };
+};
 
-// "Highest: GH₵ 21,300 in September." Nothing when no month has a tithe.
-export function highestMonth(bars: Bar[]): string {
+export function chartSummary(bars: Bar[]): ChartSummary | null {
+  const first = bars[0];
+  const last = bars.at(-1);
+  if (!first || !last) return null;
   const top = bars.reduce<Bar | null>(
     (best, b) => (b.value > (best?.value ?? 0) ? b : best),
     null,
   );
-  return top
-    ? `Highest: ${formatMoney(top.value)} in ${top.name.split(" ")[0]}.`
-    : "";
+  return {
+    range: `${first.tip} – ${last.tip}`,
+    highest: top
+      ? { amount: formatMoney(top.value), month: top.name.split(" ")[0] ?? "" }
+      : undefined,
+  };
 }
 
 // The four numbers above the list. `collected` says which days they cover ("Collected this week").

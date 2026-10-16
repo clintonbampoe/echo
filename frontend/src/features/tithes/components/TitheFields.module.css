@@ -14,35 +14,6 @@
   font-size: 13px;
   color: var(--text-3);
 }
-.fixed {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
-  border: 1px solid var(--line-2);
-  border-radius: var(--radius);
-  background: var(--surface);
-}
-.fixedName {
-  flex: 1;
-  min-width: 0;
-  margin: 0;
-  font-size: 14px;
-  font-weight: 500;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.profile {
-  flex: none;
-  font-size: 13px;
-  color: var(--text-2);
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-.profile:hover {
-  color: var(--text);
-}
 
 /* Phone and tablet: full-size touch controls. 16px text stops iPhones zooming in on a field. */
 @media (max-width: 900px) {
@@ -50,12 +21,5 @@
     --control-height: 48px;
     --control-gap: 8px;
     --control-font: 16px;
-  }
-  .fixedName {
-    font-size: 16px;
-  }
-  .profile {
-    padding: 8px 0;
-    font-size: 14px;
   }
 }

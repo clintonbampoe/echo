@@ -8,6 +8,8 @@ export type Cell = {
   // Said aloud and shown on hover, e.g. "Sunday Service, 11 Oct 2026: attended".
   name: string;
   state: "on" | "off" | "future";
+  // A shorter text for the hover tooltip, e.g. "Oct 2026" (the screen reader still gets `name`).
+  tip?: string;
   // When given, the square opens it.
   href?: string;
   // A letter under the square, e.g. the month's initial.
@@ -81,7 +83,7 @@ function Square({ cell }: { cell: Cell }) {
       <Link
         to={cell.href}
         className={className}
-        title={cell.name}
+        title={cell.tip ?? cell.name}
         aria-label={cell.name}
       >
         {tick}
@@ -90,7 +92,7 @@ function Square({ cell }: { cell: Cell }) {
   return (
     <span
       className={className}
-      title={cell.name}
+      title={cell.tip ?? cell.name}
       role="img"
       aria-label={cell.name}
     >

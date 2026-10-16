@@ -1,44 +1,54 @@
-import { PaymentChip } from "@/features/transactions";
+import { paymentLabel } from "@/features/transactions";
 import { formatDate, formatMoney } from "@/lib/format";
+import { paths } from "@/lib/paths";
 import { RecordTable } from "@/ui";
-import { useMemberTithes, useTitheTotalEver } from "../hooks";
+import type { TitheFilters } from "../api";
+import { useMemberTithes, useTitheSummary } from "../hooks";
 
-// Every tithe a member gave, newest first, with the total they have ever given under it.
-export function TitheTable({ memberId }: { memberId: string }) {
-  const list = useMemberTithes(memberId);
-  const total = useTitheTotalEver(memberId, list.rows.length > 0);
+type Props = { memberId: string; filters: TitheFilters; narrowed: boolean };
+
+// The tithes a member gave that match the filters, newest first, with what they add up to under it. A row opens
+// that tithe on the Tithes page.
+export function TitheTable({ memberId, filters, narrowed }: Props) {
+  const list = useMemberTithes(memberId, filters);
+  const total = useTitheSummary({ memberId, ...filters });
   return (
     <RecordTable
       label="Tithes"
       list={list}
       rowKey={(t) => t.id}
       large
-      empty={{
-        icon: "tithes",
-        title: "No tithes recorded",
-        text: "Tithes are recorded on the Tithes page. Once one is, it shows here with the month it is for.",
-      }}
+      href={(t) => paths.tithe(t.id)}
+      empty={
+        narrowed
+          ? {
+              icon: "search",
+              title: "No tithes match",
+              text: "Try a different method, or a wider time range.",
+            }
+          : {
+              icon: "tithes",
+              title: "No tithes recorded",
+              text: "Tithes are recorded on the Tithes page. Once one is, it shows here with the month it is for.",
+            }
+      }
       noun={["tithe recorded", "tithes recorded"]}
-      summary={
+      total={
         total.data && (
           <>
-            {" "}
-            · Total <strong>{formatMoney(total.data.totalCollected)}</strong>
+            Total <strong>{formatMoney(total.data.totalCollected)}</strong>
           </>
         )
       }
       columns={[
         { header: "For month", cell: (t) => `${t.forMonth} ${t.forYear}` },
         {
-          header: "Method",
-          cell: (t) => <PaymentChip method={t.paymentMethod} />,
-        },
-        { header: "Collected", cell: (t) => formatDate(t.collectionDate) },
-        {
           header: "Amount",
           cell: (t) => <strong>{formatMoney(t.amount)}</strong>,
           end: true,
         },
+        { header: "Method", cell: (t) => paymentLabel[t.paymentMethod] },
+        { header: "Collected", cell: (t) => formatDate(t.collectionDate) },
       ]}
     />
   );

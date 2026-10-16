@@ -46,7 +46,7 @@ export type HeldSession = {
 };
 
 // How many of the latest sessions the strip shows.
-export const RECENT = 16;
+export const RECENT = 12;
 
 // Sessions have no "everything" mode either: with no dates the server answers for this week only.
 export const listRecentSessions = (

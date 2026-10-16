@@ -1,16 +1,8 @@
 import type { ReactNode } from "react";
-import { Link } from "react-router-dom";
 import { useWatch, type UseFormReturn } from "react-hook-form";
 import { MemberPicker, type MemberMatch } from "@/features/members";
 import { paymentOptions } from "@/features/transactions";
-import { paths } from "@/lib/paths";
-import {
-  Avatar,
-  ControlledSelect,
-  Field,
-  FormSection,
-  TextAreaField,
-} from "@/ui";
+import { ControlledSelect, Field, FormSection, TextAreaField } from "@/ui";
 import {
   monthOptions,
   NOTE_MAX,
@@ -19,19 +11,7 @@ import {
   type TitheValues,
 } from "../titheForm";
 import styles from "./TitheFields.module.css";
-
-// The member of a tithe that already exists: shown, not editable, with a deliberate way to their page.
-function FixedMember({ id, name }: { id: string; name: string }) {
-  return (
-    <div className={styles.fixed}>
-      <Avatar name={name} size={36} />
-      <p className={styles.fixedName}>{name}</p>
-      <Link to={paths.member(id)} className={styles.profile}>
-        View profile
-      </Link>
-    </div>
-  );
-}
+import { MemberCard } from "./MemberCard";
 
 type Props = {
   form: UseFormReturn<TitheValues>;
@@ -78,12 +58,12 @@ export function TitheFields({
               error={e.memberId?.message}
             />
           ) : (
-            member && <FixedMember id={member.id} name={member.name} />
+            member && <MemberCard id={member.id} name={member.name} />
           )}
         </div>
         {underMember && <div className={styles.full}>{underMember}</div>}
       </FormSection>
-      <FormSection title="Tithe">
+      <FormSection>
         <Field
           label="Amount"
           unit="GH₵"
@@ -103,14 +83,6 @@ export function TitheFields({
               follow(ev.target.value),
           })}
         />
-        <div className={styles.full}>
-          <ControlledSelect
-            control={control}
-            name="paymentMethod"
-            label="Payment method"
-            options={paymentOptions}
-          />
-        </div>
       </FormSection>
       <FormSection title="Tithe for">
         <ControlledSelect
@@ -130,11 +102,20 @@ export function TitheFields({
           it.
         </p>
       </FormSection>
-      <FormSection title="Details">
+      <FormSection>
+        <div className={styles.full}>
+          <ControlledSelect
+            control={control}
+            name="paymentMethod"
+            label="Payment method"
+            options={paymentOptions}
+          />
+        </div>
         <div className={styles.full}>
           <TextAreaField
             label="Note"
             optional
+            placeholder="e.g. Cheque number, or who gave on their behalf"
             maxLength={NOTE_MAX}
             count={note.length}
             error={e.description?.message}

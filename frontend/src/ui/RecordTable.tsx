@@ -29,6 +29,8 @@ type Props<T> = {
   noun: [one: string, many: string];
   // Extra text after the count, e.g. the total given.
   summary?: ReactNode;
+  // A figure at the right of the footer, e.g. "Total GH₵ 6,400".
+  total?: ReactNode;
   // Where a row leads. When given, the first column is a link and the whole row is clickable.
   href?: (row: T) => string;
   // Keeps the table a fixed height: past about five rows the rows scroll, the heading and footer stay.
@@ -76,6 +78,7 @@ function Rows<T>({
   rowKey,
   noun,
   summary,
+  total,
   href,
   scroll,
 }: Props<T>) {
@@ -133,6 +136,7 @@ function Rows<T>({
             : `${shown} ${shown === 1 ? noun[0] : noun[1]}`}
           {summary}
         </p>
+        {total && <p>{total}</p>}
         {list.hasMore && (
           <Button
             variant="secondary"
