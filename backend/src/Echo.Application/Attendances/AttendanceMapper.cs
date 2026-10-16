@@ -26,7 +26,8 @@ public class AttendanceMapper : IAttendanceMapper
         {
             SessionId = dto.SessionId,
             PersonId = dto.PersonId,
-            CheckedInAt = dto.CheckedInAt,
+            // The service fills in the current time when the request has none.
+            CheckedInAt = dto.CheckedInAt ?? default,
         };
 
     public List<AttendanceResponseDto> ToListDto(List<Attendance> entities) =>

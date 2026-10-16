@@ -1,0 +1,44 @@
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 20px;
+}
+.heading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+.buttons {
+  display: flex;
+  gap: 8px;
+}
+.hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+.pick {
+  position: relative;
+}
+
+@media (max-width: 700px) {
+  .heading {
+    font-size: 18px;
+  }
+  .buttons {
+    width: 100%;
+  }
+  .buttons > * {
+    flex: 1;
+  }
+}

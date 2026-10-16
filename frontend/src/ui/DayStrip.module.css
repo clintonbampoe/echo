@@ -1,0 +1,200 @@
+.strip {
+  --card: 72px;
+  --gap: 8px;
+  --height: 120px;
+  --edge: 6px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.arrow {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+  transition: background var(--fast) ease;
+}
+.arrow:hover {
+  background: var(--hover);
+}
+.arrow:focus-visible,
+.day:focus-visible {
+  outline: var(--focus);
+  outline-offset: 2px;
+}
+
+.stage {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  padding: var(--edge) 0;
+  overflow: hidden;
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 16%,
+    #000 84%,
+    transparent
+  );
+}
+/* The row is moved by one number, --pos, which the script writes: where the strip is, in days. Every day works out
+   from it how far it is from the middle (--away), and from that how filled (--t) and how faded (--q) it is. */
+.track {
+  display: flex;
+  gap: var(--gap);
+  width: max-content;
+  margin: 0 0 0 calc(50% - var(--card) / 2);
+  padding: 0;
+  list-style: none;
+  transform: translate3d(
+    calc(var(--pos, 0) * (var(--card) + var(--gap)) * -1),
+    0,
+    0
+  );
+  will-change: transform;
+  touch-action: pan-y;
+  user-select: none;
+  cursor: grab;
+}
+.track:active {
+  cursor: grabbing;
+}
+.item {
+  --away: abs(calc(var(--i) - var(--pos, 0)));
+  --t: clamp(0, calc((0.9 - var(--away)) / 0.55), 1);
+  --q: clamp(0, calc(1 - var(--away) / 3.2), 1);
+  flex: none;
+  width: var(--card);
+}
+
+.day {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  box-sizing: border-box;
+  width: 100%;
+  height: var(--height);
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  border-radius: 20px;
+  /* One shape does it all: as a day nears the middle its outline darkens into the fill, a soft shadow lifts it and a
+     faint light edge runs along its top. */
+  border: 1px solid
+    color-mix(in srgb, var(--accent) calc(var(--t) * 100%), var(--line));
+  box-shadow:
+    0 10px 20px -10px color-mix(in srgb, #000 calc(var(--t) * 45%), transparent),
+    inset 0 1px 0
+      color-mix(in srgb, var(--on-accent) calc(var(--t) * 22%), transparent);
+  background: color-mix(
+    in srgb,
+    var(--accent) calc(var(--t) * 100%),
+    var(--surface)
+  );
+  color: color-mix(
+    in srgb,
+    var(--on-accent) calc(var(--t) * 100%),
+    var(--text)
+  );
+  opacity: calc(0.3 + 0.7 * var(--q));
+}
+.day:hover {
+  opacity: 1;
+}
+/* When a day lands, one soft ring lets go of it and fades: a small settle, once, never a pulse. */
+.day[aria-pressed="true"]::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  pointer-events: none;
+  animation: land 480ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+@keyframes land {
+  from {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 28%, transparent);
+  }
+  to {
+    box-shadow: 0 0 0 6px transparent;
+  }
+}
+.today {
+  border-color: color-mix(
+    in srgb,
+    var(--accent) calc(var(--t) * 100%),
+    var(--text)
+  );
+}
+.tag,
+.weekday {
+  color: color-mix(
+    in srgb,
+    var(--on-accent) calc(var(--t) * 80%),
+    var(--text-3)
+  );
+}
+.today .tag {
+  color: color-mix(in srgb, var(--on-accent) calc(var(--t) * 80%), var(--text));
+}
+.tag {
+  height: 12px;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 12px;
+  letter-spacing: 0.03em;
+}
+.weekday {
+  font-size: 13px;
+}
+.date {
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.15;
+  font-variant-numeric: tabular-nums;
+}
+.marks {
+  display: flex;
+  gap: 4px;
+  height: 6px;
+  margin-top: 4px;
+}
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentcolor;
+}
+.ahead {
+  opacity: 0.45;
+}
+
+@media (max-width: 520px) {
+  .strip {
+    --card: 60px;
+    --height: 100px;
+    gap: 6px;
+  }
+  .arrow {
+    width: 34px;
+    height: 34px;
+  }
+  .date {
+    font-size: 24px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .arrow {
+    transition: none;
+  }
+  .day[aria-pressed="true"]::after {
+    animation: none;
+  }
+}

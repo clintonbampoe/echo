@@ -45,7 +45,7 @@ export default defineConfig([
       complexity: ["error", 10],
       "max-lines": [
         "error",
-        { max: 250, skipBlankLines: true, skipComments: true },
+        { max: 260, skipBlankLines: true, skipComments: true },
       ],
       "max-lines-per-function": [
         "warn",

@@ -56,13 +56,14 @@ public static class AttendanceEndpoints
                 - `sessionId` — attendance for one specific session. Common for the "who checked in today" admin view.
                 - `sessionLabelId` — attendance across all sessions with a given label.
                 - `kind` — filter by the person's kind **at the time of attendance**, not their current kind.
+                - `name` — case-insensitive match anywhere in the person's name.
                 - `from` / `to` — filter by session date range (inclusive).
 
                 ### About `kind`
                 The `kind` filter matches the person's role when the attendance was recorded, not their role now. A visitor who later becomes a member still appears as a Visitor for their pre-conversion attendance. This is deliberate — historical reports should reflect what was true when the record was written.
 
                 ### Ordering
-                Attendance records are ordered by session date (most recent first), then by ID as a tiebreaker. Stable across pages.
+                Attendance records are ordered by session date (most recent first), then by ID, newest first. IDs are time-ordered, so within one session the person checked in last comes first. Stable across pages.
 
                 ### Pagination
                 Pass the `next` cursor from the previous response as the `cursor` query parameter. When `hasMore` is `false`, `next` is null.
@@ -138,7 +139,7 @@ public static class AttendanceEndpoints
                 ### Request body
                 - `sessionId` — **required.** The session; it must exist in your congregation.
                 - `personIds` — **required**, 1 to 500 person ids (members or visitors).
-                - `checkedInAt` — optional. Applied to every record created.
+                - `checkedInAt` — optional. Applied to every record created. Defaults to the current time.
 
                 Each person's kind (member or visitor) is recorded as it is at the time, exactly as for a single entry.
 
@@ -200,7 +201,7 @@ public static class AttendanceEndpoints
                 - `personId` — the Member or Visitor attending. Both kinds are accepted.
 
                 Optional fields:
-                - `checkedInAt` — the exact moment of check-in. Omit for manually recorded attendance.
+                - `checkedInAt` — the exact moment of check-in. Defaults to the current time, so a person marked by hand gets the time they were marked.
 
                 **The person's kind is not supplied in the request.** The server snapshots it from the person's current `Kind` at the moment of recording. If the person later converts from Visitor to Member, existing attendance records still report them as a Visitor — the record reflects what was true when it was written.
 

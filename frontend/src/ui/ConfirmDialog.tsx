@@ -15,6 +15,8 @@ type Props = {
   busy?: boolean;
   // Shown when the action fails, so the person can try again or back out.
   error?: string;
+  // 'danger' (the default) paints the confirm button red; 'neutral' is for an action that is not a loss.
+  tone?: "danger" | "neutral";
 };
 
 // Asks "are you sure?" before something that cannot be easily undone. The safe button is
@@ -28,6 +30,7 @@ export function ConfirmDialog({
   onCancel,
   busy,
   error,
+  tone = "danger",
 }: Props) {
   const titleId = useId();
   const bodyId = useId();
@@ -76,7 +79,11 @@ export function ConfirmDialog({
           >
             {cancelLabel}
           </Button>
-          <Button loading={busy} onClick={onConfirm} className={styles.danger}>
+          <Button
+            loading={busy}
+            onClick={onConfirm}
+            className={tone === "danger" ? styles.danger : undefined}
+          >
             {confirmLabel}
           </Button>
         </div>

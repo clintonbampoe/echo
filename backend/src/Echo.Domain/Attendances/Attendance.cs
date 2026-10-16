@@ -30,10 +30,10 @@ public class Attendance : ISoftDeletable
     public PersonKind PersonKindAtTime { get; set; }
 
     /// <summary>
-    /// Exact moment the check-in occurred. Null for manual entries where only
-    /// presence matters. Populated by QR-scan self check-in.
+    /// Exact moment the person was checked in. Always set: a QR scan or an
+    /// admin supplies it, and the service uses the current time when neither does.
     /// </summary>
-    public DateTime? CheckedInAt { get; set; }
+    public DateTime CheckedInAt { get; set; }
 
     /// <summary>
     /// Admin who recorded the attendance. Null for self check-in.

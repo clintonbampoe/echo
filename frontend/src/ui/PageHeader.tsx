@@ -5,7 +5,7 @@ type Props = {
   title: string;
   // One plain line saying what the page is for.
   text: string;
-  // The page's main button, e.g. "New member". Full width on a phone.
+  // The page's main button, e.g. "New member", or two buttons side by side (the main one last). Full width on a phone.
   action?: ReactNode;
 };
 

@@ -2,6 +2,7 @@
 export {
   useActiveMemberCount,
   useMember,
+  useMemberSearch,
   useMembers,
   useMemberSummary,
   useRefreshMembers,

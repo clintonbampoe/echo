@@ -34,7 +34,7 @@ public static class AttendanceCopy
             await writer.WriteAsync(a.SessionId, NpgsqlDbType.Uuid, ct);
             await writer.WriteAsync(a.PersonId, NpgsqlDbType.Uuid, ct);
             await writer.WriteAsync(a.PersonKindAtTime.ToString(), NpgsqlDbType.Text, ct);
-            await WriteNullableTimestamp(writer, a.CheckedInAt, ct);
+            await writer.WriteAsync(a.CheckedInAt, NpgsqlDbType.TimestampTz, ct);
             await WriteNullableUuid(writer, a.RecordedBy, ct);
             await writer.WriteAsync(a.CreatedAt, NpgsqlDbType.TimestampTz, ct);
         }

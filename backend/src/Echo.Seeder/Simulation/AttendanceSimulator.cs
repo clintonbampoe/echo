@@ -235,14 +235,13 @@ public sealed class AttendanceSimulator
         var start = session.StartsAt ?? new TimeOnly(9, 0);
         var begins = DateTime.SpecifyKind(session.Date.ToDateTime(start), DateTimeKind.Utc);
 
-        // Most members are checked in by a QR scan with an arrival time; the
-        // rest are ticked off by hand by the admin.
+        // Most members are checked in by a QR scan at their arrival time; the
+        // rest are ticked off by hand by the admin, a while into the session.
         var scanned = _rng.Chance(visitor ? 0.3 : 0.65);
-        DateTime? checkedInAt = scanned
+        var arrived = scanned
             ? begins.AddMinutes(Math.Clamp(_rng.Gaussian(2, 12), -30, 60))
-            : null;
-
-        var createdAt = checkedInAt ?? begins.AddHours(2);
+            : begins.AddHours(2);
+        var checkedInAt = arrived > _now ? _now : arrived;
 
         return new Attendance
         {
@@ -254,7 +253,7 @@ public sealed class AttendanceSimulator
             PersonKindAtTime = kind,
             CheckedInAt = checkedInAt,
             RecordedBy = scanned ? null : _seed.Admin.Id,
-            CreatedAt = createdAt > _now ? _now : createdAt,
+            CreatedAt = checkedInAt,
         };
     }
 
