@@ -8,6 +8,10 @@ export const paths = {
   visitors: "/visitors",
   organizations: "/organizations",
   tithes: "/tithes",
+  attendance: "/attendance",
+  // The Attendance page on one day.
+  attendanceDay: (day: string) => `/attendance?day=${day}`,
+  sessionTypes: "/attendance/labels",
   // The Tithes page with one tithe open to read.
   tithe: (id: string) => `/tithes?tithe=${id}`,
   // A member's page, optionally on one of its tabs. A link from a record's list goes to the tab about that

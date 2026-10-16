@@ -11,9 +11,7 @@ public record AttendanceCreateDto
     public Guid PersonId { get; init; }
 
     /// <summary>
-    /// Optional. If omitted, the service sets it based on context:
-    /// QR-scan check-ins get the current UTC time; admin-entered records
-    /// leave it null unless the admin explicitly provides a value.
+    /// Optional. If omitted, the service uses the current UTC time.
     /// </summary>
     public DateTime? CheckedInAt { get; init; }
 }
@@ -47,7 +45,7 @@ public record AttendanceResponseDto
     /// </summary>
     public PersonKind PersonKind { get; init; }
 
-    public DateTime? CheckedInAt { get; init; }
+    public DateTime CheckedInAt { get; init; }
     public Guid? RecordedBy { get; init; }
     public DateTime CreatedAt { get; init; }
 }
@@ -68,6 +66,9 @@ public record AttendanceFilters
     public Guid? SessionId { get; init; }
     public int? SessionLabelId { get; init; }
     public PersonKind? Kind { get; init; }
+
+    /// <summary>Case-insensitive match anywhere in the person's name.</summary>
+    public string? Name { get; init; }
     public DateOnly? From { get; init; }
     public DateOnly? To { get; init; }
 }
@@ -88,7 +89,7 @@ public record BulkAttendanceCreateDto
     [Required, MinLength(1), MaxLength(500)]
     public List<Guid> PersonIds { get; init; } = [];
 
-    /// <summary>Optional. Applied to every record created by the request.</summary>
+    /// <summary>Optional. Applied to every record created by the request. Defaults to the current UTC time.</summary>
     public DateTime? CheckedInAt { get; init; }
 }
 

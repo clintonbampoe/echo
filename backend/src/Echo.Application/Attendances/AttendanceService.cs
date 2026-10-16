@@ -9,8 +9,8 @@ using Echo.Shared.Services.Generators;
 using Echo.Shared.Utilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Echo.Application.Attendances;
 
@@ -23,6 +23,7 @@ public class AttendanceService(
     IEncoder encoder,
     IIdGenerator idGenerator,
     DateWindows dateWindows,
+    TimeProvider timeProvider,
     ApplicationInstrumentation instrumentation,
     LinkGenerator linker,
     ILogger<AttendanceService> logger
@@ -151,6 +152,7 @@ public class AttendanceService(
         entity.Session = session;
         entity.Person = person;
         entity.PersonKindAtTime = person.Kind;
+        entity.CheckedInAt = dto.CheckedInAt ?? timeProvider.GetUtcNow().UtcDateTime;
         entity.RecordedBy = null; // populated when user-scoped auth lands
 
         using (instrumentation.ActivitySource.StartActivity("svc.attendance.persist"))
@@ -262,7 +264,6 @@ public class AttendanceService(
         return new SuccessResult<AttendanceSummaryDto>(res);
     }
 
-
     public async Task<IOperationResult> CreateBulk(
         Guid congregationId,
         BulkAttendanceCreateDto dto,
@@ -282,8 +283,14 @@ public class AttendanceService(
 
         var requested = dto.PersonIds.Distinct().ToList();
         var people = await personRepository.GetByIds(congregationId, requested, ct);
-        var present = await repository.PersonIdsPresent(congregationId, dto.SessionId, requested, ct);
+        var present = await repository.PersonIdsPresent(
+            congregationId,
+            dto.SessionId,
+            requested,
+            ct
+        );
         var plan = PlanBulk(requested, people, present);
+        var checkedInAt = dto.CheckedInAt ?? timeProvider.GetUtcNow().UtcDateTime;
 
         var created = plan
             .ToCreate.Select(person => new Attendance
@@ -295,7 +302,7 @@ public class AttendanceService(
                 PersonId = person.Id,
                 Person = person,
                 PersonKindAtTime = person.Kind,
-                CheckedInAt = dto.CheckedInAt,
+                CheckedInAt = checkedInAt,
             })
             .ToList();
 
@@ -350,9 +357,13 @@ public class AttendanceService(
         foreach (var id in requested.Distinct())
         {
             if (!people.TryGetValue(id, out var person))
-                skipped.Add(new BulkSkippedDto { PersonId = id, Reason = BulkSkipReason.PersonNotFound });
+                skipped.Add(
+                    new BulkSkippedDto { PersonId = id, Reason = BulkSkipReason.PersonNotFound }
+                );
             else if (alreadyPresent.Contains(id))
-                skipped.Add(new BulkSkippedDto { PersonId = id, Reason = BulkSkipReason.AlreadyPresent });
+                skipped.Add(
+                    new BulkSkippedDto { PersonId = id, Reason = BulkSkipReason.AlreadyPresent }
+                );
             else
                 toCreate.Add(person);
         }

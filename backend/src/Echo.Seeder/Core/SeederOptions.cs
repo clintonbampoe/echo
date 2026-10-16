@@ -21,7 +21,7 @@ public sealed class SeederOptions
     // How many years the big congregation has existed before ReferenceNow.
     // Members, tithes and organizations are spread over this history. Small
     // congregations are younger, between 3 years and HistoryYears - 3.
-    [Range(6, 40)]
+    [Range(5, 40)]
     public int HistoryYears { get; init; } = 15;
 
     // Sessions and attendance are recorded for this many weeks before

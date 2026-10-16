@@ -11,6 +11,7 @@ export const visitorKeys = {
   summary: (filters: Pick<api.VisitorFilters, "from" | "to">) =>
     ["visitors", "summary", filters] as const,
   one: (id: string) => ["visitors", "one", id] as const,
+  search: (q: string) => ["visitors", "search", q] as const,
 };
 
 // One page at a time: `more()` loads the next, `rows` is every page loaded so far.
@@ -23,6 +24,14 @@ export const useVisitor = (id: string) =>
   useQuery({
     queryKey: visitorKeys.one(id),
     queryFn: ({ signal }) => api.getVisitor(id, signal),
+  });
+
+// Visitors whose name matches `q`. Waits for at least two letters; the caller debounces typing.
+export const useVisitorSearch = (q: string) =>
+  useQuery({
+    queryKey: visitorKeys.search(q),
+    queryFn: ({ signal }) => api.searchVisitors(q, signal),
+    enabled: q.length >= 2,
   });
 
 export const useVisitorSummary = (

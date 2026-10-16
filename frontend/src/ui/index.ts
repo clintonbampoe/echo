@@ -8,6 +8,7 @@ export { CellStrip, type Cell } from "./CellStrip";
 export { Chip, type ChipTone } from "./Chip";
 export { ConfirmDialog } from "./ConfirmDialog";
 export { ControlledSelect } from "./ControlledSelect";
+export { DayStrip, type StripDay } from "./DayStrip";
 export { DeleteDialog } from "./DeleteDialog";
 export { DetailBlock, DetailCard, DetailGroup } from "./DetailCard";
 export { Drawer } from "./Drawer";

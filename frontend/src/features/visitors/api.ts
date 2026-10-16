@@ -1,5 +1,6 @@
 // Visitors as the API sends them. No React in this file.
 import { api, type DateWindow, type Page } from "@/lib/api";
+import { ALL_TIME } from "@/lib/dates";
 import { PAGE_SIZE } from "@/lib/paged";
 import type { Member, MemberInput } from "@/features/members";
 
@@ -52,6 +53,30 @@ export const listVisitors = (
     query: { ...filters, cursor, pageSize: PAGE_SIZE },
     signal,
   });
+
+// Who a name search finds, as much as a picker needs. Visitors who have become members are not in it:
+// they are found among the members.
+export type VisitorMatch = {
+  id: string;
+  name: string;
+  phoneNumber?: string | null;
+};
+
+// The first page of visitors whose name has `q` in it, whenever they were added (a list with no dates is this year only).
+export async function searchVisitors(
+  q: string,
+  signal?: AbortSignal,
+): Promise<VisitorMatch[]> {
+  const page = await api.get<Page<Visitor>>("/v1/visitors", {
+    query: { name: q, ...ALL_TIME, pageSize: 10 },
+    signal,
+  });
+  return page.data.map(({ id, name, phoneNumber }) => ({
+    id,
+    name,
+    phoneNumber,
+  }));
+}
 
 export const getVisitor = (id: string, signal?: AbortSignal) =>
   api.get<Visitor>(`/v1/visitors/${id}`, { signal });

@@ -1,6 +1,7 @@
-// What other features may use from attendance. A profile shows a person's attendance; the page for a
-// session (not built yet) will live here too.
+// What other features and the app shell may use from attendance. A profile shows a person's attendance;
+// the Attendance pages are routes.
 export { PersonAttendance } from "./components/PersonAttendance";
 export { PersonVisits } from "./components/PersonVisits";
 export { useAttendance } from "./hooks";
+export { attendanceRoutes } from "./routes";
 export { useLastSeen, usePersonStats } from "./useStats";

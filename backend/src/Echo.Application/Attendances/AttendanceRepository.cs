@@ -1,9 +1,9 @@
 using Echo.Data;
 using Echo.Domain.Attendances;
+using Echo.Domain.Congregations;
 using Echo.Domain.Members;
 using Echo.Shared.Query;
 using Microsoft.EntityFrameworkCore;
-using Echo.Domain.Congregations;
 
 namespace Echo.Application.Attendances;
 
@@ -28,7 +28,7 @@ public class AttendanceRepository(AppDbContext context)
                 .ThenInclude(s => s.SessionLabel)
             .Filter(filters)
             .OrderByDescending(a => a.Session.Date)
-            .ThenBy(a => a.Id)
+            .ThenByDescending(a => a.Id)
             .Paginate(cursor, pageSize)
             .ToListAsync(ct);
     }
@@ -181,6 +181,12 @@ internal static class AttendanceQueryExtensions
         if (filters.To is not null)
             query = query.Where(a => a.Session.Date <= filters.To);
 
+        if (!string.IsNullOrWhiteSpace(filters.Name))
+        {
+            var pattern = $"%{Shared.Query.Extensions.EscapeLike(filters.Name.Trim())}%";
+            query = query.Where(a => EF.Functions.ILike(a.Person.Name, pattern));
+        }
+
         return query;
     }
 
@@ -193,7 +199,7 @@ internal static class AttendanceQueryExtensions
         if (cursor is not null)
             query = query.Where(a =>
                 a.Session.Date < cursor.SessionDate
-                || (a.Session.Date == cursor.SessionDate && a.Id > cursor.Id)
+                || (a.Session.Date == cursor.SessionDate && a.Id < cursor.Id)
             );
 
         return query.Take(pageSize);

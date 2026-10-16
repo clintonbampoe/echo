@@ -162,7 +162,7 @@ namespace Echo.Data.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("id");
 
-                    b.Property<DateTime?>("CheckedInAt")
+                    b.Property<DateTime>("CheckedInAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("checked_in_at");
 

@@ -37,7 +37,7 @@ export const navGroups: NavGroup[] = [
         label: "Attendance",
         to: "/attendance",
         icon: "calendar-check",
-        ready: false,
+        ready: true,
       },
       { label: "Events", to: "/events", icon: "calendar", ready: false },
     ],

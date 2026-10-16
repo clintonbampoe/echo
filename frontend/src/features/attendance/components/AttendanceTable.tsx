@@ -32,10 +32,7 @@ export function AttendanceTable({ list, narrowed }: Props) {
         { header: "Session", cell: (a) => a.sessionName || a.sessionLabelName },
         { header: "Type", cell: (a) => a.sessionLabelName },
         { header: "Date", cell: (a) => formatDate(a.sessionDate) },
-        {
-          header: "Checked in",
-          cell: (a) => (a.checkedInAt ? formatTime(a.checkedInAt) : "–"),
-        },
+        { header: "Checked in", cell: (a) => formatTime(a.checkedInAt) },
       ]}
     />
   );
