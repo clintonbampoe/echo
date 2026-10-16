@@ -72,4 +72,40 @@ describe("ListBody", () => {
     );
     expect(onClear).toHaveBeenCalled();
   });
+
+  it('says how the rows are sorted, and "all" once nothing more is coming', () => {
+    const five = list({ rows: ["a", "b", "c", "d", "e"] });
+    const { rerender } = render(
+      <ListBody
+        list={five}
+        icon="tithes"
+        noun={["tithe", "tithes"]}
+        emptyText="x"
+        filtered={false}
+        onClear={vi.fn()}
+        order="Newest first."
+      >
+        {() => null}
+      </ListBody>,
+    );
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Showing all 5 tithes. Newest first.",
+    );
+    rerender(
+      <ListBody
+        list={list({ rows: ["a", "b"], hasMore: true })}
+        icon="tithes"
+        noun={["tithe", "tithes"]}
+        emptyText="x"
+        filtered={false}
+        onClear={vi.fn()}
+        order="Newest first."
+      >
+        {() => null}
+      </ListBody>,
+    );
+    expect(screen.getByRole("status")).toHaveTextContent(
+      "Showing 2 tithes. Newest first.",
+    );
+  });
 });

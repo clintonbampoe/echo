@@ -171,12 +171,15 @@ describe("organization page", () => {
         screen.queryByRole("button", { name: /^Kwame Asante$/ }),
       ).toBeNull(),
     );
-    expect(
-      fetchMock.mock.calls.some(
-        ([u]) =>
-          new URL(u as string, "http://x").searchParams.get("name") === "comf",
-      ),
-    ).toBe(true);
+    await waitFor(() =>
+      expect(
+        fetchMock.mock.calls.some(
+          ([u]) =>
+            new URL(u as string, "http://x").searchParams.get("name") ===
+            "comf",
+        ),
+      ).toBe(true),
+    );
   });
 
   it("empties the search box as well as the role when the filters are cleared", async () => {
@@ -357,7 +360,7 @@ describe("organization page", () => {
     expect(within(panel).getByText("In Church Choir")).toBeInTheDocument();
     expect(
       within(panel).getByRole("link", { name: "View profile" }),
-    ).toHaveAttribute("href", "/members/m2");
+    ).toHaveAttribute("href", "/members/m2?tab=organizations");
     expect(
       within(panel).getByRole("radio", { name: "Secretary" }),
     ).toBeChecked();

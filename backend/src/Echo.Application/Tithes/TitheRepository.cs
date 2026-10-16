@@ -111,7 +111,8 @@ public class TitheRepository(AppDbContext context)
         if (filters.PaymentMethod is not null)
             query = query.Where(t => t.PaymentMethod == filters.PaymentMethod);
 
-        return await query.InMonths(first, last).MonthlyTotals().ToListAsync(ct);
+        var rows = await query.InYears(first, last).MonthlyTotals().ToListAsync(ct);
+        return rows.Select(r => r.ToDto()).ToList();
     }
 
     public async Task<TitheStats> GetSummaryStats(
@@ -138,6 +139,8 @@ public class TitheRepository(AppDbContext context)
     public void SoftDelete(Tithe entity) => entity.DeletedAt = DateTime.UtcNow;
 }
 
+internal record TitheMonthRow(int Year, MonthOfYear Month, decimal Total, int UniqueTithers);
+
 public record TitheStats(decimal Total, int UniqueTithers, PaymentMethod? MostUsedPaymentMethod);
 
 internal static class TitheQueryExtensions
@@ -156,31 +159,33 @@ internal static class TitheQueryExtensions
                 .FirstOrDefault()
         ));
 
-    // Tithes are charted by the month they are for (ForYear and ForMonth).
-    internal static IQueryable<Tithe> InMonths(
+    // Narrows to the years the chart covers. The month is stored as text, so it cannot be compared or added to a
+    // number in SQL; months outside the range come back as extra rows and FillMonths leaves them out.
+    internal static IQueryable<Tithe> InYears(
         this IQueryable<Tithe> query,
         YearMonth first,
         YearMonth last
-    )
-    {
-        var firstIndex = first.Year * 12 + first.Month;
-        var lastIndex = last.Year * 12 + last.Month;
-        return query.Where(t =>
-            t.ForYear * 12 + (int)t.ForMonth >= firstIndex
-            && t.ForYear * 12 + (int)t.ForMonth <= lastIndex
-        );
-    }
+    ) => query.Where(t => t.ForYear >= first.Year && t.ForYear <= last.Year);
 
-    internal static IQueryable<TitheMonthlyDto> MonthlyTotals(this IQueryable<Tithe> query) =>
+    // The month stays an enum here: it is stored as text, so turning it into a number happens after the query (ToDto).
+    internal static IQueryable<TitheMonthRow> MonthlyTotals(this IQueryable<Tithe> query) =>
         query
             .GroupBy(t => new { t.ForYear, t.ForMonth })
-            .Select(g => new TitheMonthlyDto
-            {
-                Year = g.Key.ForYear,
-                Month = (int)g.Key.ForMonth,
-                TotalCollected = g.Sum(t => t.Amount),
-                UniqueTithers = g.Select(t => t.MemberId).Distinct().Count(),
-            });
+            .Select(g => new TitheMonthRow(
+                g.Key.ForYear,
+                g.Key.ForMonth,
+                g.Sum(t => t.Amount),
+                g.Select(t => t.MemberId).Distinct().Count()
+            ));
+
+    internal static TitheMonthlyDto ToDto(this TitheMonthRow row) =>
+        new()
+        {
+            Year = row.Year,
+            Month = (int)row.Month,
+            TotalCollected = row.Total,
+            UniqueTithers = row.UniqueTithers,
+        };
 
     internal static IQueryable<Tithe> Filter(this IQueryable<Tithe> query, TitheFilters filters)
     {

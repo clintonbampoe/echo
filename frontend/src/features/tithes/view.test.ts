@@ -1,7 +1,6 @@
 import {
   chartBars,
-  chartRange,
-  highestMonth,
+  chartSummary,
   titheMonths,
   titheStats,
   yearSlots,
@@ -46,19 +45,28 @@ describe("tithe page numbers", () => {
 
   it("turns the monthly totals into bars with short and full month names", () => {
     expect(chartBars(rows)).toEqual([
-      { key: "2025-11", label: "Nov", name: "November 2025", value: 12000 },
-      { key: "2026-09", label: "Sep", name: "September 2026", value: 21300 },
-      { key: "2026-10", label: "Oct", name: "October 2026", value: 0 },
+      {
+        key: "2025-11",
+        label: "Nov",
+        name: "November 2025",
+        tip: "Nov 2025",
+        value: 12000,
+      },
+      {
+        key: "2026-09",
+        label: "Sep",
+        name: "September 2026",
+        tip: "Sep 2026",
+        value: 21300,
+      },
+      {
+        key: "2026-10",
+        label: "Oct",
+        name: "October 2026",
+        tip: "Oct 2026",
+        value: 0,
+      },
     ]);
-  });
-
-  it("names the highest month, or nothing when no month has a tithe", () => {
-    expect(highestMonth(chartBars(rows))).toBe(
-      "Highest: GH₵ 21,300 in September.",
-    );
-    expect(
-      highestMonth(chartBars([{ year: 2026, month: 10, totalCollected: 0 }])),
-    ).toBe("");
   });
 
   it("makes the four numbers, with dashes while loading", () => {
@@ -92,16 +100,22 @@ describe("tithe page numbers", () => {
   });
 });
 
-describe("chartRange", () => {
-  it("names the first and last month the chart covers", () => {
+describe("chartSummary", () => {
+  it("names the months the bars cover, and which one was highest", () => {
     const bars = chartBars([
       { year: 2025, month: 11, totalCollected: 1 },
       { year: 2026, month: 10, totalCollected: 2 },
     ]);
-    expect(chartRange(bars)).toBe("Nov 2025 to Oct 2026");
+    expect(chartSummary(bars)).toEqual({
+      range: "Nov 2025 – Oct 2026",
+      highest: { amount: "GH₵ 2", month: "October" },
+    });
   });
 
-  it("says nothing for an empty chart", () => {
-    expect(chartRange([])).toBe("");
+  it("leaves out the highest month when nothing was given, and says nothing for an empty chart", () => {
+    expect(
+      chartSummary(chartBars([{ year: 2026, month: 10, totalCollected: 0 }])),
+    ).toEqual({ range: "Oct 2026 – Oct 2026", highest: undefined });
+    expect(chartSummary([])).toBeNull();
   });
 });

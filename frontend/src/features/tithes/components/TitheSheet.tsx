@@ -48,8 +48,10 @@ function RecordTithe({ today, onClose, onUpdate }: Omit<Props, "open">) {
     control: form.control,
     name: ["forMonth", "forYear"],
   });
-  const existing = useSameMonthTithes(member?.id, Number(year), month).data
+  // Not while saving: the list that now holds the tithe being saved is not a clash.
+  const clash = useSameMonthTithes(member?.id, Number(year), month).data
     ?.data[0];
+  const existing = create.isPending ? undefined : clash;
 
   function choose(next: MemberMatch | null) {
     setMember(next);
@@ -78,7 +80,7 @@ function RecordTithe({ today, onClose, onUpdate }: Omit<Props, "open">) {
   return (
     <FormSheet
       title="Record tithe"
-      subtitle="Record what a member gave. You can fix it later."
+      subtitle="One tithe from one member."
       onClose={onClose}
       formId="tithe-form"
       onSubmit={form.handleSubmit((v) => save(v, false))}

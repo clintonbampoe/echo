@@ -16,6 +16,15 @@
   gap: 8px;
   margin-top: var(--control-gap, 8px);
 }
+/* Chips: each as wide as its text, wrapping when the row is full. */
+.wrap {
+  display: flex;
+  flex-wrap: wrap;
+}
+.wrap .face {
+  padding: 0 14px;
+  white-space: nowrap;
+}
 .option {
   position: relative;
   display: block;

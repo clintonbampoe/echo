@@ -95,7 +95,7 @@ export function MembershipSheet({
             <Chip tone={roleTone[member.role]}>{roleLabel[member.role]}</Chip>
           </div>
           <LinkButton
-            to={paths.member(member.memberId)}
+            to={paths.member(member.memberId, "organizations")}
             variant="secondary"
             size="sm"
           >

@@ -39,6 +39,9 @@ export type TitheSummary = {
   window?: DateWindow | null;
 };
 
+export const getTithe = (id: string, signal?: AbortSignal) =>
+  api.get<Tithe>(`/v1/tithes/${id}`, { signal });
+
 export const listTithes = (
   filters: TitheFilters,
   cursor?: string,
@@ -55,20 +58,15 @@ export const getTitheSummary = (filters: TitheFilters, signal?: AbortSignal) =>
     signal,
   });
 
+// One member's tithes. With no dates it is everything they ever gave (a request for one member has no default range).
 export const listMemberTithes = (
   memberId: string,
+  filters: TitheFilters,
   cursor?: string,
   signal?: AbortSignal,
 ) =>
   api.get<Page<Tithe>>(`/v1/tithes/member/${memberId}`, {
-    query: { cursor, pageSize: PAGE_SIZE },
-    signal,
-  });
-
-// Everything a member has ever given (a request for one member has no default date range).
-export const getTitheTotalEver = (memberId: string, signal?: AbortSignal) =>
-  api.get<{ totalCollected: number }>("/v1/tithes/summary", {
-    query: { memberId },
+    query: { ...filters, cursor, pageSize: PAGE_SIZE },
     signal,
   });
 

@@ -10,12 +10,12 @@ import {
   toApiFilters,
 } from "../filters";
 import { useTithes, useTitheSummary } from "../hooks";
-import { DeleteTitheDialog } from "./DeleteTitheDialog";
-import { EditTitheSheet } from "./EditTitheSheet";
-import { TitheSheet } from "./TitheSheet";
+import { LinkedTithe } from "./LinkedTithe";
 import { TitheChart } from "./TitheChart";
-import { TitheList } from "./TitheList";
+import { TitheDialogs, type TitheStart } from "./TitheDialogs";
 import { TitheFilterBar } from "./TitheFilterBar";
+import { TitheList } from "./TitheList";
+import { TitheSheet } from "./TitheSheet";
 import { TitheStats } from "./TitheStats";
 
 // The Tithes page: the numbers and the monthly chart, the filters, and every tithe. The page only decides what a row is.
@@ -23,11 +23,10 @@ export function TithesPage() {
   const today = todayText();
   const { filters, update, clear, resetKey } = useUrlFilters(titheFilters);
   const [recording, setRecording] = useState(false);
-  const [editing, setEditing] = useState<{
+  const [opened, setOpened] = useState<{
     tithe: Tithe;
-    topUp: boolean;
+    start: TitheStart;
   } | null>(null);
-  const [deleting, setDeleting] = useState<Tithe | null>(null);
   const query = toApiFilters(filters, today);
   const list = useTithes(query);
   const summary = useTitheSummary(query);
@@ -38,7 +37,7 @@ export function TithesPage() {
     <div className="anim-rise">
       <PageHeader
         title="Tithes"
-        text="What members give, and the month each tithe counts toward."
+        text="What members have given, and for which month."
         action={
           <Button onClick={() => setRecording(true)}>
             <Icon name="plus" size={16} />
@@ -71,12 +70,12 @@ export function TithesPage() {
         emptyText="Record a tithe, or choose a wider range."
         filtered={titheFilters.isFiltered(filters)}
         onClear={clear}
+        order="Newest first."
       >
         {(tithes) => (
           <TitheList
             tithes={tithes}
-            onEdit={(tithe) => setEditing({ tithe, topUp: false })}
-            onDelete={setDeleting}
+            onOpen={(tithe, start) => setOpened({ tithe, start })}
           />
         )}
       </ListBody>
@@ -86,20 +85,18 @@ export function TithesPage() {
         onClose={() => setRecording(false)}
         onUpdate={(tithe) => {
           setRecording(false);
-          setEditing({ tithe, topUp: true });
+          setOpened({ tithe, start: "top-up" });
         }}
       />
-      {editing && (
-        <EditTitheSheet
-          tithe={editing.tithe}
-          topUp={editing.topUp}
+      {opened && (
+        <TitheDialogs
+          tithe={opened.tithe}
+          start={opened.start}
           today={today}
-          onClose={() => setEditing(null)}
+          onClose={() => setOpened(null)}
         />
       )}
-      {deleting && (
-        <DeleteTitheDialog tithe={deleting} onClose={() => setDeleting(null)} />
-      )}
+      <LinkedTithe today={today} />
     </div>
   );
 }

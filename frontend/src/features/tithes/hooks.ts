@@ -8,8 +8,9 @@ export const titheKeys = {
   list: (filters: api.TitheFilters) => ["tithes", "list", filters] as const,
   summary: (filters: api.TitheFilters) =>
     ["tithes", "summary", filters] as const,
-  member: (id: string) => ["tithes", "member", id] as const,
-  total: (id: string) => ["tithes", "total", id] as const,
+  member: (id: string, filters: api.TitheFilters) =>
+    ["tithes", "member", id, filters] as const,
+  one: (id: string) => ["tithes", "one", id] as const,
   sameMonth: (memberId: string, year: number, month: string) =>
     ["tithes", "same-month", memberId, year, month] as const,
   months: (who: api.TitheMonthsFor, from?: string, to?: string) =>
@@ -22,24 +23,27 @@ export const useTithes = (filters: api.TitheFilters) =>
     api.listTithes(filters, c, s),
   );
 
+// One tithe by its id (a link to it from another page).
+export const useTithe = (id: string) =>
+  useQuery({
+    queryKey: titheKeys.one(id),
+    queryFn: ({ signal }) => api.getTithe(id, signal),
+  });
+
 export const useTitheSummary = (filters: api.TitheFilters) =>
   useQuery({
     queryKey: titheKeys.summary(filters),
     queryFn: ({ signal }) => api.getTitheSummary(filters, signal),
   });
 
-// Every tithe one member gave, newest first.
-export const useMemberTithes = (memberId: string) =>
-  usePagedList(titheKeys.member(memberId), (c, s) =>
-    api.listMemberTithes(memberId, c, s),
+// The tithes one member gave that match the filters (all of them with none), newest first.
+export const useMemberTithes = (
+  memberId: string,
+  filters: api.TitheFilters = {},
+) =>
+  usePagedList(titheKeys.member(memberId, filters), (c, s) =>
+    api.listMemberTithes(memberId, filters, c, s),
   );
-
-export const useTitheTotalEver = (memberId: string, enabled: boolean) =>
-  useQuery({
-    queryKey: titheKeys.total(memberId),
-    queryFn: ({ signal }) => api.getTitheTotalEver(memberId, signal),
-    enabled,
-  });
 
 // What a member already has for one month (the tithes a new one might double). Waits until a member is chosen.
 export const useSameMonthTithes = (
@@ -68,7 +72,8 @@ export const useTitheMonths = (
 // Recording, changing or deleting a tithe changes every list, number and chart, and a member's profile.
 function useRefreshTithes() {
   const client = useQueryClient();
-  return () => client.invalidateQueries({ queryKey: titheKeys.all });
+  // Not awaited: the form that saved moves on at once, and the lists refresh behind it.
+  return () => void client.invalidateQueries({ queryKey: titheKeys.all });
 }
 
 export function useCreateTithe() {

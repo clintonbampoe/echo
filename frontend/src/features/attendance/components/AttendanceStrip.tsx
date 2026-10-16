@@ -16,9 +16,11 @@ type Props = {
 
 const say = (s: Slot) =>
   `${s.name}, ${formatDate(s.date)}: ${s.present ? "attended" : "missed"}`;
+// The hover shows only which session; the square itself (ticked or empty) already says whether they came.
 const toCell = (s: Slot): Cell => ({
   id: s.id,
   name: say(s),
+  tip: `${s.name}, ${formatDate(s.date)}`,
   state: s.present ? "on" : "off",
   href: paths.session(s.id),
 });

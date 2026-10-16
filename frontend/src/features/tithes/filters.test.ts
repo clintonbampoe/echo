@@ -3,6 +3,7 @@ import {
   collectedDates,
   countActive,
   forMonthLabel,
+  memberTitheFilters,
   parseForMonth,
   titheFilters,
   toApiFilters,
@@ -93,6 +94,22 @@ describe("tithe filters", () => {
     expect(chooseForMonth(titheFilters.empty, "")).toEqual({
       forMonth: "",
       window: "week",
+    });
+  });
+
+  it("limits a member's tithes by method and days, and sends no days for all time", () => {
+    expect(memberTitheFilters("", "all", today)).toEqual({
+      paymentMethod: undefined,
+    });
+    expect(memberTitheFilters("Cash", "year", today)).toEqual({
+      paymentMethod: "Cash",
+      from: "2026-01-01",
+      to: "2026-12-31",
+    });
+    expect(memberTitheFilters("nonsense", "last-year", today)).toEqual({
+      paymentMethod: undefined,
+      from: "2025-01-01",
+      to: "2025-12-31",
     });
   });
 
