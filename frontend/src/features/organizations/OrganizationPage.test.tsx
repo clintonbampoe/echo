@@ -72,7 +72,14 @@ function server(status = 200) {
         : json({ title: "Not found" }, status);
     if (path === "/v1/organization-members/organization/o1") {
       const role = u.searchParams.get("role");
-      return page(role ? people.filter((p) => p.role === role) : people);
+      const name = u.searchParams.get("name")?.toLowerCase();
+      return page(
+        people.filter(
+          (p) =>
+            (!role || p.role === role) &&
+            (!name || p.memberName.toLowerCase().includes(name)),
+        ),
+      );
     }
     if (path === "/v1/events") return page([event]);
     return page([]);
@@ -146,6 +153,52 @@ describe("organization page", () => {
         ([u]) => new URL(u as string).searchParams.get("role") === "Secretary",
       ),
     ).toBe(true);
+  });
+
+  it("searches the group’s members by name", async () => {
+    const user = userEvent.setup();
+    const fetchMock = show(server());
+    await screen.findByRole("button", { name: /^Kwame Asante$/ });
+    await user.type(
+      screen.getByRole("searchbox", { name: "Search this group" }),
+      "comf",
+    );
+    expect(
+      await screen.findByRole("button", { name: /^Comfort Addo$/ }),
+    ).toBeInTheDocument();
+    await waitFor(() =>
+      expect(
+        screen.queryByRole("button", { name: /^Kwame Asante$/ }),
+      ).toBeNull(),
+    );
+    await waitFor(() =>
+      expect(
+        fetchMock.mock.calls.some(
+          ([u]) =>
+            new URL(u as string, "http://x").searchParams.get("name") ===
+            "comf",
+        ),
+      ).toBe(true),
+    );
+  });
+
+  it("empties the search box as well as the role when the filters are cleared", async () => {
+    const user = userEvent.setup();
+    show(server());
+    await screen.findByRole("button", { name: /^Kwame Asante$/ });
+    await user.type(
+      screen.getByRole("searchbox", { name: "Search this group" }),
+      "zzz",
+    );
+    await user.click(
+      await screen.findByRole("button", { name: /Clear filters/ }),
+    );
+    expect(
+      screen.getByRole("searchbox", { name: "Search this group" }),
+    ).toHaveValue("");
+    expect(
+      await screen.findByRole("button", { name: /^Kwame Asante$/ }),
+    ).toBeInTheDocument();
   });
 
   it("lists the events the group is hosting on the Events tab, each linking to its page", async () => {
@@ -307,7 +360,7 @@ describe("organization page", () => {
     expect(within(panel).getByText("In Church Choir")).toBeInTheDocument();
     expect(
       within(panel).getByRole("link", { name: "View profile" }),
-    ).toHaveAttribute("href", "/members/m2");
+    ).toHaveAttribute("href", "/members/m2?tab=organizations");
     expect(
       within(panel).getByRole("radio", { name: "Secretary" }),
     ).toBeChecked();

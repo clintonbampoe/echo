@@ -79,6 +79,10 @@ button.cell:hover .bar,
   transform: translateX(-50%);
   transition: opacity var(--fast) ease;
 }
+.tip strong {
+  display: block;
+  font-weight: 600;
+}
 .cell:hover .tip,
 .cell:focus-visible .tip {
   opacity: 1;

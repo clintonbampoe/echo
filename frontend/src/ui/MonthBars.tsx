@@ -4,8 +4,10 @@ export type MonthBar = {
   key: string;
   // The short name under the bar, e.g. "Oct".
   label: string;
-  // What a screen reader and the tooltip say, e.g. "October 2026".
+  // What a screen reader says, e.g. "October 2026".
   name: string;
+  // The tooltip's heading, e.g. "Oct 2026".
+  tip: string;
   value: number;
   // The value as shown, e.g. "GH₵ 21,300".
   text: string;
@@ -32,7 +34,8 @@ export function MonthBars({ label, bars, selected, onPick }: Props) {
         const mark = (
           <>
             <span className={styles.tip} aria-hidden="true">
-              {b.name}: {b.text}
+              <strong>{b.tip}</strong>
+              {b.text}
             </span>
             <span className={styles.track}>
               <span

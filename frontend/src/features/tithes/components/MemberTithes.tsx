@@ -14,7 +14,7 @@ export function MemberTithes({
   return (
     <Section hint="Tithes this member has given, newest first.">
       <TitheYearStrip memberId={memberId} today={today} />
-      <TitheTable memberId={memberId} />
+      <TitheTable memberId={memberId} filters={{}} narrowed={false} />
     </Section>
   );
 }

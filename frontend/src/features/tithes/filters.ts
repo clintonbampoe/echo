@@ -96,6 +96,34 @@ export function toApiFilters(f: ListFilters, today: string): TitheFilters {
   };
 }
 
+// The days a member's tithes are limited to. Unlike the Tithes page, "all" sends no dates at all: a request for
+// one member has no default range, so nothing is cut off.
+export type MemberWindow = "all" | "year" | "last-year";
+
+export const memberWindowOptions: readonly {
+  value: MemberWindow;
+  label: string;
+}[] = [
+  { value: "all", label: "All time" },
+  { value: "year", label: "This year" },
+  { value: "last-year", label: "Last year" },
+];
+
+export function memberTitheFilters(
+  method: string,
+  window: string,
+  today: string,
+): TitheFilters {
+  const year = Number(today.slice(0, 4));
+  const days =
+    window === "year"
+      ? { from: `${year}-01-01`, to: `${year}-12-31` }
+      : window === "last-year"
+        ? { from: `${year - 1}-01-01`, to: `${year - 1}-12-31` }
+        : {};
+  return { paymentMethod: methodOf(method), ...days };
+}
+
 // Choosing the period a tithe is for is asking about that period, not about this week: while the date range
 // is still the default, widen it so the answer is not empty by surprise.
 export function chooseForMonth(

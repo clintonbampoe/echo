@@ -35,6 +35,8 @@ type Props<T> = {
   columns: PersonColumn<T>[];
   // The ⋯ menu. Leave it out for a row with no actions.
   actions?: (row: T) => MenuItem[];
+  // What the first column is called. "Name" unless the rows are about something else ("Member" in a list of tithes).
+  nameHeader?: string;
 };
 
 const NAME = "minmax(220px, 2.4fr)";
@@ -50,6 +52,7 @@ export function PersonList<T>({
   person,
   columns,
   actions,
+  nameHeader = "Name",
 }: Props<T>) {
   const widths = (list: PersonColumn<T>[]) =>
     [NAME, ...list.map((c) => c.width), ACTIONS].join(" ");
@@ -60,7 +63,7 @@ export function PersonList<T>({
   return (
     <div className={styles.card}>
       <div className={styles.head} aria-hidden="true" style={grid}>
-        <span>Name</span>
+        <span>{nameHeader}</span>
         {columns.map((c) => (
           <span
             key={c.header}

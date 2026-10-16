@@ -1,7 +1,7 @@
 # Echo Component Inventory
 
 **Written by:** @clintonbampoe
-**Last updated:** 2026-10-15 by @clintonbampoe
+**Last updated:** 2026-10-16 by @clintonbampoe
 
 From the 167 desktop design boards. The first table is the design's inventory; "Built in ui/" says what exists in code.
 
@@ -49,14 +49,14 @@ Every feature imports these through `ui/index.ts` only. Each one holds no data, 
 | ConfirmDialog, DeleteDialog | the dialog, and the "Delete X?" version with its error state; `confirmLabel` and `cancelLabel` change the buttons ("Remove from group") | members, visitors, organizations |
 | Drawer, Sheet, BottomSheet | the overlay that holds a form, and a sheet that rises from the bottom on a phone | FormSheet, MonthYearPill |
 | Field, PasswordField, SelectField, ControlledSelect, TextAreaField | form inputs. `Field` takes a `unit` (GH₵) shown inside the box | auth, members, visitors, organizations, tithes |
-| SegmentedField | a few choices side by side, one picked (real radio buttons) | organizations (role) |
-| FormSheet, FormSection | a sheet with the shared footer, and a titled group of fields. `another` adds a "Save and add another" button; `blocked` disables both save buttons while a notice explains why | add and edit forms, tithes |
+| SegmentedField | a few choices side by side, one picked (real radio buttons). `wrap` makes chips of their own width that wrap, for a longer list | organizations (role) |
+| FormSheet, FormSection | a sheet with the shared footer, and a group of fields (`FormSection` takes an optional title). `another` adds a "Save and add another" button; `blocked` disables both save buttons while a notice explains why | add and edit forms, tithes |
 | PageHeader, FilterBar, FilterSelect, SearchBox, SearchField | the top of a list page. `FilterBar` is the search, the filter pills and the scope pill, and folds the filters behind a "Filters" button on a phone or tablet | members, visitors, organizations (list and members tab) |
-| MonthYearPill, MonthBars | a filter pill that picks a month and year, and a row of clickable month bars (a chart without a library) | tithes |
-| ListBody | loading, error, empty and nothing-matches around a list, then the count and "load more". `icon` is the one the page's menu item wears | members, visitors, organizations, tithes |
-| PersonList | a list of people: avatar, name, columns, ⋯ menu, cards on a phone. The name opens a page (`href`) or, in another record's list, a panel on the same page (`onOpen`) | members, visitors, organizations, tithes |
-| RecordTable | a table of records (a row can link), cards on a phone | attendance, tithes, events, organizations |
-| Section, StatStrip, CellStrip, Tabs | a titled block, the numbers (a value or note too long for its tile is cut with an ellipsis, full text on hover), the strip of squares, the tabs | profile pages, organizations |
+| MonthYearPill, MonthBars | a filter pill that picks a month and year, and a row of clickable month bars (a chart without a library). A bar's `tip` is the short hover title ("Oct 2026") | tithes |
+| ListBody | loading, error, empty and nothing-matches around a list, then the count and "load more". `icon` is the one the page's menu item wears; `order` adds how it is sorted ("Showing all 5 tithes. Newest first.") | members, visitors, organizations, tithes |
+| PersonList | a list of people: avatar, name, columns, ⋯ menu, cards on a phone. `nameHeader` renames the first column ("Member"). The name opens a page (`href`) or, in another record's list, a panel on the same page (`onOpen`) | members, visitors, organizations, tithes |
+| RecordTable | a table of records (a row can link), cards on a phone. `total` puts a figure at the right of the footer ("Total GH₵ 6,400") | attendance, tithes, events, organizations |
+| Section, StatStrip, CellStrip, Tabs | a titled block, the numbers (a value or note too long for its tile is cut with an ellipsis, full text on hover), the strip of squares (a square's `tip` is a shorter hover text), the tabs | profile pages, organizations |
 | ProfileLayout, BackLink, ProfileIdentity | a record's page: back link, name card, numbers and history | member and visitor pages |
 | DetailCard, DetailGroup, DetailBlock | the details card with titled blocks | member and visitor pages |
 | useMedia, useNarrowProfile, useSurface | screen-size and surface hooks | app, profile pages |
@@ -65,10 +65,14 @@ Every feature imports these through `ui/index.ts` only. Each one holds no data, 
 
 Rules every screen follows. They are about how pieces are put together, not about one piece.
 
-- **People inside another record open a panel, not a profile.** A list of members on an organization, an event, an attendance session, a project or a tithe is about that record. Clicking a person opens a panel about their part in it (role, joined date, the check-in). The panel has a deliberate "View profile" link to the member page. Only the Members and Visitors lists link a person straight to their page. Built: `MembershipSheet` in `features/organizations`; the list uses `PersonList` with `onOpen`.
+- **People inside another record open a panel, not a profile.** A list of members on an organization, an event, an attendance session, a project or a tithe is about that record. Clicking a person opens a panel about their part in it (role, joined date, the check-in). The panel has a deliberate "View profile" link to the member page, on the tab about that record. Only the Members and Visitors lists link a person straight to their page. Built: `MembershipSheet` in `features/organizations`; the list uses `PersonList` with `onOpen`.
 - **Search and filters share one bar.** Search comes first, then the filters, then the scope pill (the time range) at the far right on a wide screen. On a phone or tablet the search sits beside a "Filters" button, and every filter and the scope pill live behind it, even when there is only one, so adding a filter later changes nothing people are used to.
 - **A rule the server enforces is also checked in the form.** A member has one tithe a month. Picking a member who already has one shows a warning `Notice` with an "Update that tithe" button and disables saving (`blocked`). The server still answers 409 `TITHE_DUPLICATE` if two people race, and the form shows that message in words.
-- **A record's person is fixed after it is created.** An existing tithe shows its member with a "View profile" link and no way to change them. A tithe on the wrong member is deleted and recorded again.
+- **A record's person is fixed after it is created.** An existing tithe shows its member with a "View profile" button (the same one the membership panel uses) and no way to change them. A tithe on the wrong member is deleted and recorded again.
+- **A record opens to be read, then changed.** Clicking a tithe opens it read only, with its details and "Edit tithe" and "Delete tithe" buttons. The ⋯ menu still goes straight to editing or deleting. A link to one tithe (`/tithes?tithe=id`, from a member's tab or year strip) opens the same view. Built: `TitheDialogs` steps from view to edit or delete.
+- **A link to a member lands on the tab about where you came from.** A tithe links to the member's Tithes tab, an organization's member to Organizations, and attendance, events and responsibilities the same way (`paths.member(id, tab)`). Only the Members and Visitors lists link to the default tab.
+- **A member's Tithes tab is the year strip and the table.** The strip shows this year month by month and a given month opens that tithe; the table has the count and the total in its footer, and a row opens that tithe too.
+- **Strips show the same number of squares.** Attendance (members and visitors) and tithes all show 12. Hovering a square shows which session or month ("Oct 2026"); whether they came is the tick itself, and screen readers still get the full sentence.
 - **Clear filters empties the search box too**, from the "Clear all" link and from an empty list's button alike.
 - **Searching a record's own people is scoped to it.** The members tab on an organization searches only that group's members (`name` on the organization-members endpoint).
 

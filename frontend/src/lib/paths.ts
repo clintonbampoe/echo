@@ -1,10 +1,19 @@
 // Where each kind of record lives. Lists link to these, so the address of a page is written once.
 // A page that is not built yet is a placeholder in app/routes.tsx, so a link never ends on a 404.
+export type MemberTab =
+  "attendance" | "events" | "tithes" | "organizations" | "responsibilities";
+
 export const paths = {
   members: "/members",
   visitors: "/visitors",
   organizations: "/organizations",
-  member: (id: string) => `/members/${id}`,
+  tithes: "/tithes",
+  // The Tithes page with one tithe open to read.
+  tithe: (id: string) => `/tithes?tithe=${id}`,
+  // A member's page, optionally on one of its tabs. A link from a record's list goes to the tab about that
+  // record: a tithe to Tithes, an organization's member to Organizations, and so on.
+  member: (id: string, tab?: MemberTab) =>
+    `/members/${id}${tab ? `?tab=${tab}` : ""}`,
   visitor: (id: string) => `/visitors/${id}`,
   event: (id: string) => `/events/${id}`,
   organization: (id: string) => `/organizations/${id}`,

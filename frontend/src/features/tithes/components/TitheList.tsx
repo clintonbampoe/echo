@@ -1,13 +1,10 @@
-import { PaymentChip } from "@/features/transactions";
+import { paymentLabel } from "@/features/transactions";
 import { formatDate, formatMoney } from "@/lib/format";
 import { PersonList, type PersonColumn } from "@/ui";
 import type { Tithe } from "../api";
+import type { TitheStart } from "./TitheDialogs";
 
-type Props = {
-  tithes: Tithe[];
-  onEdit: (t: Tithe) => void;
-  onDelete: (t: Tithe) => void;
-};
+type Props = { tithes: Tithe[]; onOpen: (t: Tithe, start: TitheStart) => void };
 
 const columns: PersonColumn<Tithe>[] = [
   {
@@ -24,8 +21,7 @@ const columns: PersonColumn<Tithe>[] = [
   {
     header: "Method",
     width: "minmax(110px, 0.9fr)",
-    chip: true,
-    cell: (t) => <PaymentChip method={t.paymentMethod} />,
+    cell: (t) => paymentLabel[t.paymentMethod],
   },
   {
     header: "Collected",
@@ -36,26 +32,31 @@ const columns: PersonColumn<Tithe>[] = [
     header: "Note",
     width: "minmax(120px, 1.2fr)",
     low: true,
-    cell: (t) => t.description || "–",
+    cell: (t) => t.description || "No note",
   },
 ];
 
-// The rows: who gave and what. A row opens the edit sheet (rule S6), and the ⋯ menu has the same two actions as elsewhere.
-export function TitheList({ tithes, onEdit, onDelete }: Props) {
+// The rows: who gave and what. A row opens the tithe to read (rule S6); the ⋯ menu goes straight to editing or deleting.
+export function TitheList({ tithes, onOpen }: Props) {
   return (
     <PersonList
       label="Tithes"
+      nameHeader="Member"
       rows={tithes}
       rowKey={(t) => t.id}
       person={(t) => ({
         name: t.memberName,
         plain: true,
-        onOpen: () => onEdit(t),
+        onOpen: () => onOpen(t, "view"),
       })}
       columns={columns}
       actions={(t) => [
-        { label: "Edit tithe", onSelect: () => onEdit(t) },
-        { label: "Delete tithe", danger: true, onSelect: () => onDelete(t) },
+        { label: "Edit tithe", onSelect: () => onOpen(t, "edit") },
+        {
+          label: "Delete tithe",
+          danger: true,
+          onSelect: () => onOpen(t, "delete"),
+        },
       ]}
     />
   );
