@@ -56,6 +56,27 @@ export const listCheckIns = (
     signal,
   });
 
+// What the records can narrow check-ins by. Both days are always sent, because a request with no person and no
+// session has a default range of its own.
+export type RecordsQuery = {
+  name?: string;
+  kind?: PersonKind;
+  sessionLabelId?: number;
+  from: string;
+  to: string;
+};
+
+// Check-ins at every session in a range of days, the latest session first.
+export const listCheckInsBetween = (
+  query: RecordsQuery,
+  cursor?: string,
+  signal?: AbortSignal,
+) =>
+  api.get<Page<CheckIn>>("/v1/attendance", {
+    query: { ...query, cursor, pageSize: PAGE_SIZE },
+    signal,
+  });
+
 // The numbers for a session (by `sessionId`) or a range of days. A visitor counts as first-time when they
 // have no earlier visit at all.
 export type AttendanceSummary = {
@@ -80,7 +101,7 @@ export const getAttendanceSummary = (
 export const createCheckIn = (sessionId: string, personId: string) =>
   api.post<CheckIn>("/v1/attendance", { sessionId, personId });
 
-// Only the time can change.
+// Only the time can change. The server cannot clear it.
 export const updateCheckIn = (id: string, checkedInAt: string) =>
   api.put<CheckIn>(`/v1/attendance/${id}`, { checkedInAt });
 

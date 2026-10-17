@@ -1,15 +1,7 @@
 import { useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { todayText, daysAfter } from "@/lib/dates";
-import { paths } from "@/lib/paths";
-import {
-  Button,
-  DayStrip,
-  Icon,
-  LinkButton,
-  PageHeader,
-  StatStrip,
-} from "@/ui";
+import { DayStrip, StatStrip } from "@/ui";
 import {
   presenceStats,
   readDay,
@@ -23,6 +15,7 @@ import {
   useSessionsBetween,
 } from "../hooks";
 import { useStripAnchor } from "../useStripAnchor";
+import { AttendanceHeader } from "./AttendanceHeader";
 import { DayBar } from "./DayBar";
 import { DaySessions } from "./DaySessions";
 import { SessionSheet } from "./SessionSheet";
@@ -47,60 +40,52 @@ export function AttendancePage() {
 
   return (
     <div className="anim-rise">
-      <PageHeader
-        title="Attendance"
-        text="Pick a day to see its sessions and who came."
-        action={
-          <>
-            <LinkButton to={paths.sessionTypes} variant="secondary">
-              Session types
-            </LinkButton>
-            <Button onClick={() => setCreating(true)}>
-              <Icon name="plus" size={16} />
-              New session
-            </Button>
-          </>
-        }
-      />
-      <div className={styles.strip}>
-        <DayStrip
-          label="Days"
-          days={stripDays(anchor, today, sessions.data ?? [])}
-          selected={day}
-          onSelect={pick}
-          onShift={(weeks) => pick(daysAfter(day, weeks * 7))}
-          noun={["session", "sessions"]}
-        />
-      </div>
-      <DayBar
-        day={day}
-        today={today}
-        count={ready ? here.length : null}
-        onPick={pick}
-      />
-      <div className={styles.stats}>
-        <StatStrip
-          label="Attendance for this day"
-          stats={presenceStats(
-            summary.data,
-            `Across ${sessionCount(here.length)}`,
-            "No one marked",
-            "Present this day",
-          )}
-          busy={summary.isPending}
-        />
-      </div>
-      <div key={day} className="anim-rise">
-        <DaySessions
+      <AttendanceHeader tab="day" onNew={() => setCreating(true)} />
+      <div
+        role="tabpanel"
+        id="attendance-panel-day"
+        aria-labelledby="attendance-tab-day"
+      >
+        <div className={styles.strip}>
+          <DayStrip
+            label="Days"
+            days={stripDays(anchor, today, sessions.data ?? [])}
+            selected={day}
+            onSelect={pick}
+            onShift={(weeks) => pick(daysAfter(day, weeks * 7))}
+            noun={["session", "sessions"]}
+          />
+        </div>
+        <DayBar
           day={day}
-          here={here}
-          around={sessions.data ?? []}
-          ready={ready}
-          failed={sessions.isError}
-          noTypes={labels.data?.length === 0}
+          today={today}
+          count={ready ? here.length : null}
           onPick={pick}
-          onNew={() => setCreating(true)}
         />
+        <div className={styles.stats}>
+          <StatStrip
+            label="Attendance for this day"
+            stats={presenceStats(
+              summary.data,
+              `Across ${sessionCount(here.length)}`,
+              "No one marked",
+              "Present this day",
+            )}
+            busy={summary.isPending}
+          />
+        </div>
+        <div key={day} className="anim-rise">
+          <DaySessions
+            day={day}
+            here={here}
+            around={sessions.data ?? []}
+            ready={ready}
+            failed={sessions.isError}
+            noTypes={labels.data?.length === 0}
+            onPick={pick}
+            onNew={() => setCreating(true)}
+          />
+        </div>
       </div>
       <SessionSheet
         open={creating}

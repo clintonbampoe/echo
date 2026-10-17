@@ -1,6 +1,7 @@
 // What a person's attendance narrows by, and what its strip shows. Pure, so the tests can pass "today".
 import { monthsBefore } from "@/lib/dates";
-import type { AttendanceFilters, HeldSession } from "./api";
+import { paths } from "@/lib/paths";
+import type { AttendanceFilters, CheckIn, HeldSession } from "./api";
 
 export type Period = "all" | "year" | "12m" | "3m";
 
@@ -45,3 +46,9 @@ export function stripSlots(
     }))
     .reverse();
 }
+
+// Where a check-in's person lives: a member's Attendance tab, or the visitor's page. What they were when they came decides it.
+export const personHref = (c: Pick<CheckIn, "personKind" | "personId">) =>
+  c.personKind === "Member"
+    ? paths.member(c.personId, "attendance")
+    : paths.visitor(c.personId);

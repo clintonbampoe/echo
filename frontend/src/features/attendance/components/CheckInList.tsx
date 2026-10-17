@@ -1,8 +1,8 @@
 import { formatTime } from "@/lib/format";
 import type { Paged } from "@/lib/paged";
-import { paths } from "@/lib/paths";
 import { Chip, ListBody, PersonList, type PersonColumn } from "@/ui";
 import type { CheckIn } from "../api";
+import { personHref } from "../view";
 
 type Props = {
   list: Paged<CheckIn>;
@@ -30,11 +30,6 @@ const columns: PersonColumn<CheckIn>[] = [
   },
 ];
 
-const href = (c: CheckIn) =>
-  c.personKind === "Member"
-    ? paths.member(c.personId, "attendance")
-    : paths.visitor(c.personId);
-
 // Who is marked present at a session, newest first. Each row opens the person and has a menu to fix or undo it.
 export function CheckInList({
   list,
@@ -60,7 +55,11 @@ export function CheckInList({
           label="Check-ins"
           rows={rows}
           rowKey={(c) => c.id}
-          person={(c) => ({ name: c.personName, href: href(c), plain: true })}
+          person={(c) => ({
+            name: c.personName,
+            href: personHref(c),
+            plain: true,
+          })}
           columns={columns}
           actions={(c) => [
             { label: "Edit check-in time", onSelect: () => onEdit(c) },

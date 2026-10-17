@@ -11,6 +11,9 @@ export const paths = {
   attendance: "/attendance",
   // The Attendance page on one day.
   attendanceDay: (day: string) => `/attendance?day=${day}`,
+  // The Attendance records over a period: the sessions held, or (`people`) every check-in.
+  attendanceRecords: (view?: "people") =>
+    view ? `/attendance/records/${view}` : "/attendance/records",
   sessionTypes: "/attendance/labels",
   // The Tithes page with one tithe open to read.
   tithe: (id: string) => `/tithes?tithe=${id}`,
