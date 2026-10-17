@@ -55,11 +55,13 @@ export function RecordsFilters({
               <DatePill
                 label="From"
                 value={filters.from}
+                range={{ from: filters.from, to: filters.to }}
                 onChange={(from) => onChange({ from })}
               />
               <DatePill
                 label="To"
                 value={filters.to}
+                range={{ from: filters.from, to: filters.to }}
                 onChange={(to) => onChange({ to })}
               />
             </>

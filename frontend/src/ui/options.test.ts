@@ -1,4 +1,4 @@
-import { plainOptions, withAny } from "./options";
+import { filterOptions, plainOptions, withAny } from "./options";
 
 describe("options", () => {
   it("uses each value as its own label", () => {
@@ -13,5 +13,23 @@ describe("options", () => {
       { value: "", label: "Any status" },
       { value: "Active", label: "Active" },
     ]);
+  });
+
+  it("filters by a part of the label, ignoring case and outer spaces", () => {
+    const list = plainOptions([
+      "Ashanti",
+      "Western North",
+      "Savannah",
+      "Northern",
+    ]);
+    expect(filterOptions(list, " ASH ").map((o) => o.value)).toEqual([
+      "Ashanti",
+    ]);
+    expect(filterOptions(list, "nor").map((o) => o.value)).toEqual([
+      "Western North",
+      "Northern",
+    ]);
+    expect(filterOptions(list, "")).toBe(list);
+    expect(filterOptions(list, "zzz")).toEqual([]);
   });
 });

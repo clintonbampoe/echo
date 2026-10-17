@@ -30,5 +30,6 @@
   "spinner": "<g class=\"spin\"><path d=\"M12 3a9 9 0 1 0 9 9\" /></g>",
   "filter": "<path d=\"M4 7h10M18 7h2M4 17h2M10 17h10\"/><circle cx=\"16\" cy=\"7\" r=\"2\"/><circle cx=\"8\" cy=\"17\" r=\"2\"/>",
   "x": "<path d=\"M6 6l12 12M18 6 6 18\"/>",
-  "arrow-left": "<path d=\"M19 12H5M11 6l-6 6 6 6\"/>"
+  "arrow-left": "<path d=\"M19 12H5M11 6l-6 6 6 6\"/>",
+  "chevron-down": "<path d=\"m6 9 6 6 6-6\"/>"
 }

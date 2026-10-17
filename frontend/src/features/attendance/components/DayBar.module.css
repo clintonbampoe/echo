@@ -20,13 +20,6 @@
   display: flex;
   gap: 8px;
 }
-.hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
-  pointer-events: none;
-}
 .pick {
   position: relative;
 }

@@ -5,7 +5,7 @@ import { MemberPicker, type MemberMatch } from "@/features/members";
 import { isApiError } from "@/lib/api";
 import { todayText } from "@/lib/dates";
 import { handleSubmitError } from "@/lib/forms";
-import { Field, FormSheet, SegmentedField } from "@/ui";
+import { ControlledDate, FormSheet, SegmentedField } from "@/ui";
 import {
   addMemberFieldMap,
   addMemberSchema,
@@ -100,12 +100,11 @@ export function AddMemberSheet({ organization, taken, onClose }: Props) {
           value={role}
           onChange={(r) => form.setValue("role", r)}
         />
-        <Field
+        <ControlledDate
+          control={form.control}
+          name="joinedAt"
           label="Joined"
-          type="date"
           max={todayText()}
-          error={errors.joinedAt?.message}
-          {...form.register("joinedAt")}
         />
       </div>
     </FormSheet>

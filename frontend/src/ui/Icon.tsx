@@ -11,6 +11,7 @@ const shapes = {
   'calendar': <><rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></>,
   'calendar-check': <><rect x="3.5" y="4.5" width="17" height="16" rx="2.5"/><path d="M3.5 9.5h17M8 3v3M16 3v3M8.5 14.5l2.5 2.5 4.5-4.5"/></>,
   'check': <><path d="m5 12.5 4.5 4.5L19 7.5"/></>,
+  'chevron-down': <><path d="m6 9 6 6 6-6"/></>,
   'chevrons-up-down': <><path d="m7 9 5-5 5 5M7 15l5 5 5-5"/></>,
   'clock': <><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></>,
   'copy': <><rect x="8.5" y="8.5" width="11" height="11" rx="2"/><path d="M15.5 8.5V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v7.5a2 2 0 0 0 2 2h2.5"/></>,

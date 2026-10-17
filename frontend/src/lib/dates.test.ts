@@ -2,8 +2,13 @@ import {
   ageOn,
   daysAfter,
   daysBetween,
+  isDay,
+  monthGrid,
+  monthLength,
   monthStart,
+  monthsAfter,
   monthsBefore,
+  spokenDay,
   thisYear,
   weekStart,
 } from "./dates";
@@ -65,5 +70,37 @@ describe("weekStart and monthStart", () => {
     expect(weekStart("2026-10-11")).toBe("2026-10-11");
     expect(weekStart("2026-10-03")).toBe("2026-09-27");
     expect(monthStart("2026-10-14")).toBe("2026-10-01");
+  });
+});
+
+describe("calendar helpers", () => {
+  it("knows a real day from a made-up one", () => {
+    expect(isDay("2026-02-28")).toBe(true);
+    expect(isDay("2026-02-30")).toBe(false);
+    expect(isDay("26-2-3")).toBe(false);
+  });
+
+  it("knows how long a month is, in a leap year too", () => {
+    expect(monthLength(2026, 2)).toBe(28);
+    expect(monthLength(2028, 2)).toBe(29);
+    expect(monthLength(2026, 10)).toBe(31);
+  });
+
+  it("moves a month across a year", () => {
+    expect(monthsAfter("2026-11", 3)).toBe("2027-02");
+    expect(monthsAfter("2026-01", -1)).toBe("2025-12");
+  });
+
+  it("writes a day out in full", () => {
+    expect(spokenDay("2026-10-11")).toBe("Sunday 11 October 2026");
+  });
+
+  it("lays a month out as 6 Sunday-first weeks", () => {
+    const grid = monthGrid("2026-10");
+    expect(grid).toHaveLength(42);
+    // 1 October 2026 is a Thursday, so the grid starts on the Sunday before it.
+    expect(grid[0]).toBe("2026-09-27");
+    expect(grid[4]).toBe("2026-10-01");
+    expect(grid[41]).toBe("2026-11-07");
   });
 });

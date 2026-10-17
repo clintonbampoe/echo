@@ -3,7 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import type { ApiError } from "@/lib/api";
 import { handleSubmitError } from "@/lib/forms";
-import { DeleteDialog, Field, FormSheet } from "@/ui";
+import { ControlledTime, DeleteDialog, FormSheet } from "@/ui";
 import type { CheckIn, Session } from "../api";
 import {
   checkInSchema,
@@ -55,11 +55,10 @@ export function EditCheckInTimeSheet({ checkIn, session, onClose }: Props) {
         }
       }
     >
-      <Field
+      <ControlledTime
+        control={form.control}
+        name="time"
         label="Checked in at"
-        type="time"
-        error={form.formState.errors.time?.message}
-        {...form.register("time")}
       />
     </FormSheet>
   );

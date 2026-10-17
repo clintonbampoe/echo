@@ -17,6 +17,17 @@ export const monthNames = [
   "December",
 ];
 
+// Sunday to Saturday, in full, in the order Date.getUTCDay counts them.
+export const weekdayNames = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
+
 export const todayText = () => new Date().toISOString().slice(0, 10);
 
 // Jan 1 to today, as the plain days the API expects.
@@ -77,4 +88,36 @@ export function daysBetween(from: string, to: string): number {
 export function daysAfter(day: string, days: number): string {
   const [y, m, d] = dayParts(day);
   return new Date(Date.UTC(y, m - 1, d + days)).toISOString().slice(0, 10);
+}
+
+// Whether text is a real plain day ("2026-02-30" is not).
+export function isDay(text: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(text)) return false;
+  const [y, m, d] = dayParts(text);
+  return new Date(Date.UTC(y, m - 1, d)).toISOString().slice(0, 10) === text;
+}
+
+// How many days a month has. The month is 1 to 12.
+export const monthLength = (year: number, month: number) =>
+  new Date(Date.UTC(year, month, 0)).getUTCDate();
+
+// The month some months after another ("2026-10" plus 3 is "2027-01").
+export function monthsAfter(month: string, months: number): string {
+  const [year = 0, m = 1] = month.split("-").map(Number);
+  const index = year * 12 + (m - 1) + months;
+  return `${Math.floor(index / 12)}-${pad((index % 12) + 1)}`;
+}
+
+// A month as the 6 weeks that show it, Sunday first: 42 plain days, with the end of the month before and the
+// start of the month after filling the corners. The same size every month, so the calendar never changes height.
+export function monthGrid(month: string): string[] {
+  const first = `${month}-01`;
+  const start = weekStart(first);
+  return Array.from({ length: 42 }, (_, i) => daysAfter(start, i));
+}
+
+// A day written out for a screen reader: "Sunday 11 October 2026".
+export function spokenDay(day: string): string {
+  const [y, m, d] = dayParts(day);
+  return `${weekdayNames[new Date(Date.UTC(y, m - 1, d)).getUTCDay()]} ${d} ${monthNames[m - 1]} ${y}`;
 }

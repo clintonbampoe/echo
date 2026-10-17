@@ -1,6 +1,8 @@
 import { useWatch, type UseFormReturn } from "react-hook-form";
 import {
+  ControlledDate,
   ControlledSelect,
+  ControlledTime,
   Field,
   FormSection,
   TextAreaField,
@@ -57,12 +59,7 @@ export function SessionFields({ form, types, fixed }: Props) {
               </p>
             )}
             <div className={styles.full}>
-              <Field
-                label="Date"
-                type="date"
-                error={e.date?.message}
-                {...register("date")}
-              />
+              <ControlledDate control={control} name="date" label="Date" />
             </div>
           </>
         )}
@@ -88,19 +85,17 @@ export function SessionFields({ form, types, fixed }: Props) {
         </div>
       </FormSection>
       <FormSection title="Time">
-        <Field
+        <ControlledTime
+          control={control}
+          name="startsAt"
           label="Starts at"
-          type="time"
           optional
-          error={e.startsAt?.message}
-          {...register("startsAt")}
         />
-        <Field
+        <ControlledTime
+          control={control}
+          name="endsAt"
           label="Ends at"
-          type="time"
           optional
-          error={e.endsAt?.message}
-          {...register("endsAt")}
         />
       </FormSection>
       <FormSection>

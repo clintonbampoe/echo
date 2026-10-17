@@ -1,4 +1,4 @@
-import { useId, type FocusEvent } from "react";
+import { useId, useRef, type FocusEvent } from "react";
 import fieldStyles from "./Field.module.css";
 import { Icon } from "./Icon";
 import { OptionList } from "./OptionList";
@@ -6,10 +6,11 @@ import type { ControlProps } from "./selectTypes";
 import styles from "./Select.module.css";
 import { useListbox } from "./useListbox";
 
-// Our own dropdown, for mouse and keyboard. It follows the standard "select" pattern:
-// the button holds focus the whole time and points at the highlighted option.
+// Our own dropdown, for mouse and keyboard. It follows the standard "select" pattern: the button holds
+// focus and points at the highlighted option. A long list adds a search box, which then holds focus.
 export function Listbox({
   id,
+  label,
   options,
   value,
   onChange,
@@ -19,50 +20,65 @@ export function Listbox({
   describedBy,
 }: ControlProps) {
   const listId = useId();
-  const { open, setOpen, active, setActive, selected, show, pick, onKeyDown } =
-    useListbox(options, value, onChange);
+  const trigger = useRef<HTMLButtonElement>(null);
+  const searchBox = useRef<HTMLInputElement>(null);
+  const lb = useListbox(options, value, onChange, { trigger, searchBox });
 
   // Focus leaving the whole control (not just moving within it) closes the menu.
   function onFocusOut(e: FocusEvent<HTMLDivElement>) {
     if (e.currentTarget.contains(e.relatedTarget)) return;
-    setOpen(false);
+    lb.dismiss();
     onBlur?.();
   }
 
   return (
     <div className={styles.wrap} onBlur={onFocusOut}>
       <button
+        ref={trigger}
         type="button"
         id={id}
         role="combobox"
         aria-haspopup="listbox"
-        aria-expanded={open}
-        aria-controls={open ? listId : undefined}
-        aria-activedescendant={open ? `${listId}-${active}` : undefined}
+        aria-expanded={lb.open}
+        aria-controls={lb.open ? listId : undefined}
+        aria-activedescendant={
+          lb.open && !lb.searchable ? `${listId}-${lb.active}` : undefined
+        }
         aria-invalid={invalid || undefined}
         aria-describedby={describedBy}
         disabled={disabled}
         className={`${fieldStyles.control} ${fieldStyles.trigger}`}
-        onClick={() => (open ? setOpen(false) : show())}
-        onKeyDown={onKeyDown}
+        onClick={() => (lb.open ? lb.close() : lb.show())}
+        onKeyDown={lb.onKeyDown}
         onKeyUp={(e) => e.key === " " && e.preventDefault()}
       >
-        <span>{options[selected]?.label}</span>
+        <span>{lb.chosen?.label}</span>
         <Icon
           name="chevrons-up-down"
           size={16}
           className={fieldStyles.chevron}
         />
       </button>
-      {open && (
+      {lb.open && (
         <OptionList
           id={listId}
           labelId={`${id}-label`}
-          options={options}
-          selected={selected}
-          active={active}
-          onActive={setActive}
-          onPick={pick}
+          options={lb.shown}
+          selected={lb.selected}
+          active={lb.active}
+          onActive={lb.setActive}
+          onPick={lb.pick}
+          searchRef={searchBox}
+          search={
+            lb.searchable
+              ? {
+                  label: `Search ${label.toLowerCase()}`,
+                  value: lb.query,
+                  onChange: lb.search,
+                  onKeyDown: lb.onSearchKeyDown,
+                }
+              : undefined
+          }
         />
       )}
     </div>

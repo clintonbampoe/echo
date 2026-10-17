@@ -1,6 +1,6 @@
 import type { UseFormReturn } from "react-hook-form";
 import { regions } from "@/lib/regions";
-import { ControlledSelect, Field, FormSection } from "@/ui";
+import { ControlledDate, ControlledSelect, Field, FormSection } from "@/ui";
 import { genderChoices, maritalChoices, statusChoices } from "./options";
 import type { MemberValues } from "./schema";
 import styles from "./MemberFields.module.css";
@@ -74,25 +74,19 @@ function Contact({ form }: Form) {
 }
 
 function Personal({ form }: Form) {
-  const {
-    register,
-    formState: { errors: e },
-  } = form;
   return (
     <FormSection title="Personal">
-      <Field
+      <ControlledDate
+        control={form.control}
+        name="dateOfBirth"
         label="Date of birth"
-        type="date"
-        autoComplete="bday"
-        error={e.dateOfBirth?.message}
-        {...register("dateOfBirth")}
+        kind="birth"
       />
-      <Field
+      <ControlledDate
+        control={form.control}
+        name="joinedDate"
         label="Joined church"
         optional
-        type="date"
-        error={e.joinedDate?.message}
-        {...register("joinedDate")}
       />
       <ControlledSelect
         control={form.control}

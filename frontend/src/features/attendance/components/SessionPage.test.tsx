@@ -1,5 +1,6 @@
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { pickTime } from "@/test/pickers";
 import {
   asked,
   checkIn,
@@ -274,10 +275,10 @@ describe("session page", () => {
     const sheet = await screen.findByRole("dialog", {
       name: "Edit check-in time",
     });
-    const time = within(sheet).getByLabelText("Checked in at");
-    expect(time).toHaveValue("09:04");
-    await userEvent.clear(time);
-    await userEvent.type(time, "09:30");
+    expect(
+      within(sheet).getByRole("button", { name: /Checked in at/ }),
+    ).toHaveTextContent("9:04 am");
+    await pickTime(userEvent.setup(), "Checked in at", "09:30");
     await userEvent.click(
       within(sheet).getByRole("button", { name: "Save changes" }),
     );

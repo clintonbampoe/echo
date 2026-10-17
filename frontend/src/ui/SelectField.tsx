@@ -1,16 +1,15 @@
 import { useId } from "react";
-import fieldStyles from "./Field.module.css";
 import { Shell, type Shared } from "./FieldShell";
 import { Listbox } from "./Listbox";
 import type { ControlProps } from "./selectTypes";
+import { SheetSelect } from "./SheetSelect";
 import { useFinePointer } from "./useFinePointer";
 
 type Props = Shared &
   Pick<ControlProps, "options" | "value" | "onChange" | "onBlur" | "disabled">;
 
-// A field whose value comes from a fixed list (design rule S2).
-// With a mouse or trackpad it shows our own menu. On a touch screen it uses the phone's own
-// picker, which is what people expect there and is easier to use than a small popup.
+// A field whose value comes from a fixed list (design rule S2). Always our own picker, never the browser's:
+// a menu under the field with a mouse or trackpad, a bottom sheet on a touch screen (design rule S10).
 export function SelectField({
   label,
   hint,
@@ -23,6 +22,7 @@ export function SelectField({
   const control = {
     ...rest,
     id,
+    label,
     invalid: Boolean(error),
     describedBy: error || hint ? `${id}-msg` : undefined,
   };
@@ -38,38 +38,8 @@ export function SelectField({
       {useFinePointer() ? (
         <Listbox {...control} />
       ) : (
-        <NativeSelect {...control} />
+        <SheetSelect {...control} />
       )}
     </Shell>
-  );
-}
-
-function NativeSelect({
-  id,
-  options,
-  value,
-  onChange,
-  onBlur,
-  disabled,
-  invalid,
-  describedBy,
-}: ControlProps) {
-  return (
-    <select
-      id={id}
-      value={value}
-      disabled={disabled}
-      aria-invalid={invalid || undefined}
-      aria-describedby={describedBy}
-      onChange={(e) => onChange(e.target.value)}
-      onBlur={onBlur}
-      className={`${fieldStyles.control} ${fieldStyles.select}`}
-    >
-      {options.map((o) => (
-        <option key={o.value} value={o.value}>
-          {o.label}
-        </option>
-      ))}
-    </select>
   );
 }
