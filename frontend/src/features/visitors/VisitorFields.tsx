@@ -1,5 +1,5 @@
 import type { UseFormReturn } from "react-hook-form";
-import { Field, FormSection, TextAreaField } from "@/ui";
+import { ControlledDate, Field, FormSection, TextAreaField } from "@/ui";
 import { NOTES_MAX, type VisitorValues } from "./schema";
 import styles from "./VisitorFields.module.css";
 
@@ -53,13 +53,12 @@ export function VisitorFields({ form }: Props) {
           {...register("emailAddress")}
         />
         <div className={styles.full}>
-          <Field
+          <ControlledDate
+            control={form.control}
+            name="dateOfBirth"
             label="Date of birth"
             optional
-            type="date"
-            autoComplete="bday"
-            error={e.dateOfBirth?.message}
-            {...register("dateOfBirth")}
+            kind="birth"
           />
         </div>
       </FormSection>

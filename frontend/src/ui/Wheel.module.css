@@ -1,0 +1,89 @@
+.set {
+  --rh: 40px;
+  padding: 8px 8px 0;
+}
+.heads {
+  display: flex;
+  gap: 4px;
+  padding: 0 8px;
+}
+.heads span {
+  flex: 1;
+  font-size: 12px;
+  font-weight: 500;
+  text-align: center;
+  color: var(--text-3);
+}
+.stage {
+  position: relative;
+  display: flex;
+  gap: 4px;
+  padding: 4px 8px 0;
+}
+
+/* The black slot the picked row sits in. It sits behind the wheels, so the numbers show over it. */
+.slot {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  top: calc(4px + var(--rh) * 2);
+  height: var(--rh);
+  border-radius: var(--radius);
+  background: var(--accent);
+  box-shadow:
+    0 10px 22px rgb(10 10 10 / 22%),
+    inset 0 1px 0 rgb(255 255 255 / 16%);
+}
+
+.wheel {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  height: calc(var(--rh) * 5);
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  cursor: grab;
+  mask-image: linear-gradient(transparent, #000 22%, #000 78%, transparent);
+}
+.wheel:active {
+  cursor: grabbing;
+}
+.wheel:focus-visible {
+  outline: var(--focus);
+  outline-offset: -3px;
+  border-radius: var(--radius);
+}
+
+/* The column is moved by one number, --pos, which the script writes: where the wheel is, in rows. Every row works
+   out from it how far it is from the slot (--away), and from that how filled (--t) and how faded (--q) it is. */
+.column {
+  transform: translate3d(0, calc((2 - var(--pos, 0)) * var(--rh)), 0);
+  will-change: transform;
+}
+.row {
+  --away: abs(calc(var(--i) - var(--pos, 0)));
+  --t: clamp(0, calc((0.9 - var(--away)) / 0.55), 1);
+  --q: clamp(0, calc(1 - var(--away) / 3.2), 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--rh);
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+  color: color-mix(
+    in srgb,
+    var(--on-accent) calc(var(--t) * 100%),
+    var(--text)
+  );
+  opacity: calc(0.3 + 0.7 * var(--q));
+}
+
+@media (hover: none), (pointer: coarse) {
+  .set {
+    --rh: 48px;
+  }
+  .row {
+    font-size: 20px;
+  }
+}

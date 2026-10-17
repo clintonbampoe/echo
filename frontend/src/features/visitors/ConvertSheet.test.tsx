@@ -72,7 +72,9 @@ describe("ConvertSheet", () => {
     ).toBeInTheDocument();
     expect(screen.getByLabelText("First name")).toHaveValue("Esi");
     expect(screen.getByLabelText("Phone")).toHaveValue("055 212 3344");
-    expect(screen.getByLabelText("Date of birth")).toHaveValue("1996-08-22");
+    expect(
+      screen.getByRole("button", { name: /Date of birth/ }),
+    ).toHaveTextContent("22 Aug 1996");
   });
 
   it("asks for the details a visitor does not have and sends nothing until they are there", async () => {

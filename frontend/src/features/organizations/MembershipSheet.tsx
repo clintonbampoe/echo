@@ -10,7 +10,7 @@ import {
   Avatar,
   Button,
   Chip,
-  Field,
+  ControlledDate,
   FormSheet,
   LinkButton,
   SegmentedField,
@@ -109,12 +109,11 @@ export function MembershipSheet({
             value={role}
             onChange={(r) => form.setValue("role", r, { shouldDirty: true })}
           />
-          <Field
+          <ControlledDate
+            control={form.control}
+            name="joinedAt"
             label="Joined"
-            type="date"
             max={todayText()}
-            error={errors.joinedAt?.message}
-            {...form.register("joinedAt")}
           />
           <p className={styles.added}>
             Added to this group on {formatDate(member.createdAt)}.

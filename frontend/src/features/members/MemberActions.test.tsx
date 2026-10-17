@@ -95,7 +95,9 @@ describe("edit sheet", () => {
     const onClose = vi.fn();
     wrap(<EditMemberSheet member={member} onClose={onClose} />);
     expect(screen.getByLabelText("First name")).toHaveValue("Kwame");
-    expect(screen.getByLabelText("Date of birth")).toHaveValue("1988-02-14");
+    expect(
+      screen.getByRole("button", { name: /Date of birth/ }),
+    ).toHaveTextContent("14 Feb 1988");
     await user.clear(screen.getByLabelText("City"));
     await user.type(screen.getByLabelText("City"), "Tema");
     expect(screen.getByText("Unsaved changes")).toBeInTheDocument();

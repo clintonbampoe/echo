@@ -19,7 +19,8 @@
     background-color var(--fast) ease,
     border-color var(--fast) ease;
 }
-.pill:hover {
+.pill:hover,
+.pill[aria-expanded="true"] {
   background: var(--hover);
 }
 .pill:focus-visible {
@@ -31,15 +32,6 @@
 }
 .on {
   border-color: var(--text);
-}
-.hidden {
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
-  pointer-events: none;
 }
 
 @media (max-width: 1180px) {

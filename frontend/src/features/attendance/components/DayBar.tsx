@@ -1,5 +1,5 @@
-import { useRef } from "react";
-import { Button, Chip, Icon } from "@/ui";
+import { useState } from "react";
+import { Button, Chip, DatePanel, Icon, PickerAnchor } from "@/ui";
 import { longDay, sessionCount } from "../day";
 import styles from "./DayBar.module.css";
 
@@ -12,7 +12,22 @@ type Props = {
 
 // The picked day written out, how many sessions it has, and the two ways to jump: to today, or to any date.
 export function DayBar({ day, today, count, onPick }: Props) {
-  const date = useRef<HTMLInputElement>(null);
+  const [open, setOpen] = useState(false);
+
+  function pick(next: string) {
+    onPick(next);
+    setOpen(false);
+  }
+
+  const panel = (
+    <DatePanel
+      value={day}
+      today={today}
+      min="2000-01-01"
+      max={`${Number(today.slice(0, 4)) + 5}-12-31`}
+      onPick={pick}
+    />
+  );
   return (
     <div className={styles.bar}>
       <h2 className={styles.heading}>
@@ -27,24 +42,24 @@ export function DayBar({ day, today, count, onPick }: Props) {
         >
           Today
         </Button>
-        <span className={styles.pick}>
+        <PickerAnchor
+          open={open}
+          onClose={() => setOpen(false)}
+          title="Pick a date"
+          panel={panel}
+          className={styles.pick}
+        >
           <Button
             variant="secondary"
-            onClick={() => date.current?.showPicker?.()}
+            data-trigger
+            aria-haspopup="dialog"
+            aria-expanded={open}
+            onClick={() => setOpen(!open)}
           >
             <Icon name="calendar" size={16} />
             Pick a date
           </Button>
-          <input
-            ref={date}
-            type="date"
-            tabIndex={-1}
-            aria-hidden="true"
-            className={styles.hidden}
-            value={day}
-            onChange={(e) => e.target.value && onPick(e.target.value)}
-          />
-        </span>
+        </PickerAnchor>
       </div>
     </div>
   );

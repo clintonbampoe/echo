@@ -2,7 +2,13 @@ import type { ReactNode } from "react";
 import { useWatch, type UseFormReturn } from "react-hook-form";
 import { MemberPicker, type MemberMatch } from "@/features/members";
 import { paymentOptions } from "@/features/transactions";
-import { ControlledSelect, Field, FormSection, TextAreaField } from "@/ui";
+import {
+  ControlledDate,
+  ControlledSelect,
+  Field,
+  FormSection,
+  TextAreaField,
+} from "@/ui";
 import {
   monthOptions,
   NOTE_MAX,
@@ -10,8 +16,8 @@ import {
   yearOptions,
   type TitheValues,
 } from "../titheForm";
-import styles from "./TitheFields.module.css";
 import { MemberCard } from "./MemberCard";
+import styles from "./TitheFields.module.css";
 
 type Props = {
   form: UseFormReturn<TitheValues>;
@@ -73,15 +79,12 @@ export function TitheFields({
           error={e.amount?.message}
           {...register("amount")}
         />
-        <Field
+        <ControlledDate
+          control={control}
+          name="collectionDate"
           label="Collected on"
-          type="date"
           max={today}
-          error={e.collectionDate?.message}
-          {...register("collectionDate", {
-            onChange: (ev: { target: { value: string } }) =>
-              follow(ev.target.value),
-          })}
+          onPick={follow}
         />
       </FormSection>
       <FormSection title="Tithe for">

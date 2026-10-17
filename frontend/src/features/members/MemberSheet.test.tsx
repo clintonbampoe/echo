@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { saveTokens } from "@/lib/tokens";
+import { pickDate } from "@/test/pickers";
 import { MemberSheet } from "./MemberSheet";
 
 const json = (body: unknown, status = 200) =>
@@ -44,7 +45,7 @@ async function fillRequired(user: ReturnType<typeof userEvent.setup>) {
   await type("First name", "Kwame");
   await type("Last name", "Asante");
   await type("Phone", "024 412 7788");
-  await type("Date of birth", "1988-02-14");
+  await pickDate(user, "Date of birth", "1988-02-14");
   await type("Residential address", "14 Palm Street");
   await type("City", "Accra");
   await type("Hometown", "Kumasi");

@@ -1,6 +1,7 @@
-import { useId, type FocusEvent } from "react";
+import { useId, useRef, useState, type FocusEvent } from "react";
 import { Icon } from "./Icon";
 import { OptionList } from "./OptionList";
+import { OptionSheet } from "./OptionSheet";
 import type { Option } from "./selectTypes";
 import { useFinePointer } from "./useFinePointer";
 import { useListbox } from "./useListbox";
@@ -17,9 +18,9 @@ type Props = {
   quiet?: boolean;
 };
 
-// A pill that narrows a list. With a mouse it opens our menu; on a touch screen the phone's own picker.
+// A pill that narrows a list. With a mouse it opens our menu; on a touch screen a bottom sheet.
 export function FilterSelect(props: Props) {
-  return useFinePointer() ? <MenuPill {...props} /> : <NativePill {...props} />;
+  return useFinePointer() ? <MenuPill {...props} /> : <SheetPill {...props} />;
 }
 
 function text(label: string, options: readonly Option[], value: string) {
@@ -30,38 +31,51 @@ function text(label: string, options: readonly Option[], value: string) {
 
 function MenuPill({ label, options, value, onChange, quiet }: Props) {
   const id = useId();
-  const { open, setOpen, active, setActive, selected, show, pick, onKeyDown } =
-    useListbox(options, value, onChange);
+  const trigger = useRef<HTMLButtonElement>(null);
+  const searchBox = useRef<HTMLInputElement>(null);
+  const lb = useListbox(options, value, onChange, { trigger, searchBox });
 
   function onFocusOut(e: FocusEvent<HTMLDivElement>) {
-    if (!e.currentTarget.contains(e.relatedTarget)) setOpen(false);
+    if (!e.currentTarget.contains(e.relatedTarget)) lb.dismiss();
   }
 
   return (
     <div className={styles.wrap} onBlur={onFocusOut}>
       <button
+        ref={trigger}
         type="button"
         id={id}
         aria-haspopup="listbox"
-        aria-expanded={open}
+        aria-expanded={lb.open}
         aria-label={`${label}: ${text("Any", options, value)}`}
         className={`${styles.pill} ${value && !quiet ? styles.on : ""}`}
-        onClick={() => (open ? setOpen(false) : show())}
-        onKeyDown={onKeyDown}
+        onClick={() => (lb.open ? lb.close() : lb.show())}
+        onKeyDown={lb.onKeyDown}
         onKeyUp={(e) => e.key === " " && e.preventDefault()}
       >
         {text(label, options, value)}
         <Icon name="chevrons-up-down" size={14} className={styles.chevron} />
       </button>
-      {open && (
+      {lb.open && (
         <OptionList
           id={`${id}-list`}
           labelId={id}
-          options={options}
-          selected={selected}
-          active={active}
-          onActive={setActive}
-          onPick={pick}
+          options={lb.shown}
+          selected={lb.selected}
+          active={lb.active}
+          onActive={lb.setActive}
+          onPick={lb.pick}
+          searchRef={searchBox}
+          search={
+            lb.searchable
+              ? {
+                  label: `Search ${label.toLowerCase()}`,
+                  value: lb.query,
+                  onChange: lb.search,
+                  onKeyDown: lb.onSearchKeyDown,
+                }
+              : undefined
+          }
           className={styles.menu}
         />
       )}
@@ -69,29 +83,30 @@ function MenuPill({ label, options, value, onChange, quiet }: Props) {
   );
 }
 
-// The real <select> sits invisibly over the pill, so a tap opens the phone's picker.
-function NativePill({ label, options, value, onChange, quiet }: Props) {
+// On a touch screen the pill opens the choices in a bottom sheet.
+function SheetPill({ label, options, value, onChange, quiet }: Props) {
+  const [open, setOpen] = useState(false);
   return (
     <div className={styles.wrap}>
-      <span
+      <button
+        type="button"
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        aria-label={`${label}: ${text("Any", options, value)}`}
         className={`${styles.pill} ${value && !quiet ? styles.on : ""}`}
-        aria-hidden="true"
+        onClick={() => setOpen(true)}
       >
         {text(label, options, value)}
         <Icon name="chevrons-up-down" size={14} className={styles.chevron} />
-      </span>
-      <select
-        aria-label={label}
+      </button>
+      <OptionSheet
+        open={open}
+        onClose={() => setOpen(false)}
+        title={label}
+        options={options}
         value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className={styles.native}
-      >
-        {options.map((o) => (
-          <option key={o.value} value={o.value}>
-            {o.value ? o.label : `${label}: any`}
-          </option>
-        ))}
-      </select>
+        onPick={onChange}
+      />
     </div>
   );
 }
