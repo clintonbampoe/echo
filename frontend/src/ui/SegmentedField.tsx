@@ -8,6 +8,8 @@ type Props<V extends string> = {
   onChange: (value: V) => void;
   // Chips of their own width that wrap onto the next line, for a longer list (five payment methods).
   wrap?: boolean;
+  // Keeps the label for screen readers but does not draw it, for a switch whose choices explain themselves.
+  hideLabel?: boolean;
 };
 
 // A few choices side by side, one of them picked: the buttons of a short list that should stay in view (a role, say).
@@ -18,11 +20,14 @@ export function SegmentedField<V extends string>({
   value,
   onChange,
   wrap,
+  hideLabel,
 }: Props<V>) {
   const name = useId();
   return (
     <fieldset className={styles.field}>
-      <legend className={styles.label}>{label}</legend>
+      <legend className={hideLabel ? styles.hidden : styles.label}>
+        {label}
+      </legend>
       <div className={wrap ? `${styles.group} ${styles.wrap}` : styles.group}>
         {options.map((o) => (
           <label key={o.value} className={styles.option}>

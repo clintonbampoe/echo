@@ -25,6 +25,10 @@ export const attendanceKeys = {
     ["attendance", "sessions", "before", label, day] as const,
   checkIns: (sessionId: string, filters: api.CheckInFilters) =>
     ["attendance", "check-ins", sessionId, filters] as const,
+  recordSessions: (filters: api.SessionFilters) =>
+    ["attendance", "records", "sessions", filters] as const,
+  recordCheckIns: (query: api.RecordsQuery) =>
+    ["attendance", "records", "check-ins", query] as const,
   summary: (scope: api.SummaryScope) =>
     ["attendance", "summary", scope] as const,
 };
@@ -111,6 +115,18 @@ export const useCheckIns = (
 ) =>
   usePagedList(attendanceKeys.checkIns(sessionId, filters), (c, s) =>
     api.listCheckIns(sessionId, filters, c, s),
+  );
+
+// The sessions in a range of days, page after page, for the records.
+export const useRecordSessions = (filters: api.SessionFilters) =>
+  usePagedList(attendanceKeys.recordSessions(filters), (c, s) =>
+    api.listSessions(filters, c, s),
+  );
+
+// Every check-in in a range of days, page after page, for the records.
+export const useRecordCheckIns = (query: api.RecordsQuery) =>
+  usePagedList(attendanceKeys.recordCheckIns(query), (c, s) =>
+    api.listCheckInsBetween(query, c, s),
   );
 
 export const useAttendanceSummary = (scope: api.SummaryScope) =>
