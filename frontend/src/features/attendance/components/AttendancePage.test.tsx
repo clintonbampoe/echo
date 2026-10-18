@@ -43,7 +43,10 @@ beforeEach(() => {
   });
   vi.stubGlobal("fetch", fetchMock);
 });
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+  vi.useRealTimers();
+  vi.unstubAllGlobals();
+});
 
 const open = (address = "/attendance?day=2026-10-11") =>
   renderAt(address, route("/attendance", <AttendancePage />));
@@ -112,6 +115,11 @@ describe("attendance page", () => {
   });
 
   it("moves a week with the arrows and back with Today", async () => {
+    // The fixtures are dated around 12 October 2026, so the clock is set there. Only Date is faked: timers stay real.
+    vi.useFakeTimers({
+      toFake: ["Date"],
+      now: new Date("2026-10-12T10:00:00"),
+    });
     open();
     await screen.findByRole("list", { name: "Sessions" });
     await userEvent.click(screen.getByRole("button", { name: "Next week" }));

@@ -39,4 +39,44 @@ describe("segmented field", () => {
     expect(onChange).toHaveBeenCalledWith("b");
     expect(screen.getByRole("radio", { name: "Beta" })).toBeChecked();
   });
+
+  it("can be drawn as one joined bar and still be a group of radios", () => {
+    render(
+      <SegmentedField
+        label="Show"
+        options={options}
+        value="a"
+        onChange={() => {}}
+        joined
+        hideLabel
+      />,
+    );
+    expect(screen.getByRole("group", { name: "Show" })).toBeInTheDocument();
+    expect(screen.getAllByRole("radio")).toHaveLength(2);
+  });
+
+  it("tells a joined bar which choice is picked, so its thumb can slide there", async () => {
+    const user = userEvent.setup();
+    function Joined() {
+      const [value, setValue] = useState<string>("a");
+      return (
+        <SegmentedField
+          label="Show"
+          options={options}
+          value={value}
+          onChange={setValue}
+          joined
+          hideLabel
+        />
+      );
+    }
+    render(<Joined />);
+    const bar = screen
+      .getByRole("radio", { name: "Alpha" })
+      .closest("div") as HTMLElement;
+    expect(bar.style.getPropertyValue("--n")).toBe("2");
+    expect(bar.style.getPropertyValue("--i")).toBe("0");
+    await user.click(screen.getByRole("radio", { name: "Beta" }));
+    expect(bar.style.getPropertyValue("--i")).toBe("1");
+  });
 });

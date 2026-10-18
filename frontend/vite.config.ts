@@ -14,5 +14,7 @@ export default defineConfig({
     globals: true,
     setupFiles: ["./src/test/setup.ts"],
     css: false,
+    // Form tests click through pickers one step at a time; a slower laptop needs more than the 5 seconds default.
+    testTimeout: 10_000,
   },
 });

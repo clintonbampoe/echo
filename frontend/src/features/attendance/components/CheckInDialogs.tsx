@@ -4,20 +4,20 @@ import { useForm } from "react-hook-form";
 import type { ApiError } from "@/lib/api";
 import { handleSubmitError } from "@/lib/forms";
 import { ControlledTime, DeleteDialog, FormSheet } from "@/ui";
-import type { CheckIn, Session } from "../api";
+import type { CheckIn } from "../api";
 import {
   checkInSchema,
   timeOf,
   toCheckedInAt,
   type CheckInValues,
 } from "../checkInForm";
-import { dayMonth, sessionTitle } from "../day";
+import { dayMonth, recordTitle } from "../day";
 import { useRemoveCheckIn, useUpdateCheckIn } from "../hooks";
 
-type Props = { checkIn: CheckIn; session: Session; onClose: () => void };
+type Props = { checkIn: CheckIn; onClose: () => void };
 
 // Changes when someone arrived. The time can be changed, not taken away.
-export function EditCheckInTimeSheet({ checkIn, session, onClose }: Props) {
+export function EditCheckInTimeSheet({ checkIn, onClose }: Props) {
   const update = useUpdateCheckIn();
   const [problem, setProblem] = useState<ApiError | null>(null);
   const form = useForm<CheckInValues>({
@@ -30,7 +30,7 @@ export function EditCheckInTimeSheet({ checkIn, session, onClose }: Props) {
     try {
       await update.mutateAsync({
         id: checkIn.id,
-        checkedInAt: toCheckedInAt(session.date, time),
+        checkedInAt: toCheckedInAt(checkIn.sessionDate, time),
       });
       onClose();
     } catch (e) {
@@ -41,7 +41,7 @@ export function EditCheckInTimeSheet({ checkIn, session, onClose }: Props) {
   return (
     <FormSheet
       title="Edit check-in time"
-      subtitle={`${checkIn.personName}, ${sessionTitle(session)}, ${dayMonth(session.date)}`}
+      subtitle={`${checkIn.personName}, ${recordTitle(checkIn)}, ${dayMonth(checkIn.sessionDate)}`}
       onClose={onClose}
       formId="check-in-time-form"
       onSubmit={form.handleSubmit(save)}
@@ -65,10 +65,7 @@ export function EditCheckInTimeSheet({ checkIn, session, onClose }: Props) {
 }
 
 // Takes one attendance record away. The person is not touched, and can be marked present again.
-export function RemoveCheckInDialog({
-  checkIn,
-  onClose,
-}: Omit<Props, "session">) {
+export function RemoveCheckInDialog({ checkIn, onClose }: Props) {
   const remove = useRemoveCheckIn();
   return (
     <DeleteDialog

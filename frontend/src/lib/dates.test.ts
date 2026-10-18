@@ -8,6 +8,7 @@ import {
   monthStart,
   monthsAfter,
   monthsBefore,
+  nowTime,
   spokenDay,
   thisYear,
   weekStart,
@@ -102,5 +103,14 @@ describe("calendar helpers", () => {
     expect(grid[0]).toBe("2026-09-27");
     expect(grid[4]).toBe("2026-10-01");
     expect(grid[41]).toBe("2026-11-07");
+  });
+});
+
+describe("nowTime", () => {
+  it("gives the time on the device as hours, minutes and no seconds", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date(2026, 9, 17, 6, 5, 42));
+    expect(nowTime()).toBe("06:05:00");
+    vi.useRealTimers();
   });
 });

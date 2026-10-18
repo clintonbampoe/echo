@@ -1,8 +1,8 @@
 .root {
   position: fixed;
   inset: 0;
-  z-index: 60;
-}
+  z-index: 80;
+} /* above a dialog, so a choice list opened inside one is not hidden by it */
 .scrim {
   position: absolute;
   inset: 0;

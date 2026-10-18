@@ -1,5 +1,6 @@
 // Lists that load a page at a time, shared by every feature. This is the one place outside a feature's
 // hooks.ts that touches TanStack Query, so the same six lines are not copied into each feature.
+import { useEffect } from "react";
 import {
   useInfiniteQuery,
   type InfiniteData,
@@ -57,3 +58,17 @@ export function usePagedList<T>(
 // more we can only say "at least": "50+".
 export const countLabel = (loaded: number, hasMore: boolean): string =>
   hasMore ? `${loaded}+` : String(loaded);
+
+// Keeps loading pages until the list has ended, for a page that must see every row to count them or to match
+// two lists against each other. It reads as loading until then, so nothing is counted half-way.
+export function useEveryRow<T>(list: Paged<T>): Paged<T> {
+  const { hasMore, loadingMore, failed, more } = list;
+  useEffect(() => {
+    if (hasMore && !loadingMore && !failed) more();
+  }, [hasMore, loadingMore, failed, more]);
+  return {
+    ...list,
+    loading: list.loading || (hasMore && !failed),
+    hasMore: false,
+  };
+}

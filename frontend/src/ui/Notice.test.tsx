@@ -18,4 +18,9 @@ describe("Notice", () => {
     render(<Notice tone="warning" title="Careful" />);
     expect(screen.getByRole("status")).toHaveTextContent("Careful");
   });
+
+  it("can be one plain line that is still a status", () => {
+    render(<Notice tone="plain" title="Apart from tithes" />);
+    expect(screen.getByRole("status")).toHaveTextContent("Apart from tithes");
+  });
 });

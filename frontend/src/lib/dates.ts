@@ -30,6 +30,16 @@ export const weekdayNames = [
 
 export const todayText = () => new Date().toISOString().slice(0, 10);
 
+// The time now as the plain "14:05:00" the API expects for a time of day, on the clock of the person's own device.
+export function nowTime(): string {
+  const d = new Date();
+  return (
+    [d.getHours(), d.getMinutes()]
+      .map((n) => String(n).padStart(2, "0"))
+      .join(":") + ":00"
+  );
+}
+
 // Jan 1 to today, as the plain days the API expects.
 export const thisYear = (today: string) => ({
   year: Number(today.slice(0, 4)),

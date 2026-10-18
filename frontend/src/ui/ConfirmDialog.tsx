@@ -11,6 +11,8 @@ type Props = {
   cancelLabel: string;
   onConfirm: () => void;
   onCancel: () => void;
+  // Keeps the confirm button off until the dialog has what it needs, e.g. a category to move to.
+  confirmDisabled?: boolean;
   // True while the action runs: the confirm button spins and both buttons are locked.
   busy?: boolean;
   // Shown when the action fails, so the person can try again or back out.
@@ -28,6 +30,7 @@ export function ConfirmDialog({
   cancelLabel,
   onConfirm,
   onCancel,
+  confirmDisabled,
   busy,
   error,
   tone = "danger",
@@ -81,6 +84,7 @@ export function ConfirmDialog({
           </Button>
           <Button
             loading={busy}
+            disabled={confirmDisabled}
             onClick={onConfirm}
             className={tone === "danger" ? styles.danger : undefined}
           >

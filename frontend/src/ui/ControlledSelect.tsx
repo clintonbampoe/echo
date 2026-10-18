@@ -12,6 +12,7 @@ type Props<T extends FieldValues> = {
   name: Path<T>;
   label: string;
   options: readonly Option[];
+  placeholder?: string;
 };
 
 // A choice from a fixed list, wired to a react-hook-form field. SelectField is a controlled field, so
@@ -21,6 +22,7 @@ export function ControlledSelect<T extends FieldValues>({
   name,
   label,
   options,
+  placeholder,
 }: Props<T>) {
   return (
     <Controller
@@ -30,6 +32,7 @@ export function ControlledSelect<T extends FieldValues>({
         <SelectField
           label={label}
           options={options}
+          placeholder={placeholder}
           error={fieldState.error?.message}
           {...field}
         />

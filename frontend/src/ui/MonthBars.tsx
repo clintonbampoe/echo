@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import styles from "./MonthBars.module.css";
 
 export type MonthBar = {
@@ -11,6 +12,8 @@ export type MonthBar = {
   value: number;
   // The value as shown, e.g. "GH₵ 21,300".
   text: string;
+  // A second bar beside the first, e.g. expenses against income. Both share one scale.
+  compare?: { value: number; text: string };
 };
 
 type Props = {
@@ -21,43 +24,92 @@ type Props = {
   selected?: string;
   // Makes each bar a button.
   onPick?: (key: string) => void;
+  // Names the two bars when every month carries a pair, e.g. ['Income', 'Expenses'].
+  legend?: [string, string];
 };
+
+// What a screen reader hears for one month: one value, or both when the month carries a pair.
+const spoken = (b: MonthBar, legend?: [string, string]) =>
+  b.compare && legend
+    ? `${b.name}: ${legend[0]} ${b.text}, ${legend[1]} ${b.compare.text}`
+    : `${b.name}: ${b.text}`;
+
+type MarkProps = {
+  bar: MonthBar;
+  top: number;
+  picked: boolean;
+  legend?: [string, string];
+};
+
+// One month: the tooltip, the bar or pair of bars, and the month's name under them.
+function Mark({ bar: b, top, picked, legend }: MarkProps) {
+  const height = (value: number) =>
+    top > 0 ? Math.max(3, (value / top) * 100) : 3;
+  // In a pair the first bar is the one the legend calls solid; on its own it is solid only when picked.
+  const lead = b.compare ? true : picked;
+  // The tooltip rides just above the taller bar, so a full-height month never covers the chart's heading.
+  const lift = {
+    "--lift": `${Math.max(height(b.value), b.compare ? height(b.compare.value) : 0)}%`,
+  } as CSSProperties;
+  return (
+    <>
+      <span
+        className={`${styles.track} ${b.compare ? styles.pair : ""}`}
+        style={lift}
+      >
+        <span className={styles.tip} aria-hidden="true">
+          <strong>{b.tip}</strong>
+          {b.compare && legend ? (
+            <>
+              <span className={styles.line}>
+                {legend[0]} {b.text}
+              </span>
+              <span className={styles.line}>
+                {legend[1]} {b.compare.text}
+              </span>
+            </>
+          ) : (
+            b.text
+          )}
+        </span>
+        <span
+          className={`${styles.bar} ${lead ? styles.on : ""}`}
+          style={{ height: `${height(b.value)}%` }}
+        />
+        {b.compare && (
+          <span
+            className={`${styles.bar} ${styles.second}`}
+            style={{ height: `${height(b.compare.value)}%` }}
+          />
+        )}
+      </span>
+      <span className={`${styles.label} ${picked ? styles.current : ""}`}>
+        {b.label}
+      </span>
+    </>
+  );
+}
 
 // One bar per month. Bars share one scale, start at the baseline and carry their value in a tooltip on hover
 // and keyboard focus. With `onPick` a bar is a button, so a chart can also be a filter.
-export function MonthBars({ label, bars, selected, onPick }: Props) {
-  const top = Math.max(0, ...bars.map((b) => b.value));
+export function MonthBars({ label, bars, selected, onPick, legend }: Props) {
+  const top = Math.max(
+    0,
+    ...bars.flatMap((b) => [b.value, b.compare?.value ?? 0]),
+  );
   return (
     <ul aria-label={label} className={styles.bars}>
       {bars.map((b) => {
-        const height = top > 0 ? Math.max(3, (b.value / top) * 100) : 3;
-        const mark = (
-          <>
-            <span className={styles.tip} aria-hidden="true">
-              <strong>{b.tip}</strong>
-              {b.text}
-            </span>
-            <span className={styles.track}>
-              <span
-                className={`${styles.bar} ${selected === b.key ? styles.on : ""}`}
-                style={{ height: `${height}%` }}
-              />
-            </span>
-            <span
-              className={`${styles.label} ${selected === b.key ? styles.current : ""}`}
-            >
-              {b.label}
-            </span>
-          </>
-        );
+        const picked = selected === b.key;
+        const mark = <Mark bar={b} top={top} picked={picked} legend={legend} />;
         return (
           <li key={b.key} className={styles.item}>
             {onPick ? (
               <button
                 type="button"
                 className={styles.cell}
-                aria-label={`${b.name}: ${b.text}`}
-                aria-pressed={selected === b.key}
+                aria-label={spoken(b, legend)}
+                aria-pressed={picked}
                 onClick={() => onPick(b.key)}
               >
                 {mark}
@@ -66,7 +118,7 @@ export function MonthBars({ label, bars, selected, onPick }: Props) {
               <div
                 className={styles.cell}
                 role="img"
-                aria-label={`${b.name}: ${b.text}`}
+                aria-label={spoken(b, legend)}
               >
                 {mark}
               </div>

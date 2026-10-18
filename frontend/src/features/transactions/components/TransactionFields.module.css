@@ -1,0 +1,41 @@
+/* The form sits in a sheet, so its fields are a little smaller than the sign-up form's. */
+.fields {
+  --control-height: 40px;
+  --control-gap: 6px;
+  --control-font: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+.hint,
+.cleared {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--text-3);
+}
+.hint a {
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.cleared {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Phone and tablet: full-size touch controls. 16px text stops iPhones zooming in on a field. */
+@media (max-width: 900px) {
+  .fields {
+    --control-height: 48px;
+    --control-gap: 8px;
+    --control-font: 16px;
+  }
+}

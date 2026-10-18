@@ -40,3 +40,21 @@
   gap: 8px;
   margin-top: 10px;
 }
+
+/* Plain: no box, just the mark and a line of small text. */
+.plain {
+  gap: 8px;
+  padding: 0;
+  background: none;
+  border: 0;
+}
+.plain .icon {
+  margin-top: 2px;
+  color: var(--text-3);
+}
+.plain .title {
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--text-2);
+}

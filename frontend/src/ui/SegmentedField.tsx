@@ -1,16 +1,32 @@
-import { useId } from "react";
+import { useId, type CSSProperties } from "react";
+import { Icon, type IconName } from "./Icon";
 import styles from "./SegmentedField.module.css";
 
 type Props<V extends string> = {
   label: string;
-  options: readonly { value: V; label: string }[];
+  // `icon` draws a small mark before the word, e.g. an arrow for money in or out.
+  options: readonly { value: V; label: string; icon?: IconName }[];
   value: V;
   onChange: (value: V) => void;
   // Chips of their own width that wrap onto the next line, for a longer list (five payment methods).
   wrap?: boolean;
   // Keeps the label for screen readers but does not draw it, for a switch whose choices explain themselves.
   hideLabel?: boolean;
+  // One joined bar with the picked choice filled in, for a switch that sits above a list (All / Income / Expenses).
+  joined?: boolean;
+  // With `joined`: the bar spans the whole width on a phone or tablet.
+  fill?: boolean;
 };
+
+const groupClass = (wrap?: boolean, joined?: boolean, fill?: boolean) =>
+  [
+    styles.group,
+    wrap && styles.wrap,
+    joined && styles.joined,
+    joined && fill && styles.fill,
+  ]
+    .filter(Boolean)
+    .join(" ");
 
 // A few choices side by side, one of them picked: the buttons of a short list that should stay in view (a role, say).
 // Real radio buttons underneath, so the arrow keys and screen readers work as they should.
@@ -21,14 +37,25 @@ export function SegmentedField<V extends string>({
   onChange,
   wrap,
   hideLabel,
+  joined,
+  fill,
 }: Props<V>) {
   const name = useId();
+  // A joined switch slides one thumb behind the picked choice; the stylesheet only needs to know which of how many.
+  const index = options.findIndex((o) => o.value === value);
+  const thumb = joined
+    ? ({
+        "--n": options.length,
+        "--i": Math.max(index, 0),
+        "--thumb": index < 0 ? 0 : 1,
+      } as CSSProperties)
+    : undefined;
   return (
     <fieldset className={styles.field}>
       <legend className={hideLabel ? styles.hidden : styles.label}>
         {label}
       </legend>
-      <div className={wrap ? `${styles.group} ${styles.wrap}` : styles.group}>
+      <div className={groupClass(wrap, joined, fill)} style={thumb}>
         {options.map((o) => (
           <label key={o.value} className={styles.option}>
             <input
@@ -39,7 +66,10 @@ export function SegmentedField<V extends string>({
               onChange={() => onChange(o.value)}
               className={styles.input}
             />
-            <span className={styles.face}>{o.label}</span>
+            <span className={styles.face}>
+              {o.icon && <Icon name={o.icon} size={14} />}
+              {o.label}
+            </span>
           </label>
         ))}
       </div>

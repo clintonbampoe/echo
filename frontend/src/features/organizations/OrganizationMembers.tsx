@@ -4,12 +4,11 @@ import { Alert, Chip, ListBody, PersonList, type PersonColumn } from "@/ui";
 import type { Organization, OrganizationMember, OrganizationRole } from "./api";
 import { useOrganizationMembers, useUpdateOrganizationMember } from "./hooks";
 import { roleLabel, roleTone } from "./labels";
-import { MembershipSheet } from "./MembershipSheet";
 import { MembersFilterBar } from "./MembersFilterBar";
 import styles from "./OrganizationMembers.module.css";
-import { RemoveMemberDialog } from "./RemoveMemberDialog";
 import { useMemberFilters } from "./useMemberFilters";
 import { roles } from "./view";
+import { useMembershipPanels } from "../attendance/useMembershipPanels";
 
 const columns: PersonColumn<OrganizationMember>[] = [
   {
@@ -26,19 +25,18 @@ const columns: PersonColumn<OrganizationMember>[] = [
 ];
 
 // The people in one organization, with their role and when they joined. They can be searched by name and
-// narrowed by role; Clear filters empties both. A row opens their membership panel (about this group
-// only); its ⋯ menu changes their role or takes them out of the group.
+// narrowed by role; Clear filters empties both. A row opens their membership panel (about this group only);
+// its ⋯ menu changes their role or takes them out of the group without opening anything.
 export function OrganizationMembers({
   organization,
 }: {
   organization: Organization;
 }) {
   const f = useMemberFilters();
-  const [viewing, setViewing] = useState<OrganizationMember | null>(null);
-  const [removing, setRemoving] = useState<OrganizationMember | null>(null);
   const [failed, setFailed] = useState(false);
   const list = useOrganizationMembers(organization.id, f.api);
   const update = useUpdateOrganizationMember();
+  const { open, remove, panels } = useMembershipPanels(organization);
 
   async function changeRole(m: OrganizationMember, next: OrganizationRole) {
     if (next === m.role) return;
@@ -76,7 +74,7 @@ export function OrganizationMembers({
             rowKey={(m) => m.id}
             person={(m) => ({
               name: m.memberName,
-              onOpen: () => setViewing(m),
+              onOpen: () => open(m),
               plain: true,
             })}
             columns={columns}
@@ -91,30 +89,13 @@ export function OrganizationMembers({
                 label: "Remove from group",
                 danger: true,
                 separated: true,
-                onSelect: () => setRemoving(m),
+                onSelect: () => remove(m),
               },
             ]}
           />
         )}
       </ListBody>
-      {viewing && (
-        <MembershipSheet
-          organization={organization}
-          member={viewing}
-          onClose={() => setViewing(null)}
-          onRemove={() => {
-            setRemoving(viewing);
-            setViewing(null);
-          }}
-        />
-      )}
-      {removing && (
-        <RemoveMemberDialog
-          organization={organization}
-          member={removing}
-          onClose={() => setRemoving(null)}
-        />
-      )}
+      {panels}
     </>
   );
 }

@@ -48,6 +48,7 @@
   border: 1px solid var(--line-2);
   border-radius: var(--radius);
   font-size: var(--control-font, 15px);
+  gap: 8px;
   transition:
     border-color var(--fast) ease,
     box-shadow var(--fast) ease;
@@ -74,4 +75,74 @@
   overflow: hidden;
   clip-path: inset(50%);
   white-space: nowrap;
+}
+
+/* Joined: the choices share one rounded bar. They are all as wide as the widest, so a single thumb can slide
+   between them: it is placed from how many choices there are (--n) and which one is picked (--i). */
+.group.joined {
+  position: relative;
+  display: inline-grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 2px;
+  margin-top: 0;
+  padding: 3px;
+  background: var(--surface);
+  border: 1px solid var(--line-2);
+  border-radius: 10px;
+}
+.joined::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  width: calc((100% - 6px - 2px * (var(--n) - 1)) / var(--n));
+  background: var(--accent);
+  border-radius: 7px;
+  opacity: var(--thumb, 1);
+  transform: translateX(calc(var(--i) * (100% + 2px)));
+  transition:
+    transform var(--base) var(--ease),
+    opacity var(--fast) ease;
+}
+.joined .face {
+  height: 30px;
+  padding: 0 14px;
+  background: transparent;
+  border: 0;
+  border-radius: 7px;
+  box-shadow: none;
+  color: var(--text-2);
+  font-size: 14px;
+  font-weight: 500;
+  transition:
+    color var(--base) var(--ease),
+    background-color var(--fast) ease;
+}
+.joined .option:hover .face {
+  color: var(--text);
+  background: var(--hover);
+}
+.joined .input:checked + .face {
+  background: transparent;
+  color: var(--on-accent);
+  box-shadow: none;
+}
+@media (max-width: 1180px) {
+  .joined .face {
+    height: 34px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .joined::before,
+  .joined .face {
+    transition: none;
+  }
+}
+@media (max-width: 900px) {
+  .group.fill {
+    display: grid;
+    width: 100%;
+  }
 }

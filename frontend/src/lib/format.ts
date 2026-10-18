@@ -9,6 +9,12 @@ export function formatDate(value: string): string {
   return `${day} ${months[Number(month) - 1] ?? ""} ${year}`;
 }
 
+// "2019-03-12" -> "12 Mar". For a day inside a context that already says which year it is.
+export function formatDayMonth(value: string): string {
+  const [, month, day] = value.slice(0, 10).split("-");
+  return `${Number(day)} ${months[Number(month) - 1] ?? ""}`;
+}
+
 // 1284 -> "1,284"
 export const formatNumber = (n: number): string => n.toLocaleString("en-GB");
 
