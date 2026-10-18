@@ -10,6 +10,8 @@ export type ControlProps = {
   onChange: (value: string) => void;
   onBlur?: () => void;
   disabled?: boolean;
+  // What the field says while nothing is chosen, e.g. "Choose a category".
+  placeholder?: string;
   invalid: boolean;
   describedBy?: string;
 };

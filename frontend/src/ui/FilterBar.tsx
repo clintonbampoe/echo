@@ -4,12 +4,14 @@ import { SearchBox } from "./SearchBox";
 import styles from "./FilterBar.module.css";
 
 type Props = {
-  // Names the search box, e.g. "Search members".
-  searchLabel: string;
-  search: string;
-  onSearch: (value: string) => void;
-  // Changes when the filters are cleared, so the search box empties too.
-  resetKey: number;
+  // Names the search box, e.g. "Search members". Left out by a list the server cannot search.
+  searchLabel?: string;
+  search?: string;
+  onSearch?: (value: string) => void;
+  // Takes the search box's place when there is none, e.g. an Income / Expenses switch.
+  leading?: ReactNode;
+  // Changes when the filters are cleared, so the search box empties too. A bar with no search has none.
+  resetKey?: number;
   // How many filters (not counting the search box) are narrowing the list.
   active: number;
   // True when anything at all, search included, is narrowing the list.
@@ -21,13 +23,34 @@ type Props = {
   trailing?: ReactNode;
 };
 
+type LeadProps = Pick<
+  Props,
+  "searchLabel" | "search" | "onSearch" | "leading"
+> & { resetKey: number };
+
+// The left of the bar: the search box, or what a list the server cannot search puts in its place.
+function Lead({ searchLabel, search, onSearch, resetKey, leading }: LeadProps) {
+  if (searchLabel === undefined || search === undefined || !onSearch)
+    return <div className={styles.search}>{leading}</div>;
+  return (
+    <SearchBox
+      key={resetKey}
+      label={searchLabel}
+      value={search}
+      onCommit={onSearch}
+      className={styles.search}
+    />
+  );
+}
+
 // The bar above a list. On a wide screen everything sits in one row. On a phone or tablet the pills fold
 // away behind a "Filters" button, so the list is the first thing people see.
 export function FilterBar({
   searchLabel,
   search,
   onSearch,
-  resetKey,
+  leading,
+  resetKey = 0,
   active,
   filtered,
   onClear,
@@ -48,12 +71,12 @@ export function FilterBar({
   return (
     <div className={styles.bar}>
       <div className={styles.top}>
-        <SearchBox
-          key={resetKey}
-          label={searchLabel}
-          value={search}
-          onCommit={onSearch}
-          className={styles.search}
+        <Lead
+          searchLabel={searchLabel}
+          search={search}
+          onSearch={onSearch}
+          resetKey={resetKey}
+          leading={leading}
         />
         <button
           type="button"

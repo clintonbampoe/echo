@@ -361,9 +361,11 @@ describe("organization page", () => {
     expect(
       within(panel).getByRole("link", { name: "View profile" }),
     ).toHaveAttribute("href", "/members/m2?tab=organizations");
+    expect(within(panel).getAllByText("Secretary").length).toBeGreaterThan(0);
     expect(
-      within(panel).getByRole("radio", { name: "Secretary" }),
-    ).toBeChecked();
+      within(panel).getByRole("button", { name: "Edit membership" }),
+    ).toBeInTheDocument();
+    expect(within(panel).queryByRole("radio")).toBeNull();
   });
 
   it("saves a role changed in the membership panel", async () => {
@@ -372,10 +374,17 @@ describe("organization page", () => {
     await user.click(
       await screen.findByRole("button", { name: /^Kwame Asante$/ }),
     );
-    const panel = await screen.findByRole("dialog", { name: "Membership" });
-    await user.click(within(panel).getByRole("radio", { name: "Leader" }));
     await user.click(
-      within(panel).getByRole("button", { name: "Save changes" }),
+      within(
+        await screen.findByRole("dialog", { name: "Membership" }),
+      ).getByRole("button", { name: "Edit membership" }),
+    );
+    const sheet = await screen.findByRole("dialog", {
+      name: "Edit membership",
+    });
+    await user.click(within(sheet).getByRole("radio", { name: "Leader" }));
+    await user.click(
+      within(sheet).getByRole("button", { name: "Save changes" }),
     );
     await waitFor(() =>
       expect(
@@ -394,7 +403,9 @@ describe("organization page", () => {
       joinedAt: "2020-01-12",
     });
     await waitFor(() =>
-      expect(screen.queryByRole("dialog", { name: "Membership" })).toBeNull(),
+      expect(
+        screen.queryByRole("dialog", { name: "Edit membership" }),
+      ).toBeNull(),
     );
   });
 

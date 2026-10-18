@@ -16,6 +16,7 @@ export function Listbox({
   onChange,
   onBlur,
   disabled,
+  placeholder,
   invalid,
   describedBy,
 }: ControlProps) {
@@ -52,7 +53,7 @@ export function Listbox({
         onKeyDown={lb.onKeyDown}
         onKeyUp={(e) => e.key === " " && e.preventDefault()}
       >
-        <span>{lb.chosen?.label}</span>
+        <span>{lb.chosen?.label ?? placeholder}</span>
         <Icon
           name="chevrons-up-down"
           size={16}

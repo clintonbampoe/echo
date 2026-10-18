@@ -13,6 +13,7 @@ export function SheetSelect({
   onChange,
   onBlur,
   disabled,
+  placeholder,
   invalid,
   describedBy,
 }: ControlProps) {
@@ -38,7 +39,7 @@ export function SheetSelect({
         onClick={() => setOpen(true)}
       >
         <span id={`${id}-value`}>
-          {options.find((o) => o.value === value)?.label}
+          {options.find((o) => o.value === value)?.label ?? placeholder}
         </span>
         <Icon
           name="chevrons-up-down"

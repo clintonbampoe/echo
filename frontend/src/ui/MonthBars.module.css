@@ -33,10 +33,13 @@ button.cell:focus-visible {
   outline-offset: 2px;
 }
 
+/* A month carries one bar, or two side by side sharing its width and the chart's scale. */
 .track {
+  position: relative;
   display: flex;
   align-items: flex-end;
   justify-content: center;
+  gap: 3px;
   width: 100%;
   height: 96px;
 }
@@ -46,12 +49,25 @@ button.cell:focus-visible {
   border-radius: 4px 4px 0 0;
   transition: background-color var(--fast) ease;
 }
-button.cell:hover .bar,
-.cell:hover .bar {
+button.cell:hover .bar:not(.on) {
   background: var(--text-3);
 }
 .bar.on {
   background: var(--text);
+}
+/* The second bar of a pair is always the quiet one. A pair is two slim bars with rounded tops on a taller track. */
+.bar.second {
+  background: var(--line-2);
+}
+button.cell:hover .bar.second {
+  background: var(--line-2);
+}
+.track.pair {
+  height: 120px;
+}
+.pair .bar {
+  width: 14px;
+  border-radius: 5px 5px 2px 2px;
 }
 
 .label {
@@ -65,7 +81,7 @@ button.cell:hover .bar,
 
 .tip {
   position: absolute;
-  bottom: calc(100% + 4px);
+  bottom: calc(var(--lift, 100%) + 6px);
   left: 50%;
   z-index: 2;
   padding: 4px 8px;
@@ -82,6 +98,9 @@ button.cell:hover .bar,
 .tip strong {
   display: block;
   font-weight: 600;
+}
+.line {
+  display: block;
 }
 .cell:hover .tip,
 .cell:focus-visible .tip {
@@ -104,6 +123,9 @@ button.cell:hover .bar,
   }
   .track {
     height: 72px;
+  }
+  .track.pair {
+    height: 88px;
   }
   .label {
     font-size: 11px;

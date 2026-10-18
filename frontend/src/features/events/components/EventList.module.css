@@ -1,0 +1,165 @@
+/* A wide screen: one bordered list, rows divided by a line. Phone and tablet: a card per event. */
+.list {
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.item + .item {
+  border-top: 1px solid var(--line);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) minmax(0, 260px) auto;
+  align-items: center;
+  gap: 20px;
+  padding: 18px 20px;
+  color: inherit;
+  text-decoration: none;
+  transition: background-color var(--fast) ease;
+}
+.row:hover {
+  background: var(--hover);
+}
+.row:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: -2px;
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  line-height: 1;
+}
+.month {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+.date {
+  margin-top: 4px;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  min-width: 0;
+}
+.name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 16px;
+  font-weight: 600;
+}
+.when {
+  font-size: 14px;
+  color: var(--text-2);
+}
+
+.fill {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+  font-size: 14px;
+}
+.nums {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-weight: 500;
+}
+.cap {
+  font-weight: 400;
+  color: var(--text-3);
+  white-space: nowrap;
+}
+.track {
+  display: block;
+  height: 6px;
+  overflow: hidden;
+  background: var(--sel);
+  border-radius: 3px;
+}
+.bar {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  border-radius: 3px;
+}
+.sub {
+  font-size: 13px;
+  color: var(--text-3);
+}
+.go {
+  color: var(--text-3);
+}
+
+@media (max-width: 900px) {
+  .list {
+    display: grid;
+    gap: 12px;
+    background: none;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    overflow: visible;
+  }
+  .item + .item {
+    border-top: 0;
+  }
+  .row {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+  }
+  .row:hover {
+    background: var(--surface);
+  }
+  .top {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/* A phone: the numbers drop under the name, across the card. */
+@media (max-width: 560px) {
+  .row {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 14px;
+    padding: 16px;
+  }
+  .fill {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+  .go {
+    grid-column: 3;
+    grid-row: 1;
+  }
+}

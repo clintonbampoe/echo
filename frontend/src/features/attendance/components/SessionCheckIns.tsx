@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { FilterBar, FilterSelect } from "@/ui";
-import type { CheckIn, PersonKind, Session } from "../api";
+import type { PersonKind, Session } from "../api";
 import { useCheckIns } from "../hooks";
 import { CheckInList } from "./CheckInList";
-import { EditCheckInTimeSheet, RemoveCheckInDialog } from "./CheckInDialogs";
+import { useCheckInPanels } from "./useCheckInPanels";
 
 const kinds = [
   { value: "", label: "Kind" },
@@ -11,13 +11,12 @@ const kinds = [
   { value: "Visitor", label: "Visitors" },
 ];
 
-// Who is marked present at one session: the search and Kind filter, the list, and fixing or removing a check-in.
+// Who is marked present at one session: the search and Kind filter, the list, and the panels a row opens.
 export function SessionCheckIns({ session }: { session: Session }) {
   const [name, setName] = useState("");
   const [kind, setKind] = useState("");
   const [resetKey, setResetKey] = useState(0);
-  const [editing, setEditing] = useState<CheckIn | null>(null);
-  const [removing, setRemoving] = useState<CheckIn | null>(null);
+  const { open, remove, panels } = useCheckInPanels();
   const list = useCheckIns(session.id, {
     name: name || undefined,
     kind: (kind || undefined) as PersonKind | undefined,
@@ -52,22 +51,10 @@ export function SessionCheckIns({ session }: { session: Session }) {
         list={list}
         filtered={filtered}
         onClear={clear}
-        onEdit={setEditing}
-        onRemove={setRemoving}
+        onOpen={open}
+        onRemove={remove}
       />
-      {editing && (
-        <EditCheckInTimeSheet
-          checkIn={editing}
-          session={session}
-          onClose={() => setEditing(null)}
-        />
-      )}
-      {removing && (
-        <RemoveCheckInDialog
-          checkIn={removing}
-          onClose={() => setRemoving(null)}
-        />
-      )}
+      {panels}
     </>
   );
 }

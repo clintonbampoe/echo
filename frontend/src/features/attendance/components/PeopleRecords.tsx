@@ -1,9 +1,9 @@
 import { formatDate, formatTime } from "@/lib/format";
 import { Chip, ListBody, PersonList, type PersonColumn } from "@/ui";
 import type { CheckIn, RecordsQuery } from "../api";
-import { sessionTitle } from "../day";
+import { recordTitle } from "../day";
 import { useRecordCheckIns } from "../hooks";
-import { personHref } from "../view";
+import { useCheckInPanels } from "./useCheckInPanels";
 
 type Props = { query: RecordsQuery; narrowed: boolean; onClear: () => void };
 
@@ -21,7 +21,7 @@ const columns: PersonColumn<CheckIn>[] = [
   {
     header: "Session",
     width: "minmax(140px, 1.4fr)",
-    cell: (c) => sessionTitle(c),
+    cell: (c) => recordTitle(c),
   },
   {
     header: "Date",
@@ -35,34 +35,46 @@ const columns: PersonColumn<CheckIn>[] = [
   },
 ];
 
-// Everyone who was marked present in the period, one row for each time they came, latest session first. A row opens the person.
+// Everyone who was marked present in the period, one row for each time they came, latest session first. A row
+// opens that check-in's panel, which is about the session they came to (design rule S6).
 export function PeopleRecords({ query, narrowed, onClear }: Props) {
   const list = useRecordCheckIns(query);
+  const { open, remove, panels } = useCheckInPanels();
   return (
-    <ListBody
-      list={list}
-      icon="calendar-check"
-      noun={["check-in", "check-ins"]}
-      emptyTitle="No one was marked present in this period"
-      emptyText="People marked present at a session in the days you chose will be listed here. Try a longer period."
-      noMatchText="Try a different name, another kind or type, or a longer period."
-      filtered={narrowed}
-      onClear={onClear}
-      order="Latest session first."
-    >
-      {(rows) => (
-        <PersonList
-          label="Check-ins"
-          rows={rows}
-          rowKey={(c) => c.id}
-          person={(c) => ({
-            name: c.personName,
-            href: personHref(c),
-            plain: true,
-          })}
-          columns={columns}
-        />
-      )}
-    </ListBody>
+    <>
+      <ListBody
+        list={list}
+        icon="calendar-check"
+        noun={["check-in", "check-ins"]}
+        emptyTitle="No one was marked present in this period"
+        emptyText="People marked present at a session in the days you chose will be listed here. Try a longer period."
+        noMatchText="Try a different name, another kind or type, or a longer period."
+        filtered={narrowed}
+        onClear={onClear}
+        order="Latest session first."
+      >
+        {(rows) => (
+          <PersonList
+            label="Check-ins"
+            rows={rows}
+            rowKey={(c) => c.id}
+            person={(c) => ({
+              name: c.personName,
+              onOpen: () => open(c),
+              plain: true,
+            })}
+            columns={columns}
+            actions={(c) => [
+              {
+                label: "Remove from session",
+                danger: true,
+                onSelect: () => remove(c),
+              },
+            ]}
+          />
+        )}
+      </ListBody>
+      {panels}
+    </>
   );
 }

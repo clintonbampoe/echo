@@ -1,9 +1,9 @@
 // What the Attendance page shows for one day, worked out from plain days and sessions. Pure, so the tests
 // can pass "today". No React in this file.
 import { dayParts, daysAfter, daysBetween, monthNames } from "@/lib/dates";
-import { formatClock, formatNumber } from "@/lib/format";
+import { formatClock, formatDayMonth, formatNumber } from "@/lib/format";
 import type { ChipTone, Stat, StripDay } from "@/ui";
-import type { AttendanceSummary, Session, SessionStatus } from "./api";
+import type { AttendanceSummary, CheckIn, Session, SessionStatus } from "./api";
 
 // The strip lists this many days either side of its anchor, and the anchor only moves once the picked day gets
 // further than REANCHOR from it, so scrolling never rebuilds the row under your finger.
@@ -144,10 +144,12 @@ export function readDay(text: string | null, today: string): string {
 }
 
 // "2026-10-11" -> "11 Oct".
-export function dayMonth(day: string): string {
-  const [, m, d] = dayParts(day);
-  return `${d} ${(monthNames[m - 1] ?? "").slice(0, 3)}`;
-}
+export const dayMonth = formatDayMonth;
+
+// A check-in names its session the same way the session page does: its own name, else the type's.
+export const recordTitle = (
+  c: Pick<CheckIn, "sessionName" | "sessionLabelName">,
+) => c.sessionName || c.sessionLabelName;
 
 // The nearest other day that has a session: the next one after `day`, else the latest one before it.
 export function nearestSessionDay(

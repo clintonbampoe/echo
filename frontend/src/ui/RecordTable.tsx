@@ -1,6 +1,7 @@
 import type { CSSProperties, ReactNode } from "react";
 import { Link } from "react-router-dom";
 import type { Paged } from "@/lib/paged";
+import { ActionMenu, type MenuItem } from "./ActionMenu";
 import { Alert } from "./Alert";
 import { Button } from "./Button";
 import { EmptyState } from "./EmptyState";
@@ -33,6 +34,11 @@ type Props<T> = {
   total?: ReactNode;
   // Where a row leads. When given, the first column is a link and the whole row is clickable.
   href?: (row: T) => string;
+  // For a row that opens a panel on the same page: the first column is a button, and the whole row is clickable.
+  onOpen?: (row: T) => void;
+  // The ⋯ menu at the end of each row. It needs `rowName`, which names the row for the menu and for screen readers.
+  actions?: (row: T) => MenuItem[];
+  rowName?: (row: T) => string;
   // Keeps the table a fixed height: past about five rows the rows scroll, the heading and footer stay.
   scroll?: boolean;
 };
@@ -71,6 +77,33 @@ export function RecordTable<T>(props: Props<T>) {
   return <Rows {...props} />;
 }
 
+// A table kept to a fixed height is a region the keyboard can scroll, and says so.
+const scrolling = (label: string, scroll?: boolean) =>
+  scroll
+    ? {
+        className: styles.scroll,
+        tabIndex: 0,
+        role: "region",
+        "aria-label": `${label}, scrollable`,
+      }
+    : {};
+
+type RowsProps<T> = Pick<
+  Props<T>,
+  | "label"
+  | "columns"
+  | "list"
+  | "rowKey"
+  | "noun"
+  | "summary"
+  | "total"
+  | "href"
+  | "onOpen"
+  | "actions"
+  | "rowName"
+  | "scroll"
+>;
+
 function Rows<T>({
   label,
   columns,
@@ -80,52 +113,38 @@ function Rows<T>({
   summary,
   total,
   href,
+  onOpen,
+  actions,
+  rowName,
   scroll,
-}: Props<T>) {
-  const [first, ...rest] = columns;
+}: RowsProps<T>) {
   const cols = { "--cols": columns.length } as CSSProperties;
   const shown = list.rows.length;
+  const tail = (actions && styles.tail) || "";
   return (
     <div className={styles.wrap}>
-      <div className={styles.head} aria-hidden="true" style={cols}>
+      <div className={`${styles.head} ${tail}`} aria-hidden="true" style={cols}>
         {columns.map((c) => (
           <span key={c.header} className={c.end ? styles.end : undefined}>
             {c.header}
           </span>
         ))}
+        {actions && <span />}
       </div>
-      <div
-        className={scroll ? styles.scroll : undefined}
-        tabIndex={scroll ? 0 : undefined}
-        role={scroll ? "region" : undefined}
-        aria-label={scroll ? `${label}, scrollable` : undefined}
-      >
+      <div {...scrolling(label, scroll)}>
         <ul aria-label={label} className={styles.list}>
           {list.rows.map((row) => (
-            <li
+            <Row
               key={rowKey(row)}
-              className={`${styles.row} ${href ? styles.clickable : ""}`}
-              style={cols}
-            >
-              <div className={styles.title}>
-                {href ? (
-                  <Link to={href(row)} className={styles.link}>
-                    {first?.cell(row)}
-                  </Link>
-                ) : (
-                  first?.cell(row)
-                )}
-              </div>
-              {rest.map((c) => (
-                <div
-                  key={c.header}
-                  className={`${styles.cell} ${c.end ? styles.end : ""}`}
-                  data-label={c.header}
-                >
-                  {c.cell(row)}
-                </div>
-              ))}
-            </li>
+              row={row}
+              columns={columns}
+              cols={cols}
+              tail={tail}
+              href={href}
+              onOpen={onOpen}
+              actions={actions}
+              rowName={rowName}
+            />
           ))}
         </ul>
       </div>
@@ -148,5 +167,69 @@ function Rows<T>({
         )}
       </footer>
     </div>
+  );
+}
+
+type RowProps<T> = Pick<
+  Props<T>,
+  "columns" | "href" | "onOpen" | "actions" | "rowName"
+> & { row: T; cols: CSSProperties; tail: string };
+
+// One record: its first column (a link or a button when the row leads somewhere), the other cells, and the ⋯ menu.
+function Row<T>({
+  row,
+  columns,
+  cols,
+  tail,
+  href,
+  onOpen,
+  actions,
+  rowName,
+}: RowProps<T>) {
+  const [first, ...rest] = columns;
+  const leads = Boolean(href || onOpen);
+  const title = first?.cell(row);
+  const name = rowName?.(row) ?? "";
+  return (
+    <li
+      className={`${styles.row} ${leads ? styles.clickable : ""} ${tail}`}
+      style={cols}
+    >
+      <div className={styles.title}>
+        {href ? (
+          <Link to={href(row)} className={styles.link}>
+            {title}
+          </Link>
+        ) : onOpen ? (
+          <button
+            type="button"
+            className={styles.link}
+            onClick={() => onOpen(row)}
+          >
+            {title}
+          </button>
+        ) : (
+          title
+        )}
+      </div>
+      {rest.map((c) => (
+        <div
+          key={c.header}
+          className={`${styles.cell} ${c.end ? styles.end : ""}`}
+          data-label={c.header}
+        >
+          {c.cell(row)}
+        </div>
+      ))}
+      {actions && (
+        <div className={styles.actions}>
+          <ActionMenu
+            label={`Actions for ${name}`}
+            title={name}
+            items={actions(row)}
+          />
+        </div>
+      )}
+    </li>
   );
 }

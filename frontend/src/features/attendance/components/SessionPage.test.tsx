@@ -105,11 +105,11 @@ describe("session page", () => {
     ).toHaveAttribute("href", "/attendance?day=2026-10-11");
     const list = await screen.findByRole("list", { name: "Check-ins" });
     expect(
-      within(list).getByRole("link", { name: "Kwame Asante" }),
-    ).toHaveAttribute("href", "/members/m1?tab=attendance");
+      within(list).getByRole("button", { name: "Kwame Asante" }),
+    ).toBeInTheDocument();
     expect(
-      within(list).getByRole("link", { name: "Esi Owusu" }),
-    ).toHaveAttribute("href", "/visitors/v1");
+      within(list).getByRole("button", { name: "Esi Owusu" }),
+    ).toBeInTheDocument();
     expect(within(list).getByText("9:04 am")).toBeInTheDocument();
     expect(within(list).getByText("9:20 am")).toBeInTheDocument();
     expect(
@@ -264,13 +264,25 @@ describe("session page", () => {
     );
   });
 
+  it("opens a check-in panel from a row, with the way out to the person's page", async () => {
+    open();
+    await userEvent.click(
+      await screen.findByRole("button", { name: "Kwame Asante" }),
+    );
+    const panel = await screen.findByRole("dialog", { name: "Check-in" });
+    expect(
+      within(panel).getByRole("link", { name: "View profile" }),
+    ).toHaveAttribute("href", "/members/m1?tab=attendance");
+    expect(within(panel).getByText("9:04 am")).toBeInTheDocument();
+  });
+
   it("changes a check-in time to that time on the session's day", async () => {
     open();
     await userEvent.click(
-      await screen.findByRole("button", { name: "Actions for Kwame Asante" }),
+      await screen.findByRole("button", { name: "Kwame Asante" }),
     );
     await userEvent.click(
-      await screen.findByRole("menuitem", { name: "Edit check-in time" }),
+      await screen.findByRole("button", { name: "Edit check-in" }),
     );
     const sheet = await screen.findByRole("dialog", {
       name: "Edit check-in time",

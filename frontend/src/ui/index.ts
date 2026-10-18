@@ -31,6 +31,7 @@ export { MonthYearPill } from "./MonthYearPill";
 export { Notice } from "./Notice";
 export { plainOptions, withAny } from "./options";
 export { PageHeader } from "./PageHeader";
+export { PanelIdentity } from "./PanelIdentity";
 export { PickerAnchor } from "./PickerAnchor";
 export { PersonList, type Person, type PersonColumn } from "./PersonList";
 export { ProfileIdentity } from "./ProfileIdentity";

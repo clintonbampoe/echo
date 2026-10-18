@@ -1,0 +1,7 @@
+/* Money in is marked, money out reads as ordinary text: an expense is not a warning. */
+.in {
+  color: var(--pos);
+}
+.out {
+  color: var(--text);
+}

@@ -8,6 +8,10 @@ export const paths = {
   visitors: "/visitors",
   organizations: "/organizations",
   tithes: "/tithes",
+  finance: "/finance",
+  financeCategories: "/finance/categories",
+  events: "/events",
+  eventsPast: "/events/past",
   attendance: "/attendance",
   // The Attendance page on one day.
   attendanceDay: (day: string) => `/attendance?day=${day}`,

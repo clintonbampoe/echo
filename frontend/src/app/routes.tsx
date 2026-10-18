@@ -1,9 +1,11 @@
 import { createBrowserRouter, type RouteObject } from "react-router-dom";
 import { attendanceRoutes } from "@/features/attendance";
 import { authRoutes } from "@/features/auth";
+import { eventRoutes } from "@/features/events";
 import { memberRoutes } from "@/features/members";
 import { organizationRoutes } from "@/features/organizations";
 import { titheRoutes } from "@/features/tithes";
+import { transactionRoutes } from "@/features/transactions";
 import { visitorRoutes } from "@/features/visitors";
 import { ComingSoon } from "./ComingSoon";
 import { Dashboard } from "./Dashboard";
@@ -13,10 +15,6 @@ import { AppShell } from "./shell";
 
 // Pages that lists already link to, before their features exist. Each one is replaced by the real route.
 const placeholders: RouteObject[] = [
-  {
-    path: "events/:id",
-    element: <ComingSoon icon="calendar" title="Event page" />,
-  },
   {
     path: "projects/:id",
     element: <ComingSoon icon="projects" title="Project page" />,
@@ -50,6 +48,8 @@ const routes: RouteObject[] = [
               ...organizationRoutes,
               ...titheRoutes,
               ...attendanceRoutes,
+              ...eventRoutes,
+              ...transactionRoutes,
               ...placeholders,
             ],
           },

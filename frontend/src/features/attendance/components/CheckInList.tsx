@@ -2,13 +2,12 @@ import { formatTime } from "@/lib/format";
 import type { Paged } from "@/lib/paged";
 import { Chip, ListBody, PersonList, type PersonColumn } from "@/ui";
 import type { CheckIn } from "../api";
-import { personHref } from "../view";
 
 type Props = {
   list: Paged<CheckIn>;
   filtered: boolean;
   onClear: () => void;
-  onEdit: (checkIn: CheckIn) => void;
+  onOpen: (checkIn: CheckIn) => void;
   onRemove: (checkIn: CheckIn) => void;
 };
 
@@ -30,12 +29,12 @@ const columns: PersonColumn<CheckIn>[] = [
   },
 ];
 
-// Who is marked present at a session, newest first. Each row opens the person and has a menu to fix or undo it.
+// Who is marked present at a session, newest first. A row opens their check-in panel; the ⋯ menu undoes it.
 export function CheckInList({
   list,
   filtered,
   onClear,
-  onEdit,
+  onOpen,
   onRemove,
 }: Props) {
   return (
@@ -57,16 +56,14 @@ export function CheckInList({
           rowKey={(c) => c.id}
           person={(c) => ({
             name: c.personName,
-            href: personHref(c),
+            onOpen: () => onOpen(c),
             plain: true,
           })}
           columns={columns}
           actions={(c) => [
-            { label: "Edit check-in time", onSelect: () => onEdit(c) },
             {
               label: "Remove from session",
               danger: true,
-              separated: true,
               onSelect: () => onRemove(c),
             },
           ]}

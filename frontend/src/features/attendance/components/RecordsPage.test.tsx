@@ -82,14 +82,25 @@ describe("attendance records", () => {
     ).toBeInTheDocument();
   });
 
-  it("shows who was marked present on the People view, and each name opens the person", async () => {
+  it("shows who was marked present on the People view, and a row opens their check-in panel", async () => {
     open("/attendance/records/people");
     const list = await screen.findByRole("list", { name: "Check-ins" });
+    await userEvent.click(
+      within(list).getByRole("button", { name: "Kwame Asante" }),
+    );
+    const panel = await screen.findByRole("dialog", { name: "Check-in" });
     expect(
-      within(list).getByRole("link", { name: "Kwame Asante" }),
+      within(panel).getByRole("link", { name: "View profile" }),
     ).toHaveAttribute("href", "/members/m1?tab=attendance");
+    await userEvent.click(within(panel).getByRole("button", { name: "Close" }));
+    await userEvent.click(
+      within(list).getByRole("button", { name: "Efua Mensah" }),
+    );
     expect(
-      within(list).getByRole("link", { name: "Efua Mensah" }),
+      within(await screen.findByRole("dialog", { name: "Check-in" })).getByRole(
+        "link",
+        { name: "View profile" },
+      ),
     ).toHaveAttribute("href", "/visitors/v1");
   });
 

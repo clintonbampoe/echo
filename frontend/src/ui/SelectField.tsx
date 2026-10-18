@@ -6,7 +6,10 @@ import { SheetSelect } from "./SheetSelect";
 import { useFinePointer } from "./useFinePointer";
 
 type Props = Shared &
-  Pick<ControlProps, "options" | "value" | "onChange" | "onBlur" | "disabled">;
+  Pick<
+    ControlProps,
+    "options" | "value" | "onChange" | "onBlur" | "disabled" | "placeholder"
+  >;
 
 // A field whose value comes from a fixed list (design rule S2). Always our own picker, never the browser's:
 // a menu under the field with a mouse or trackpad, a bottom sheet on a touch screen (design rule S10).

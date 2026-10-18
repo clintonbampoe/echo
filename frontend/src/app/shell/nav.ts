@@ -39,14 +39,14 @@ export const navGroups: NavGroup[] = [
         icon: "calendar-check",
         ready: true,
       },
-      { label: "Events", to: "/events", icon: "calendar", ready: false },
+      { label: "Events", to: "/events", icon: "calendar", ready: true },
     ],
   },
   {
     title: "Money",
     items: [
       { label: "Tithes", to: "/tithes", icon: "tithes", ready: true },
-      { label: "Finance", to: "/finance", icon: "finance", ready: false },
+      { label: "Finance", to: "/finance", icon: "finance", ready: true },
       { label: "Projects", to: "/projects", icon: "projects", ready: false },
     ],
   },
