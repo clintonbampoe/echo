@@ -8,6 +8,7 @@ import {
   formatMonth,
   formatNumber,
   formatTime,
+  plural,
 } from "./format";
 
 describe("format", () => {
@@ -62,5 +63,14 @@ describe("format", () => {
     expect(formatAgo("2026-09-15", today)).toBe("29 days ago");
     expect(formatAgo("2026-10-13", today)).toBe("Yesterday");
     expect(formatAgo("2026-10-14", today)).toBe("Today");
+  });
+});
+
+describe("plural", () => {
+  it("says one of a thing in the singular and any other number in the plural", () => {
+    expect(plural(1, "asset")).toBe("1 asset");
+    expect(plural(0, "asset")).toBe("0 assets");
+    expect(plural(1284, "asset")).toBe("1,284 assets");
+    expect(plural(2, "category", "categories")).toBe("2 categories");
   });
 });

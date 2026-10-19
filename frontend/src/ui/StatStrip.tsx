@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import styles from "./StatStrip.module.css";
 
 // One number with a name and a line of context, e.g. "Attendance" / "86%" / "38 of 44 sessions".
@@ -10,11 +11,16 @@ type Props = {
   busy?: boolean;
 };
 
-// Four numbers in a row (two by two on a phone). A value or note too long for its tile is cut with an ellipsis
+// Four numbers in a row (a page with three shows three, sharing the width), and two by two on a phone. A value or note too long for its tile is cut with an ellipsis
 // (the full text shows on hover), so it never runs into the next tile.
 export function StatStrip({ label, stats, busy }: Props) {
   return (
-    <section aria-label={label} aria-busy={busy} className={styles.strip}>
+    <section
+      aria-label={label}
+      aria-busy={busy}
+      className={styles.strip}
+      style={{ "--count": stats.length } as CSSProperties}
+    >
       {stats.map((s) => (
         <div key={s.label} className={styles.item}>
           <p className={styles.label}>{s.label}</p>

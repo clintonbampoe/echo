@@ -72,3 +72,20 @@ export function useEveryRow<T>(list: Paged<T>): Paged<T> {
     hasMore: false,
   };
 }
+
+// A list the API sends whole, not a page at a time (the categories), shaped for a screen that expects a Paged one:
+// there is never more to load.
+export function plainList<T>(
+  rows: T[],
+  q: { isPending: boolean; isError: boolean; refetch: () => unknown },
+): Paged<T> {
+  return {
+    rows,
+    loading: q.isPending,
+    failed: q.isError,
+    hasMore: false,
+    loadingMore: false,
+    more: () => {},
+    retry: () => void q.refetch(),
+  };
+}
