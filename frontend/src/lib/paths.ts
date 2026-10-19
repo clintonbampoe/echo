@@ -32,4 +32,7 @@ export const paths = {
   projects: "/projects",
   projectCategories: "/projects/categories",
   project: (id: string) => `/projects/${id}`,
+  assets: "/assets",
+  assetCategories: "/assets/categories",
+  asset: (id: string) => `/assets/${id}`,
 };

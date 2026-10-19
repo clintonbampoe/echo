@@ -18,6 +18,10 @@ export function formatDayMonth(value: string): string {
 // 1284 -> "1,284"
 export const formatNumber = (n: number): string => n.toLocaleString("en-GB");
 
+// How many of something, with the right word: plural(1, 'asset') -> "1 asset", plural(3, 'asset') -> "3 assets".
+export const plural = (n: number, one: string, many = `${one}s`): string =>
+  `${formatNumber(n)} ${n === 1 ? one : many}`;
+
 // "2026-10-11T09:04:00" -> "9:04 am". Read in the viewer's own time zone.
 export function formatTime(value: string): string {
   return new Date(value)
@@ -64,15 +68,15 @@ export function formatDayTime(day: string, time?: string | null): string {
 
 // How long ago a plain day was, in the biggest whole unit: "10 years ago", "3 months ago", "5 days ago".
 export function formatAgo(day: string, today: string): string {
-  const plural = (n: number, unit: string) =>
+  const ago = (n: number, unit: string) =>
     `${n} ${unit}${n === 1 ? "" : "s"} ago`;
   const years = ageOn(day, today);
-  if (years >= 1) return plural(years, "year");
+  if (years >= 1) return ago(years, "year");
   const [fy, fm, fd] = dayParts(day);
   const [ty, tm, td] = dayParts(today);
   const whole = (ty - fy) * 12 + (tm - fm) - (td < fd ? 1 : 0);
-  if (whole >= 1) return plural(whole, "month");
+  if (whole >= 1) return ago(whole, "month");
   const days = daysBetween(day, today);
   if (days === 0) return "Today";
-  return days === 1 ? "Yesterday" : plural(days, "day");
+  return days === 1 ? "Yesterday" : ago(days, "day");
 }

@@ -52,7 +52,7 @@ export const navGroups: NavGroup[] = [
   },
   {
     title: "Church",
-    items: [{ label: "Assets", to: "/assets", icon: "assets", ready: false }],
+    items: [{ label: "Assets", to: "/assets", icon: "assets", ready: true }],
   },
   {
     title: "Insights",

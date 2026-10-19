@@ -1,4 +1,5 @@
 import { createBrowserRouter, type RouteObject } from "react-router-dom";
+import { assetRoutes } from "@/features/assets";
 import { attendanceRoutes } from "@/features/attendance";
 import { authRoutes } from "@/features/auth";
 import { eventRoutes } from "@/features/events";
@@ -43,6 +44,7 @@ const routes: RouteObject[] = [
               ...eventRoutes,
               ...transactionRoutes,
               ...projectRoutes,
+              ...assetRoutes,
             ],
           },
         ],
