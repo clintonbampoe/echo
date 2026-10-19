@@ -5,21 +5,13 @@ import { eventRoutes } from "@/features/events";
 import { memberRoutes } from "@/features/members";
 import { organizationRoutes } from "@/features/organizations";
 import { titheRoutes } from "@/features/tithes";
+import { projectRoutes } from "@/features/projects";
 import { transactionRoutes } from "@/features/transactions";
 import { visitorRoutes } from "@/features/visitors";
-import { ComingSoon } from "./ComingSoon";
 import { Dashboard } from "./Dashboard";
 import { NotFound } from "./NotFound";
 import { RequireAuth } from "./RequireAuth";
 import { AppShell } from "./shell";
-
-// Pages that lists already link to, before their features exist. Each one is replaced by the real route.
-const placeholders: RouteObject[] = [
-  {
-    path: "projects/:id",
-    element: <ComingSoon icon="projects" title="Project page" />,
-  },
-];
 
 // One list, top to bottom, of every URL in the app. Each feature owns its own routes and
 // hands them over here; this file only decides where they sit. Pages load on demand.
@@ -50,7 +42,7 @@ const routes: RouteObject[] = [
               ...attendanceRoutes,
               ...eventRoutes,
               ...transactionRoutes,
-              ...placeholders,
+              ...projectRoutes,
             ],
           },
         ],

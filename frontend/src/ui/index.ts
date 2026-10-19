@@ -33,6 +33,7 @@ export { plainOptions, withAny } from "./options";
 export { PageHeader } from "./PageHeader";
 export { PanelIdentity } from "./PanelIdentity";
 export { PickerAnchor } from "./PickerAnchor";
+export { ProgressBar } from "./ProgressBar";
 export { PersonList, type Person, type PersonColumn } from "./PersonList";
 export { ProfileIdentity } from "./ProfileIdentity";
 export { BackLink, ProfileLayout } from "./ProfileLayout";

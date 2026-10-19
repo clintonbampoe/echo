@@ -29,5 +29,7 @@ export const paths = {
   event: (id: string) => `/events/${id}`,
   organization: (id: string) => `/organizations/${id}`,
   session: (id: string) => `/attendance/sessions/${id}`,
+  projects: "/projects",
+  projectCategories: "/projects/categories",
   project: (id: string) => `/projects/${id}`,
 };
