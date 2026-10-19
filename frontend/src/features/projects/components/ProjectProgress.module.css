@@ -1,0 +1,76 @@
+.card {
+  margin-top: 20px;
+  padding: 20px 24px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+.top {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px 24px;
+}
+.label {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-2);
+}
+.raised {
+  margin: 4px 0 0;
+  font-size: 32px;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+.of {
+  margin-left: 6px;
+  font-size: 15px;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--text-2);
+}
+.left {
+  text-align: right;
+}
+.leftValue {
+  margin: 4px 0 0;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 16px;
+}
+.bar > :first-child {
+  flex: 1;
+}
+.percent {
+  min-width: 40px;
+  font-size: 13px;
+  color: var(--text-2);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Phone: what is still to raise sits under what is raised, not beside it. */
+@media (max-width: 600px) {
+  .card {
+    padding: 18px 20px;
+  }
+  .top {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .left {
+    text-align: left;
+  }
+  .raised {
+    font-size: 28px;
+  }
+}

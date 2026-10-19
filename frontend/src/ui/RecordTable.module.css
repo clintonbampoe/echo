@@ -223,6 +223,12 @@
   .end {
     text-align: left;
   }
+  .full {
+    grid-column: 1 / -1;
+  }
+  .last {
+    order: 1;
+  }
   .footer {
     margin-top: 12px;
     border: 0;

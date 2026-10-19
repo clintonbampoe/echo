@@ -14,7 +14,21 @@ export type Column<T> = {
   cell: (row: T) => ReactNode;
   // Numbers line up on the right.
   end?: boolean;
+  // On a phone, takes a whole row of the card (a long value, or a bar), not half of one (design rule S4).
+  full?: boolean;
+  // On a phone, comes after the other values of the card, though it sits earlier in the table (a note after the figures).
+  last?: boolean;
 };
+
+const cellClass = (c: { end?: boolean; full?: boolean; last?: boolean }) =>
+  [
+    styles.cell,
+    c.end && styles.end,
+    c.full && styles.full,
+    c.last && styles.last,
+  ]
+    .filter(Boolean)
+    .join(" ");
 
 type Props<T> = {
   // Names the table for screen readers, e.g. "Tithes".
@@ -213,11 +227,7 @@ function Row<T>({
         )}
       </div>
       {rest.map((c) => (
-        <div
-          key={c.header}
-          className={`${styles.cell} ${c.end ? styles.end : ""}`}
-          data-label={c.header}
-        >
+        <div key={c.header} className={cellClass(c)} data-label={c.header}>
           {c.cell(row)}
         </div>
       ))}

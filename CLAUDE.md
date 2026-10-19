@@ -82,15 +82,15 @@ To override a nested JSON setting (e.g., `Database:Name`), use a double undersco
 
 Solution file: `backend/Echo.slnx`. Projects under `backend/src/`:
 
-| Project | Dependencies | Role |
-| --- | --- | --- |
-| `Echo.Domain` | none | Entities, EF entity configurations, enums, `AppDbContext`, domain interfaces. Pure domain — no outward deps. |
-| `Echo.Infrastructure` | `Echo.Domain` | EF migrations, design-time `DbContextFactory`, health checks. |
-| `Echo.Shared` | `Echo.Domain` | (Per `backend/README.md`) module-agnostic shared assets. |
-| `Echo.Application` | `Echo.Domain`, `Echo.Shared` | Cross-module services: hashing (Bcrypt, Sha256 keyed), email (Resend keyed), JWT `TokenGenerator`, `LinkBuilder`, `Clock`, `HttpResults`, `Pagination`, `Query`. |
-| `Echo.Core` | `Echo.Domain`, `Echo.Shared`, `Echo.Application` | Core domain: controllers, services, repositories, DTOs, AutoMapper profiles. The "feature" module that the rest of the app extends. |
-| `Echo.Auth` | `Echo.Domain`, `Echo.Shared`, `Echo.Application` | Auth flows: controllers, services, repositories, DTOs. |
-| `Echo.Api` | all | **Composition root** — `Program.cs`. Wires DI, Swagger, JWT, rate limiting, versioning, OpenAPI. |
+| Project               | Dependencies                                     | Role                                                                                                                                                             |
+| --------------------- | ------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Echo.Domain`         | none                                             | Entities, EF entity configurations, enums, `AppDbContext`, domain interfaces. Pure domain — no outward deps.                                                     |
+| `Echo.Infrastructure` | `Echo.Domain`                                    | EF migrations, design-time `DbContextFactory`, health checks.                                                                                                    |
+| `Echo.Shared`         | `Echo.Domain`                                    | (Per `backend/README.md`) module-agnostic shared assets.                                                                                                         |
+| `Echo.Application`    | `Echo.Domain`, `Echo.Shared`                     | Cross-module services: hashing (Bcrypt, Sha256 keyed), email (Resend keyed), JWT `TokenGenerator`, `LinkBuilder`, `Clock`, `HttpResults`, `Pagination`, `Query`. |
+| `Echo.Core`           | `Echo.Domain`, `Echo.Shared`, `Echo.Application` | Core domain: controllers, services, repositories, DTOs, AutoMapper profiles. The "feature" module that the rest of the app extends.                              |
+| `Echo.Auth`           | `Echo.Domain`, `Echo.Shared`, `Echo.Application` | Auth flows: controllers, services, repositories, DTOs.                                                                                                           |
+| `Echo.Api`            | all                                              | **Composition root** — `Program.cs`. Wires DI, Swagger, JWT, rate limiting, versioning, OpenAPI.                                                                 |
 
 ### Module Layout (applied per feature module)
 
