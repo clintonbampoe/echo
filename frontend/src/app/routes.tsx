@@ -2,6 +2,7 @@ import { createBrowserRouter, type RouteObject } from "react-router-dom";
 import { assetRoutes } from "@/features/assets";
 import { attendanceRoutes } from "@/features/attendance";
 import { authRoutes } from "@/features/auth";
+import { dashboardRoutes } from "@/features/dashboard";
 import { eventRoutes } from "@/features/events";
 import { memberRoutes } from "@/features/members";
 import { organizationRoutes } from "@/features/organizations";
@@ -9,7 +10,6 @@ import { titheRoutes } from "@/features/tithes";
 import { projectRoutes } from "@/features/projects";
 import { transactionRoutes } from "@/features/transactions";
 import { visitorRoutes } from "@/features/visitors";
-import { Dashboard } from "./Dashboard";
 import { NotFound } from "./NotFound";
 import { RequireAuth } from "./RequireAuth";
 import { AppShell } from "./shell";
@@ -35,7 +35,7 @@ const routes: RouteObject[] = [
           {
             Component: AppShell,
             children: [
-              { path: "dashboard", Component: Dashboard },
+              ...dashboardRoutes,
               ...memberRoutes,
               ...visitorRoutes,
               ...organizationRoutes,

@@ -84,9 +84,9 @@
   display: inline-grid;
   grid-auto-flow: column;
   grid-auto-columns: 1fr;
-  gap: 2px;
+  gap: 0;
   margin-top: 0;
-  padding: 3px;
+  padding: 2px;
   background: var(--surface);
   border: 1px solid var(--line-2);
   border-radius: 10px;
@@ -94,27 +94,27 @@
 .joined::before {
   content: "";
   position: absolute;
-  top: 3px;
-  bottom: 3px;
-  left: 3px;
-  width: calc((100% - 6px - 2px * (var(--n) - 1)) / var(--n));
+  top: 2px;
+  bottom: 2px;
+  left: 2px;
+  width: calc((100% - 4px) / var(--n));
   background: var(--accent);
-  border-radius: 7px;
+  border-radius: 8px;
   opacity: var(--thumb, 1);
-  transform: translateX(calc(var(--i) * (100% + 2px)));
+  transform: translateX(calc(var(--i) * 100%));
   transition:
     transform var(--base) var(--ease),
     opacity var(--fast) ease;
 }
 .joined .face {
-  height: 30px;
-  padding: 0 14px;
+  height: 28px;
+  padding: 0 12px;
   background: transparent;
   border: 0;
-  border-radius: 7px;
+  border-radius: 8px;
   box-shadow: none;
   color: var(--text-2);
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   transition:
     color var(--base) var(--ease),
@@ -124,15 +124,13 @@
   color: var(--text);
   background: var(--hover);
 }
+.joined.compact .face {
+  font-size: 12px;
+}
 .joined .input:checked + .face {
   background: transparent;
   color: var(--on-accent);
   box-shadow: none;
-}
-@media (max-width: 1180px) {
-  .joined .face {
-    height: 34px;
-  }
 }
 @media (prefers-reduced-motion: reduce) {
   .joined::before,

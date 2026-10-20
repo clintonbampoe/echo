@@ -4,10 +4,10 @@ using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
+using Echo.Shared.Utilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
-using Echo.Shared.Utilities;
 
 namespace Echo.Application.Members;
 
@@ -25,11 +25,7 @@ public class MemberService(
 )
 {
     internal static DateWindow? ResolveWindow(MemberFilters filters, DateWindows dateWindows) =>
-        dateWindows.ThisYear(
-            filters.From,
-            filters.To,
-            hasParent: false
-        );
+        dateWindows.ThisYear(filters.From, filters.To, hasParent: false);
 
     public async Task<IOperationResult> List(
         Guid congregationId,
@@ -237,6 +233,7 @@ public class MemberService(
             MaleCount = stats.Male,
             FemaleCount = stats.Female,
             AverageAge = stats.AverageAge,
+            AgeGroups = AgeGroupsOf(stats),
         };
 
         activity?.SetTag("member.summary.total", res.TotalMembers);
@@ -247,4 +244,14 @@ public class MemberService(
 
     private static MemberCursor BuildCursor(Member last) =>
         new() { Name = last.Person.Name, Id = last.PersonId };
+
+    // Always the same five groups in the same order, so a client can draw them without checking.
+    private static AgeGroupDto[] AgeGroupsOf(MemberStats s) =>
+        [
+            new() { Label = "Under 18", Count = s.Under18 },
+            new() { Label = "18–29", Count = s.Age18To29 },
+            new() { Label = "30–44", Count = s.Age30To44 },
+            new() { Label = "45–59", Count = s.Age45To59 },
+            new() { Label = "60+", Count = s.Age60Plus },
+        ];
 }

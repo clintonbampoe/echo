@@ -16,14 +16,22 @@ type Props<V extends string> = {
   joined?: boolean;
   // With `joined`: the bar spans the whole width on a phone or tablet.
   fill?: boolean;
+  // With `joined`: smaller words, for a switch squeezed beside a card's title.
+  compact?: boolean;
 };
 
-const groupClass = (wrap?: boolean, joined?: boolean, fill?: boolean) =>
+const groupClass = (
+  wrap?: boolean,
+  joined?: boolean,
+  fill?: boolean,
+  compact?: boolean,
+) =>
   [
     styles.group,
     wrap && styles.wrap,
     joined && styles.joined,
     joined && fill && styles.fill,
+    joined && compact && styles.compact,
   ]
     .filter(Boolean)
     .join(" ");
@@ -39,6 +47,7 @@ export function SegmentedField<V extends string>({
   hideLabel,
   joined,
   fill,
+  compact,
 }: Props<V>) {
   const name = useId();
   // A joined switch slides one thumb behind the picked choice; the stylesheet only needs to know which of how many.
@@ -55,7 +64,7 @@ export function SegmentedField<V extends string>({
       <legend className={hideLabel ? styles.hidden : styles.label}>
         {label}
       </legend>
-      <div className={groupClass(wrap, joined, fill)} style={thumb}>
+      <div className={groupClass(wrap, joined, fill, compact)} style={thumb}>
         {options.map((o) => (
           <label key={o.value} className={styles.option}>
             <input

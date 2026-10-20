@@ -12,11 +12,12 @@ import { useVisitors, useVisitorSummary } from "./hooks";
 import { SummaryStrip } from "./SummaryStrip";
 import { VisitorList } from "./VisitorList";
 import { VisitorSheet } from "./VisitorSheet";
+import { useUrlFlag } from "@/lib/useUrlFlag";
 
 // The visitors list: header, numbers, filters and the rows. The page only decides what a row is.
 export function VisitorsPage() {
   const { filters, update, clear, resetKey } = useUrlFilters(visitorFilters);
-  const [adding, setAdding] = useState(false);
+  const [adding, setAdding] = useUrlFlag("new");
   const [editing, setEditing] = useState<Visitor | null>(null);
   const [converting, setConverting] = useState<Visitor | null>(null);
   const [deleting, setDeleting] = useState<Visitor | null>(null);

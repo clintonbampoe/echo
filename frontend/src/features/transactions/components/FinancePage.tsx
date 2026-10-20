@@ -14,15 +14,19 @@ import { financeStats } from "../view";
 import { FinanceChart } from "./FinanceChart";
 import { FinanceFilterBar } from "./FinanceFilterBar";
 import styles from "./FinancePage.module.css";
+import {
+  TransactionDialogs,
+  type TransactionStart,
+} from "./TransactionDialogs";
 import { TransactionList } from "./TransactionList";
 import { TransactionSheet } from "./TransactionSheet";
-import { TransactionDialogs, type TransactionStart } from "./TransactionDialogs";
+import { useUrlFlag } from "@/lib/useUrlFlag";
 
 // The Finance page: what came in and what went out, the monthly chart, the filters, and every transaction.
 // Tithes and project contributions are recorded on their own pages and are not counted here.
 export function FinancePage() {
   const today = todayText();
-  const [recording, setRecording] = useState(false);
+  const [recording, setRecording] = useUrlFlag("new");
   const [opened, setOpened] = useState<{
     transaction: Transaction;
     start: TransactionStart;
