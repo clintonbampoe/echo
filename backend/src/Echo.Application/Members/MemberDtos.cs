@@ -149,6 +149,12 @@ public record MemberFilters
     public DateOnly? To { get; init; }
 }
 
+public record AgeGroupDto
+{
+    public required string Label { get; init; }
+    public int Count { get; init; }
+}
+
 public record MemberSummaryDto
 {
     public int TotalMembers { get; init; }
@@ -156,6 +162,7 @@ public record MemberSummaryDto
     public int MaleCount { get; init; }
     public int FemaleCount { get; init; }
     public double AverageAge { get; init; }
+    public IReadOnlyList<AgeGroupDto> AgeGroups { get; init; } = [];
     public DateWindow? Window { get; init; }
 }
 

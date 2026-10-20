@@ -331,8 +331,9 @@ public static class MemberEndpoints
                 - `maleCount` — count with `gender = Male`.
                 - `femaleCount` — count with `gender = Female`.
                 - `averageAge` — mean age in years, computed from `dateOfBirth`.
+                - `ageGroups` — member counts by age. Always five entries in this order: `Under 18`, `18–29`, `30–44`, `45–59`, `60+`. They add up to `totalMembers`.
 
-                Age is calculated against the current date; members with no `dateOfBirth` are excluded from the average but still counted in the totals.
+                Age is calculated against the current date, using the full date of birth: someone whose birthday has not come yet this year is a year younger.
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.

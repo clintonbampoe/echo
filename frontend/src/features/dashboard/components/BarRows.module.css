@@ -1,0 +1,46 @@
+/* The rows share the height they are given, so the card never has to grow for them. */
+.rows {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: space-evenly;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 7.5rem) minmax(0, 1fr) 3rem;
+  align-items: center;
+  gap: 12px;
+  font-size: 13px;
+}
+/* A list that also says each row's share, the way the age groups card does. On a narrow card the
+   percent column goes away and only the counts stay, as the phone board draws it. */
+.shares .row {
+  grid-template-columns: minmax(0, 7.5rem) minmax(0, 1fr) 3rem 3rem;
+}
+@container (max-width: 459px) {
+  .shares .row {
+    grid-template-columns: minmax(0, 7.5rem) minmax(0, 1fr) 3rem;
+  }
+  .shares .sub {
+    display: none;
+  }
+}
+.name {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.count {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-2);
+}
+.sub {
+  overflow: hidden;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}

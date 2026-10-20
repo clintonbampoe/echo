@@ -1,0 +1,84 @@
+.content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* Narrow: the figure for the stretch picked sits over the chart. */
+.big {
+  margin: 0;
+  font-size: 34px;
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.note {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--text-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.chart {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  margin-top: 24px;
+}
+
+/* The three figures under the chart sit in one strip, divided by hairlines, as the boards draw it. */
+.trio {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 16px;
+  border-top: 1px solid var(--line);
+}
+.trio > div {
+  min-width: 0;
+  padding: 14px 0 0;
+}
+.trio > div + div {
+  padding-left: 16px;
+  border-left: 1px solid var(--line);
+}
+.label {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.value {
+  margin: 4px 0 0;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* A wide card has room for the chart and all three figures: the strip replaces the lone figure. */
+@container (min-width: 460px) {
+  .lead {
+    display: none;
+  }
+  .chart {
+    margin-top: 0;
+  }
+}
+@container (max-width: 459px) {
+  .trio {
+    display: none;
+  }
+}

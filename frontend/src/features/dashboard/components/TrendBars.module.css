@@ -1,0 +1,159 @@
+.chart {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.bars {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  flex: 1;
+  gap: 8px;
+  min-height: 96px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-bottom: 1px solid var(--line);
+}
+.item {
+  display: flex;
+  min-width: 0;
+}
+.cell {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 100%;
+  padding: 0;
+  background: none;
+  border: 0;
+  color: inherit;
+  font: inherit;
+}
+button.cell {
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+}
+button.cell:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+}
+
+.bar {
+  width: min(100%, 56px);
+  background: var(--line-2);
+  border-radius: 8px 8px 0 0;
+  transition:
+    background-color var(--fast) ease,
+    opacity var(--fast) ease;
+}
+.cell:hover .bar {
+  background: var(--text-3);
+}
+/* The charts whose figures a strip already tells (tithes, growth) run a shade quieter, as the boards draw them. */
+.soft .bar {
+  background: var(--line);
+}
+.soft .cell:hover .bar {
+  background: var(--text-3);
+}
+.bar.now,
+.cell:hover .bar.now {
+  background: var(--text);
+}
+
+/* A pair: two slim bars side by side, the first in black, the second quieter. */
+.pair {
+  gap: 3px;
+}
+.pair .bar {
+  width: min(30%, 14px);
+  border-radius: 5px 5px 0 0;
+}
+.bar.first,
+.cell:hover .bar.first {
+  background: var(--text);
+}
+.bar.second,
+.cell:hover .bar.second {
+  background: var(--text-3);
+}
+.pair:not(.picked) .bar {
+  opacity: 0.4;
+}
+button.pair:hover .bar {
+  opacity: 1;
+}
+
+.tip {
+  position: absolute;
+  bottom: calc(var(--lift, 100%) + 6px);
+  left: 50%;
+  z-index: 2;
+  padding: 4px 8px;
+  background: var(--text);
+  border-radius: var(--radius-sm);
+  color: var(--surface);
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-50%);
+  transition: opacity var(--fast) ease;
+}
+.tip strong,
+.line {
+  display: block;
+}
+.tip strong {
+  font-weight: 600;
+}
+.cell:hover .tip,
+button.cell:focus-visible .tip {
+  opacity: 1;
+}
+/* The first and last bars sit at the card's edge: keep their tooltip inside it. */
+.item:first-child .tip {
+  left: 0;
+  transform: none;
+}
+.item:last-child .tip {
+  right: 0;
+  left: auto;
+  transform: none;
+}
+
+.labels {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 8px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+  color: var(--text-3);
+  text-align: center;
+  white-space: nowrap;
+}
+/* A narrow card has no room for long labels on every bar: the first and last say where the chart runs. */
+@container (max-width: 719px) {
+  .dense {
+    display: flex;
+    justify-content: space-between;
+  }
+  .dense .mid {
+    display: none;
+  }
+}
+/* Asked for only the ends, whatever the room: the first and last name the stretch. */
+.labels.ends {
+  display: flex;
+  justify-content: space-between;
+}
+.labels.ends .mid {
+  display: none;
+}

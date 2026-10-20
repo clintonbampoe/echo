@@ -10,11 +10,12 @@ import { useMembers, useMemberSummary } from "./hooks";
 import { MemberList } from "./MemberList";
 import { MemberSheet } from "./MemberSheet";
 import { SummaryStrip } from "./SummaryStrip";
+import { useUrlFlag } from "@/lib/useUrlFlag";
 
 // The members list: header, numbers, filters and the rows. The page only decides what a row is.
 export function MembersPage() {
   const { filters, update, clear, resetKey } = useUrlFilters(memberFilters);
-  const [adding, setAdding] = useState(false);
+  const [adding, setAdding] = useUrlFlag("new");
   const [editing, setEditing] = useState<Member | null>(null);
   const [deleting, setDeleting] = useState<Member | null>(null);
 

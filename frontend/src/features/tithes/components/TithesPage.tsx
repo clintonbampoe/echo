@@ -17,12 +17,13 @@ import { TitheFilterBar } from "./TitheFilterBar";
 import { TitheList } from "./TitheList";
 import { TitheSheet } from "./TitheSheet";
 import { TitheStats } from "./TitheStats";
+import { useUrlFlag } from "@/lib/useUrlFlag";
 
 // The Tithes page: the numbers and the monthly chart, the filters, and every tithe. The page only decides what a row is.
 export function TithesPage() {
   const today = todayText();
   const { filters, update, clear, resetKey } = useUrlFilters(titheFilters);
-  const [recording, setRecording] = useState(false);
+  const [recording, setRecording] = useUrlFlag("new");
   const [opened, setOpened] = useState<{
     tithe: Tithe;
     start: TitheStart;

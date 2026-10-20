@@ -1,0 +1,96 @@
+.content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 16px;
+  min-height: 0;
+}
+.label {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-3);
+}
+.big {
+  margin: 4px 0 0;
+  font-size: 34px;
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.meter {
+  margin-top: 12px;
+}
+.note {
+  margin: 8px 0 0;
+  font-size: 13px;
+  color: var(--text-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.duo {
+  display: none;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+.amount {
+  margin: 2px 0 0;
+  font-size: 18px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.split {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* Wide: the value on the left, the categories on the right behind a line. The cost and what was lost show too. */
+@container (min-width: 720px) {
+  .content {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+    gap: 32px;
+    align-items: center;
+  }
+  .duo {
+    display: grid;
+  }
+  .split {
+    justify-content: center;
+    align-self: stretch;
+    padding-left: 32px;
+    border-left: 1px solid var(--line);
+  }
+}
+
+/* A part on a card of its own, on a phone or a tablet: one column, whatever the card's width. */
+.content.one {
+  display: flex;
+  flex-direction: column;
+}
+.one .split {
+  padding-left: 0;
+  border-left: 0;
+}
+
+/* The value's own card: the cost and what was lost sit at its foot. */
+.solo .value {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+.solo .duo {
+  display: grid;
+  margin-top: auto;
+  padding-top: 20px;
+}
