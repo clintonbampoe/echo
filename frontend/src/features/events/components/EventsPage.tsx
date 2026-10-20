@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { todayText } from "@/lib/dates";
 import { paths } from "@/lib/paths";
@@ -18,6 +17,7 @@ import { summaryStats, tabCounts } from "../stat";
 import { EventList } from "./EventList";
 import { EventSheet } from "./EventSheet";
 import { EventsFilterBar } from "./EventsFilterBar";
+import { useUrlFlag } from "@/lib/useUrlFlag";
 
 const text = {
   upcoming: {
@@ -37,7 +37,7 @@ const text = {
 // The Events page: the numbers, the two tabs and the list of the open one. Each tab is its own address.
 export function EventsPage({ tab }: { tab: EventTab }) {
   const navigate = useNavigate();
-  const [adding, setAdding] = useState(false);
+  const [adding, setAdding] = useUrlFlag("new");
   const { filters, update, clear, resetKey } = useUrlFilters(eventFilters);
   const today = todayText();
   const list = useEvents(toApiFilters(filters, tab, today));

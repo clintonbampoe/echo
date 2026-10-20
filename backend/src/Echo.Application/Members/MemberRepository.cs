@@ -65,10 +65,10 @@ public class MemberRepository(AppDbContext context, TimeProvider timeProvider)
 
         var today = DateUtils.GetDateToday(timeProvider);
 
-        // Clean, readable entry point
+        // One query, one pass: every count below is a FILTER aggregate over the same scan.
         var stats = await members.SummarizeMembers(today).FirstOrDefaultAsync(ct);
 
-        return stats ?? new MemberStats(0, 0, 0, 0, 0d);
+        return stats ?? new MemberStats(0, 0, 0, 0, 0d, 0, 0, 0, 0, 0);
     }
 
     public void Create(Member entity) => _dbSet.Add(entity);
@@ -76,16 +76,37 @@ public class MemberRepository(AppDbContext context, TimeProvider timeProvider)
     public void SoftDelete(Member entity) => entity.DeletedAt = DateTime.UtcNow;
 }
 
-public record MemberStats(int Total, int Active, int Male, int Female, double AverageAge);
+public record MemberStats(
+    int Total,
+    int Active,
+    int Male,
+    int Female,
+    double AverageAge,
+    int Under18,
+    int Age18To29,
+    int Age30To44,
+    int Age45To59,
+    int Age60Plus
+);
 
 internal static class MemberQueryExtensions
 {
+    // Reads only congregation_id, joined_date, status, gender and date_of_birth, all of which are in
+    // the covering index on members, so the database can answer from the index alone.
     internal static IQueryable<MemberStats> SummarizeMembers(
         this IQueryable<Member> query,
         DateOnly today
     )
     {
         var (year, month, day) = (today.Year, today.Month, today.Day);
+
+        // Someone is at least N years old exactly when they were born on or before the day N years
+        // ago, so each age group is a range of birth dates. These are worked out once here, not per
+        // row, which keeps the scan cheap with millions of members.
+        var born18 = today.AddYears(-18);
+        var born30 = today.AddYears(-30);
+        var born45 = today.AddYears(-45);
+        var born60 = today.AddYears(-60);
 
         return query
             .GroupBy(m => m.CongregationId)
@@ -105,7 +126,12 @@ internal static class MemberQueryExtensions
                                 : 0
                         )
                     )
-                ) ?? 0d
+                ) ?? 0d,
+                group.Count(m => m.DateOfBirth > born18),
+                group.Count(m => m.DateOfBirth <= born18 && m.DateOfBirth > born30),
+                group.Count(m => m.DateOfBirth <= born30 && m.DateOfBirth > born45),
+                group.Count(m => m.DateOfBirth <= born45 && m.DateOfBirth > born60),
+                group.Count(m => m.DateOfBirth <= born60)
             ));
     }
 
@@ -126,12 +152,17 @@ internal static class MemberQueryExtensions
         if (filters.MaritalStatus.HasValue)
             query = query.Where(m => m.MaritalStatus == filters.MaritalStatus.Value);
 
-        // Members without a JoinedDate are kept in every window.
-        if (filters.From is not null)
-            query = query.Where(m => m.JoinedDate == null || m.JoinedDate >= filters.From);
-
-        if (filters.To is not null)
-            query = query.Where(m => m.JoinedDate == null || m.JoinedDate <= filters.To);
+        // Members without a JoinedDate are kept in every window. This is one "undated, or inside the
+        // window" test, rather than one test per bound, so the database sees a single range plus
+        // the undated rows and can combine the two index lookups.
+        if (filters.From is not null || filters.To is not null)
+        {
+            var from = filters.From ?? DateOnly.MinValue;
+            var to = filters.To ?? DateOnly.MaxValue;
+            query = query.Where(m =>
+                m.JoinedDate == null || (m.JoinedDate >= from && m.JoinedDate <= to)
+            );
+        }
 
         return query;
     }

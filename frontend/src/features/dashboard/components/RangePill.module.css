@@ -1,0 +1,78 @@
+.anchor {
+  display: inline-block;
+}
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 10px 0 12px;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius);
+  transition: background-color var(--fast) ease;
+}
+.pill:hover,
+.pill[aria-expanded="true"] {
+  background: var(--hover);
+}
+.pill:focus-visible {
+  outline: var(--focus);
+  outline-offset: 2px;
+}
+.chevron {
+  flex: none;
+  color: var(--text-3);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  padding: 6px;
+}
+.option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 38px;
+  padding: 0 12px 0 8px;
+  font-size: 14px;
+  color: var(--text);
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm);
+}
+.option:hover {
+  background: var(--hover);
+}
+.option:focus-visible {
+  outline: var(--focus);
+  outline-offset: -2px;
+}
+.selected {
+  font-weight: 500;
+}
+.check {
+  display: inline-flex;
+  flex: none;
+  justify-content: center;
+  width: 16px;
+}
+
+/* In the bottom sheet: 52px rows, like every choice list on a touch screen. */
+@media (pointer: coarse) {
+  .list {
+    padding: 0;
+  }
+  .option {
+    height: 52px;
+    padding: 0 4px;
+    font-size: 16px;
+    border-radius: 0;
+  }
+}

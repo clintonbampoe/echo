@@ -1,0 +1,101 @@
+.content {
+  display: grid;
+  flex: 1;
+  grid-template-columns: minmax(0, 1fr);
+  min-height: 0;
+}
+.main {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* Narrow: the latest number sits above the chart. */
+.big {
+  margin: 0;
+  font-size: 34px;
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.note {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--text-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.chart {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  margin-top: 24px;
+}
+
+/* Wide: the same three numbers stand beside the chart, spread over its height. */
+.side {
+  display: none;
+}
+.label {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-3);
+}
+.value {
+  margin: 2px 0 0;
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+@container (min-width: 720px) {
+  .content {
+    grid-template-columns: minmax(0, 2.2fr) minmax(0, 1fr);
+    gap: 32px;
+  }
+  .figure {
+    display: none;
+  }
+  .chart {
+    margin-top: 0;
+  }
+  .side {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding-bottom: 26px;
+  }
+}
+
+.failed {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--text-2);
+}
+.retry {
+  height: 32px;
+  padding: 0 14px;
+  font-size: 13px;
+  font-weight: 500;
+  background: transparent;
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius-pill);
+}
+.retry:hover {
+  background: var(--hover);
+}
+.retry:focus-visible {
+  outline: var(--focus);
+  outline-offset: 2px;
+}

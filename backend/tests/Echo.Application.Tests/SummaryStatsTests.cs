@@ -85,26 +85,103 @@ public class SummaryStatsTests
             Row(MemberStatus.Inactive, Gender.Female, new DateOnly(1980, 10, 14)),
         };
 
-        // FIX: Invoke the extension directly on the members collection queryable
         var res = members.AsQueryable().SummarizeMembers(new DateOnly(2026, 10, 14)).Single();
 
-        Assert.Equal(new MemberStats(3, 2, 1, 2, (26 + 35 + 46) / 3.0), res);
+        // 26 is in 18–29, 35 in 30–44, and 46 in 45–59.
+        Assert.Equal(new MemberStats(3, 2, 1, 2, (26 + 35 + 46) / 3.0, 0, 1, 1, 1, 0), res);
     }
 
     [Fact]
     public void Members_NoMembers_AverageAgeIsZero()
     {
-        // FIX: Invoke directly on the empty queryable collection
         var res = Array
             .Empty<Member>()
             .AsQueryable()
             .SummarizeMembers(new DateOnly(2026, 10, 14))
-            .SingleOrDefault(); // Changed to SingleOrDefault because an empty group yields no rows
+            .SingleOrDefault(); // An empty group yields no rows
 
         // If an empty collection yields null, map to our safe default fallback layout
-        var finalResult = res ?? new MemberStats(0, 0, 0, 0, 0d);
+        var finalResult = res ?? new MemberStats(0, 0, 0, 0, 0d, 0, 0, 0, 0, 0);
 
-        Assert.Equal(new MemberStats(0, 0, 0, 0, 0d), finalResult);
+        Assert.Equal(new MemberStats(0, 0, 0, 0, 0d, 0, 0, 0, 0, 0), finalResult);
+    }
+
+    [Fact]
+    public void Members_AgeGroups_SplitOnTheExactBirthday()
+    {
+        Member Born(DateOnly dateOfBirth)
+        {
+            var m = MemberFactory.NewEntity();
+            m.DateOfBirth = dateOfBirth;
+            m.CongregationId = Guid.Empty;
+            return m;
+        }
+
+        // Today is 2026-10-14. For each edge, one member turns the age today and one tomorrow, so
+        // the second is still a year younger.
+        var members = new[]
+        {
+            Born(new DateOnly(2008, 10, 14)), // 18 today
+            Born(new DateOnly(2008, 10, 15)), // 17 until tomorrow
+            Born(new DateOnly(1996, 10, 14)), // 30 today
+            Born(new DateOnly(1996, 10, 15)), // 29 until tomorrow
+            Born(new DateOnly(1981, 10, 14)), // 45 today
+            Born(new DateOnly(1981, 10, 15)), // 44 until tomorrow
+            Born(new DateOnly(1966, 10, 14)), // 60 today
+            Born(new DateOnly(1966, 10, 15)), // 59 until tomorrow
+        };
+
+        var res = members.AsQueryable().SummarizeMembers(new DateOnly(2026, 10, 14)).Single();
+
+        Assert.Equal(
+            new[] { 1, 2, 2, 2, 1 },
+            new[] { res.Under18, res.Age18To29, res.Age30To44, res.Age45To59, res.Age60Plus }
+        );
+        Assert.Equal(
+            res.Total,
+            res.Under18 + res.Age18To29 + res.Age30To44 + res.Age45To59 + res.Age60Plus
+        );
+    }
+
+    [Fact]
+    public void Members_Filter_KeepsUndatedMembersAndOnlyTheDatedOnesInsideTheWindow()
+    {
+        Member Joined(DateOnly? on)
+        {
+            var m = MemberFactory.NewEntity();
+            m.JoinedDate = on;
+            return m;
+        }
+
+        var members = new[]
+        {
+            Joined(new DateOnly(2026, 2, 1)), // before
+            Joined(new DateOnly(2026, 3, 15)), // inside
+            Joined(new DateOnly(2026, 4, 2)), // after
+            Joined(null), // no joined date: in every window
+        }.AsQueryable();
+
+        DateOnly?[] Dates(MemberFilters filters) =>
+            members.Filter(filters).Select(m => m.JoinedDate).ToArray();
+
+        var march = new MemberFilters
+        {
+            From = new DateOnly(2026, 3, 1),
+            To = new DateOnly(2026, 3, 31),
+        };
+        var fromMarch = new MemberFilters { From = new DateOnly(2026, 3, 1) };
+        var toMarch = new MemberFilters { To = new DateOnly(2026, 3, 31) };
+
+        Assert.Equal(new DateOnly?[] { new DateOnly(2026, 3, 15), null }, Dates(march));
+        Assert.Equal(
+            new DateOnly?[] { new DateOnly(2026, 3, 15), new DateOnly(2026, 4, 2), null },
+            Dates(fromMarch)
+        );
+        Assert.Equal(
+            new DateOnly?[] { new DateOnly(2026, 2, 1), new DateOnly(2026, 3, 15), null },
+            Dates(toMarch)
+        );
+        Assert.Equal(4, Dates(new MemberFilters()).Length);
     }
 
     [Fact]

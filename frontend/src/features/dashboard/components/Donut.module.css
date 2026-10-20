@@ -1,0 +1,12 @@
+.donut {
+  flex: none;
+  width: 112px;
+  height: 112px;
+  transform: rotate(-90deg);
+}
+@container (min-width: 420px) {
+  .donut {
+    width: 150px;
+    height: 150px;
+  }
+}

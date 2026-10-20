@@ -1,0 +1,123 @@
+.content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* Narrow: the total above the ring. */
+.big {
+  margin: 0;
+  font-size: 34px;
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.note {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--text-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.row {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 20px;
+  min-height: 0;
+}
+.figure + .row {
+  margin-top: 12px;
+}
+/* Five rows tall whatever there are, so the ring and the first row stay where they are. */
+.legend {
+  flex: 1;
+  min-width: 0;
+  min-height: 140px;
+}
+.tot {
+  display: none;
+}
+.rows {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.item {
+  display: grid;
+  grid-template-columns: 10px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  height: 28px;
+  font-size: 13px;
+}
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+.name {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.amount {
+  display: none;
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+}
+.percent {
+  min-width: 34px;
+  color: var(--text-3);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.empty {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-3);
+}
+
+/* Wide: the total moves into the list and each row gains its amount. */
+@container (min-width: 420px) {
+  .figure {
+    display: none;
+  }
+  .figure + .row,
+  .row {
+    gap: 32px;
+    margin-top: 0;
+  }
+  .legend {
+    min-height: 172px;
+  }
+  .tot {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    height: 32px;
+    margin: 0;
+    font-size: 13px;
+    color: var(--text-3);
+  }
+  .tot strong {
+    color: var(--text);
+    font-size: 15px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .item {
+    grid-template-columns: 10px minmax(0, 1fr) auto auto;
+  }
+  .amount {
+    display: block;
+  }
+}

@@ -1,0 +1,80 @@
+/* The card measures itself, so what is inside changes layout with the card's width, not the screen's. */
+.card {
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  height: var(--dash-h, 300px);
+  padding: 20px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+.tall {
+  --dash-h: 340px;
+}
+.taller {
+  --dash-h: 440px;
+}
+@media (max-width: 900px) {
+  .card {
+    --dash-h: 372px;
+  }
+}
+
+.head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 32px;
+}
+.titles {
+  min-width: 0;
+}
+.title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+.link {
+  display: inline-flex;
+  align-items: center;
+  color: inherit;
+  text-decoration: none;
+}
+.link:hover {
+  text-decoration: underline;
+}
+.link:focus-visible {
+  outline: var(--focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+.go {
+  margin-left: 2px;
+  color: var(--text-3);
+}
+.hint {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--text-3);
+}
+@container (max-width: 479px) {
+  .hint {
+    display: none;
+  }
+}
+.control {
+  flex: none;
+  white-space: nowrap;
+}
+
+/* Whatever goes in the body fills what is left of the card. */
+.body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  margin-top: 16px;
+}
