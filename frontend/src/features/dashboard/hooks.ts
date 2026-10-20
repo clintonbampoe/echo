@@ -218,10 +218,34 @@ export function useProjects() {
   return { projects: data, failed, retry };
 }
 
-// How many members are men and women.
-export function useGender() {
-  const { data, failed, retry } = useOnce("gender", api.getGender);
-  return { figures: data, failed, retry };
+// How many members are men and women, and their age groups. One answer, shared by two cards.
+export function useMix() {
+  const { data, failed, retry } = useOnce("mix", api.getMix);
+  return { mix: data, failed, retry };
+}
+
+// The newest visitors, over the widest window the card admits. The server sends a page in name order,
+// so the sorting into newest first happens on the card, from the days the server said. No period.
+export function useRecentVisitors(today: string) {
+  const { data, failed, retry } = useData("visitors-recent", today, today, (_f, t, signal) =>
+    api.getRecentVisitors(t, signal),
+  );
+  return { visitors: data, failed, retry };
+}
+
+// The projects At Risk (the server's own status) and, of every project, how many are At Risk. No period.
+export function useProjectsAtRisk() {
+  const rows = useOnce("projects-at-risk", api.getProjectsAtRisk);
+  const totals = useOnce("project-totals", api.getProjectTotals);
+  return {
+    projects: rows.data,
+    totals: totals.data,
+    failed: rows.failed || totals.failed,
+    retry: () => {
+      rows.retry();
+      totals.retry();
+    },
+  };
 }
 
 // The assets as a whole, and each category's share. The server has no breakdown by category, so this asks

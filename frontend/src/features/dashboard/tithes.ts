@@ -5,7 +5,7 @@ import { change } from "./cards";
 import type { Unit } from "./trend";
 
 export type TitheView = {
-  last?: string;
+  total?: string;
   tithers?: string;
   average?: string;
   footer: string;
@@ -19,18 +19,21 @@ export function footerOf(now: number, before: number, unit: Unit): string {
   return `${chip.text} ${chip.arrow} on the ${unit} before`;
 }
 
-// The three figures for the latest stretch, as text, and the comparison with the one before it.
+// The three figures for the stretch picked (the latest when none is), as text, and the comparison
+// with the stretch before it.
 export function titheView(
   values: readonly TitheFigures[] | undefined,
   unit: Unit,
+  picked?: number,
 ): TitheView {
-  const last = values?.[values.length - 1];
-  const before = values?.[values.length - 2];
-  if (!last) return { footer: "" };
+  const index = picked ?? (values?.length ?? 1) - 1;
+  const at = values?.[index];
+  const before = values?.[index - 1];
+  if (!at) return { footer: "" };
   return {
-    last: formatMoney(last.total),
-    tithers: formatNumber(last.tithers),
-    average: formatMoney(Math.round(last.average)),
-    footer: before ? footerOf(last.total, before.total, unit) : "",
+    total: formatMoney(at.total),
+    tithers: formatNumber(at.tithers),
+    average: formatMoney(Math.round(at.average)),
+    footer: before ? footerOf(at.total, before.total, unit) : "",
   };
 }

@@ -1,7 +1,7 @@
 // The summary calls the dashboard makes. No React in this file. Each one answers with what a card needs,
 // so a card never depends on the rest of a feature's types.
 import { api } from "@/lib/api";
-import { ALL_TIME } from "@/lib/dates";
+import { ALL_TIME, monthsBefore } from "@/lib/dates";
 
 const get = <T>(path: string, from: string, to: string, signal?: AbortSignal) =>
   api.get<T>(path, { query: { from, to }, signal });
@@ -185,17 +185,116 @@ export const getVisitorFigures = (
     joined: r.convertedVisitors,
   }));
 
-// Every member, and how many are men and women. Not the period.
+// A visitor as the recent visitors card needs it, with the day it was added. Plain "2026-10-19".
+export type RecentVisitor = { id: string; name: string; added: string };
+
+// The newest visitors, taken from a page the server sends in name order. The server cannot order by
+// when it added them, so this asks for a wide window and the card sorts the page it gets.
+const VISITOR_WINDOW_MONTHS = 6;
+const VISITOR_PAGE = 50;
+
+export const getRecentVisitors = (
+  today: string,
+  signal?: AbortSignal,
+) =>
+  api
+    .get<{ data: { id: string; name: string; createdAt: string }[] }>(
+      "/v1/visitors",
+      {
+        query: {
+          from: monthsBefore(today, VISITOR_WINDOW_MONTHS),
+          to: today,
+          pageSize: VISITOR_PAGE,
+        },
+        signal,
+      },
+    )
+    .then((r) =>
+      r.data.map((v): RecentVisitor => ({
+        id: v.id,
+        name: v.name,
+        added: v.createdAt.slice(0, 10),
+      })),
+    );
+
+// A project under way and its money, for the projects-at-risk card. `endDate` is plain "2026-10-24"
+// or missing, the same shape as DashEvent.
+export type TrackedProject = {
+  id: string;
+  name: string;
+  raised: number;
+  target: number;
+  endDate?: string;
+};
+
+// The projects whose status the server has marked At Risk, all time. Ordered by start date, name as the tiebreaker.
+export const getProjectsAtRisk = (signal?: AbortSignal) =>
+  api
+    .get<{
+      data: {
+        id: string;
+        name: string;
+        raisedAmount: number;
+        targetAmount: number;
+        endDate?: string | null;
+      }[];
+    }>("/v1/projects", {
+      query: {
+        from: ALL_TIME.from,
+        to: ALL_TIME.to,
+        status: "AtRisk",
+        pageSize: 50,
+      },
+      signal,
+    })
+    .then((r) =>
+      r.data.map((p): TrackedProject => ({
+        id: p.id,
+        name: p.name,
+        raised: p.raisedAmount,
+        target: p.targetAmount,
+        endDate: p.endDate ? p.endDate.slice(0, 10) : undefined,
+      })),
+    );
+
+// What the projects-at-risk card says beside its rows: of every project, how many are At Risk. All time.
+export type ProjectTotals = { total: number; atRisk: number };
+
+export const getProjectTotals = (signal?: AbortSignal) =>
+  api
+    .get<{ totalProjects: number; atRiskCount: number }>(
+      "/v1/projects/summary",
+      { signal },
+    )
+    .then((r): ProjectTotals => ({
+      total: r.totalProjects,
+      atRisk: r.atRiskCount,
+    }));
+
+// Every member, and how many are men and women, and how old they are. Not the period. The gender and
+// age groups cards share one answer.
 export type GenderFigures = { total: number; male: number; female: number };
 
-export const getGender = (signal?: AbortSignal) =>
-  get<{ totalMembers: number; maleCount: number; femaleCount: number }>(
+export type AgeBand = { label: string; count: number };
+
+export type MemberMix = GenderFigures & { average: number; bands: AgeBand[] };
+
+export const getMix = (signal?: AbortSignal) =>
+  get<{
+    totalMembers: number;
+    maleCount: number;
+    femaleCount: number;
+    averageAge: number;
+    ageGroups: { label: string; count: number }[];
+  }>(
     "/v1/members/summary",
     ALL_TIME.from,
     ALL_TIME.to,
     signal,
-  ).then((r): GenderFigures => ({
+  ).then((r): MemberMix => ({
     total: r.totalMembers,
     male: r.maleCount,
     female: r.femaleCount,
+    average: r.averageAge,
+    bands: r.ageGroups,
   }));

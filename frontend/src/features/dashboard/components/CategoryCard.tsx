@@ -35,10 +35,14 @@ export function CategoryCard({ today, months }: Props) {
 
   return (
     <DashCard
-      tall
       title="By category"
       hint={monthRangeLabel(months)}
       to="/finance"
+      foot={{
+        note: "Top 4 categories, the rest under Other",
+        to: "/finance",
+        label: "See in Finance",
+      }}
       control={
         <SegmentedField
           joined

@@ -1,5 +1,6 @@
 import { screen, within } from "@testing-library/react";
-import { json, renderCard, signIn } from "../dashboardTestKit";
+import userEvent from "@testing-library/user-event";
+import { json, renderCard, signIn, asked } from "../dashboardTestKit";
 import { MemberGrowthCard } from "./MemberGrowthCard";
 
 // Members who joined, by the first day asked for. 2 of them have no joined date, so they are in every count:
@@ -22,11 +23,11 @@ beforeEach(() => {
   vi.stubGlobal(
     "fetch",
     vi.fn(async (url: string) => {
-      const u = new URL(url, "http://x");
-      if (broken || u.pathname !== "/v1/members/summary")
+      const { path, query } = asked(url);
+      if (broken || path !== "/v1/members/summary")
         return json({ title: "Server error", status: 500 }, 500);
       return json({
-        totalMembers: counts[u.searchParams.get("from") ?? ""] ?? 0,
+        totalMembers: counts[query.get("from") ?? ""] ?? 0,
       });
     }),
   );
@@ -42,8 +43,18 @@ describe("member growth card", () => {
     expect(summary().getByText("9")).toBeInTheDocument();
     expect(summary().getByText("5")).toBeInTheDocument();
     expect(
-      screen.getByRole("img", { name: "October 2026: 9" }),
+      screen.getByRole("button", { name: "October 2026: 9" }),
     ).toBeInTheDocument();
+  });
+
+  it("speaks about the month picked", async () => {
+    renderCard(<MemberGrowthCard today="2026-10-19" />);
+    await summary().findByText("29");
+    await userEvent.click(
+      screen.getByRole("button", { name: "September 2026: 4" }),
+    );
+    expect(summary().getByText("September 2026")).toBeInTheDocument();
+    expect(summary().getByText("4")).toBeInTheDocument();
   });
 
   it("says so when it could not load", async () => {

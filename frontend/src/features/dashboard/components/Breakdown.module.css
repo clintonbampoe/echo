@@ -6,6 +6,9 @@
 }
 
 /* Narrow: the total above the ring. */
+.figure {
+  min-width: 0;
+}
 .big {
   margin: 0;
   font-size: 34px;
@@ -24,6 +27,25 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+/* The ring keeps its own box so the read-out can sit in the hole without touching the drawing. */
+.ring {
+  position: relative;
+  display: flex;
+  flex: none;
+}
+.center {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  color: var(--text-2);
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
 }
 
 .row {
@@ -50,13 +72,32 @@
   padding: 0;
   list-style: none;
 }
+/* A row is the button: the whole line reads a slice, and the ring follows it. */
 .item {
   display: grid;
   grid-template-columns: 10px minmax(0, 1fr) auto;
   align-items: center;
   gap: 10px;
+  width: calc(100% + 12px);
   height: 28px;
+  margin: 0 -6px;
+  padding: 0 6px;
+  background: none;
+  border: 0;
+  border-radius: var(--radius-sm);
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
   font-size: 13px;
+  text-align: left;
+}
+.item:hover,
+.item.on {
+  background: var(--hover);
+}
+.item:focus-visible {
+  outline: var(--focus);
+  outline-offset: 0;
 }
 .dot {
   width: 10px;
@@ -120,4 +161,35 @@
   .amount {
     display: block;
   }
+}
+
+/* Stacked: a tall card puts the legend under the ring, in the full width, and keeps the total above. */
+.stacked .figure {
+  display: block;
+}
+.stacked .row {
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 0;
+}
+.stacked .figure + .row {
+  margin-top: 12px;
+}
+.stacked .ring {
+  align-self: center;
+}
+.stacked .legend {
+  flex: none;
+  min-height: 0;
+}
+.stacked .tot {
+  display: none;
+}
+.stacked .item {
+  grid-template-columns: 10px minmax(0, 1fr) auto auto;
+}
+.stacked .amount {
+  display: block;
 }

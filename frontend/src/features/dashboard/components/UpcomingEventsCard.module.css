@@ -105,7 +105,7 @@
 }
 
 /* A narrow card: three events, and no count of who registered. */
-@container (max-width: 479px) {
+@container (max-width: 459px) {
   .row:nth-child(n + 4) {
     display: none;
   }

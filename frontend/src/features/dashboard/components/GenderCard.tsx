@@ -1,5 +1,5 @@
 import { formatNumber } from "@/lib/format";
-import { useGender } from "../hooks";
+import { useMix } from "../hooks";
 import { genderRows } from "../people";
 import { shareOf } from "../shares";
 import { Breakdown } from "./Breakdown";
@@ -8,15 +8,19 @@ import { DashCard } from "./DashCard";
 
 // Men, women and everyone else, across every member whatever their status. Not the period.
 export function GenderCard() {
-  const data = useGender();
-  const ready = data.figures !== undefined;
-  const { total, slices } = shareOf(genderRows(data.figures));
+  const data = useMix();
+  const ready = data.mix !== undefined;
+  const { total, slices } = shareOf(genderRows(data.mix));
   return (
     <DashCard
-      tall
       title="Gender"
       hint="All members, not the period"
       to="/members"
+      foot={{
+        note: "Counts include every status",
+        to: "/members",
+        label: "See members",
+      }}
     >
       {data.failed ? (
         <CardFailed onRetry={data.retry} />

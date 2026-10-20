@@ -86,7 +86,6 @@ export function EventCalendarCard({ today }: { today: string }) {
 
   return (
     <DashCard
-      taller
       title="Event calendar"
       hint="Days with an event are marked"
       to="/events"

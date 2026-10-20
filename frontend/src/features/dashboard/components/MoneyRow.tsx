@@ -3,17 +3,12 @@ import { Pager } from "@/ui";
 import {
   DEFAULT_MONTHS,
   MONTH_RANGES,
-  monthRangeLabel,
+  monthChoices,
   type MonthRange,
 } from "../money";
 import { CategoryCard } from "./CategoryCard";
 import { IncomeExpensesCard } from "./IncomeExpensesCard";
-import { RangePill } from "./RangePill";
-
-const options = MONTH_RANGES.map((m) => ({
-  value: String(m),
-  label: monthRangeLabel(m),
-}));
+import { RangeTabs } from "./RangeTabs";
 
 // Income and expenses beside where the money came from. One range for both, picked on the first card.
 export function MoneyRow({ today }: { today: string }) {
@@ -21,15 +16,19 @@ export function MoneyRow({ today }: { today: string }) {
   const pick = (value: string) =>
     setMonths(MONTH_RANGES.find((m) => String(m) === value) ?? DEFAULT_MONTHS);
   return (
-    <Pager label="Money" titles={["Income and expenses", "By category"]}>
+    <Pager
+      label="Money"
+      titles={["Income and expenses", "By category"]}
+      columns="3fr 2fr"
+    >
       <IncomeExpensesCard
         today={today}
         months={months}
         control={
-          <RangePill
+          <RangeTabs
             label="Range"
             value={String(months)}
-            options={options}
+            options={monthChoices}
             onChange={pick}
           />
         }

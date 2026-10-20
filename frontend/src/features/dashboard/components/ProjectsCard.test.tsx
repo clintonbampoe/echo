@@ -30,7 +30,9 @@ describe("projects card", () => {
         next: null,
       });
     renderCard(<ProjectsCard />);
-    const rows = within(await screen.findByRole("list"));
+    // Wait for the rows instead of the list: the list is on screen while it is still loading.
+    await screen.findByText("Borehole");
+    const rows = within(screen.getByRole("list"));
     expect(rows.getByText("Borehole")).toBeInTheDocument();
     expect(rows.getByText("75%")).toBeInTheDocument();
     expect(rows.getByText("GH₵ 4,000")).toBeInTheDocument();

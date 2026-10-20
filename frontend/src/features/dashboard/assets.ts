@@ -33,7 +33,7 @@ export function assetView(f: AssetFigures | undefined): AssetView {
 export const assetHint = (count?: number) =>
   count === undefined
     ? "Not counting liquidated"
-    : `${formatNumber(count)} ${plural(count, "asset")}, not counting liquidated`;
+    : `${plural(count, "asset")}, not counting liquidated`;
 
 // One row per category, measured by value or by how many assets it holds.
 export type CategoryRow = {

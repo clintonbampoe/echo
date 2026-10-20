@@ -1,6 +1,6 @@
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { json, renderCard, signIn } from "../dashboardTestKit";
+import { json, renderCard, signIn, asked } from "../dashboardTestKit";
 import { CategoryCard } from "./CategoryCard";
 
 const byCategory = [
@@ -19,8 +19,8 @@ beforeEach(() => {
   vi.stubGlobal(
     "fetch",
     vi.fn(async (url: string) => {
-      const u = new URL(url, "http://x");
-      if (broken || u.pathname !== "/v1/transactions/summary")
+      const { path } = asked(url);
+      if (broken || path !== "/v1/transactions/summary")
         return json({ title: "Server error", status: 500 }, 500);
       return json({
         totalIncome: 48000,
@@ -38,8 +38,9 @@ const show = () => renderCard(<CategoryCard today="2026-10-19" months={6} />);
 describe("category card", () => {
   it("lists where the income came from, with each share", async () => {
     show();
-    const rows = within(await screen.findByRole("list"));
-    expect(rows.getByText("Offerings")).toBeInTheDocument();
+    // Wait for the rows instead of the list: the list is on screen while it is still loading.
+    await screen.findByText("Offerings");
+    const rows = within(screen.getByRole("list"));
     expect(rows.getByText("45%")).toBeInTheDocument();
     expect(rows.getByText("GH₵ 21,600")).toBeInTheDocument();
     expect(

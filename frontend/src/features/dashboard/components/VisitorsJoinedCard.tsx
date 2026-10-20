@@ -19,10 +19,14 @@ export function VisitorsJoinedCard({ period, today }: Props) {
 
   return (
     <DashCard
-      tall
       title="Visitors who joined"
       hint="Follows the period"
       to="/visitors"
+      foot={{
+        note: "Counted when marked as a member",
+        to: "/visitors",
+        label: "See visitors",
+      }}
     >
       {data.failed ? (
         <CardFailed onRetry={data.retry} />
@@ -42,7 +46,6 @@ export function VisitorsJoinedCard({ period, today }: Props) {
               text: text(r.value),
             }))}
           />
-          <p className={styles.footer}>Counted when marked as a member</p>
         </div>
       )}
     </DashCard>

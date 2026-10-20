@@ -1,12 +1,7 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen, within } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { saveTokens } from "@/lib/tokens";
+import { renderCard, signIn, json, asked } from "../dashboardTestKit";
 import { AttendanceCard } from "./AttendanceCard";
-import { MemoryRouter } from "react-router-dom";
-
-const json = (body: unknown, status = 200) =>
-  new Response(JSON.stringify(body), { status });
 
 // People present in each of the last eight weeks, by the day the week began. Any other day answers 500.
 const weeks: Record<string, number> = {
@@ -23,38 +18,22 @@ const weeks: Record<string, number> = {
 let broken: boolean;
 beforeEach(() => {
   broken = false;
-  saveTokens({
-    accessToken: "a",
-    accessTokenExpiresAt: "2099-01-01T00:00:00Z",
-    refreshToken: "r",
-    refreshTokenExpiresAt: "2099-01-01T00:00:00Z",
-  });
+  signIn();
   vi.stubGlobal(
     "fetch",
     vi.fn(async (url: string) => {
-      const u = new URL(url, "http://x");
-      if (broken || u.pathname !== "/v1/attendance/summary")
+      const { path, query } = asked(url);
+      if (broken || path !== "/v1/attendance/summary")
         return json({ title: "Server error", status: 500 }, 500);
       return json({
-        totalPresent: weeks[u.searchParams.get("from") ?? ""] ?? 500,
+        totalPresent: weeks[query.get("from") ?? ""] ?? 500,
       });
     }),
   );
 });
 afterEach(() => vi.unstubAllGlobals());
 
-const show = () =>
-  render(
-    <MemoryRouter>
-      <QueryClientProvider
-        client={
-          new QueryClient({ defaultOptions: { queries: { retry: false } } })
-        }
-      >
-        <AttendanceCard today="2026-10-19" />
-      </QueryClientProvider>
-    </MemoryRouter>,
-  );
+const show = () => renderCard(<AttendanceCard today="2026-10-19" />);
 
 const summary = () => within(screen.getByRole("group", { name: "Summary" }));
 
@@ -66,8 +45,19 @@ describe("attendance card", () => {
     expect(summary().getByText("930")).toBeInTheDocument();
     expect(summary().getByText("Average per week")).toBeInTheDocument();
     expect(
-      screen.getByRole("img", { name: "Week of 11 Oct: 912" }),
+      screen.getByRole("button", { name: "Week of 11 Oct: 912" }),
     ).toBeInTheDocument();
+  });
+
+  it("speaks about the week picked, and goes back to the latest", async () => {
+    show();
+    await summary().findByText("912");
+    const bar = screen.getByRole("button", { name: "Week of 4 Oct: 860" });
+    await userEvent.click(bar);
+    expect(summary().getByText("Week of 4 Oct")).toBeInTheDocument();
+    expect(summary().getByText("860")).toBeInTheDocument();
+    await userEvent.click(bar);
+    expect(summary().getByText("Last week")).toBeInTheDocument();
   });
 
   it("counts months when asked for six months", async () => {
@@ -75,7 +65,7 @@ describe("attendance card", () => {
     await userEvent.click(screen.getByRole("radio", { name: "6 months" }));
     expect(await summary().findByText("Average per month")).toBeInTheDocument();
     expect(
-      await screen.findByRole("img", { name: "April 2026: 500" }),
+      await screen.findByRole("button", { name: "April 2026: 500" }),
     ).toBeInTheDocument();
   });
 

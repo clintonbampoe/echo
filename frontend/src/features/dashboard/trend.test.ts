@@ -1,4 +1,4 @@
-import { bucketsOf, summarize, viewOf } from "./trend";
+import { bucketsOf, pickedStretch, stretchName, summarize, viewOf } from "./trend";
 
 // A Monday: the week began on Sunday 18 October, so the last whole week is 11 to 17 October.
 const TODAY = "2026-10-19";
@@ -49,5 +49,30 @@ describe("summarize", () => {
 
   it("has nothing to say about nothing", () => {
     expect(summarize([])).toBeUndefined();
+  });
+});
+
+describe("pickedStretch", () => {
+  const weeks = bucketsOf(viewOf("weeks"), TODAY);
+
+  it("speaks about the latest stretch until a bar is picked", () => {
+    const at = pickedStretch(weeks, null);
+    expect(at.chosen).toBe(false);
+    expect(at.index).toBe(7);
+    expect(at.stretch?.from).toBe("2026-10-11");
+    expect(stretchName(at, "Last week")).toBe("Last week");
+  });
+
+  it("speaks about the bar picked", () => {
+    const at = pickedStretch(weeks, "2026-08-23");
+    expect(at.chosen).toBe(true);
+    expect(at.index).toBe(0);
+    expect(stretchName(at, "Last week")).toBe("Week of 23 Aug");
+  });
+
+  it("falls back to the latest when the picked bar is gone", () => {
+    const at = pickedStretch(weeks, "2025-01-01");
+    expect(at.chosen).toBe(false);
+    expect(at.index).toBe(7);
   });
 });

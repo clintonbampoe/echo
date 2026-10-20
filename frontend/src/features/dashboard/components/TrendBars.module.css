@@ -45,12 +45,19 @@ button.cell:focus-visible {
 .bar {
   width: min(100%, 56px);
   background: var(--line-2);
-  border-radius: 5px 5px 0 0;
+  border-radius: 8px 8px 0 0;
   transition:
     background-color var(--fast) ease,
     opacity var(--fast) ease;
 }
 .cell:hover .bar {
+  background: var(--text-3);
+}
+/* The charts whose figures a strip already tells (tithes, growth) run a shade quieter, as the boards draw them. */
+.soft .bar {
+  background: var(--line);
+}
+.soft .cell:hover .bar {
   background: var(--text-3);
 }
 .bar.now,
@@ -64,7 +71,7 @@ button.cell:focus-visible {
 }
 .pair .bar {
   width: min(30%, 14px);
-  border-radius: 5px 5px 2px 2px;
+  border-radius: 5px 5px 0 0;
 }
 .bar.first,
 .cell:hover .bar.first {
@@ -124,7 +131,7 @@ button.cell:focus-visible .tip {
   grid-auto-flow: column;
   grid-auto-columns: minmax(0, 1fr);
   gap: 8px;
-  margin: 10px 0 0;
+  margin: 8px 0 0;
   padding: 0;
   list-style: none;
   font-size: 12px;
@@ -141,4 +148,12 @@ button.cell:focus-visible .tip {
   .dense .mid {
     display: none;
   }
+}
+/* Asked for only the ends, whatever the room: the first and last name the stretch. */
+.labels.ends {
+  display: flex;
+  justify-content: space-between;
+}
+.labels.ends .mid {
+  display: none;
 }

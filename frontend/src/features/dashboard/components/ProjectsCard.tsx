@@ -5,8 +5,13 @@ import { Breakdown } from "./Breakdown";
 import { CardFailed } from "./CardFailed";
 import { DashCard } from "./DashCard";
 
+type Props = {
+  // The tall narrow card of a desktop row puts the legend under the ring.
+  stacked?: boolean;
+};
+
 // Money raised so far for each project, all time (not the period picked above).
-export function ProjectsCard() {
+export function ProjectsCard({ stacked = false }: Props) {
   const data = useProjects();
   const ready = data.projects !== undefined;
   const { total, slices } = shareOf(
@@ -18,10 +23,14 @@ export function ProjectsCard() {
   );
   return (
     <DashCard
-      tall
       title="Projects"
       hint="Raised so far, all time"
       to="/projects"
+      foot={{
+        note: "All time, not the period",
+        to: "/projects",
+        label: "See projects",
+      }}
     >
       {data.failed ? (
         <CardFailed onRetry={data.retry} />
@@ -31,6 +40,7 @@ export function ProjectsCard() {
           total={ready ? formatMoney(total) : "–"}
           totalLabel="Total raised"
           note="Total raised, all time"
+          stacked={stacked}
           slices={slices.map((s) => ({
             key: s.key,
             name: s.name,

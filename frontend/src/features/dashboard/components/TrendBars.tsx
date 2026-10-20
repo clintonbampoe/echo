@@ -27,6 +27,11 @@ type Props = {
   onPick?: (key: string) => void;
   // Names the two bars of a pair, e.g. ["Income", "Expenses"].
   legend?: Legend;
+  // Only the first and last label, whatever the room: the ends say where the chart runs (the months of
+  // the growth chart, whose six names would crowd a narrow card).
+  ends?: boolean;
+  // Bars a shade quieter, for a card whose figures a strip below already tells (tithes, growth).
+  soft?: boolean;
 };
 
 const TALLEST = 88;
@@ -128,7 +133,15 @@ function Item({
 
 // One bar (or pair) per stretch on a shared scale. The tallest stops short of the top, so its tooltip has
 // room. On a narrow card, long labels ("23 Aug") show only at the two ends.
-export function TrendBars({ label, bars, selected, onPick, legend }: Props) {
+export function TrendBars({
+  label,
+  bars,
+  selected,
+  onPick,
+  legend,
+  ends,
+  soft,
+}: Props) {
   const top = Math.max(
     0,
     ...bars.flatMap((b) => [b.value, b.second?.value ?? 0]),
@@ -137,9 +150,12 @@ export function TrendBars({ label, bars, selected, onPick, legend }: Props) {
   const height = (v: number) =>
     top > 0 ? Math.max(3, (v / top) * TALLEST) : 3;
   const dense = bars.some((b) => b.label.length > 4);
+  const labelClass = ends
+    ? `${styles.labels} ${styles.ends}`
+    : `${styles.labels} ${dense ? styles.dense : ""}`;
 
   return (
-    <div className={styles.chart}>
+    <div className={`${styles.chart} ${soft ? styles.soft : ""}`}>
       <ul aria-label={label} className={styles.bars}>
         {bars.map((b, i) => (
           <Item
@@ -152,10 +168,7 @@ export function TrendBars({ label, bars, selected, onPick, legend }: Props) {
           />
         ))}
       </ul>
-      <ol
-        className={`${styles.labels} ${dense ? styles.dense : ""}`}
-        aria-hidden="true"
-      >
+      <ol className={labelClass} aria-hidden="true">
         {bars.map((b, i) => (
           <li
             key={b.key}

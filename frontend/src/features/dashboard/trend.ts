@@ -13,7 +13,6 @@ import { rangeHint } from "./periods";
 export const viewKeys = ["weeks", "half", "year"] as const;
 export type ViewKey = (typeof viewKeys)[number];
 export type Unit = "week" | "month";
-
 export type View = {
   key: ViewKey;
   label: string;
@@ -53,6 +52,13 @@ const byKey: Record<ViewKey, View> = {
 
 export const views: readonly View[] = viewKeys.map((key) => byKey[key]);
 export const viewOf = (key: ViewKey): View => byKey[key];
+
+// The chart cards' range switch, in the words a wide card and a narrow one use.
+export const viewChoices = views.map((v) => ({
+  value: v.key,
+  label: v.label,
+  short: v.short,
+}));
 
 // The words around the numbers, which change with the unit.
 export const wordsOf = (unit: Unit) =>
@@ -130,3 +136,24 @@ export function summarize(values: readonly number[]): Summary | undefined {
     best: Math.max(...values),
   };
 }
+
+// The stretch a chart card speaks about: the bar picked, or the latest when none is picked. A bar picked
+// again clears the pick, and a pick that no longer exists (the range changed) falls back to the latest.
+export type Picked = { index: number; stretch: Bucket | undefined; chosen: boolean };
+
+export function pickedStretch(
+  buckets: readonly Bucket[],
+  picked: string | null,
+): Picked {
+  const found =
+    picked === null ? -1 : buckets.findIndex((b) => b.from === picked);
+  if (found < 0) {
+    const index = buckets.length - 1;
+    return { index, stretch: buckets[index], chosen: false };
+  }
+  return { index: found, stretch: buckets[found], chosen: true };
+}
+
+// The words over the figure: the stretch picked ("Week of 4 Oct"), or the latest ("Last week").
+export const stretchName = (at: Picked, latest: string) =>
+  at.chosen && at.stretch ? at.stretch.name : latest;

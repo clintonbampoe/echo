@@ -79,7 +79,6 @@ export function PeriodPill({ value, today, onChange }: Props) {
       >
         <Icon name="calendar" size={16} className={styles.icon} />
         {current.label}
-        <span className={styles.range}>{rangeHint(spanOf(value, today))}</span>
         <Icon name="chevron-down" size={16} className={styles.chevron} />
       </button>
     </PickerAnchor>

@@ -1,6 +1,6 @@
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { json, renderCard, signIn } from "../dashboardTestKit";
+import { json, renderCard, signIn, asked } from "../dashboardTestKit";
 import { IncomeExpensesCard } from "./IncomeExpensesCard";
 
 const income = [5500, 6100, 5800, 7000, 6600, 8400];
@@ -13,8 +13,8 @@ beforeEach(() => {
   vi.stubGlobal(
     "fetch",
     vi.fn(async (url: string) => {
-      const u = new URL(url, "http://x");
-      if (broken || u.pathname !== "/v1/transactions/summary/monthly")
+      const { path } = asked(url);
+      if (broken || path !== "/v1/transactions/summary/monthly")
         return json({ title: "Server error", status: 500 }, 500);
       return json(
         income.map((totalIncome, i) => ({

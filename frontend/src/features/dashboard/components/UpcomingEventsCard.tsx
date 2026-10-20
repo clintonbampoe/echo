@@ -4,7 +4,7 @@ import type { DashEvent } from "../api";
 import { tileOf, whenOf } from "../events";
 import { useUpcomingEvents } from "../hooks";
 import { CardFailed } from "./CardFailed";
-import { DashCard } from "./DashCard";
+import { DashCard, SeeLink } from "./DashCard";
 import styles from "./UpcomingEventsCard.module.css";
 
 // One event: a link to it, with the day in a square, its name, and when. A wide card adds how many registered.
@@ -57,7 +57,11 @@ function Rows({ events }: { events: DashEvent[] | undefined }) {
 export function UpcomingEventsCard({ today }: { today: string }) {
   const data = useUpcomingEvents(today);
   return (
-    <DashCard taller title="Upcoming events" to="/events">
+    <DashCard
+      title="Upcoming events"
+      to="/events"
+      control={<SeeLink to="/events">All events</SeeLink>}
+    >
       {data.failed ? (
         <CardFailed onRetry={data.retry} />
       ) : (

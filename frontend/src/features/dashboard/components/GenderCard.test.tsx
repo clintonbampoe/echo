@@ -23,7 +23,9 @@ describe("gender card", () => {
         averageAge: 38,
       });
     renderCard(<GenderCard />);
-    const rows = within(await screen.findByRole("list"));
+    // Wait for the rows instead of the list: the list is on screen while it is still loading.
+    await screen.findByText("Male");
+    const rows = within(screen.getByRole("list"));
     expect(rows.getByText("Male")).toBeInTheDocument();
     expect(rows.getByText("54%")).toBeInTheDocument();
     expect(rows.getByText("Other")).toBeInTheDocument();

@@ -1,6 +1,6 @@
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { json, renderCard, signIn } from "../dashboardTestKit";
+import { json, renderCard, signIn, asked } from "../dashboardTestKit";
 import { AssetsCard } from "./AssetsCard";
 
 const categories = [
@@ -38,11 +38,11 @@ beforeEach(() => {
   vi.stubGlobal(
     "fetch",
     vi.fn(async (url: string) => {
-      const u = new URL(url, "http://x");
+      const { path, query } = asked(url);
       if (broken) return json({ title: "Server error", status: 500 }, 500);
-      if (u.pathname === "/v1/asset-categories") return json(categories);
-      if (u.pathname === "/v1/assets/summary")
-        return json(figures(u.searchParams.get("categoryId")));
+      if (path === "/v1/asset-categories") return json(categories);
+      if (path === "/v1/assets/summary")
+        return json(figures(query.get("categoryId")));
       return json({ title: "Not found", status: 404 }, 404);
     }),
   );
@@ -60,6 +60,20 @@ describe("assets card", () => {
     expect(rows.getByText("Vehicles")).toBeInTheDocument();
     expect(rows.getByText("60%")).toBeInTheDocument();
     expect(rows.queryByText("Furniture")).not.toBeInTheDocument();
+  });
+
+  it("gives the value and the categories a card each when split", async () => {
+    renderCard(<AssetsCard split />);
+    expect(
+      await screen.findByText("77% of what they cost"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("region", { name: "Assets" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("region", { name: "Assets by category" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("radio", { name: "Count" })).toBeInTheDocument();
   });
 
   it("counts assets instead of their value when asked", async () => {

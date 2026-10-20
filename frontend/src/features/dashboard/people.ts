@@ -1,13 +1,21 @@
-// What the visitor and gender cards say. Pure.
-import { plural } from "@/lib/format";
-import type { GenderFigures, VisitorFigures } from "./api";
+// What the visitor, gender and age cards say. Pure.
+import { formatAgo } from "@/lib/format";
+import type {
+  GenderFigures,
+  MemberMix,
+  RecentVisitor,
+  VisitorFigures,
+} from "./api";
 import type { Row } from "./shares";
 
-// The line under the number of visitors who became members.
+// The line under the number of visitors who became members. The number sits on its own, so the line
+// does not repeat it. Something there while the count is on its way.
 export const joinedLabel = (joined?: number) =>
   joined === undefined
     ? "Visitors who became members"
-    : plural(joined, "Visitor became a member", "Visitors became members");
+    : joined === 1
+      ? "Visitor became a member"
+      : "Visitors became members";
 
 export type VisitorRow = {
   key: string;
@@ -57,3 +65,35 @@ export function genderRows(f: GenderFigures | undefined): Row[] {
     },
   ];
 }
+
+// The age groups, in the dashboard's own words. The server labels its bands with dashes ("18–29"); the
+// paper asks for spoken words, and the five bands always come in this order.
+const AGE_WORDS = [
+  "Under 18",
+  "18 to 29",
+  "30 to 44",
+  "45 to 59",
+  "60 and over",
+] as const;
+
+export type AgeRow = { key: string; name: string; count: number };
+
+export function ageRows(mix: MemberMix | undefined): AgeRow[] {
+  if (!mix) return [];
+  return mix.bands.map((b, i) => ({
+    key: b.label,
+    name: AGE_WORDS[i] ?? b.label,
+    count: b.count,
+  }));
+}
+
+// The average age as the card says it: "38". Nothing to say for a church with no members.
+export const averageAge = (mix: MemberMix | undefined) =>
+  mix && mix.total > 0 ? String(Math.round(mix.average)) : undefined;
+
+// "Added yesterday", or why there is nothing to say. The clock can be a moment ahead of us, and a day
+// after today is still today as far as the words go.
+export const addedAgo = (visitor: RecentVisitor, today: string): string => {
+  if (visitor.added >= today) return "Added today";
+  return `Added ${formatAgo(visitor.added, today).toLowerCase()}`;
+};

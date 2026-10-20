@@ -39,7 +39,6 @@ export function IncomeExpensesCard({ today, months, control }: Props) {
 
   return (
     <DashCard
-      tall
       title="Income and expenses"
       hint="Apart from tithes"
       to="/finance"

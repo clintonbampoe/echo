@@ -10,6 +10,14 @@ export const DEFAULT_MONTHS: MonthRange = 6;
 
 export const monthRangeLabel = (months: number) => `Last ${months} months`;
 
+// The range switch's choices for the money months, as short as the card's heading allows: "3 months",
+// "6 months", "Year". A tight row drops to "3 mo".
+export const monthChoices = MONTH_RANGES.map((m) => ({
+  value: String(m),
+  label: m === 12 ? "Year" : `${m} months`,
+  short: m === 12 ? "Year" : `${m} mo`,
+}));
+
 // The months ending with this one, as the days the API takes. This month counts as far as today.
 export function moneyRange(today: string, months: number) {
   return {

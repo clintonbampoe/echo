@@ -21,10 +21,19 @@ describe("footerOf", () => {
 describe("titheView", () => {
   it("writes the latest figures and rounds the average to whole cedis", () => {
     expect(titheView([figures(10640), figures(11300)], "week")).toEqual({
-      last: "GH₵ 11,300",
+      total: "GH₵ 11,300",
       tithers: "214",
       average: "GH₵ 53",
       footer: "6.2% up on the week before",
+    });
+  });
+
+  it("writes the figures of the stretch picked", () => {
+    expect(titheView([figures(10640), figures(11300)], "week", 0)).toEqual({
+      total: "GH₵ 10,640",
+      tithers: "214",
+      average: "GH₵ 53",
+      footer: "",
     });
   });
 

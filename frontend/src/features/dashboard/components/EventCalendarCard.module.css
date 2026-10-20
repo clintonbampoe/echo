@@ -6,7 +6,9 @@
   flex-direction: column;
   min-height: 0;
 }
-@container (max-width: 479px) {
+/* The phone and tablet tree gives every card 402px; six rows of 40px days would push the foot out of it,
+   so the discs shrink there. A 40% card of a desktop row is 461px and keeps the 40px ones. */
+@media (max-width: 900px) {
   .content {
     --day: 32px;
     --gap: 2px;
