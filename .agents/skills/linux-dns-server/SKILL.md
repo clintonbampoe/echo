@@ -1,0 +1,386 @@
+---
+name: linux-dns-server
+description: Use when operating BIND or Unbound as an authoritative or recursive DNS server, including zone authoring, validation, reloads, reverse zones, transfers, and SELinux contexts. Use linux-network-admin for client-side resolution or interface configuration.
+license: MIT
+metadata:
+  portable: true
+  compatible_with:
+  - claude-code
+  - codex
+  author: Peter Bamuhigire
+  author_url: techguypeter.com
+  author_contact: "+256784464178"
+---
+
+# Linux DNS Server
+
+## Distro support
+
+BIND and unbound run on both families; `dig`, `rndc`, `named-checkconf`, and
+`named-checkzone` are **identical**. The differences are package names, config
+file locations, and SELinux. Body uses Debian/Ubuntu; the **RHEL family**
+(Fedora, RHEL, CentOS Stream, Rocky, Alma, Oracle) equivalents are in the matrix.
+
+| Concept | Debian/Ubuntu | RHEL family |
+|---|---|---|
+| BIND package | `bind9` | `bind` |
+| DNS utilities | `dnsutils` | `bind-utils` |
+| systemd unit | `named` (alias `bind9`) | `named` |
+| Main config | `/etc/bind/named.conf*` | `/etc/named.conf` |
+| Zone files | `/etc/bind/`, `/var/lib/bind/` | `/var/named/` |
+| Service user | `bind` | `named` |
+| Validation tools | `named-checkconf`, `named-checkzone`, `dig` | identical |
+
+**RHEL-family gotcha:** SELinux governs BIND. Zone files must carry the
+`named_zone_t` context (`restorecon -Rv /var/named`) and writes to
+`/var/named` need the right labels; serving from a non-standard path requires
+`semanage fcontext`. There is no SELinux step on Debian/Ubuntu. (Deep SELinux
+coverage lands in `linux-server-hardening` / Phase 2.)
+
+In `sk-*` scripts use the `common.sh` primitives (`pkg_install`, `svc_name`)
+instead of hardcoding the family. See [`linux-bash-scripting`](../../10-automation-and-scripting/linux-bash-scripting/SKILL.md)
+and [`docs/multi-distro/plan.md`](../../docs/multi-distro/plan.md).
+
+<!-- dual-compat-start -->
+## Use when
+
+- Managing authoritative DNS zones, records, serials, or server reloads.
+- Validating zone files or setting up reverse DNS on Ubuntu/Debian.
+- Debugging BIND9 or unbound behavior on a server that owns DNS service.
+
+## Do not use when
+
+- The task is client-side DNS resolution from an application host; use `linux-network-admin`.
+- The task is mail authentication policy only; use `linux-mail-server`.
+
+## Required inputs
+
+| Artefact | Source | Required? | If absent |
+|---|---|---|---|
+| Zone name, current zone/config, server role, and software | Authoritative host or version control | required | Stay read-only and return discovery commands. |
+| Requested records, TTL/serial policy, and delegation/transfer constraints | DNS owner/change request | required for change | Stop before editing or reloading. |
+| Maintenance and rollback path | Service owner | required for mutation | Produce a proposed diff and validation plan only. |
+
+## Workflow
+
+1. Identify the zone and the authoritative server role before editing.
+2. Make the smallest correct record or config change and validate syntax first.
+3. Reload the service only after passing the relevant checks.
+4. Query the authoritative server directly to verify the expected answer.
+5. Stop if zone ownership, serial policy, validator output, transfer/recursion scope, or rollback is unresolved.
+6. Recover a failed reload by restoring the saved zone/config, validating it, reloading the prior version, and querying each authority again.
+
+## Quality standards
+
+- Validate zone syntax before reload every time.
+- Keep serial management explicit and predictable.
+- Verify from the authoritative source, not only from cached resolvers.
+
+## Anti-patterns
+
+- Editing a zone without advancing its serial. Fix: apply the site's serial policy exactly once per published change.
+- Reloading `named` before `named-checkconf` and `named-checkzone`. Fix: block reload on either validator failure.
+- Querying only a caching resolver. Fix: query each authoritative server directly and then check public delegation.
+- Allowing unrestricted recursion or zone transfer. Fix: restrict by role, network, TSIG, and explicit ACL.
+- Bypassing an SELinux denial with permissive mode. Fix: restore correct zone paths/contexts and keep enforcement.
+
+## Outputs
+
+| Artefact | Consumer | Acceptance condition |
+|---|---|---|
+| Zone/config change or diagnosis | DNS operator | Correct owner/name/type/value/TTL/serial and family-specific path/context are explicit. |
+| Validation/reload evidence | Reviewer | Config and every changed zone validate before a successful reload. |
+| Authoritative query record | Service owner | Expected answers and SOA serial are returned directly by every authoritative server. |
+
+## References
+
+- [`references/bind9-reference.md`](references/bind9-reference.md)
+- [`references/zone-file-syntax.md`](references/zone-file-syntax.md)
+
+## Evidence Produced
+
+| Artefact | Acceptance condition |
+|---|---|
+| DNS change evidence | Includes reviewed diff, validators, reload result, direct answers from each authority, SOA serial, transfer result where relevant, and rollback. |
+
+## Capability contract
+
+Read-only inspection is the default for diagnosis. Editing zones/configuration, reloading DNS, changing delegation, opening firewall access, or enabling transfer/recursion requires explicit authority. Do not expose TSIG private material.
+
+## Degraded mode
+
+Without access to the authoritative host, validate supplied text where possible and mark live reload, delegation, propagation, and SELinux checks `not assessed`. Do not treat a local syntax pass as published DNS success.
+
+## Decision rules
+
+| Choice | Action | Failure or risk avoided |
+|---|---|---|
+| Authoritative record change | Edit owner zone, advance serial, validate, reload, query authority | Stale or unpublished answers. |
+| Client cannot resolve | Route to `linux-network-admin` first | Editing healthy authoritative zones. |
+| Recursive resolver service | Restrict recursion to approved clients | Open-resolver abuse. |
+
+## Worked example
+
+To add `api.example.org A 192.0.2.40`, confirm the authoritative zone and serial policy, edit the managed source, validate configuration and zone, reload, query each authoritative server with recursion disabled, and record the returned address, TTL, and new SOA serial.
+
+<!-- dual-compat-end -->
+
+**This skill is self-contained.** Every command below is a standard BIND
+tool (`named`, `rndc`, `named-checkconf`, `named-checkzone`, `dig`) present on
+both Debian/Ubuntu and the RHEL family; only package names and paths differ
+(see **Distro support**). The `sk-*` scripts in the **Optional fast path**
+section are convenience wrappers — never required.
+
+This skill owns **authoritative DNS serving** — running BIND9 or unbound
+as a server that answers queries for zones you control.
+
+It does **not** own:
+
+- **Client-side DNS lookups** from a server — `linux-network-admin`.
+- **MX records and email auth** — `linux-mail-server`.
+- **DNS records at a registrar** — those belong to whoever manages the
+  domain at its registrar; this skill handles self-hosted authoritative
+  DNS.
+
+Informed by *Linux Network Administrator's Guide* (BIND chapters) and
+the Canonical *Ubuntu Server Guide* (BIND9 packaging).
+
+---
+
+## When to use
+
+- Hosting authoritative zones for your own domains.
+- Setting up a recursive resolver for an internal network.
+- Validating zone files before reload.
+- Debugging zone transfer failures or serial mismatches.
+- Adding, removing, or editing DNS records in a managed zone.
+- Setting up reverse DNS (in-addr.arpa / ip6.arpa).
+- Installing or operating **Pi-hole** specifically — blocklists, DoH
+  upstream, DHCP-integrated sinkholing — see
+  [`references/pihole-blocklist-sinkholing.md`](references/pihole-blocklist-sinkholing.md)
+  (a different DNS product from the BIND/Unbound content in the rest of this
+  skill).
+
+## When NOT to use
+
+- Debugging outbound DNS from a server — `linux-network-admin`'s
+  diagnostics.
+- Cloudflare / Route53 / Google Cloud DNS — those are managed DNS APIs.
+
+---
+
+## Standing rules
+
+1. **Always `named-checkconf` before reloading.** A bad config takes
+   down every zone.
+2. **Always `named-checkzone` for every modified zone.** A bad zone
+   file takes down that zone.
+3. **Bump the serial on every change.** Format: `YYYYMMDDNN`. Slaves
+   won't pull the change if the serial hasn't moved.
+4. **Reverse zones must match forward zones.** Every A record you own
+   should have a PTR in the in-addr.arpa zone you control (or upstream).
+5. **Zone files live in `/etc/bind/zones/` by convention.** Permissions:
+   `bind:bind`, mode `0644`.
+6. **`rndc reload <zone>` is safer than `systemctl reload bind9`.** It
+   reloads one zone at a time.
+7. **Restrict recursion.** Only answer recursive queries from trusted
+   networks. Open recursive resolvers are used in amplification attacks.
+
+---
+
+## Quick reference — manual commands
+
+### Install and baseline
+
+```bash
+sudo apt install bind9 bind9-utils dnsutils
+
+# Files land in:
+#   /etc/bind/named.conf           — main config, don't edit directly
+#   /etc/bind/named.conf.options   — global options
+#   /etc/bind/named.conf.local     — your zones
+#   /var/lib/bind/                 — dynamic state (slaves, journals)
+#   /var/log/                      — if you configure file logging
+
+sudo systemctl status bind9 --no-pager
+sudo journalctl -u bind9 -n 50 --no-pager
+```
+
+### Validate and reload
+
+```bash
+# Validate main config
+sudo named-checkconf
+
+# Validate a specific zone file
+sudo named-checkzone example.com /etc/bind/zones/example.com.zone
+
+# Reload via rndc (preferred — doesn't flush cache)
+sudo rndc reload                              # reload everything
+sudo rndc reload example.com                  # reload one zone
+
+# Dump the current cache (debugging)
+sudo rndc dumpdb -cache
+sudo less /var/cache/bind/named_dump.db
+
+# Flush cache for a zone (after manual changes at upstream)
+sudo rndc flush
+```
+
+### Query your own server
+
+```bash
+# Ask your BIND directly (bypass systemd-resolved)
+dig @127.0.0.1 example.com SOA
+dig @127.0.0.1 example.com NS
+dig @127.0.0.1 example.com MX
+dig @127.0.0.1 example.com A +all        # show all sections
+
+# Check from outside (replace with your public IP)
+dig @<public-ip> example.com SOA
+
+# AXFR zone transfer test (from an allowed secondary)
+dig @<master> example.com AXFR
+```
+
+### Adding a record
+
+```bash
+# 1. Edit the zone file
+sudo nano /etc/bind/zones/example.com.zone
+
+# 2. Bump the serial (YYYYMMDDNN format)
+#    From 2026041001 to 2026041002 etc.
+
+# 3. Validate
+sudo named-checkzone example.com /etc/bind/zones/example.com.zone
+
+# 4. Reload that zone only
+sudo rndc reload example.com
+
+# 5. Verify
+dig @127.0.0.1 new-record.example.com A +short
+```
+
+Full BIND9 reference (`named.conf` structure, options, logging, views,
+TSIG, rndc control channel, systemd integration, common errors) — see
+[`references/bind9-reference.md`](references/bind9-reference.md).
+
+Full zone file syntax reference (SOA, NS, A, AAAA, CNAME, MX, TXT, SRV,
+PTR, CAA, reverse zones, slave config, 4–6 complete examples) — see
+[`references/zone-file-syntax.md`](references/zone-file-syntax.md).
+
+---
+
+## Typical workflows
+
+### Workflow: Adding a record to a managed zone
+
+```bash
+sudo nano /etc/bind/zones/example.com.zone
+# Increment SOA serial
+# Add the new record (A, CNAME, MX, TXT, etc.)
+
+sudo named-checkzone example.com /etc/bind/zones/example.com.zone
+sudo rndc reload example.com
+
+dig @127.0.0.1 new.example.com A +short
+```
+
+### Workflow: Serial mismatch between master and slave
+
+```bash
+# Compare serials
+dig @master.example.com  example.com SOA +short | awk '{print $3}'
+dig @slave.example.com   example.com SOA +short | awk '{print $3}'
+
+# If they differ after a master reload:
+sudo journalctl -u bind9 -n 100 --no-pager | grep -i -E "transfer|notify"
+# Look for: "transfer of 'example.com/IN' from ...: failed"
+# Common cause: slave firewall blocks 53/tcp (AXFR is TCP)
+
+# Force the slave to retry
+sudo rndc retransfer example.com              # on the slave
+
+# Check the journal log on the slave
+sudo ls /var/lib/bind/
+```
+
+### Workflow: Validating a zone before import
+
+```bash
+# Against a file you received but haven't installed
+named-checkzone example.com /tmp/imported-zone.zone
+
+# Dump the parsed zone to verify what BIND sees
+named-compilezone -o - example.com /tmp/imported-zone.zone | less
+```
+
+### Workflow: Setting up a reverse zone for your subnet
+
+```bash
+# For 192.0.2.0/24, the zone is 2.0.192.in-addr.arpa
+sudo nano /etc/bind/named.conf.local
+# Add a zone stanza pointing at /etc/bind/zones/db.192.0.2
+
+# Create the zone file with SOA + NS + PTR records
+# (see references/zone-file-syntax.md for the template)
+
+sudo named-checkconf
+sudo named-checkzone 2.0.192.in-addr.arpa /etc/bind/zones/db.192.0.2
+sudo rndc reload
+
+dig @127.0.0.1 -x 192.0.2.10 +short
+```
+
+---
+
+## Troubleshooting / gotchas
+
+- **Zone loaded but queries return SERVFAIL.** Check `named-checkconf`
+  for missing includes. Check that the `zone` stanza in
+  `named.conf.local` points at a file BIND can read (`bind:bind`, mode
+  `0644`).
+- **Serial didn't increment, slaves aren't pulling.** BIND compares
+  serial numbers literally — a new file with the same serial is treated
+  as identical. Always bump.
+- **`rndc reload` works but queries show old data.** BIND caches
+  recursive answers. `sudo rndc flush` clears the recursive cache; zone
+  data is authoritative and updates immediately.
+- **AXFR failing with "REFUSED".** Master's `allow-transfer` doesn't
+  list the slave's IP, or TSIG key mismatch.
+- **Running both `systemd-resolved` and `bind9`.** Port 53 conflict.
+  Disable resolved's stub listener: `DNSStubListener=no` in
+  `/etc/systemd/resolved.conf`, then `systemctl restart systemd-resolved`.
+- **Logs going to syslog with nothing in `/var/log/named.log`.** BIND
+  defaults to syslog (`journalctl -u bind9`). File logging requires
+  explicit `logging { ... }` stanzas — see the reference.
+
+---
+
+## References
+
+- [`references/bind9-reference.md`](references/bind9-reference.md) —
+  full BIND9 reference: named.conf structure, options, logging, views,
+  TSIG, rndc, systemd.
+- [`references/zone-file-syntax.md`](references/zone-file-syntax.md) —
+  zone file syntax with all record types, reverse zones, slave config,
+  complete worked examples.
+- [`references/pihole-blocklist-sinkholing.md`](references/pihole-blocklist-sinkholing.md) —
+  Pi-hole install, blocklist management, DNS-over-HTTPS upstream, and
+  DHCP-integrated sinkholing — a different DNS product from BIND/Unbound,
+  documented separately from the rest of this skill.
+- Book: *Linux Network Administrator's Guide* — BIND chapters.
+- Book: *Ubuntu Server Guide* — BIND9 package layout.
+- Man pages: `named(8)`, `named.conf(5)`, `named-checkconf(8)`,
+  `named-checkzone(8)`, `rndc(8)`.
+
+---
+
+## Script availability
+
+No wrapper commands for this skill are shipped in this checkout. Use the native procedures above; planned wrappers remain in [the script inventory](../../docs/engine-design/script-inventory.md) until their source files are present.
+
+## Currentness reference
+
+Read [current DNS operations and source gate](references/current-dns-operations-and-source-gate.md) before making version-sensitive BIND, DNSSEC, packaging, directive, or command claims. Verify current support with ISC and protocol behaviour with the relevant IETF RFC; the book is conceptual background only.
