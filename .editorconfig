@@ -46,4 +46,3 @@ dotnet_naming_style.prefix_underscore_style.capitalization = camel_case
 # React and Frontend settings
 [*.{js,jsx,ts,tsx,json,css}]
 indent_size = 2
-

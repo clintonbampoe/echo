@@ -10,6 +10,12 @@ Echo is a **multi-tenant church management platform**. Each congregation is an i
 - `frontend/` — React 19 + TypeScript + Vite SPA
 - `docs/` — API, DB schema, architecture reference
 
+> **Performance work is planned in [`docs/Performance.md`](docs/Performance.md).** Read it
+> before touching query code, indexes, Postgres configuration, or the nginx / Docker /
+> rate-limiting stack — it records the measured baselines, the order of work, the reasoning
+> behind it, and the landmines that are deliberately parked. Measurements go in
+> `docs/Performance-log.md`.
+
 ## Development Workflow (Linear + GitHub Draft PRs)
 
 - All work is tracked in Linear. Branch names follow `prefix/scope-identifier-number-description`, e.g. `feat/frontend-clnt-11-implement-client-app-login-page`. Get the branch name from Linear with `Ctrl+Shift+.` (issue identifiers use a 4-letter prefix like `CLNT-N`).
