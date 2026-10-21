@@ -3,7 +3,7 @@
 > The ritual. One entry per move, five lines each. This file is simultaneously the
 > engineering log, the content pipeline, and the guard against repeating a mistake.
 >
-> Format follows the plan in `docs/Performance.md`.
+> Format follows the plan in `docs/performance/plan.md`.
 
 ---
 

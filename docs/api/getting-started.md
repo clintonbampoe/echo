@@ -3,7 +3,7 @@
 **Written by:** @clintonbampoe
 **Last updated:** 2026-09-12 by @clintonbampoe
 
-This is your entry point if you are setting up Echo locally for the first time. The main [Api Usage](./ApiUsage.md) guide assumes you already have a valid JWT token. 
+This is your entry point if you are setting up Echo locally for the first time. The main [API Usage](./api-usage.md) guide assumes you already have a valid JWT token. 
 
 Echo is a multi-tenant system. This means that every user (including Admins) must belong to a Congregation. This guide walks you through the mandatory two-step process to create your first valid credentials.
 
@@ -129,4 +129,4 @@ Take the token received above and pass it to the verify-email endpoint.
 
 With your `User` account now verified, you can acquire a JWT token to access protected endpoints.
 
-See [Acquiring a JWT Token](./ApiUsage.md#authentication) for more details.
+See [Acquiring a JWT Token](./api-usage.md#authentication) for more details.

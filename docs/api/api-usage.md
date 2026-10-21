@@ -6,7 +6,7 @@
 ---
 
 This is the official guide to using the Echo API.
->**New Developer?** Start with [Getting Started](./GettingStarted.md) to create your first admin and obtain a JWT Token.
+>**New Developer?** Start with [Getting Started](./getting-started.md) to create your first admin and obtain a JWT Token.
 
 ## Infrastructure & Access
 
@@ -41,7 +41,7 @@ The version is part of the URL path (e.g. `/api/v1/events`). This is configured 
 The Echo API uses JWT (JSON Web Token) authentication.
 
 ### Obtaining a JWT Token
-Send a valid login request to the `Sessions` endpoint with your valid credentials. If you don't have any valid credentials, see [Creating a User Account](./GettingStarted#creating-a-new-user-account)
+Send a valid login request to the `Sessions` endpoint with your valid credentials. If you don't have any valid credentials, see [Creating a User Account](../api/getting-started.md#creating-a-new-user-account)
 
 **Endpoint:** `POST /api/auth/v1/sessions/login`
 
@@ -178,7 +178,7 @@ This endpoint is public and is available without authentication. It returns
 `200` only when the database is reachable and every migration has been applied;
 otherwise it returns `503` with the failing check. Use `/api/health/live` if you
 only want to know whether the process is up. See
-[Health endpoints](../Infrastructure.md#health-endpoints).
+[Health endpoints](../infrastructure/topology.md#health-endpoints).
 curl -H "Authorization: Bearer <your-token>" \
      "http://localhost:8080/api/v1/events?cursor=eyJpZ...&pageSize=20"
 ```
@@ -309,6 +309,6 @@ curl http://localhost:8080/health/ready
 
 ## Related Documentation
 
-- [GettingStarted](GettingStarted.md): Local development setup
-- [Infrastructure](./../Infrastructure.md): Docker, containers, reverse proxy and environment variables
-- [Front-end](frontend/README.md): Front-end documentation
+- [Getting Started](getting-started.md): Local development setup
+- [Infrastructure](../infrastructure/index.md): Docker, containers, reverse proxy and environment variables
+- [Front-end](../frontend/README.md): Front-end documentation

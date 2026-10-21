@@ -5,9 +5,9 @@
 > any of them and the project is better off than before it.
 >
 > Companion files:
-> - `docs/Performance-log.md` — the measurement log (the ritual, below)
-> - `docs/Infrastructure.md` — how the stack fits together
-> - `docs/frontend/Architecture.md` — frontend rules
+> - `docs/performance/log.md` — the measurement log (the ritual, below)
+> - `docs/infrastructure/index.md` — how the stack fits together
+> - `docs/frontend/architecture.md` — frontend rules
 >
 > Last updated: 2026-10-21.
 
