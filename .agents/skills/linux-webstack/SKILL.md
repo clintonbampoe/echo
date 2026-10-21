@@ -1,0 +1,237 @@
+---
+name: linux-webstack
+description: Use when installing, configuring, tuning, or diagnosing the shared Nginx, Apache/httpd, PHP-FPM, or Node.js service stack on Linux. Use linux-site-deployment for one site's release and linux-service-management for generic systemd operations.
+license: MIT
+metadata:
+  portable: true
+  compatible_with:
+  - claude-code
+  - codex
+  author: Peter Bamuhigire
+  author_url: techguypeter.com
+  author_contact: "+256784464178"
+---
+# Web Stack Management
+
+## Distro support
+
+Two-family skill. Nginx is portable (conf.d on both). **Apache differs the
+most**: on the RHEL family (Fedora, RHEL, CentOS Stream, Rocky, Alma, Oracle)
+it is **`httpd`** with a flat **`/etc/httpd/conf.d/`** model — no
+`sites-available`/`a2ensite`. And **SELinux** can block a correctly-permissioned
+site. Full detail: [`references/httpd-reference.md`](references/httpd-reference.md).
+
+| Concept | Debian/Ubuntu | RHEL family |
+|---|---|---|
+| Apache package/service | `apache2` / `apache2ctl` | `httpd` / `apachectl` |
+| Vhost model | `sites-available` + `a2ensite` | drop `*.conf` in `/etc/httpd/conf.d/` |
+| Apache config root | `/etc/apache2/` | `/etc/httpd/` |
+| Web run-as user | `www-data` | `apache` |
+| Apache logs | `/var/log/apache2/` | `/var/log/httpd/` |
+| PHP-FPM service / pool | `php8.x-fpm` / `/etc/php/8.x/fpm/pool.d/` | `php-fpm` / `/etc/php-fpm.d/` |
+| PHP-FPM socket | `/run/php/php8.x-fpm.sock` | `/run/php-fpm/www.sock` |
+| Newer PHP | Ondřej PPA | Remi repo / `dnf module` |
+| MAC on web content | none | **SELinux**: `httpd_sys_content_t`, `httpd_can_network_connect` |
+
+In `sk-*` scripts use `svc_name apache`, `web_conf_dir apache`, and
+`web_reload apache` from `common.sh` instead of hardcoding. See
+[`references/httpd-reference.md`](references/httpd-reference.md) and
+[`docs/multi-distro/plan.md`](../../docs/multi-distro/plan.md).
+
+<!-- dual-compat-start -->
+## Use when
+
+- Managing Nginx, Apache, PHP-FPM, or Node.js services in the standard web stack.
+- Debugging reverse-proxy behavior, upstream failures, or PHP worker tuning.
+- Validating config changes before reloading live web services.
+
+## Do not use when
+
+- The task is a brand-new site rollout; use `linux-site-deployment`.
+- The task is certificate lifecycle or firewall policy; use `linux-firewall-ssl`.
+
+## Required inputs
+
+| Artefact | Source | Required? | If absent |
+|---|---|---|---|
+| Host family/release, stack topology, service/vhost, ports, sockets, and expected request path | Host and architecture/runbook | required | Inspect read-only; do not assume the proxy chain. |
+| Current configuration, status, logs, recent changes, and reproducible request | Host/change record | required for diagnosis | Return targeted collection commands and mark root cause unresolved. |
+| Change window, config backup, health check, and rollback authority | Service owner | required for mutation | Stop before reload/restart. |
+
+## Workflow
+
+1. Identify the failing web-stack layer and inspect its current config and status.
+2. Apply the matching workflow below for reverse proxy, Apache backend, PHP-FPM, or Node.js.
+3. Validate config before any reload or restart.
+4. Confirm end-to-end request flow after the change.
+5. Stop if the failing hop, configuration validator, rollback copy, maintenance authority, or SELinux consequence is unresolved.
+6. Recover by restoring the prior config/context, validating it, reloading only the affected service, and repeating the end-to-end request.
+
+## Quality standards
+
+- Validate configs before reload every time.
+- Keep responsibility boundaries clear across Nginx, Apache, PHP-FPM, and Node.js.
+- Verify with real request behavior, not just successful daemon restarts.
+
+## Anti-patterns
+
+- Restarting every web service at once. Fix: trace the request and isolate the first failing hop.
+- Reloading unvalidated configuration. Fix: run the native syntax/config test for each changed daemon first.
+- Treating every 502 as Nginx. Fix: inspect upstream listener/socket, protocol, permissions/context, and application logs.
+- Disabling SELinux to make a proxy or docroot work. Fix: set the correct labels/booleans and keep enforcement.
+- Tuning PHP-FPM or workers without memory/request evidence. Fix: measure workload and preserve capacity headroom.
+
+## Outputs
+
+| Artefact | Consumer | Acceptance condition |
+|---|---|---|
+| Layered diagnosis or reviewed config change | Web operator | Identifies the failing hop and uses family-correct units, paths, sockets, and SELinux controls. |
+| Reload/recovery evidence | On-call operator | Config tests pass, reload/restart succeeds, errors do not increase, and rollback config is retained. |
+| Request-path verification | Service owner | External request, proxy/backend hop, dynamic response, and required assets behave as specified. |
+
+## References
+
+- [`references/nginx-directives.md`](references/nginx-directives.md)
+- [`references/config-patterns.md`](references/config-patterns.md)
+- [`references/php-fpm-tuning.md`](references/php-fpm-tuning.md)
+- [`references/httpd-reference.md`](references/httpd-reference.md) — Apache httpd + conf.d model + SELinux (RHEL family)
+
+## Evidence Produced
+
+| Artefact | Acceptance condition |
+|---|---|
+| Web-stack evidence | Includes config diff, services/listeners, config-test output, logs, relevant SELinux findings, reload status, and end-to-end request result. |
+
+## Capability contract
+
+Diagnosis defaults to read-only. Read/execute access is required to inspect config, services, ports, sockets, logs, and requests. Editing config, changing labels/booleans, or reloading/restarting production services requires explicit authority and rollback.
+
+## Degraded mode
+
+Without host or request access, produce a request-hop diagnosis tree and label live configuration, runtime, SELinux, and health checks `not assessed`. Do not infer health from static snippets alone.
+
+## Decision rules
+
+| Choice | Action | Failure or risk avoided |
+|---|---|---|
+| Static content only | Serve through Nginx | Unnecessary proxy/backend failure modes. |
+| Existing dual-stack PHP host | Keep Nginx front and family-correct Apache/PHP backend | Conflicting listeners or unsupported layout. |
+| Node service | Run under systemd and proxy to loopback/Unix socket | Fragile shell-managed processes. |
+
+## Worked example
+
+For a 502 on Rocky Linux, trace the Nginx upstream, confirm the backend listener, inspect `httpd`/PHP-FPM status and logs, check socket permissions and SELinux denials, correct the evidenced layer, pass daemon config tests, reload only that service, and verify the external request.
+
+<!-- dual-compat-end -->
+
+**This skill is self-contained.** Every command below is a standard tool on
+both the Debian/Ubuntu and RHEL families (note the per-family naming in the
+**Distro support** table above — e.g. `apache2ctl`/`apachectl`). The `sk-*`
+scripts in the **Optional fast path** section are convenience wrappers — never
+required.
+
+```
+Client → Nginx (443/80)
+           ├── Astro/static → /dist/ folders
+           ├── PHP direct → PHP-FPM socket
+           ├── PHP apps → Apache (port 8080)
+           └── Node.js APIs → localhost:<port>
+```
+
+---
+
+## Nginx
+
+```bash
+sudo nginx -t                                      # test config (always first)
+sudo nginx -t && sudo systemctl reload nginx       # graceful reload
+sudo systemctl restart nginx                       # full restart
+
+# Enable / disable site
+sudo ln -s /etc/nginx/sites-available/<domain>.conf /etc/nginx/sites-enabled/
+sudo rm /etc/nginx/sites-enabled/<domain>.conf
+
+sudo tail -f /var/log/nginx/error.log
+sudo tail -f /var/log/nginx/access.log
+```
+
+### Debug 502 Bad Gateway
+
+```bash
+sudo tail -20 /var/log/nginx/error.log           # what upstream is failing?
+sudo systemctl status php8.3-fpm                 # PHP-FPM sites
+sudo systemctl status apache2                    # Apache-proxied sites
+ls -la /run/php/php8.3-fpm.sock                  # FPM socket present?
+sudo systemctl restart php8.3-fpm                # fix
+```
+
+Config patterns and templates: `references/config-patterns.md`
+
+---
+
+## Apache (Port 8080)
+
+```bash
+sudo apache2ctl configtest                        # test config
+sudo apache2ctl configtest && sudo systemctl reload apache2
+sudo a2ensite <domain>.conf
+sudo a2dissite <domain>.conf
+sudo tail -f /var/log/apache2/error.log
+```
+
+---
+
+## PHP-FPM
+
+```bash
+sudo php-fpm8.3 -t                               # test config
+sudo systemctl reload php8.3-fpm                # graceful
+sudo systemctl restart php8.3-fpm               # full restart
+sudo tail -f /var/log/php8.3-fpm.log
+```
+
+### Tune Workers
+
+```bash
+sudo nano /etc/php/8.3/fpm/pool.d/www.conf
+# Key settings:
+# pm.max_children = 20  (RAM-dependent: (RAM_MB - 256) / avg_worker_MB)
+# pm.start_servers = 4
+# pm.min_spare_servers = 2
+# pm.max_spare_servers = 8
+# pm.max_requests = 500
+sudo systemctl reload php8.3-fpm
+```
+
+---
+
+## Node.js Services
+
+```bash
+sudo systemctl status <service-name>
+sudo journalctl -u <service-name> -n 50 --no-pager
+sudo systemctl restart <service-name>
+```
+
+Create new Node.js systemd unit: see `references/config-patterns.md`.
+
+---
+
+## nginx.conf Global Settings
+
+```bash
+sudo nano /etc/nginx/nginx.conf
+```
+```nginx
+worker_processes auto;
+server_tokens off;         # hide version
+client_max_body_size 64M;  # upload limit
+gzip on;
+```
+
+---
+
+No Nginx/Apache reload, PHP-FPM pool, or MySQL tuning/audit wrapper sources
+are shipped for this skill in the current checkout. Use the native commands
+and configuration procedures above; run a syntax validator before any
+authorised reload.

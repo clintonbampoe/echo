@@ -1,0 +1,421 @@
+---
+name: linux-secrets
+description: Use when scanning for leaked credentials, encrypting configuration with age, sops, or GPG, rotating secrets, or checking credential-file handling. Use linux-access-control for user and permission administration and linux-server-hardening for wider host controls.
+license: MIT
+metadata:
+  portable: true
+  compatible_with:
+  - claude-code
+  - codex
+  author: Peter Bamuhigire
+  author_url: techguypeter.com
+  author_contact: "+256784464178"
+---
+
+# Linux Secrets
+
+## Distro support
+
+The tooling — `age`, `sops`, `gpg`, `pass`, and secret scanners — is **portable
+across both families**; only installation differs. Body uses Debian/Ubuntu; the
+**RHEL family** (Fedora, RHEL, CentOS Stream, Rocky, Alma, Oracle) equivalents
+are in the matrix.
+
+| Concept | Debian/Ubuntu | RHEL family |
+|---|---|---|
+| Install age / gpg | `apt install age gnupg` | `dnf install age gnupg2` |
+| Install sops | release binary / `apt` | release binary / `dnf` (Fedora has it) |
+| Install scanners (gitleaks, trufflehog) | release binary | release binary |
+| age / sops / gpg usage | identical | identical |
+| `age` availability | universe | **EPEL** on RHEL/Rocky/Alma; in main on Fedora |
+
+**RHEL-family note:** GnuPG is the `gnupg2` package on RHEL. `age` requires
+**EPEL** on RHEL/CentOS/Rocky/Alma (`ensure_epel`), but is in the main repo on
+Fedora. Encryption/decryption commands and key formats are identical.
+
+In `sk-*` scripts use the `common.sh` primitives (`pkg_install`, `ensure_epel`)
+rather than hardcoding the family. See [`linux-bash-scripting`](../../10-automation-and-scripting/linux-bash-scripting/SKILL.md)
+and [`docs/multi-distro/plan.md`](../../docs/multi-distro/plan.md).
+
+<!-- dual-compat-start -->
+## Use when
+
+- Scanning for leaked secrets in repos or filesystems.
+- Encrypting sensitive config with `age` or `sops`.
+- Rotating credentials or auditing credential file permissions.
+
+## Do not use when
+
+- The task is generic filesystem permissions without secret material; use `linux-access-control`.
+- The task is a full security posture review rather than secret hygiene; use `linux-security-analysis`.
+
+## Required inputs
+
+| Artefact | Source | Required? | If absent |
+|---|---|---|---|
+| Repository/path or named credential and suspected exposure | Operator, scanner alert, or service owner | required | Do not run an unbounded filesystem scan; request scope. |
+| Secret owner, dependants, storage system, and rotation authority | Service inventory and owner | required for rotation | Contain exposure but stop before replacement/cutover. |
+| Recovery/rollback and availability constraints | Change owner | required for live rotation | Return a staged rotation plan only. |
+
+## Workflow
+
+1. Determine whether the task is detection, encryption at rest, or live credential change.
+2. Inspect current storage and exposure state before modifying anything.
+3. Follow the matching workflow below for scanning, encrypting, rotating, or auditing permissions.
+4. Verify both technical success and operational follow-through, such as dependent service updates.
+5. Stop if owner, dependant inventory, provider authority, rollback, or redaction boundary is unresolved.
+6. Recover a failed rotation by reverting consumers to the still-valid prior credential when safe, then repair the failed consumer before revocation.
+
+## Quality standards
+
+- Minimize plaintext exposure and document the final storage model.
+- Rotations should be coordinated, verified, and logged.
+- Secret handling must remain least-privilege and reviewable.
+
+## Anti-patterns
+
+- Rotating without enumerating dependants. Fix: map issuer, consumers, caches, jobs, and rollback before cutover.
+- Declaring encryption successful without decryption/use tests. Fix: test with an authorised recipient and application path.
+- Finding a leak without containment. Fix: revoke/disable first, preserve minimal evidence, then remove history according to policy.
+- Printing secret values into logs or evidence. Fix: record identifiers, fingerprints, locations, and redacted matches only.
+- Committing encrypted data while committing the decryption key beside it. Fix: keep recipients/keys in an independent trust boundary.
+
+## Outputs
+
+| Artefact | Consumer | Acceptance condition |
+|---|---|---|
+| Redacted exposure report | Security/service owner | Names location, secret type, status, owner, and containment without reproducing the value. |
+| Encryption or rotation record | Service owner | Authorised recipients/consumers work, the prior credential is revoked, and rollback/expiry is recorded. |
+| Verification evidence | Reviewer | Scanner rerun and application authentication test pass with secret values redacted. |
+
+## References
+
+- [`references/secret-scanning.md`](references/secret-scanning.md)
+- [`references/age-and-sops.md`](references/age-and-sops.md)
+- [`references/rotation-playbook.md`](references/rotation-playbook.md)
+
+## Evidence Produced
+
+| Artefact | Acceptance condition |
+|---|---|
+| Redacted secret-handling evidence | Includes findings, fingerprints, rotation/revocation time, dependant checklist, use tests, and clean rescan without secret values. |
+
+## Capability contract
+
+Read-only scanning is the default. Reading secret contents, editing encrypted files, contacting a secret provider, revoking credentials, or restarting consumers requires explicit authority and least-privilege access. Do not send secrets through chat or command output.
+
+## Degraded mode
+
+If provider access or a consumer test is unavailable, contain what can be contained and mark revocation or cutover `not assessed`; return a sequenced owner handoff. A successful file edit is not a successful rotation.
+
+## Decision rules
+
+| Choice | Action | Failure or risk avoided |
+|---|---|---|
+| Confirmed active leak | Revoke/disable, then rotate and remediate history | Ongoing compromise. |
+| Shared encrypted configuration | Use SOPS with managed recipients | Manual plaintext handling. |
+| Single file transfer/backup | Use age/GPG for named recipients | Excess key distribution. |
+
+## Worked example
+
+For a leaked database password in a repository, record only the file/line and credential identifier, revoke the credential at the issuer, create a replacement, update each named consumer, restart them in an approved order, test authentication, remove the leaked value from reachable history, and rescan.
+
+<!-- dual-compat-end -->
+
+**This skill is self-contained.** Every command below is a standard tool
+(`trufflehog`, `gitleaks`, `age`, `sops`, `gpg`, `stat`, `find`). The
+`sk-*` scripts in the **Optional fast path** section are convenience
+wrappers — never required.
+
+This skill owns **secret hygiene** on a managed server: scanning for
+credentials that have leaked into files or repos, encrypting config at
+rest with `age` or `sops`, and rotating credentials without downtime.
+
+Informed by *Linux System Administration for the 2020s* (secrets are a
+first-class operational concern, not an afterthought).
+
+It does **not** own:
+
+- **User SSH keys** for access — `linux-access-control`.
+- **TLS certificates** — `linux-firewall-ssl`.
+- **Application secrets lifecycle inside code repos** (beyond scanning)
+  — application teams own their own vaulting.
+
+---
+
+## When to use
+
+- Scanning a repo or directory for accidentally committed credentials.
+- Encrypting a config file (database password, API key) with `age` or
+  `sops`.
+- Rotating a managed credential: backup GPG key, MySQL user password,
+  API token.
+- Auditing which files on the server contain credentials and verifying
+  their permissions.
+
+## When NOT to use
+
+- Storing a single personal secret — use a password manager.
+- Managing cloud provider secret stores (AWS Secrets Manager, Vault) —
+  out of scope for v1.
+
+---
+
+## Standing rules
+
+1. **Credential files are mode `0600`, owned by the process that needs
+   them.**
+2. **Credentials never live in a git-tracked file in plain text.**
+   Secret scanning is a pre-commit requirement.
+3. **Every rotation has a verification step.** A rotation that doesn't
+   prove the new credential works is worse than no rotation at all.
+4. **Rotation is dry-runnable.** Every rotation supports `--dry-run`
+   which prints the steps without writing.
+5. **`age` is preferred over `gpg` for new encryption.** Smaller,
+   simpler, modern key format. `sops` wraps it with config-file
+   awareness.
+6. **Leaked secrets are revoked immediately, not "after we understand
+   the scope."** Scope analysis happens *after* revocation.
+7. **Rotation order is: generate → deploy alongside → verify → revoke.**
+   Never revoke first (guaranteed outage). Never big-bang (no rollback).
+
+---
+
+## Quick reference — manual commands
+
+### Secret scanning
+
+```bash
+# trufflehog v3 (recommended)
+# Install: curl -sSfL https://raw.githubusercontent.com/trufflesecurity/trufflehog/main/scripts/install.sh | sudo sh -s -- -b /usr/local/bin
+trufflehog filesystem /var/www/my-app --no-update
+trufflehog git file:///home/user/my-repo --no-update
+
+# gitleaks (alternative)
+# Install: sudo apt install gitleaks  (or from GitHub releases for newer versions)
+gitleaks detect --source . --verbose
+gitleaks detect --source . --log-opts="--since=2026-01-01"
+
+# detect-secrets (Python, pre-commit friendly)
+sudo apt install detect-secrets
+detect-secrets scan > .secrets.baseline
+
+# Audit filesystem credential file permissions
+find /etc /root /home -type f \( -name "*.key" -o -name "*.pem" -o -name ".mysql-backup.cnf" -o -name "rclone.conf" \) -printf "%m %u:%g %p\n" 2>/dev/null
+```
+
+Full scanning playbook (custom rule files, pre-commit hook integration,
+false-positive suppression, history rewrite with `git-filter-repo`,
+cron-scheduled sweeps) — see
+[`references/secret-scanning.md`](references/secret-scanning.md).
+
+### age encryption (modern, simple)
+
+```bash
+# Install
+sudo apt install age
+
+# Generate a key (owner)
+mkdir -p ~/.config/age && chmod 700 ~/.config/age
+age-keygen -o ~/.config/age/keys.txt
+chmod 600 ~/.config/age/keys.txt
+
+# Get the public key (shareable)
+grep "# public key:" ~/.config/age/keys.txt
+# age1abcd...
+
+# Encrypt to a single recipient
+age -r age1abcd... -o secret.age secret.txt
+
+# Decrypt (needs the private key)
+age -d -i ~/.config/age/keys.txt -o secret.txt secret.age
+
+# Encrypt to multiple recipients (backup + primary)
+age -r age1abcd... -r age1efgh... -o secret.age secret.txt
+
+# Use an SSH key as recipient (age reads ssh-ed25519 directly)
+age -R ~/.ssh/id_ed25519.pub -o secret.age secret.txt
+age -d -i ~/.ssh/id_ed25519 -o secret.txt secret.age
+```
+
+### sops (wraps age for config-file-aware encryption)
+
+```bash
+# Install sops from GitHub releases
+SOPS_VER=3.9.0
+curl -LO https://github.com/getsops/sops/releases/download/v${SOPS_VER}/sops-v${SOPS_VER}.linux.amd64
+sudo install -m 0755 sops-v${SOPS_VER}.linux.amd64 /usr/local/bin/sops
+
+# Create .sops.yaml — who can decrypt what
+cat > .sops.yaml <<'EOF'
+creation_rules:
+  - path_regex: secrets/.*\.yaml$
+    age: age1abcd...,age1efgh...
+EOF
+
+# Encrypt YAML/JSON/ENV (only values, not keys)
+sops -e -i secrets/db.yaml
+
+# Edit in place (opens $EDITOR with decrypted content)
+sops secrets/db.yaml
+
+# Decrypt to stdout (for CI)
+sops -d secrets/db.yaml
+
+# Rotate recipients after adding/removing a team member
+sops updatekeys secrets/db.yaml
+```
+
+Full age/sops deep dive (multi-recipient, SSH keys, YubiKey via
+age-plugin-yubikey, threat model, Ansible integration via
+`community.sops`, systemd `LoadCredentialEncrypted=`, docker-compose
+secrets, complete `database.env` example) — see
+[`references/age-and-sops.md`](references/age-and-sops.md).
+
+### Credential rotation
+
+```bash
+# Pattern: generate → deploy alongside → verify → revoke
+# Example: backup GPG key rotation
+
+# 1. Generate new key
+gpg --quick-generate-key "backup-$(date +%Y)" default default 2y
+
+# 2. Re-encrypt a test file with the new key
+gpg --encrypt --recipient "backup-$(date +%Y)" --output test.gpg test.txt
+
+# 3. Verify decryption works
+gpg --decrypt test.gpg > /tmp/test.out && diff test.txt /tmp/test.out
+
+# 4. Update the backup script config to reference the new key ID
+
+# 5. Run a real backup with the new key (dry-run first)
+sudo /usr/local/bin/mysql-backup.sh --dry-run
+
+# 6. Real run + verification
+sudo /usr/local/bin/mysql-backup.sh
+
+# 7. Only now mark the old key for eventual revocation (keep for grace period
+#    so old backups can still be decrypted)
+
+# 8. Log the rotation to the append-only audit trail
+echo "$(date -Iseconds) rotated backup gpg key from <old-id> to <new-id>" | \
+    sudo tee -a /var/log/linux-skills/secret-rotations.log
+```
+
+Full rotation playbook (category cadences, three concrete runbooks,
+append-only audit log with `chattr +a`) — see
+[`references/rotation-playbook.md`](references/rotation-playbook.md).
+
+---
+
+## Typical workflows
+
+### Workflow: "Scan a repo before commit"
+
+```bash
+cd /var/www/my-app
+trufflehog filesystem . --no-update
+
+# If anything is found:
+# 1. REVOKE the credential at its source immediately (database, API, etc.)
+# 2. Rotate
+# 3. Only then consider history cleanup
+```
+
+### Workflow: "Encrypt a new secrets file for Ansible"
+
+```bash
+# Add the sops rule for this repo (one-time per recipient change)
+cat > .sops.yaml <<'EOF'
+creation_rules:
+  - path_regex: ansible/group_vars/.*/vault\.yaml$
+    age: age1abcd...
+EOF
+
+# Create the plaintext values, then encrypt in place
+cat > ansible/group_vars/all/vault.yaml <<'EOF'
+database_password: supersecret
+api_token: tk_live_abc
+EOF
+
+sops -e -i ansible/group_vars/all/vault.yaml
+
+# Edit later with:
+sops ansible/group_vars/all/vault.yaml
+
+# Ansible side: use community.sops.load_vars
+```
+
+### Workflow: "Rotate the backup GPG key annually"
+
+See [`references/rotation-playbook.md`](references/rotation-playbook.md)
+for the full runbook. Summary:
+
+1. Generate new key with 2-year expiry.
+2. Re-encrypt the current credential file to both old AND new (grace period).
+3. Run a dry-run backup with the new key.
+4. Run a real backup, verify it decrypts.
+5. Update documentation with the new key ID and fingerprint.
+6. Schedule old-key revocation for 90 days from now.
+7. Append rotation entry to `/var/log/linux-skills/secret-rotations.log`.
+
+### Workflow: "Audit credential file permissions"
+
+```bash
+# Walk known credential locations
+sudo find /etc/mysql /root/.ssh /etc/ssl/private /etc/letsencrypt/live \
+    /home/*/.config/rclone /home/*/.mysql-backup.cnf \
+    -type f -printf "%m %u:%g %p\n" 2>/dev/null | sort
+
+# Anything not 600 or 640 is a finding
+sudo find /etc/mysql /root/.ssh /etc/ssl/private -type f \
+    -not -perm 600 -not -perm 640 -printf "%m %p\n" 2>/dev/null
+```
+
+---
+
+## Troubleshooting / gotchas
+
+- **`trufflehog` false positives on test fixtures.** Add them to a
+  baseline file (`trufflehog` supports `--exclude-paths`). Baselines are
+  safer than inline `// nosecrets` comments because baselines are
+  reviewed during changes.
+- **Big-bang rotation breaks production.** Every consumer must see the
+  new credential before the old one is revoked. Design for
+  dual-credentials during the grace period.
+- **`sops updatekeys` is silent.** It re-encrypts the data key to the
+  new recipients but doesn't tell you which files it touched. Always
+  run in a clean git tree and inspect the diff.
+- **age keys in `~/.config/age/keys.txt` are plaintext on disk.** They
+  are protected by filesystem permissions only. For higher assurance,
+  use `age-plugin-yubikey` so the private half lives on hardware.
+- **Revoking a backup GPG key before the grace period expires orphans
+  old backups.** Keep the old key for at least one full backup cycle
+  after rotation — longer for compliance retention.
+- **`chattr +a` on the rotation log prevents accidental deletion but
+  does NOT stop root from unlinking the file.** Combine with off-host
+  log shipping for real tamper evidence.
+
+---
+
+## References
+
+- [`references/secret-scanning.md`](references/secret-scanning.md) —
+  trufflehog, gitleaks, detect-secrets, pre-commit integration, history
+  rewrite, filesystem audit.
+- [`references/age-and-sops.md`](references/age-and-sops.md) — full age
+  and sops deep dive with Ansible and systemd integration.
+- [`references/rotation-playbook.md`](references/rotation-playbook.md) —
+  rotation discipline, three concrete runbooks, tamper-evident audit log.
+- Book: *Linux System Administration for the 2020s* — DevSecOps chapter,
+  security gates before artifacts flow downstream.
+- Upstream docs: age (https://github.com/FiloSottile/age), sops
+  (https://github.com/getsops/sops), trufflehog
+  (https://github.com/trufflesecurity/trufflehog).
+
+---
+
+## Script availability
+
+No wrapper commands for this skill are shipped in this checkout. Use the native procedures above; planned wrappers remain in [the script inventory](../../docs/engine-design/script-inventory.md) until their source files are present.
