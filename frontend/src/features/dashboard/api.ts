@@ -193,10 +193,7 @@ export type RecentVisitor = { id: string; name: string; added: string };
 const VISITOR_WINDOW_MONTHS = 6;
 const VISITOR_PAGE = 50;
 
-export const getRecentVisitors = (
-  today: string,
-  signal?: AbortSignal,
-) =>
+export const getRecentVisitors = (today: string, signal?: AbortSignal) =>
   api
     .get<{ data: { id: string; name: string; createdAt: string }[] }>(
       "/v1/visitors",
@@ -286,15 +283,12 @@ export const getMix = (signal?: AbortSignal) =>
     femaleCount: number;
     averageAge: number;
     ageGroups: { label: string; count: number }[];
-  }>(
-    "/v1/members/summary",
-    ALL_TIME.from,
-    ALL_TIME.to,
-    signal,
-  ).then((r): MemberMix => ({
-    total: r.totalMembers,
-    male: r.maleCount,
-    female: r.femaleCount,
-    average: r.averageAge,
-    bands: r.ageGroups,
-  }));
+  }>("/v1/members/summary", ALL_TIME.from, ALL_TIME.to, signal).then(
+    (r): MemberMix => ({
+      total: r.totalMembers,
+      male: r.maleCount,
+      female: r.femaleCount,
+      average: r.averageAge,
+      bands: r.ageGroups,
+    }),
+  );

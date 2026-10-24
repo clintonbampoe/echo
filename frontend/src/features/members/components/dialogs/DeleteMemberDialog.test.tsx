@@ -14,14 +14,19 @@ afterEach(() => vi.unstubAllGlobals());
 
 const deleted = () =>
   fetchMock.mock.calls.some(
-    ([url, init]) => init?.method === "DELETE" && url.includes("/v1/members/m1"),
+    ([url, init]) =>
+      init?.method === "DELETE" && url.includes("/v1/members/m1"),
   );
 
 describe("delete member dialog", () => {
   it("says what happens in words that fit the member, and starts on the safe button", () => {
     renderApp(
       <DeleteMemberDialog
-        member={aMember({ name: "Abena Mensah", firstName: "Abena", gender: "Female" })}
+        member={aMember({
+          name: "Abena Mensah",
+          firstName: "Abena",
+          gender: "Female",
+        })}
         onClose={vi.fn()}
       />,
     );
@@ -52,6 +57,8 @@ describe("delete member dialog", () => {
     await user.click(screen.getByRole("button", { name: "Delete" }));
     await waitFor(() => expect(onClose).toHaveBeenCalled());
     expect(deleted()).toBe(true);
-    expect(await screen.findByRole("status")).toHaveTextContent("Member deleted");
+    expect(await screen.findByRole("status")).toHaveTextContent(
+      "Member deleted",
+    );
   });
 });

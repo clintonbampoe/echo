@@ -2,16 +2,13 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  margin-bottom: 16px;
+  margin-bottom: -10px;
   font-size: 14px;
-  color: var(--text-2);
+  color: var(--text-3);
   text-decoration: none;
 }
 .back:hover {
   color: var(--text);
-}
-.flip {
-  transform: rotate(180deg);
 }
 
 /* Wide: who they are and their details in one card on the left, numbers and history on the right. */

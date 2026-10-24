@@ -13,7 +13,12 @@ const summary = {
 };
 
 let requested: string[];
-function server(members = [aMember(), aMember({ id: "m2", name: "Abena Mensah", status: "Inactive" })]) {
+function server(
+  members = [
+    aMember(),
+    aMember({ id: "m2", name: "Abena Mensah", status: "Inactive" }),
+  ],
+) {
   requested = [];
   vi.stubGlobal(
     "fetch",
@@ -28,7 +33,8 @@ function server(members = [aMember(), aMember({ id: "m2", name: "Abena Mensah", 
       }
       if (path === "/v1/members")
         return json({ data: members, hasMore: false, next: null });
-      if (path.includes("/congregation")) return json({ id: "2", name: "Grace" });
+      if (path.includes("/congregation"))
+        return json({ id: "2", name: "Grace" });
       return json({});
     }),
   );
@@ -43,9 +49,9 @@ describe("members page", () => {
     renderApp(<MembersPage />, "/members");
     const strip = await screen.findByRole("region", { name: "Member summary" });
     expect(await within(strip).findByText("New this year")).toBeInTheDocument();
-    expect(await within(strip).findByText("+30%")).toBeInTheDocument();
-    expect(within(strip).getByText("54%")).toBeInTheDocument();
-    expect(within(strip).getByText("46%")).toBeInTheDocument();
+    expect(await within(strip).findByText("30%")).toBeInTheDocument();
+    expect(within(strip).getByText("54")).toBeInTheDocument();
+    expect(within(strip).getByText("46")).toBeInTheDocument();
     expect(within(strip).getByText("38")).toBeInTheDocument();
   });
 
@@ -63,7 +69,9 @@ describe("members page", () => {
     server();
     renderApp(<MembersPage />, "/members?window=all");
     await screen.findByRole("link", { name: "Abena Mensah" });
-    const summaries = requested.filter((u) => pathOf(u) === "/v1/members/summary");
+    const summaries = requested.filter(
+      (u) => pathOf(u) === "/v1/members/summary",
+    );
     expect(summaries).toHaveLength(1);
   });
 
@@ -71,7 +79,9 @@ describe("members page", () => {
     const user = userEvent.setup();
     server();
     renderApp(<MembersPage />, "/members");
-    await user.click(await screen.findByRole("button", { name: "Add member" }));
+    await user.click(
+      (await screen.findAllByRole("button", { name: "Add member" }))[0]!,
+    );
     expect(
       await screen.findByRole("dialog", { name: "Add member" }),
     ).toBeInTheDocument();
@@ -79,26 +89,11 @@ describe("members page", () => {
     expect(screen.queryByRole("dialog", { name: "Add member" })).toBeNull();
   });
 
-  it("opens the edit sheet and the delete dialog from a row's menu", async () => {
-    const user = userEvent.setup();
+  it("has no row menu: rows open the profile", async () => {
     server();
     renderApp(<MembersPage />, "/members");
-    await user.click(
-      await screen.findByRole("button", { name: "Actions for Kwame Asante" }),
-    );
-    await user.click(screen.getByRole("menuitem", { name: "Edit member" }));
-    expect(
-      await screen.findByRole("dialog", { name: "Edit Kwame Asante" }),
-    ).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "Cancel" }));
-
-    await user.click(
-      screen.getByRole("button", { name: "Actions for Abena Mensah" }),
-    );
-    await user.click(screen.getByRole("menuitem", { name: "Delete" }));
-    expect(
-      await screen.findByRole("alertdialog", { name: "Delete Abena Mensah?" }),
-    ).toBeInTheDocument();
+    await screen.findByRole("link", { name: "Kwame Asante" });
+    expect(screen.queryByRole("button", { name: /Actions for/ })).toBeNull();
   });
 
   it("says so when nothing matches the filters", async () => {

@@ -139,7 +139,11 @@ export function summarize(values: readonly number[]): Summary | undefined {
 
 // The stretch a chart card speaks about: the bar picked, or the latest when none is picked. A bar picked
 // again clears the pick, and a pick that no longer exists (the range changed) falls back to the latest.
-export type Picked = { index: number; stretch: Bucket | undefined; chosen: boolean };
+export type Picked = {
+  index: number;
+  stretch: Bucket | undefined;
+  chosen: boolean;
+};
 
 export function pickedStretch(
   buckets: readonly Bucket[],

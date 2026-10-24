@@ -1,5 +1,4 @@
 import { screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { renderApp } from "@/test/kit";
 import { aMember } from "../../testing/fixtures";
 import { MemberList } from "./MemberList";
@@ -14,9 +13,7 @@ const abena = aMember({
 
 describe("member list", () => {
   it("shows phone and city under the name, and a chip only for members who are not active", () => {
-    renderApp(
-      <MemberList members={[kwame, abena]} onEdit={vi.fn()} onDelete={vi.fn()} />,
-    );
+    renderApp(<MemberList members={[kwame, abena]} />);
     expect(screen.getByRole("link", { name: "Kwame Asante" })).toHaveAttribute(
       "href",
       "/members/m1",
@@ -27,33 +24,15 @@ describe("member list", () => {
     expect(screen.getByText("12 Mar 2019")).toBeInTheDocument();
   });
 
-  it("opens a row menu with Edit member and Delete, and hands the member to the chosen action", async () => {
-    const user = userEvent.setup();
-    const onDelete = vi.fn();
-    renderApp(
-      <MemberList members={[kwame]} onEdit={vi.fn()} onDelete={onDelete} />,
-    );
-    await user.click(
-      screen.getByRole("button", { name: "Actions for Kwame Asante" }),
-    );
-    expect(screen.getAllByRole("menuitem").map((i) => i.textContent)).toEqual([
-      "Edit member",
-      "Delete",
-    ]);
-    await user.click(screen.getByRole("menuitem", { name: "Delete" }));
-    expect(onDelete).toHaveBeenCalledWith(kwame);
-    expect(screen.queryByRole("menu")).toBeNull();
+  it("has no row menu: edit and delete live on the profile", () => {
+    renderApp(<MemberList members={[kwame]} />);
+    expect(screen.queryByRole("button", { name: /Actions for/ })).toBeNull();
   });
 
-  it("closes the menu on Escape", async () => {
-    const user = userEvent.setup();
+  it("puts the footer at the bottom of the card", () => {
     renderApp(
-      <MemberList members={[kwame]} onEdit={vi.fn()} onDelete={vi.fn()} />,
+      <MemberList members={[kwame]} footer={<p>Showing 1 member</p>} />,
     );
-    await user.click(
-      screen.getByRole("button", { name: "Actions for Kwame Asante" }),
-    );
-    await user.keyboard("{Escape}");
-    expect(screen.queryByRole("menu")).toBeNull();
+    expect(screen.getByText("Showing 1 member")).toBeInTheDocument();
   });
 });

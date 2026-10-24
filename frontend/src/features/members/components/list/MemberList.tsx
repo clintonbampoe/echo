@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { formatDate } from "@/lib/format";
 import { paths } from "@/lib/paths";
 import { Chip, PersonList, type PersonColumn } from "@/ui";
@@ -7,8 +8,7 @@ import { statusTone } from "../../model/labels";
 
 type Props = {
   members: Member[];
-  onEdit: (m: Member) => void;
-  onDelete: (m: Member) => void;
+  footer?: ReactNode;
 };
 
 // Which columns a member row shows. The row itself (avatar, name, line under it, menu, card layout) is shared.
@@ -31,7 +31,7 @@ const columns: PersonColumn<Member>[] = [
   },
 ];
 
-export function MemberList({ members, onEdit, onDelete }: Props) {
+export function MemberList({ members, footer }: Props) {
   return (
     <PersonList
       label="Members"
@@ -44,10 +44,7 @@ export function MemberList({ members, onEdit, onDelete }: Props) {
       })}
       columns={columns}
       compact
-      actions={(m) => [
-        { label: "Edit member", onSelect: () => onEdit(m) },
-        { label: "Delete", danger: true, separated: true, onSelect: () => onDelete(m) },
-      ]}
+      footer={footer}
     />
   );
 }

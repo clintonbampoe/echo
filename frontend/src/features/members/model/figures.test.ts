@@ -24,12 +24,16 @@ describe("member figures", () => {
   });
 
   it("shows New this year with its change, then women, men and average age", () => {
-    const stats = memberFigures("year", summary(), summary({ totalMembers: 46 }));
-    expect(stats.map((s) => [s.label, s.value])).toEqual([
-      ["New this year", "60"],
-      ["Women", "54%"],
-      ["Men", "46%"],
-      ["Average age", "38"],
+    const stats = memberFigures(
+      "year",
+      summary(),
+      summary({ totalMembers: 46 }),
+    );
+    expect(stats.map((s) => [s.label, s.value, s.unit])).toEqual([
+      ["New this year", "60", undefined],
+      ["Women", "54", "%"],
+      ["Men", "46", "%"],
+      ["Average age", "38", undefined],
     ]);
     expect(stats[0]?.change).toBe("+30%");
   });

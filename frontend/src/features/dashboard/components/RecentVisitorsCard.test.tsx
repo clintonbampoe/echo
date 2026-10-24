@@ -47,13 +47,13 @@ it("names the three newest, and when each was added", async () => {
 it("leads to every visitor's records", async () => {
   renderCard(<RecentVisitorsCard today="2026-10-20" />);
   await screen.findByText("Esi Mensah");
-  expect(
-    screen.getByRole("link", { name: /All visitors/ }),
-  ).toHaveAttribute("href", "/visitors");
-  expect(screen.getAllByRole("link", { name: /Esi Mensah/ })[0]).toHaveAttribute(
+  expect(screen.getByRole("link", { name: /All visitors/ })).toHaveAttribute(
     "href",
-    "/visitors/u2",
+    "/visitors",
   );
+  expect(
+    screen.getAllByRole("link", { name: /Esi Mensah/ })[0],
+  ).toHaveAttribute("href", "/visitors/u2");
 });
 
 it("says when it has nothing to show", async () => {

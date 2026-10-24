@@ -1,6 +1,5 @@
 import { usePersonStats } from "@/features/attendance";
-import { useOrganizationsStat } from "@/features/organizations";
-import { useTitheStat } from "@/features/tithes";
+import { useLastTitheStat, useTitheStat } from "@/features/tithes";
 import { StatStrip } from "@/ui";
 
 // The four numbers at the top of a profile. Each one is worked out by the feature it is about; attendance
@@ -8,11 +7,11 @@ import { StatStrip } from "@/ui";
 export function ProfileFigures({ id, today }: { id: string; today: string }) {
   const [attendance, lastSeen] = usePersonStats(id, today);
   const tithes = useTitheStat(id, today);
-  const organizations = useOrganizationsStat(id);
+  const lastTithe = useLastTitheStat(id);
   return (
     <StatStrip
       label="Member numbers"
-      stats={[attendance!, lastSeen!, tithes, organizations]}
+      stats={[attendance!, tithes, lastSeen!, lastTithe]}
     />
   );
 }

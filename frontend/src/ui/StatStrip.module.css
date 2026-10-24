@@ -35,7 +35,11 @@
 }
 .value {
   min-width: 0;
-  font-size: 28px;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  font-variant-numeric: tabular-nums;
+  font-size: 32px;
   font-weight: 600;
   line-height: 1;
   letter-spacing: -0.03em;
@@ -81,11 +85,18 @@
   height: 28px;
 }
 
+.unit {
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0;
+  opacity: 0.62;
+}
 .change {
   flex: none;
   display: inline-flex;
   align-items: center;
-  padding: 3px 9px;
+  gap: 2px;
+  padding: 3px 9px 3px 5px;
   border-radius: var(--radius-pill);
   background: var(--pos-bg);
   color: var(--pos);
@@ -105,4 +116,17 @@
   margin: -1px;
   overflow: hidden;
   clip-path: inset(50%);
+}
+
+/* On a phone the unit moves up into the label, as on the boards. */
+.labelUnit {
+  display: none;
+}
+@media (max-width: 900px) {
+  .labelUnit {
+    display: inline;
+  }
+  .unit {
+    display: none;
+  }
 }

@@ -12,13 +12,7 @@ const ROWS = 3;
 
 // One visitor: a link to their record, with the monogram, their name and when they were added.
 // On a wide card the whole record is offered by a button; on a narrow one a chevron leads.
-function Row({
-  visitor: v,
-  today,
-}: {
-  visitor: RecentVisitor;
-  today: string;
-}) {
+function Row({ visitor: v, today }: { visitor: RecentVisitor; today: string }) {
   return (
     <li className={styles.row}>
       <Link to={`/visitors/${v.id}`} className={styles.link}>
@@ -36,7 +30,13 @@ function Row({
   );
 }
 
-function Rows({ visitors, today }: { visitors?: RecentVisitor[]; today: string }) {
+function Rows({
+  visitors,
+  today,
+}: {
+  visitors?: RecentVisitor[];
+  today: string;
+}) {
   if (!visitors)
     return (
       <ul aria-busy="true" className={styles.list}>
@@ -48,17 +48,11 @@ function Rows({ visitors, today }: { visitors?: RecentVisitor[]; today: string }
       </ul>
     );
   if (visitors.length === 0)
-    return (
-      <p className={styles.empty}>No visitors in the last 6 months</p>
-    );
+    return <p className={styles.empty}>No visitors in the last 6 months</p>;
   return (
     <ul className={styles.list}>
       {visitors.slice(0, ROWS).map((v) => (
-        <Row
-          key={v.id}
-          visitor={v}
-          today={today}
-        />
+        <Row key={v.id} visitor={v} today={today} />
       ))}
     </ul>
   );

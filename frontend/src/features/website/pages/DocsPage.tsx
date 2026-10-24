@@ -41,7 +41,12 @@ export function DocsPage() {
         <ul className={styles.topics}>
           {topics.map((topic) => (
             <li key={topic.title}>
-              <a href={DOCS_URL} target="_blank" rel="noreferrer" className={styles.topic}>
+              <a
+                href={DOCS_URL}
+                target="_blank"
+                rel="noreferrer"
+                className={styles.topic}
+              >
                 <h2>{topic.title}</h2>
                 <p>{topic.text}</p>
               </a>

@@ -7,7 +7,8 @@ describe("tithesStat", () => {
       totalCollected: month === 2 ? 0 : 100,
     }));
     expect(tithesStat(rows, "2026-03-20")).toMatchObject({
-      value: "GH₵ 200",
+      value: "200",
+      unit: "GHS",
       note: "2 of 3 months",
     });
   });

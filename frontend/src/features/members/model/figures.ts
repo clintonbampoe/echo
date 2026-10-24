@@ -22,12 +22,16 @@ const newLabel: Record<WindowKey, string> = {
   all: "All members",
 };
 
-const count = (s: MemberSummary | undefined, pick: (s: MemberSummary) => number) =>
-  s ? formatNumber(pick(s)) : "–";
+const count = (
+  s: MemberSummary | undefined,
+  pick: (s: MemberSummary) => number,
+) => (s ? formatNumber(pick(s)) : "–");
 
 // A share of the people whose gender we know, as "54%".
-const share = (s: MemberSummary | undefined, pick: (s: MemberSummary) => number) =>
-  s ? `${percent(pick(s), s.femaleCount + s.maleCount)}%` : "–";
+const share = (
+  s: MemberSummary | undefined,
+  pick: (s: MemberSummary) => number,
+) => (s ? String(percent(pick(s), s.femaleCount + s.maleCount)) : "–");
 
 // `previous` is the same count a year earlier. It is only meaningful for "this year", so only then is it compared.
 export function memberFigures(
@@ -41,16 +45,20 @@ export function memberFigures(
       label: newLabel[window],
       value: count(s, (x) => x.totalMembers),
       note: s ? `${count(s, (x) => x.activeMembers)} active` : "",
-      change: compare ? changeLabel(s.totalMembers, previous.totalMembers) : undefined,
+      change: compare
+        ? changeLabel(s.totalMembers, previous.totalMembers)
+        : undefined,
     },
     {
       label: "Women",
       value: share(s, (x) => x.femaleCount),
+      unit: s ? "%" : undefined,
       note: s ? `${count(s, (x) => x.femaleCount)} women` : "",
     },
     {
       label: "Men",
       value: share(s, (x) => x.maleCount),
+      unit: s ? "%" : undefined,
       note: s ? `${count(s, (x) => x.maleCount)} men` : "",
     },
     {

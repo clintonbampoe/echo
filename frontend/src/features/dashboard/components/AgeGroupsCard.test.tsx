@@ -55,27 +55,28 @@ it("says the average age in the foot", async () => {
   expect(screen.getByText("See members")).toHaveAttribute("href", "/members");
 });
 
-  it("says nothing about the average for a church without members", async () => {    vi.stubGlobal(
-      "fetch",
-      vi.fn(async (url: string) => {
-        const { path } = asked(url);
-        if (broken || path !== "/v1/members/summary")
-          return json({ title: "Server error", status: 500 }, 500);
-        return json({
-          ...mix,
-          totalMembers: 0,
-          averageAge: 0,
-          ageGroups: mix.ageGroups.map((b) => ({ ...b, count: 0 })),
-        });
-      }),
-    );
-    renderCard(<AgeGroupsCard />);
-    await screen.findByText("No members yet");
-    expect(screen.queryByText(/Average age/)).not.toBeInTheDocument();
-    expect(
-      screen.queryByRole("list", { name: "Members by age group" }),
-    ).not.toBeInTheDocument();
-  });
+it("says nothing about the average for a church without members", async () => {
+  vi.stubGlobal(
+    "fetch",
+    vi.fn(async (url: string) => {
+      const { path } = asked(url);
+      if (broken || path !== "/v1/members/summary")
+        return json({ title: "Server error", status: 500 }, 500);
+      return json({
+        ...mix,
+        totalMembers: 0,
+        averageAge: 0,
+        ageGroups: mix.ageGroups.map((b) => ({ ...b, count: 0 })),
+      });
+    }),
+  );
+  renderCard(<AgeGroupsCard />);
+  await screen.findByText("No members yet");
+  expect(screen.queryByText(/Average age/)).not.toBeInTheDocument();
+  expect(
+    screen.queryByRole("list", { name: "Members by age group" }),
+  ).not.toBeInTheDocument();
+});
 
 it("says so when the ages could not load, and offers another try", async () => {
   broken = true;

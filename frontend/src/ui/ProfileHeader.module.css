@@ -2,7 +2,6 @@
   display: flex;
   align-items: center;
   gap: 20px;
-  margin-top: 20px;
 }
 .who {
   flex: 1;
@@ -15,15 +14,15 @@
   gap: 10px;
 }
 .name {
-  font-size: 28px;
+  font-size: 30px;
   font-weight: 600;
   line-height: 1.15;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.03em;
 }
 .line {
   margin-top: 6px;
-  font-size: 15px;
-  color: var(--text-2);
+  font-size: 14px;
+  color: var(--text-3);
 }
 .actions {
   display: flex;
@@ -35,19 +34,34 @@
 @media (max-width: 900px) {
   .header {
     flex-wrap: wrap;
-    gap: 16px;
+    gap: 14px 14px;
+  }
+  .header > :first-child {
+    width: 60px !important;
+    height: 60px !important;
+    font-size: 20px !important;
   }
   .who {
-    flex-basis: calc(100% - 96px);
+    flex: 1;
   }
   .name {
     font-size: 24px;
   }
+  .line {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  /* The ⋯ stays beside the name; Edit takes the next row. */
   .actions {
-    flex-basis: 100%;
+    display: contents;
   }
   .actions > :first-child {
-    flex: 1;
-    height: 48px;
+    order: 3;
+    flex: 1 0 100%;
+    height: 44px;
+  }
+  .actions > :last-child {
+    order: 2;
   }
 }

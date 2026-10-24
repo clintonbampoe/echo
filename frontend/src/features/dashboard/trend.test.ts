@@ -1,4 +1,10 @@
-import { bucketsOf, pickedStretch, stretchName, summarize, viewOf } from "./trend";
+import {
+  bucketsOf,
+  pickedStretch,
+  stretchName,
+  summarize,
+  viewOf,
+} from "./trend";
 
 // A Monday: the week began on Sunday 18 October, so the last whole week is 11 to 17 October.
 const TODAY = "2026-10-19";

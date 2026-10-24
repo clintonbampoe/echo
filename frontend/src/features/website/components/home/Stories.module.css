@@ -46,8 +46,8 @@
 }
 .points li {
   padding-left: 22px;
-  background: radial-gradient(circle, var(--text) 3px, transparent 3.5px) 0 0.6em /
-    10px 10px no-repeat;
+  background: radial-gradient(circle, var(--text) 3px, transparent 3.5px) 0
+    0.6em / 10px 10px no-repeat;
 }
 .more {
   display: inline-block;

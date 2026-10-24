@@ -1,8 +1,24 @@
 export const ANSWERS = [
-  { q: "How many came on Sunday?", a: "342", note: "in the room, 12 of them first-timers" },
-  { q: "What did we give this month?", a: "GHS 10,400", note: "from 132 of 248 members" },
-  { q: "Which project is closest to its goal?", a: "The borehole", note: "82% of GHS 40,000 raised" },
-  { q: "Who joined this year?", a: "60 new members", note: "up 30% on last year" },
+  {
+    q: "How many came on Sunday?",
+    a: "342",
+    note: "in the room, 12 of them first-timers",
+  },
+  {
+    q: "What did we give this month?",
+    a: "GHS 10,400",
+    note: "from 132 of 248 members",
+  },
+  {
+    q: "Which project is closest to its goal?",
+    a: "The borehole",
+    note: "82% of GHS 40,000 raised",
+  },
+  {
+    q: "Who joined this year?",
+    a: "60 new members",
+    note: "up 30% on last year",
+  },
 ] as const;
 
 export const STORIES = [
@@ -44,8 +60,17 @@ export const STORIES = [
 export const EVERYTHING = [
   { title: "Events", text: "Plan, register and check people in on the day." },
   { title: "Projects", text: "Set a target and watch the progress bar fill." },
-  { title: "Ministries and groups", text: "Choirs, youth, ushers and cell groups, each with its own members." },
-  { title: "Visitors", text: "Follow up every first-time guest, then welcome them as members." },
+  {
+    title: "Ministries and groups",
+    text: "Choirs, youth, ushers and cell groups, each with its own members.",
+  },
+  {
+    title: "Visitors",
+    text: "Follow up every first-time guest, then welcome them as members.",
+  },
   { title: "Assets", text: "What the church owns and what it is worth now." },
-  { title: "Invitations and roles", text: "Bring leaders in with a reusable link or code." },
+  {
+    title: "Invitations and roles",
+    text: "Bring leaders in with a reusable link or code.",
+  },
 ] as const;

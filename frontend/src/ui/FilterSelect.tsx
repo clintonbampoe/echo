@@ -66,7 +66,7 @@ function MenuPill(props: Props) {
       >
         {shown(props)}
         {!applied(value, quiet) && (
-          <Icon name="chevrons-up-down" size={14} className={styles.chevron} />
+          <Icon name="chevron-down" size={12} className={styles.chevron} />
         )}
       </button>
       <Clear
@@ -118,7 +118,7 @@ function SheetPill(props: Props) {
       >
         {shown(props)}
         {!applied(value, quiet) && (
-          <Icon name="chevrons-up-down" size={14} className={styles.chevron} />
+          <Icon name="chevron-down" size={12} className={styles.chevron} />
         )}
       </button>
       <Clear

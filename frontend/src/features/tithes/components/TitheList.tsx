@@ -41,7 +41,6 @@ export function TitheList({ tithes, onOpen }: Props) {
   return (
     <PersonList
       label="Tithes"
-      nameHeader="Member"
       rows={tithes}
       rowKey={(t) => t.id}
       person={(t) => ({

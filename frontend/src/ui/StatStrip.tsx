@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 import { cssVars } from "./cssVars";
+import { Icon } from "./Icon";
 import styles from "./StatStrip.module.css";
 
 // One number with a name and a line of context, e.g. "Attendance" / "86%" / "38 of 44 sessions".
@@ -9,6 +10,8 @@ export type Stat = {
   value: string;
   note: string;
   change?: string;
+  // A small unit after the value ("%", "GHS").
+  unit?: string;
 };
 
 type Props = {
@@ -34,13 +37,20 @@ export function StatStrip({ label, stats, busy }: Props) {
           className={`${styles.item} stagger`}
           style={cssVars({ "--i": i })}
         >
-          <p className={styles.label}>{s.label}</p>
+          <p className={styles.label}>
+            {s.label}
+            {s.unit && <span className={styles.labelUnit}> · {s.unit}</span>}
+          </p>
           {busy ? (
             <span className={`skeleton ${styles.pending}`} aria-hidden="true" />
           ) : (
             <div className={styles.bottom}>
-              <p className={styles.value} title={`${s.value} · ${s.note}`}>
+              <p
+                className={styles.value}
+                title={`${s.value}${s.unit ?? ""} · ${s.note}`}
+              >
                 {s.value}
+                {s.unit && <span className={styles.unit}>{s.unit}</span>}
               </p>
               {/* The context line is not drawn (the boards leave it out); screen readers still get it. */}
               {s.note && <p className={styles.note}>{s.note}</p>}
@@ -48,7 +58,16 @@ export function StatStrip({ label, stats, busy }: Props) {
                 <span
                   className={`${styles.change} ${s.change.startsWith("−") ? styles.down : ""}`}
                 >
-                  {s.change}
+                  <Icon
+                    name={
+                      s.change.startsWith("−") ? "chevron-down" : "chevron-up"
+                    }
+                    size={14}
+                  />
+                  {s.change.replace(/^[+−]/, "")}
+                  <span className={styles.note}>
+                    {s.change.startsWith("−") ? " down" : " up"}
+                  </span>
                 </span>
               )}
             </div>

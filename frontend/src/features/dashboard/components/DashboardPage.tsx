@@ -57,10 +57,7 @@ const groups = (today: string, period: PeriodKey): readonly Group[] => [
   {
     label: "Events",
     children: (
-      <Pager
-        label="Events"
-        titles={["Upcoming events", "Event calendar"]}
-      >
+      <Pager label="Events" titles={["Upcoming events", "Event calendar"]}>
         <UpcomingEventsCard today={today} />
         <EventCalendarCard today={today} />
       </Pager>
@@ -69,10 +66,7 @@ const groups = (today: string, period: PeriodKey): readonly Group[] => [
   {
     label: "Members",
     children: (
-      <Pager
-        label="Members"
-        titles={["Member growth", "Gender", "Age groups"]}
-      >
+      <Pager label="Members" titles={["Member growth", "Gender", "Age groups"]}>
         <MemberGrowthCard today={today} />
         <GenderCard />
         <AgeGroupsCard />

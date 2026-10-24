@@ -67,9 +67,7 @@ describe("assets card", () => {
     expect(
       await screen.findByText("77% of what they cost"),
     ).toBeInTheDocument();
-    expect(
-      screen.getByRole("region", { name: "Assets" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Assets" })).toBeInTheDocument();
     expect(
       screen.getByRole("region", { name: "Assets by category" }),
     ).toBeInTheDocument();

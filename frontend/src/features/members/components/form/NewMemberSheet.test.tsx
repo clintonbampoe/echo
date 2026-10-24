@@ -53,10 +53,9 @@ describe("add member sheet", () => {
     expect(screen.getByLabelText("Phone")).toBeInTheDocument();
     expect(screen.getByRole("radio", { name: "Female" })).toBeInTheDocument();
     expect(screen.getByRole("radio", { name: "Male" })).toBeChecked();
-    expect(screen.getByRole("button", { name: /More details/ })).toHaveAttribute(
-      "aria-expanded",
-      "false",
-    );
+    expect(
+      screen.getByRole("button", { name: /More details/ }),
+    ).toHaveAttribute("aria-expanded", "false");
   });
 
   it("names the church, and on an empty form says what to fix and opens the fold that hides some of it", async () => {
@@ -68,10 +67,9 @@ describe("add member sheet", () => {
     await user.click(screen.getByRole("button", { name: "Add member" }));
     expect(await screen.findByText("Enter a first name")).toBeInTheDocument();
     expect(screen.getByText(/Fix \d+ fields to continue/)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /More details/ })).toHaveAttribute(
-      "aria-expanded",
-      "true",
-    );
+    expect(
+      screen.getByRole("button", { name: /More details/ }),
+    ).toHaveAttribute("aria-expanded", "true");
     expect(posts()).toHaveLength(0);
   });
 
@@ -121,7 +119,9 @@ describe("add member sheet", () => {
       "Kwame Asante added",
     );
     expect(onClose).not.toHaveBeenCalled();
-    await waitFor(() => expect(screen.getByLabelText("Full name")).toHaveValue(""));
+    await waitFor(() =>
+      expect(screen.getByLabelText("Full name")).toHaveValue(""),
+    );
     expect(screen.getByLabelText("Phone")).toHaveValue("");
   });
 

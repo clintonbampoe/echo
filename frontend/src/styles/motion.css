@@ -189,13 +189,14 @@ a[data-press]:active {
 .skeleton {
   display: block;
   border-radius: 8px;
-  background: linear-gradient(
-      100deg,
-      transparent 30%,
-      rgb(255 255 255 / 55%) 50%,
-      transparent 70%
-    )
-    140% 0 / 250% 100% no-repeat,
+  background:
+    linear-gradient(
+        100deg,
+        transparent 30%,
+        rgb(255 255 255 / 55%) 50%,
+        transparent 70%
+      )
+      140% 0 / 250% 100% no-repeat,
     var(--sel);
   animation: echoShimmer 1.4s linear infinite;
 }

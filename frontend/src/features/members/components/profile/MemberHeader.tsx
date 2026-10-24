@@ -1,4 +1,4 @@
-import { Button, Chip, Icon, ActionMenu, ProfileHeader } from "@/ui";
+import { Button, Chip, ActionMenu, ProfileHeader } from "@/ui";
 import type { Member } from "../../api/members";
 import { profileLine } from "../../model/display";
 import { statusTone } from "../../model/labels";
@@ -18,10 +18,7 @@ export function MemberHeader({ member: m, onEdit, onDelete }: Props) {
         )
       }
     >
-      <Button onClick={onEdit}>
-        <Icon name="user" size={16} />
-        Edit
-      </Button>
+      <Button onClick={onEdit}>Edit</Button>
       <ActionMenu
         label={`More actions for ${m.name}`}
         title={m.name}

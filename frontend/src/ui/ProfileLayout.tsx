@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { Icon } from "./Icon";
 import styles from "./ProfileLayout.module.css";
 
-// "← Members": the way back to the list a record came from.
+// "‹ Members": the way back to the list a record came from.
 export function BackLink({
   to,
   children,
@@ -13,7 +13,7 @@ export function BackLink({
 }) {
   return (
     <Link to={to} className={styles.back}>
-      <Icon name="arrow-right" size={16} className={styles.flip} />
+      <Icon name="chevron-left" size={16} />
       {children}
     </Link>
   );

@@ -9,7 +9,9 @@ export function OpenStrip() {
       <div className={styles.strip}>
         <div>
           <p className={styles.label}>Community</p>
-          <h2 className={styles.title}>Free, open source, and built with you.</h2>
+          <h2 className={styles.title}>
+            Free, open source, and built with you.
+          </h2>
         </div>
         <p className={styles.text}>
           Echo costs churches nothing. Read it, shape it and help it grow, or

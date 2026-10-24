@@ -13,8 +13,18 @@ export function memberSince(joined: string | null | undefined) {
   if (!joined) return "";
   const [year, month] = joined.split("-");
   const names = [
-    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
   ];
   const name = names[Number(month) - 1];
   return name && year ? `Member since ${name} ${year}` : "";

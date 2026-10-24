@@ -4,8 +4,8 @@
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-pill);
-  background: var(--sel);
-  color: var(--text);
+  background: linear-gradient(135deg, #f4f4f5, #dadadf);
+  color: #3f3f46;
   font-weight: 600;
   line-height: 1;
 }
@@ -13,4 +13,16 @@
   border-radius: 9px;
   background: var(--accent);
   color: var(--on-accent);
+}
+.tint0 {
+  background: linear-gradient(200deg, #ebebee, #cfcfd5);
+}
+.tint1 {
+  background: linear-gradient(135deg, #f4f4f5, #dadadf);
+}
+.tint2 {
+  background: linear-gradient(135deg, #f0f0f2, #d6d6dc);
+}
+.tint3 {
+  background: linear-gradient(160deg, #edeff0, #d1d1d7);
 }

@@ -1,4 +1,11 @@
-import { Address, Contact, Emergency, Name, Personal, type Form } from "./sections";
+import {
+  Address,
+  Contact,
+  Emergency,
+  Name,
+  Personal,
+  type Form,
+} from "./sections";
 import styles from "./MemberFields.module.css";
 
 // Every input of the member form, in sections. Create and edit use the same fields.

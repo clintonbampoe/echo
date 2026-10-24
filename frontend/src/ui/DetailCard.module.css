@@ -5,17 +5,17 @@
   box-shadow: var(--shadow);
 }
 .group {
-  padding: 18px 20px;
+  padding: 20px 22px 6px;
   border-top: 1px solid var(--line);
 }
 .group:first-child {
   border-top: 0;
 }
 .title {
-  margin-bottom: 6px;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--text-2);
+  margin-bottom: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
 }
 .list {
   margin: 0;
@@ -24,11 +24,18 @@
   display: flex;
   justify-content: space-between;
   gap: 16px;
-  padding: 8px 0;
+  align-items: center;
+  min-height: calc(52px * var(--density, 1));
   font-size: 14px;
+  font-weight: 500;
+  border-top: 1px solid var(--line);
+}
+.row:first-child {
+  border-top: 0;
 }
 .row dt {
   flex: none;
+  font-weight: 400;
   color: var(--text-3);
 }
 .row dd {

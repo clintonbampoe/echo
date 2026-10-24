@@ -1,6 +1,6 @@
 // The numbers about a person's attendance for a profile. Pure, so the tests can check them without a screen.
 // "–" means "still loading" or "nothing to show".
-import { formatDate } from "@/lib/format";
+import { formatDayMonth } from "@/lib/format";
 import type { Stat } from "@/ui";
 
 // "86" for 38 of 44. Nothing when no sessions were held, so the card shows a dash instead of 0%.
@@ -17,7 +17,8 @@ export function attendanceStat(present?: number, held?: number): Stat {
   const percent = known ? attendancePercent(present, held) : null;
   return {
     label: "Attendance",
-    value: percent === null ? "–" : `${percent}%`,
+    value: percent === null ? "–" : String(percent),
+    unit: percent === null ? undefined : "%",
     note: known
       ? held > 0
         ? `${present} of ${held} sessions this year`
@@ -38,7 +39,7 @@ export function lastSeenStat(
     };
   return {
     label: "Last seen",
-    value: formatDate(last.sessionDate),
+    value: formatDayMonth(last.sessionDate),
     note: last.name,
   };
 }

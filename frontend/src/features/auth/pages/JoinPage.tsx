@@ -73,12 +73,10 @@ function JoinForm({
       title="Create your account"
       text={
         invitation.invitedBy
-        ? `${invitation.invitedBy} invited you to join ${invitation.congregationName} on Echo.`
-        : `You were invited to join ${invitation.congregationName} on Echo.`
+          ? `${invitation.invitedBy} invited you to join ${invitation.congregationName} on Echo.`
+          : `You were invited to join ${invitation.congregationName} on Echo.`
       }
-      links={
-        <AuthLinks items={[{ to: "/signin", label: "Sign in" }]} />
-      }
+      links={<AuthLinks items={[{ to: "/signin", label: "Sign in" }]} />}
     >
       {problem && <JoinProblem problem={problem} />}
       <form

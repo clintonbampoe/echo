@@ -36,9 +36,7 @@ beforeEach(() => {
     vi.fn(async (url: string) => {
       const { path, query } = asked(url);
       const body =
-        answers[path]?.[
-          key(query.get("from") ?? "", query.get("to") ?? "")
-        ];
+        answers[path]?.[key(query.get("from") ?? "", query.get("to") ?? "")];
       return body === undefined
         ? json({ title: "Server error", status: 500 }, 500)
         : json(body);
@@ -47,7 +45,8 @@ beforeEach(() => {
 });
 afterEach(() => vi.unstubAllGlobals());
 
-const show = () => renderCard(<NumberCards period="last-week" today="2026-10-19" />);
+const show = () =>
+  renderCard(<NumberCards period="last-week" today="2026-10-19" />);
 
 const card = (name: string) => within(screen.getByRole("group", { name }));
 

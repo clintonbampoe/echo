@@ -19,7 +19,11 @@ function Attendance() {
     ["DA", "Daniel Asante", "Tema", ""],
   ];
   return (
-    <div className={styles.card} role="img" aria-label="Taking attendance: 342 present, 317 members and 25 visitors">
+    <div
+      className={styles.card}
+      role="img"
+      aria-label="Taking attendance: 342 present, 317 members and 25 visitors"
+    >
       <p className={styles.small}>Sunday Service · 9:00 am</p>
       <p className={styles.big}>
         342 <span>present</span>
@@ -43,7 +47,11 @@ function Attendance() {
 
 function Money() {
   return (
-    <div className={styles.card} role="img" aria-label="October net income of GHS 13,000: income 34,000, expenses 21,000">
+    <div
+      className={styles.card}
+      role="img"
+      aria-label="October net income of GHS 13,000: income 34,000, expenses 21,000"
+    >
       <p className={styles.small}>October · net</p>
       <p className={styles.big}>
         +13,000 <span>GHS</span>

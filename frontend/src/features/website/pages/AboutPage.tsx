@@ -8,7 +8,10 @@ import styles from "./AboutPage.module.css";
 export function AboutPage() {
   return (
     <>
-      <PageHero eyebrow="About" title={["Quiet software for", "loud communities."]} />
+      <PageHero
+        eyebrow="About"
+        title={["Quiet software for", "loud communities."]}
+      />
       <Section top={96}>
         <p className={styles.lead}>{ABOUT.lead}</p>
       </Section>

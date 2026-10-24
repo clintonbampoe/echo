@@ -3,13 +3,11 @@
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  margin-top: 16px;
   padding: 48px 16px;
   text-align: center;
   color: var(--text-3);
 }
 .gap {
-  margin-top: 16px;
 }
 
 .footer {
@@ -30,4 +28,32 @@
   margin: -1px;
   overflow: hidden;
   clip-path: inset(50%);
+}
+
+/* The count and "Load more" as the last row of the list's own card. */
+.inside {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  padding: 0 22px;
+  border-top: 1px solid var(--line);
+  font-size: 13px;
+  color: var(--text-3);
+}
+.more {
+  padding: 8px 0 8px 12px;
+  background: none;
+  border: 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+}
+.more:disabled {
+  opacity: 0.5;
+}
+.more:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+  border-radius: 6px;
 }

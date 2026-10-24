@@ -6,14 +6,15 @@
 .pill {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  height: 32px;
-  padding: 0 12px 0 14px;
+  gap: 6px;
+  height: 34px;
+  padding: 0 13px;
   background: transparent;
   border: 1px dashed var(--line-2);
   border-radius: var(--radius-pill);
   font-size: 13px;
   font-weight: 500;
+  color: var(--text-2);
   white-space: nowrap;
   transition:
     background-color var(--fast) ease,

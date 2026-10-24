@@ -40,8 +40,8 @@ type Props<T> = {
   // On a phone each row stays one short line (avatar, name, the line under it, status) instead of a card of
   // label and value pairs. The other columns are left out there, so only use it when the line says enough.
   compact?: boolean;
-  // What the first column is called. "Name" unless the rows are about something else ("Member" in a list of tithes).
-  nameHeader?: string;
+  // Sits at the bottom of the card, under the rows (the count and "Load more").
+  footer?: ReactNode;
 };
 
 const NAME = "minmax(220px, 2.4fr)";
@@ -57,33 +57,19 @@ export function PersonList<T>({
   person,
   columns,
   actions,
-  nameHeader = "Name",
   compact,
+  footer,
 }: Props<T>) {
   const widths = (list: PersonColumn<T>[]) =>
-    [NAME, ...list.map((c) => c.width), ACTIONS].join(" ");
+    [NAME, ...list.map((c) => c.width), ...(actions ? [ACTIONS] : [])].join(
+      " ",
+    );
   const grid = {
     "--cols": widths(columns),
     "--cols-mid": widths(columns.filter((c) => !c.low)),
   } as CSSProperties;
   return (
     <div className={`${styles.card} ${compact ? styles.compact : ""}`}>
-      <div className={styles.head} aria-hidden="true" style={grid}>
-        <span>{nameHeader}</span>
-        {columns.map((c) => (
-          <span
-            key={c.header}
-            className={
-              [c.low && styles.low, c.end && styles.end]
-                .filter(Boolean)
-                .join(" ") || undefined
-            }
-          >
-            {c.header}
-          </span>
-        ))}
-        <span />
-      </div>
       <ul aria-label={label} className={styles.list}>
         {rows.map((row, i) => (
           <Row
@@ -97,6 +83,7 @@ export function PersonList<T>({
           />
         ))}
       </ul>
+      {footer}
     </div>
   );
 }
@@ -119,7 +106,7 @@ function Row<T>({ row, index, person: p, columns, items, grid }: RowProps<T>) {
       style={cssVars({ "--i": Math.min(index, 12) }, grid)}
     >
       <div className={styles.who}>
-        <Avatar name={p.name} size={36} />
+        <Avatar name={p.name} size={40} />
         <div className={styles.names}>
           <p className={styles.name}>
             {p.href !== undefined ? (
@@ -151,15 +138,15 @@ function Row<T>({ row, index, person: p, columns, items, grid }: RowProps<T>) {
           {c.cell(row)}
         </div>
       ))}
-      <div className={styles.actions}>
-        {items && (
+      {items && (
+        <div className={styles.actions}>
           <ActionMenu
             label={`Actions for ${p.name}`}
             title={p.name}
             items={items}
           />
-        )}
-      </div>
+        </div>
+      )}
     </li>
   );
 }

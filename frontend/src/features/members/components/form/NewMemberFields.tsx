@@ -1,6 +1,13 @@
 import { useState } from "react";
 import { Controller } from "react-hook-form";
-import { ControlledDate, ControlledSelect, Disclosure, Field, FormSection, SegmentedField } from "@/ui";
+import {
+  ControlledDate,
+  ControlledSelect,
+  Disclosure,
+  Field,
+  FormSection,
+  SegmentedField,
+} from "@/ui";
 import { joinName, splitName } from "../../forms/mapping";
 import { maritalChoices } from "../../model/options";
 import styles from "./MemberFields.module.css";
@@ -46,7 +53,10 @@ function FullName({ form }: Form) {
   function change(value: string) {
     setText(value);
     const parts = splitName(value);
-    const options = { shouldDirty: true, shouldValidate: form.formState.isSubmitted };
+    const options = {
+      shouldDirty: true,
+      shouldValidate: form.formState.isSubmitted,
+    };
     form.setValue("firstName", parts.firstName, options);
     form.setValue("otherNames", parts.otherNames, options);
     form.setValue("lastName", parts.lastName, options);

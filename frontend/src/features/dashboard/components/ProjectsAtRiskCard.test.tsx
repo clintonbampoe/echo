@@ -40,12 +40,8 @@ it("lists each project at risk, with how much of the money has come in", async (
   renderCard(<ProjectsAtRiskCard />);
   await screen.findByText("Church roof");
   const rows = within(screen.getByRole("list"));
-  expect(
-    rows.getAllByText("GH₵ 9,800 of GH₵ 30,000 raised"),
-  ).toHaveLength(1);
-  expect(rows.getAllByText("GH₵ 7,200 of GH₵ 25,000 raised")).toHaveLength(
-    1,
-  );
+  expect(rows.getAllByText("GH₵ 9,800 of GH₵ 30,000 raised")).toHaveLength(1);
+  expect(rows.getAllByText("GH₵ 7,200 of GH₵ 25,000 raised")).toHaveLength(1);
   expect(rows.getAllByText("GH₵ 3,100 of GH₵ 8,000 raised")).toHaveLength(1);
   expect(rows.getAllByText("At risk")).toHaveLength(3);
 });
@@ -53,9 +49,10 @@ it("lists each project at risk, with how much of the money has come in", async (
 it("says how many of every project are at risk, and leads to all of them", async () => {
   renderCard(<ProjectsAtRiskCard />);
   expect(await screen.findByText("3 of 5")).toBeInTheDocument();
-  expect(
-    screen.getByRole("link", { name: /All projects/ }),
-  ).toHaveAttribute("href", "/projects");
+  expect(screen.getByRole("link", { name: /All projects/ })).toHaveAttribute(
+    "href",
+    "/projects",
+  );
 });
 
 it("says so when nothing is at risk", async () => {
@@ -71,9 +68,7 @@ it("says so when nothing is at risk", async () => {
     }),
   );
   renderCard(<ProjectsAtRiskCard />);
-  expect(
-    await screen.findByText("No projects at risk"),
-  ).toBeInTheDocument();
+  expect(await screen.findByText("No projects at risk")).toBeInTheDocument();
   expect(screen.queryByRole("list")).not.toBeInTheDocument();
 });
 

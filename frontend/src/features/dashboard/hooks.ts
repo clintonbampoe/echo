@@ -227,8 +227,11 @@ export function useMix() {
 // The newest visitors, over the widest window the card admits. The server sends a page in name order,
 // so the sorting into newest first happens on the card, from the days the server said. No period.
 export function useRecentVisitors(today: string) {
-  const { data, failed, retry } = useData("visitors-recent", today, today, (_f, t, signal) =>
-    api.getRecentVisitors(t, signal),
+  const { data, failed, retry } = useData(
+    "visitors-recent",
+    today,
+    today,
+    (_f, t, signal) => api.getRecentVisitors(t, signal),
   );
   return { visitors: data, failed, retry };
 }

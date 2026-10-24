@@ -28,7 +28,10 @@ describe("the website frame", () => {
   it("leads the home page with the promise", async () => {
     renderAt("/");
     expect(
-      await screen.findByRole("heading", { level: 1, name: /Your church,\s*answered\./ }),
+      await screen.findByRole("heading", {
+        level: 1,
+        name: /Your church,\s*answered\./,
+      }),
     ).toBeInTheDocument();
   });
 
@@ -41,33 +44,49 @@ describe("the website frame", () => {
       ["Roadmap", "/roadmap"],
       ["Community", "/community"],
     ]) {
-      expect(within(nav).getByRole("link", { name })).toHaveAttribute("href", href);
+      expect(within(nav).getByRole("link", { name })).toHaveAttribute(
+        "href",
+        href,
+      );
     }
   });
 
   it("offers sign in and get started to someone who is signed out", async () => {
     renderAt("/");
-    expect(await screen.findByRole("link", { name: "Sign in" })).toHaveAttribute("href", "/signin");
-    expect(screen.getByRole("link", { name: "Get started" })).toHaveAttribute("href", "/signup");
+    expect(
+      await screen.findByRole("link", { name: "Sign in" }),
+    ).toHaveAttribute("href", "/signin");
+    expect(screen.getByRole("link", { name: "Get started" })).toHaveAttribute(
+      "href",
+      "/signup",
+    );
   });
 
   it("offers Open Echo to someone who is signed in", async () => {
     saveTokens(tokens);
     renderAt("/");
-    expect(await screen.findByRole("link", { name: "Open Echo" })).toHaveAttribute("href", "/dashboard");
-    expect(screen.queryByRole("link", { name: "Sign in" })).not.toBeInTheDocument();
+    expect(
+      await screen.findByRole("link", { name: "Open Echo" }),
+    ).toHaveAttribute("href", "/dashboard");
+    expect(
+      screen.queryByRole("link", { name: "Sign in" }),
+    ).not.toBeInTheDocument();
   });
 
   it("does not treat an expired session as signed in", async () => {
     saveTokens({ ...tokens, refreshTokenExpiresAt: "2000-01-01T00:00:00Z" });
     renderAt("/");
-    expect(await screen.findByRole("link", { name: "Sign in" })).toBeInTheDocument();
+    expect(
+      await screen.findByRole("link", { name: "Sign in" }),
+    ).toBeInTheDocument();
   });
 
   it("lets the person switch between light and dark and remembers it", async () => {
     renderAt("/");
     await userEvent.click(
-      await screen.findByRole("button", { name: /switch to (dark|light) mode/i }),
+      await screen.findByRole("button", {
+        name: /switch to (dark|light) mode/i,
+      }),
     );
     const chosen = localStorage.getItem("echo-theme");
     expect(chosen === "light" || chosen === "dark").toBe(true);
@@ -89,7 +108,9 @@ describe("every page", () => {
     ["/terms", /Terms of service/],
   ])("%s has its title", async (path, title) => {
     renderAt(path);
-    expect(await screen.findByRole("heading", { level: 1, name: title })).toBeInTheDocument();
+    expect(
+      await screen.findByRole("heading", { level: 1, name: title }),
+    ).toBeInTheDocument();
   });
 });
 
@@ -106,7 +127,9 @@ describe("docs", () => {
 describe("contact", () => {
   it("asks for the missing details before opening the email app", async () => {
     renderAt("/contact");
-    await userEvent.click(await screen.findByRole("button", { name: "Send message" }));
+    await userEvent.click(
+      await screen.findByRole("button", { name: "Send message" }),
+    );
     expect(await screen.findByText("Enter your name.")).toBeInTheDocument();
     expect(screen.getByText("Write a message.")).toBeInTheDocument();
   });

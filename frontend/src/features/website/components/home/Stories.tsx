@@ -11,9 +11,7 @@ export function Stories() {
       <div className={styles.list}>
         {STORIES.map((story, i) => (
           <Reveal key={story.number}>
-            <article
-              className={`${styles.story} ${i % 2 ? styles.flip : ""}`}
-            >
+            <article className={`${styles.story} ${i % 2 ? styles.flip : ""}`}>
               <div className={styles.words}>
                 <p className={styles.label}>
                   <span>{story.number}</span> {story.label}

@@ -2,7 +2,9 @@ import type { RouteObject } from "react-router-dom";
 import { SiteLayout } from "./components/chrome/SiteLayout";
 
 // A page that loads when someone first goes to it.
-const page = (load: () => Promise<{ Component: RouteObject["Component"] }>) => ({
+const page = (
+  load: () => Promise<{ Component: RouteObject["Component"] }>,
+) => ({
   lazy: load,
 });
 

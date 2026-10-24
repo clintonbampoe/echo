@@ -10,7 +10,10 @@ export const json = (body: unknown, status = 200) =>
 // A request's path with the dev "/api" prefix taken off, so mocks match what a card asks for.
 export const asked = (url: string | URL | Request) => {
   const u = new URL(url.toString(), "http://x");
-  return { path: u.pathname.replace(/^\/api(?=\/)/, ""), query: u.searchParams };
+  return {
+    path: u.pathname.replace(/^\/api(?=\/)/, ""),
+    query: u.searchParams,
+  };
 };
 
 export function signIn() {

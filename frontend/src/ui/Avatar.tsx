@@ -8,13 +8,17 @@ type Props = {
   shape?: "circle" | "square";
 };
 
+// A name always lands on the same one of four soft greys, so a list is not a wall of one colour.
+const tint = (name: string) =>
+  [...name].reduce((sum, ch) => sum + ch.charCodeAt(0), 0) % 4;
+
 // Decorative: the name is always written out next to it.
 export function Avatar({ name, size = 32, shape = "circle" }: Props) {
   return (
     <span
       aria-hidden="true"
-      className={`${styles.avatar} ${shape === "square" ? styles.square : ""}`}
-      style={{ width: size, height: size, fontSize: Math.round(size * 0.38) }}
+      className={`${styles.avatar} ${shape === "square" ? styles.square : styles[`tint${tint(name)}`]}`}
+      style={{ width: size, height: size, fontSize: Math.round(size * 0.34) }}
     >
       {initials(name)}
     </span>

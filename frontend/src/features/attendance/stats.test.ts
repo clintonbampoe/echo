@@ -12,7 +12,8 @@ describe("attendance stats", () => {
   it("attendance: percent and the numbers behind it", () => {
     expect(attendanceStat(38, 44)).toEqual({
       label: "Attendance",
-      value: "86%",
+      value: "86",
+      unit: "%",
       note: "38 of 44 sessions this year",
     });
     expect(attendanceStat(undefined, 44).value).toBe("–");
@@ -25,7 +26,7 @@ describe("attendance stats", () => {
         { sessionDate: "2026-10-11", name: "Sunday Service" },
         false,
       ),
-    ).toMatchObject({ value: "11 Oct 2026", note: "Sunday Service" });
+    ).toMatchObject({ value: "11 Oct", note: "Sunday Service" });
     expect(lastSeenStat(undefined, false).note).toBe("No attendance yet");
     expect(lastSeenStat(undefined, true).note).toBe("");
   });

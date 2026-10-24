@@ -35,14 +35,7 @@ export function SeeLink({ to, children }: { to: string; children: string }) {
   );
 }
 
-export function DashCard({
-  title,
-  hint,
-  to,
-  foot,
-  control,
-  children,
-}: Props) {
+export function DashCard({ title, hint, to, foot, control, children }: Props) {
   const id = useId();
   return (
     <section aria-labelledby={id} className={styles.card}>

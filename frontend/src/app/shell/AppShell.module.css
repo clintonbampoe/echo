@@ -18,6 +18,12 @@
 .main {
   padding: 36px 44px 48px;
 }
+/* A page is a column of sections, 22px apart (16px on a phone), as on the boards. */
+.main > div {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
 
 @media (max-width: 900px) {
   .panel {
@@ -29,5 +35,8 @@
   }
   .main {
     padding: 8px 16px 40px;
+  }
+  .main > div {
+    gap: 16px;
   }
 }

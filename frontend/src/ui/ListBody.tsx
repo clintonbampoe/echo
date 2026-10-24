@@ -27,8 +27,10 @@ type Props<T> = {
   order?: string;
   // What stands in for the rows while they load, when PersonList's grey rows are not the right shape.
   skeleton?: ReactNode;
-  // Draws the rows once there are some.
-  children: (rows: T[]) => ReactNode;
+  // Draws the rows once there are some. With `footerInside` it also gets the count and "Load more" to put at the
+  // bottom of its own card, as the Members list does.
+  children: (rows: T[], footer: ReactNode) => ReactNode;
+  footerInside?: boolean;
 };
 
 // "Showing 50 members", or with a sort order "Showing all 5 tithes. Newest first." ("all" once nothing more is coming).
@@ -56,6 +58,7 @@ export function ListBody<T>({
   order,
   skeleton,
   children,
+  footerInside,
 }: Props<T>) {
   const many = noun[1];
   if (list.loading)
@@ -102,23 +105,57 @@ export function ListBody<T>({
       </div>
     );
   }
+  const footer = (
+    <ListFooter
+      list={list}
+      noun={noun}
+      order={order}
+      inside={Boolean(footerInside)}
+    />
+  );
   return (
     <>
-      {children(list.rows)}
-      <footer className={styles.footer}>
-        <p role="status">
-          {countLine(list.rows.length, list.hasMore, noun, order)}
-        </p>
-        {list.hasMore && (
-          <Button
-            variant="secondary"
-            loading={list.loadingMore}
-            onClick={list.more}
-          >
-            Load more
-          </Button>
-        )}
-      </footer>
+      {children(list.rows, footer)}
+      {!footerInside && footer}
     </>
+  );
+}
+
+type FooterProps<T> = {
+  list: Paged<T>;
+  noun: [string, string];
+  order?: string;
+  inside: boolean;
+};
+
+// The count and "Load more": under the list, or as the last row of the list's card.
+function ListFooter<T>({ list, noun, order, inside }: FooterProps<T>) {
+  const more =
+    list.hasMore &&
+    (inside ? (
+      <button
+        type="button"
+        className={styles.more}
+        disabled={list.loadingMore}
+        onClick={list.more}
+      >
+        Load more
+      </button>
+    ) : (
+      <Button
+        variant="secondary"
+        loading={list.loadingMore}
+        onClick={list.more}
+      >
+        Load more
+      </Button>
+    ));
+  return (
+    <footer className={inside ? styles.inside : styles.footer}>
+      <p role="status">
+        {countLine(list.rows.length, list.hasMore, noun, order)}
+      </p>
+      {more}
+    </footer>
   );
 }

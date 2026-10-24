@@ -58,7 +58,9 @@ describe("tithes card", () => {
   it("speaks about the week picked, and about the one before", async () => {
     renderCard(<TithesCard today="2026-10-19" />);
     await summary().findByText("GH₵ 11,300");
-    const bar = screen.getByRole("button", { name: "Week of 4 Oct: GH₵ 10,640" });
+    const bar = screen.getByRole("button", {
+      name: "Week of 4 Oct: GH₵ 10,640",
+    });
     await userEvent.click(bar);
     expect(summary().getByText("Week of 4 Oct")).toBeInTheDocument();
     expect(summary().getByText("GH₵ 10,640")).toBeInTheDocument();

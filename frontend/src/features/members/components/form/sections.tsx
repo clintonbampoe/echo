@@ -1,7 +1,11 @@
 import type { UseFormReturn } from "react-hook-form";
 import { regions } from "@/lib/regions";
 import { ControlledDate, ControlledSelect, Field, FormSection } from "@/ui";
-import { genderChoices, maritalChoices, statusChoices } from "../../model/options";
+import {
+  genderChoices,
+  maritalChoices,
+  statusChoices,
+} from "../../model/options";
 import type { MemberValues } from "../../forms/schema";
 import styles from "./MemberFields.module.css";
 

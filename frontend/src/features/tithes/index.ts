@@ -2,4 +2,4 @@
 export { MemberTithes } from "./components/MemberTithes";
 export { useMemberTithes } from "./hooks";
 export { titheRoutes } from "./routes";
-export { useTitheStat } from "./useStat";
+export { useLastTitheStat, useTitheStat } from "./useStat";

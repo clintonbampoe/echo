@@ -173,7 +173,9 @@ describe("invitations", () => {
     expect(await screen.findByLabelText("First name")).toBeInTheDocument();
     expect(router.state.location.pathname).toBe("/join/abc/account");
     expect(
-      screen.getByText("Pastor Kwame invited you to join Grace Chapel on Echo."),
+      screen.getByText(
+        "Pastor Kwame invited you to join Grace Chapel on Echo.",
+      ),
     ).toBeInTheDocument();
   });
 
@@ -206,7 +208,9 @@ describe("light and dark", () => {
     localStorage.clear();
     renderAt("/signin");
     await userEvent.click(
-      await screen.findByRole("button", { name: /switch to (dark|light) mode/i }),
+      await screen.findByRole("button", {
+        name: /switch to (dark|light) mode/i,
+      }),
     );
     const chosen = localStorage.getItem("echo-theme");
     expect(chosen === "light" || chosen === "dark").toBe(true);
