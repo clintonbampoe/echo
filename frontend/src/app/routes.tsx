@@ -10,6 +10,7 @@ import { titheRoutes } from "@/features/tithes";
 import { projectRoutes } from "@/features/projects";
 import { transactionRoutes } from "@/features/transactions";
 import { visitorRoutes } from "@/features/visitors";
+import { websiteRoutes } from "@/features/website";
 import { NotFound } from "./NotFound";
 import { RequireAuth } from "./RequireAuth";
 import { AppShell } from "./shell";
@@ -22,12 +23,7 @@ const routes: RouteObject[] = [
     // background is already painted, so it just looks like the page arriving.
     HydrateFallback: () => null,
     children: [
-      {
-        path: "/",
-        lazy: async () => ({
-          Component: (await import("@/features/landing")).LandingPage,
-        }),
-      },
+      ...websiteRoutes,
       ...authRoutes,
       {
         Component: RequireAuth,

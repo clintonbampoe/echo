@@ -41,6 +41,8 @@ export type InvitationInfo = {
   region: string;
   allowedRole: string;
   expiresAt: string;
+  // Who sent the invitation. The API does not return it yet; shown when it does.
+  invitedBy?: string;
 };
 
 export const login = (email: string, password: string) =>

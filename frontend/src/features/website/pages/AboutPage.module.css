@@ -1,0 +1,33 @@
+.lead {
+  max-width: 980px;
+  margin: 0;
+  font-size: 46px;
+  font-weight: 500;
+  line-height: 1.18;
+  letter-spacing: -0.035em;
+}
+.small {
+  margin: 0 0 8px;
+  font-size: 13px;
+  color: var(--text-3);
+}
+.place {
+  margin: 0;
+  font-size: 34px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+
+@media (max-width: 999px) {
+  .lead {
+    font-size: 34px;
+  }
+}
+@media (max-width: 599px) {
+  .lead {
+    font-size: 26px;
+  }
+  .place {
+    font-size: 28px;
+  }
+}

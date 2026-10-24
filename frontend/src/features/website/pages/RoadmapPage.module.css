@@ -1,0 +1,47 @@
+.columns {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 36px;
+}
+.stage {
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+.when {
+  margin: 0;
+  font-size: 34px;
+  font-weight: 600;
+  letter-spacing: -0.035em;
+}
+.note {
+  margin: 6px 0 24px;
+  font-size: 14px;
+  color: var(--text-3);
+}
+.items {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.item {
+  padding: 16px 20px;
+  border: 1px solid var(--card-line);
+  border-radius: 18px;
+  background: var(--card);
+  font-size: 16px;
+  font-weight: 500;
+}
+.suggest {
+  margin: 56px 0 0;
+  font-size: 16px;
+  color: var(--text-2);
+}
+
+@media (max-width: 999px) {
+  .columns {
+    grid-template-columns: 1fr;
+  }
+}

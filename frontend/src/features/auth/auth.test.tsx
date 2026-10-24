@@ -148,18 +148,69 @@ describe("invitations", () => {
     ).toBeInTheDocument();
   });
 
-  it("shows which church the invitation is for", async () => {
-    fetchMock.mockResolvedValueOnce(
-      json(200, {
-        congregationName: "Grace Chapel",
-        city: "Osu",
-        region: "GreaterAccra",
-        allowedRole: "Member",
-      }),
-    );
+  const grace = {
+    congregationName: "Grace Chapel",
+    city: "Osu",
+    region: "GreaterAccra",
+    allowedRole: "Member",
+    invitedBy: "Pastor Kwame",
+  };
+
+  it("asks the person to confirm which church the invitation is for", async () => {
+    fetchMock.mockResolvedValueOnce(json(200, grace));
     renderAt("/join/abc");
     expect(await screen.findByText("Grace Chapel")).toBeInTheDocument();
     expect(screen.getByText(/Osu, Greater Accra/)).toBeInTheDocument();
+    expect(screen.getByText("Invited by Pastor Kwame")).toBeInTheDocument();
+  });
+
+  it("goes on to the account form once the church is confirmed", async () => {
+    fetchMock.mockResolvedValue(json(200, grace));
+    const router = renderAt("/join/abc");
+    await userEvent.click(
+      await screen.findByRole("button", { name: "Yes, continue" }),
+    );
+    expect(await screen.findByLabelText("First name")).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe("/join/abc/account");
+    expect(
+      screen.getByText("Pastor Kwame invited you to join Grace Chapel on Echo."),
+    ).toBeInTheDocument();
+  });
+
+  it("goes back to the code when it is not their church", async () => {
+    fetchMock.mockResolvedValueOnce(json(200, grace));
+    const router = renderAt("/join/abc");
+    await userEvent.click(
+      await screen.findByRole("button", { name: "This is not my church" }),
+    );
+    await waitFor(() => expect(router.state.location.pathname).toBe("/join"));
+  });
+
+  it("checks a typed code, then shows the church to confirm", async () => {
+    fetchMock.mockResolvedValue(json(200, grace));
+    const router = renderAt("/join");
+    await userEvent.type(
+      await screen.findByLabelText("Invitation code"),
+      "GRACE-4821",
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Continue" }));
+    await waitFor(() =>
+      expect(router.state.location.pathname).toBe("/join/GRACE-4821"),
+    );
+    expect(await screen.findByText("Is this your church?")).toBeInTheDocument();
+  });
+});
+
+describe("light and dark", () => {
+  it("lets the person switch an auth screen between light and dark", async () => {
+    localStorage.clear();
+    renderAt("/signin");
+    await userEvent.click(
+      await screen.findByRole("button", { name: /switch to (dark|light) mode/i }),
+    );
+    const chosen = localStorage.getItem("echo-theme");
+    expect(chosen === "light" || chosen === "dark").toBe(true);
+    expect(document.documentElement.dataset.surface).toBe(chosen);
   });
 });
 

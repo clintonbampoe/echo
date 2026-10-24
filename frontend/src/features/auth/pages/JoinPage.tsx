@@ -4,13 +4,15 @@ import { useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import type { ApiError } from "@/lib/api";
 import { handleSubmitError } from "@/lib/forms";
-import { Alert, Button, Field, LinkButton, PasswordField } from "@/ui";
-import { AuthHeading } from "../components/AuthHeading";
-import { AuthLinks, BackLink } from "../components/AuthLinks";
-import { InvitationCard } from "../components/InvitationCard";
-import { StatusScreen } from "../components/StatusScreen";
+import { Alert, Button, Field, PasswordField } from "@/ui";
+import { AuthLinks } from "../components/AuthLinks";
+import { AuthScreen } from "../components/AuthScreen";
+import {
+  InvalidInvitation,
+  InvitationGate,
+} from "../components/InvitationGate";
 import type { InvitationInfo } from "../api";
-import { useInvitation, useRegisterMember } from "../hooks";
+import { useRegisterMember } from "../hooks";
 import { joinSchema, type JoinValues } from "../schema";
 import styles from "./form.module.css";
 
@@ -22,32 +24,14 @@ const FIELD_MAP = {
   "userInfo.password": "password",
 } as const;
 
-const invalid = (
-  <StatusScreen
-    icon="alert"
-    title="This invitation is no longer valid"
-    text="Invitation links expire, and each one works once. Ask your church administrator to send you a new one."
-  >
-    <LinkButton to="/signin" size="lg" block>
-      Back to sign in
-    </LinkButton>
-  </StatusScreen>
-);
-
-// /join/:code. Shows which church the code is for, then asks for the person's details.
+// /join/:code/account. The invitation is confirmed; now ask for the person's details.
 export function JoinPage() {
   const code = useParams().code ?? "";
-  const invitation = useInvitation(code);
-  if (invitation.isPending)
-    return (
-      <StatusScreen
-        icon="spinner"
-        title="Checking your invitation"
-        text="This only takes a moment."
-      />
-    );
-  if (invitation.isError) return invalid;
-  return <JoinForm code={code} invitation={invitation.data} />;
+  return (
+    <InvitationGate code={code}>
+      {(invitation) => <JoinForm code={code} invitation={invitation} />}
+    </InvitationGate>
+  );
 }
 
 function JoinForm({
@@ -82,24 +66,25 @@ function JoinForm({
     }
   }
 
-  if (problem?.errorCode === "INVALID_TOKEN") return invalid;
+  if (problem?.errorCode === "INVALID_TOKEN") return <InvalidInvitation />;
 
   return (
-    <>
-      <AuthHeading title="Create your account">
-        You have been invited to join:
-      </AuthHeading>
-      <InvitationCard invitation={invitation} />
-      <BackLink to="/join">Use a different code</BackLink>
-      {problem && (
-        <div className={styles.alert}>
-          <JoinProblem problem={problem} />
-        </div>
-      )}
+    <AuthScreen
+      title="Create your account"
+      text={
+        invitation.invitedBy
+        ? `${invitation.invitedBy} invited you to join ${invitation.congregationName} on Echo.`
+        : `You were invited to join ${invitation.congregationName} on Echo.`
+      }
+      links={
+        <AuthLinks items={[{ to: "/signin", label: "Sign in" }]} />
+      }
+    >
+      {problem && <JoinProblem problem={problem} />}
       <form
         onSubmit={form.handleSubmit(onSubmit)}
         noValidate
-        className={`${styles.form} ${styles.tight}`}
+        className={styles.form}
       >
         <Field
           label="First name"
@@ -138,17 +123,15 @@ function JoinForm({
         <Button
           type="submit"
           size="lg"
+          pill
           block
           loading={register.isPending}
           className={styles.submit}
         >
-          Create account
+          Join {invitation.congregationName}
         </Button>
       </form>
-      <AuthLinks
-        items={[{ to: "/signin", label: "Sign in to an existing account" }]}
-      />
-    </>
+    </AuthScreen>
   );
 }
 

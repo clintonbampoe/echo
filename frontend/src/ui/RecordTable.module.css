@@ -32,10 +32,9 @@
   padding-inline: 16px;
 }
 .tail {
-  grid-template-columns: minmax(0, 2fr) repeat(
-      calc(var(--cols) - 1),
-      minmax(0, 1fr)
-    ) 32px;
+  grid-template-columns:
+    minmax(0, 2fr) repeat(calc(var(--cols) - 1), minmax(0, 1fr))
+    32px;
 }
 .head {
   padding-block: 12px;

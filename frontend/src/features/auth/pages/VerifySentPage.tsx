@@ -1,7 +1,7 @@
 import { Navigate, useLocation } from "react-router-dom";
 import { BackLink } from "../components/AuthLinks";
 import { ResendButton } from "../components/ResendButton";
-import { StatusScreen } from "../components/StatusScreen";
+import { AuthScreen } from "../components/AuthScreen";
 import { sendVerificationLink } from "../api";
 import styles from "./form.module.css";
 
@@ -12,9 +12,9 @@ export function VerifySentPage() {
   if (!email) return <Navigate to="/signin" replace />;
 
   return (
-    <StatusScreen
-      icon="mail"
+    <AuthScreen
       title="Verify your email"
+      links={<BackLink />}
       text={
         <>
           We sent a link to <strong>{email}</strong>. Open it to activate your
@@ -27,7 +27,6 @@ export function VerifySentPage() {
         Nothing in your inbox? Check spam, or contact your church administrator
         if the address is wrong.
       </p>
-      <BackLink />
-    </StatusScreen>
+    </AuthScreen>
   );
 }

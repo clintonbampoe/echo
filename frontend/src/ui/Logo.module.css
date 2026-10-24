@@ -1,17 +1,17 @@
-.frame {
-  fill: var(--surface-2);
-  stroke: var(--line-2);
+.logo {
+  color: var(--text);
 }
-.mark {
-  font-family: var(--font-sans);
-  fill: var(--text);
+.outer,
+.inner {
+  stroke: currentcolor;
+  stroke-width: 1.5;
 }
-.wave {
-  fill: none;
-  stroke: var(--text);
-  stroke-width: 2;
-  stroke-linecap: round;
+.outer {
+  stroke-opacity: 0.3;
 }
-.faint {
-  stroke-opacity: 0.55;
+.inner {
+  stroke-opacity: 0.65;
+}
+.core {
+  fill: currentcolor;
 }

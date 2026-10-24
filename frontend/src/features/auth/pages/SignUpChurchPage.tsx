@@ -5,9 +5,8 @@ import { Navigate, useNavigate } from "react-router-dom";
 import type { ApiError } from "@/lib/api";
 import { handleSubmitError } from "@/lib/forms";
 import { Alert, Button } from "@/ui";
-import { AuthHeading } from "../components/AuthHeading";
 import { BackLink } from "../components/AuthLinks";
-import { StepBar } from "../components/StepBar";
+import { AuthScreen } from "../components/AuthScreen";
 import { useRegisterCongregation } from "../hooks";
 import { churchSchema, type AccountValues, type ChurchValues } from "../schema";
 import { ChurchFields } from "./ChurchFields";
@@ -70,35 +69,33 @@ function ChurchForm({ account }: { account: AccountValues }) {
   }
 
   return (
-    <>
-      <StepBar step={2} of={2} />
-      <AuthHeading title="Tell us about your church">
-        Members will see these details when they join.
-      </AuthHeading>
+    <AuthScreen
+      title="Tell us about your church"
+      text="Step 2 of 2. You can change all of this later."
+      links={<BackLink to="/signup">Back</BackLink>}
+    >
       {problem && (
-        <div className={styles.alert}>
-          <Alert title="We could not create your account">
-            {problem.message}
-          </Alert>
-        </div>
+        <Alert title="We could not create your account">
+          {problem.message}
+        </Alert>
       )}
       <form
         onSubmit={form.handleSubmit(onSubmit)}
         noValidate
-        className={`${styles.form} ${styles.tight}`}
+        className={styles.form}
       >
         <ChurchFields form={form} />
         <Button
           type="submit"
           size="lg"
+          pill
           block
           loading={register.isPending}
           className={styles.submit}
         >
-          Create account
+          Create church
         </Button>
       </form>
-      <BackLink to="/signup">Back</BackLink>
-    </>
+    </AuthScreen>
   );
 }

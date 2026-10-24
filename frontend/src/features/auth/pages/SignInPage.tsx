@@ -5,7 +5,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import type { ApiError } from "@/lib/api";
 import { handleSubmitError } from "@/lib/forms";
 import { Button, Field, PasswordField } from "@/ui";
-import { AuthHeading } from "../components/AuthHeading";
+import { AuthScreen } from "../components/AuthScreen";
 import { AuthLinks } from "../components/AuthLinks";
 import { SignInAlert } from "../components/SignInAlert";
 import { useSignIn } from "../hooks";
@@ -54,15 +54,19 @@ export function SignInPage() {
   }
 
   return (
-    <>
-      <AuthHeading title="Sign in to Echo">
-        Use the email you registered with.
-      </AuthHeading>
-      {problem && (
-        <div className={styles.alert}>
-          <SignInAlert problem={problem} email={getValues("email")} />
-        </div>
-      )}
+    <AuthScreen
+      title="Sign in to Echo"
+      text="Welcome back. Pick up where you left off."
+      links={
+        <AuthLinks
+          items={[
+            { to: "/signup", label: "Create a church account" },
+            { to: "/join", label: "Join with an invitation code" },
+          ]}
+        />
+      }
+    >
+      {problem && <SignInAlert problem={problem} email={getValues("email")} />}
       <form
         onSubmit={handleSubmit(onSubmit)}
         noValidate
@@ -79,6 +83,7 @@ export function SignInPage() {
         <PasswordField
           label="Password"
           autoComplete="current-password"
+          placeholder="Enter your password"
           error={errors.password?.message}
           aside={
             <Link to="/forgot" className={styles.aside}>
@@ -90,6 +95,7 @@ export function SignInPage() {
         <Button
           type="submit"
           size="lg"
+          pill
           block
           loading={signIn.isPending}
           className={styles.submit}
@@ -97,12 +103,6 @@ export function SignInPage() {
           Sign in
         </Button>
       </form>
-      <AuthLinks
-        items={[
-          { to: "/signup", label: "Create a church account" },
-          { to: "/join", label: "Join with an invitation code" },
-        ]}
-      />
-    </>
+    </AuthScreen>
   );
 }

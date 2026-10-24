@@ -91,7 +91,9 @@ Features import `ui` only through `ui/index.ts`, which stays alphabetical.
 - Clearing filters clears the search box too. A box is emptied by giving it a new `key` (`resetKey`), never
   by writing into it.
 - Colours and radii are tokens (`var(--text)`, never a hex). Each component has its own `X.module.css`.
-  The app is light; landing and auth are dark.
+  The app is light. The public pages (the website and auth) are light or dark by the
+  person's choice (moon/sun button, remembered, otherwise the device setting); they use
+  `[data-surface=light|dark]` tokens with the same names, and call `usePublicSurface()`.
 
 ## Code conventions
 

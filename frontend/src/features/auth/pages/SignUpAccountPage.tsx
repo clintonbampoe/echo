@@ -2,9 +2,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { Button, Field, PasswordField } from "@/ui";
-import { AuthHeading } from "../components/AuthHeading";
 import { AuthLinks } from "../components/AuthLinks";
-import { StepBar } from "../components/StepBar";
+import { AuthScreen } from "../components/AuthScreen";
 import { accountSchema, type AccountValues } from "../schema";
 import { useSignUp } from "./signUpContext";
 import styles from "./form.module.css";
@@ -27,15 +26,15 @@ export function SignUpAccountPage() {
   }
 
   return (
-    <>
-      <StepBar step={1} of={2} />
-      <AuthHeading title="Create your account">
-        You will be the first administrator of your church.
-      </AuthHeading>
+    <AuthScreen
+      title="Create your account"
+      text="Step 1 of 2. You become your church's first administrator."
+      links={<AuthLinks items={[{ to: "/signin", label: "Sign in" }]} />}
+    >
       <form
         onSubmit={handleSubmit(onSubmit)}
         noValidate
-        className={`${styles.form} ${styles.tight}`}
+        className={styles.form}
       >
         <div className={styles.row}>
           <Field
@@ -67,13 +66,10 @@ export function SignUpAccountPage() {
           error={errors.password?.message}
           {...register("password")}
         />
-        <Button type="submit" size="lg" block className={styles.submit}>
+        <Button type="submit" size="lg" pill block className={styles.submit}>
           Continue
         </Button>
       </form>
-      <AuthLinks
-        items={[{ to: "/signin", label: "Sign in to an existing account" }]}
-      />
-    </>
+    </AuthScreen>
   );
 }

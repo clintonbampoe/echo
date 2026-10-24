@@ -66,3 +66,74 @@
   opacity: 1;
   transform: none;
 }
+
+/* The website and auth atmosphere (ui/Atmosphere). Global because the orbs name them inline. */
+@keyframes echoEdge {
+  0% {
+    left: -6%;
+    top: 3%;
+  }
+  25% {
+    left: 96%;
+    top: 12%;
+  }
+  50% {
+    left: 99%;
+    top: 55%;
+  }
+  75% {
+    left: -4%;
+    top: 92%;
+  }
+  100% {
+    left: -6%;
+    top: 3%;
+  }
+}
+@keyframes echoDrift {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(var(--dx), var(--dy));
+  }
+}
+@keyframes echoFloat {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(var(--dx), var(--dy));
+  }
+}
+@keyframes echoFade {
+  0%,
+  100% {
+    opacity: 0.05;
+  }
+  35%,
+  65% {
+    opacity: 1;
+  }
+}
+@keyframes echoFade2 {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes echoPing {
+  0% {
+    transform: scale(0.7);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
