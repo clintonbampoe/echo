@@ -1,7 +1,6 @@
 /* The section measures itself, so four across needs room for the figures, not a wide screen. */
 .wrap {
   container-type: inline-size;
-  margin-top: 24px;
 }
 
 .grid {

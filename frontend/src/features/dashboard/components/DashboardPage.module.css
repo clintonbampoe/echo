@@ -5,7 +5,7 @@
   gap: 16px;
 }
 .title {
-  font-size: 26px;
+  font-size: 30px;
   line-height: 1.15;
   font-weight: 600;
   letter-spacing: -0.025em;
@@ -47,8 +47,7 @@
 /* The chart cards, one under the other. Each later card joins this grid. */
 .charts {
   display: grid;
-  gap: 16px;
-  margin-top: 24px;
+  gap: 22px;
 }
 
 /* On a phone the cards come in themes, and one label heads each. */

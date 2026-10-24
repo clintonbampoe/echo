@@ -92,32 +92,30 @@ const groups = (today: string, period: PeriodKey): readonly Group[] => [
 type Row = { height: number; node: ReactNode };
 
 const rows = (today: string, period: PeriodKey): readonly Row[] => [
-  { height: 460, node: <MoneyRow today={today} /> },
-  { height: 316, node: <AttendanceCard today={today} /> },
   {
-    height: 534,
+    height: 360,
     node: (
       <Pager
-        label="Tithes and projects"
-        titles={["Tithes", "Projects"]}
+        label="Attendance and recent visitors"
+        titles={["Attendance", "Recent visitors"]}
         columns="3fr 2fr"
       >
-        <TithesCard today={today} />
-        <ProjectsCard stacked />
+        <AttendanceCard today={today} />
+        <RecentVisitorsCard today={today} />
       </Pager>
     ),
   },
-  { height: 368, node: <AssetsCard /> },
+  { height: 460, node: <MoneyRow today={today} /> },
   {
-    height: 418,
+    height: 440,
     node: (
       <Pager
-        label="Members and visitors"
-        titles={["Member growth", "Visitors who joined"]}
+        label="Tithes and member growth"
+        titles={["Tithes", "Member growth"]}
         columns="3fr 2fr"
       >
+        <TithesCard today={today} />
         <MemberGrowthCard today={today} />
-        <VisitorsJoinedCard period={period} today={today} />
       </Pager>
     ),
   },
@@ -127,6 +125,15 @@ const rows = (today: string, period: PeriodKey): readonly Row[] => [
       <Pager label="Members" titles={["Gender", "Age groups"]}>
         <GenderCard />
         <AgeGroupsCard />
+      </Pager>
+    ),
+  },
+  {
+    height: 400,
+    node: (
+      <Pager label="Projects and assets" titles={["Projects", "Assets"]}>
+        <ProjectsCard stacked />
+        <AssetsCard split />
       </Pager>
     ),
   },
@@ -147,10 +154,10 @@ const rows = (today: string, period: PeriodKey): readonly Row[] => [
     height: 265,
     node: (
       <Pager
-        label="Recent visitors and projects at risk"
-        titles={["Recent visitors", "Projects at risk"]}
+        label="Visitors who joined and projects at risk"
+        titles={["Visitors who joined", "Projects at risk"]}
       >
-        <RecentVisitorsCard today={today} />
+        <VisitorsJoinedCard period={period} today={today} />
         <ProjectsAtRiskCard />
       </Pager>
     ),

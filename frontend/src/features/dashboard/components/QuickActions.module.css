@@ -2,7 +2,6 @@
    not the screen's. */
 .section {
   container-type: inline-size;
-  margin-top: 24px;
 }
 .heading {
   margin: 0;
