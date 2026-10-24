@@ -5,6 +5,7 @@ import { OptionList } from "./OptionList";
 import type { ControlProps } from "./selectTypes";
 import styles from "./Select.module.css";
 import { useListbox } from "./useListbox";
+import { usePresence } from "./usePresence";
 
 // Our own dropdown, for mouse and keyboard. It follows the standard "select" pattern: the button holds
 // focus and points at the highlighted option. A long list adds a search box, which then holds focus.
@@ -24,6 +25,7 @@ export function Listbox({
   const trigger = useRef<HTMLButtonElement>(null);
   const searchBox = useRef<HTMLInputElement>(null);
   const lb = useListbox(options, value, onChange, { trigger, searchBox });
+  const menu = usePresence(lb.open, 140);
 
   // Focus leaving the whole control (not just moving within it) closes the menu.
   function onFocusOut(e: FocusEvent<HTMLDivElement>) {
@@ -60,8 +62,9 @@ export function Listbox({
           className={fieldStyles.chevron}
         />
       </button>
-      {lb.open && (
+      {menu.mounted && (
         <OptionList
+          closing={menu.closing}
           id={listId}
           labelId={`${id}-label`}
           options={lb.shown}

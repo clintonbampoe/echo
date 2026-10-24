@@ -29,6 +29,8 @@ type Props = {
   search?: MenuSearch;
   // The search box, so the menu's owner can move focus into it.
   searchRef?: Ref<HTMLInputElement>;
+  // True while the menu plays its exit animation.
+  closing?: boolean;
   // Lets a compact trigger give the menu its own width.
   className?: string;
 };
@@ -44,10 +46,15 @@ export function OptionList({
   onPick,
   search,
   searchRef,
+  closing,
   className,
 }: Props) {
   return (
-    <div ref={keepOnScreen} className={`${styles.menu} ${className ?? ""}`}>
+    <div
+      ref={keepOnScreen}
+      className={`${styles.menu} ${className ?? ""}`}
+      data-closing={closing}
+    >
       {search && (
         <SearchField
           ref={searchRef}

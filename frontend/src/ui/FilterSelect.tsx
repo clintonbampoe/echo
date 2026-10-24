@@ -5,6 +5,7 @@ import { OptionSheet } from "./OptionSheet";
 import type { Option } from "./selectTypes";
 import { useFinePointer } from "./useFinePointer";
 import { useListbox } from "./useListbox";
+import { usePresence } from "./usePresence";
 import styles from "./FilterSelect.module.css";
 
 type Props = {
@@ -23,6 +24,8 @@ export function FilterSelect(props: Props) {
   return useFinePointer() ? <MenuPill {...props} /> : <SheetPill {...props} />;
 }
 
+const applied = (value: string, quiet?: boolean) => !!value && !quiet;
+
 function text(label: string, options: readonly Option[], value: string) {
   return value
     ? (options.find((o) => o.value === value)?.label ?? label)
@@ -34,6 +37,7 @@ function MenuPill({ label, options, value, onChange, quiet }: Props) {
   const trigger = useRef<HTMLButtonElement>(null);
   const searchBox = useRef<HTMLInputElement>(null);
   const lb = useListbox(options, value, onChange, { trigger, searchBox });
+  const menu = usePresence(lb.open, 140);
 
   function onFocusOut(e: FocusEvent<HTMLDivElement>) {
     if (!e.currentTarget.contains(e.relatedTarget)) lb.dismiss();
@@ -48,16 +52,20 @@ function MenuPill({ label, options, value, onChange, quiet }: Props) {
         aria-haspopup="listbox"
         aria-expanded={lb.open}
         aria-label={`${label}: ${text("Any", options, value)}`}
-        className={`${styles.pill} ${value && !quiet ? styles.on : ""}`}
+        className={`${styles.pill} ${applied(value, quiet) ? styles.on : ""}`}
         onClick={() => (lb.open ? lb.close() : lb.show())}
         onKeyDown={lb.onKeyDown}
         onKeyUp={(e) => e.key === " " && e.preventDefault()}
       >
         {text(label, options, value)}
-        <Icon name="chevrons-up-down" size={14} className={styles.chevron} />
+        {!applied(value, quiet) && (
+          <Icon name="chevrons-up-down" size={14} className={styles.chevron} />
+        )}
       </button>
-      {lb.open && (
+      <Clear label={label} show={applied(value, quiet)} onClear={() => onChange("")} />
+      {menu.mounted && (
         <OptionList
+          closing={menu.closing}
           id={`${id}-list`}
           labelId={id}
           options={lb.shown}
@@ -93,12 +101,15 @@ function SheetPill({ label, options, value, onChange, quiet }: Props) {
         aria-haspopup="dialog"
         aria-expanded={open}
         aria-label={`${label}: ${text("Any", options, value)}`}
-        className={`${styles.pill} ${value && !quiet ? styles.on : ""}`}
+        className={`${styles.pill} ${applied(value, quiet) ? styles.on : ""}`}
         onClick={() => setOpen(true)}
       >
         {text(label, options, value)}
-        <Icon name="chevrons-up-down" size={14} className={styles.chevron} />
+        {!applied(value, quiet) && (
+          <Icon name="chevrons-up-down" size={14} className={styles.chevron} />
+        )}
       </button>
+      <Clear label={label} show={applied(value, quiet)} onClear={() => onChange("")} />
       <OptionSheet
         open={open}
         onClose={() => setOpen(false)}
@@ -108,5 +119,28 @@ function SheetPill({ label, options, value, onChange, quiet }: Props) {
         onPick={onChange}
       />
     </div>
+  );
+}
+
+// The ✕ on a pill that is filtering: puts the list back to everything without opening the menu.
+function Clear({
+  label,
+  show,
+  onClear,
+}: {
+  label: string;
+  show: boolean;
+  onClear: () => void;
+}) {
+  if (!show) return null;
+  return (
+    <button
+      type="button"
+      aria-label={`Clear ${label.toLowerCase()} filter`}
+      className={styles.clear}
+      onClick={onClear}
+    >
+      <Icon name="x" size={12} />
+    </button>
   );
 }

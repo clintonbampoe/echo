@@ -13,7 +13,11 @@
   border: 1px solid var(--line-2);
   border-radius: var(--radius);
   box-shadow: 0 12px 32px rgb(10 10 10 / 14%);
-  animation: open var(--fast) var(--ease) both;
+  transform-origin: top left;
+  animation: open 260ms var(--spring) both;
+}
+.menu[data-closing="true"] {
+  animation: close 120ms ease-in both;
 }
 :global([data-surface="dark"]) .menu {
   box-shadow: 0 12px 32px rgb(0 0 0 / 50%);
@@ -57,9 +61,15 @@
   color: var(--text-2);
 }
 
+@keyframes close {
+  to {
+    opacity: 0;
+    transform: scale(0.96) translateY(-2px);
+  }
+}
 @keyframes open {
   from {
     opacity: 0;
-    transform: translateY(-4px);
+    transform: scale(0.92) translateY(-6px);
   }
 }

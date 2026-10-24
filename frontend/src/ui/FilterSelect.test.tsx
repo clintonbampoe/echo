@@ -36,6 +36,17 @@ describe("FilterSelect", () => {
     ).toBeInTheDocument();
   });
 
+  it("clears an applied filter from the pill's own ✕", async () => {
+    const user = userEvent.setup();
+    render(<Harness />);
+    expect(screen.queryByRole("button", { name: /^Clear/ })).toBeNull();
+    await user.click(screen.getByRole("button", { name: "Status: Any" }));
+    await user.click(screen.getByRole("option", { name: "Active" }));
+    await user.click(screen.getByRole("button", { name: "Clear status filter" }));
+    expect(screen.getByRole("status")).toHaveTextContent("none");
+    expect(screen.getByRole("button", { name: "Status: Any" })).toBeInTheDocument();
+  });
+
   it("opens a bottom sheet on a touch screen, with no native select", async () => {
     vi.stubGlobal("matchMedia", () => ({
       matches: false,

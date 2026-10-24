@@ -23,8 +23,40 @@ button.pill:hover,
 button.pill[aria-expanded="true"] {
   background: var(--hover);
 }
+/* A pill that is filtering: solid, with room on the right for its ✕. */
 .on {
-  border-color: var(--text);
+  padding-right: 34px;
+  background: var(--sel);
+  border-color: transparent;
+  border-style: solid;
+  font-weight: 600;
+}
+button.on:hover,
+button.on[aria-expanded="true"] {
+  background: var(--line-2);
+}
+.clear {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  margin-top: -11px;
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  color: var(--text-2);
+}
+.clear:hover {
+  background: var(--line-2);
+  color: var(--text);
+}
+.clear:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 1px;
 }
 .chevron {
   color: var(--text-3);
