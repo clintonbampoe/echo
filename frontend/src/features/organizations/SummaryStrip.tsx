@@ -12,7 +12,7 @@ export function SummaryStrip({ summary: s }: Props) {
   const stats: Stat[] = [
     { label: "Organizations", value: n(s?.totalOrganizations), note: "Active" },
     {
-      label: "Memberships",
+      label: "Members placed",
       value: n(s?.totalMembers),
       note: "Across all groups",
     },

@@ -106,7 +106,7 @@ function Detail({ organization: o }: { organization: Organization }) {
         onAdd={() => setAdding(true)}
       />
       <StatStrip label="Organization numbers" stats={stats} />
-      <div className={styles.tabs}>
+      <div>
         <Tabs
           label="Organization"
           tabs={tabs}

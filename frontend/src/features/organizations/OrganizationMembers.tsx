@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { formatMonth } from "@/lib/format";
-import { Alert, Chip, ListBody, PersonList, type PersonColumn } from "@/ui";
+import { Alert, ListBody, PersonList, type PersonColumn } from "@/ui";
 import type { Organization, OrganizationMember, OrganizationRole } from "./api";
 import { useOrganizationMembers, useUpdateOrganizationMember } from "./hooks";
-import { roleLabel, roleTone } from "./labels";
+import { roleLabel } from "./labels";
 import { MembersFilterBar } from "./MembersFilterBar";
 import styles from "./OrganizationMembers.module.css";
 import { useMemberFilters } from "./useMemberFilters";
@@ -11,12 +11,6 @@ import { roles } from "./view";
 import { useMembershipPanels } from "../attendance/useMembershipPanels";
 
 const columns: PersonColumn<OrganizationMember>[] = [
-  {
-    header: "Role",
-    width: "minmax(120px, 1fr)",
-    chip: true,
-    cell: (m) => <Chip tone={roleTone[m.role]}>{roleLabel[m.role]}</Chip>,
-  },
   {
     header: "Joined",
     width: "minmax(100px, 1.4fr)",
@@ -66,8 +60,9 @@ export function OrganizationMembers({
         filtered={f.filtered}
         noMatchText="No one in this group matches that."
         onClear={f.clear}
+        footerInside
       >
-        {(members) => (
+        {(members, footer) => (
           <PersonList
             label="Members"
             rows={members}
@@ -75,9 +70,10 @@ export function OrganizationMembers({
             person={(m) => ({
               name: m.memberName,
               onOpen: () => open(m),
-              plain: true,
+              detail: roleLabel[m.role],
             })}
             columns={columns}
+            footer={footer}
             actions={(m) => [
               ...roles.map((r) => ({
                 label: roleLabel[r],

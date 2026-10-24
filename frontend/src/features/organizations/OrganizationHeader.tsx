@@ -1,7 +1,6 @@
-import { Button } from "@/ui";
+import { ActionMenu, Button } from "@/ui";
 import type { Organization } from "./api";
 import styles from "./OrganizationHeader.module.css";
-import { OrganizationTile } from "./OrganizationTile";
 
 type Props = {
   organization: Organization;
@@ -11,7 +10,7 @@ type Props = {
   onAdd?: () => void;
 };
 
-// The top of an organization's page: its tile, name and description, and what can be done to the group.
+// The top of an organization's page: its name and description, the one main action and a ⋯ menu for the rest.
 export function OrganizationHeader({
   organization: o,
   onEdit,
@@ -20,23 +19,20 @@ export function OrganizationHeader({
 }: Props) {
   return (
     <header className={styles.header}>
-      <OrganizationTile name={o.name} size={56} />
       <div className={styles.who}>
         <h1 className={styles.name}>{o.name}</h1>
         {o.description && <p className={styles.text}>{o.description}</p>}
       </div>
       <div className={styles.actions}>
-        {onAdd && (
-          <Button className={styles.add} onClick={onAdd}>
-            Add member
-          </Button>
-        )}
-        <Button variant="secondary" onClick={onEdit}>
-          Edit
-        </Button>
-        <Button variant="secondary" onClick={onDelete}>
-          Delete
-        </Button>
+        {onAdd && <Button onClick={onAdd}>Add member</Button>}
+        <ActionMenu
+          label={`More actions for ${o.name}`}
+          title={o.name}
+          items={[
+            { label: "Edit", onSelect: onEdit },
+            { label: "Delete", danger: true, onSelect: onDelete },
+          ]}
+        />
       </div>
     </header>
   );

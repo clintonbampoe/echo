@@ -215,7 +215,12 @@ describe("organization page", () => {
   it("deletes the group and goes back to the list", async () => {
     const user = userEvent.setup();
     const fetchMock = show(server());
-    await user.click(await screen.findByRole("button", { name: "Delete" }));
+    await user.click(
+      await screen.findByRole("button", {
+        name: "More actions for Church Choir",
+      }),
+    );
+    await user.click(screen.getByRole("menuitem", { name: "Delete" }));
     await user.click(
       await screen.findByRole("button", { name: "Delete organization" }),
     );
@@ -232,7 +237,12 @@ describe("organization page", () => {
   it("opens the edit sheet filled with what the group has", async () => {
     const user = userEvent.setup();
     show(server());
-    await user.click(await screen.findByRole("button", { name: "Edit" }));
+    await user.click(
+      await screen.findByRole("button", {
+        name: "More actions for Church Choir",
+      }),
+    );
+    await user.click(screen.getByRole("menuitem", { name: "Edit" }));
     expect(await screen.findByLabelText("Name")).toHaveValue("Church Choir");
   });
 

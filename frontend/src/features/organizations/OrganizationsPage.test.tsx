@@ -67,10 +67,10 @@ describe("organizations page", () => {
     open();
     const card = await screen.findByRole("link", { name: /Church Choir/ });
     expect(card).toHaveAttribute("href", "/organizations/o1");
-    expect(card).toHaveTextContent("61 members");
-    expect(screen.getByRole("link", { name: /Media Team/ })).toHaveTextContent(
-      "1 member",
-    );
+    expect(card.closest("li")).toHaveTextContent("61 members");
+    expect(
+      screen.getByRole("link", { name: /Media Team/ }).closest("li"),
+    ).toHaveTextContent("1 member");
     expect(await screen.findByText("612")).toBeInTheDocument();
     expect(screen.getByText("44")).toBeInTheDocument();
     expect(screen.getByText("Youth Ministry")).toBeInTheDocument();
@@ -83,7 +83,7 @@ describe("organizations page", () => {
       await screen.findByText("Create your first organization"),
     ).toBeInTheDocument();
     expect(screen.queryByRole("searchbox")).toBeNull();
-    expect(screen.queryByText("Memberships")).toBeNull();
+    expect(screen.queryByText("Members placed")).toBeNull();
   });
 
   it("says nothing matches, rather than inviting a first one, when a filter is on", async () => {

@@ -27,7 +27,10 @@ export function OrganizationsPage() {
 
   return (
     <div className="anim-rise">
-      <PageHeader title="Organizations" action={add} />
+      <PageHeader
+        title="Organizations"
+        add={{ label: "New organization", onClick: () => setAdding(true) }}
+      />
       {none ? (
         <EmptyState
           icon="organizations"
