@@ -244,7 +244,12 @@ describe("event page", () => {
   it("deletes the event and goes back to the list", async () => {
     const user = userEvent.setup();
     open();
-    await user.click(await screen.findByRole("button", { name: "Delete" }));
+    await user.click(
+      await screen.findByRole("button", {
+        name: "More actions for Prayer Retreat",
+      }),
+    );
+    await user.click(screen.getByRole("menuitem", { name: "Delete" }));
     expect(
       await screen.findByText(/Its 3 registrations and 3 check-ins are kept/),
     ).toBeInTheDocument();

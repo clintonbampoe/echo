@@ -64,9 +64,7 @@ function Detail({ asset: a }: { asset: Asset }) {
         onDelete={() => setDeleting(true)}
       />
       <StatStrip label="Asset figures" stats={assetFigures(a)} />
-      <div className={styles.details}>
-        <AssetDetails asset={a} />
-      </div>
+      <AssetDetails asset={a} />
       {editing && (
         <EditAssetSheet asset={a} onClose={() => setEditing(false)} />
       )}

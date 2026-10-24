@@ -133,7 +133,12 @@ describe("asset page", () => {
       await screen.findByText("Edit asset", { selector: "h2" }),
     ).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Cancel" }));
-    await user.click(screen.getByRole("button", { name: "Delete" }));
+    await user.click(
+      screen.getByRole("button", {
+        name: "More actions for Behringer X32 mixing desk",
+      }),
+    );
+    await user.click(screen.getByRole("menuitem", { name: "Delete" }));
     expect(
       await screen.findByText("Delete Behringer X32 mixing desk?"),
     ).toBeInTheDocument();

@@ -94,17 +94,17 @@ function Detail({ event: e }: { event: EventItem }) {
         onEdit={() => setEditing(true)}
         onDelete={() => setDeleting(true)}
       />
-      <div className={styles.panel}>
+      <div>
         <RecordPanel
           event={e}
           registered={new Set(regs.rows.map((r) => r.memberId))}
           checkedIn={new Set(checks.rows.map((c) => c.memberId))}
         />
       </div>
-      <div className={styles.stats}>
+      <div>
         <StatStrip label="Event numbers" stats={stats} busy={state.loading} />
       </div>
-      <div className={styles.tabs}>
+      <div>
         <Tabs
           label="Event"
           tabs={tabs}

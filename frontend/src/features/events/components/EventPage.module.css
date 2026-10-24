@@ -1,6 +1,3 @@
-.tabs {
-  margin-top: 28px;
-}
 .note {
   display: flex;
   flex-direction: column;
@@ -8,10 +5,4 @@
   gap: 12px;
   padding: 24px 0;
   color: var(--text-3);
-}
-.stats {
-  margin-top: 24px;
-}
-.panel {
-  margin-top: 24px;
 }
