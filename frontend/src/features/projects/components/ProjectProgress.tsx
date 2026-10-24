@@ -1,34 +1,36 @@
-import { formatMoney } from "@/lib/format";
-import { ProgressBar } from "@/ui";
+import { formatDate, formatMoney } from "@/lib/format";
+import { Chip, ProgressBar } from "@/ui";
 import type { Project } from "../api";
 import { remaining } from "../contributionView";
+import { statusLabel, statusTone } from "../labels";
 import { percentRaised } from "../view";
 import styles from "./ProjectProgress.module.css";
 
-// How far along a project is: what has been raised against the target, what is left, and a bar. Past the target the
-// bar is full, the percent says how far past, and "left" turns into how much over.
+// How far along a project is: the share of the target raised, its status, when it ends, and a bar. Past the target
+// the bar is full and the percent says how far past.
 export function ProjectProgress({ project: p }: { project: Project }) {
   const percent = percentRaised(p);
   const left = remaining(p);
   return (
     <section aria-label="Raised against target" className={styles.card}>
       <div className={styles.top}>
-        <div>
-          <p className={styles.label}>Raised</p>
-          <p className={styles.raised}>
-            {formatMoney(p.raisedAmount)}
-            <span className={styles.of}>of {formatMoney(p.targetAmount)}</span>
-          </p>
-        </div>
-        <div className={styles.left}>
-          <p className={styles.label}>{left.label}</p>
-          <p className={styles.leftValue}>{formatMoney(left.amount)}</p>
-        </div>
+        <p className={styles.percent}>
+          {percent}%<span className={styles.funded}> funded</span>
+        </p>
+        {p.status !== "OnTrack" && (
+          <Chip tone={statusTone[p.status]}>{statusLabel[p.status]}</Chip>
+        )}
+        {p.endDate && (
+          <p className={styles.ends}>Ends {formatDate(p.endDate)}</p>
+        )}
       </div>
-      <div className={styles.bar}>
-        <ProgressBar value={percent / 100} label="Raised against target" />
-        <span className={styles.percent}>{percent}%</span>
-      </div>
+      <p className={styles.left}>
+        {left.label} {formatMoney(left.amount)}
+      </p>
+      <ProgressBar
+        value={Math.min(percent, 100) / 100}
+        label="Raised against target"
+      />
     </section>
   );
 }

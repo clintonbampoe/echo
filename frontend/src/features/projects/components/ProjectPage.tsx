@@ -4,12 +4,13 @@ import { isApiError } from "@/lib/api";
 import { todayText } from "@/lib/dates";
 import { paths } from "@/lib/paths";
 import { useUrlFilters } from "@/lib/useUrlFilters";
-import { Alert, BackLink, Button } from "@/ui";
+import { Alert, BackLink, Button, StatStrip } from "@/ui";
 import type { Contribution, Project } from "../api";
 import {
   contributionFilters,
   toContributionFilters,
 } from "../contributionView";
+import { projectFigures } from "../view";
 import { useContributions, useContributionSummary, useProject } from "../hooks";
 import {
   ContributionDialogs,
@@ -88,6 +89,11 @@ function Detail({ project: p }: { project: Project }) {
         onEdit={() => setEditing(true)}
         onDelete={() => setDeleting(true)}
         onRecord={() => setRecording(true)}
+      />
+      <StatStrip
+        label="Project figures"
+        stats={projectFigures(p, summary.data?.totalContributions, todayText())}
+        busy={summary.isPending}
       />
       <ProjectProgress project={p} />
       <div className={styles.layout}>

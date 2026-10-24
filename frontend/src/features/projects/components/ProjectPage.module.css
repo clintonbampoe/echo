@@ -13,7 +13,6 @@
   grid-template-columns: 340px minmax(0, 1fr);
   gap: 16px;
   align-items: start;
-  margin-top: 16px;
 }
 
 @media (max-width: 1180px) {

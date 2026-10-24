@@ -158,10 +158,13 @@ describe("project page", () => {
     const progress = screen.getByRole("region", {
       name: "Raised against target",
     });
-    expect(within(progress).getByText("GH₵ 48,200")).toBeInTheDocument();
-    expect(within(progress).getByText("of GH₵ 80,000")).toBeInTheDocument();
-    expect(within(progress).getByText("GH₵ 31,800")).toBeInTheDocument();
-    expect(within(progress).getByText("60%")).toBeInTheDocument();
+    expect(
+      within(progress).getByText("Still to raise GH₵ 31,800"),
+    ).toBeInTheDocument();
+    expect(within(progress).getByText(/60%/)).toBeInTheDocument();
+    const figures = screen.getByRole("region", { name: "Project figures" });
+    expect(await within(figures).findByText("48,200")).toBeInTheDocument();
+    expect(within(figures).getByText("80,000")).toBeInTheDocument();
     const details = screen.getByRole("region", { name: "Project details" });
     expect(within(details).getByText("Ama Boateng")).toBeInTheDocument();
     expect(within(details).getByText("01 Mar 2026")).toBeInTheDocument();
@@ -204,10 +207,9 @@ describe("project page", () => {
       name: "Raised against target",
     });
     expect(
-      within(progress).getByText("Over the target by"),
+      within(progress).getByText("Over the target by GH₵ 5,000"),
     ).toBeInTheDocument();
-    expect(within(progress).getByText("GH₵ 5,000")).toBeInTheDocument();
-    expect(within(progress).getByText("106%")).toBeInTheDocument();
+    expect(within(progress).getByText(/106%/)).toBeInTheDocument();
   });
 
   it("invites the first contribution when there are none, with nothing to filter", async () => {
@@ -240,12 +242,20 @@ describe("project page", () => {
     const user = userEvent.setup();
     open();
     await screen.findByRole("heading", { name: "Church roof renovation" });
-    await user.click(screen.getByRole("button", { name: "Edit" }));
+    const more = () =>
+      user.click(
+        screen.getByRole("button", {
+          name: "More actions for Church roof renovation",
+        }),
+      );
+    await more();
+    await user.click(screen.getByRole("menuitem", { name: "Edit" }));
     expect(
       await screen.findByText("Edit Church roof renovation"),
     ).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Cancel" }));
-    await user.click(screen.getByRole("button", { name: "Delete" }));
+    await more();
+    await user.click(screen.getByRole("menuitem", { name: "Delete" }));
     expect(
       await screen.findByText(/Its 2 contributions are kept in history/),
     ).toBeInTheDocument();
@@ -264,7 +274,7 @@ describe("project page", () => {
       open();
       await screen.findByRole("heading", { name: "Church roof renovation" });
       await user.click(
-        screen.getByRole("button", { name: "Record contribution" }),
+        screen.getByRole("button", { name: "Add contribution" }),
       );
       expect(
         await screen.findByText(
@@ -309,7 +319,7 @@ describe("project page", () => {
       open();
       await screen.findByRole("heading", { name: "Church roof renovation" });
       await user.click(
-        screen.getByRole("button", { name: "Record contribution" }),
+        screen.getByRole("button", { name: "Add contribution" }),
       );
       await user.click(
         screen.getAllByRole("button", { name: "Record contribution" }).at(-1)!,
@@ -324,7 +334,7 @@ describe("project page", () => {
       open();
       await screen.findByRole("heading", { name: "Church roof renovation" });
       await user.click(
-        screen.getByRole("button", { name: "Record contribution" }),
+        screen.getByRole("button", { name: "Add contribution" }),
       );
       await user.click(
         within(screen.getByRole("dialog")).getByRole("combobox", {
@@ -356,11 +366,9 @@ describe("project page", () => {
       const user = userEvent.setup();
       open();
       await screen.findByText("No contributions yet");
-      const buttons = screen.getAllByRole("button", {
-        name: "Record contribution",
-      });
-      expect(buttons).toHaveLength(2);
-      await user.click(buttons[1]!);
+      await user.click(
+        screen.getByRole("button", { name: "Record contribution" }),
+      );
       expect(
         await screen.findByText(
           "Given towards Church roof renovation. Not linked to a member.",

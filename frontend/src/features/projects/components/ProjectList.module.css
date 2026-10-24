@@ -1,42 +1,95 @@
-/* The name wraps rather than being cut off: a long project name is still readable (design rule S1). */
-.name {
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.card {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 8px;
+  padding: 22px 24px;
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  transition: background var(--fast) ease;
+}
+.card:hover {
+  background: var(--surface-2);
+}
+.card:has(.name:focus-visible) {
+  outline: var(--focus);
+  outline-offset: 2px;
+}
+.top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.who {
   min-width: 0;
+}
+.name {
+  font-size: 15px;
+  font-weight: 600;
+  color: inherit;
+  text-decoration: none;
+}
+.name:focus-visible {
+  outline: none;
+}
+/* The whole card is the click target; the name is the link screen readers and keys find. */
+.name::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
 }
 .category {
+  margin: 2px 0 0;
   font-size: 13px;
-  font-weight: 400;
   color: var(--text-3);
 }
-
-.raised {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  min-width: 0;
-}
-.progress {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  max-width: 160px;
-}
-.progress > :first-child {
-  flex: 1;
-}
 .percent {
-  min-width: 36px;
+  margin: 8px 0 10px;
+  font-size: 32px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+.funded {
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--text-3);
+}
+.amounts {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 0;
   font-size: 13px;
-  color: var(--text-2);
-  text-align: right;
+  color: var(--text-3);
   font-variant-numeric: tabular-nums;
 }
 
-/* In a card the bar runs the full width, with the percent at its end. */
-@media (max-width: 900px) {
-  .progress {
-    max-width: none;
+@media (max-width: 1180px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 700px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+  .card {
+    padding: 18px 20px;
   }
 }

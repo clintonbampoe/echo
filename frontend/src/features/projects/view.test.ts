@@ -60,11 +60,12 @@ describe("project view", () => {
       "This year",
     );
     expect(stats.map((s) => s.value)).toEqual([
-      "6",
-      "GH₵ 107,000",
-      "GH₵ 215,000",
-      "1",
+      "107,000",
+      "215,000",
+      "49",
+      "17,833",
     ]);
+    expect(stats.map((s) => s.unit)).toEqual(["GHS", "GHS", "%", "GHS"]);
     expect(stats[0]?.note).toBe("This year");
   });
 
