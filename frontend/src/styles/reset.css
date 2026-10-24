@@ -53,7 +53,8 @@ a {
   outline-offset: 2px;
 }
 
-/* Anything that moves must respect this. One rule, everywhere. */
+/* Anything that moves must respect this. One rule, everywhere: the device asking for less motion, or the person
+   turning on "Reduce motion" in Settings (which sets data-reduce-motion on <html>). */
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -66,4 +67,15 @@ a {
     animation-iteration-count: 1 !important;
     transition-duration: 1ms !important;
   }
+}
+html[data-reduce-motion="true"] {
+  scroll-behavior: auto;
+}
+html[data-reduce-motion="true"] *,
+html[data-reduce-motion="true"] *::before,
+html[data-reduce-motion="true"] *::after {
+  animation-duration: 1ms !important;
+  animation-delay: 0ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 1ms !important;
 }

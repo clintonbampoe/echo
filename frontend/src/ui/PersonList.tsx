@@ -111,14 +111,7 @@ type RowProps<T> = {
   grid: CSSProperties;
 };
 
-function Row<T>({
-  row,
-  index,
-  person: p,
-  columns,
-  items,
-  grid,
-}: RowProps<T>) {
+function Row<T>({ row, index, person: p, columns, items, grid }: RowProps<T>) {
   return (
     <li
       className={`${styles.row} stagger`}
@@ -180,8 +173,14 @@ export function PersonListSkeleton({ rows = 6 }: { rows?: number }) {
           <li key={i} className={styles.skeletonRow}>
             <span className={`skeleton ${styles.skeletonAvatar}`} />
             <span className={styles.skeletonLines}>
-              <span className="skeleton" style={{ width: `${48 - (i % 3) * 8}%`, height: 14 }} />
-              <span className="skeleton" style={{ width: `${30 + (i % 4) * 5}%`, height: 11 }} />
+              <span
+                className="skeleton"
+                style={{ width: `${48 - (i % 3) * 8}%`, height: 14 }}
+              />
+              <span
+                className="skeleton"
+                style={{ width: `${30 + (i % 4) * 5}%`, height: 11 }}
+              />
             </span>
             <span className={`skeleton ${styles.skeletonTail}`} />
           </li>

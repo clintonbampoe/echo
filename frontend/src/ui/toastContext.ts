@@ -1,4 +1,9 @@
-import { createContext, useContext, type Dispatch, type SetStateAction } from "react";
+import {
+  createContext,
+  useContext,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
 
 export type ToastInput = {
   message: string;
@@ -6,11 +11,14 @@ export type ToastInput = {
   action?: { label: string; onClick: () => void };
 };
 
-export type Slot = { toast: (ToastInput & { id: number }) | null; open: boolean };
+export type Slot = {
+  toast: (ToastInput & { id: number }) | null;
+  open: boolean;
+};
 
-export const ToastContext = createContext<Dispatch<SetStateAction<Slot>> | null>(
-  null,
-);
+export const ToastContext = createContext<Dispatch<
+  SetStateAction<Slot>
+> | null>(null);
 
 let counter = 0;
 

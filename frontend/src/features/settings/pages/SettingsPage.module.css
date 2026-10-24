@@ -1,0 +1,57 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.card {
+  overflow: hidden;
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+.density {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px 22px;
+}
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.title {
+  font-size: 15px;
+  font-weight: 600;
+}
+.sub {
+  font-size: 13px;
+  color: var(--text-3);
+}
+.setting {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: calc(64px * var(--density, 1));
+  padding: 0 22px;
+}
+.setting + .setting {
+  border-top: 1px solid var(--line);
+}
+.setting .title {
+  font-size: 15px;
+  font-weight: 500;
+}
+
+@media (max-width: 900px) {
+  .page {
+    gap: 16px;
+  }
+  .head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

@@ -1,0 +1,140 @@
+.page {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  background:
+    radial-gradient(
+      520px 260px at 20% -40px,
+      rgb(10 10 11 / 4.5%),
+      transparent
+    ),
+    var(--bg);
+}
+.top {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  padding: 0 6px 0 5px;
+}
+.close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+}
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 8px 16px 40px;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+.account {
+  flex-direction: row;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  color: inherit;
+  text-decoration: none;
+}
+.who {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.name {
+  font-size: 16px;
+  font-weight: 600;
+}
+.sub {
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  height: 50px;
+  padding: 0 14px;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font-size: 16px;
+  text-align: left;
+  text-decoration: none;
+}
+/* The divider starts after the icon, not at the card's edge. */
+.row + .row::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 58px;
+  border-top: 1px solid var(--line);
+}
+.row:active {
+  background: var(--hover);
+}
+.tile {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: var(--fill);
+  color: var(--text-2);
+}
+.on {
+  font-weight: 600;
+}
+.on .tile {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+.label {
+  flex: 1;
+}
+.chevron {
+  flex: none;
+  color: var(--line-2);
+}
+.danger {
+  color: var(--neg);
+}
+.danger .tile {
+  color: var(--neg);
+}
+.close:focus-visible,
+.row:focus-visible,
+.account:focus-visible {
+  outline: var(--focus);
+  outline-offset: -2px;
+}

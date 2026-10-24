@@ -12,10 +12,11 @@ describe("stat strip", () => {
         ]}
       />,
     );
-    expect(screen.getByText(name)).toHaveAttribute("title", name);
-    expect(screen.getByText("and Ama Serwaa Boateng")).toHaveAttribute(
+    expect(screen.getByText(name)).toHaveAttribute(
       "title",
-      "and Ama Serwaa Boateng",
+      `${name} · and Ama Serwaa Boateng`,
     );
+    // The note is not drawn, but a screen reader still gets it.
+    expect(screen.getByText("and Ama Serwaa Boateng")).toBeInTheDocument();
   });
 });

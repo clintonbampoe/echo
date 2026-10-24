@@ -1,0 +1,14 @@
+.fields {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.hint {
+  font-size: 12.5px;
+  color: var(--text-3);
+}

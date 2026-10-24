@@ -66,10 +66,12 @@ export function SegmentedField<V extends string>({
       <legend className={hideLabel ? styles.hidden : styles.label}>
         {label}
       </legend>
-      <div className={groupClass(joined, fill, compact, stretch)}
+      <div
+        className={groupClass(joined, fill, compact, stretch)}
         style={thumb}
         data-flip={flip}
-        data-squish="before">
+        data-squish="before"
+      >
         {options.map((o) => (
           <label key={o.value} className={styles.option}>
             <input

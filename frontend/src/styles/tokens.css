@@ -10,28 +10,33 @@
  * Dark mode for the app itself is on hold, so there are no app dark tokens.
  */
 :root {
-  /* App surface (light) */
-  --bg: #f4f4f3;
+  /* App surface (light). Values are the design boards': cool greys, hairline borders. */
+  --bg: #f6f6f7;
   --surface: #ffffff;
-  --surface-2: #fafaf9;
-  --line: #e7e7e4;
-  --line-2: #d6d6d2;
-  --text: #0a0a0a;
+  --surface-2: #fcfcfd;
+  --side: #ededef; /* the sidebar */
+  --fill: #f1f1f3; /* tab rails, tiles, quiet chips */
+  --fill-2: #e6e6ea; /* skeletons, bar tracks */
+  --line: #e4e4e7;
+  --line-2: #cfcfd5;
+  --text: #0a0a0b;
   --text-2: #52525b;
-  --text-3: #686870;
-  --accent: #0a0a0a;
+  --text-3: #6a6a72;
+  --accent: #0a0a0b;
   --on-accent: #ffffff;
-  --accent-hover: #262626;
-  --hover: #ededeb;
-  --sel: #e8e8e5;
-  --pos: #15803d;
-  --pos-bg: #ecfdf3;
-  --neg: #b91c1c;
-  --neg-bg: #fef2f2;
-  --warn: #b45309;
-  --warn-bg: #fff7e6;
+  --accent-hover: #26262b;
+  --hover: #eeeef0;
+  --sel: #eaeaee;
+  --pos: #17794a;
+  --pos-bg: #e3f3e9;
+  --neg: #c42b1f;
+  --neg-bg: #fadeda;
+  --warn: #7a4e00;
+  --warn-bg: #f8eccb;
   --warn-line: #f0d9a8;
-  --shadow: 0 1px 2px rgb(10 10 10 / 4%);
+  --card-bg: linear-gradient(180deg, #ffffff, #fcfcfd);
+  --shadow:
+    0 1px 2px rgb(10 10 11 / 5%), 0 12px 28px -16px rgb(10 10 11 / 10%);
 
   /* Type */
   --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
@@ -39,7 +44,8 @@
   /* Shape */
   --radius-sm: 8px;
   --radius: 12px;
-  --radius-lg: 14px;
+  --radius-lg: 20px;
+  --radius-field: 14px;
   --radius-pill: 999px;
 
   /* Motion. One curve, three speeds. */
@@ -50,6 +56,9 @@
   --fast: 160ms;
   --base: 280ms;
   --slow: 700ms;
+
+  /* How roomy list rows are: Settings > Density sets data-density on <html>. */
+  --density: 1;
 
   /* Focus */
   --focus: 2px solid var(--text);
@@ -102,4 +111,11 @@
     0 0 0 1px rgb(0 0 0 / 40%);
   --glow: 0 10px 30px -10px rgb(250 250 250 / 53%);
   color-scheme: dark;
+}
+
+html[data-density="compact"] {
+  --density: 0.88;
+}
+html[data-density="spacious"] {
+  --density: 1.14;
 }

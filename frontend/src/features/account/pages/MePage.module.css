@@ -1,0 +1,68 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.card {
+  overflow: hidden;
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+.identity {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 22px;
+}
+.who {
+  min-width: 0;
+}
+.name {
+  font-size: 18px;
+  font-weight: 600;
+}
+.sub {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  color: var(--text-3);
+}
+.line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  min-height: 64px;
+  padding: 10px 22px;
+  border: 0;
+  border-top: 1px solid var(--line);
+  background: transparent;
+  text-align: left;
+}
+.card > .line:first-child {
+  border-top: 0;
+}
+button.line:hover {
+  background: var(--hover);
+}
+.title {
+  font-size: 15px;
+  font-weight: 500;
+}
+.value {
+  font-size: 14px;
+  color: var(--text-2);
+}
+.chevron {
+  color: var(--line-2);
+}
+
+@media (max-width: 900px) {
+  .page {
+    gap: 16px;
+  }
+}

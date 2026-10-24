@@ -30,11 +30,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         toast &&
         createPortal(
           <div className={styles.dock}>
-            <div
-              role="status"
-              className={styles.toast}
-              data-closing={closing}
-            >
+            <div role="status" className={styles.toast} data-closing={closing}>
               <span className={styles.message}>{toast.message}</span>
               {toast.action && (
                 <button

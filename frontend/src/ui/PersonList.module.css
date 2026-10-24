@@ -1,7 +1,7 @@
 .card {
   margin-top: 16px;
   overflow: hidden;
-  background: var(--surface);
+  background: var(--card-bg);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow);
@@ -31,7 +31,7 @@
 }
 .row {
   position: relative;
-  min-height: 60px;
+  min-height: calc(60px * var(--density, 1));
   padding-block: 10px;
   border-top: 1px solid var(--line);
   cursor: pointer;
@@ -146,7 +146,7 @@
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     gap: 10px 16px;
     padding: 14px 16px;
-    background: var(--surface);
+    background: var(--card-bg);
     border: 1px solid var(--line);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow);
@@ -191,7 +191,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  min-height: 64px;
+  min-height: calc(64px * var(--density, 1));
   padding: 10px 20px;
   border-top: 1px solid var(--line);
 }
@@ -225,7 +225,7 @@
     grid-template-columns: minmax(0, 1fr) auto 36px;
     align-items: center;
     gap: 0 10px;
-    min-height: 66px;
+    min-height: calc(66px * var(--density, 1));
     padding: 10px 14px;
   }
   .compact .who {

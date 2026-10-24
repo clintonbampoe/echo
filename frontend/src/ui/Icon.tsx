@@ -30,20 +30,23 @@ const shapes = {
   ),
   assets: (
     <>
-      <path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3z" />
-      <path d="M12 12 4.5 7.8M12 12l7.5-4.2M12 12v9" />
+      <g transform="scale(1.2)">
+        <path d="M3 8l7-5 7 5v9H3zM8 17v-5h4v5" />
+      </g>
     </>
   ),
   calendar: (
     <>
-      <rect x="3.5" y="5" width="17" height="15.5" rx="2.5" />
-      <path d="M3.5 10h17M8 3v4M16 3v4" />
+      <g transform="scale(1.2)">
+        <path d="M3 5h14v12H3zM3 9h14M7 3v3M13 3v3" />
+      </g>
     </>
   ),
   "calendar-check": (
     <>
-      <rect x="3.5" y="4.5" width="17" height="16" rx="2.5" />
-      <path d="M3.5 9.5h17M8 3v3M16 3v3M8.5 14.5l2.5 2.5 4.5-4.5" />
+      <g transform="scale(1.2)">
+        <path d="M3 5h14v12H3zM3 9h14M7 3v3M13 3v3M7.5 13l1.8 1.8L13 11.5" />
+      </g>
     </>
   ),
   "calendar-plus": (
@@ -98,15 +101,16 @@ const shapes = {
   ),
   dashboard: (
     <>
-      <rect x="3.5" y="3.5" width="7" height="7" rx="1.8" />
-      <rect x="13.5" y="3.5" width="7" height="7" rx="1.8" />
-      <rect x="3.5" y="13.5" width="7" height="7" rx="1.8" />
-      <rect x="13.5" y="13.5" width="7" height="7" rx="1.8" />
+      <g transform="scale(1.2)">
+        <path d="M3 3h5.5v5.5H3zM11.5 3H17v5.5h-5.5zM3 11.5h5.5V17H3zM11.5 11.5H17V17h-5.5z" />
+      </g>
     </>
   ),
   "door-in": (
     <>
-      <path d="M14 4h4a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-4M10 8l-4 4 4 4M6 12h10" />
+      <g transform="scale(1.2)">
+        <path d="M8 3H4v14h4M8 10h9M14 7l3 3-3 3" />
+      </g>
     </>
   ),
   eye: (
@@ -124,7 +128,16 @@ const shapes = {
   ),
   finance: (
     <>
-      <path d="M4 20V10M10 20V4M16 20v-7M22 20H2" />
+      <g transform="scale(1.2)">
+        <path d="M3 6h14v10H3zM3 6l2-3h10l2 3M13 11h2" />
+      </g>
+    </>
+  ),
+  inbox: (
+    <>
+      <g transform="scale(1.2)">
+        <path d="M3 11l2-6h10l2 6v5H3zM3 11h4l1 2h4l1-2h4" />
+      </g>
     </>
   ),
   key: (
@@ -139,6 +152,13 @@ const shapes = {
       <path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1" />
     </>
   ),
+  "log-out": (
+    <>
+      <g transform="scale(1.2)">
+        <path d="M8 3H4v14h4M8 10h9M14 7l3 3-3 3" />
+      </g>
+    </>
+  ),
   mail: (
     <>
       <rect x="3" y="5" width="18" height="14" rx="2.5" />
@@ -147,7 +167,9 @@ const shapes = {
   ),
   menu: (
     <>
-      <path d="M4 7h16M4 12h16M4 17h16" />
+      <g transform="scale(1.2)">
+        <path d="M3 7h14M3 13h14" />
+      </g>
     </>
   ),
   more: (
@@ -159,10 +181,9 @@ const shapes = {
   ),
   organizations: (
     <>
-      <circle cx="12" cy="5.5" r="2.5" />
-      <circle cx="5.5" cy="18" r="2.5" />
-      <circle cx="18.5" cy="18" r="2.5" />
-      <path d="M12 8v4M12 12l-5 4M12 12l5 4" />
+      <g transform="scale(1.2)">
+        <path d="M4 17V4h8v13M12 8h4v9M2 17h16M7 7h2M7 10h2M7 13h2" />
+      </g>
     </>
   ),
   plus: (
@@ -172,7 +193,9 @@ const shapes = {
   ),
   projects: (
     <>
-      <path d="M4 20h16M6 20V9l6-5 6 5v11M10 20v-5h4v5" />
+      <g transform="scale(1.2)">
+        <path d="M3 5h5l2 2h7v9H3z" />
+      </g>
     </>
   ),
   reports: (
@@ -185,6 +208,13 @@ const shapes = {
     <>
       <circle cx="11" cy="11" r="6.5" />
       <path d="m20 20-3.8-3.8" />
+    </>
+  ),
+  settings: (
+    <>
+      <g transform="scale(1.2)">
+        <path d="M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM10 2.5l1.2 1.6 2-.4.9 1.8 1.9.8-.3 2L17.1 10l-1.4 1.5.3 2-1.9.8-.9 1.8-2-.4L10 17.5l-1.2-1.6-2 .4-.9-1.8-1.9-.8.3-2L2.9 10l1.4-1.5-.3-2 1.9-.8.9-1.8 2 .4z" />
+      </g>
     </>
   ),
   shield: (
@@ -207,14 +237,16 @@ const shapes = {
   ),
   tithes: (
     <>
-      <path d="M12 21s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.6-7 10-7 10z" />
+      <g transform="scale(1.2)">
+        <path d="M10 16s-6-3.6-6-8a3.4 3.4 0 016-2 3.4 3.4 0 016 2c0 4.4-6 8-6 8z" />
+      </g>
     </>
   ),
   user: (
     <>
-      <circle cx="9" cy="8" r="3.5" />
-      <path d="M2.5 20c.5-3.5 3-5.5 6.5-5.5s6 2 6.5 5.5" />
-      <path d="M16 4.7a3.5 3.5 0 0 1 0 6.6M18.5 14.8c1.7.7 2.8 2.4 3 5.2" />
+      <g transform="scale(1.2)">
+        <path d="M7.5 9a3 3 0 100-6 3 3 0 000 6zM2 17c0-3 2.5-5 5.5-5s5.5 2 5.5 5M13.5 4.2a2.6 2.6 0 010 4.8M15 12.2c1.9.5 3 2.1 3 4.8" />
+      </g>
     </>
   ),
   "user-plus": (

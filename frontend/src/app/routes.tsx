@@ -1,11 +1,14 @@
 import { createBrowserRouter, type RouteObject } from "react-router-dom";
+import { accountRoutes } from "@/features/account";
 import { assetRoutes } from "@/features/assets";
 import { attendanceRoutes } from "@/features/attendance";
 import { authRoutes } from "@/features/auth";
 import { dashboardRoutes } from "@/features/dashboard";
 import { eventRoutes } from "@/features/events";
+import { invitationRoutes } from "@/features/invitations";
 import { memberRoutes } from "@/features/members";
 import { organizationRoutes } from "@/features/organizations";
+import { settingsRoutes } from "@/features/settings";
 import { titheRoutes } from "@/features/tithes";
 import { projectRoutes } from "@/features/projects";
 import { transactionRoutes } from "@/features/transactions";
@@ -41,6 +44,9 @@ const routes: RouteObject[] = [
               ...transactionRoutes,
               ...projectRoutes,
               ...assetRoutes,
+              ...invitationRoutes,
+              ...settingsRoutes,
+              ...accountRoutes,
             ],
           },
         ],

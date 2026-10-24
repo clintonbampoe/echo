@@ -9,6 +9,7 @@ export const exitAnimations = { enabled: true };
 export function exitDuration(ms: number) {
   if (!exitAnimations.enabled || typeof window.matchMedia !== "function")
     return 0;
+  if (document.documentElement.dataset.reduceMotion === "true") return 0;
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : ms;
 }
 

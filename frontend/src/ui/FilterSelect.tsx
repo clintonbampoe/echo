@@ -69,7 +69,11 @@ function MenuPill(props: Props) {
           <Icon name="chevrons-up-down" size={14} className={styles.chevron} />
         )}
       </button>
-      <Clear label={label} show={applied(value, quiet)} onClear={() => onChange("")} />
+      <Clear
+        label={label}
+        show={applied(value, quiet)}
+        onClear={() => onChange("")}
+      />
       {menu.mounted && (
         <OptionList
           closing={menu.closing}
@@ -117,7 +121,11 @@ function SheetPill(props: Props) {
           <Icon name="chevrons-up-down" size={14} className={styles.chevron} />
         )}
       </button>
-      <Clear label={label} show={applied(value, quiet)} onClear={() => onChange("")} />
+      <Clear
+        label={label}
+        show={applied(value, quiet)}
+        onClear={() => onChange("")}
+      />
       <OptionSheet
         open={open}
         onClose={() => setOpen(false)}

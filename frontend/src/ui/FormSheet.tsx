@@ -6,7 +6,7 @@ import styles from "./FormSheet.module.css";
 
 type Props = {
   title: string;
-  subtitle: string;
+  subtitle?: string;
   onClose: () => void;
   // Ties the footer's save button to the form.
   formId: string;

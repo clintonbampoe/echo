@@ -3,3 +3,4 @@ export type { CongregationType, UserRole } from "./api";
 export { useCongregation, useMe } from "./hooks";
 export { roleLabel } from "./labels";
 export { congregationTypes } from "./options";
+export { accountRoutes } from "./routes";

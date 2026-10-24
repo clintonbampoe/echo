@@ -78,7 +78,8 @@
   gap: 0;
   margin-top: 0;
   padding: 3px;
-  background: var(--sel);
+  background: var(--fill);
+  border: 1px solid var(--line);
   border-radius: var(--radius-pill);
 }
 .joined::before {
@@ -87,12 +88,12 @@
   top: 3px;
   bottom: 3px;
   left: 3px;
-  width: calc((100% - 6px) / var(--n));
-  background: var(--accent);
+  width: calc((100% - 8px) / var(--n));
+  background: var(--surface);
   border-radius: var(--radius-pill);
   box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 22%),
-    0 4px 12px -4px rgb(10 10 11 / 35%);
+    0 0 0 1px var(--line-2),
+    0 1px 2px rgb(0 0 0 / 6%);
   opacity: var(--thumb, 1);
   /* Slides with translate and squishes with scale (motion.css), so the two do not fight. */
   translate: calc(var(--i) * 100%) 0;
@@ -123,7 +124,7 @@
 }
 .joined .input:checked + .face {
   background: transparent;
-  color: var(--on-accent);
+  color: var(--text);
   box-shadow: none;
 }
 .group.stretch {

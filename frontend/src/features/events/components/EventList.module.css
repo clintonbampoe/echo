@@ -3,7 +3,7 @@
   margin: 16px 0 0;
   padding: 0;
   list-style: none;
-  background: var(--surface);
+  background: var(--card-bg);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow);
@@ -133,7 +133,7 @@
     border-top: 0;
   }
   .row {
-    background: var(--surface);
+    background: var(--card-bg);
     border: 1px solid var(--line);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow);

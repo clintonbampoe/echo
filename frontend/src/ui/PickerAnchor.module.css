@@ -10,7 +10,7 @@
   min-width: 304px;
   background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-field);
   box-shadow: 0 12px 32px rgb(10 10 10 / 14%);
   animation: open var(--fast) var(--ease) both;
 }

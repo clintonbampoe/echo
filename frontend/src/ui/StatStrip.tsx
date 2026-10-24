@@ -36,26 +36,22 @@ export function StatStrip({ label, stats, busy }: Props) {
         >
           <p className={styles.label}>{s.label}</p>
           {busy ? (
-            <span
-              className={`skeleton ${styles.pending}`}
-              aria-hidden="true"
-            />
+            <span className={`skeleton ${styles.pending}`} aria-hidden="true" />
           ) : (
-            <>
-              <p className={styles.value} title={s.value}>
+            <div className={styles.bottom}>
+              <p className={styles.value} title={`${s.value} · ${s.note}`}>
                 {s.value}
-                {s.change && (
-                  <span
-                    className={`${styles.change} ${s.change.startsWith("−") ? styles.down : ""}`}
-                  >
-                    {s.change}
-                  </span>
-                )}
               </p>
-              <p className={styles.note} title={s.note}>
-                {s.note}
-              </p>
-            </>
+              {/* The context line is not drawn (the boards leave it out); screen readers still get it. */}
+              {s.note && <p className={styles.note}>{s.note}</p>}
+              {s.change && (
+                <span
+                  className={`${styles.change} ${s.change.startsWith("−") ? styles.down : ""}`}
+                >
+                  {s.change}
+                </span>
+              )}
+            </div>
           )}
         </div>
       ))}

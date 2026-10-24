@@ -1,4 +1,5 @@
 import { ageOn, dayParts, daysBetween, monthNames } from "./dates";
+import { getPreferences } from "./preferences";
 
 const months = monthNames.map((name) => name.slice(0, 3));
 
@@ -33,10 +34,15 @@ export function formatTime(value: string): string {
     .replace(/\s?(am|pm)/i, (_, half: string) => ` ${half.toLowerCase()}`);
 }
 
-// 6400 -> "GH₵ 6,400". Whole cedis when there are no pesewas, two places otherwise.
+// 6400 -> "GH₵ 6,400" (or "6,400" when the person turned the symbol off in Settings). Whole cedis when there are no
+// pesewas, two places otherwise.
 export function formatMoney(amount: number): string {
   const whole = Number.isInteger(amount);
-  return `GH₵ ${amount.toLocaleString("en-GB", { minimumFractionDigits: whole ? 0 : 2, maximumFractionDigits: 2 })}`;
+  const figure = amount.toLocaleString("en-GB", {
+    minimumFractionDigits: whole ? 0 : 2,
+    maximumFractionDigits: 2,
+  });
+  return getPreferences().currencySymbol ? `GH₵ ${figure}` : figure;
 }
 
 // "08:42:00" -> "8:42 am". For a time of day the API sends on its own, with no date.

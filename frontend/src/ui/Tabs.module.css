@@ -13,16 +13,17 @@
   position: relative;
   display: inline-flex;
   gap: 2px;
-  padding: 4px;
-  background: var(--sel);
+  padding: 3px;
+  background: var(--fill);
+  border: 1px solid var(--line);
   border-radius: var(--radius-pill);
 }
 
 /* The thumb's slot: it slides along the row (translate) while the thumb inside it squishes (scale). */
 .slot {
   position: absolute;
-  top: 4px;
-  bottom: 4px;
+  top: 3px;
+  bottom: 3px;
   left: 0;
   width: var(--w, 0);
   translate: var(--x, 0) 0;
@@ -36,12 +37,11 @@
 .thumb {
   position: absolute;
   inset: 0;
-  background: var(--accent);
+  background: var(--surface);
   border-radius: var(--radius-pill);
-  /* A faint sheen across the top, so the pill reads as glass. */
   box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 22%),
-    0 4px 12px -4px rgb(10 10 11 / 35%);
+    0 0 0 1px var(--line-2),
+    0 1px 2px rgb(0 0 0 / 6%);
 }
 
 .tab {
@@ -50,8 +50,8 @@
   align-items: center;
   gap: 8px;
   flex: none;
-  height: 36px;
-  padding: 0 16px;
+  height: 38px;
+  padding: 0 18px;
   background: transparent;
   border: 0;
   border-radius: var(--radius-pill);
@@ -69,7 +69,7 @@
 }
 .selected,
 .selected:hover {
-  color: var(--on-accent);
+  color: var(--text);
 }
 
 .count {
@@ -85,6 +85,6 @@
     color var(--base) ease;
 }
 .selected .count {
-  background: color-mix(in srgb, var(--on-accent) 22%, transparent);
-  color: var(--on-accent);
+  background: var(--fill);
+  color: var(--text);
 }

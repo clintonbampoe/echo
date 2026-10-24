@@ -41,11 +41,7 @@ export function SheetSelect({
         <span id={`${id}-value`}>
           {options.find((o) => o.value === value)?.label ?? placeholder}
         </span>
-        <Icon
-          name="chevrons-up-down"
-          size={16}
-          className={fieldStyles.chevron}
-        />
+        <Icon name="chevron-down" size={16} className={fieldStyles.chevron} />
       </button>
       <OptionSheet
         open={open}

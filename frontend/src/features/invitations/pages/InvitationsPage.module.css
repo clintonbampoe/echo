@@ -1,0 +1,19 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.skeleton > span {
+  height: 72px;
+  border-radius: var(--radius);
+}
+@media (max-width: 900px) {
+  .page {
+    gap: 16px;
+  }
+}

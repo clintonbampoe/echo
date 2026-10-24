@@ -1,58 +1,41 @@
 import { NavLink } from "react-router-dom";
+import { useMe } from "@/features/account";
 import { Icon } from "@/ui";
-import { navGroups, type NavItem } from "./nav";
+import { adminNav, mainNav, type NavItem } from "./nav";
 import styles from "./NavList.module.css";
 
-type Props = {
-  // Called after a link is followed, so a drawer can close itself.
-  onNavigate?: () => void;
-};
-
-export function NavList({ onNavigate }: Props) {
+// The sidebar's links. The Admin group is drawn only for administrators.
+export function NavList() {
+  const isAdmin = useMe().data?.role === "Admin";
   return (
-    <nav aria-label="Main" className={styles.nav}>
-      {navGroups.map((group, i) => (
-        <div key={group.title ?? i}>
-          {group.title && <p className={styles.group}>{group.title}</p>}
-          {group.items.map((item) => (
-            <Item key={item.to} item={item} onNavigate={onNavigate} />
+    <>
+      <nav aria-label="Main" className={styles.nav}>
+        {mainNav.map((item) => (
+          <Item key={item.to} item={item} />
+        ))}
+      </nav>
+      {isAdmin && (
+        <nav aria-label="Admin" className={styles.admin}>
+          <p className={styles.heading}>Admin</p>
+          {adminNav.map((item) => (
+            <Item key={item.to} item={item} />
           ))}
-        </div>
-      ))}
-    </nav>
+        </nav>
+      )}
+    </>
   );
 }
 
-function Item({
-  item,
-  onNavigate,
-}: {
-  item: NavItem;
-  onNavigate?: () => void;
-}) {
-  if (!item.ready) {
-    return (
-      <span
-        aria-disabled="true"
-        title={`${item.label} is coming soon`}
-        className={`${styles.item} ${styles.soon}`}
-      >
-        <Icon name={item.icon} size={18} />
-        <span className={styles.label}>{item.label}</span>
-        <span className={styles.badge}>Soon</span>
-      </span>
-    );
-  }
+function Item({ item }: { item: NavItem }) {
   return (
     <NavLink
       to={item.to}
-      onClick={onNavigate}
       className={({ isActive }) =>
         `${styles.item} ${isActive ? styles.on : ""}`
       }
     >
       <Icon name={item.icon} size={18} />
-      <span className={styles.label}>{item.label}</span>
+      {item.label}
     </NavLink>
   );
 }

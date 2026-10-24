@@ -17,6 +17,8 @@ export function Presence({ open, ms = 220, children }: Props) {
   const { mounted, closing } = usePresence(open, ms);
   if (!mounted) return null;
   return (
-    <LeavingContext.Provider value={closing}>{children}</LeavingContext.Provider>
+    <LeavingContext.Provider value={closing}>
+      {children}
+    </LeavingContext.Provider>
   );
 }

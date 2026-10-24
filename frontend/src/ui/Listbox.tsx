@@ -56,11 +56,7 @@ export function Listbox({
         onKeyUp={(e) => e.key === " " && e.preventDefault()}
       >
         <span>{lb.chosen?.label ?? placeholder}</span>
-        <Icon
-          name="chevrons-up-down"
-          size={16}
-          className={fieldStyles.chevron}
-        />
+        <Icon name="chevron-down" size={16} className={fieldStyles.chevron} />
       </button>
       {menu.mounted && (
         <OptionList

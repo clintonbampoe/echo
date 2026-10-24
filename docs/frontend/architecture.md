@@ -23,6 +23,8 @@ lib        plain TypeScript: API client, dates, formatting
 - `lib/` has no components. `ui/` imports only `lib/`. A component that needs data isn't a `ui/` component.
 - `features/` import `ui/` and `lib/`. Another feature is imported only through its `index.ts`.
 - Nothing imports `app/`.
+- The shell (`app/shell`) is a 244px sidebar on wide screens and a top bar with a full-screen menu page on a phone or tablet. The nav is flat (Main, then an Admin group for admins) and follows the design boards. `/me` and `/settings` open from the sidebar footer.
+- Settings that stay on the device (density, reduce motion, currency symbol) live in `lib/preferences` and are read by CSS through attributes on `<html>`.
 
 ## Who owns what
 
@@ -75,6 +77,7 @@ Use these before writing your own. A new list page is about 40 lines made from t
 | `ui` | `FormSheet`, `FormSection`, `Field`, `ControlledSelect`, `DeleteDialog`, `Notice` | forms, delete and notes inside a form |
 | `ui` | `MonthYearPill`, `MonthBars` | picking a month, and a month-by-month chart |
 | `ui` | `Chip` + `ChipTone`, `plainOptions`, `withAny` | status labels, dropdown lists |
+| `ui` | `RowCard` + `Row`, `Switch` | a card of icon rows with an action menu, an on/off switch |
 | `ui` | `Tabs`, `SegmentedField`, `Disclosure`, `ProfileHeader` | pill tabs and switches, a fold in a form, a profile's top |
 | `ui` | `ToastProvider` + `useToast`, `Presence` + `useHeld` | saying what happened, letting a sheet or dialog play its exit |
 | `test` | `kit` (`renderApp`, `signIn`, `json`, `pathOf`), `pickers` | what component tests share. Don't copy these into a test |
