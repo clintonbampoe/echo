@@ -47,7 +47,9 @@ button.cell:focus-visible {
   width: min(100%, 34px);
   background: var(--line-2);
   border-radius: 4px 4px 0 0;
-  transition: background-color var(--fast) ease;
+  transition:
+    background-color var(--fast) ease,
+    height 600ms var(--grow);
 }
 button.cell:hover .bar:not(.on) {
   background: var(--text-3);

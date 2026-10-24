@@ -1,4 +1,6 @@
 import type { KeyboardEvent } from "react";
+import { useFlip } from "./useFlip";
+import { useSlidingThumb } from "./useSlidingThumb";
 import styles from "./Tabs.module.css";
 
 export type TabItem = {
@@ -17,9 +19,13 @@ type Props = {
   idPrefix: string;
 };
 
-// A row of tabs. Left and right arrows move between them; the caller shows the matching panel,
-// giving it role="tabpanel", id `${idPrefix}-panel-${id}` and aria-labelledby `${idPrefix}-tab-${id}`.
+// A row of pill tabs. The picked one is a dark pill that slides to wherever you tap and squishes as it lands.
+// Left and right arrows move between them; the caller shows the matching panel, giving it role="tabpanel",
+// id `${idPrefix}-panel-${id}` and aria-labelledby `${idPrefix}-tab-${id}`.
 export function Tabs({ label, tabs, value, onChange, idPrefix }: Props) {
+  const row = useSlidingThumb(value);
+  const flip = useFlip(value);
+
   function onKeyDown(e: KeyboardEvent) {
     const at = tabs.findIndex((t) => t.id === value);
     const next = {
@@ -37,31 +43,40 @@ export function Tabs({ label, tabs, value, onChange, idPrefix }: Props) {
   }
 
   return (
-    <div
-      role="tablist"
-      aria-label={label}
-      className={styles.list}
-      onKeyDown={onKeyDown}
-    >
-      {tabs.map((t) => {
-        const selected = t.id === value;
-        return (
-          <button
-            key={t.id}
-            id={`${idPrefix}-tab-${t.id}`}
-            type="button"
-            role="tab"
-            aria-selected={selected}
-            aria-controls={`${idPrefix}-panel-${t.id}`}
-            tabIndex={selected ? 0 : -1}
-            className={`${styles.tab} ${selected ? styles.selected : ""}`}
-            onClick={() => onChange(t.id)}
-          >
-            {t.label}
-            {t.count != null && <span className={styles.count}>{t.count}</span>}
-          </button>
-        );
-      })}
+    <div className={styles.scroller}>
+      <div
+        ref={row}
+        role="tablist"
+        aria-label={label}
+        className={styles.list}
+        onKeyDown={onKeyDown}
+      >
+        <span className={styles.slot} aria-hidden="true">
+          <span className={styles.thumb} data-flip={flip} />
+        </span>
+        {tabs.map((t) => {
+          const selected = t.id === value;
+          return (
+            <button
+              key={t.id}
+              id={`${idPrefix}-tab-${t.id}`}
+              type="button"
+              role="tab"
+              aria-selected={selected}
+              aria-controls={`${idPrefix}-panel-${t.id}`}
+              data-selected={selected}
+              tabIndex={selected ? 0 : -1}
+              className={`${styles.tab} ${selected ? styles.selected : ""}`}
+              onClick={() => onChange(t.id)}
+            >
+              {t.label}
+              {t.count != null && (
+                <span className={styles.count}>{t.count}</span>
+              )}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }

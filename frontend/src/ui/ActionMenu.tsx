@@ -8,6 +8,7 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { Icon } from "./Icon";
+import { usePresence } from "./usePresence";
 import styles from "./ActionMenu.module.css";
 
 export type MenuItem = {
@@ -143,6 +144,7 @@ export function ActionMenu({ label, title, items }: Props) {
   const trigger = useRef<HTMLButtonElement>(null);
   const menu = useRef<HTMLDivElement>(null);
   const titleId = useId();
+  const { mounted, closing } = usePresence(open, 160);
 
   useDismissOnMove(open, menu, setOpen);
 
@@ -169,11 +171,12 @@ export function ActionMenu({ label, title, items }: Props) {
       >
         <Icon name="more" size={18} />
       </button>
-      {open &&
+      {mounted &&
         createPortal(
           <div className={styles.root}>
             <div
-              className={`${styles.scrim} anim-fade`}
+              className={`${styles.scrim} scrim-fade`}
+              data-closing={closing}
               onClick={close}
               aria-hidden="true"
             />
@@ -185,6 +188,7 @@ export function ActionMenu({ label, title, items }: Props) {
               role="menu"
               aria-labelledby={titleId}
               className={styles.menu}
+              data-closing={closing}
               onKeyDown={(e) =>
                 navigate(e, menu.current, close, () => setOpen(false))
               }

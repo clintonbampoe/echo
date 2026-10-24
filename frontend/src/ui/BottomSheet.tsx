@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, type ReactNode } from "react";
 import { createPortal } from "react-dom";
+import { usePresence } from "./usePresence";
 import styles from "./BottomSheet.module.css";
 
 type Props = {
@@ -14,6 +15,7 @@ type Props = {
 export function BottomSheet({ open, onClose, title, children }: Props) {
   const panel = useRef<HTMLDivElement>(null);
   const titleId = useId();
+  const { mounted, closing } = usePresence(open, 200);
 
   useEffect(() => {
     if (!open) return;
@@ -24,11 +26,12 @@ export function BottomSheet({ open, onClose, title, children }: Props) {
     };
   }, [open]);
 
-  if (!open) return null;
+  if (!mounted) return null;
   return createPortal(
     <div className={styles.root}>
       <div
-        className={`${styles.scrim} anim-fade`}
+        className={`${styles.scrim} scrim-fade`}
+        data-closing={closing}
         onClick={onClose}
         aria-hidden="true"
       />
@@ -38,7 +41,8 @@ export function BottomSheet({ open, onClose, title, children }: Props) {
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
-        className={styles.panel}
+        className={`${styles.panel} lift`}
+        data-closing={closing}
         onKeyDown={(e) => e.key === "Escape" && onClose()}
       >
         <span className={styles.handle} aria-hidden="true" />

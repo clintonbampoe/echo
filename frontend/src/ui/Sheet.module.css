@@ -8,7 +8,6 @@
   position: absolute;
   inset: 0;
   background: rgb(10 10 10 / 45%);
-  animation-duration: var(--base);
 }
 
 .panel {
@@ -22,7 +21,6 @@
   background: var(--surface);
   border-left: 1px solid var(--line);
   box-shadow: -16px 0 48px rgb(10 10 10 / 12%);
-  animation: slide var(--base) var(--ease) both;
 }
 .panel:focus {
   outline: none;
@@ -78,13 +76,6 @@
   padding: 16px 24px;
   border-top: 1px solid var(--line);
   background: var(--surface);
-}
-
-@keyframes slide {
-  from {
-    transform: translate3d(32px, 0, 0);
-    opacity: 0;
-  }
 }
 
 /* Phone and tablet: the sheet is the whole screen, with the content kept to a readable width

@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Icon } from "./Icon";
+import { usePresence } from "./usePresence";
 import styles from "./Sheet.module.css";
 
 type Props = {
@@ -27,6 +28,7 @@ export function Sheet({
 }: Props) {
   const panel = useRef<HTMLDivElement>(null);
   const titleId = useId();
+  const { mounted, closing } = usePresence(open, 220);
 
   useEffect(() => {
     if (!open) return;
@@ -42,13 +44,14 @@ export function Sheet({
     };
   }, [open]);
 
-  if (!open) return null;
+  if (!mounted) return null;
   // Rendered on <body>, not where it is used: a page that animates (and so has a transform)
   // would otherwise become the "screen" the fixed panel is measured against.
   return createPortal(
     <div className={styles.root}>
       <div
-        className={`${styles.scrim} anim-fade`}
+        className={`${styles.scrim} scrim-fade`}
+        data-closing={closing}
         onClick={onClose}
         aria-hidden="true"
       />
@@ -58,7 +61,8 @@ export function Sheet({
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
-        className={styles.panel}
+        className={`${styles.panel} slide-in`}
+        data-closing={closing}
         onKeyDown={(e) => e.key === "Escape" && onClose()}
       >
         <header className={styles.header}>

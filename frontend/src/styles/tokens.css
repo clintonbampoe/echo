@@ -44,6 +44,9 @@
 
   /* Motion. One curve, three speeds. */
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --spring: cubic-bezier(0.34, 1.56, 0.64, 1); /* overshoots a little, then settles: pills, pops */
+  --grow: cubic-bezier(0.2, 0.8, 0.2, 1); /* bars rising from the baseline */
+  --press: 0.96; /* how far a pressed control shrinks */
   --fast: 160ms;
   --base: 280ms;
   --slow: 700ms;

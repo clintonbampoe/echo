@@ -43,6 +43,9 @@
 .row:hover {
   background: var(--hover);
 }
+.row:active {
+  background: var(--sel);
+}
 
 /* Above the row's link, so the ⋯ button still opens the menu instead of the person. */
 .actions {
@@ -94,7 +97,7 @@
 .row:hover .link {
   text-decoration: underline;
 }
-.email {
+.detail {
   overflow: hidden;
   font-size: 12px;
   color: var(--text-3);
@@ -182,4 +185,32 @@
     font-size: 12px;
     color: var(--text-3);
   }
+}
+
+.skeletonRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 64px;
+  padding: 10px 20px;
+  border-top: 1px solid var(--line);
+}
+.skeletonRow:first-child {
+  border-top: 0;
+}
+.skeletonAvatar {
+  flex: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+}
+.skeletonLines {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 7px;
+}
+.skeletonTail {
+  width: 72px;
+  height: 12px;
 }

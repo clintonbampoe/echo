@@ -9,13 +9,6 @@
   line-height: 1;
   text-decoration: none;
   white-space: nowrap;
-  transition:
-    background-color var(--fast) ease,
-    border-color var(--fast) ease,
-    transform var(--fast) ease;
-}
-.button:active:not(:disabled) {
-  transform: translateY(1px) scale(0.995);
 }
 .button:disabled {
   cursor: not-allowed;

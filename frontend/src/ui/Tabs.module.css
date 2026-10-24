@@ -1,12 +1,47 @@
-.list {
-  display: flex;
-  gap: 2px;
+/* The scroller lets a long row slide sideways on a phone without the track's rounded ends being cut off. */
+.scroller {
   overflow-x: auto;
-  border-bottom: 1px solid var(--line);
   scrollbar-width: none;
+  margin-inline: -2px;
+  padding: 2px;
 }
-.list::-webkit-scrollbar {
+.scroller::-webkit-scrollbar {
   display: none;
+}
+
+.list {
+  position: relative;
+  display: inline-flex;
+  gap: 2px;
+  padding: 4px;
+  background: var(--sel);
+  border-radius: var(--radius-pill);
+}
+
+/* The thumb's slot: it slides along the row (translate) while the thumb inside it squishes (scale). */
+.slot {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 0;
+  width: var(--w, 0);
+  translate: var(--x, 0) 0;
+  pointer-events: none;
+}
+.list[data-ready="true"] .slot {
+  transition:
+    translate 520ms var(--spring),
+    width 520ms var(--spring);
+}
+.thumb {
+  position: absolute;
+  inset: 0;
+  background: var(--accent);
+  border-radius: var(--radius-pill);
+  /* A faint sheen across the top, so the pill reads as glass. */
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 22%),
+    0 4px 12px -4px rgb(10 10 11 / 35%);
 }
 
 .tab {
@@ -15,72 +50,41 @@
   align-items: center;
   gap: 8px;
   flex: none;
-  height: 46px;
-  padding: 0 14px;
-  margin-bottom: -1px;
+  height: 36px;
+  padding: 0 16px;
   background: transparent;
   border: 0;
-  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  border-radius: var(--radius-pill);
   font-size: 14px;
   font-weight: 500;
-  color: var(--text-3);
-  transition:
-    color var(--fast) ease,
-    background-color var(--fast) ease;
+  color: var(--text-2);
+  transition: color var(--base) ease;
 }
 .tab:hover {
   color: var(--text);
-  background: var(--hover);
 }
 .tab:focus-visible {
   outline: 2px solid var(--text);
-  outline-offset: -2px;
+  outline-offset: 2px;
 }
-
-/* The open tab: dark text, a bar the same colour as the text, and a count that is filled in. */
-.tab::after {
-  content: "";
-  position: absolute;
-  left: 10px;
-  right: 10px;
-  bottom: 0;
-  height: 3px;
-  border-radius: 3px 3px 0 0;
-  background: var(--text);
-  transform: scaleX(0);
-  transition: transform var(--base) var(--ease);
-}
-.selected {
-  font-weight: 600;
-  color: var(--text);
-}
+.selected,
 .selected:hover {
-  background: transparent;
-}
-.selected::after {
-  transform: scaleX(1);
-}
-
-.count {
-  min-width: 22px;
-  padding: 1px 7px;
-  border-radius: var(--radius-pill);
-  background: var(--sel);
-  font-size: 12px;
-  font-weight: 500;
-  text-align: center;
-  color: var(--text-2);
-  transition:
-    background-color var(--fast) ease,
-    color var(--fast) ease;
-}
-.selected .count {
-  background: var(--accent);
   color: var(--on-accent);
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .tab::after {
-    transition: none;
-  }
+.count {
+  min-width: 20px;
+  padding: 1px 6px;
+  border-radius: var(--radius-pill);
+  background: var(--line-2);
+  font-size: 12px;
+  text-align: center;
+  color: var(--text-2);
+  transition:
+    background-color var(--base) ease,
+    color var(--base) ease;
+}
+.selected .count {
+  background: color-mix(in srgb, var(--on-accent) 22%, transparent);
+  color: var(--on-accent);
 }

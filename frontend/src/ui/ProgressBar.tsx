@@ -19,7 +19,7 @@ export function ProgressBar({ value, label }: Props) {
       aria-valuenow={Math.round(share * 100)}
       className={styles.track}
     >
-      <span className={styles.fill} style={{ width: `${share * 100}%` }} />
+      <span className={`${styles.fill} grow-x`} style={{ width: `${share * 100}%` }} />
     </div>
   );
 }

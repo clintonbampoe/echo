@@ -2,6 +2,10 @@ import "@testing-library/jest-dom/vitest";
 import { afterEach } from "vitest";
 import { cleanup, configure } from "@testing-library/react";
 import { clearTokens } from "@/lib/tokens";
+import { exitAnimations } from "@/ui/usePresence";
+
+// Exit animations only slow the tests down: a closed dialog should be gone at once.
+exitAnimations.enabled = false;
 
 // A busy machine can take longer than a second to answer, so queries wait a little longer before giving up.
 configure({ asyncUtilTimeout: 3000 });

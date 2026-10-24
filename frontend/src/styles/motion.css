@@ -137,3 +137,201 @@
     opacity: 0;
   }
 }
+
+/*
+ * The interaction layer (design system §7). Everything here is switched off by the reduced-motion rule in
+ * reset.css, so none of it needs its own media query.
+ */
+
+/* A pressed control gives under the finger and springs back. Opt out with data-press="none". */
+button:not([data-press="none"]),
+[role="button"]:not([data-press="none"]),
+a[data-press] {
+  transition:
+    transform 180ms cubic-bezier(0.3, 1.4, 0.5, 1),
+    background-color var(--fast) ease,
+    border-color var(--fast) ease,
+    color var(--fast) ease,
+    box-shadow var(--fast) ease,
+    opacity var(--fast) ease;
+}
+button:not(:disabled):not([data-press="none"]):active,
+[role="button"]:not([aria-disabled="true"]):not([data-press="none"]):active,
+a[data-press]:active {
+  transform: scale(var(--press));
+}
+
+/* Bars rise from the baseline; a skeleton's sheen sweeps across. */
+@keyframes echoGrow {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+@keyframes echoGrowX {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+@keyframes echoShimmer {
+  from {
+    background-position: 140% 0;
+  }
+  to {
+    background-position: -40% 0;
+  }
+}
+.skeleton {
+  display: block;
+  border-radius: 8px;
+  background: linear-gradient(
+      100deg,
+      transparent 30%,
+      rgb(255 255 255 / 55%) 50%,
+      transparent 70%
+    )
+    140% 0 / 250% 100% no-repeat,
+    var(--sel);
+  animation: echoShimmer 1.4s linear infinite;
+}
+:root[data-theme="dark"] .skeleton {
+  background:
+    linear-gradient(
+        100deg,
+        transparent 30%,
+        rgb(255 255 255 / 8%) 50%,
+        transparent 70%
+      )
+      140% 0 / 250% 100% no-repeat,
+    var(--sel);
+}
+
+/* A popover, menu or dialog arrives from where it was opened. Set --origin on it for a corner. */
+@keyframes echoPop {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(-4px);
+  }
+}
+@keyframes echoPopOut {
+  to {
+    opacity: 0;
+    transform: scale(0.96) translateY(-2px);
+  }
+}
+@keyframes echoLift {
+  from {
+    opacity: 0;
+    transform: translateY(32px);
+  }
+}
+@keyframes echoLiftOut {
+  to {
+    opacity: 0;
+    transform: translateY(32px);
+  }
+}
+@keyframes echoSlideIn {
+  from {
+    transform: translateX(32px);
+    opacity: 0;
+  }
+}
+@keyframes echoSlideOut {
+  to {
+    transform: translateX(32px);
+    opacity: 0;
+  }
+}
+@keyframes echoFadeOut {
+  to {
+    opacity: 0;
+  }
+}
+.pop {
+  transform-origin: var(--origin, top);
+  animation: echoPop 260ms var(--spring) both;
+}
+.pop[data-closing="true"] {
+  animation: echoPopOut 120ms ease-in both;
+}
+.lift {
+  animation: echoLift 340ms var(--spring) both;
+}
+.lift[data-closing="true"] {
+  animation: echoLiftOut 200ms ease-in both;
+}
+.slide-in {
+  animation: echoSlideIn 340ms var(--ease) both;
+}
+.slide-in[data-closing="true"] {
+  animation: echoSlideOut 200ms ease-in both;
+}
+.scrim-fade {
+  animation: fade var(--base) ease both;
+}
+.scrim-fade[data-closing="true"] {
+  animation: echoFadeOut 200ms ease both;
+}
+
+/* A list row or card that arrives with its neighbours, one after the other. */
+.stagger {
+  animation: rise 420ms var(--ease) both;
+  animation-delay: calc(var(--i, 0) * 28ms);
+}
+
+/* The liquid pill's squish. The same animation twice under two names: switching between them restarts it, so a
+   thumb can squish every time its choice changes (see ui/useFlip). It animates `scale`, leaving `translate` free
+   for sliding. */
+@keyframes echoPill {
+  0% {
+    scale: 0.88 1.08;
+  }
+  45% {
+    scale: 1.1 0.92;
+  }
+  100% {
+    scale: 1;
+  }
+}
+@keyframes echoPillB {
+  0% {
+    scale: 0.88 1.08;
+  }
+  45% {
+    scale: 1.1 0.92;
+  }
+  100% {
+    scale: 1;
+  }
+}
+[data-flip="a"]:not([data-squish]) {
+  animation: echoPill 550ms var(--spring) both;
+}
+[data-flip="b"]:not([data-squish]) {
+  animation: echoPillB 550ms var(--spring) both;
+}
+/* data-squish="before": the element's ::before is the thumb, so it is the one that squishes. */
+[data-flip="a"][data-squish="before"]::before {
+  animation: echoPill 550ms var(--spring) both;
+}
+[data-flip="b"][data-squish="before"]::before {
+  animation: echoPillB 550ms var(--spring) both;
+}
+
+/* Bars rise from their baseline, one after another (set --i). Plays when the chart mounts. */
+.grow-y {
+  transform-origin: bottom;
+  animation: echoGrow 800ms var(--grow) both;
+  animation-delay: calc(var(--i, 0) * 40ms);
+}
+.grow-x {
+  transform-origin: left;
+  animation: echoGrowX 800ms var(--grow) both;
+  animation-delay: calc(var(--i, 0) * 40ms);
+}

@@ -2,6 +2,7 @@ import type { CSSProperties, ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { ActionMenu, type MenuItem } from "./ActionMenu";
 import { Avatar } from "./Avatar";
+import { cssVars } from "./cssVars";
 import styles from "./PersonList.module.css";
 
 export type PersonColumn<T> = {
@@ -17,11 +18,12 @@ export type PersonColumn<T> = {
   end?: boolean;
 };
 
-// `plain` leaves out the line under the name, for rows that have nothing to put there (no "No email").
+// `detail` is the line under the name (an email, or "phone · city"); `plain` leaves it out for rows that have
+// nothing to put there.
 // The name opens a page (`href`) or, for a row that opens a panel on the same page, runs `onOpen`.
 export type Person = {
   name: string;
-  email?: string | null;
+  detail?: string | null;
   plain?: boolean;
 } & ({ href: string; onOpen?: never } | { onOpen: () => void; href?: never });
 
@@ -79,9 +81,10 @@ export function PersonList<T>({
         <span />
       </div>
       <ul aria-label={label} className={styles.list}>
-        {rows.map((row) => (
+        {rows.map((row, i) => (
           <Row
             key={rowKey(row)}
+            index={i}
             row={row}
             person={person(row)}
             columns={columns}
@@ -96,15 +99,28 @@ export function PersonList<T>({
 
 type RowProps<T> = {
   row: T;
+  // Where the row is in the list, so rows can arrive one after another.
+  index: number;
   person: Person;
   columns: PersonColumn<T>[];
   items?: MenuItem[];
   grid: CSSProperties;
 };
 
-function Row<T>({ row, person: p, columns, items, grid }: RowProps<T>) {
+function Row<T>({
+  row,
+  index,
+  person: p,
+  columns,
+  items,
+  grid,
+}: RowProps<T>) {
   return (
-    <li className={styles.row} style={grid}>
+    <li
+      className={`${styles.row} stagger`}
+      // Only the first screenful is staggered; later rows (Load more) arrive together.
+      style={cssVars({ "--i": Math.min(index, 12) }, grid)}
+    >
       <div className={styles.who}>
         <Avatar name={p.name} size={36} />
         <div className={styles.names}>
@@ -119,7 +135,7 @@ function Row<T>({ row, person: p, columns, items, grid }: RowProps<T>) {
               </button>
             )}
           </p>
-          {!p.plain && <p className={styles.email}>{p.email || "No email"}</p>}
+          {!p.plain && <p className={styles.detail}>{p.detail || "—"}</p>}
         </div>
       </div>
       {columns.map((c) => (
@@ -148,5 +164,25 @@ function Row<T>({ row, person: p, columns, items, grid }: RowProps<T>) {
         )}
       </div>
     </li>
+  );
+}
+
+// Grey rows shaped like PersonList's, with the sheen sweeping across, while the real ones load.
+export function PersonListSkeleton({ rows = 6 }: { rows?: number }) {
+  return (
+    <div className={styles.card} aria-hidden="true">
+      <ul className={styles.list}>
+        {Array.from({ length: rows }, (_, i) => (
+          <li key={i} className={styles.skeletonRow}>
+            <span className={`skeleton ${styles.skeletonAvatar}`} />
+            <span className={styles.skeletonLines}>
+              <span className="skeleton" style={{ width: `${48 - (i % 3) * 8}%`, height: 14 }} />
+              <span className="skeleton" style={{ width: `${30 + (i % 4) * 5}%`, height: 11 }} />
+            </span>
+            <span className={`skeleton ${styles.skeletonTail}`} />
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }

@@ -1,4 +1,4 @@
-import type { CSSProperties } from "react";
+import { cssVars } from "./cssVars";
 import styles from "./MonthBars.module.css";
 
 export type MonthBar = {
@@ -36,21 +36,24 @@ const spoken = (b: MonthBar, legend?: [string, string]) =>
 
 type MarkProps = {
   bar: MonthBar;
+  // Which month, left to right, so the bars rise one after another.
+  index: number;
   top: number;
   picked: boolean;
   legend?: [string, string];
 };
 
 // One month: the tooltip, the bar or pair of bars, and the month's name under them.
-function Mark({ bar: b, top, picked, legend }: MarkProps) {
+function Mark({ bar: b, index, top, picked, legend }: MarkProps) {
   const height = (value: number) =>
     top > 0 ? Math.max(3, (value / top) * 100) : 3;
   // In a pair the first bar is the one the legend calls solid; on its own it is solid only when picked.
   const lead = b.compare ? true : picked;
   // The tooltip rides just above the taller bar, so a full-height month never covers the chart's heading.
-  const lift = {
+  const lift = cssVars({
     "--lift": `${Math.max(height(b.value), b.compare ? height(b.compare.value) : 0)}%`,
-  } as CSSProperties;
+    "--i": index,
+  });
   return (
     <>
       <span
@@ -73,12 +76,12 @@ function Mark({ bar: b, top, picked, legend }: MarkProps) {
           )}
         </span>
         <span
-          className={`${styles.bar} ${lead ? styles.on : ""}`}
+          className={`${styles.bar} grow-y ${lead ? styles.on : ""}`}
           style={{ height: `${height(b.value)}%` }}
         />
         {b.compare && (
           <span
-            className={`${styles.bar} ${styles.second}`}
+            className={`${styles.bar} grow-y ${styles.second}`}
             style={{ height: `${height(b.compare.value)}%` }}
           />
         )}
@@ -99,9 +102,11 @@ export function MonthBars({ label, bars, selected, onPick, legend }: Props) {
   );
   return (
     <ul aria-label={label} className={styles.bars}>
-      {bars.map((b) => {
+      {bars.map((b, i) => {
         const picked = selected === b.key;
-        const mark = <Mark bar={b} top={top} picked={picked} legend={legend} />;
+        const mark = (
+          <Mark bar={b} index={i} top={top} picked={picked} legend={legend} />
+        );
         return (
           <li key={b.key} className={styles.item}>
             {onPick ? (

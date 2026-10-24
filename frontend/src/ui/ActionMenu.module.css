@@ -41,7 +41,11 @@
   border: 1px solid var(--line-2);
   border-radius: var(--radius);
   box-shadow: 0 12px 32px rgb(10 10 10 / 14%);
-  animation: open var(--fast) var(--ease) both;
+  transform-origin: top right;
+  animation: open 260ms var(--spring) both;
+}
+.menu[data-closing="true"] {
+  animation: openOut 120ms ease-in both;
 }
 .title {
   display: none;
@@ -63,6 +67,9 @@
 .item:focus-visible {
   background: var(--hover);
   outline: none;
+}
+.item:active {
+  scale: 0.98;
 }
 .danger {
   color: var(--neg);
@@ -102,7 +109,13 @@
 @keyframes open {
   from {
     opacity: 0;
-    transform: translateY(-4px);
+    transform: scale(0.9) translateY(-6px);
+  }
+}
+@keyframes openOut {
+  to {
+    opacity: 0;
+    transform: scale(0.96) translateY(-2px);
   }
 }
 
@@ -125,7 +138,11 @@
     overflow-y: auto;
     border: 0;
     border-radius: 16px 16px 0 0;
+    transform-origin: bottom;
     animation-name: lift;
+  }
+  .menu[data-closing="true"] {
+    animation-name: liftOut;
   }
   .menu::before {
     content: "";
@@ -158,7 +175,13 @@
 }
 @keyframes lift {
   from {
-    transform: translateY(24px);
+    transform: translateY(40px);
+    opacity: 0;
+  }
+}
+@keyframes liftOut {
+  to {
+    transform: translateY(40px);
     opacity: 0;
   }
 }

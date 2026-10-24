@@ -68,7 +68,7 @@ export function VisitorList({
       rowKey={(v) => v.id}
       person={(v) => ({
         name: v.name,
-        email: v.emailAddress,
+        detail: v.emailAddress,
         href: paths.visitor(v.id),
       })}
       columns={joined ? converted : current}

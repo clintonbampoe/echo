@@ -58,3 +58,10 @@
     font-size: 20px;
   }
 }
+
+/* Stands where the value and note will be, the same height, so the strip does not jump when the numbers arrive. */
+.pending {
+  width: 60%;
+  height: 44px;
+  margin-top: 6px;
+}

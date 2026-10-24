@@ -47,7 +47,7 @@ export function MemberList({ members, onEdit, onDelete }: Props) {
       rowKey={(m) => m.id}
       person={(m) => ({
         name: m.name,
-        email: m.emailAddress,
+        detail: m.emailAddress,
         href: paths.member(m.id),
       })}
       columns={columns}

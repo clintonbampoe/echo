@@ -1,0 +1,61 @@
+.dock {
+  position: fixed;
+  right: 0;
+  bottom: max(20px, env(safe-area-inset-bottom));
+  left: 0;
+  z-index: 90;
+  display: flex;
+  justify-content: center;
+  padding: 0 16px;
+  pointer-events: none;
+}
+.toast {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 48px;
+  padding: 0 8px 0 20px;
+  background: var(--text);
+  color: var(--bg);
+  border-radius: var(--radius-pill);
+  box-shadow: 0 14px 36px -10px rgb(10 10 11 / 40%);
+  font-size: 14px;
+  font-weight: 500;
+  pointer-events: auto;
+  animation: in 380ms var(--spring) both;
+}
+.toast[data-closing="true"] {
+  animation: out 200ms ease-in both;
+}
+.toast:not(:has(.action)) {
+  padding-right: 20px;
+}
+.action {
+  height: 32px;
+  padding: 0 14px;
+  background: color-mix(in srgb, var(--bg) 18%, transparent);
+  border: 0;
+  border-radius: var(--radius-pill);
+  color: inherit;
+  font-size: 13px;
+  font-weight: 600;
+}
+.action:hover {
+  background: color-mix(in srgb, var(--bg) 28%, transparent);
+}
+.action:focus-visible {
+  outline: 2px solid var(--bg);
+  outline-offset: 2px;
+}
+@keyframes in {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.92);
+  }
+}
+@keyframes out {
+  to {
+    opacity: 0;
+    transform: translateY(12px) scale(0.96);
+  }
+}

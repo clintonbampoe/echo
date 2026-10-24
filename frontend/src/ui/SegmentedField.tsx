@@ -1,5 +1,6 @@
 import { useId, type CSSProperties } from "react";
 import { Icon, type IconName } from "./Icon";
+import { useFlip } from "./useFlip";
 import styles from "./SegmentedField.module.css";
 
 type Props<V extends string> = {
@@ -14,16 +15,24 @@ type Props<V extends string> = {
   joined?: boolean;
   // With `joined`: the bar spans the whole width on a phone or tablet.
   fill?: boolean;
+  // With `joined`: the bar spans the whole width at every size, for a choice inside a form.
+  stretch?: boolean;
   // With `joined`: smaller words, for a switch squeezed beside a card's title.
   compact?: boolean;
 };
 
-const groupClass = (joined?: boolean, fill?: boolean, compact?: boolean) =>
+const groupClass = (
+  joined?: boolean,
+  fill?: boolean,
+  compact?: boolean,
+  stretch?: boolean,
+) =>
   [
     styles.group,
     joined && styles.joined,
     joined && fill && styles.fill,
     joined && compact && styles.compact,
+    joined && stretch && styles.stretch,
   ]
     .filter(Boolean)
     .join(" ");
@@ -39,8 +48,10 @@ export function SegmentedField<V extends string>({
   joined,
   fill,
   compact,
+  stretch,
 }: Props<V>) {
   const name = useId();
+  const flip = useFlip(value);
   // A joined switch slides one thumb behind the picked choice; the stylesheet only needs to know which of how many.
   const index = options.findIndex((o) => o.value === value);
   const thumb = joined
@@ -55,7 +66,10 @@ export function SegmentedField<V extends string>({
       <legend className={hideLabel ? styles.hidden : styles.label}>
         {label}
       </legend>
-      <div className={groupClass(joined, fill, compact)} style={thumb}>
+      <div className={groupClass(joined, fill, compact, stretch)}
+        style={thumb}
+        data-flip={flip}
+        data-squish="before">
         {options.map((o) => (
           <label key={o.value} className={styles.option}>
             <input

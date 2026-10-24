@@ -77,32 +77,35 @@
   grid-auto-columns: 1fr;
   gap: 0;
   margin-top: 0;
-  padding: 2px;
-  background: var(--surface);
-  border: 1px solid var(--line-2);
-  border-radius: 10px;
+  padding: 3px;
+  background: var(--sel);
+  border-radius: var(--radius-pill);
 }
 .joined::before {
   content: "";
   position: absolute;
-  top: 2px;
-  bottom: 2px;
-  left: 2px;
-  width: calc((100% - 4px) / var(--n));
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  width: calc((100% - 6px) / var(--n));
   background: var(--accent);
-  border-radius: 8px;
+  border-radius: var(--radius-pill);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 22%),
+    0 4px 12px -4px rgb(10 10 11 / 35%);
   opacity: var(--thumb, 1);
-  transform: translateX(calc(var(--i) * 100%));
+  /* Slides with translate and squishes with scale (motion.css), so the two do not fight. */
+  translate: calc(var(--i) * 100%) 0;
   transition:
-    transform var(--base) var(--ease),
+    translate 520ms var(--spring),
     opacity var(--fast) ease;
 }
 .joined .face {
-  height: 28px;
-  padding: 0 12px;
+  height: 30px;
+  padding: 0 14px;
   background: transparent;
   border: 0;
-  border-radius: 8px;
+  border-radius: var(--radius-pill);
   box-shadow: none;
   color: var(--text-2);
   font-size: 13px;
@@ -123,11 +126,12 @@
   color: var(--on-accent);
   box-shadow: none;
 }
-@media (prefers-reduced-motion: reduce) {
-  .joined::before,
-  .joined .face {
-    transition: none;
-  }
+.group.stretch {
+  display: grid;
+  width: 100%;
+}
+.stretch .face {
+  height: 38px;
 }
 @media (max-width: 900px) {
   .group.fill {

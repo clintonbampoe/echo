@@ -11,7 +11,6 @@
   position: absolute;
   inset: 0;
   background: rgb(10 10 10 / 45%);
-  animation-duration: var(--fast);
 }
 
 .panel {
@@ -22,7 +21,10 @@
   background: var(--surface);
   border-radius: var(--radius-lg, 16px);
   box-shadow: 0 24px 64px rgb(10 10 10 / 24%);
-  animation: pop var(--fast) var(--ease) both;
+  animation: pop 320ms var(--spring) both;
+}
+.panel[data-closing="true"] {
+  animation: popOut 140ms ease-in both;
 }
 .title {
   margin: 0 0 8px;
@@ -60,7 +62,13 @@
 @keyframes pop {
   from {
     opacity: 0;
-    transform: translateY(6px) scale(0.98);
+    transform: translateY(8px) scale(0.94);
+  }
+}
+@keyframes popOut {
+  to {
+    opacity: 0;
+    transform: scale(0.97);
   }
 }
 
@@ -75,6 +83,9 @@
     border-radius: 16px 16px 0 0;
     animation-name: lift;
   }
+  .panel[data-closing="true"] {
+    animation-name: liftOut;
+  }
   .actions {
     flex-direction: column-reverse;
   }
@@ -85,7 +96,13 @@
 }
 @keyframes lift {
   from {
-    transform: translateY(24px);
+    transform: translateY(40px);
+    opacity: 0;
+  }
+}
+@keyframes liftOut {
+  to {
+    transform: translateY(40px);
     opacity: 0;
   }
 }

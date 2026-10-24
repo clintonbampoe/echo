@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { cssVars } from "./cssVars";
 import styles from "./StatStrip.module.css";
 
 // One number with a name and a line of context, e.g. "Attendance" / "86%" / "38 of 44 sessions".
@@ -21,15 +22,28 @@ export function StatStrip({ label, stats, busy }: Props) {
       className={styles.strip}
       style={{ "--count": stats.length } as CSSProperties}
     >
-      {stats.map((s) => (
-        <div key={s.label} className={styles.item}>
+      {stats.map((s, i) => (
+        <div
+          key={s.label}
+          className={`${styles.item} stagger`}
+          style={cssVars({ "--i": i })}
+        >
           <p className={styles.label}>{s.label}</p>
-          <p className={styles.value} title={s.value}>
-            {s.value}
-          </p>
-          <p className={styles.note} title={s.note}>
-            {s.note}
-          </p>
+          {busy ? (
+            <span
+              className={`skeleton ${styles.pending}`}
+              aria-hidden="true"
+            />
+          ) : (
+            <>
+              <p className={styles.value} title={s.value}>
+                {s.value}
+              </p>
+              <p className={styles.note} title={s.note}>
+                {s.note}
+              </p>
+            </>
+          )}
         </div>
       ))}
     </section>

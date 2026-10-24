@@ -7,7 +7,6 @@
   position: absolute;
   inset: 0;
   background: rgb(10 10 10 / 45%);
-  animation-duration: var(--base);
 }
 .panel {
   position: absolute;
@@ -20,7 +19,6 @@
   background: var(--surface);
   border-radius: 16px 16px 0 0;
   box-shadow: 0 -16px 48px rgb(10 10 10 / 12%);
-  animation: rise var(--base) var(--ease) both;
 }
 .panel:focus {
   outline: none;
@@ -37,19 +35,4 @@
   margin-bottom: 12px;
   font-size: 16px;
   font-weight: 600;
-}
-@keyframes rise {
-  from {
-    transform: translateY(24px);
-    opacity: 0;
-  }
-  to {
-    transform: none;
-    opacity: 1;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .panel {
-    animation: none;
-  }
 }

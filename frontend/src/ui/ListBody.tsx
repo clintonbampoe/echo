@@ -5,6 +5,7 @@ import { Alert } from "./Alert";
 import { Button } from "./Button";
 import { EmptyState } from "./EmptyState";
 import type { IconName } from "./Icon";
+import { PersonListSkeleton } from "./PersonList";
 import styles from "./ListBody.module.css";
 
 type Props<T> = {
@@ -24,6 +25,8 @@ type Props<T> = {
   onClear: () => void;
   // How the rows are sorted, e.g. "Newest first." When given, the count line says so: "Showing all 5 tithes. Newest first."
   order?: string;
+  // What stands in for the rows while they load, when PersonList's grey rows are not the right shape.
+  skeleton?: ReactNode;
   // Draws the rows once there are some.
   children: (rows: T[]) => ReactNode;
 };
@@ -51,14 +54,18 @@ export function ListBody<T>({
   noMatchText = "Try a different search, or a wider time range.",
   onClear,
   order,
+  skeleton,
   children,
 }: Props<T>) {
   const many = noun[1];
   if (list.loading)
     return (
-      <p role="status" className={styles.note}>
-        Loading {many}…
-      </p>
+      <>
+        <p role="status" className={styles.loading}>
+          Loading {many}…
+        </p>
+        {skeleton ?? <PersonListSkeleton />}
+      </>
     );
   if (list.failed) {
     return (
