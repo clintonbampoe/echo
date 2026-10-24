@@ -21,37 +21,40 @@ export const projectDates = (
     : `${formatMonth(p.startDate)} onward`;
 
 // The four numbers above the list. `period` says which days they cover ("This year").
+const ratio = (part: number, whole: number) => (whole > 0 ? part / whole : 0);
+const money = (n: number) => formatNumber(Math.round(n));
+
 export function projectStats(
   summary: ProjectSummary | undefined,
   period: string,
 ): Stat[] {
+  if (!summary) {
+    return ["Raised", "Goal", "Funded", "Average raised"].map((label) => ({
+      label,
+      value: "–",
+      note: "",
+    }));
+  }
   const s = summary;
-  const funded =
-    s && s.totalTarget > 0 ? (s.totalRaised / s.totalTarget) * 100 : 0;
-  const average =
-    s && s.totalProjects > 0 ? s.totalRaised / s.totalProjects : 0;
+  const funded = Math.floor(ratio(s.totalRaised, s.totalTarget) * 100);
+  const average = ratio(s.totalRaised, s.totalProjects);
   return [
-    {
-      label: "Raised",
-      value: s ? formatNumber(s.totalRaised) : "–",
-      unit: "GHS",
-      note: period,
-    },
+    { label: "Raised", value: money(s.totalRaised), unit: "GHS", note: period },
     {
       label: "Goal",
-      value: s ? formatNumber(s.totalTarget) : "–",
+      value: money(s.totalTarget),
       unit: "GHS",
-      note: `Across ${s?.totalProjects ?? 0} projects`,
+      note: `Across ${s.totalProjects} projects`,
     },
     {
       label: "Funded",
-      value: s ? String(Math.floor(funded)) : "–",
+      value: String(funded),
       unit: "%",
-      note: s && s.atRiskCount > 0 ? `${s.atRiskCount} at risk` : "",
+      note: s.atRiskCount > 0 ? `${s.atRiskCount} at risk` : "",
     },
     {
       label: "Average raised",
-      value: s ? formatNumber(Math.round(average)) : "–",
+      value: money(average),
       unit: "GHS",
       note: "Per project",
     },
