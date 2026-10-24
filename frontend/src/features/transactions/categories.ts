@@ -1,5 +1,6 @@
 // The Categories page: which categories show, how they are named, and what the form accepts. No React in this file.
 import { z } from "zod";
+import { plural } from "@/lib/format";
 import { urlFilters } from "@/lib/urlFilters";
 import type { Option } from "@/ui";
 import type { Category, CategoryInput, TransactionType } from "./api";
@@ -11,10 +12,6 @@ export const categoryFilters = urlFilters(
   { type: "" },
   { type: ["", ...transactionTypes] },
 );
-
-// "1 transaction", "38 transactions".
-export const plural = (n: number, one: string, many = `${one}s`) =>
-  `${n} ${n === 1 ? one : many}`;
 
 export const usedBy = (n: number) => plural(n, "transaction");
 

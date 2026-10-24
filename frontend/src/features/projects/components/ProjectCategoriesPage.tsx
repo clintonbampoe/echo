@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Paged } from "@/lib/paged";
+import { plainList } from "@/lib/paged";
 import { paths } from "@/lib/paths";
 import { BackLink, Button, Icon, PageHeader } from "@/ui";
 import type { ProjectCategory } from "../api";
@@ -10,22 +10,6 @@ import { ProjectCategorySheet } from "./ProjectCategorySheet";
 
 type Open =
   { kind: "new" } | { kind: CategoryStart; category: ProjectCategory } | null;
-
-// The categories come as one plain list, so they are shown as a list with nothing more to load.
-function asList(
-  rows: ProjectCategory[],
-  q: ReturnType<typeof useProjectCategories>,
-): Paged<ProjectCategory> {
-  return {
-    rows,
-    loading: q.isPending,
-    failed: q.isError,
-    hasMore: false,
-    loadingMore: false,
-    more: () => {},
-    retry: () => void q.refetch(),
-  };
-}
 
 // What projects are grouped under: a name, and how many projects use it.
 export function ProjectCategoriesPage() {
@@ -47,7 +31,7 @@ export function ProjectCategoriesPage() {
         }
       />
       <ProjectCategoryList
-        list={asList(categories.data ?? [], categories)}
+        list={plainList(categories.data ?? [], categories)}
         onOpen={(category, kind) => setOpen({ kind, category })}
       />
       {open?.kind === "new" && <ProjectCategorySheet onClose={close} />}

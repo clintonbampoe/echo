@@ -1,7 +1,12 @@
 // What the Attendance page shows for one day, worked out from plain days and sessions. Pure, so the tests
 // can pass "today". No React in this file.
 import { dayParts, daysAfter, daysBetween, monthNames } from "@/lib/dates";
-import { formatClock, formatDayMonth, formatNumber } from "@/lib/format";
+import {
+  formatClock,
+  formatDayMonth,
+  formatNumber,
+  plural,
+} from "@/lib/format";
 import type { ChipTone, Stat, StripDay } from "@/ui";
 import type { AttendanceSummary, CheckIn, Session, SessionStatus } from "./api";
 
@@ -90,9 +95,7 @@ export function timeRange(s: Pick<Session, "startsAt" | "endsAt">): string {
     : formatClock(s.startsAt);
 }
 
-const plural = (n: number, one: string, many: string) =>
-  `${formatNumber(n)} ${n === 1 ? one : many}`;
-export const sessionCount = (n: number) => plural(n, "session", "sessions");
+export const sessionCount = (n: number) => plural(n, "session");
 
 // The four numbers of a day or a session. `present` is the line under the total ("Across 2 sessions") and
 // `idle` the line under members and visitors while nobody is marked yet.

@@ -8,8 +8,6 @@ type Props<V extends string> = {
   options: readonly { value: V; label: string; icon?: IconName }[];
   value: V;
   onChange: (value: V) => void;
-  // Chips of their own width that wrap onto the next line, for a longer list (five payment methods).
-  wrap?: boolean;
   // Keeps the label for screen readers but does not draw it, for a switch whose choices explain themselves.
   hideLabel?: boolean;
   // One joined bar with the picked choice filled in, for a switch that sits above a list (All / Income / Expenses).
@@ -20,15 +18,9 @@ type Props<V extends string> = {
   compact?: boolean;
 };
 
-const groupClass = (
-  wrap?: boolean,
-  joined?: boolean,
-  fill?: boolean,
-  compact?: boolean,
-) =>
+const groupClass = (joined?: boolean, fill?: boolean, compact?: boolean) =>
   [
     styles.group,
-    wrap && styles.wrap,
     joined && styles.joined,
     joined && fill && styles.fill,
     joined && compact && styles.compact,
@@ -43,7 +35,6 @@ export function SegmentedField<V extends string>({
   options,
   value,
   onChange,
-  wrap,
   hideLabel,
   joined,
   fill,
@@ -64,7 +55,7 @@ export function SegmentedField<V extends string>({
       <legend className={hideLabel ? styles.hidden : styles.label}>
         {label}
       </legend>
-      <div className={groupClass(wrap, joined, fill, compact)} style={thumb}>
+      <div className={groupClass(joined, fill, compact)} style={thumb}>
         {options.map((o) => (
           <label key={o.value} className={styles.option}>
             <input

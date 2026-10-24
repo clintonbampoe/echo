@@ -1,6 +1,6 @@
 import { ConfirmDialog, Notice } from "@/ui";
 import type { ProjectCategory } from "../api";
-import { plural } from "../categoryView";
+import { plural } from "@/lib/format";
 
 type Props = {
   category: ProjectCategory;

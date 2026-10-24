@@ -1,14 +1,11 @@
 // The Project categories page: how a category is named and counted, where its projects can move to, and what the form
 // accepts. No React in this file.
 import { z } from "zod";
+import { plural } from "@/lib/format";
 import type { Option } from "@/ui";
 import type { ProjectCategory } from "./api";
 
 export const CATEGORY_NAME_MAX = 100;
-
-// "1 project", "3 projects".
-export const plural = (n: number, one: string, many = `${one}s`) =>
-  `${n} ${n === 1 ? one : many}`;
 
 export const usedBy = (n: number) => plural(n, "project");
 

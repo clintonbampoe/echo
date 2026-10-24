@@ -2,6 +2,7 @@
 // catches the obvious mistakes first. No React in this file.
 import { z } from "zod";
 import { paymentOptions, type PaymentMethod } from "@/features/transactions";
+import { amountProblem } from "@/lib/validation";
 import type {
   Contribution,
   ContributionInput,
@@ -11,16 +12,12 @@ import type {
 export const NOTE_MAX = 2000;
 export const AMOUNT_MAX = 1_000_000;
 
-const AMOUNT_RANGE = "Enter an amount between 0.01 and 1,000,000";
-
-// The first thing wrong with an amount as typed, or nothing. Commas are allowed ("1,250.50").
-function amountProblem(text: string): string | null {
-  if (text === "") return "Enter the amount";
-  const plain = text.replace(/,/g, "");
-  if (!/^\d+(\.\d{1,2})?$/.test(plain)) return AMOUNT_RANGE;
-  const value = Number(plain);
-  return value < 0.01 || value > AMOUNT_MAX ? AMOUNT_RANGE : null;
-}
+const AMOUNT = {
+  min: 0.01,
+  max: AMOUNT_MAX,
+  empty: "Enter the amount",
+  range: "Enter an amount between 0.01 and 1,000,000",
+};
 
 const methods = paymentOptions.map((o) => o.value) as [
   PaymentMethod,
@@ -33,7 +30,7 @@ export const contributionSchema = z.object({
     .string()
     .trim()
     .superRefine((v, ctx) => {
-      const message = amountProblem(v);
+      const message = amountProblem(v, AMOUNT);
       if (message) ctx.addIssue({ code: "custom", message });
     }),
   dateContributed: z.string().min(1, "Enter the date"),

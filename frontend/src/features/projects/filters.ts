@@ -1,6 +1,6 @@
 // What the Projects page is narrowed by. The mechanics (reading and writing the address) are shared in lib;
 // this file says which filters projects have and how they become API filters. No React in this file.
-import { ALL_TIME } from "@/lib/dates";
+import { calendarYearDates } from "@/lib/dates";
 import { urlFilters } from "@/lib/urlFilters";
 import { withAny, type Option } from "@/ui";
 import type { ProjectCategory, ProjectFilters, ProjectStatus } from "./api";
@@ -52,16 +52,7 @@ export const categoryOptions = (
     (categories ?? []).map((c) => ({ value: String(c.id), label: c.name })),
   );
 
-// A whole calendar year, not just up to today: a project that starts later this year is part of this year.
-export function periodDates(
-  key: string,
-  today: string,
-): { from: string; to: string } {
-  const year = Number(today.slice(0, 4));
-  if (key === "all") return ALL_TIME;
-  const wanted = key === "last-year" ? year - 1 : year;
-  return { from: `${wanted}-01-01`, to: `${wanted}-12-31` };
-}
+export const periodDates = calendarYearDates;
 
 // Filters narrowing the list, not counting the search box.
 export const countActive = (f: ListFilters) =>

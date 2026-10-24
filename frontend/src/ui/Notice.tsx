@@ -8,23 +8,19 @@ type Props = {
   // What to do about it: Buttons or links. Sits under the text.
   action?: ReactNode;
   // 'warning' is for something that will stop the save if it is ignored, and wears the warning colours and icon.
-  // 'plain' is one quiet line with a small warning mark, for a standing remark that is not a problem.
-  tone?: "info" | "warning" | "plain";
+  tone?: "info" | "warning";
 };
 
 // A heads-up that is not an error: something worth knowing before carrying on, with the way to act on it.
 // (An Alert is for what went wrong; a Notice is for what the person may want to look at first.)
 export function Notice({ title, children, action, tone = "info" }: Props) {
-  const toneClass =
-    tone === "warning" ? styles.warning : tone === "plain" ? styles.plain : "";
   return (
-    <div role="status" className={`${styles.notice} ${toneClass}`}>
-      {tone !== "info" && (
-        <Icon
-          name="alert"
-          size={tone === "plain" ? 15 : 20}
-          className={styles.icon}
-        />
+    <div
+      role="status"
+      className={`${styles.notice} ${tone === "warning" ? styles.warning : ""}`}
+    >
+      {tone === "warning" && (
+        <Icon name="alert" size={20} className={styles.icon} />
       )}
       <div className={styles.content}>
         <p className={styles.title}>{title}</p>

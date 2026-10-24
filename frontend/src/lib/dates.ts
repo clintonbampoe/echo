@@ -71,6 +71,18 @@ export function monthsBefore(day: string, months: number): string {
 // year only. A wide range asks for the lot.
 export const ALL_TIME = { from: "2000-01-01", to: "2100-12-31" };
 
+// A whole calendar year (this one, or "last-year"), not just up to today, or all time. For the lists whose records
+// run across dates (projects, assets) rather than happen on one.
+export function calendarYearDates(
+  key: string,
+  today: string,
+): { from: string; to: string } {
+  if (key === "all") return ALL_TIME;
+  const year = Number(today.slice(0, 4));
+  const wanted = key === "last-year" ? year - 1 : year;
+  return { from: `${wanted}-01-01`, to: `${wanted}-12-31` };
+}
+
 // Year, month and day of a plain "2019-03-12" day (a time part is ignored).
 export const dayParts = (day: string) =>
   day.slice(0, 10).split("-").map(Number) as [number, number, number];
