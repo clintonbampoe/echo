@@ -3,7 +3,6 @@ import {
   categoriesOfType,
   categorySchema,
   mergeTargets,
-  plural,
   toCategoryInput,
   usedBy,
 } from "./categories";
@@ -18,7 +17,6 @@ describe("categories", () => {
   it("counts in words", () => {
     expect(usedBy(1)).toBe("1 transaction");
     expect(usedBy(0)).toBe("0 transactions");
-    expect(plural(2, "category", "categories")).toBe("2 categories");
   });
 
   it("filters by type, or shows all", () => {

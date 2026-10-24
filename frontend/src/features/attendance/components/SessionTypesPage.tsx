@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Paged } from "@/lib/paged";
+import { plainList } from "@/lib/paged";
 import { paths } from "@/lib/paths";
 import {
   ActionMenu,
@@ -19,21 +19,6 @@ import styles from "./SessionTypesPage.module.css";
 
 type Open =
   { kind: "new" } | { kind: "edit" | "delete"; label: SessionLabel } | null;
-
-// The types come as one plain list, so they are shown as a list with nothing more to load.
-function asList(
-  labels: ReturnType<typeof useSessionLabels>,
-): Paged<SessionLabel> {
-  return {
-    rows: labels.data ?? [],
-    loading: labels.isPending,
-    failed: labels.isError,
-    hasMore: false,
-    loadingMore: false,
-    more: () => {},
-    retry: () => void labels.refetch(),
-  };
-}
 
 function typeColumns(
   onEdit: (label: SessionLabel) => void,
@@ -74,7 +59,7 @@ export function SessionTypesPage() {
   const [open, setOpen] = useState<Open>(null);
   const close = () => setOpen(null);
 
-  const list = asList(labels);
+  const list = plainList(labels.data ?? [], labels);
   const columns = typeColumns(
     (label) => setOpen({ kind: "edit", label }),
     (label) => setOpen({ kind: "delete", label }),

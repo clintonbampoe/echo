@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { ConfirmDialog, SelectField } from "@/ui";
 import type { ProjectCategory } from "../api";
-import { mergeTargets, plural } from "../categoryView";
+import { plural } from "@/lib/format";
+import { mergeTargets } from "../categoryView";
 import { useMergeProjectCategory } from "../hooks";
 import styles from "./MergeProjectCategoryDialog.module.css";
 

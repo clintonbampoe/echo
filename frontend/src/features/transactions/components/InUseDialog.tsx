@@ -1,6 +1,7 @@
 import { ConfirmDialog, Notice } from "@/ui";
 import type { Category } from "../api";
-import { plural, typeWord } from "../categories";
+import { plural } from "@/lib/format";
+import { typeWord } from "../categories";
 
 type Props = { category: Category; onMove: () => void; onClose: () => void };
 
