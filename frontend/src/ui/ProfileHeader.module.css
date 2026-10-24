@@ -1,0 +1,53 @@
+.header {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-top: 20px;
+}
+.who {
+  flex: 1;
+  min-width: 0;
+}
+.title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+.name {
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
+}
+.line {
+  margin-top: 6px;
+  font-size: 15px;
+  color: var(--text-2);
+}
+.actions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+}
+
+@media (max-width: 900px) {
+  .header {
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .who {
+    flex-basis: calc(100% - 96px);
+  }
+  .name {
+    font-size: 24px;
+  }
+  .actions {
+    flex-basis: 100%;
+  }
+  .actions > :first-child {
+    flex: 1;
+    height: 48px;
+  }
+}

@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Button } from "./Button";
+import { useLeaving } from "./presenceContext";
 import { useLeave } from "./usePresence";
 import styles from "./ConfirmDialog.module.css";
 
@@ -40,6 +41,8 @@ export function ConfirmDialog({
   const bodyId = useId();
   const safe = useRef<HTMLButtonElement>(null);
   const exit = useLeave(160);
+  const leaving = useLeaving();
+  const closing = exit.leaving || leaving;
   const cancel = () => exit.leave(onCancel);
 
   useEffect(() => {
@@ -54,7 +57,7 @@ export function ConfirmDialog({
     <div className={styles.root}>
       <div
         className={`${styles.scrim} scrim-fade`}
-        data-closing={exit.leaving}
+        data-closing={closing}
         onClick={busy ? undefined : cancel}
         aria-hidden="true"
       />
@@ -64,7 +67,7 @@ export function ConfirmDialog({
         aria-labelledby={titleId}
         aria-describedby={bodyId}
         className={styles.panel}
-        data-closing={exit.leaving}
+        data-closing={closing}
         onKeyDown={(e) => e.key === "Escape" && !busy && cancel()}
       >
         <h2 id={titleId} className={styles.title}>

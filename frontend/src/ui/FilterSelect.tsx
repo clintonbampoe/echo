@@ -15,6 +15,8 @@ type Props = {
   options: readonly Option[];
   value: string;
   onChange: (value: string) => void;
+  // Said before the chosen option on the pill, e.g. "Joined:" gives "Joined: All time".
+  prefix?: string;
   // For a choice that always has a value (like a date range): no highlight, since nothing is being filtered out.
   quiet?: boolean;
 };
@@ -32,7 +34,12 @@ function text(label: string, options: readonly Option[], value: string) {
     : label;
 }
 
-function MenuPill({ label, options, value, onChange, quiet }: Props) {
+// What the pill says: the choice, or the filter's name while nothing is chosen.
+const shown = (p: Props) =>
+  `${p.prefix ? `${p.prefix} ` : ""}${text(p.label, p.options, p.value)}`;
+
+function MenuPill(props: Props) {
+  const { label, options, value, onChange, quiet } = props;
   const id = useId();
   const trigger = useRef<HTMLButtonElement>(null);
   const searchBox = useRef<HTMLInputElement>(null);
@@ -57,7 +64,7 @@ function MenuPill({ label, options, value, onChange, quiet }: Props) {
         onKeyDown={lb.onKeyDown}
         onKeyUp={(e) => e.key === " " && e.preventDefault()}
       >
-        {text(label, options, value)}
+        {shown(props)}
         {!applied(value, quiet) && (
           <Icon name="chevrons-up-down" size={14} className={styles.chevron} />
         )}
@@ -92,7 +99,8 @@ function MenuPill({ label, options, value, onChange, quiet }: Props) {
 }
 
 // On a touch screen the pill opens the choices in a bottom sheet.
-function SheetPill({ label, options, value, onChange, quiet }: Props) {
+function SheetPill(props: Props) {
+  const { label, options, value, onChange, quiet } = props;
   const [open, setOpen] = useState(false);
   return (
     <div className={styles.wrap}>
@@ -104,7 +112,7 @@ function SheetPill({ label, options, value, onChange, quiet }: Props) {
         className={`${styles.pill} ${applied(value, quiet) ? styles.on : ""}`}
         onClick={() => setOpen(true)}
       >
-        {text(label, options, value)}
+        {shown(props)}
         {!applied(value, quiet) && (
           <Icon name="chevrons-up-down" size={14} className={styles.chevron} />
         )}

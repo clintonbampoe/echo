@@ -3,7 +3,13 @@ import { cssVars } from "./cssVars";
 import styles from "./StatStrip.module.css";
 
 // One number with a name and a line of context, e.g. "Attendance" / "86%" / "38 of 44 sessions".
-export type Stat = { label: string; value: string; note: string };
+// `change` is a small chip beside the value, e.g. "+30%" against last year.
+export type Stat = {
+  label: string;
+  value: string;
+  note: string;
+  change?: string;
+};
 
 type Props = {
   // Names the strip for screen readers.
@@ -38,6 +44,13 @@ export function StatStrip({ label, stats, busy }: Props) {
             <>
               <p className={styles.value} title={s.value}>
                 {s.value}
+                {s.change && (
+                  <span
+                    className={`${styles.change} ${s.change.startsWith("−") ? styles.down : ""}`}
+                  >
+                    {s.change}
+                  </span>
+                )}
               </p>
               <p className={styles.note} title={s.note}>
                 {s.note}

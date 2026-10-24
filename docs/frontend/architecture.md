@@ -42,21 +42,24 @@ lib        plain TypeScript: API client, dates, formatting
 
 ## Inside a feature
 
+`features/members` is the model. Features still in the older flat shape (`api.ts`, `hooks.ts`) move to it as
+their screens are redesigned.
+
 ```text
-features/tithes/
-  api.ts       HTTP calls and API types. No React.
-  hooks.ts     TanStack Query hooks and keys. The only file that knows the cache.
-  labels.ts    words and chip colours for a status or kind
-  options.ts   dropdown lists
-  view.ts      pure logic for what is shown     stat.ts + useStat.ts   profile card numbers
-  schema.ts    zod form schema
-  filters.ts   the list's URL filters, and the API query built from them
-  titheForm.ts form values, and mapping to and from the API (named for the form)
-  components/  pieces it draws, including ones other features embed
-  index.ts     what other features may use
+features/members/
+  index.ts       what other features may use. Nothing else is importable.
+  routes.tsx     its routes, lazy-loaded
+  api/           one file per resource: HTTP calls and API types. No React.
+  hooks/         keys.ts, queries.ts, mutations.ts, figures.ts. The only place that knows the cache.
+  model/         pure logic: filters, labels, options, figures, display lines. No React; has its own tests.
+  forms/         schema.ts (zod), mapping.ts (API <-> form values)
+  components/    grouped by screen area (list/, profile/, form/, dialogs/, picker/); a component, its
+                 stylesheet and its test sit together
+  pages/         compose components and hooks, and nothing else. A page has no logic of its own.
+  testing/       fixtures for this feature's tests (`aMember()`)
 ```
 
-Not every feature has every file. Read top to bottom: `api` → `hooks` → `components`.
+Read top to bottom: `api` → `hooks` → `model` → `components` → `pages`. Not every feature has every folder.
 
 ## Shared pieces
 
@@ -72,8 +75,27 @@ Use these before writing your own. A new list page is about 40 lines made from t
 | `ui` | `FormSheet`, `FormSection`, `Field`, `ControlledSelect`, `DeleteDialog`, `Notice` | forms, delete and notes inside a form |
 | `ui` | `MonthYearPill`, `MonthBars` | picking a month, and a month-by-month chart |
 | `ui` | `Chip` + `ChipTone`, `plainOptions`, `withAny` | status labels, dropdown lists |
+| `ui` | `Tabs`, `SegmentedField`, `Disclosure`, `ProfileHeader` | pill tabs and switches, a fold in a form, a profile's top |
+| `ui` | `ToastProvider` + `useToast`, `Presence` + `useHeld` | saying what happened, letting a sheet or dialog play its exit |
+| `test` | `kit` (`renderApp`, `signIn`, `json`, `pathOf`), `pickers` | what component tests share. Don't copy these into a test |
 
 Features import `ui` only through `ui/index.ts`, which stays alphabetical.
+
+## Interaction
+
+Everything reacts to the person, and it is all built once in `ui/` and `styles/motion.css` so no screen
+writes its own. Tokens are `--spring`, `--grow`, `--press`.
+
+- **Press**: every `button` and `[role=button]` shrinks to `--press` and springs back. Opt out with `data-press="none"`.
+- **Liquid pill**: `Tabs` and joined `SegmentedField` slide a dark thumb to the pick and squish it as it lands
+  (`useSlidingThumb` measures; `useFlip` replays the squish; CSS does the rest).
+- **Pop and exit**: menus, dropdowns, sheets, dialogs and toasts animate in and out. `usePresence` keeps a
+  closing thing on the page until its exit has played. A sheet or dialog that is mounted only while wanted is
+  wrapped in `<Presence open>`, with `useHeld` keeping what it showed.
+- **Loading**: shimmer skeletons shaped like what will arrive (`.skeleton`, `PersonListSkeleton`, `StatStrip busy`).
+  Bars and progress grow from the baseline (`.grow-y`, `.grow-x`, 40ms apart). Rows arrive one after another (`.stagger`).
+- **Reduced motion**: `reset.css` shortens every animation and transition. Exit waits are skipped too
+  (`exitDuration`). Tests turn exit animations off (`test/setup.ts`).
 
 ## State, errors and styling
 
@@ -128,7 +150,7 @@ Features import `ui` only through `ui/index.ts`, which stays alphabetical.
 
 ## Adding a feature
 
-1. Create `features/<name>/` with `api.ts`, `hooks.ts`, `components/`, `index.ts`.
+1. Create `features/<name>/` in the shape above: `api/`, `hooks/`, `components/`, `pages/`, `index.ts`, `routes.tsx`.
 2. Check the shared pieces first. If something generic is missing, add it to `ui/` or `lib/`.
 3. Export its routes and add them to `app/routes.tsx`.
 4. Handle all four states.

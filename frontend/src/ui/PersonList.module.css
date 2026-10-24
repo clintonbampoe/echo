@@ -214,3 +214,34 @@
   width: 72px;
   height: 12px;
 }
+
+/* A compact list stays one short line per person on a phone, so a long list is quick to scan. */
+@media (max-width: 900px) {
+  .compact .list {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 8px;
+  }
+  .compact .row {
+    grid-template-columns: minmax(0, 1fr) auto 36px;
+    align-items: center;
+    gap: 0 10px;
+    min-height: 66px;
+    padding: 10px 14px;
+  }
+  .compact .who {
+    grid-column: auto;
+    padding-right: 0;
+  }
+  .compact .actions {
+    position: relative;
+    top: auto;
+    right: auto;
+  }
+  .compact .cell:not(.chip) {
+    display: none;
+  }
+  .compact .chip {
+    grid-column: auto;
+    order: 0;
+  }
+}

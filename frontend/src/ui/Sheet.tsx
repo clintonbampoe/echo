@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Icon } from "./Icon";
+import { useLeaving } from "./presenceContext";
 import { usePresence } from "./usePresence";
 import styles from "./Sheet.module.css";
 
@@ -28,7 +29,10 @@ export function Sheet({
 }: Props) {
   const panel = useRef<HTMLDivElement>(null);
   const titleId = useId();
-  const { mounted, closing } = usePresence(open, 220);
+  const presence = usePresence(open, 220);
+  const leaving = useLeaving();
+  const { mounted } = presence;
+  const closing = presence.closing || leaving;
 
   useEffect(() => {
     if (!open) return;

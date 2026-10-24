@@ -3,6 +3,7 @@ import styles from "./Button.module.css";
 export type ButtonStyle = {
   variant?: "primary" | "secondary" | "ghost";
   size?: "sm" | "md" | "lg" | "xl";
+  // Buttons are fully round pills (design system §3). Pass pill={false} for a squarer button inside a dense control.
   pill?: boolean;
   block?: boolean;
 };
@@ -11,7 +12,7 @@ export type ButtonStyle = {
 export function buttonClass({
   variant = "primary",
   size = "md",
-  pill,
+  pill = true,
   block,
 }: ButtonStyle): string {
   return [

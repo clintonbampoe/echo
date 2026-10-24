@@ -15,6 +15,7 @@ export { DatePill } from "./DatePill";
 export { DayStrip, type StripDay } from "./DayStrip";
 export { DeleteDialog } from "./DeleteDialog";
 export { DetailBlock, DetailCard, DetailGroup } from "./DetailCard";
+export { Disclosure } from "./Disclosure";
 export { Donut, type DonutSlice } from "./Donut";
 export { Drawer } from "./Drawer";
 export { EmptyState } from "./EmptyState";
@@ -35,6 +36,7 @@ export { PageHeader } from "./PageHeader";
 export { Pager } from "./Pager";
 export { PanelIdentity } from "./PanelIdentity";
 export { PickerAnchor } from "./PickerAnchor";
+export { Presence } from "./Presence";
 export { ProgressBar } from "./ProgressBar";
 export {
   PersonList,
@@ -42,6 +44,7 @@ export {
   type Person,
   type PersonColumn,
 } from "./PersonList";
+export { ProfileHeader } from "./ProfileHeader";
 export { ProfileIdentity } from "./ProfileIdentity";
 export { BackLink, ProfileLayout } from "./ProfileLayout";
 export { RecordTable, type Column } from "./RecordTable";
@@ -60,6 +63,7 @@ export { useToast } from "./toastContext";
 export { TimeField } from "./TimeField";
 export { TextAreaField } from "./TextAreaField";
 export type { Option } from "./selectTypes";
+export { useHeld } from "./useHeld";
 export { useMedia } from "./useMedia";
 export { useNarrowProfile } from "./useNarrowProfile";
 export { usePublicSurface } from "./useSurface";

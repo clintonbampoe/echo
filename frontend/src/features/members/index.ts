@@ -7,16 +7,15 @@ export {
   useMemberSummary,
   useRefreshMembers,
 } from "./hooks";
-export { MemberFields } from "./MemberFields";
-export { MemberPicker } from "./MemberPicker";
+export { MemberFields } from "./components/form/MemberFields";
+export { MemberPicker } from "./components/picker/MemberPicker";
 export { memberRoutes } from "./routes";
 export {
   emptyMember,
   fieldMap as memberFieldMap,
-  memberSchema,
   toInput as toMemberInput,
-  type MemberValues,
-} from "./schema";
+} from "./forms/mapping";
+export { memberSchema, type MemberValues } from "./forms/schema";
 export type {
   Gender,
   MemberMatch,
@@ -26,4 +25,4 @@ export type {
   MemberInput,
   MemberStatus,
   MemberSummary,
-} from "./api";
+} from "./api/members";

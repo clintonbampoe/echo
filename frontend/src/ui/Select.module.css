@@ -10,9 +10,10 @@
   z-index: 20;
   padding: 6px;
   background: var(--surface);
-  border: 1px solid var(--line-2);
-  border-radius: var(--radius);
-  box-shadow: 0 12px 32px rgb(10 10 10 / 14%);
+  border-radius: 14px;
+  box-shadow:
+    0 14px 36px -10px rgb(10 10 11 / 22%),
+    0 0 0 1px rgb(10 10 11 / 5%);
   transform-origin: top left;
   animation: open 260ms var(--spring) both;
 }

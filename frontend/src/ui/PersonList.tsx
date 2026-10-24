@@ -37,12 +37,15 @@ type Props<T> = {
   columns: PersonColumn<T>[];
   // The ⋯ menu. Leave it out for a row with no actions.
   actions?: (row: T) => MenuItem[];
+  // On a phone each row stays one short line (avatar, name, the line under it, status) instead of a card of
+  // label and value pairs. The other columns are left out there, so only use it when the line says enough.
+  compact?: boolean;
   // What the first column is called. "Name" unless the rows are about something else ("Member" in a list of tithes).
   nameHeader?: string;
 };
 
 const NAME = "minmax(220px, 2.4fr)";
-const ACTIONS = "32px";
+const ACTIONS = "36px";
 
 // People as rows: an avatar, a name and email, then the columns the feature chose. A table row on a
 // wide screen and a card on a phone, from the same markup, so the layout never depends on the data
@@ -55,6 +58,7 @@ export function PersonList<T>({
   columns,
   actions,
   nameHeader = "Name",
+  compact,
 }: Props<T>) {
   const widths = (list: PersonColumn<T>[]) =>
     [NAME, ...list.map((c) => c.width), ACTIONS].join(" ");
@@ -63,7 +67,7 @@ export function PersonList<T>({
     "--cols-mid": widths(columns.filter((c) => !c.low)),
   } as CSSProperties;
   return (
-    <div className={styles.card}>
+    <div className={`${styles.card} ${compact ? styles.compact : ""}`}>
       <div className={styles.head} aria-hidden="true" style={grid}>
         <span>{nameHeader}</span>
         {columns.map((c) => (

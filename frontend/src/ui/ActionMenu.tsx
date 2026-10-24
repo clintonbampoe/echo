@@ -196,14 +196,22 @@ export function ActionMenu({ label, title, items }: Props) {
               <p id={titleId} className={styles.title}>
                 {title}
               </p>
-              {items.map((item, i) => (
-                <MenuRow
-                  key={item.label}
-                  item={item}
-                  newGroup={!!item.group && item.group !== items[i - 1]?.group}
-                  onChoose={choose}
-                />
-              ))}
+              <div className={styles.items}>
+                {items.map((item, i) => (
+                  <MenuRow
+                    key={item.label}
+                    item={item}
+                    newGroup={
+                      !!item.group && item.group !== items[i - 1]?.group
+                    }
+                    onChoose={choose}
+                  />
+                ))}
+              </div>
+              {/* Only drawn in the bottom sheet, where there is no click-outside to lean on. */}
+              <button type="button" className={styles.cancel} onClick={close}>
+                Cancel
+              </button>
             </div>
           </div>,
           document.body,
