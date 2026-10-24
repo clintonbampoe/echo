@@ -1,13 +1,15 @@
 /* A wide screen: one bordered list, rows divided by a line. Phone and tablet: a card per event. */
-.list {
-  margin: 16px 0 0;
-  padding: 0;
-  list-style: none;
+.card {
   background: var(--card-bg);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow);
   overflow: hidden;
+}
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 .item + .item {
   border-top: 1px solid var(--line);
@@ -18,7 +20,7 @@
   grid-template-columns: auto minmax(0, 1fr) minmax(0, 260px) auto;
   align-items: center;
   gap: 20px;
-  padding: 18px 20px;
+  padding: 12px 22px;
   color: inherit;
   text-decoration: none;
   transition: background-color var(--fast) ease;
@@ -36,23 +38,22 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  width: 56px;
-  height: 56px;
-  background: var(--surface-2);
-  border: 1px solid var(--line);
-  border-radius: 12px;
+  width: 44px;
+  height: 44px;
+  background: var(--fill);
+  border-radius: 13px;
   line-height: 1;
 }
 .month {
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.06em;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: var(--text-2);
+  color: var(--text-3);
 }
 .date {
-  margin-top: 4px;
-  font-size: 22px;
+  margin-top: 1px;
+  font-size: 17px;
   font-weight: 600;
 }
 
@@ -72,12 +73,12 @@
 .name {
   min-width: 0;
   overflow-wrap: anywhere;
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 500;
 }
 .when {
-  font-size: 14px;
-  color: var(--text-2);
+  font-size: 13px;
+  color: var(--text-3);
 }
 
 .fill {

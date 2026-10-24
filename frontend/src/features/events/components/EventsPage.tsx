@@ -72,11 +72,6 @@ export function EventsPage({ tab }: { tab: EventTab }) {
         </EmptyState>
       ) : (
         <>
-          <StatStrip
-            label="Event summary"
-            stats={summaryStats(summary.data, next.data)}
-            busy={!summary.data}
-          />
           <Tabs
             label="Events"
             idPrefix="events"
@@ -85,6 +80,11 @@ export function EventsPage({ tab }: { tab: EventTab }) {
             onChange={(id) =>
               navigate(id === "past" ? paths.eventsPast : paths.events)
             }
+          />
+          <StatStrip
+            label="Event summary"
+            stats={summaryStats(summary.data, next.data)}
+            busy={!summary.data}
           />
           <div
             role="tabpanel"
@@ -106,8 +106,15 @@ export function EventsPage({ tab }: { tab: EventTab }) {
               filtered={filtered}
               onClear={clear}
               order={t.order}
+              footerInside
             >
-              {(events) => <EventList events={events} past={tab === "past"} />}
+              {(events, footer) => (
+                <EventList
+                  events={events}
+                  past={tab === "past"}
+                  footer={footer}
+                />
+              )}
             </ListBody>
           </div>
         </>

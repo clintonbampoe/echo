@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { formatNumber } from "@/lib/format";
 import { paths } from "@/lib/paths";
@@ -12,7 +13,7 @@ import {
 } from "../rows";
 import styles from "./EventList.module.css";
 
-type Props = { events: EventItem[]; past: boolean };
+type Props = { events: EventItem[]; past: boolean; footer?: ReactNode };
 
 function DateTile({ day }: { day: string }) {
   const { month, date } = dateTile(day);
@@ -48,28 +49,31 @@ function Registered({ event: e, past }: { event: EventItem; past: boolean }) {
 }
 
 // One row per event. The whole row opens the event; it is edited and deleted on its own page.
-export function EventList({ events, past }: Props) {
+export function EventList({ events, past, footer }: Props) {
   return (
-    <ul
-      aria-label={past ? "Past events" : "Upcoming events"}
-      className={styles.list}
-    >
-      {events.map((e) => (
-        <li key={e.id} className={styles.item}>
-          <Link to={paths.event(e.id)} className={styles.row}>
-            <DateTile day={e.startDate} />
-            <span className={styles.main}>
-              <span className={styles.top}>
-                <span className={styles.name}>{e.name}</span>
-                <Chip>{e.organizationName}</Chip>
+    <div className={styles.card}>
+      <ul
+        aria-label={past ? "Past events" : "Upcoming events"}
+        className={styles.list}
+      >
+        {events.map((e) => (
+          <li key={e.id} className={styles.item}>
+            <Link to={paths.event(e.id)} className={styles.row}>
+              <DateTile day={e.startDate} />
+              <span className={styles.main}>
+                <span className={styles.top}>
+                  <span className={styles.name}>{e.name}</span>
+                  <Chip>{e.organizationName}</Chip>
+                </span>
+                <span className={styles.when}>{eventWhere(e)}</span>
               </span>
-              <span className={styles.when}>{eventWhere(e)}</span>
-            </span>
-            <Registered event={e} past={past} />
-            <Icon name="arrow-right" size={16} className={styles.go} />
-          </Link>
-        </li>
-      ))}
-    </ul>
+              <Registered event={e} past={past} />
+              <Icon name="arrow-right" size={16} className={styles.go} />
+            </Link>
+          </li>
+        ))}
+      </ul>
+      {footer}
+    </div>
   );
 }
