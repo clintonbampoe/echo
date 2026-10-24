@@ -49,7 +49,7 @@ describe("InvitationsPage", () => {
     renderApp(<InvitationsPage />);
     await screen.findByText("Youth team");
     await userEvent.click(
-      screen.getAllByRole("button", { name: "Invite people" })[0]!,
+      screen.getByRole("button", { name: "Invite people" }),
     );
     await userEvent.click(
       await screen.findByRole("button", { name: "Create invitation" }),

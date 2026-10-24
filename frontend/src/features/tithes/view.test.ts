@@ -77,19 +77,25 @@ describe("tithe page numbers", () => {
       averagePerMember: 297.58,
     };
     expect(titheStats(summary, 214, "Collected this week")).toEqual([
-      { label: "Collected", value: "GH₵ 18,450", note: "Collected this week" },
       {
-        label: "Members who gave",
+        label: "Collected",
+        value: "18,450",
+        unit: "GHS",
+        note: "Collected this week",
+      },
+      {
+        label: "Tithers",
         value: "62",
         note: "Out of 214 active members",
       },
       {
-        label: "Average per member",
-        value: "GH₵ 297.58",
+        label: "Average tithe",
+        value: "297.58",
+        unit: "GHS",
         note: "Collected divided by those who gave",
       },
       {
-        label: "Most used method",
+        label: "Most used",
         value: "Mobile money",
         note: "Of the tithes this period",
       },

@@ -79,9 +79,7 @@ describe("members page", () => {
     const user = userEvent.setup();
     server();
     renderApp(<MembersPage />, "/members");
-    await user.click(
-      (await screen.findAllByRole("button", { name: "Add member" }))[0]!,
-    );
+    await user.click(await screen.findByRole("button", { name: "Add member" }));
     expect(
       await screen.findByRole("dialog", { name: "Add member" }),
     ).toBeInTheDocument();

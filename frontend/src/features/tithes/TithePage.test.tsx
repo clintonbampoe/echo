@@ -126,7 +126,6 @@ describe("tithes page", () => {
     expect(
       await screen.findByRole("button", { name: "Kofi Mensah" }),
     ).toBeInTheDocument();
-    expect(screen.getByText("Whole family")).toBeInTheDocument();
     expect(
       await screen.findByText("Out of 118 active members"),
     ).toBeInTheDocument();
@@ -361,10 +360,10 @@ describe("tithes page", () => {
     const user = userEvent.setup();
     open();
     await screen.findByRole("button", { name: "Kofi Mensah" });
+    await user.click(screen.getByRole("button", { name: "Kofi Mensah" }));
     await user.click(
-      screen.getByRole("button", { name: "Actions for Kofi Mensah" }),
+      await screen.findByRole("button", { name: "Delete tithe" }),
     );
-    await user.click(screen.getByRole("menuitem", { name: "Delete tithe" }));
     expect(screen.getByText("Delete this tithe?")).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Delete tithe" }));
     expect(

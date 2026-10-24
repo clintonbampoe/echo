@@ -33,28 +33,24 @@
   align-items: center;
   gap: 10px;
 }
-.round {
-  display: none;
-  align-items: center;
-  justify-content: center;
-  flex: none;
-  width: 44px;
-  height: 44px;
-  border: 0;
-  border-radius: 50%;
-  background: var(--accent);
-  color: var(--on-accent);
-}
-.round:focus-visible {
-  outline: var(--focus);
-  outline-offset: 2px;
-}
-
+/* One button: a pill with its name on a wide screen, a round + on a phone (the name stays for screen readers). */
 @media (max-width: 900px) {
-  .wide {
-    display: none;
+  .add {
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border-radius: 50%;
   }
-  .round {
-    display: inline-flex;
+  .add svg {
+    width: 20px;
+    height: 20px;
+  }
+  .label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
   }
 }

@@ -26,20 +26,10 @@ export function PageHeader({ title, text, badge, add, action }: Props) {
           <div className={styles.action}>
             {action}
             {add && (
-              <>
-                <Button onClick={add.onClick} className={styles.wide}>
-                  <Icon name="plus" size={16} />
-                  {add.label}
-                </Button>
-                <button
-                  type="button"
-                  aria-label={add.label}
-                  className={styles.round}
-                  onClick={add.onClick}
-                >
-                  <Icon name="plus" size={20} />
-                </button>
-              </>
+              <Button onClick={add.onClick} className={styles.add}>
+                <Icon name="plus" size={16} />
+                <span className={styles.label}>{add.label}</span>
+              </Button>
             )}
           </div>
         )}

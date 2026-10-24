@@ -92,11 +92,12 @@ export function titheStats(
   return [
     {
       label: "Collected",
-      value: s ? formatMoney(s.totalCollected) : "–",
+      value: s ? formatNumber(s.totalCollected) : "–",
+      unit: s ? "GHS" : undefined,
       note: collected,
     },
     {
-      label: "Members who gave",
+      label: "Tithers",
       value: s ? formatNumber(s.uniqueTithers) : "–",
       note:
         activeMembers === undefined
@@ -104,12 +105,13 @@ export function titheStats(
           : `Out of ${formatNumber(activeMembers)} active members`,
     },
     {
-      label: "Average per member",
-      value: s ? formatMoney(s.averagePerMember) : "–",
+      label: "Average tithe",
+      value: s ? formatNumber(s.averagePerMember) : "–",
+      unit: s ? "GHS" : undefined,
       note: "Collected divided by those who gave",
     },
     {
-      label: "Most used method",
+      label: "Most used",
       value: method,
       note: "Of the tithes this period",
     },

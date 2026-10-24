@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { todayText } from "@/lib/dates";
 import { useUrlFilters } from "@/lib/useUrlFilters";
-import { Button, Icon, ListBody, PageHeader } from "@/ui";
+import { ListBody, PageHeader } from "@/ui";
 import type { Tithe } from "../api";
 import {
   chooseForMonth,
@@ -38,12 +38,7 @@ export function TithesPage() {
     <div className="anim-rise">
       <PageHeader
         title="Tithes"
-        action={
-          <Button onClick={() => setRecording(true)}>
-            <Icon name="plus" size={16} />
-            Record tithe
-          </Button>
-        }
+        add={{ label: "Record tithe", onClick: () => setRecording(true) }}
       />
       <TitheStats
         summary={summary.data}
@@ -70,10 +65,11 @@ export function TithesPage() {
         emptyText="Record a tithe, or choose a wider range."
         filtered={titheFilters.isFiltered(filters)}
         onClear={clear}
-        order="Newest first."
+        footerInside
       >
-        {(tithes) => (
+        {(tithes, footer) => (
           <TitheList
+            footer={footer}
             tithes={tithes}
             onOpen={(tithe, start) => setOpened({ tithe, start })}
           />
