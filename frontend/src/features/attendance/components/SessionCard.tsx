@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { paths } from "@/lib/paths";
-import { Chip, LinkButton } from "@/ui";
+import { Chip } from "@/ui";
 import type { Session } from "../api";
 import { sessionTitle, statusTone } from "../day";
 import { formatClock } from "@/lib/format";
@@ -18,27 +18,25 @@ export function SessionList({ sessions }: { sessions: Session[] }) {
 }
 
 function SessionCard({ session: s }: { session: Session }) {
+  const when = s.startsAt
+    ? s.endsAt
+      ? `${formatClock(s.startsAt)} – ${formatClock(s.endsAt)}`
+      : formatClock(s.startsAt)
+    : "No time set";
   return (
     <li className={styles.card}>
-      <p className={styles.time}>
-        {s.startsAt ? (
-          formatClock(s.startsAt)
-        ) : (
-          <span className={styles.none}>No time set</span>
-        )}
-        {s.startsAt && s.endsAt && (
-          <span className={styles.to}>to {formatClock(s.endsAt)}</span>
-        )}
-      </p>
       <div className={styles.main}>
         <p className={styles.name}>
           <Link to={paths.session(s.id)} className={styles.link}>
             {sessionTitle(s)}
           </Link>
-          <Chip tone="neutral">{s.category}</Chip>
-          <Chip tone={statusTone[s.status]}>{s.status}</Chip>
+          {s.status !== "Completed" && (
+            <Chip tone={statusTone[s.status]}>{s.status}</Chip>
+          )}
         </p>
-        {s.topic && <p className={styles.topic}>{s.topic}</p>}
+        <p className={styles.topic}>
+          {[when, s.topic].filter(Boolean).join(" · ")}
+        </p>
       </div>
       <p className={styles.count}>
         <span className={styles.number}>
@@ -46,16 +44,6 @@ function SessionCard({ session: s }: { session: Session }) {
         </span>
         <span className={styles.unit}>present</span>
       </p>
-      <LinkButton
-        to={paths.session(s.id)}
-        variant="secondary"
-        size="sm"
-        tabIndex={-1}
-        aria-hidden="true"
-        className={styles.open}
-      >
-        Open
-      </LinkButton>
     </li>
   );
 }

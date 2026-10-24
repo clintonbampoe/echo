@@ -1,9 +1,14 @@
-.strip {
-  margin-top: 20px;
-}
-.stats {
-  margin-top: 16px;
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
 }
 .empty {
-  margin-top: 16px;
+  margin: 0;
+}
+
+@media (max-width: 700px) {
+  .panel {
+    gap: 16px;
+  }
 }

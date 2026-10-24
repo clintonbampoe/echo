@@ -1,6 +1,6 @@
 import { formatTime } from "@/lib/format";
 import type { Paged } from "@/lib/paged";
-import { Chip, ListBody, PersonList, type PersonColumn } from "@/ui";
+import { ListBody, PersonList, type PersonColumn } from "@/ui";
 import type { CheckIn } from "../api";
 
 type Props = {
@@ -13,18 +13,9 @@ type Props = {
 
 const columns: PersonColumn<CheckIn>[] = [
   {
-    header: "Kind",
-    width: "110px",
-    chip: true,
-    cell: (c) => (
-      <Chip tone={c.personKind === "Member" ? "neutral" : "warning"}>
-        {c.personKind}
-      </Chip>
-    ),
-  },
-  {
     header: "Checked in",
     width: "120px",
+    end: true,
     cell: (c) => formatTime(c.checkedInAt),
   },
 ];
@@ -48,8 +39,9 @@ export function CheckInList({
       filtered={filtered}
       onClear={onClear}
       order="Newest first."
+      footerInside
     >
-      {(rows) => (
+      {(rows, footer) => (
         <PersonList
           label="Check-ins"
           rows={rows}
@@ -57,9 +49,10 @@ export function CheckInList({
           person={(c) => ({
             name: c.personName,
             onOpen: () => onOpen(c),
-            plain: true,
+            detail: c.personKind,
           })}
           columns={columns}
+          footer={footer}
           actions={(c) => [
             {
               label: "Remove from session",

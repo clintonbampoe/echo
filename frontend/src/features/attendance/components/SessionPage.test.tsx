@@ -96,7 +96,7 @@ describe("session page", () => {
     expect(
       await screen.findByRole("heading", { name: /Sunday Service/ }),
     ).toBeInTheDocument();
-    expect(screen.getByText(/Topic: Walking in Faith\./)).toBeInTheDocument();
+    expect(screen.getByText(/Walking in Faith/)).toBeInTheDocument();
     expect(
       screen.getByText(/Created by Ama Serwaa Boateng\./),
     ).toBeInTheDocument();

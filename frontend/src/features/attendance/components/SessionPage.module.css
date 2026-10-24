@@ -1,18 +1,19 @@
 .layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 380px;
-  grid-template-areas: "stats panel" "list panel";
-  gap: 0 20px;
+  grid-template-columns: minmax(0, 1fr) 400px;
+  grid-template-areas: "stats stats" "list panel";
+  gap: 22px;
   align-items: start;
-  margin-top: 20px;
 }
 .stats {
   grid-area: stats;
-  margin-bottom: 4px;
 }
 .list {
   grid-area: list;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 .panel {
   grid-area: panel;
@@ -31,10 +32,10 @@
 @media (max-width: 1100px) {
   .layout {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-areas: "panel" "stats" "list";
+    grid-template-areas: "stats" "panel" "list";
+    gap: 16px;
   }
   .panel {
     position: static;
-    margin: 0 0 16px;
   }
 }

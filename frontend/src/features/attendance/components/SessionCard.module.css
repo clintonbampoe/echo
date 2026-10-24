@@ -1,17 +1,18 @@
 .list {
   display: grid;
-  gap: 10px;
-  margin: 16px 0 0;
+  gap: 12px;
+  margin: 0;
   padding: 0;
   list-style: none;
 }
 .card {
   position: relative;
-  display: grid;
-  grid-template-columns: 96px minmax(0, 1fr) auto auto;
+  display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 16px;
-  padding: 16px 18px;
+  min-height: 72px;
+  padding: 14px 24px;
   background: var(--card-bg);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
@@ -24,23 +25,6 @@
 .card:has(.link:focus-visible) {
   outline: var(--focus);
   outline-offset: 2px;
-}
-
-.time {
-  margin: 0;
-  font-size: 14px;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-}
-.to {
-  display: block;
-  font-size: 12px;
-  font-weight: 400;
-  color: var(--text-3);
-}
-.none {
-  color: var(--text-3);
-  font-weight: 400;
 }
 .main {
   min-width: 0;
@@ -69,14 +53,15 @@
   border-radius: inherit;
 }
 .topic {
-  margin: 4px 0 0;
+  margin: 2px 0 0;
   font-size: 13px;
-  color: var(--text-2);
+  color: var(--text-3);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .count {
+  margin: 0;
   text-align: right;
 }
 .number {
@@ -90,30 +75,9 @@
   font-size: 12px;
   color: var(--text-3);
 }
-.open {
-  position: relative;
-  z-index: 1;
-  pointer-events: none;
-}
 
 @media (max-width: 700px) {
   .card {
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 8px 12px;
-    padding: 14px;
-  }
-  .time {
-    grid-column: 1 / -1;
-    display: flex;
-    gap: 6px;
-    font-size: 13px;
-  }
-  .to {
-    display: inline;
-  }
-  .open {
-    position: relative;
-    z-index: 1;
-    pointer-events: none;
+    padding: 12px 16px;
   }
 }

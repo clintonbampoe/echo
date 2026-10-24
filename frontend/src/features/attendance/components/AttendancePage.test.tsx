@@ -54,10 +54,9 @@ const open = (address = "/attendance?day=2026-10-11") =>
 describe("attendance page", () => {
   it("shows the day, its sessions and the numbers", async () => {
     open();
-    const heading = await screen.findByRole("heading", {
-      name: /Sunday, 11 October 2026/,
-    });
-    expect(await within(heading).findByText("2 sessions")).toBeInTheDocument();
+    expect(
+      await screen.findByRole("heading", { name: /Sunday 11 Oct/ }),
+    ).toBeInTheDocument();
     const list = await screen.findByRole("list", { name: "Sessions" });
     expect(
       within(list).getByRole("link", { name: "Sunday Service" }),
@@ -65,8 +64,8 @@ describe("attendance page", () => {
     expect(
       within(list).getByRole("link", { name: "Evening Prayer" }),
     ).toBeInTheDocument();
-    expect(within(list).getByText("Walking in Faith")).toBeInTheDocument();
-    expect(within(list).getByText("8:00 am")).toBeInTheDocument();
+    expect(within(list).getByText(/Walking in Faith/)).toBeInTheDocument();
+    expect(within(list).getByText(/8:00 am/)).toBeInTheDocument();
     expect(within(list).getByText("Scheduled")).toBeInTheDocument();
     expect(await screen.findByText("Across 2 sessions")).toBeInTheDocument();
   });
@@ -98,7 +97,7 @@ describe("attendance page", () => {
       screen.getByRole("button", { name: "Go to Sun 18 Oct" }),
     );
     expect(
-      await screen.findByRole("heading", { name: /Sunday, 18 October 2026/ }),
+      await screen.findByRole("heading", { name: /Sunday 18 Oct/ }),
     ).toBeInTheDocument();
   });
 
@@ -124,12 +123,10 @@ describe("attendance page", () => {
     await screen.findByRole("list", { name: "Sessions" });
     await userEvent.click(screen.getByRole("button", { name: "Next week" }));
     expect(
-      await screen.findByRole("heading", { name: /Sunday, 18 October 2026/ }),
+      await screen.findByRole("heading", { name: /Sunday 18 Oct/ }),
     ).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "Today" }));
-    expect(
-      screen.queryByRole("heading", { name: /18 October 2026/ }),
-    ).toBeNull();
+    expect(screen.queryByRole("heading", { name: /Sunday 18 Oct/ })).toBeNull();
   });
 
   it("creates a session on the day that is open", async () => {

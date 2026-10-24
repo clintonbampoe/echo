@@ -41,6 +41,12 @@ export function longDay(day: string): string {
   return `${weekday(day, "long")}, ${d} ${monthNames[m - 1]} ${y}`;
 }
 
+// "2026-10-11" -> "Sunday 11 Oct". The heading over a day's sessions.
+export function dayTitle(day: string): string {
+  const [, m, d] = dayParts(day);
+  return `${weekday(day, "long")} ${d} ${(monthNames[m - 1] ?? "").slice(0, 3)}`;
+}
+
 // "2026-10-11" -> "Sunday, 11 October". For a way back, where the year is understood.
 export const dayName = (day: string) => longDay(day).replace(/ \d{4}$/, "");
 
@@ -106,9 +112,11 @@ export function presenceStats(
   presentLabel = "Present",
 ): Stat[] {
   if (!summary) {
-    return [presentLabel, "Members", "Visitors", "First-time visitors"].map(
-      (label) => ({ label, value: "–", note: "" }),
-    );
+    return [presentLabel, "Members", "Visitors", "First-time"].map((label) => ({
+      label,
+      value: "–",
+      note: "",
+    }));
   }
   const {
     totalPresent: total,
@@ -130,7 +138,7 @@ export function presenceStats(
     { label: "Members", ...share(members, members100) },
     { label: "Visitors", ...share(visitors, 100 - members100) },
     {
-      label: "First-time visitors",
+      label: "First-time",
       value: formatNumber(firstTimeVisitors),
       note: "Came for the first time",
     },

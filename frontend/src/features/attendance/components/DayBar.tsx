@@ -1,17 +1,16 @@
 import { useState } from "react";
-import { Button, Chip, DatePanel, Icon, PickerAnchor } from "@/ui";
-import { longDay, sessionCount } from "../day";
+import { Button, DatePanel, Icon, PickerAnchor } from "@/ui";
+import { dayTitle } from "../day";
 import styles from "./DayBar.module.css";
 
 type Props = {
   day: string;
   today: string;
-  count: number | null;
   onPick: (day: string) => void;
 };
 
 // The picked day written out, how many sessions it has, and the two ways to jump: to today, or to any date.
-export function DayBar({ day, today, count, onPick }: Props) {
+export function DayBar({ day, today, onPick }: Props) {
   const [open, setOpen] = useState(false);
 
   function pick(next: string) {
@@ -30,13 +29,11 @@ export function DayBar({ day, today, count, onPick }: Props) {
   );
   return (
     <div className={styles.bar}>
-      <h2 className={styles.heading}>
-        {longDay(day)}
-        {count !== null && <Chip tone="neutral">{sessionCount(count)}</Chip>}
-      </h2>
+      <h2 className={styles.heading}>{dayTitle(day)}</h2>
       <div className={styles.buttons}>
         <Button
           variant="secondary"
+          size="sm"
           disabled={day === today}
           onClick={() => onPick(today)}
         >
@@ -51,12 +48,13 @@ export function DayBar({ day, today, count, onPick }: Props) {
         >
           <Button
             variant="secondary"
+            size="sm"
             data-trigger
             aria-haspopup="dialog"
             aria-expanded={open}
             onClick={() => setOpen(!open)}
           >
-            <Icon name="calendar" size={16} />
+            <Icon name="calendar" size={14} />
             Pick a date
           </Button>
         </PickerAnchor>

@@ -2,6 +2,7 @@ import type { AttendanceSummary } from "./api";
 import {
   dayMonth,
   dayName,
+  dayTitle,
   longDay,
   nearestSessionDay,
   needsNewAnchor,
@@ -63,6 +64,7 @@ describe("the day strip", () => {
 
 describe("writing a day", () => {
   it("writes the long, short and year-less forms", () => {
+    expect(dayTitle("2026-10-11")).toBe("Sunday 11 Oct");
     expect(longDay("2026-10-11")).toBe("Sunday, 11 October 2026");
     expect(dayName("2026-10-11")).toBe("Sunday, 11 October");
     expect(shortDay("2026-10-14")).toBe("Wed 14 Oct");
@@ -102,7 +104,7 @@ describe("presence numbers", () => {
       ["Present", "3", "Across 2 sessions"],
       ["Members", "2", "67% of those present"],
       ["Visitors", "1", "33% of those present"],
-      ["First-time visitors", "1", "Came for the first time"],
+      ["First-time", "1", "Came for the first time"],
     ]);
   });
 

@@ -3,7 +3,9 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
-  margin-top: 8px;
+}
+.who {
+  min-width: 0;
 }
 .title {
   display: flex;
@@ -11,40 +13,30 @@
   align-items: center;
   gap: 10px;
   margin: 0;
-  font-size: 26px;
+  font-size: 30px;
   line-height: 1.15;
   font-weight: 600;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.03em;
 }
 .meta {
-  margin: 8px 0 0;
-  font-size: 15px;
-  color: var(--text-2);
+  margin: 6px 0 0;
+  font-size: 13.5px;
+  color: var(--text-3);
 }
 .notes {
   margin: 4px 0 0;
-  font-size: 14px;
+  font-size: 13.5px;
   color: var(--text-3);
 }
 .buttons {
   display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-.danger {
-  color: var(--neg);
+  align-items: center;
+  gap: 10px;
+  flex: none;
 }
 
 @media (max-width: 900px) {
-  .header {
-    flex-direction: column;
-    align-items: stretch;
-  }
   .title {
-    font-size: 22px;
-  }
-  .buttons > * {
-    flex: 1;
-    height: 48px;
+    font-size: 24px;
   }
 }

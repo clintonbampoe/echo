@@ -45,8 +45,9 @@ export function AttendancePage() {
         role="tabpanel"
         id="attendance-panel-day"
         aria-labelledby="attendance-tab-day"
+        className={styles.panel}
       >
-        <div className={styles.strip}>
+        <div>
           <DayStrip
             label="Days"
             days={stripDays(anchor, today, sessions.data ?? [])}
@@ -56,20 +57,15 @@ export function AttendancePage() {
             noun={["session", "sessions"]}
           />
         </div>
-        <DayBar
-          day={day}
-          today={today}
-          count={ready ? here.length : null}
-          onPick={pick}
-        />
-        <div className={styles.stats}>
+        <DayBar day={day} today={today} onPick={pick} />
+        <div>
           <StatStrip
             label="Attendance for this day"
             stats={presenceStats(
               summary.data,
               `Across ${sessionCount(here.length)}`,
               "No one marked",
-              "Present this day",
+              "Present",
             )}
             busy={summary.isPending}
           />

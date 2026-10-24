@@ -34,26 +34,25 @@ export function CheckInPanel({ session, rows }: Props) {
 
   return (
     <aside aria-label="Mark present" className={styles.panel}>
-      <h2 className={styles.title}>Mark present</h2>
-      <p className={styles.text}>
-        Search, then tap. Each person is saved as you go.
-      </p>
-      <SegmentedField
-        label="Who is arriving"
-        options={kindOptions}
-        value={kind}
-        onChange={(next) => {
-          setKind(next);
-          setText("");
-        }}
-      />
-      <p className={styles.label} aria-hidden="true">
-        Search {kind === "Member" ? "members" : "visitors"}
-      </p>
+      <div className={styles.head}>
+        <h2 className={styles.title}>Mark present</h2>
+        <SegmentedField
+          label="Who is arriving"
+          hideLabel
+          joined
+          compact
+          options={kindOptions}
+          value={kind}
+          onChange={(next) => {
+            setKind(next);
+            setText("");
+          }}
+        />
+      </div>
       <SearchField
         ref={input}
         label={`Search ${kind === "Member" ? "members" : "visitors"}`}
-        placeholder="Type a name"
+        placeholder={`Find a ${kind === "Member" ? "member" : "visitor"}`}
         className={styles.search}
         value={text}
         onChange={(e) => setText(e.target.value)}

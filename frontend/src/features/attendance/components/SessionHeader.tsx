@@ -1,4 +1,4 @@
-import { Button, Chip } from "@/ui";
+import { ActionMenu, Button, Chip } from "@/ui";
 import type { Session } from "../api";
 import { sessionTitle, shortDay, statusTone, timeRange } from "../day";
 import styles from "./SessionHeader.module.css";
@@ -11,7 +11,8 @@ type Props = {
   onCancel: () => void;
 };
 
-// Who this session is, when it was, and what can be done to it. Only a session still ahead can be completed or cancelled.
+// Who this session is, when it was, and what can be done to it: the main step (complete it) and a ⋯ menu for the
+// rest. Only a session still ahead can be completed or cancelled.
 export function SessionHeader({
   session: s,
   onEdit,
@@ -19,20 +20,25 @@ export function SessionHeader({
   onComplete,
   onCancel,
 }: Props) {
-  const when = [`${shortDay(s.date)} ${s.date.slice(0, 4)}`, timeRange(s)]
+  const scheduled = s.status === "Scheduled";
+  const line = [shortDay(s.date), timeRange(s), s.topic]
     .filter(Boolean)
-    .join(", ");
+    .join(" · ");
+  const items = [
+    { label: "Edit", onSelect: onEdit },
+    ...(scheduled ? [{ label: "Cancel session", onSelect: onCancel }] : []),
+    { label: "Delete", danger: true, onSelect: onDelete },
+  ];
   return (
     <header className={styles.header}>
-      <div>
+      <div className={styles.who}>
         <h1 className={styles.title}>
           {sessionTitle(s)}
-          <Chip tone="neutral">{s.category}</Chip>
-          <Chip tone={statusTone[s.status]}>{s.status}</Chip>
+          {s.status !== "Completed" && (
+            <Chip tone={statusTone[s.status]}>{s.status}</Chip>
+          )}
         </h1>
-        <p className={styles.meta}>
-          {when}.{s.topic ? ` Topic: ${s.topic}.` : ""}
-        </p>
+        <p className={styles.meta}>{line}</p>
         {(s.notes || s.createdByName) && (
           <p className={styles.notes}>
             {s.notes}
@@ -42,24 +48,12 @@ export function SessionHeader({
         )}
       </div>
       <div className={styles.buttons}>
-        {s.status === "Scheduled" && (
-          <Button onClick={onComplete}>Mark completed</Button>
-        )}
-        <Button variant="secondary" onClick={onEdit}>
-          Edit
-        </Button>
-        {s.status === "Scheduled" && (
-          <Button variant="secondary" onClick={onCancel}>
-            Cancel session
-          </Button>
-        )}
-        <Button
-          variant="secondary"
-          className={styles.danger}
-          onClick={onDelete}
-        >
-          Delete
-        </Button>
+        {scheduled && <Button onClick={onComplete}>Mark completed</Button>}
+        <ActionMenu
+          label={`More actions for ${sessionTitle(s)}`}
+          title={sessionTitle(s)}
+          items={items}
+        />
       </div>
     </header>
   );
