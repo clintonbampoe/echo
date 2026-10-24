@@ -1,20 +1,19 @@
 import { useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useLastSeen, PersonVisits } from "@/features/attendance";
 import { isApiError } from "@/lib/api";
 import { todayText } from "@/lib/dates";
 import { paths } from "@/lib/paths";
 import {
+  ActionMenu,
   Alert,
   BackLink,
   Button,
   Chip,
-  Icon,
   LinkButton,
-  ProfileIdentity,
-  ProfileLayout,
+  ProfileHeader,
   StatStrip,
-  useNarrowProfile,
+  Tabs,
 } from "@/ui";
 import type { Visitor } from "./api";
 import { ConvertedBanner } from "./ConvertedBanner";
@@ -22,9 +21,8 @@ import { ConvertSheet } from "./ConvertSheet";
 import { DeleteVisitorDialog } from "./DeleteVisitorDialog";
 import { EditVisitorSheet } from "./EditVisitorSheet";
 import { useVisitor } from "./hooks";
-import { kindTone } from "./labels";
-import { addedStat, becameStat, daysSinceStat, visitsStat } from "./stat";
-import { memberIdOf, visitorKind } from "./view";
+import { becameStat, daysSinceStat, firstVisitStat, visitsStat } from "./stat";
+import { memberIdOf } from "./view";
 import { VisitorDetails } from "./VisitorDetails";
 import styles from "./VisitorPage.module.css";
 
@@ -68,7 +66,8 @@ export function VisitorPage() {
 
 function Profile({ visitor: v }: { visitor: Visitor }) {
   const navigate = useNavigate();
-  const narrow = useNarrowProfile();
+  const [params, setParams] = useSearchParams();
+  const tab = params.get("tab") === "visits" ? "visits" : "details";
   const [editing, setEditing] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [converting, setConverting] = useState(false);
@@ -76,65 +75,70 @@ function Profile({ visitor: v }: { visitor: Visitor }) {
   const lastVisit = useLastSeen(v.id, "Last visit");
   // Someone who has become a member is edited and removed under Members, not here.
   const memberId = memberIdOf(v);
-  const details = <VisitorDetails v={v} today={today} />;
 
   return (
-    <>
-      <ProfileLayout
-        back={{ to: paths.visitors, label: "Visitors" }}
-        narrow={narrow}
-        aside={details}
-        notice={<ConvertedBanner v={v} />}
-        identity={
-          <ProfileIdentity
-            label="Visitor"
-            name={v.name}
-            meta={
-              memberId ? (
-                <Chip tone="positive">Member now</Chip>
-              ) : (
-                <Chip tone={kindTone[visitorKind(v)]}>{visitorKind(v)}</Chip>
-              )
-            }
-          >
-            {memberId ? (
-              <LinkButton to={paths.member(memberId)}>View member</LinkButton>
-            ) : (
-              <>
-                <Button
-                  className={styles.make}
-                  onClick={() => setConverting(true)}
-                >
-                  Make member
-                </Button>
-                <Button variant="secondary" onClick={() => setEditing(true)}>
-                  <Icon name="user" size={16} />
-                  Edit
-                </Button>
-                <Button
-                  variant="secondary"
-                  className={styles.danger}
-                  onClick={() => setDeleting(true)}
-                >
-                  Delete
-                </Button>
-              </>
-            )}
-          </ProfileIdentity>
-        }
+    <div className="anim-rise">
+      <BackLink to={paths.visitors}>Visitors</BackLink>
+      <ConvertedBanner v={v} />
+      <ProfileHeader
+        label="Visitor"
+        name={v.name}
+        line={[v.phoneNumber, v.emailAddress].filter(Boolean).join(" · ")}
+        badges={memberId ? <Chip tone="positive">Member now</Chip> : undefined}
       >
-        <StatStrip
-          label="Visitor numbers"
-          stats={[
-            visitsStat(v),
-            addedStat(v),
-            lastVisit,
-            memberId ? becameStat(v) : daysSinceStat(v, today),
-          ]}
-        />
-        {narrow && details}
-        <PersonVisits personId={v.id} name={v.name} />
-      </ProfileLayout>
+        {memberId ? (
+          <LinkButton to={paths.member(memberId)}>View member</LinkButton>
+        ) : (
+          <>
+            <Button onClick={() => setConverting(true)}>Make a member</Button>
+            <ActionMenu
+              label={`More actions for ${v.name}`}
+              title={v.name}
+              items={[
+                { label: "Edit", onSelect: () => setEditing(true) },
+                {
+                  label: "Delete",
+                  danger: true,
+                  separated: true,
+                  onSelect: () => setDeleting(true),
+                },
+              ]}
+            />
+          </>
+        )}
+      </ProfileHeader>
+      <StatStrip
+        label="Visitor numbers"
+        stats={[
+          visitsStat(v),
+          firstVisitStat(v),
+          lastVisit,
+          memberId ? becameStat(v) : daysSinceStat(v, today),
+        ]}
+      />
+      <Tabs
+        label="Visitor history"
+        tabs={[
+          { id: "details", label: "Details" },
+          { id: "visits", label: "Visits" },
+        ]}
+        value={tab}
+        onChange={(t) => setParams({ tab: t }, { replace: true })}
+        idPrefix="visitor"
+      />
+      <div
+        key={tab}
+        className="anim-rise"
+        role="tabpanel"
+        id={`visitor-panel-${tab}`}
+        aria-labelledby={`visitor-tab-${tab}`}
+      >
+        {tab === "details" ? (
+          <VisitorDetails v={v} today={today} />
+        ) : (
+          <PersonVisits personId={v.id} name={v.name} />
+        )}
+      </div>
 
       {converting && (
         <ConvertSheet visitor={v} onClose={() => setConverting(false)} />
@@ -149,6 +153,6 @@ function Profile({ visitor: v }: { visitor: Visitor }) {
           onDeleted={() => navigate(paths.visitors, { replace: true })}
         />
       )}
-    </>
+    </div>
   );
 }

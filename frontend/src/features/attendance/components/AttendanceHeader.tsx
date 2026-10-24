@@ -9,10 +9,6 @@ const tabs = [
   { id: "day", label: "Day" },
   { id: "records", label: "Records" },
 ];
-const text = {
-  day: "Pick a day to see its sessions and who came.",
-  records: "Look back over any period, by session or by who came.",
-};
 
 // The top of both Attendance tabs: the title, the two buttons, and the tabs (Day for working on one day, Records
 // for looking back). Each tab is its own address, so the page body of the open one has `id="attendance-panel-{tab}"`.
@@ -28,7 +24,6 @@ export function AttendanceHeader({
     <>
       <PageHeader
         title="Attendance"
-        text={text[tab]}
         action={
           <>
             <LinkButton to={paths.sessionTypes} variant="secondary">

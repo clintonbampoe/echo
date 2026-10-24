@@ -1,11 +1,6 @@
-import { useState } from "react";
 import { useUrlFilters } from "@/lib/useUrlFilters";
 import { windowOptions } from "@/lib/windows";
-import { Button, Icon, ListBody, PageHeader } from "@/ui";
-import type { Visitor } from "./api";
-import { ConvertSheet } from "./ConvertSheet";
-import { DeleteVisitorDialog } from "./DeleteVisitorDialog";
-import { EditVisitorSheet } from "./EditVisitorSheet";
+import { ListBody, PageHeader } from "@/ui";
 import { FilterBar } from "./FilterBar";
 import { toApiFilters, toSummaryFilters, visitorFilters } from "./filters";
 import { useVisitors, useVisitorSummary } from "./hooks";
@@ -18,9 +13,6 @@ import { useUrlFlag } from "@/lib/useUrlFlag";
 export function VisitorsPage() {
   const { filters, update, clear, resetKey } = useUrlFilters(visitorFilters);
   const [adding, setAdding] = useUrlFlag("new");
-  const [editing, setEditing] = useState<Visitor | null>(null);
-  const [converting, setConverting] = useState<Visitor | null>(null);
-  const [deleting, setDeleting] = useState<Visitor | null>(null);
   const list = useVisitors(toApiFilters(filters));
   const summary = useVisitorSummary(toSummaryFilters(filters));
   const windowLabel =
@@ -30,13 +22,7 @@ export function VisitorsPage() {
     <div className="anim-rise">
       <PageHeader
         title="Visitors"
-        text="First-time guests, and the people you are following up with."
-        action={
-          <Button onClick={() => setAdding(true)}>
-            <Icon name="plus" size={16} />
-            New visitor
-          </Button>
-        }
+        add={{ label: "Add visitor", onClick: () => setAdding(true) }}
       />
       <SummaryStrip summary={summary.data} windowLabel={windowLabel} />
       <FilterBar
@@ -52,33 +38,13 @@ export function VisitorsPage() {
         emptyText="Visitors you add will appear here."
         filtered={visitorFilters.isFiltered(filters)}
         onClear={clear}
+        footerInside
       >
-        {(visitors) => (
-          <VisitorList
-            visitors={visitors}
-            converted={filters.status === "became"}
-            onConvert={setConverting}
-            onEdit={setEditing}
-            onDelete={setDeleting}
-          />
+        {(visitors, footer) => (
+          <VisitorList visitors={visitors} footer={footer} />
         )}
       </ListBody>
       <VisitorSheet open={adding} onClose={() => setAdding(false)} />
-      {editing && (
-        <EditVisitorSheet visitor={editing} onClose={() => setEditing(null)} />
-      )}
-      {converting && (
-        <ConvertSheet
-          visitor={converting}
-          onClose={() => setConverting(null)}
-        />
-      )}
-      {deleting && (
-        <DeleteVisitorDialog
-          visitor={deleting}
-          onClose={() => setDeleting(null)}
-        />
-      )}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { addedStat, becameStat, daysSinceStat, visitsStat } from "./stat";
+import { firstVisitStat, becameStat, daysSinceStat, visitsStat } from "./stat";
 
 describe("visitor stats", () => {
   it("counts visits and says since when", () => {
@@ -6,10 +6,12 @@ describe("visitor stats", () => {
       value: "3",
       note: "As a visitor",
     });
-    expect(addedStat({ createdAt: "2026-09-07T10:00:00Z" })).toMatchObject({
-      label: "Added",
-      note: "First recorded",
-    });
+    expect(firstVisitStat({ createdAt: "2026-09-07T10:00:00Z" })).toMatchObject(
+      {
+        label: "First visit",
+        note: "First recorded",
+      },
+    );
   });
 
   it("days since: a dash with no visits, a nudge after two weeks", () => {

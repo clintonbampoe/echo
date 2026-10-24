@@ -60,11 +60,7 @@ export function EventsPage({ tab }: { tab: EventTab }) {
 
   return (
     <div className="anim-rise">
-      <PageHeader
-        title="Events"
-        text="Conventions, concerts and gatherings, with who signed up and who came."
-        action={add}
-      />
+      <PageHeader title="Events" action={add} />
       {none ? (
         <EmptyState icon="calendar" title="Plan your first event" action={add}>
           Events are one-off gatherings like a convention or concert. Pick the

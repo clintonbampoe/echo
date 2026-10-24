@@ -87,14 +87,8 @@ describe("visitors page", () => {
     expect(
       await screen.findByRole("link", { name: "Esi Mensah" }),
     ).toHaveAttribute("href", "/visitors/v1");
-    expect(
-      screen.getByText("Returning", { selector: "span" }),
-    ).toBeInTheDocument();
-    expect(screen.getByText("New", { selector: "span" })).toBeInTheDocument();
+    expect(screen.getByText("Returning")).toBeInTheDocument();
     expect(await screen.findByText("251")).toBeInTheDocument();
-    expect(
-      screen.getByText("This year, including those who became members"),
-    ).toBeInTheDocument();
   });
 
   it("shows those who became members, and opens their visitor page", async () => {
@@ -102,7 +96,7 @@ describe("visitors page", () => {
     expect(
       await screen.findByRole("link", { name: "Yaa Pokua" }),
     ).toHaveAttribute("href", "/visitors/v3");
-    expect(screen.getByText("12 Oct 2026")).toBeInTheDocument();
+    expect(screen.getByText("Joined")).toBeInTheDocument();
     expect(screen.queryByText("Last visit")).toBeNull();
     const asked = fetchMock.mock.calls.map(
       (c) => new URL((c as [string])[0]).searchParams,

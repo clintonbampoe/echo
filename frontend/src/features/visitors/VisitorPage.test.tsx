@@ -85,6 +85,7 @@ describe("VisitorPage", () => {
     expect(within(numbers).getByText("As a visitor")).toBeInTheDocument();
     expect(within(numbers).getByText("Time to follow up")).toBeInTheDocument();
     expect(screen.getByText("Came with her sister.")).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("tab", { name: "Visits" }));
     expect(
       await screen.findByRole("link", { name: /Sunday Service/ }),
     ).toHaveAttribute("href", "/attendance/sessions/s1");
@@ -93,7 +94,7 @@ describe("VisitorPage", () => {
   it("opens the make member form from the page", async () => {
     show(server(visitor));
     await userEvent.click(
-      await screen.findByRole("button", { name: "Make member" }),
+      await screen.findByRole("button", { name: "Make a member" }),
     );
     expect(
       await screen.findByText("Make Esi Mensah a member"),
@@ -103,8 +104,11 @@ describe("VisitorPage", () => {
   it("deletes the visitor and goes back to the list", async () => {
     show(server(visitor));
     await userEvent.click(
-      await screen.findByRole("button", { name: "Delete" }),
+      await screen.findByRole("button", {
+        name: "More actions for Esi Mensah",
+      }),
     );
+    await userEvent.click(screen.getByRole("menuitem", { name: "Delete" }));
     await userEvent.click(
       await screen.findByRole("button", { name: "Delete visitor" }),
     );

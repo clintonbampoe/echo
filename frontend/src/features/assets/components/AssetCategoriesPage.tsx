@@ -22,7 +22,6 @@ export function AssetCategoriesPage() {
       <BackLink to={paths.assets}>Assets</BackLink>
       <PageHeader
         title="Asset categories"
-        text="Headings to group your assets under."
         action={
           <Button onClick={() => setOpen({ kind: "new" })}>
             <Icon name="plus" size={16} />

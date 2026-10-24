@@ -28,7 +28,6 @@ export function CategoriesPage() {
       <BackLink to={paths.finance}>Finance</BackLink>
       <PageHeader
         title="Categories"
-        text="What your transactions are filed under. Each category is for income or for expenses, and that cannot be changed after it is created."
         action={
           <Button onClick={() => setOpen({ kind: "new" })}>
             <Icon name="plus" size={16} />

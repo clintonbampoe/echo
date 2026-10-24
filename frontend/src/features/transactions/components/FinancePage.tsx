@@ -43,7 +43,6 @@ export function FinancePage() {
     <div className="anim-rise">
       <PageHeader
         title="Finance"
-        text="Money in and money out, apart from tithes."
         action={
           <>
             <LinkButton to={paths.financeCategories} variant="secondary">

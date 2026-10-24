@@ -70,7 +70,6 @@ export function SessionTypesPage() {
       <BackLink to={paths.attendance}>Attendance</BackLink>
       <PageHeader
         title="Session types"
-        text="The kinds of gathering your church holds. Each has a category that groups your reports. A category cannot be changed after it is created."
         action={
           <Button onClick={() => setOpen({ kind: "new" })}>
             <Icon name="plus" size={16} />

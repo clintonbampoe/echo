@@ -38,7 +38,6 @@ export function TithesPage() {
     <div className="anim-rise">
       <PageHeader
         title="Tithes"
-        text="What members have given, and for which month."
         action={
           <Button onClick={() => setRecording(true)}>
             <Icon name="plus" size={16} />

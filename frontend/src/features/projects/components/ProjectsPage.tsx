@@ -41,7 +41,6 @@ export function ProjectsPage() {
     <div className="anim-rise">
       <PageHeader
         title="Projects"
-        text="Fundraising goals, and the money given towards each."
         action={
           <>
             <LinkButton to={paths.projectCategories} variant="secondary">

@@ -8,12 +8,21 @@ type Props = { summary?: VisitorSummary; windowLabel: string };
 export function SummaryStrip({ summary: s, windowLabel }: Props) {
   const n = (value: number | undefined) =>
     s && value !== undefined ? formatNumber(value) : "–";
+  const conversion =
+    s && s.newVisitors > 0
+      ? String(Math.round((s.convertedVisitors / s.newVisitors) * 100))
+      : "–";
   const stats: Stat[] = [
-    { label: "Visitors", value: n(s?.totalVisitors), note: "Not yet members" },
     {
-      label: "Added",
+      label: windowLabel,
       value: n(s?.newVisitors),
-      note: `${windowLabel}, including those who became members`,
+      note: "Added, including those who became members",
+    },
+    {
+      label: "Conversion",
+      value: conversion,
+      unit: conversion === "–" ? undefined : "%",
+      note: "Share who became members",
     },
     {
       label: "Returning",
@@ -21,9 +30,9 @@ export function SummaryStrip({ summary: s, windowLabel }: Props) {
       note: "Came more than once",
     },
     {
-      label: "Became members",
-      value: n(s?.convertedVisitors),
-      note: windowLabel,
+      label: "Not yet members",
+      value: n(s?.totalVisitors),
+      note: "Still visitors",
     },
   ];
   return <StatStrip label="Visitor summary" stats={stats} busy={!s} />;

@@ -22,7 +22,6 @@ export function ProjectCategoriesPage() {
       <BackLink to={paths.projects}>Projects</BackLink>
       <PageHeader
         title="Project categories"
-        text="Headings to group your projects under."
         action={
           <Button onClick={() => setOpen({ kind: "new" })}>
             <Icon name="plus" size={16} />

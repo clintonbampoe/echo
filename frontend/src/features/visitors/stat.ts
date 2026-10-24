@@ -1,6 +1,6 @@
 // The four numbers at the top of a visitor's page. Pure, so the tests need no screen.
 import { daysBetween } from "@/lib/dates";
-import { formatDate, formatNumber } from "@/lib/format";
+import { formatDate, formatDayMonth, formatNumber } from "@/lib/format";
 import type { Stat } from "@/ui";
 import type { Visitor } from "./api";
 
@@ -10,9 +10,9 @@ export const visitsStat = (v: Pick<Visitor, "visitCount">): Stat => ({
   note: "As a visitor",
 });
 
-export const addedStat = (v: Pick<Visitor, "createdAt">): Stat => ({
-  label: "Added",
-  value: formatDate(v.createdAt),
+export const firstVisitStat = (v: Pick<Visitor, "createdAt">): Stat => ({
+  label: "First visit",
+  value: formatDayMonth(v.createdAt),
   note: "First recorded",
 });
 

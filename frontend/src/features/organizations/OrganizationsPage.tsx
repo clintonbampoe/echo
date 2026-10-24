@@ -27,11 +27,7 @@ export function OrganizationsPage() {
 
   return (
     <div className="anim-rise">
-      <PageHeader
-        title="Organizations"
-        text="Ministries, groups and teams, and the people in them."
-        action={add}
-      />
+      <PageHeader title="Organizations" action={add} />
       {none ? (
         <EmptyState
           icon="organizations"

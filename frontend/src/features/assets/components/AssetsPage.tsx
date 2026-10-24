@@ -32,7 +32,6 @@ export function AssetsPage() {
     <div className="anim-rise">
       <PageHeader
         title="Assets"
-        text="What the church owns, and what it is worth."
         action={
           <>
             <LinkButton to={paths.assetCategories} variant="secondary">
