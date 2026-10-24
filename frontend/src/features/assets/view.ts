@@ -1,6 +1,6 @@
 // What the Assets pages show of an asset: the numbers, what was lost and the dates. Pure, so the tests can check it
 // without a screen.
-import { formatDate, formatMoney } from "@/lib/format";
+import { formatDate, formatNumber } from "@/lib/format";
 import type { Stat } from "@/ui";
 import type { Asset, AssetSummary } from "./api";
 
@@ -40,35 +40,38 @@ export function assetStats(
   leavesOutLiquidated: boolean,
 ): Stat[] {
   if (!summary)
-    return ["Assets", "Current value", "Purchase cost", "Lost value"].map(
-      (label, i) => ({ label, value: "–", note: i === 0 ? period : "" }),
+    return ["Current value", "Purchase cost", "Lost value", "Assets"].map(
+      (label, i) => ({ label, value: "–", note: i === 3 ? period : "" }),
     );
   const change = valueChange(
     summary.totalPurchaseCost,
     summary.totalCurrentValue,
   );
   return [
-    { label: "Assets", value: String(summary.totalAssets), note: period },
     {
       label: "Current value",
-      value: formatMoney(summary.totalCurrentValue),
+      value: formatNumber(summary.totalCurrentValue),
+      unit: "GHS",
       note: leavesOutLiquidated
         ? "Not counting liquidated"
         : "Across these assets",
     },
     {
       label: "Purchase cost",
-      value: formatMoney(summary.totalPurchaseCost),
+      value: formatNumber(summary.totalPurchaseCost),
+      unit: "GHS",
       note: "Across these assets",
     },
     {
       label: change.label,
-      value: formatMoney(change.amount),
+      value: formatNumber(change.amount),
+      unit: "GHS",
       note:
         change.label === "Gained value"
           ? "Current value minus cost"
           : "Cost minus current value",
     },
+    { label: "Assets", value: String(summary.totalAssets), note: period },
   ];
 }
 
@@ -78,19 +81,22 @@ export function assetFigures(a: Asset): Stat[] {
   return [
     {
       label: "Current value",
-      value: formatMoney(a.currentValue),
+      value: formatNumber(a.currentValue),
+      unit: "GHS",
       note: "As last entered",
     },
     {
       label: "Purchase cost",
-      value: formatMoney(a.purchaseCost),
+      value: formatNumber(a.purchaseCost),
+      unit: "GHS",
       note: a.purchaseDate
         ? formatDate(a.purchaseDate.slice(0, 10))
         : "No purchase date",
     },
     {
       label: change.label,
-      value: formatMoney(change.amount),
+      value: formatNumber(change.amount),
+      unit: "GHS",
       note: change.note,
     },
   ];

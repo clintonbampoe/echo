@@ -1,7 +1,7 @@
 // What the Finance page shows of its transactions: the numbers, the chart and the signed amount.
 // Pure, so the tests can check it without a screen.
 import { monthNames } from "@/lib/dates";
-import { formatMoney } from "@/lib/format";
+import { formatMoney, formatNumber } from "@/lib/format";
 import type { MonthBar, Stat } from "@/ui";
 import type {
   Transaction,
@@ -27,17 +27,22 @@ export function financeStats(
   return [
     {
       label: "Income",
-      value: s ? formatMoney(s.totalIncome) : "–",
+      value: s ? formatNumber(s.totalIncome) : "–",
+      unit: s ? "GHS" : undefined,
       note: period,
     },
     {
       label: "Expenses",
-      value: s ? formatMoney(s.totalExpenses) : "–",
+      value: s ? formatNumber(s.totalExpenses) : "–",
+      unit: s ? "GHS" : undefined,
       note: period,
     },
     {
       label: "Net",
-      value: s ? signedMoney(s.net, s.net < 0 ? "Expense" : "Income") : "–",
+      value: s
+        ? `${s.net < 0 ? "−" : "+"}${formatNumber(Math.abs(s.net))}`
+        : "–",
+      unit: s ? "GHS" : undefined,
       note: "Income minus expenses",
     },
     {

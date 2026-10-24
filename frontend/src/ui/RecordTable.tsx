@@ -6,6 +6,7 @@ import { Alert } from "./Alert";
 import { Button } from "./Button";
 import { EmptyState } from "./EmptyState";
 import type { IconName } from "./Icon";
+import { RecordLines, type Line } from "./RecordLines";
 import { RecordSkeleton } from "./RecordSkeleton";
 import styles from "./RecordTable.module.css";
 
@@ -53,6 +54,9 @@ type Props<T> = {
   // The ⋯ menu at the end of each row. It needs `rowName`, which names the row for the menu and for screen readers.
   actions?: (row: T) => MenuItem[];
   rowName?: (row: T) => string;
+  // Draws each record as a line of the board's list card (lead, title, line under it, end) instead of a table row.
+  // The columns are then only used for the loading shape. A line has no ⋯ menu: its page or panel has the actions.
+  line?: (row: T) => Line;
   // Keeps the table a fixed height: past about five rows the rows scroll, the heading and footer stay.
   scroll?: boolean;
 };
@@ -88,6 +92,18 @@ export function RecordTable<T>(props: Props<T>) {
       </div>
     );
   }
+  if (props.line)
+    return (
+      <RecordLines
+        label={label}
+        list={list}
+        rowKey={props.rowKey}
+        line={props.line}
+        href={props.href}
+        onOpen={props.onOpen}
+        noun={props.noun}
+      />
+    );
   return <Rows {...props} />;
 }
 

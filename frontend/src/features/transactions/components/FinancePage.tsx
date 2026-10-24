@@ -2,7 +2,7 @@ import { useState } from "react";
 import { todayText } from "@/lib/dates";
 import { paths } from "@/lib/paths";
 import { useUrlFilters } from "@/lib/useUrlFilters";
-import { Button, Icon, LinkButton, Notice, PageHeader, StatStrip } from "@/ui";
+import { LinkButton, Notice, PageHeader, StatStrip } from "@/ui";
 import type { Transaction } from "../api";
 import { financeFilters, periodOptions, toApiFilters } from "../filters";
 import {
@@ -44,16 +44,11 @@ export function FinancePage() {
       <PageHeader
         title="Finance"
         action={
-          <>
-            <LinkButton to={paths.financeCategories} variant="secondary">
-              Categories
-            </LinkButton>
-            <Button onClick={() => setRecording(true)}>
-              <Icon name="plus" size={16} />
-              Record transaction
-            </Button>
-          </>
+          <LinkButton to={paths.financeCategories} variant="secondary">
+            Categories
+          </LinkButton>
         }
+        add={{ label: "Record transaction", onClick: () => setRecording(true) }}
       />
       <div className={styles.notice}>
         <Notice

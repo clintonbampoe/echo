@@ -1,0 +1,29 @@
+.tile {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--fill);
+  color: var(--text-2);
+}
+.date {
+  width: 44px;
+  height: 44px;
+  flex-direction: column;
+  border-radius: 13px;
+  color: var(--text);
+}
+.month {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: var(--text-3);
+}
+.day {
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.1;
+}

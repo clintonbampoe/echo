@@ -60,7 +60,10 @@ export function EventsPage({ tab }: { tab: EventTab }) {
 
   return (
     <div className="anim-rise">
-      <PageHeader title="Events" action={add} />
+      <PageHeader
+        title="Events"
+        add={{ label: "New event", onClick: () => setAdding(true) }}
+      />
       {none ? (
         <EmptyState icon="calendar" title="Plan your first event" action={add}>
           Events are one-off gatherings like a convention or concert. Pick the

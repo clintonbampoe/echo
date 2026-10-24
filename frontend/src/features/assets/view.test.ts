@@ -66,13 +66,13 @@ describe("asset view", () => {
       true,
     );
     expect(stats.map((s) => s.value)).toEqual([
+      "177,900",
+      "325,200",
+      "147,300",
       "5",
-      "GH₵ 177,900",
-      "GH₵ 325,200",
-      "GH₵ 147,300",
     ]);
-    expect(stats[0]?.note).toBe("All time");
-    expect(stats[1]?.note).toBe("Not counting liquidated");
+    expect(stats[3]?.note).toBe("All time");
+    expect(stats[0]?.note).toBe("Not counting liquidated");
   });
 
   it("does not say liquidated assets are left out when the list is of them", () => {
@@ -86,7 +86,7 @@ describe("asset view", () => {
       "All time",
       false,
     );
-    expect(stats[1]?.note).toBe("Across these assets");
+    expect(stats[0]?.note).toBe("Across these assets");
   });
 
   it("calls a total that is worth more than it cost a gain", () => {
@@ -100,18 +100,33 @@ describe("asset view", () => {
       "All time",
       true,
     );
-    expect(stats[3]).toMatchObject({
+    expect(stats[2]).toMatchObject({
       label: "Gained value",
-      value: "GH₵ 50,000",
+      value: "50,000",
       note: "Current value minus cost",
     });
   });
 
   it("gives the three numbers of one asset", () => {
     expect(assetFigures(asset())).toEqual([
-      { label: "Current value", value: "GH₵ 31,500", note: "As last entered" },
-      { label: "Purchase cost", value: "GH₵ 42,000", note: "12 Mar 2023" },
-      { label: "Lost value", value: "GH₵ 10,500", note: "25% below cost" },
+      {
+        label: "Current value",
+        value: "31,500",
+        unit: "GHS",
+        note: "As last entered",
+      },
+      {
+        label: "Purchase cost",
+        value: "42,000",
+        unit: "GHS",
+        note: "12 Mar 2023",
+      },
+      {
+        label: "Lost value",
+        value: "10,500",
+        unit: "GHS",
+        note: "25% below cost",
+      },
     ]);
     expect(assetFigures(asset({ purchaseDate: null }))[1]?.note).toBe(
       "No purchase date",

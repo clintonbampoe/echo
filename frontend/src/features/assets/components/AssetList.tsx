@@ -1,12 +1,15 @@
-import { formatMoney } from "@/lib/format";
+import { formatMoney, formatMonth, formatNumber } from "@/lib/format";
 import type { Paged } from "@/lib/paged";
 import { paths } from "@/lib/paths";
-import { Chip, RecordTable } from "@/ui";
+import { Chip, IconTile, RecordTable } from "@/ui";
 import type { Asset } from "../api";
 import { statusLabel, statusTone } from "../labels";
 import { purchased } from "../view";
 import type { AssetStart } from "./AssetDialogs";
 import styles from "./AssetList.module.css";
+
+const purchasedMonth = (a: Asset) =>
+  a.purchaseDate ? formatMonth(a.purchaseDate.slice(0, 10)) : "";
 
 type Props = {
   list: Paged<Asset>;
@@ -49,6 +52,19 @@ export function AssetList({ list, filtered, onAction }: Props) {
       rowKey={(a) => a.id}
       large
       href={(a) => paths.asset(a.id)}
+      line={(a) => ({
+        lead: <IconTile icon="assets" />,
+        title: a.name,
+        sub: a.categoryName,
+        end: (
+          <>
+            <strong className={styles.value}>
+              {formatNumber(a.currentValue)}
+            </strong>
+            <span className={styles.when}>{purchasedMonth(a)}</span>
+          </>
+        ),
+      })}
       rowName={(a) => a.name}
       actions={(a) => [
         { label: "Edit asset", onSelect: () => onAction(a, "edit") },

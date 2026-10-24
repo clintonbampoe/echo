@@ -38,9 +38,9 @@ describe("the four numbers", () => {
   it("names the period under income and expenses, and the busiest category", () => {
     const stats = financeStats(summary, "This week");
     expect(stats.map((s) => s.value)).toEqual([
-      "GH₵ 6,850",
-      "GH₵ 2,140",
-      "+GH₵ 4,710",
+      "6,850",
+      "2,140",
+      "+4,710",
       "Offerings",
     ]);
     expect(stats[0]?.note).toBe("This week");

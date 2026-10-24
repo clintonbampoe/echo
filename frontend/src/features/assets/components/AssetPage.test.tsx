@@ -70,11 +70,11 @@ describe("asset page", () => {
     ).toBeInTheDocument();
     expect(screen.getAllByText("In use").length).toBeGreaterThan(0);
     const figures = screen.getByRole("region", { name: "Asset figures" });
-    expect(within(figures).getByText("GH₵ 31,500")).toBeInTheDocument();
+    expect(within(figures).getByText("31,500")).toBeInTheDocument();
     expect(within(figures).getByText("As last entered")).toBeInTheDocument();
-    expect(within(figures).getByText("GH₵ 42,000")).toBeInTheDocument();
+    expect(within(figures).getByText("42,000")).toBeInTheDocument();
     expect(within(figures).getByText("12 Mar 2023")).toBeInTheDocument();
-    expect(within(figures).getByText("GH₵ 10,500")).toBeInTheDocument();
+    expect(within(figures).getByText("10,500")).toBeInTheDocument();
     expect(within(figures).getByText("25% below cost")).toBeInTheDocument();
     const details = screen.getByRole("region", { name: "Asset details" });
     expect(within(details).getByText("BX32-88214")).toBeInTheDocument();

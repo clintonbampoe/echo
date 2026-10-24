@@ -21,3 +21,10 @@
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
+.value {
+  color: var(--text);
+}
+.when {
+  min-width: 72px;
+  text-align: right;
+}

@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { paths } from "@/lib/paths";
-import { Button, Icon, LinkButton, PageHeader, Tabs } from "@/ui";
+import { LinkButton, PageHeader, Tabs } from "@/ui";
 import styles from "./AttendanceHeader.module.css";
 
 export type AttendanceTab = "day" | "records";
@@ -25,16 +25,11 @@ export function AttendanceHeader({
       <PageHeader
         title="Attendance"
         action={
-          <>
-            <LinkButton to={paths.sessionTypes} variant="secondary">
-              Session types
-            </LinkButton>
-            <Button onClick={onNew}>
-              <Icon name="plus" size={16} />
-              New session
-            </Button>
-          </>
+          <LinkButton to={paths.sessionTypes} variant="secondary">
+            Session types
+          </LinkButton>
         }
+        add={{ label: "New session", onClick: onNew }}
       />
       <div className={styles.tabs}>
         <Tabs

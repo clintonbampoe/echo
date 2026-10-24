@@ -1,4 +1,4 @@
-import { formatDate } from "@/lib/format";
+import { formatDate, formatDayTime, formatNumber } from "@/lib/format";
 import type { Paged } from "@/lib/paged";
 import { Chip, RecordTable } from "@/ui";
 import type { Transaction } from "../api";
@@ -6,6 +6,10 @@ import { typeLabel, typeTone } from "../labels";
 import { transactionAmount } from "../view";
 import styles from "./TransactionList.module.css";
 import type { TransactionStart } from "./TransactionDialogs";
+
+const formatWeekdayDay = (day: string) => formatDayTime(day);
+const signedAmount = (t: Transaction) =>
+  `${t.transactionType === "Income" ? "+" : "−"}${formatNumber(Math.abs(t.amount))}`;
 
 type Props = {
   list: Paged<Transaction>;
@@ -24,6 +28,17 @@ export function TransactionList({ list, filtered, period, onOpen }: Props) {
       rowKey={(t) => t.id}
       large
       onOpen={(t) => onOpen(t, "view")}
+      line={(t) => ({
+        title: t.description || t.categoryName,
+        sub: `${t.categoryName} · ${formatWeekdayDay(t.transactionDate)}`,
+        end: (
+          <strong
+            className={t.transactionType === "Income" ? styles.in : styles.out}
+          >
+            {signedAmount(t)}
+          </strong>
+        ),
+      })}
       rowName={(t) => t.description || t.categoryName}
       actions={(t) => [
         { label: "Edit transaction", onSelect: () => onOpen(t, "edit") },

@@ -114,8 +114,8 @@ describe("finance page", () => {
     const numbers = await screen.findByRole("region", {
       name: "Finance summary",
     });
-    expect(within(numbers).getByText("GH₵ 6,850")).toBeInTheDocument();
-    expect(within(numbers).getByText("+GH₵ 4,710")).toBeInTheDocument();
+    expect(within(numbers).getByText("6,850")).toBeInTheDocument();
+    expect(within(numbers).getByText("+4,710")).toBeInTheDocument();
     expect(within(numbers).getAllByText("This week")).toHaveLength(2);
     expect(
       await screen.findByRole("img", {
@@ -123,8 +123,8 @@ describe("finance page", () => {
       }),
     ).toBeInTheDocument();
     const table = await screen.findByRole("list", { name: "Transactions" });
-    expect(within(table).getByText("−GH₵ 1,240")).toBeInTheDocument();
-    expect(within(table).getByText("+GH₵ 6,850")).toBeInTheDocument();
+    expect(within(table).getByText("−1,240")).toBeInTheDocument();
+    expect(within(table).getByText("+6,850")).toBeInTheDocument();
     expect(
       within(table).getByText("ECG electricity bill, September"),
     ).toBeInTheDocument();
@@ -314,7 +314,9 @@ describe("finance page", () => {
       const user = userEvent.setup();
       open();
       await user.click(
-        await screen.findByRole("button", { name: "13 Oct 2026" }),
+        await screen.findByRole("button", {
+          name: "ECG electricity bill, September",
+        }),
       );
       const panel = await screen.findByRole("dialog");
       expect(within(panel).getByText("−GH₵ 1,240")).toBeInTheDocument();
@@ -347,16 +349,16 @@ describe("finance page", () => {
       });
     });
 
-    it("deletes from the ⋯ menu after asking", async () => {
+    it("deletes from the transaction after asking", async () => {
       const user = userEvent.setup();
       open();
       await user.click(
         await screen.findByRole("button", {
-          name: "Actions for ECG electricity bill, September",
+          name: "ECG electricity bill, September",
         }),
       );
       await user.click(
-        await screen.findByRole("menuitem", { name: "Delete transaction" }),
+        await screen.findByRole("button", { name: "Delete transaction" }),
       );
       const ask = await screen.findByRole("alertdialog");
       expect(

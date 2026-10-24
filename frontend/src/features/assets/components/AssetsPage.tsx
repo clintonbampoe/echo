@@ -2,7 +2,7 @@ import { useState } from "react";
 import { todayText } from "@/lib/dates";
 import { paths } from "@/lib/paths";
 import { useUrlFilters } from "@/lib/useUrlFilters";
-import { Button, Icon, LinkButton, PageHeader, StatStrip } from "@/ui";
+import { LinkButton, PageHeader, StatStrip } from "@/ui";
 import type { Asset } from "../api";
 import { assetFilters, periodOptions, toApiFilters } from "../filters";
 import { useAssetCategories, useAssets, useAssetSummary } from "../hooks";
@@ -33,16 +33,11 @@ export function AssetsPage() {
       <PageHeader
         title="Assets"
         action={
-          <>
-            <LinkButton to={paths.assetCategories} variant="secondary">
-              Categories
-            </LinkButton>
-            <Button onClick={() => setCreating(true)}>
-              <Icon name="plus" size={16} />
-              New asset
-            </Button>
-          </>
+          <LinkButton to={paths.assetCategories} variant="secondary">
+            Categories
+          </LinkButton>
         }
+        add={{ label: "New asset", onClick: () => setCreating(true) }}
       />
       <StatStrip
         label="Assets summary"

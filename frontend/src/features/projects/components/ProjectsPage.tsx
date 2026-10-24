@@ -2,7 +2,7 @@ import { useState } from "react";
 import { todayText } from "@/lib/dates";
 import { paths } from "@/lib/paths";
 import { useUrlFilters } from "@/lib/useUrlFilters";
-import { Button, Icon, LinkButton, PageHeader, StatStrip } from "@/ui";
+import { LinkButton, PageHeader, StatStrip } from "@/ui";
 import type { Project } from "../api";
 import { periodOptions, projectFilters, toApiFilters } from "../filters";
 import {
@@ -42,16 +42,11 @@ export function ProjectsPage() {
       <PageHeader
         title="Projects"
         action={
-          <>
-            <LinkButton to={paths.projectCategories} variant="secondary">
-              Categories
-            </LinkButton>
-            <Button onClick={() => setCreating(true)}>
-              <Icon name="plus" size={16} />
-              New project
-            </Button>
-          </>
+          <LinkButton to={paths.projectCategories} variant="secondary">
+            Categories
+          </LinkButton>
         }
+        add={{ label: "New project", onClick: () => setCreating(true) }}
       />
       <StatStrip
         label="Projects summary"
