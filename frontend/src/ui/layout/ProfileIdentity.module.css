@@ -1,5 +1,5 @@
 .identity {
-  padding: 20px;
+  padding: var(--s-20);
   background: var(--card-bg);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
@@ -9,14 +9,14 @@
 .header {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--s-16);
 }
 .who {
   min-width: 0;
   flex: 1;
 }
 .name {
-  font-size: 20px;
+  font-size: var(--type-title2);
   line-height: 1.2;
   font-weight: 600;
   letter-spacing: -0.02em;
@@ -26,16 +26,16 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 6px 10px;
+  gap: var(--s-6) var(--s-12);
   margin-top: 6px;
-  font-size: 14px;
+  font-size: var(--type-body);
   color: var(--text-2);
 }
 
 .actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--s-8);
   margin-top: 16px;
 }
 .actions > * {

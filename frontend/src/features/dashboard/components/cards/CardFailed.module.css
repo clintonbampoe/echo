@@ -4,7 +4,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: var(--s-12);
   color: var(--text-2);
 }
 .failed p {
@@ -12,8 +12,8 @@
 }
 .retry {
   height: 32px;
-  padding: 0 14px;
-  font-size: 13px;
+  padding: 0 var(--s-16);
+  font-size: var(--type-footnote);
   font-weight: 500;
   background: transparent;
   border: 1px solid var(--line-2);

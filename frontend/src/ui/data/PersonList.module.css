@@ -11,8 +11,8 @@
   display: grid;
   grid-template-columns: var(--cols);
   align-items: center;
-  gap: 16px;
-  padding: 0 22px;
+  gap: var(--s-16);
+  padding: 0 var(--s-24);
 }
 .list {
   margin: 0;
@@ -22,7 +22,7 @@
 .row {
   position: relative;
   min-height: calc(66px * var(--density, 1));
-  padding-block: 10px;
+  padding-block: var(--s-12);
   border-top: 1px solid var(--line);
   cursor: pointer;
   transition:
@@ -36,7 +36,7 @@
 @media (min-width: 901px) {
   .row {
     margin-inline: 8px;
-    padding-inline: 14px;
+    padding-inline: var(--s-16);
     border-top: 0;
     border-radius: var(--radius);
   }
@@ -76,14 +76,14 @@
 .who {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--s-12);
   min-width: 0;
 }
 .names {
   min-width: 0;
 }
 .name {
-  font-size: 15px;
+  font-size: var(--type-callout);
   font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -117,7 +117,7 @@
 
 .detail {
   overflow: hidden;
-  font-size: 13px;
+  font-size: var(--type-footnote);
   color: var(--text-3);
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -128,7 +128,7 @@
 .cell {
   min-width: 0;
   overflow: hidden;
-  font-size: 14px;
+  font-size: var(--type-body);
   color: var(--text-3);
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -155,12 +155,12 @@
   .list {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
-    gap: 10px;
+    gap: var(--s-12);
   }
   .row {
     grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-    gap: 10px 16px;
-    padding: 14px 16px;
+    gap: var(--s-12) var(--s-16);
+    padding: var(--s-16) var(--s-16);
     background: var(--card-bg);
     border: 1px solid var(--line);
     border-radius: var(--radius-lg);
@@ -177,7 +177,7 @@
   }
   .who {
     grid-column: 1 / -1;
-    padding-right: 36px;
+    padding-right: var(--s-40);
   }
   .actions {
     position: absolute;
@@ -200,7 +200,7 @@
     content: attr(data-label);
     display: block;
     margin-bottom: 2px;
-    font-size: 12px;
+    font-size: var(--type-caption);
     color: var(--text-3);
   }
 }
@@ -208,9 +208,9 @@
 .skeletonRow {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--s-12);
   min-height: calc(64px * var(--density, 1));
-  padding: 10px 20px;
+  padding: var(--s-12) var(--s-20);
   border-top: 1px solid var(--line);
 }
 .skeletonRow:first-child {
@@ -251,9 +251,9 @@
     grid-auto-flow: column;
     grid-auto-columns: auto;
     align-items: center;
-    gap: 0 10px;
+    gap: 0 var(--s-12);
     min-height: calc(66px * var(--density, 1));
-    padding: 0 16px;
+    padding: 0 var(--s-16);
     background: transparent;
     border: 0;
     border-top: 1px solid var(--line);

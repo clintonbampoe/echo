@@ -1,7 +1,7 @@
 .stack {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--s-16);
 }
 .card {
   overflow: hidden;
@@ -11,30 +11,30 @@
   box-shadow: var(--shadow);
 }
 .title {
-  padding: 22px 24px 0;
-  font-size: 16px;
+  padding: var(--s-24) var(--s-24) 0;
+  font-size: var(--type-headline);
   font-weight: 600;
   letter-spacing: -0.015em;
 }
 .sub {
-  padding: 2px 24px 0;
-  font-size: 13px;
+  padding: var(--s-2) var(--s-24) 0;
+  font-size: var(--type-footnote);
   color: var(--text-3);
 }
 .chart {
-  padding: 24px;
+  padding: var(--s-24);
 }
 .list {
   margin: 0;
-  padding: 0 8px 8px;
+  padding: 0 var(--s-8) var(--s-8);
   list-style: none;
 }
 .row {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--s-12);
   min-height: 52px;
-  padding: 0 16px;
+  padding: 0 var(--s-16);
   border-radius: var(--radius);
   transition: background-color var(--t-fast) var(--ease-soft);
 }
@@ -50,7 +50,7 @@
 }
 .drop {
   flex: 1;
-  font-size: 13px;
+  font-size: var(--type-footnote);
   color: var(--text-3);
 }
 .value {

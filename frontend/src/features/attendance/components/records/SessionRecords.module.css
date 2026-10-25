@@ -1,5 +1,5 @@
 .count {
-  font-size: 18px;
+  font-size: var(--type-title3);
   font-weight: 600;
   color: var(--text);
 }

@@ -1,6 +1,6 @@
 .track {
   margin-top: 16px;
-  padding: 16px;
+  padding: var(--s-16);
   background: var(--card-bg);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
@@ -10,14 +10,14 @@
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--s-12);
 }
 .title {
-  font-size: 14px;
+  font-size: var(--type-body);
   font-weight: 600;
 }
 .count {
-  font-size: 13px;
+  font-size: var(--type-footnote);
   color: var(--text-2);
 }
 
@@ -166,14 +166,14 @@
 .caption {
   display: block;
   margin-top: 6px;
-  font-size: 12px;
+  font-size: var(--type-caption);
   color: var(--text-3);
 }
 .ends {
   display: flex;
   justify-content: space-between;
   margin-top: 8px;
-  font-size: 12px;
+  font-size: var(--type-caption);
   color: var(--text-3);
 }
 

@@ -5,10 +5,10 @@
 .pill {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--s-8);
   height: 36px;
-  padding: 0 12px;
-  font-size: 14px;
+  padding: 0 var(--s-12);
+  font-size: var(--type-body);
   font-weight: 500;
   white-space: nowrap;
   background: var(--surface);
@@ -34,15 +34,15 @@
 .list {
   display: flex;
   flex-direction: column;
-  padding: 6px;
+  padding: var(--s-6);
 }
 .option {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--s-12);
   height: 38px;
-  padding: 0 8px;
-  font-size: 14px;
+  padding: 0 var(--s-8);
+  font-size: var(--type-body);
   color: var(--text);
   text-align: left;
   background: transparent;
@@ -69,7 +69,7 @@
 }
 .when {
   margin-left: auto;
-  font-size: 12px;
+  font-size: var(--type-caption);
   font-weight: 400;
   color: var(--text-3);
 }
@@ -81,12 +81,12 @@
   }
   .option {
     height: 52px;
-    padding: 0 4px;
-    font-size: 16px;
+    padding: 0 var(--s-4);
+    font-size: var(--type-headline);
     border-radius: 0;
   }
   .when {
-    font-size: 14px;
+    font-size: var(--type-body);
   }
 }
 

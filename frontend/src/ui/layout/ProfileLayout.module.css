@@ -1,9 +1,9 @@
 .back {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--s-4);
   margin-bottom: -10px;
-  font-size: 14px;
+  font-size: var(--type-body);
   color: var(--text-3);
   text-decoration: none;
 }
@@ -18,21 +18,21 @@
   display: grid;
   grid-template-columns: 340px minmax(0, 1fr);
   align-items: start;
-  gap: 24px;
+  gap: var(--s-24);
 }
 .main {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 24px;
+  gap: var(--s-24);
   min-width: 0;
 }
 .stack {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: var(--s-20);
 }
 .stack .main {
-  gap: 20px;
+  gap: var(--s-20);
 }
 .main > :first-child {
   margin-top: 0;

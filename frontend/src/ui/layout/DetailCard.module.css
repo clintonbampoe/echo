@@ -5,7 +5,7 @@
   box-shadow: var(--shadow);
 }
 .group {
-  padding: 20px 22px 6px;
+  padding: var(--s-20) var(--s-24) var(--s-6);
   border-top: 1px solid var(--line);
 }
 .group:first-child {
@@ -13,7 +13,7 @@
 }
 .title {
   margin-bottom: 8px;
-  font-size: 15px;
+  font-size: var(--type-callout);
   font-weight: 600;
   color: var(--text);
 }
@@ -23,10 +23,10 @@
 .row {
   display: flex;
   justify-content: space-between;
-  gap: 16px;
+  gap: var(--s-16);
   align-items: center;
   min-height: calc(52px * var(--density, 1));
-  font-size: 14px;
+  font-size: var(--type-body);
   font-weight: 500;
   border-top: 1px solid var(--line);
 }

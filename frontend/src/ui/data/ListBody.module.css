@@ -2,8 +2,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 48px 16px;
+  gap: var(--s-8);
+  padding: var(--s-48) var(--s-16);
   text-align: center;
   color: var(--text-3);
 }
@@ -14,9 +14,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
-  padding: 20px 0 4px;
-  font-size: 13px;
+  gap: var(--s-12);
+  padding: var(--s-20) 0 var(--s-4);
+  font-size: var(--type-footnote);
   color: var(--text-3);
 }
 
@@ -36,16 +36,16 @@
   align-items: center;
   justify-content: space-between;
   height: 56px;
-  padding: 0 22px;
+  padding: 0 var(--s-24);
   border-top: 1px solid var(--line);
-  font-size: 13px;
+  font-size: var(--type-footnote);
   color: var(--text-3);
 }
 .more {
-  padding: 8px 0 8px 12px;
+  padding: var(--s-8) 0 var(--s-8) var(--s-12);
   background: none;
   border: 0;
-  font-size: 14px;
+  font-size: var(--type-body);
   font-weight: 500;
   color: var(--text);
 }
@@ -55,5 +55,5 @@
 .more:focus-visible {
   outline: 2px solid var(--text);
   outline-offset: 2px;
-  border-radius: 6px;
+  border-radius: var(--radius-xs);
 }

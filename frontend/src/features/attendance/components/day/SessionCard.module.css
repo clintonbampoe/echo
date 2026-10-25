@@ -7,22 +7,22 @@
 }
 .help {
   margin: 0;
-  padding: 0 22px 10px;
-  font-size: 13px;
+  padding: 0 var(--s-24) var(--s-12);
+  font-size: var(--type-footnote);
   color: var(--text-3);
 }
 .list {
   margin: 0;
-  padding: 0 0 8px;
+  padding: 0 0 var(--s-8);
   list-style: none;
 }
 .row {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: var(--s-16);
   min-height: 72px;
   margin-inline: 8px;
-  padding: 8px 14px;
+  padding: var(--s-8) var(--s-16);
 }
 .row + .row {
   border-top: 1px solid var(--line);
@@ -52,13 +52,13 @@
   color: var(--text);
 }
 .clock {
-  font-size: 16px;
+  font-size: var(--type-headline);
   font-weight: 600;
   line-height: 1.1;
   font-variant-numeric: tabular-nums;
 }
 .period {
-  font-size: 11px;
+  font-size: var(--type-caption);
   font-weight: 500;
   letter-spacing: 0.04em;
   text-transform: uppercase;
@@ -73,9 +73,9 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  gap: var(--s-8);
   margin: 0;
-  font-size: 15px;
+  font-size: var(--type-callout);
   font-weight: 600;
 }
 .link {
@@ -94,7 +94,7 @@
 }
 .topic {
   margin: 2px 0 0;
-  font-size: 13px;
+  font-size: var(--type-footnote);
   color: var(--text-3);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -106,13 +106,13 @@
 }
 .number {
   display: block;
-  font-size: 22px;
+  font-size: var(--type-title1);
   font-weight: 600;
   line-height: 1;
   font-variant-numeric: tabular-nums;
 }
 .unit {
-  font-size: 12px;
+  font-size: var(--type-caption);
   color: var(--text-3);
 }
 
@@ -121,7 +121,7 @@
 @media (max-width: 700px) {
   .row {
     margin-inline: 4px;
-    padding-inline: 10px;
+    padding-inline: var(--s-12);
   }
   .help,
   .extra,

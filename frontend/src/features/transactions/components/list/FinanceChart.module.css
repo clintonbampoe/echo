@@ -1,24 +1,24 @@
 .body {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--s-16);
 }
 .line {
   margin: 0;
-  font-size: 13px;
+  font-size: var(--type-footnote);
   color: var(--text-3);
 }
 .legend {
   display: flex;
-  gap: 14px;
+  gap: var(--s-16);
   margin: 0;
-  font-size: 13px;
+  font-size: var(--type-footnote);
   color: var(--text-2);
 }
 .key {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--s-6);
 }
 .swatch {
   width: 9px;

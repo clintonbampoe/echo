@@ -1,10 +1,10 @@
 /* The form sits in a sheet, so its fields are a little smaller than the sign-up form's. */
 .fields {
   --control-height: 48px;
-  --control-gap: 6px;
+  --control-gap: var(--s-6);
   --control-font: 14px;
   display: grid;
-  gap: 20px;
+  gap: var(--s-20);
 }
 
 .full {
@@ -13,13 +13,13 @@
 }
 .label {
   margin: 0 0 var(--control-gap);
-  font-size: 13px;
+  font-size: var(--type-footnote);
   font-weight: 500;
   color: var(--text-2);
 }
 .hint {
   margin: 6px 0 0;
-  font-size: 13px;
+  font-size: var(--type-footnote);
   color: var(--text-3);
 }
 
@@ -27,7 +27,7 @@
 @media (max-width: 900px) {
   .fields {
     --control-height: 48px;
-    --control-gap: 8px;
+    --control-gap: var(--s-8);
     --control-font: 16px;
   }
 }

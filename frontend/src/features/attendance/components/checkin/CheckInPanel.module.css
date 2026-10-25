@@ -1,5 +1,5 @@
 .panel {
-  padding: 20px 24px;
+  padding: var(--s-20) var(--s-24);
   background: var(--card-bg);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
@@ -9,35 +9,35 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--s-12);
   margin-bottom: 12px;
 }
 .title {
   margin: 0;
-  font-size: 15px;
+  font-size: var(--type-callout);
   font-weight: 600;
 }
 .hint {
   margin: 8px 0 0;
-  font-size: 13px;
+  font-size: var(--type-footnote);
   color: var(--text-3);
 }
 .tail {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 4px 10px;
+  gap: var(--s-4) var(--s-12);
   margin: 16px 0 0;
-  padding-top: 12px;
+  padding-top: var(--s-12);
   border-top: 1px solid var(--line);
-  font-size: 13px;
+  font-size: var(--type-footnote);
   color: var(--text-3);
 }
 .undo {
   padding: 0;
   border: 0;
   background: none;
-  font-size: 13px;
+  font-size: var(--type-footnote);
   font-weight: 500;
   color: var(--text);
   text-decoration: underline;
@@ -49,7 +49,7 @@
 }
 .problem {
   margin: 10px 0 0;
-  font-size: 13px;
+  font-size: var(--type-footnote);
   color: var(--neg);
 }
 

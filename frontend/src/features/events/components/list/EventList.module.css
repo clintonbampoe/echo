@@ -18,7 +18,7 @@
 .item {
   display: flex;
   align-items: center;
-  padding-right: 14px;
+  padding-right: var(--s-16);
 }
 /* The row is a glass tile on hover (.liquid-row); the card clips, so the tile stays inside its edges. */
 .item:global(.liquid-row)::before {
@@ -41,8 +41,8 @@
   min-width: 0;
   grid-template-columns: auto minmax(0, 1fr) minmax(0, 260px);
   align-items: center;
-  gap: 20px;
-  padding: 12px 8px 12px 22px;
+  gap: var(--s-20);
+  padding: var(--s-12) var(--s-8) var(--s-12) var(--s-24);
   color: inherit;
   text-decoration: none;
 }
@@ -60,31 +60,31 @@
 .main {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--s-2);
   min-width: 0;
 }
 .name {
   min-width: 0;
   overflow-wrap: anywhere;
-  font-size: 15px;
+  font-size: var(--type-callout);
   font-weight: 500;
 }
 .when {
-  font-size: 13px;
+  font-size: var(--type-footnote);
   color: var(--text-3);
 }
 
 .fill {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--s-8);
   min-width: 0;
-  font-size: 14px;
+  font-size: var(--type-body);
 }
 .nums {
   display: flex;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--s-12);
   white-space: nowrap;
 }
 .nums strong {
@@ -99,31 +99,31 @@
   height: 6px;
   overflow: hidden;
   background: var(--sel);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
 }
 .bar {
   display: block;
   height: 100%;
   background: var(--text);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   transform-origin: left;
   animation: echoGrowX 700ms var(--grow) backwards;
 }
 
 .value {
   display: flex;
-  gap: 4px;
+  gap: var(--s-4);
 }
 
 /* A phone: the bar goes, and the room sits under the share. */
 @media (max-width: 560px) {
   .row {
     grid-template-columns: auto minmax(0, 1fr) auto;
-    gap: 14px;
-    padding: 14px 4px 14px 16px;
+    gap: var(--s-16);
+    padding: var(--s-16) var(--s-4) var(--s-16) var(--s-16);
   }
   .item {
-    padding-right: 8px;
+    padding-right: var(--s-8);
   }
   .value {
     flex-direction: column;
@@ -135,7 +135,7 @@
     display: none;
   }
   .room {
-    font-size: 13px;
+    font-size: var(--type-footnote);
     font-weight: 400;
     color: var(--text-3);
   }

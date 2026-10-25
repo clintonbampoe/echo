@@ -6,20 +6,20 @@
   z-index: 90;
   display: flex;
   justify-content: center;
-  padding: 0 16px;
+  padding: 0 var(--s-16);
   pointer-events: none;
 }
 .toast {
   display: inline-flex;
   align-items: center;
-  gap: 14px;
+  gap: var(--s-16);
   min-height: 48px;
-  padding: 0 8px 0 20px;
+  padding: 0 var(--s-8) 0 var(--s-20);
   background: var(--text);
   color: var(--bg);
   border-radius: var(--radius-pill);
   box-shadow: 0 14px 36px -10px rgb(10 10 11 / 40%);
-  font-size: 14px;
+  font-size: var(--type-body);
   font-weight: 500;
   pointer-events: auto;
   animation: in var(--t-enter) var(--ease-spring) both;
@@ -28,16 +28,16 @@
   animation: out 200ms ease-in both;
 }
 .toast:not(:has(.action)) {
-  padding-right: 20px;
+  padding-right: var(--s-20);
 }
 .action {
   height: 32px;
-  padding: 0 14px;
+  padding: 0 var(--s-16);
   background: color-mix(in srgb, var(--bg) 18%, transparent);
   border: 0;
   border-radius: var(--radius-pill);
   color: inherit;
-  font-size: 13px;
+  font-size: var(--type-footnote);
   font-weight: 600;
 }
 .action {

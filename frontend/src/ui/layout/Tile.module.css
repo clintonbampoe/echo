@@ -5,7 +5,7 @@
   justify-content: center;
   width: 40px;
   height: 40px;
-  border-radius: 12px;
+  border-radius: var(--radius);
   background: var(--fill);
   color: var(--text-2);
 }
@@ -13,17 +13,17 @@
   width: 44px;
   height: 44px;
   flex-direction: column;
-  border-radius: 13px;
+  border-radius: var(--radius-field);
   color: var(--text);
 }
 .month {
-  font-size: 10px;
+  font-size: var(--type-caption);
   font-weight: 600;
   letter-spacing: 0.05em;
   color: var(--text-3);
 }
 .day {
-  font-size: 17px;
+  font-size: var(--type-headline);
   font-weight: 600;
   line-height: 1.1;
 }

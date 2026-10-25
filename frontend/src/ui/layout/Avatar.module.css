@@ -10,7 +10,7 @@
   line-height: 1;
 }
 .square {
-  border-radius: 9px;
+  border-radius: var(--radius-sm);
   background: var(--accent);
   color: var(--on-accent);
 }

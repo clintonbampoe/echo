@@ -1,18 +1,18 @@
 .dist {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: var(--s-20);
 }
 /* The bar is slim; a hovered segment grows to nearly twice its height from its centre. */
 .bar {
   display: flex;
-  gap: 3px;
+  gap: var(--s-4);
   height: 8px;
 }
 .seg {
   position: relative;
   min-width: 8px;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   cursor: pointer;
   transform-origin: center center;
   transition:
@@ -45,7 +45,7 @@
 .legend {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--s-2);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -53,16 +53,16 @@
 .row {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--s-12);
   width: 100%;
   min-height: 40px;
-  padding: 0 10px;
+  padding: 0 var(--s-12);
   background: transparent;
   border: 0;
   border-radius: var(--radius-option);
   color: inherit;
   font: inherit;
-  font-size: 14px;
+  font-size: var(--type-body);
   text-align: left;
   transition:
     background-color var(--t-fast) var(--ease-soft),
@@ -95,7 +95,7 @@ a.row:focus-visible {
 }
 .share {
   min-width: 40px;
-  font-size: 13px;
+  font-size: var(--type-footnote);
   text-align: right;
   color: var(--text-3);
   font-variant-numeric: tabular-nums;
@@ -124,11 +124,11 @@ a.row:focus-visible {
     bottom: calc(100% + 9px);
     left: 50%;
     z-index: 5;
-    padding: 6px 11px;
+    padding: var(--s-6) var(--s-12);
     background: rgb(10 10 11 / 86%);
-    border-radius: 999px;
+    border-radius: var(--radius-pill);
     color: #fff;
-    font-size: 12px;
+    font-size: var(--type-caption);
     font-weight: 500;
     pointer-events: none;
     transform: translateX(-50%) scaleY(0.53);
@@ -245,7 +245,7 @@ a.row:focus-visible {
 
 .empty {
   margin: 0;
-  font-size: 14px;
+  font-size: var(--type-body);
   color: var(--text-3);
 }
 

@@ -6,7 +6,7 @@
 }
 .name {
   margin: 0;
-  font-size: 14px;
+  font-size: var(--type-body);
   font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -14,20 +14,20 @@
 }
 .phone {
   margin: 0;
-  font-size: 13px;
+  font-size: var(--type-footnote);
   color: var(--text-3);
 }
 .picked {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
+  gap: var(--s-12);
+  padding: var(--s-12) var(--s-12);
   border: 1px solid var(--line-2);
   border-radius: var(--radius);
   background: var(--surface);
 }
 @media (max-width: 900px) {
   .name {
-    font-size: 16px;
+    font-size: var(--type-headline);
   }
 }

@@ -3,19 +3,19 @@
 }
 .heading {
   margin-bottom: 12px;
-  font-size: 12px;
+  font-size: var(--type-caption);
   font-weight: 500;
   color: var(--text-3);
 }
 .grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
+  gap: var(--s-16);
 }
 
 @media (max-width: 900px) {
   .grid {
-    gap: 16px 20px;
+    gap: var(--s-16) var(--s-20);
   }
 }
 @media (max-width: 560px) {

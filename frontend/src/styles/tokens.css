@@ -57,7 +57,35 @@
   /* Type */
   --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
 
+  /* Type scale. Every text size in the app is one of these; nothing is written as a raw number. */
+  --type-caption: 12px; /* the smallest anything gets */
+  --type-footnote: 13px;
+  --type-body: 14px;
+  --type-callout: 15px;
+  --type-headline: 16px;
+  --type-title3: 18px;
+  --type-title2: 20px;
+  --type-title1: 24px;
+  --type-large: 30px;
+  --type-display-s: 36px;
+  --type-display: 48px;
+  --type-hero: 60px;
+
+  /* Spacing ladder. Gaps and padding are one of these. */
+  --s-2: 2px;
+  --s-4: 4px;
+  --s-6: 6px;
+  --s-8: 8px;
+  --s-12: 12px;
+  --s-16: 16px;
+  --s-20: 20px;
+  --s-24: 24px;
+  --s-32: 32px;
+  --s-40: 40px;
+  --s-48: 48px;
+
   /* Shape */
+  --radius-xs: 6px; /* a small thumb, a chip's corner */
   --radius-sm: 8px;
   --radius: 12px;
   --radius-lg: 26px; /* cards */

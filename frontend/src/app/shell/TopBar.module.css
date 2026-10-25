@@ -3,7 +3,7 @@
   align-items: center;
   justify-content: space-between;
   height: 56px;
-  padding: 0 6px 0 5px;
+  padding: 0 var(--s-6) 0 5px;
 }
 .button {
   display: inline-flex;

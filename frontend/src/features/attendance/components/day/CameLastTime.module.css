@@ -1,23 +1,23 @@
 .block {
   margin-top: 16px;
-  padding-top: 14px;
+  padding-top: var(--s-16);
   border-top: 1px solid var(--line);
 }
 .head {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--s-12);
   margin-bottom: 8px;
 }
 .title {
   margin: 0;
-  font-size: 15px;
+  font-size: var(--type-callout);
   font-weight: 600;
 }
 .help {
   margin: 2px 0 0;
-  font-size: 13px;
+  font-size: var(--type-footnote);
   color: var(--text-3);
 }
 .list {
@@ -28,9 +28,9 @@
 .row {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--s-12);
   min-height: 56px;
-  padding: 0 4px;
+  padding: 0 var(--s-4);
 }
 .row + .row {
   border-top: 1px solid var(--line);
@@ -45,7 +45,7 @@
   flex: 1;
   min-width: 0;
   overflow: hidden;
-  font-size: 14px;
+  font-size: var(--type-body);
   font-weight: 500;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -56,10 +56,10 @@
 .mark {
   flex: none;
   height: 36px;
-  padding: 0 14px;
+  padding: 0 var(--s-16);
   border: 0;
   border-radius: var(--radius-pill);
-  font-size: 13px;
+  font-size: var(--type-footnote);
   font-weight: 500;
   transition:
     transform 350ms var(--spring),
@@ -104,6 +104,6 @@
   .all,
   .mark {
     height: 44px;
-    padding: 0 18px;
+    padding: 0 var(--s-20);
   }
 }

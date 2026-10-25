@@ -230,7 +230,7 @@ a[data-press]:active {
 }
 .skeleton {
   display: block;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background:
     linear-gradient(
         100deg,

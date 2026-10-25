@@ -13,9 +13,9 @@
 .row {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: var(--s-16);
   min-height: calc(72px * var(--density, 1));
-  padding: 0 8px 0 16px;
+  padding: 0 var(--s-8) 0 var(--s-16);
 }
 .row + .row {
   border-top: 1px solid var(--line);
@@ -33,7 +33,7 @@
   justify-content: center;
   width: 44px;
   height: 44px;
-  border-radius: 14px;
+  border-radius: var(--radius-field);
   background: var(--fill);
   color: var(--text-2);
 }
@@ -48,7 +48,7 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--s-2);
 }
 .title,
 .sub {
@@ -57,17 +57,17 @@
   white-space: nowrap;
 }
 .title {
-  font-size: 15px;
+  font-size: var(--type-callout);
   font-weight: 500;
 }
 .sub {
-  font-size: 13px;
+  font-size: var(--type-footnote);
   color: var(--text-3);
 }
 
 @media (min-width: 901px) {
   .row {
-    padding: 0 14px 0 20px;
+    padding: 0 var(--s-16) 0 var(--s-20);
   }
 }
 

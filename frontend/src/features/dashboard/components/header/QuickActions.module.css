@@ -2,17 +2,17 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
+  gap: var(--s-8);
 }
 .pill {
   display: inline-flex;
   align-items: center;
   height: 36px;
-  padding: 0 16px;
+  padding: 0 var(--s-16);
   background: var(--card-bg);
   border: 1px solid var(--line-2);
   border-radius: var(--radius-pill);
-  font-size: 14px;
+  font-size: var(--type-body);
   font-weight: 500;
   color: var(--text);
   text-decoration: none;

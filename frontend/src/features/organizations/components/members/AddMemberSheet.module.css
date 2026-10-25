@@ -1,9 +1,9 @@
 /* The form sits in a sheet, so its controls are a little smaller than a full page form's. */
 .fields {
   display: grid;
-  gap: 16px;
+  gap: var(--s-16);
   --control-height: 48px;
-  --control-gap: 6px;
+  --control-gap: var(--s-6);
   --control-font: 14px;
 }
 
@@ -11,7 +11,7 @@
 @media (max-width: 900px) {
   .fields {
     --control-height: 48px;
-    --control-gap: 8px;
+    --control-gap: var(--s-8);
     --control-font: 16px;
   }
 }

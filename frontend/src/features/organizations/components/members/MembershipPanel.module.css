@@ -1,13 +1,13 @@
 .body {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  padding-top: 8px;
+  gap: var(--s-20);
+  padding-top: var(--s-8);
 }
 .actions {
   display: flex;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--s-12);
 }
 .delete {
   color: var(--neg);

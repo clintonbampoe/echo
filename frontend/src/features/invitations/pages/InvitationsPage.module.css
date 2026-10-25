@@ -1,12 +1,12 @@
 .page {
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: var(--s-24);
 }
 .skeleton {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--s-2);
 }
 .skeleton > span {
   height: 72px;
@@ -14,6 +14,6 @@
 }
 @media (max-width: 900px) {
   .page {
-    gap: 16px;
+    gap: var(--s-16);
   }
 }

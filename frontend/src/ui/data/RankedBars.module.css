@@ -1,7 +1,7 @@
 .list {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--s-4);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -10,9 +10,9 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--s-8);
   width: calc(100% + 20px);
-  padding: 8px 10px;
+  padding: var(--s-8) var(--s-12);
   margin: 0 -10px;
   background: none;
   border: 0;
@@ -47,8 +47,8 @@ button.row:active .track {
 .line {
   display: flex;
   justify-content: space-between;
-  gap: 12px;
-  font-size: 14px;
+  gap: var(--s-12);
+  font-size: var(--type-body);
 }
 .name {
   min-width: 0;
@@ -62,7 +62,7 @@ button.row:active .track {
   display: block;
   height: 6px;
   background: var(--fill-2);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   transform-origin: center center;
   transition: transform 450ms var(--spring);
 }
@@ -70,7 +70,7 @@ button.row:active .track {
   display: block;
   height: 100%;
   background: #7f95ae;
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
   transform-origin: left;
   animation: echoGrowX 700ms var(--grow) backwards;
   animation-delay: calc(var(--i, 0) * 40ms);

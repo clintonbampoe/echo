@@ -2,7 +2,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr) 400px;
   grid-template-areas: "stats stats" "list panel";
-  gap: 22px;
+  gap: var(--s-24);
   align-items: start;
 }
 .stats {
@@ -13,7 +13,7 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--s-12);
 }
 .panel {
   grid-area: panel;
@@ -24,8 +24,8 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 12px;
-  padding: 24px 0;
+  gap: var(--s-12);
+  padding: var(--s-24) 0;
   color: var(--text-3);
 }
 
@@ -33,7 +33,7 @@
   .layout {
     grid-template-columns: minmax(0, 1fr);
     grid-template-areas: "stats" "panel" "list";
-    gap: 16px;
+    gap: var(--s-16);
   }
   .panel {
     position: static;

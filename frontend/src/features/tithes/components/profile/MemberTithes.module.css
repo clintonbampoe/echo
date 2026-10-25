@@ -3,16 +3,16 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 12px 16px;
+  gap: var(--s-12) var(--s-16);
   margin: 20px 0 16px;
 }
 .text {
   margin: 0;
-  font-size: 14px;
+  font-size: var(--type-body);
   color: var(--text-2);
 }
 .filters {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--s-8);
 }

@@ -2,17 +2,17 @@
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--s-16);
   min-height: 0;
 }
 .label {
   margin: 0;
-  font-size: 13px;
+  font-size: var(--type-footnote);
   color: var(--text-3);
 }
 .big {
   margin: 4px 0 0;
-  font-size: 34px;
+  font-size: var(--type-display-s);
   font-weight: 600;
   line-height: 1.05;
   letter-spacing: -0.03em;
@@ -26,7 +26,7 @@
 }
 .note {
   margin: 8px 0 0;
-  font-size: 13px;
+  font-size: var(--type-footnote);
   color: var(--text-3);
   white-space: nowrap;
   overflow: hidden;
@@ -35,12 +35,12 @@
 .duo {
   display: none;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
+  gap: var(--s-16);
   margin-top: 16px;
 }
 .amount {
   margin: 2px 0 0;
-  font-size: 18px;
+  font-size: var(--type-title3);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
@@ -59,7 +59,7 @@
   .content {
     display: grid;
     grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
-    gap: 32px;
+    gap: var(--s-32);
     align-items: center;
   }
   .duo {
@@ -68,7 +68,7 @@
   .split {
     justify-content: center;
     align-self: stretch;
-    padding-left: 32px;
+    padding-left: var(--s-32);
     border-left: 1px solid var(--line);
   }
 }
@@ -92,5 +92,5 @@
 .solo .duo {
   display: grid;
   margin-top: auto;
-  padding-top: 20px;
+  padding-top: var(--s-20);
 }

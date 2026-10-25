@@ -10,15 +10,15 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--s-12);
   width: 100%;
   height: 52px;
-  padding: 0 12px;
+  padding: 0 var(--s-12);
   border: 0;
   border-radius: var(--radius-option);
   background: transparent;
   color: inherit;
-  font-size: 16px;
+  font-size: var(--type-headline);
   text-align: left;
 }
 .row {
@@ -54,7 +54,7 @@
   color: var(--text);
 }
 .none {
-  padding: 16px 4px;
-  font-size: 15px;
+  padding: var(--s-16) var(--s-4);
+  font-size: var(--type-callout);
   color: var(--text-2);
 }

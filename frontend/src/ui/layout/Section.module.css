@@ -6,11 +6,11 @@
 }
 .title {
   margin: 0;
-  font-size: 14px;
+  font-size: var(--type-body);
   font-weight: 600;
 }
 .hint {
   margin: 2px 0 0;
-  font-size: 13px;
+  font-size: var(--type-footnote);
   color: var(--text-3);
 }

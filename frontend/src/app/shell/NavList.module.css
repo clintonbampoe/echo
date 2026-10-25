@@ -3,14 +3,14 @@
 .admin {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--s-4);
 }
 .admin {
-  gap: 6px;
+  gap: var(--s-6);
 }
 .heading {
-  padding: 0 11px;
-  font-size: 12px;
+  padding: 0 var(--s-12);
+  font-size: var(--type-caption);
   font-weight: 500;
   color: var(--text-3);
 }
@@ -20,7 +20,7 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: var(--s-24);
 }
 .slot {
   position: absolute;
@@ -45,7 +45,7 @@
   position: absolute;
   inset: 0;
   background: var(--surface);
-  border-radius: 10px;
+  border-radius: var(--radius);
   box-shadow:
     0 1px 2px rgb(10 10 11 / 8%),
     0 0 0 1px var(--line-2);
@@ -55,12 +55,12 @@
   position: relative;
   display: flex;
   align-items: center;
-  gap: 11px;
+  gap: var(--s-12);
   height: 36px;
-  padding: 0 11px;
-  border-radius: 10px;
+  padding: 0 var(--s-12);
+  border-radius: var(--radius);
   color: var(--text-2);
-  font-size: 14px;
+  font-size: var(--type-body);
   text-decoration: none;
   transition:
     background-color var(--t-fast) var(--ease-soft),

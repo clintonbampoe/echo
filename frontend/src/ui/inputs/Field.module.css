@@ -8,12 +8,12 @@
   justify-content: space-between;
 }
 .label {
-  font-size: 13px;
+  font-size: var(--type-footnote);
   font-weight: 500;
   color: var(--text-2);
 }
 .optional {
-  font-size: 13px;
+  font-size: var(--type-footnote);
   color: var(--text-3);
 }
 
@@ -22,11 +22,11 @@
   width: 100%;
   height: var(--control-height, 48px);
   margin-top: var(--control-gap, 8px);
-  padding: 0 14px;
+  padding: 0 var(--s-16);
   background: var(--surface-2);
   border: 1px solid var(--line-2);
   border-radius: var(--radius-field);
-  font-size: var(--control-font, 15px);
+  font-size: var(--control-font, var(--type-callout));
   line-height: 1;
   transition:
     border-color var(--t-base) var(--ease-soft),
@@ -80,7 +80,7 @@
   display: flex;
   align-items: center;
   height: var(--control-height, 48px);
-  font-size: var(--control-font, 15px);
+  font-size: var(--control-font, var(--type-callout));
   color: var(--text-3);
   pointer-events: none;
 }
@@ -92,7 +92,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--s-12);
   text-align: left;
   cursor: pointer;
 }
@@ -140,7 +140,7 @@
 
 .message {
   margin-top: 8px;
-  font-size: 13px;
+  font-size: var(--type-footnote);
   color: var(--text-3);
 }
 /* An error message fades in under its field. */

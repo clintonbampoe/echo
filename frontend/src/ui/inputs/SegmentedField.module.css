@@ -6,14 +6,14 @@
 }
 .label {
   padding: 0;
-  font-size: 13px;
+  font-size: var(--type-footnote);
   font-weight: 500;
   color: var(--text-2);
 }
 .group {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
-  gap: 8px;
+  gap: var(--s-8);
   margin-top: var(--control-gap, 8px);
 }
 .option {
@@ -34,12 +34,12 @@
   align-items: center;
   justify-content: center;
   height: var(--control-height, 48px);
-  padding: 0 8px;
+  padding: 0 var(--s-8);
   background: var(--surface);
   border: 1px solid var(--line-2);
   border-radius: var(--radius);
-  font-size: var(--control-font, 15px);
-  gap: 8px;
+  font-size: var(--control-font, var(--type-callout));
+  gap: var(--s-8);
   transition:
     border-color var(--fast) ease,
     box-shadow var(--fast) ease;
@@ -79,7 +79,7 @@
   grid-auto-columns: 1fr;
   gap: 0;
   margin-top: 0;
-  padding: 3px;
+  padding: var(--s-4);
   background: var(--fill);
   border: 1px solid var(--line);
   border-radius: var(--radius-pill);
@@ -105,13 +105,13 @@
 }
 .joined .face {
   height: 30px;
-  padding: 0 14px;
+  padding: 0 var(--s-16);
   background: transparent;
   border: 0;
   border-radius: var(--radius-pill);
   box-shadow: none;
   color: var(--text-2);
-  font-size: 13px;
+  font-size: var(--type-footnote);
   font-weight: 500;
   transition:
     color var(--base) var(--ease),
@@ -134,7 +134,7 @@
   }
 }
 .joined.compact .face {
-  font-size: 12px;
+  font-size: var(--type-caption);
 }
 .joined .input:checked + .face {
   background: transparent;

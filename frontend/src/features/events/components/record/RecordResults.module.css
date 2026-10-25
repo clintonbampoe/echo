@@ -3,8 +3,8 @@
 }
 .note {
   margin: 0;
-  padding: 12px 4px;
-  font-size: 14px;
+  padding: var(--s-12) var(--s-4);
+  font-size: var(--type-body);
   color: var(--text-3);
 }
 .list {
@@ -19,8 +19,8 @@
 .option {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-  padding: 12px;
+  gap: var(--s-12);
+  padding: var(--s-12);
 }
 .option + .option {
   border-top: 1px solid var(--line);
@@ -37,7 +37,7 @@
 }
 .name {
   margin: 0;
-  font-size: 14px;
+  font-size: var(--type-body);
   font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -45,7 +45,7 @@
 }
 .phone {
   margin: 0;
-  font-size: 13px;
+  font-size: var(--type-footnote);
   color: var(--text-3);
 }
 .action {
@@ -53,11 +53,11 @@
 }
 .foot {
   margin: 8px 0 0;
-  font-size: 13px;
+  font-size: var(--type-footnote);
   color: var(--text-3);
 }
 @media (max-width: 900px) {
   .name {
-    font-size: 16px;
+    font-size: var(--type-headline);
   }
 }

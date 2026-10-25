@@ -2,7 +2,7 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 16px;
+  gap: var(--s-16);
 }
 .who {
   flex: 1;
@@ -12,9 +12,9 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
+  gap: var(--s-12);
   margin: 0;
-  font-size: 30px;
+  font-size: var(--type-large);
   line-height: 1.15;
   font-weight: 600;
   letter-spacing: -0.03em;
@@ -24,13 +24,13 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   margin: 6px 0 0;
-  font-size: 14px;
+  font-size: var(--type-body);
   color: var(--text-3);
 }
 .buttons {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--s-12);
   flex: none;
 }
 
@@ -52,6 +52,6 @@
 
 @media (max-width: 900px) {
   .title {
-    font-size: 24px;
+    font-size: var(--type-title1);
   }
 }

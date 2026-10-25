@@ -2,14 +2,14 @@
 .area {
   height: auto;
   min-height: 112px;
-  padding: 10px 14px;
+  padding: var(--s-12) var(--s-16);
   line-height: 1.5;
   resize: vertical;
 }
 
 .counter {
   margin: 6px 0 0;
-  font-size: 12px;
+  font-size: var(--type-caption);
   text-align: right;
   color: var(--text-3);
 }

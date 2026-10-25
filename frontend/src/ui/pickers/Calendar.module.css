@@ -8,12 +8,12 @@
   align-items: center;
   justify-content: center;
   height: 30px;
-  font-size: 12px;
+  font-size: var(--type-caption);
   font-weight: 500;
   color: var(--text-3);
 }
 .days {
-  row-gap: 2px;
+  row-gap: var(--s-2);
 }
 
 /* A day is a cell of its column's width and 40px high; the 38px circle that answers the pointer is drawn behind its number. */
@@ -28,7 +28,7 @@
   padding: 0;
   border: 0;
   background: transparent;
-  font-size: 14px;
+  font-size: var(--type-body);
   font-weight: 500;
   font-variant-numeric: tabular-nums;
   color: var(--text);
@@ -125,7 +125,7 @@
 @media (hover: none), (pointer: coarse) {
   .day {
     height: 42px;
-    font-size: 16px;
+    font-size: var(--type-headline);
   }
   .day::before {
     width: 42px;

@@ -8,8 +8,8 @@
   left: 0;
   right: 0;
   z-index: 20;
-  padding: 8px;
-  border-radius: 26px;
+  padding: var(--s-8);
+  border-radius: var(--radius-lg);
   --origin: top center;
 }
 .menu[data-closing="true"] {
@@ -27,8 +27,8 @@
   list-style: none;
 }
 .none {
-  padding: 10px;
-  font-size: 14px;
+  padding: var(--s-12);
+  font-size: var(--type-body);
   color: var(--text-2);
 }
 
@@ -36,11 +36,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: var(--s-12);
   height: 42px;
-  padding: 0 16px;
-  border-radius: 999px;
-  font-size: 14px;
+  padding: 0 var(--s-16);
+  border-radius: var(--radius-pill);
+  font-size: var(--type-body);
   cursor: pointer;
   transition: background-color var(--t-fast) var(--ease-soft);
 }

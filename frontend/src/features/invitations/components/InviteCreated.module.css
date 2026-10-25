@@ -1,21 +1,21 @@
 .code {
-  padding: 28px 16px;
+  padding: var(--s-32) var(--s-16);
   border-radius: var(--radius);
   background: var(--fill);
   text-align: center;
-  font-size: 28px;
+  font-size: var(--type-large);
   font-weight: 600;
   letter-spacing: 0.04em;
   user-select: all;
 }
 .note {
   margin-top: 16px;
-  font-size: 13.5px;
+  font-size: var(--type-footnote);
   color: var(--text-3);
 }
 .footer {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
+  gap: var(--s-12);
   width: 100%;
 }

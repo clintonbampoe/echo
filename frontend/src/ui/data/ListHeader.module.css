@@ -3,13 +3,13 @@
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 12px;
-  padding: 22px 24px 8px;
+  gap: var(--s-12);
+  padding: var(--s-24) var(--s-24) var(--s-8);
 }
 .title {
   min-width: 0;
   overflow: hidden;
-  font-size: 16px;
+  font-size: var(--type-headline);
   font-weight: 600;
   letter-spacing: -0.015em;
   text-overflow: ellipsis;
@@ -17,6 +17,6 @@
 }
 .summary {
   flex: none;
-  font-size: 13px;
+  font-size: var(--type-footnote);
   color: var(--text-3);
 }

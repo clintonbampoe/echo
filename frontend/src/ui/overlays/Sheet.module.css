@@ -34,17 +34,17 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 16px;
-  padding: 24px 24px 8px;
+  gap: var(--s-16);
+  padding: var(--s-24) var(--s-24) var(--s-8);
 }
 .title {
-  font-size: 21px;
+  font-size: var(--type-title2);
   font-weight: 600;
   letter-spacing: -0.02em;
 }
 .subtitle {
   margin-top: 2px;
-  font-size: 14px;
+  font-size: var(--type-body);
   color: var(--text-2);
 }
 
@@ -79,10 +79,10 @@
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  padding: 8px 24px 24px;
+  padding: var(--s-8) var(--s-24) var(--s-24);
 }
 .footer {
-  padding: 8px 24px 24px;
+  padding: var(--s-8) var(--s-24) var(--s-24);
 }
 
 /* A tablet, where the panel is wider and the content keeps a readable width. */
@@ -110,14 +110,14 @@
     animation: sheetOut 200ms ease-in both;
   }
   .header {
-    padding: 20px 20px 4px;
+    padding: var(--s-20) var(--s-20) var(--s-4);
     touch-action: none;
   }
   .body {
-    padding: 4px 20px 20px;
+    padding: var(--s-4) var(--s-20) var(--s-20);
   }
   .footer {
-    padding: 4px 20px 20px;
+    padding: var(--s-4) var(--s-20) var(--s-20);
   }
 }
 

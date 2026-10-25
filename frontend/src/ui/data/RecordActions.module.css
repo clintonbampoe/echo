@@ -1,14 +1,14 @@
 .actions {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--s-2);
 }
 .remove {
   height: 46px;
   background: none;
   border: 0;
-  border-radius: 999px;
-  font-size: 15px;
+  border-radius: var(--radius-pill);
+  font-size: var(--type-callout);
   font-weight: 500;
   color: var(--neg);
   cursor: pointer;

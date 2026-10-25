@@ -7,12 +7,12 @@
   gap: 0;
   width: 100%;
   min-height: 52px;
-  padding: 0 16px;
+  padding: 0 var(--s-16);
   background: none;
   border: 1px dashed var(--line-2);
   border-radius: var(--radius-field);
   transition: background-color var(--fast) ease;
-  font-size: 14px;
+  font-size: var(--type-body);
   text-align: left;
 }
 .toggle:focus-visible {
@@ -68,5 +68,5 @@
   overflow: hidden;
   /* Room for focus rings, which overflow: hidden would otherwise cut off. */
   margin: -4px;
-  padding: 4px;
+  padding: var(--s-4);
 }

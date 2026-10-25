@@ -5,7 +5,7 @@
   position: relative;
   display: grid;
   grid-template-columns: var(--columns, repeat(2, minmax(0, 1fr)));
-  gap: 16px;
+  gap: var(--s-16);
 }
 .dots {
   display: none;
@@ -14,7 +14,7 @@
 @media (max-width: 900px) {
   .track {
     display: flex;
-    gap: 12px;
+    gap: var(--s-12);
     align-items: stretch;
     overflow-x: auto;
     overscroll-behavior-x: contain;
@@ -42,7 +42,7 @@
     display: flex;
     justify-content: center;
     gap: 0;
-    padding-top: 8px;
+    padding-top: var(--s-8);
   }
 }
 
@@ -74,7 +74,7 @@
 .dot[aria-current="true"]::before {
   width: 18px;
   background: var(--text);
-  border-radius: 999px;
+  border-radius: var(--radius-pill);
 }
 .dot:focus-visible {
   outline: var(--focus);

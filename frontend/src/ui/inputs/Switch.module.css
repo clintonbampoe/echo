@@ -4,7 +4,7 @@
   align-items: center;
   width: 46px;
   height: 28px;
-  padding: 3px;
+  padding: var(--s-4);
   border: 0;
   border-radius: var(--radius-pill);
   background: var(--fill-2);

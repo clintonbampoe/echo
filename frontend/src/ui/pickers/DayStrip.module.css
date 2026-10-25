@@ -1,12 +1,12 @@
 .strip {
   --card: 72px;
-  --gap: 8px;
+  --gap: var(--s-8);
   --height: 112px;
   --edge: 6px;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 14px 16px;
+  gap: var(--s-12);
+  padding: var(--s-16) var(--s-16);
   background: var(--card-bg);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
@@ -85,7 +85,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: var(--s-4);
   box-sizing: border-box;
   width: 100%;
   height: var(--height);
@@ -135,25 +135,25 @@
 }
 .tag {
   height: 12px;
-  font-size: 10px;
+  font-size: var(--type-caption);
   font-weight: 600;
   line-height: 12px;
   letter-spacing: 0.03em;
 }
 .weekday {
-  font-size: 11px;
+  font-size: var(--type-caption);
   font-weight: 500;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 .date {
-  font-size: 24px;
+  font-size: var(--type-title1);
   font-weight: 500;
   font-variant-numeric: tabular-nums;
 }
 .marks {
   display: flex;
-  gap: 4px;
+  gap: var(--s-4);
   height: 6px;
   margin-top: 8px;
 }
@@ -171,13 +171,13 @@
   .strip {
     --card: 46px;
     --height: 96px;
-    gap: 4px;
-    padding: 12px 8px;
+    gap: var(--s-4);
+    padding: var(--s-12) var(--s-8);
   }
   .date {
     width: 42px;
     height: 42px;
-    font-size: 18px;
+    font-size: var(--type-title3);
   }
   .arrow {
     display: none;

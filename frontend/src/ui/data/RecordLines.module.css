@@ -14,10 +14,10 @@
   position: relative;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: var(--s-16);
   min-height: calc(66px * var(--density, 1));
   margin-inline: 8px;
-  padding: 8px 14px;
+  padding: var(--s-8) var(--s-16);
   border-radius: var(--radius);
   transition:
     background-color var(--t-fast) var(--ease-soft),
@@ -58,7 +58,7 @@
 }
 .title {
   overflow: hidden;
-  font-size: 15px;
+  font-size: var(--type-callout);
   font-weight: 500;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -66,7 +66,7 @@
 .sub {
   overflow: hidden;
   margin-top: 2px;
-  font-size: 13px;
+  font-size: var(--type-footnote);
   color: var(--text-3);
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -100,8 +100,8 @@
   flex: none;
   display: flex;
   align-items: center;
-  gap: 12px;
-  font-size: 14px;
+  gap: var(--s-12);
+  font-size: var(--type-body);
   font-variant-numeric: tabular-nums;
   color: var(--text-3);
 }
@@ -110,16 +110,16 @@
   align-items: center;
   justify-content: space-between;
   height: 56px;
-  padding: 0 22px;
+  padding: 0 var(--s-24);
   border-top: 1px solid var(--line);
-  font-size: 13px;
+  font-size: var(--type-footnote);
   color: var(--text-3);
 }
 .more {
-  padding: 8px 0 8px 12px;
+  padding: var(--s-8) 0 var(--s-8) var(--s-12);
   background: none;
   border: 0;
-  font-size: 14px;
+  font-size: var(--type-body);
   font-weight: 500;
   color: var(--text);
 }
@@ -129,7 +129,7 @@
 .more:focus-visible {
   outline: 2px solid var(--text);
   outline-offset: 2px;
-  border-radius: 6px;
+  border-radius: var(--radius-xs);
 }
 
 /* A card answers the pointer: its border and shadow strengthen (feel spec, Cards). */

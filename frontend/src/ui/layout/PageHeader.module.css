@@ -1,37 +1,37 @@
 .header {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--s-12);
 }
 .top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: var(--s-16);
 }
 .title {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 30px;
+  font-size: var(--type-large);
   line-height: 1.15;
   font-weight: 600;
   letter-spacing: -0.03em;
 }
 .text {
-  font-size: 13.5px;
+  font-size: var(--type-footnote);
   color: var(--text-3);
 }
 .note {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--s-12);
 }
 .action {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--s-12);
 }
 /* One button: a pill with its name on a wide screen, a round + on a phone (the name stays for screen readers). */
 @media (max-width: 900px) {

@@ -1,16 +1,16 @@
 .figure {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--s-4);
 }
 .label {
   margin: 0;
-  font-size: 13px;
+  font-size: var(--type-footnote);
   color: var(--text-3);
 }
 .big {
   margin: 0;
-  font-size: 48px;
+  font-size: var(--type-display);
   font-weight: 600;
   letter-spacing: -0.035em;
   line-height: 1.05;
@@ -18,24 +18,24 @@
 }
 .unit {
   margin-left: 8px;
-  font-size: 14px;
+  font-size: var(--type-body);
   font-weight: 400;
   letter-spacing: 0;
   color: var(--text-3);
 }
 .sides {
   display: flex;
-  gap: 24px;
+  gap: var(--s-24);
   margin-top: 8px;
 }
 .side {
   margin: 2px 0 0;
-  font-size: 18px;
+  font-size: var(--type-title3);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 @container (max-width: 459px) {
   .big {
-    font-size: 36px;
+    font-size: var(--type-display-s);
   }
 }

@@ -1,7 +1,7 @@
 .header {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: var(--s-20);
 }
 .who {
   flex: 1;
@@ -11,41 +11,41 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
+  gap: var(--s-12);
 }
 .name {
-  font-size: 30px;
+  font-size: var(--type-large);
   font-weight: 600;
   line-height: 1.15;
   letter-spacing: -0.03em;
 }
 .line {
   margin-top: 6px;
-  font-size: 14px;
+  font-size: var(--type-body);
   color: var(--text-3);
 }
 .actions {
   display: flex;
   flex: none;
   align-items: center;
-  gap: 8px;
+  gap: var(--s-8);
 }
 
 @media (max-width: 900px) {
   .header {
     flex-wrap: wrap;
-    gap: 14px 14px;
+    gap: var(--s-16) var(--s-16);
   }
   .header > :first-child {
     width: 60px !important;
     height: 60px !important;
-    font-size: 20px !important;
+    font-size: var(--type-title2) !important;
   }
   .who {
     flex: 1;
   }
   .name {
-    font-size: 24px;
+    font-size: var(--type-title1);
   }
   .line {
     overflow: hidden;

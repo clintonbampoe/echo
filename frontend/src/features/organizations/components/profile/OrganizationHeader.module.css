@@ -2,14 +2,14 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 16px;
+  gap: var(--s-16);
 }
 .who {
   min-width: 0;
 }
 .name {
   margin: 0;
-  font-size: 30px;
+  font-size: var(--type-large);
   font-weight: 600;
   letter-spacing: -0.03em;
   line-height: 1.15;
@@ -17,18 +17,18 @@
 }
 .text {
   margin: 6px 0 0;
-  font-size: 13.5px;
+  font-size: var(--type-footnote);
   color: var(--text-3);
 }
 .actions {
   display: flex;
   flex: none;
   align-items: center;
-  gap: 10px;
+  gap: var(--s-12);
 }
 
 @media (max-width: 900px) {
   .name {
-    font-size: 24px;
+    font-size: var(--type-title1);
   }
 }

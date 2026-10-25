@@ -1,13 +1,13 @@
 /* The rows of cards, one under the other. */
 .charts {
   display: grid;
-  gap: 22px;
+  gap: var(--s-24);
 }
 
 /* On a phone the cards come in themed groups, and one label heads each. */
 .group {
   display: grid;
-  gap: 12px;
+  gap: var(--s-12);
 }
 .groupHead {
   display: flex;
@@ -17,7 +17,7 @@
 }
 .groupTitle {
   margin: 0;
-  font-size: 17px;
+  font-size: var(--type-headline);
   font-weight: 600;
   letter-spacing: -0.01em;
 }

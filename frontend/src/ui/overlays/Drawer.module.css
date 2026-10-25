@@ -15,7 +15,7 @@
   bottom: 0;
   left: 0;
   width: min(300px, 86vw);
-  padding: 12px;
+  padding: var(--s-12);
   overflow-y: auto;
   animation: slide var(--base) var(--ease) both;
 }

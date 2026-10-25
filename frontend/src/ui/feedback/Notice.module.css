@@ -1,8 +1,8 @@
 .notice {
   display: flex;
-  gap: 12px;
+  gap: var(--s-12);
   align-items: flex-start;
-  padding: 12px 14px;
+  padding: var(--s-12) var(--s-16);
   border: 1px solid var(--line-2);
   border-radius: var(--radius);
   background: var(--surface-2);
@@ -21,13 +21,13 @@
 }
 .title {
   margin: 0;
-  font-size: 14px;
+  font-size: var(--type-body);
   font-weight: 500;
   color: var(--text);
 }
 .body {
   margin-top: 4px;
-  font-size: 13px;
+  font-size: var(--type-footnote);
   line-height: 1.5;
   color: var(--text-2);
 }
@@ -37,6 +37,6 @@
 .action {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--s-8);
   margin-top: 10px;
 }

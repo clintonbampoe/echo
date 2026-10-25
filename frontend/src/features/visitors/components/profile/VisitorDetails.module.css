@@ -1,17 +1,17 @@
 .notes {
   margin: 0;
-  font-size: 14px;
+  font-size: var(--type-body);
   line-height: 1.5;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
 .empty {
   margin: 0;
-  font-size: 14px;
+  font-size: var(--type-body);
   color: var(--text-3);
 }
 .hint {
   margin: 8px 0 0;
-  font-size: 12px;
+  font-size: var(--type-caption);
   color: var(--text-3);
 }

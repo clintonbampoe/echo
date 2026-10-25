@@ -11,7 +11,7 @@
 .item {
   min-width: 0;
   min-height: 112px;
-  padding: 20px 24px;
+  padding: var(--s-20) var(--s-24);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -20,7 +20,7 @@
   border-left: 1px solid var(--line);
 }
 .label {
-  font-size: 13px;
+  font-size: var(--type-footnote);
   font-weight: 500;
   color: var(--text-2);
   white-space: nowrap;
@@ -31,15 +31,15 @@
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 8px;
+  gap: var(--s-8);
 }
 .value {
   min-width: 0;
   display: inline-flex;
   align-items: baseline;
-  gap: 6px;
+  gap: var(--s-6);
   font-variant-numeric: tabular-nums;
-  font-size: 32px;
+  font-size: var(--type-large);
   font-weight: 600;
   line-height: 1;
   letter-spacing: -0.03em;
@@ -54,7 +54,7 @@
     grid-template-columns: none;
     grid-auto-flow: column;
     grid-auto-columns: minmax(0, 1fr);
-    gap: 10px;
+    gap: var(--s-12);
     background: none;
     border: 0;
     box-shadow: none;
@@ -62,7 +62,7 @@
   }
   .item {
     min-height: 96px;
-    padding: 14px 16px;
+    padding: var(--s-16) var(--s-16);
     background: var(--card-bg);
     border: 1px solid var(--line);
     border-radius: 18px;
@@ -75,10 +75,10 @@
     display: none;
   }
   .label {
-    font-size: 12.5px;
+    font-size: var(--type-caption);
   }
   .value {
-    font-size: 22px;
+    font-size: var(--type-title1);
   }
 }
 @media (max-width: 600px) {
@@ -94,7 +94,7 @@
 }
 
 .unit {
-  font-size: 14px;
+  font-size: var(--type-body);
   font-weight: 400;
   letter-spacing: 0;
   opacity: 0.62;
@@ -103,12 +103,12 @@
   flex: none;
   display: inline-flex;
   align-items: center;
-  gap: 2px;
-  padding: 3px 9px 3px 5px;
+  gap: var(--s-2);
+  padding: var(--s-4) var(--s-8) var(--s-4) 5px;
   border-radius: var(--radius-pill);
   background: var(--pos-bg);
   color: var(--pos);
-  font-size: 12.5px;
+  font-size: var(--type-caption);
   font-weight: 600;
   letter-spacing: 0;
 }

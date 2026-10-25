@@ -1,7 +1,7 @@
 .page {
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: var(--s-24);
 }
 .card {
   overflow: hidden;
@@ -11,21 +11,21 @@
   box-shadow: var(--shadow);
 }
 .section {
-  padding: 20px 22px 4px;
+  padding: var(--s-20) var(--s-24) var(--s-4);
 }
 .heading {
-  font-size: 13px;
+  font-size: var(--type-footnote);
   font-weight: 600;
   letter-spacing: 0.02em;
   text-transform: uppercase;
   color: var(--text-3);
 }
 .title {
-  font-size: 15px;
+  font-size: var(--type-callout);
   font-weight: 600;
 }
 .sub {
-  font-size: 13px;
+  font-size: var(--type-footnote);
   color: var(--text-3);
 }
 /* Every setting is one row: its words on the left, its control on the right. Nothing in the row moves on hover. */
@@ -33,9 +33,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
+  gap: var(--s-24);
   min-height: calc(72px * var(--density, 1));
-  padding: 12px 22px;
+  padding: var(--s-12) var(--s-24);
 }
 .setting + .setting,
 .section + .setting {
@@ -49,17 +49,17 @@
   cursor: pointer;
 }
 .setting .title {
-  font-size: 15px;
+  font-size: var(--type-callout);
   font-weight: 500;
 }
 
 @media (max-width: 700px) {
   .page {
-    gap: 16px;
+    gap: var(--s-16);
   }
   .setting:not(.flip) {
     flex-direction: column;
     align-items: stretch;
-    gap: 12px;
+    gap: var(--s-12);
   }
 }

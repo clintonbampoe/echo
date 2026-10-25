@@ -6,13 +6,13 @@
 .pill {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--s-6);
   height: 32px;
-  padding: 0 13px;
+  padding: 0 var(--s-12);
   background: transparent;
   border: 1px dashed var(--line-2);
   border-radius: var(--radius-pill);
-  font-size: 13px;
+  font-size: var(--type-footnote);
   font-weight: 500;
   color: var(--text-2);
   white-space: nowrap;
@@ -94,7 +94,7 @@ button.on[aria-expanded="true"] {
 @media (max-width: 1180px) {
   .pill {
     height: 40px;
-    font-size: 14px;
+    font-size: var(--type-body);
   }
 }
 .chevron {

@@ -2,18 +2,18 @@
 .name {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--s-2);
   min-width: 0;
 }
 .serial {
   font-family: var(--font-mono, ui-monospace, monospace);
-  font-size: 13px;
+  font-size: var(--type-footnote);
   font-weight: 400;
   color: var(--text-3);
   overflow-wrap: anywhere;
 }
 .none {
-  font-size: 13px;
+  font-size: var(--type-footnote);
   font-weight: 400;
   color: var(--text-3);
 }

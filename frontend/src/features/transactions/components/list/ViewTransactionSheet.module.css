@@ -1,21 +1,21 @@
 .body {
   display: grid;
-  gap: 20px;
-  padding-top: 4px;
+  gap: var(--s-20);
+  padding-top: var(--s-4);
 }
 .head {
   display: grid;
-  gap: 4px;
+  gap: var(--s-4);
 }
 .what {
   margin: 0;
-  font-size: 14px;
+  font-size: var(--type-body);
   color: var(--text-3);
   overflow-wrap: anywhere;
 }
 .amount {
   margin: 0;
-  font-size: 40px;
+  font-size: var(--type-display-s);
   font-weight: 600;
   line-height: 1.1;
   letter-spacing: -0.03em;
@@ -23,6 +23,6 @@
 }
 .kind {
   margin: 0;
-  font-size: 14px;
+  font-size: var(--type-body);
   color: var(--text-3);
 }

@@ -2,9 +2,9 @@
   display: inline-flex;
   align-items: center;
   height: 24px;
-  padding: 0 12px;
+  padding: 0 var(--s-12);
   border-radius: var(--radius-pill);
-  font-size: 12px;
+  font-size: var(--type-caption);
   font-weight: 500;
   white-space: nowrap;
 }

@@ -1,24 +1,24 @@
 .figures {
   display: flex;
-  gap: 24px;
-  padding-bottom: 16px;
+  gap: var(--s-24);
+  padding-bottom: var(--s-16);
   border-bottom: 1px solid var(--line);
 }
 .label {
   margin: 0;
-  font-size: 13px;
+  font-size: var(--type-footnote);
   color: var(--text-3);
 }
 .value {
   margin: 2px 0 0;
-  font-size: 22px;
+  font-size: var(--type-title1);
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
 .list {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--s-4);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -26,8 +26,8 @@
 .row {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 8px 12px;
+  gap: var(--s-12);
+  padding: var(--s-8) var(--s-12);
   color: inherit;
   text-decoration: none;
 }
@@ -42,18 +42,18 @@
 }
 .name {
   overflow: hidden;
-  font-size: 14px;
+  font-size: var(--type-body);
   font-weight: 500;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 .when {
-  font-size: 12.5px;
+  font-size: var(--type-caption);
   color: var(--text-3);
 }
 .empty {
   margin: 0;
-  font-size: 14px;
+  font-size: var(--type-body);
   color: var(--text-3);
 }
 

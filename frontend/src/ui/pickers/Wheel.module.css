@@ -1,15 +1,15 @@
 .set {
   --rh: 40px;
-  padding: 8px 8px 0;
+  padding: var(--s-8) var(--s-8) 0;
 }
 .heads {
   display: flex;
-  gap: 4px;
-  padding: 0 8px;
+  gap: var(--s-4);
+  padding: 0 var(--s-8);
 }
 .heads span {
   flex: 1;
-  font-size: 12px;
+  font-size: var(--type-caption);
   font-weight: 500;
   text-align: center;
   color: var(--text-3);
@@ -17,8 +17,8 @@
 .stage {
   position: relative;
   display: flex;
-  gap: 4px;
-  padding: 4px 8px 0;
+  gap: var(--s-4);
+  padding: var(--s-4) var(--s-8) 0;
 }
 
 /* The black slot the picked row sits in. It sits behind the wheels, so the numbers show over it. */
@@ -69,7 +69,7 @@
   align-items: center;
   justify-content: center;
   height: var(--rh);
-  font-size: 18px;
+  font-size: var(--type-title3);
   font-variant-numeric: tabular-nums;
   color: color-mix(
     in srgb,
@@ -84,6 +84,6 @@
     --rh: 48px;
   }
   .row {
-    font-size: 20px;
+    font-size: var(--type-title2);
   }
 }

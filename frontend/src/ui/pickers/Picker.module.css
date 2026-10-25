@@ -1,7 +1,7 @@
 /* What every picker panel shares: the head with the month, and the foot with its text buttons. */
 .panel {
   display: grid;
-  padding: 14px;
+  padding: var(--s-16);
 }
 .head {
   display: flex;
@@ -43,11 +43,11 @@
   opacity: 0.35;
 }
 .my {
-  gap: 6px;
+  gap: var(--s-6);
   height: 36px;
-  padding: 0 12px;
+  padding: 0 var(--s-12);
   border-radius: var(--radius-pill);
-  font-size: 14px;
+  font-size: var(--type-body);
   font-weight: 600;
   color: var(--text);
 }
@@ -69,23 +69,23 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: var(--s-8);
   margin-top: 8px;
-  padding-top: 8px;
+  padding-top: var(--s-8);
   border-top: 1px solid var(--line);
 }
 .foot > div {
   display: flex;
-  gap: 4px;
+  gap: var(--s-4);
 }
 /* Clear, Today and Done are pills as wide as their words. Done is the one in ink. */
 .tx {
   height: 34px;
-  padding: 0 14px;
+  padding: 0 var(--s-16);
   border: 0;
   border-radius: var(--radius-pill);
   background: transparent;
-  font-size: 13px;
+  font-size: var(--type-footnote);
   font-weight: 500;
   color: var(--text-2);
   transition:
@@ -129,18 +129,18 @@
   }
   .my {
     height: 44px;
-    font-size: 16px;
+    font-size: var(--type-headline);
   }
   .foot {
-    gap: 10px;
+    gap: var(--s-12);
     margin-top: 16px;
     padding-top: 0;
     border-top: 0;
   }
   .tx {
     height: 44px;
-    padding: 0 20px;
-    font-size: 15px;
+    padding: 0 var(--s-20);
+    font-size: var(--type-callout);
     background: rgb(10 10 11 / 6%);
     color: var(--text);
   }

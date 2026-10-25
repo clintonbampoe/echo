@@ -15,7 +15,7 @@
   right: max(8px, var(--right, 0px));
   min-width: 200px;
   max-width: calc(100% - 16px);
-  padding: 6px;
+  padding: var(--s-6);
   border-radius: var(--radius-pop);
 }
 .menu[data-closing="true"] {
@@ -38,11 +38,11 @@
   align-items: center;
   width: 100%;
   height: 44px;
-  padding: 0 14px;
+  padding: 0 var(--s-16);
   background: transparent;
   border: 0;
   border-radius: var(--radius-option);
-  font-size: 14px;
+  font-size: var(--type-body);
   text-align: left;
   transition:
     background-color var(--t-fast) var(--ease-soft),
@@ -75,8 +75,8 @@
 /* A choice among several: a heading, then a radio mark in front of each. */
 .group {
   margin: 0;
-  padding: 6px 10px 4px;
-  font-size: 12px;
+  padding: var(--s-6) var(--s-12) var(--s-4);
+  font-size: var(--type-caption);
   text-align: right;
   color: var(--text-3);
 }
@@ -115,6 +115,6 @@
 @media (pointer: coarse), (max-width: 560px) {
   .item {
     height: 52px;
-    font-size: 15px;
+    font-size: var(--type-callout);
   }
 }

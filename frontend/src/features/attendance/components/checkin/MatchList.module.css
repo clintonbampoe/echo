@@ -1,7 +1,7 @@
 .list {
   display: grid;
   margin: 8px 0 0;
-  padding: 0 12px;
+  padding: 0 var(--s-12);
   list-style: none;
   border: 1px solid var(--line);
   border-radius: var(--radius);
@@ -9,8 +9,8 @@
 .row {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 0;
+  gap: var(--s-12);
+  padding: var(--s-8) 0;
   border-top: 1px solid var(--line);
 }
 .row:first-child {
@@ -22,7 +22,7 @@
 }
 .name {
   display: block;
-  font-size: 14px;
+  font-size: var(--type-body);
   font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -30,16 +30,16 @@
 }
 .phone {
   display: block;
-  font-size: 12px;
+  font-size: var(--type-caption);
   color: var(--text-3);
 }
 .note {
   margin: 8px 0 0;
-  font-size: 13px;
+  font-size: var(--type-footnote);
   color: var(--text-3);
 }
 .state {
-  font-size: 13px;
+  font-size: var(--type-footnote);
   font-weight: 500;
 }
 .now {

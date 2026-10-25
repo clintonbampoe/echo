@@ -1,7 +1,7 @@
 .page {
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: var(--s-24);
 }
 .card {
   overflow: hidden;
@@ -13,32 +13,32 @@
 .identity {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 24px 24px 28px;
+  gap: var(--s-16);
+  padding: var(--s-24) var(--s-24) var(--s-32);
 }
 .who {
   min-width: 0;
 }
 .name {
-  font-size: 20px;
+  font-size: var(--type-title2);
   font-weight: 600;
 }
 .sub {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 13px;
+  font-size: var(--type-footnote);
   color: var(--text-3);
 }
 .line {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: var(--s-16);
   width: calc(100% - 24px);
   margin: 0 12px;
   min-height: 64px;
-  padding: 10px;
+  padding: var(--s-12);
   border: 0;
   border-top: 1px solid var(--line);
   background: transparent;
@@ -77,11 +77,11 @@ button.line:disabled {
   transition: translate var(--t-base) var(--ease-out);
 }
 .title {
-  font-size: 15px;
+  font-size: var(--type-callout);
   font-weight: 500;
 }
 .value {
-  font-size: 14px;
+  font-size: var(--type-body);
   color: var(--text-2);
 }
 .chevron {
@@ -90,7 +90,7 @@ button.line:disabled {
 
 @media (max-width: 900px) {
   .page {
-    gap: 16px;
+    gap: var(--s-16);
   }
 }
 .card > .line:last-child {

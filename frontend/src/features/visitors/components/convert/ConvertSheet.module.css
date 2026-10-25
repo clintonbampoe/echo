@@ -1,7 +1,7 @@
 .intro {
   margin: 0 0 20px;
-  padding: 12px 14px;
-  font-size: 14px;
+  padding: var(--s-12) var(--s-16);
+  font-size: var(--type-body);
   line-height: 1.5;
   color: var(--text-2);
   background: var(--surface-2);
