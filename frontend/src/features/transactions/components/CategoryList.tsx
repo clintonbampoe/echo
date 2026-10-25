@@ -1,62 +1,54 @@
 import type { Paged } from "@/lib/paged";
-import { Chip, RecordTable } from "@/ui";
+import { EmptyState, IconTile, RecordLines } from "@/ui";
 import type { Category } from "../api";
 import { usedBy } from "../categories";
-import { typeLabel, typeTone } from "../labels";
 
 export type CategoryStart = "edit" | "delete";
 
 type Props = {
   list: Paged<Category>;
-  filtered: boolean;
+  // Income or Expense: which of the two is on show.
+  type: string;
   onOpen: (c: Category, start: CategoryStart) => void;
 };
 
-// Every category with what it is for and how many transactions are filed under it. A table on a wide screen, a card
-// for each on a phone. There is no detail panel: a category is a name and a type, so the ⋯ menu is all it needs.
-export function CategoryList({ list, filtered, onOpen }: Props) {
+// The categories of one type, each with how many transactions are filed under it. There is no detail panel: a
+// category is a name and a type, so a row opens the editor and the ⋯ menu has the rest.
+export function CategoryList({ list, type, onOpen }: Props) {
+  if (list.rows.length === 0 && !list.loading)
+    return (
+      <EmptyState
+        icon="finance"
+        title={`No ${type === "Income" ? "income" : "expense"} categories yet`}
+      >
+        Create a category, then file money in and money out under it.
+      </EmptyState>
+    );
   return (
-    <RecordTable
+    <RecordLines
       label="Categories"
       list={list}
       rowKey={(c) => String(c.id)}
-      large
-      rowName={(c) => c.name}
-      actions={(c) => [
-        { label: "Edit category", onSelect: () => onOpen(c, "edit") },
-        {
-          label: "Delete category",
-          danger: true,
-          separated: true,
-          onSelect: () => onOpen(c, "delete"),
-        },
-      ]}
+      line={(c) => ({
+        lead: <IconTile icon="finance" />,
+        title: c.name,
+        sub: usedBy(c.transactionCount),
+      })}
+      onOpen={(c) => onOpen(c, "edit")}
+      actions={(c) => ({
+        label: `Actions for ${c.name}`,
+        title: c.name,
+        items: [
+          { label: "Edit category", onSelect: () => onOpen(c, "edit") },
+          {
+            label: "Delete category",
+            danger: true,
+            separated: true,
+            onSelect: () => onOpen(c, "delete"),
+          },
+        ],
+      })}
       noun={["category", "categories"]}
-      empty={
-        filtered
-          ? {
-              icon: "search",
-              title: "No categories of this type",
-              text: "Choose All to see every category, or create one of this type.",
-            }
-          : {
-              icon: "finance",
-              title: "No categories yet",
-              text: "Create a category, then file money in and money out under it.",
-            }
-      }
-      columns={[
-        { header: "Name", cell: (c) => c.name },
-        {
-          header: "Type",
-          cell: (c) => (
-            <Chip tone={typeTone[c.categoryType]}>
-              {typeLabel[c.categoryType]}
-            </Chip>
-          ),
-        },
-        { header: "Used by", cell: (c) => usedBy(c.transactionCount) },
-      ]}
     />
   );
 }

@@ -37,7 +37,6 @@ export function StatusDialog({
       }
       confirmLabel={cancelling ? "Cancel session" : "Mark completed"}
       cancelLabel={cancelling ? "Keep session" : "Cancel"}
-      tone={cancelling ? "danger" : "neutral"}
       busy={update.isPending}
       error={failed ? "We could not save this change. Try again." : undefined}
       onConfirm={() => void confirm()}

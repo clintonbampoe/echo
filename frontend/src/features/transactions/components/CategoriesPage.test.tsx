@@ -62,9 +62,9 @@ const sent = (method: string) =>
     ([, i]) => (i as RequestInit | undefined)?.method === method,
   );
 
-const menuFor = async (name: string, item: string) => {
+const menuFor = async (name: string, item: string, address?: string) => {
   const user = userEvent.setup();
-  open();
+  open(address);
   await screen.findByText(name);
   await user.click(
     screen.getByRole("button", {
@@ -76,11 +76,23 @@ const menuFor = async (name: string, item: string) => {
 };
 
 describe("categories page", () => {
-  it("lists every category with its type and how many transactions use it", async () => {
+  it("lists the income categories first, with how many transactions use each", async () => {
     open();
     expect(await screen.findByText("Offerings")).toBeInTheDocument();
     expect(screen.getByText("38 transactions")).toBeInTheDocument();
     expect(screen.getByText("0 transactions")).toBeInTheDocument();
+    expect(
+      screen.getByText("2 categories · 38 transactions in use"),
+    ).toBeInTheDocument();
+    expect(screen.queryByText("Utilities")).not.toBeInTheDocument();
+  });
+
+  it("switches to the expense categories", async () => {
+    const user = userEvent.setup();
+    open();
+    await user.click(await screen.findByRole("radio", { name: "Expenses" }));
+    expect(await screen.findByText("Utilities")).toBeInTheDocument();
+    expect(screen.queryByText("Offerings")).not.toBeInTheDocument();
   });
 
   it("shows only one type when asked in the address", async () => {
@@ -128,14 +140,15 @@ describe("categories page", () => {
   });
 
   it("will not delete a category in use, and moves its transactions instead", async () => {
-    const user = await menuFor("Utilities", "Delete category");
+    await menuFor(
+      "Utilities",
+      "Delete category",
+      "/finance/categories?type=Expense",
+    );
     expect(
       await screen.findByText("Utilities is still in use"),
     ).toBeInTheDocument();
     expect(sent("DELETE")).toHaveLength(0);
-    await user.click(
-      screen.getByRole("button", { name: "Move 14 transactions" }),
-    );
     expect(
       await screen.findByText(/no other expense category/i),
     ).toBeInTheDocument();
@@ -143,9 +156,6 @@ describe("categories page", () => {
 
   it("moves an income category to another income category and deletes it", async () => {
     const user = await menuFor("Offerings", "Delete category");
-    await user.click(
-      await screen.findByRole("button", { name: "Move 38 transactions" }),
-    );
     const confirm = await screen.findByRole("button", {
       name: "Move and delete",
     });

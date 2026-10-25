@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import type { Paged } from "@/lib/paged";
+import { ActionMenu, type MenuItem } from "./ActionMenu";
 import { Avatar } from "./Avatar";
 import styles from "./RecordLines.module.css";
 
@@ -22,6 +23,8 @@ type Props<T> = {
   // Where a row leads: a page, or a panel on the same page.
   href?: (row: T) => string;
   onOpen?: (row: T) => void;
+  // A ⋯ menu at the right of each row, for what a row can do besides open.
+  actions?: (row: T) => { label: string; title: string; items: MenuItem[] };
   // What the count calls a row ("asset" -> "Showing 6 assets").
   noun: [one: string, many: string];
 };
@@ -35,6 +38,7 @@ export function RecordLines<T>({
   line,
   href,
   onOpen,
+  actions,
   noun,
 }: Props<T>) {
   const shown = list.rows.length;
@@ -74,7 +78,12 @@ export function RecordLines<T>({
                 </p>
                 {l.sub && <p className={styles.sub}>{l.sub}</p>}
               </div>
-              {l.end && <div className={styles.end}>{l.end}</div>}
+              {(l.end || actions) && (
+                <div className={styles.end}>
+                  {l.end}
+                  {actions && <ActionMenu {...actions(row)} />}
+                </div>
+              )}
             </li>
           );
         })}

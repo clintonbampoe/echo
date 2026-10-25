@@ -16,11 +16,12 @@
 .panel {
   position: relative;
   width: 100%;
-  max-width: 440px;
-  padding: 24px;
-  background: var(--surface);
-  border-radius: var(--radius-lg, 16px);
+  max-width: 380px;
+  padding: 28px 24px 20px;
+  background: var(--card-bg);
+  border-radius: 28px;
   box-shadow: 0 24px 64px rgb(10 10 10 / 24%);
+  text-align: center;
   animation: pop 320ms var(--spring) both;
 }
 .panel[data-closing="true"] {
@@ -28,13 +29,14 @@
 }
 .title {
   margin: 0 0 8px;
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 600;
+  letter-spacing: -0.01em;
 }
 .body {
-  color: var(--text-2);
+  color: var(--text-3);
   font-size: 14px;
-  line-height: 1.5;
+  line-height: 1.6;
 }
 .body p {
   margin: 0 0 8px;
@@ -44,19 +46,18 @@
   color: var(--neg);
   font-size: 14px;
 }
+/* A black button, then a plain Cancel under it. The select a dialog may carry reads left to right. */
 .actions {
   display: flex;
-  justify-content: flex-end;
-  gap: 8px;
+  flex-direction: column;
+  gap: 4px;
   margin-top: 20px;
 }
-.actions .danger {
-  background: var(--neg);
-  color: #fff;
+.actions > button {
+  height: 48px;
 }
-.actions .danger:hover:not(:disabled) {
-  background: var(--neg);
-  filter: brightness(0.92);
+.body :where(label, [role="combobox"]) {
+  text-align: left;
 }
 
 @keyframes pop {
@@ -69,40 +70,5 @@
   to {
     opacity: 0;
     transform: scale(0.97);
-  }
-}
-
-@media (max-width: 900px) {
-  .root {
-    align-items: flex-end;
-    padding: 0;
-  }
-  .panel {
-    max-width: none;
-    padding: 24px 16px 20px;
-    border-radius: 16px 16px 0 0;
-    animation-name: lift;
-  }
-  .panel[data-closing="true"] {
-    animation-name: liftOut;
-  }
-  .actions {
-    flex-direction: column-reverse;
-  }
-  .actions > button {
-    width: 100%;
-    height: 52px;
-  }
-}
-@keyframes lift {
-  from {
-    transform: translateY(40px);
-    opacity: 0;
-  }
-}
-@keyframes liftOut {
-  to {
-    transform: translateY(40px);
-    opacity: 0;
   }
 }

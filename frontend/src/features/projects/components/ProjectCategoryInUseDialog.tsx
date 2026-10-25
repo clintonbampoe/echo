@@ -20,7 +20,6 @@ export function ProjectCategoryInUseDialog({
       title={`${category.name} is still in use`}
       confirmLabel={`Move ${plural(n, "project")}`}
       cancelLabel="Cancel"
-      tone="neutral"
       onConfirm={onMove}
       onCancel={onClose}
     >

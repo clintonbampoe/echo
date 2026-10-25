@@ -16,7 +16,6 @@ export function AssetCategoryInUseDialog({ category, onMove, onClose }: Props) {
       title={`${category.name} is still in use`}
       confirmLabel={`Move ${plural(n, "asset")}`}
       cancelLabel="Cancel"
-      tone="neutral"
       onConfirm={onMove}
       onCancel={onClose}
     >

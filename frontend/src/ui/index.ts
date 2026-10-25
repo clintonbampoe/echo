@@ -79,5 +79,5 @@ export { useNarrowProfile } from "./useNarrowProfile";
 export { usePublicSurface } from "./useSurface";
 export { ThemeToggle } from "./ThemeToggle";
 export { Atmosphere } from "./Atmosphere";
-export type { Line } from "./RecordLines";
+export { RecordLines, type Line } from "./RecordLines";
 export { DateTile, IconTile } from "./Tile";

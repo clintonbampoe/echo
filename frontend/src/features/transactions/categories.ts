@@ -8,10 +8,24 @@ import { transactionTypes } from "./filters";
 
 export const NAME_MAX = 100;
 
+// Income or expenses, one at a time; income first.
 export const categoryFilters = urlFilters(
-  { type: "" },
-  { type: ["", ...transactionTypes] },
+  { type: "Income" },
+  { type: transactionTypes },
 );
+
+// The switch above the list: no "all", since a category is only ever one of the two.
+export const categoryTypeOptions = [
+  { value: "Income", label: "Income" },
+  { value: "Expense", label: "Expenses" },
+] as const;
+
+// "6 categories · 37 transactions in use".
+export const categoriesSummary = (categories: Category[]): string =>
+  `${plural(categories.length, "category", "categories")} · ${plural(
+    categories.reduce((sum, c) => sum + c.transactionCount, 0),
+    "transaction",
+  )} in use`;
 
 export const usedBy = (n: number) => plural(n, "transaction");
 

@@ -36,7 +36,7 @@ export function MergeCategoryDialog({ category, categories, onClose }: Props) {
 
   return (
     <ConfirmDialog
-      title={`Move ${plural(n, "transaction")} from ${category.name}`}
+      title={`${category.name} is still in use`}
       confirmLabel="Move and delete"
       cancelLabel="Cancel"
       confirmDisabled={!target}
@@ -48,14 +48,15 @@ export function MergeCategoryDialog({ category, categories, onClose }: Props) {
       onCancel={onClose}
     >
       <p>
-        {n === 1 ? "The transaction moves" : `All ${n} transactions move`} to
-        the category you pick. Then {category.name} is deleted.
+        {plural(n, "transaction")} {n === 1 ? "uses" : "use"} this category.
+        Move {n === 1 ? "it" : "them"} to another {word} category, then it can
+        be deleted.
       </p>
       {options.length > 0 ? (
         <div className={styles.pick}>
           <SelectField
             label="Move to"
-            placeholder={`Choose ${word === "income" ? "an income" : "an expense"} category`}
+            placeholder="Choose a category"
             options={options}
             value={target}
             onChange={setTarget}

@@ -4,8 +4,12 @@ import { paths } from "@/lib/paths";
 import { useUrlFilters } from "@/lib/useUrlFilters";
 import { BackLink, PageHeader, SegmentedField } from "@/ui";
 import type { Category } from "../api";
-import { categoriesOfType, categoryFilters } from "../categories";
-import { typeOptions } from "../filters";
+import {
+  categoriesOfType,
+  categoriesSummary,
+  categoryFilters,
+  categoryTypeOptions,
+} from "../categories";
 import { useCategories } from "../hooks";
 import styles from "./CategoriesPage.module.css";
 import { CategoryList, type CategoryStart } from "./CategoryList";
@@ -35,15 +39,17 @@ export function CategoriesPage() {
           label="Show"
           hideLabel
           joined
-          fill
-          options={typeOptions}
+          options={categoryTypeOptions}
           value={filters.type}
           onChange={(type) => update({ type })}
         />
       </div>
+      {categories.data && (
+        <p className={styles.summary}>{categoriesSummary(shown)}</p>
+      )}
       <CategoryList
         list={plainList(shown, categories)}
-        filtered={categoryFilters.isFiltered(filters)}
+        type={filters.type}
         onOpen={(category, kind) => setOpen({ kind, category })}
       />
       {open?.kind === "new" && <CategorySheet onClose={close} />}

@@ -362,7 +362,7 @@ describe("finance page", () => {
       const ask = await screen.findByRole("alertdialog");
       expect(
         within(ask).getByText(
-          /GH₵ 1,240 expense under Utilities, dated 13 Oct 2026, will be removed/,
+          /ECG electricity bill, September for GHS 1,240 will be removed from October.s totals/,
         ),
       ).toBeInTheDocument();
       await user.click(
