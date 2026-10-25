@@ -7,6 +7,7 @@ import { CheckInPersonPanel } from "./CheckInPersonPanel";
 // changes its time, and the dialog that undoes it. A list keeps `panels` on the page and calls `open` on a row.
 export function useCheckInPanels(): {
   open: (checkIn: CheckIn) => void;
+  edit: (checkIn: CheckIn) => void;
   remove: (checkIn: CheckIn) => void;
   panels: ReactNode;
 } {
@@ -45,5 +46,5 @@ export function useCheckInPanels(): {
     </>
   );
 
-  return { open: setViewing, remove: setRemoving, panels };
+  return { open: setViewing, edit: setEditing, remove: setRemoving, panels };
 }

@@ -1,4 +1,3 @@
-import { paymentLabel } from "@/features/transactions";
 import type { ReactNode } from "react";
 import { formatDayMonth, formatNumber } from "@/lib/format";
 import { PersonList, type PersonColumn } from "@/ui";
@@ -20,7 +19,7 @@ const columns: PersonColumn<Tithe>[] = [
   },
 ];
 
-// The rows: who gave, how and when, and the amount. A row opens the tithe to read, where it can be edited or deleted.
+// The rows: who gave, the day, and the amount. A row opens the tithe to read; the ⋯ menu edits or deletes it.
 export function TitheList({ tithes, onOpen, footer }: Props) {
   return (
     <PersonList
@@ -29,10 +28,14 @@ export function TitheList({ tithes, onOpen, footer }: Props) {
       rowKey={(t) => t.id}
       person={(t) => ({
         name: t.memberName,
-        detail: `${paymentLabel[t.paymentMethod]} · ${formatDayMonth(t.collectionDate)}`,
+        detail: formatDayMonth(t.collectionDate),
         onOpen: () => onOpen(t, "view"),
       })}
       columns={columns}
+      actions={(t) => [
+        { label: "Edit", onSelect: () => onOpen(t, "edit") },
+        { label: "Delete", danger: true, onSelect: () => onOpen(t, "delete") },
+      ]}
       compact
       footer={footer}
     />

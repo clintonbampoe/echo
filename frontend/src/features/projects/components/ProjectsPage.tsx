@@ -11,6 +11,9 @@ import {
   useProjectSummary,
 } from "../hooks";
 import { managerOptions, projectStats } from "../view";
+import type { Project } from "../api";
+import { DeleteProjectDialog } from "./DeleteProjectDialog";
+import { EditProjectSheet } from "./EditProjectSheet";
 import { ProjectFilterBar } from "./ProjectFilterBar";
 import { ProjectList } from "./ProjectList";
 import { ProjectSheet } from "./ProjectSheet";
@@ -19,6 +22,8 @@ import { ProjectSheet } from "./ProjectSheet";
 export function ProjectsPage() {
   const today = todayText();
   const [creating, setCreating] = useState(false);
+  const [editing, setEditing] = useState<Project | null>(null);
+  const [deleting, setDeleting] = useState<Project | null>(null);
   const { filters, update, clear, resetKey } = useUrlFilters(projectFilters);
   const categories = useProjectCategories();
   const managers = useProjectManagers();
@@ -60,8 +65,19 @@ export function ProjectsPage() {
         filtered={projectFilters.isFiltered(filters) && !wide}
         everything={wide}
         onClear={clear}
+        onEdit={setEditing}
+        onDelete={setDeleting}
       />
       <ProjectSheet open={creating} onClose={() => setCreating(false)} />
+      {editing && (
+        <EditProjectSheet project={editing} onClose={() => setEditing(null)} />
+      )}
+      {deleting && (
+        <DeleteProjectDialog
+          project={deleting}
+          onClose={() => setDeleting(null)}
+        />
+      )}
     </div>
   );
 }

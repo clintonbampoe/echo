@@ -370,4 +370,15 @@ describe("tithes page", () => {
       ),
     ).toBe(true);
   });
+
+  it("deletes from the menu on its row, asking first", async () => {
+    const user = userEvent.setup();
+    open();
+    await screen.findByRole("button", { name: "Kofi Mensah" });
+    await user.click(
+      screen.getByRole("button", { name: "Actions for Kofi Mensah" }),
+    );
+    await user.click(await screen.findByRole("menuitem", { name: "Delete" }));
+    expect(await screen.findByText("Delete this tithe?")).toBeInTheDocument();
+  });
 });

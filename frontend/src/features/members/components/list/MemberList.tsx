@@ -3,12 +3,14 @@ import { formatDate } from "@/lib/format";
 import { paths } from "@/lib/paths";
 import { Chip, PersonList, type PersonColumn } from "@/ui";
 import type { Member } from "../../api/members";
+import type { MemberAction } from "../dialogs/MemberActionHost";
 import { contactLine } from "../../model/display";
 import { statusTone } from "../../model/labels";
 
 type Props = {
   members: Member[];
   footer?: ReactNode;
+  onAct: (action: MemberAction) => void;
 };
 
 // Which columns a member row shows. The row itself (avatar, name, line under it, menu, card layout) is shared.
@@ -31,7 +33,7 @@ const columns: PersonColumn<Member>[] = [
   },
 ];
 
-export function MemberList({ members, footer }: Props) {
+export function MemberList({ members, footer, onAct }: Props) {
   return (
     <PersonList
       label="Members"
@@ -43,6 +45,14 @@ export function MemberList({ members, footer }: Props) {
         href: paths.member(m.id),
       })}
       columns={columns}
+      actions={(m) => [
+        { label: "Edit", onSelect: () => onAct({ kind: "edit", member: m }) },
+        {
+          label: "Delete",
+          danger: true,
+          onSelect: () => onAct({ kind: "delete", member: m }),
+        },
+      ]}
       compact
       footer={footer}
     />

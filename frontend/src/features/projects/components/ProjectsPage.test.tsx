@@ -170,6 +170,22 @@ describe("projects page", () => {
     expect(await screen.findByText("The project page")).toBeInTheDocument();
   });
 
+  it("edits a project from the menu on its card", async () => {
+    const user = userEvent.setup();
+    open();
+    await user.click(
+      await screen.findByRole("button", {
+        name: "Actions for Church roof renovation",
+      }),
+    );
+    await user.click(await screen.findByRole("menuitem", { name: "Edit" }));
+    expect(
+      await screen.findByRole("dialog", {
+        name: /Church roof renovation/,
+      }),
+    ).toBeInTheDocument();
+  });
+
   it("invites the first project when there are none at all, and points to wider dates otherwise", async () => {
     list = [];
     open("/projects?window=all");

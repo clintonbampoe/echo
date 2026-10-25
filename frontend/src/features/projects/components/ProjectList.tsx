@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { formatMoney } from "@/lib/format";
 import type { Paged } from "@/lib/paged";
 import { paths } from "@/lib/paths";
-import { Chip, ListBody, ProgressBar } from "@/ui";
+import { ActionMenu, Chip, ListBody, ProgressBar } from "@/ui";
 import type { Project } from "../api";
 import { statusLabel, statusTone } from "../labels";
 import { percentRaised } from "../view";
@@ -13,10 +13,18 @@ type Props = {
   filtered: boolean;
   everything: boolean;
   onClear: () => void;
+  onEdit: (project: Project) => void;
+  onDelete: (project: Project) => void;
 };
 
+type Act = Pick<Props, "onEdit" | "onDelete">;
+
 // One project as a card: its name and category, how much of the target is raised, and a bar. The whole card opens it.
-function ProjectCard({ project: p }: { project: Project }) {
+function ProjectCard({
+  project: p,
+  onEdit,
+  onDelete,
+}: Act & { project: Project }) {
   const percent = percentRaised(p);
   return (
     <li className={styles.card}>
@@ -30,6 +38,16 @@ function ProjectCard({ project: p }: { project: Project }) {
         {p.status !== "OnTrack" && (
           <Chip tone={statusTone[p.status]}>{statusLabel[p.status]}</Chip>
         )}
+        <span className={styles.menu}>
+          <ActionMenu
+            label={`Actions for ${p.name}`}
+            title={p.name}
+            items={[
+              { label: "Edit", onSelect: () => onEdit(p) },
+              { label: "Delete", danger: true, onSelect: () => onDelete(p) },
+            ]}
+          />
+        </span>
       </div>
       <p className={styles.percent}>
         {percent}%<span className={styles.funded}> funded</span>
@@ -47,7 +65,14 @@ function ProjectCard({ project: p }: { project: Project }) {
 }
 
 // Every project in the period, newest start first, as a grid of cards.
-export function ProjectList({ list, filtered, everything, onClear }: Props) {
+export function ProjectList({
+  list,
+  filtered,
+  everything,
+  onClear,
+  onEdit,
+  onDelete,
+}: Props) {
   return (
     <ListBody
       list={list}
@@ -69,7 +94,12 @@ export function ProjectList({ list, filtered, everything, onClear }: Props) {
       {(rows) => (
         <ul aria-label="Projects" className={styles.grid}>
           {rows.map((p) => (
-            <ProjectCard key={p.id} project={p} />
+            <ProjectCard
+              key={p.id}
+              project={p}
+              onEdit={onEdit}
+              onDelete={onDelete}
+            />
           ))}
         </ul>
       )}

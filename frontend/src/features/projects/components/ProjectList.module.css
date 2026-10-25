@@ -93,3 +93,11 @@
     padding: 18px 20px;
   }
 }
+
+/* Above the card's click layer, so the menu takes its own click. */
+.menu {
+  position: relative;
+  z-index: 1;
+  flex: none;
+  margin: -6px -10px 0 0;
+}

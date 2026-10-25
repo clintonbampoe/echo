@@ -8,6 +8,8 @@ type Props = {
   filtered: boolean;
   onClear: () => void;
   onOpen: (checkIn: CheckIn) => void;
+  onEdit: (checkIn: CheckIn) => void;
+  onRemove: (checkIn: CheckIn) => void;
 };
 
 const columns: PersonColumn<CheckIn>[] = [
@@ -21,7 +23,14 @@ const columns: PersonColumn<CheckIn>[] = [
 ];
 
 // Who is marked present at a session, newest first. A row opens their record, where it can be changed or removed.
-export function CheckInList({ list, filtered, onClear, onOpen }: Props) {
+export function CheckInList({
+  list,
+  filtered,
+  onClear,
+  onOpen,
+  onEdit,
+  onRemove,
+}: Props) {
   return (
     <ListBody
       list={list}
@@ -47,6 +56,14 @@ export function CheckInList({ list, filtered, onClear, onOpen }: Props) {
           })}
           columns={columns}
           footer={footer}
+          actions={(c) => [
+            { label: "Edit time", onSelect: () => onEdit(c) },
+            {
+              label: "Remove from session",
+              danger: true,
+              onSelect: () => onRemove(c),
+            },
+          ]}
           compact
           flat
         />

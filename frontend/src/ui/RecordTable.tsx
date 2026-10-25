@@ -55,7 +55,7 @@ type Props<T> = {
   actions?: (row: T) => MenuItem[];
   rowName?: (row: T) => string;
   // Draws each record as a line of the board's list card (lead, title, line under it, end) instead of a table row.
-  // The columns are then only used for the loading shape. A line has no ⋯ menu: its page or panel has the actions.
+  // The columns are then only used for the loading shape. `actions` and `rowName` give the line its ⋯ menu.
   line?: (row: T) => Line;
   // Keeps the table a fixed height: past about five rows the rows scroll, the heading and footer stay.
   scroll?: boolean;
@@ -102,9 +102,20 @@ export function RecordTable<T>(props: Props<T>) {
         href={props.href}
         onOpen={props.onOpen}
         noun={props.noun}
+        actions={lineActions(props)}
       />
     );
   return <Rows {...props} />;
+}
+
+// The ⋯ menu of a line, when the table was given actions and a name for each row.
+function lineActions<T>({ actions, rowName }: Props<T>) {
+  if (!actions || !rowName) return undefined;
+  return (row: T) => ({
+    label: `Actions for ${rowName(row)}`,
+    title: rowName(row),
+    items: actions(row),
+  });
 }
 
 // A table kept to a fixed height is a region the keyboard can scroll, and says so.

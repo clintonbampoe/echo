@@ -16,7 +16,7 @@ export function SessionCheckIns({ session }: { session: Session }) {
   const [name, setName] = useState("");
   const [kind, setKind] = useState("");
   const [resetKey, setResetKey] = useState(0);
-  const { open, panels } = useCheckInPanels();
+  const { open, edit, remove, panels } = useCheckInPanels();
   const list = useCheckIns(session.id, {
     name: name || undefined,
     kind: (kind || undefined) as PersonKind | undefined,
@@ -56,6 +56,8 @@ export function SessionCheckIns({ session }: { session: Session }) {
           filtered={filtered}
           onClear={clear}
           onOpen={open}
+          onEdit={edit}
+          onRemove={remove}
         />
       </ListCard>
       {panels}

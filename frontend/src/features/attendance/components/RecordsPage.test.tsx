@@ -80,6 +80,19 @@ describe("attendance records", () => {
     ).toBeInTheDocument();
   });
 
+  it("edits or deletes a session from the menu on its row", async () => {
+    open();
+    await userEvent.click(
+      await screen.findByRole("button", { name: /Actions for Sunday Service/ }),
+    );
+    expect(
+      await screen.findByRole("menuitem", { name: "Edit" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("menuitem", { name: "Delete" }),
+    ).toBeInTheDocument();
+  });
+
   it("has Day and Records tabs, with Records open", async () => {
     open();
     expect(

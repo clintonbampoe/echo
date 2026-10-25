@@ -87,11 +87,17 @@ describe("members page", () => {
     expect(screen.queryByRole("dialog", { name: "Add member" })).toBeNull();
   });
 
-  it("has no row menu: rows open the profile", async () => {
+  it("edits a member from the menu on its row", async () => {
     server();
     renderApp(<MembersPage />, "/members");
     await screen.findByRole("link", { name: "Kwame Asante" });
-    expect(screen.queryByRole("button", { name: /Actions for/ })).toBeNull();
+    await userEvent.click(
+      screen.getByRole("button", { name: "Actions for Kwame Asante" }),
+    );
+    await userEvent.click(
+      await screen.findByRole("menuitem", { name: "Edit" }),
+    );
+    expect(await screen.findByRole("dialog")).toBeInTheDocument();
   });
 
   it("says so when nothing matches the filters", async () => {

@@ -20,7 +20,7 @@ const columns: PersonColumn<CheckIn>[] = [
 // opens that check-in's panel, which is about the session they came to (design rule S6).
 export function PeopleRecords({ query, narrowed, onClear }: Props) {
   const list = useRecordCheckIns(query);
-  const { open, remove, panels } = useCheckInPanels();
+  const { open, edit, remove, panels } = useCheckInPanels();
   return (
     <>
       <ListBody
@@ -48,6 +48,7 @@ export function PeopleRecords({ query, narrowed, onClear }: Props) {
             columns={columns}
             footer={footer}
             actions={(c) => [
+              { label: "Edit time", onSelect: () => edit(c) },
               {
                 label: "Remove from session",
                 danger: true,

@@ -1,7 +1,12 @@
+import { useState } from "react";
 import { useUrlFilters } from "@/lib/useUrlFilters";
 import { useUrlFlag } from "@/lib/useUrlFlag";
 import { ListBody, PageHeader, Presence, StatStrip } from "@/ui";
 import { NewMemberSheet } from "../components/form/NewMemberSheet";
+import {
+  MemberActionHost,
+  type MemberAction,
+} from "../components/dialogs/MemberActionHost";
 import { MemberFilterBar } from "../components/list/MemberFilterBar";
 import { MemberList } from "../components/list/MemberList";
 import { useMemberFigures, useMembers } from "../hooks";
@@ -11,6 +16,7 @@ import { memberFilters, toApiFilters, windowOf } from "../model/filters";
 export function MembersPage() {
   const { filters, update, clear, resetKey } = useUrlFilters(memberFilters);
   const [adding, setAdding] = useUrlFlag("new");
+  const [action, setAction] = useState<MemberAction | null>(null);
 
   const query = toApiFilters(filters);
   const list = useMembers(query);
@@ -42,8 +48,11 @@ export function MembersPage() {
         onClear={clear}
         footerInside
       >
-        {(members, footer) => <MemberList members={members} footer={footer} />}
+        {(members, footer) => (
+          <MemberList members={members} footer={footer} onAct={setAction} />
+        )}
       </ListBody>
+      <MemberActionHost action={action} onClose={() => setAction(null)} />
       <Presence open={adding}>
         <NewMemberSheet onClose={() => setAdding(false)} />
       </Presence>

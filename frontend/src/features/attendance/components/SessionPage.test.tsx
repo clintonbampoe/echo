@@ -299,6 +299,19 @@ describe("session page", () => {
     expect([at.getDate(), at.getHours(), at.getMinutes()]).toEqual([11, 9, 30]);
   });
 
+  it("changes the time or removes a check-in from the menu on its row", async () => {
+    open();
+    await userEvent.click(
+      await screen.findByRole("button", { name: "Actions for Esi Owusu" }),
+    );
+    expect(
+      await screen.findByRole("menuitem", { name: "Edit time" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("menuitem", { name: "Remove from session" }),
+    ).toBeInTheDocument();
+  });
+
   it("marks a scheduled session completed after asking", async () => {
     open();
     await userEvent.click(
