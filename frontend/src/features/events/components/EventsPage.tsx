@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { todayText } from "@/lib/dates";
 import { paths } from "@/lib/paths";
@@ -14,6 +15,9 @@ import {
 import { eventFilters, toApiFilters, type EventTab } from "../filters";
 import { useEvents, useEventSummary, useNextEvent } from "../hooks";
 import { summaryStats } from "../stat";
+import type { EventItem } from "../api";
+import { DeleteEventDialog } from "./DeleteEventDialog";
+import { EditEventSheet } from "./EditEventSheet";
 import { EventList } from "./EventList";
 import { EventSheet } from "./EventSheet";
 import { EventsFilterBar } from "./EventsFilterBar";
@@ -39,6 +43,8 @@ const text = {
 export function EventsPage({ tab }: { tab: EventTab }) {
   const navigate = useNavigate();
   const [adding, setAdding] = useUrlFlag("new");
+  const [editing, setEditing] = useState<EventItem | null>(null);
+  const [deleting, setDeleting] = useState<EventItem | null>(null);
   const { filters, update, clear, resetKey } = useUrlFilters(eventFilters);
   const today = todayText();
   const list = useEvents(toApiFilters(filters, tab, today));
@@ -114,6 +120,8 @@ export function EventsPage({ tab }: { tab: EventTab }) {
                   events={events}
                   past={tab === "past"}
                   footer={footer}
+                  onEdit={setEditing}
+                  onDelete={setDeleting}
                 />
               )}
             </ListBody>
@@ -121,6 +129,12 @@ export function EventsPage({ tab }: { tab: EventTab }) {
         </>
       )}
       <EventSheet open={adding} onClose={() => setAdding(false)} />
+      {editing && (
+        <EditEventSheet event={editing} onClose={() => setEditing(null)} />
+      )}
+      {deleting && (
+        <DeleteEventDialog event={deleting} onClose={() => setDeleting(null)} />
+      )}
     </div>
   );
 }

@@ -15,9 +15,8 @@ describe("event summary", () => {
     expect(stats.map((x) => [x.label, x.value])).toEqual([
       ["Upcoming", "6"],
       ["Registered", "1,284"],
-      ["Events", "24"],
+      ["Next event", "17 Oct"],
     ]);
-    expect(stats[0]?.note).toBe("Next: Sat 17 Oct");
   });
 
   it("shows what was held over the past ones: events, check-ins and the average", () => {
@@ -27,7 +26,6 @@ describe("event summary", () => {
       ["Check-ins", "1,102"],
       ["Average", "61"],
     ]);
-    expect(stats[1]?.note).toBe("86% of those registered");
   });
 
   it("shows dashes while it loads, and says when nothing is planned", () => {
@@ -37,14 +35,11 @@ describe("event summary", () => {
     expect(
       summaryStats(undefined, undefined, "past").map((x) => x.value),
     ).toEqual(["–", "–", "–"]);
-    expect(summaryStats(s, null, "upcoming")[0]?.note).toBe("Nothing planned");
+    expect(summaryStats(s, null, "upcoming")[2]?.value).toBe("None");
   });
 
   it("does not divide by nobody", () => {
     const none = { ...s, totalRegistered: 0, totalAttended: 0 };
-    expect(summaryStats(none, next, "past")[1]?.note).toBe(
-      "No one registered yet",
-    );
     expect(
       summaryStats({ ...none, totalEvents: 6 }, next, "past")[2]?.value,
     ).toBe("0");

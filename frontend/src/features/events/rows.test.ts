@@ -1,5 +1,5 @@
 import type { EventItem } from "./api";
-import { capacityShare, eventSub, fillOf } from "./rows";
+import { capacityShare, countOf, eventSub, fillOf } from "./rows";
 
 const event = (over: Partial<EventItem> = {}): EventItem =>
   ({
@@ -53,5 +53,15 @@ describe("event rows", () => {
     expect(fillOf(event({ capacity: undefined }), false).text).toBe(
       "22 · No limit",
     );
+  });
+});
+
+describe("countOf", () => {
+  it("says how many registered, or how many came to a past event", () => {
+    expect(countOf(event({ registrationCount: 22 }), false)).toBe(
+      "22 registered",
+    );
+    expect(countOf(event({ attendanceCount: 196 }), true)).toBe("196 came");
+    expect(countOf(event({ registrationCount: 8 }), true)).toBe("8 registered");
   });
 });

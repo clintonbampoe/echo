@@ -42,3 +42,9 @@ export function fillOf(e: EventItem, past: boolean): Fill {
         : `${Math.round(share * 100)}% of ${formatNumber(of)}`,
   };
 }
+
+// The line under a name in the list: how many signed up, or for a past event how many came when the list knows.
+export function countOf(e: EventItem, past: boolean): string {
+  const came = past && e.attendanceCount !== undefined;
+  return `${formatNumber(came ? (e.attendanceCount ?? 0) : e.registrationCount)} ${came ? "came" : "registered"}`;
+}

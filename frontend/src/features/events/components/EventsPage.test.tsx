@@ -96,7 +96,7 @@ describe("events page", () => {
     open();
     const row = await screen.findByRole("link", { name: /Youth Rally/ });
     expect(row).toHaveAttribute("href", "/events/e1");
-    expect(row).toHaveTextContent("Sat 17 Oct · Main Auditorium");
+    expect(row).toHaveTextContent("84 registered");
     expect(row).toHaveTextContent("Registered");
     expect(row).toHaveTextContent("56% of 150");
     expect(
@@ -132,7 +132,8 @@ describe("events page", () => {
     ];
     open("past", "/events/past?window=all");
     expect(await screen.findByText("Came")).toBeInTheDocument();
-    expect(screen.getByText("49% of 84")).toBeInTheDocument();
+    expect(screen.getByText("49%")).toBeInTheDocument();
+    expect(screen.getByText("of 84")).toBeInTheDocument();
     const list = urls.find(
       (u) =>
         u.pathname.endsWith("/events") &&
@@ -194,6 +195,19 @@ describe("events page", () => {
     open();
     expect(
       await screen.findByRole("button", { name: "New event" }),
+    ).toBeInTheDocument();
+  });
+
+  it("opens the edit sheet from the menu on its row", async () => {
+    const user = userEvent.setup();
+    open();
+    await screen.findByRole("link", { name: /Youth Rally/ });
+    await user.click(
+      screen.getByRole("button", { name: "Actions for Youth Rally" }),
+    );
+    await user.click(await screen.findByRole("menuitem", { name: "Edit" }));
+    expect(
+      await screen.findByRole("dialog", { name: "Edit Youth Rally" }),
     ).toBeInTheDocument();
   });
 });

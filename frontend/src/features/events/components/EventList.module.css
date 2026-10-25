@@ -1,4 +1,4 @@
-/* A wide screen: one bordered list, rows divided by a line. Phone and tablet: a card per event. */
+/* One bordered card, rows divided by a line. */
 .card {
   background: var(--card-bg);
   border: 1px solid var(--line);
@@ -15,12 +15,19 @@
   border-top: 1px solid var(--line);
 }
 
+.item {
+  display: flex;
+  align-items: center;
+  padding-right: 14px;
+}
 .row {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) minmax(0, 300px);
+  flex: 1;
+  min-width: 0;
+  grid-template-columns: auto minmax(0, 1fr) minmax(0, 260px);
   align-items: center;
   gap: 20px;
-  padding: 12px 22px;
+  padding: 12px 8px 12px 22px;
   color: inherit;
   text-decoration: none;
   transition: background-color var(--fast) ease;
@@ -31,6 +38,9 @@
 .row:focus-visible {
   outline: 2px solid var(--text);
   outline-offset: -2px;
+}
+.menu {
+  flex: none;
 }
 
 .main {
@@ -84,39 +94,33 @@
   border-radius: 3px;
 }
 
-@media (max-width: 900px) {
-  .list {
-    display: grid;
-    gap: 12px;
-    background: none;
-    border: 0;
-    border-radius: 0;
-    box-shadow: none;
-    overflow: visible;
-  }
-  .item + .item {
-    border-top: 0;
-  }
-  .row {
-    background: var(--card-bg);
-    border: 1px solid var(--line);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow);
-  }
-  .row:hover {
-    background: var(--surface);
-  }
+.value {
+  display: flex;
+  gap: 4px;
 }
 
-/* A phone: the numbers drop under the name, across the card. */
+/* A phone: the bar goes, and the room sits under the share. */
 @media (max-width: 560px) {
   .row {
-    grid-template-columns: auto minmax(0, 1fr);
+    grid-template-columns: auto minmax(0, 1fr) auto;
     gap: 14px;
-    padding: 16px;
+    padding: 14px 4px 14px 16px;
   }
-  .fill {
-    grid-column: 1 / -1;
-    grid-row: 2;
+  .item {
+    padding-right: 8px;
+  }
+  .value {
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0;
+  }
+  .label,
+  .track {
+    display: none;
+  }
+  .room {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--text-3);
   }
 }
