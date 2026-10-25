@@ -68,23 +68,23 @@ Read top to bottom: `api` → `hooks` → `model` → `components` → `pages`. 
 
 Use these before writing your own. A new list page is about 40 lines made from them.
 
-| Where | Pieces | For |
-| --- | --- | --- |
-| `lib` | `api`, `usePagedList` | requests, cursor paging |
-| `lib` | `urlFilters`, `useUrlFilters`, `windows` | filters and date ranges kept in the URL. `resetKey` empties a search box after Clear |
-| `lib` | `dates`, `format`, `validation`, `regions`, `paths` | days, money, required fields, links |
-| `ui` | `PageHeader`, `FilterBar`, `SearchBox`, `ListBody` | the shell of a list page. `FilterBar` folds filters behind a "Filters" button on a phone or tablet, even for one filter |
-| `ui` | `ListCard`, `ListHeader`, `PersonList`, `RecordTable`, `RecordLines` | every list card opens with a `ListHeader` (title left, count right), drawn from the list's `title`; pages never hand-build one |
-| `ui` | `Section`, `StatStrip`, `HistoryTrack`, `RankedBars`, `DistributionBar`, `EmptyState` | numbers, the history track (a line of dots joined by a rail), ranked bars (Finance categories), a distribution bar with its legend (Tithes methods, Projects, the dashboard) |
-| `ui` | `WithSide` | a page whose list sits beside a column of figures (Finance, Tithes: 8 + 4) and stacks on a tablet |
-| `ui` | `Lookup`, `PickerAnchor`, `PanelSelect` | one family of pickers: a searchable lookup (member picker), and the anchor that places a picker panel under its field |
-| `ui` | `FormSheet`, `FormSection`, `Field`, `ControlledSelect`, `DeleteDialog`, `Notice` | forms, delete and notes inside a form |
-| `ui` | `MonthYearPill`, `MonthBars` | picking a month, and a month-by-month chart |
-| `ui` | `Chip` + `ChipTone`, `plainOptions`, `withAny` | status labels, dropdown lists |
-| `ui` | `RowCard` + `Row`, `Switch` | a card of icon rows with an action menu, an on/off switch |
-| `ui` | `Tabs`, `SegmentedField`, `Disclosure`, `ProfileHeader` | pill tabs and switches, a fold in a form, a profile's top |
-| `ui` | `ToastProvider` + `useToast`, `Presence` + `useHeld` | saying what happened, letting a sheet or dialog play its exit |
-| `test` | `kit` (`renderApp`, `signIn`, `json`, `pathOf`), `pickers` | what component tests share. Don't copy these into a test |
+| Where  | Pieces                                                                                | For                                                                                                                                                                          |
+| ------ | ------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `lib`  | `api`, `usePagedList`                                                                 | requests, cursor paging                                                                                                                                                      |
+| `lib`  | `urlFilters`, `useUrlFilters`, `windows`                                              | filters and date ranges kept in the URL. `resetKey` empties a search box after Clear                                                                                         |
+| `lib`  | `dates`, `format`, `validation`, `regions`, `paths`                                   | days, money, required fields, links                                                                                                                                          |
+| `ui`   | `PageHeader`, `FilterBar`, `SearchBox`, `ListBody`                                    | the shell of a list page. `FilterBar` folds filters behind a "Filters" button on a phone or tablet, even for one filter                                                      |
+| `ui`   | `ListCard`, `ListHeader`, `PersonList`, `RecordTable`, `RecordLines`                  | every list card opens with a `ListHeader` (title left, count right), drawn from the list's `title`; pages never hand-build one                                               |
+| `ui`   | `Section`, `StatStrip`, `HistoryTrack`, `RankedBars`, `DistributionBar`, `EmptyState` | numbers, the history track (a line of dots joined by a rail), ranked bars (Finance categories), a distribution bar with its legend (Tithes methods, Projects, the dashboard) |
+| `ui`   | `WithSide`                                                                            | a page whose list sits beside a column of figures (Finance, Tithes: 8 + 4) and stacks on a tablet                                                                            |
+| `ui`   | `Lookup`, `PickerAnchor`, `PanelSelect`                                               | one family of pickers: a searchable lookup (member picker), and the anchor that places a picker panel under its field                                                        |
+| `ui`   | `FormSheet`, `FormSection`, `Field`, `ControlledSelect`, `DeleteDialog`, `Notice`     | forms, delete and notes inside a form                                                                                                                                        |
+| `ui`   | `MonthYearPill`, `MonthBars`                                                          | picking a month, and a month-by-month chart                                                                                                                                  |
+| `ui`   | `Chip` + `ChipTone`, `plainOptions`, `withAny`                                        | status labels, dropdown lists                                                                                                                                                |
+| `ui`   | `RowCard` + `Row`, `Switch`                                                           | a card of icon rows with an action menu, an on/off switch                                                                                                                    |
+| `ui`   | `Tabs`, `SegmentedField`, `Disclosure`, `ProfileHeader`                               | pill tabs and switches, a fold in a form, a profile's top                                                                                                                    |
+| `ui`   | `ToastProvider` + `useToast`, `Presence` + `useHeld`                                  | saying what happened, letting a sheet or dialog play its exit                                                                                                                |
+| `test` | `kit` (`renderApp`, `signIn`, `json`, `pathOf`), `pickers`                            | what component tests share. Don't copy these into a test                                                                                                                     |
 
 Features import `ui` only through `ui/index.ts`, which stays alphabetical.
 
@@ -147,11 +147,11 @@ so no screen writes its own. The rulebook is `claude/feel-and-interaction-spec.m
 
 ## State, errors and styling
 
-| Kind of state | Home |
-| --- | --- |
-| Server data | TanStack Query cache |
-| What the user is looking at (filters, date range, `?tab=`) | the URL |
-| Throwaway (is a menu open) | `useState` |
+| Kind of state                                              | Home                 |
+| ---------------------------------------------------------- | -------------------- |
+| Server data                                                | TanStack Query cache |
+| What the user is looking at (filters, date range, `?tab=`) | the URL              |
+| Throwaway (is a menu open)                                 | `useState`           |
 
 - No global store. Lists have no total: count what is loaded, and take any real total from `/summary`.
   Never count or sum in the browser.
@@ -176,13 +176,13 @@ so no screen writes its own. The rulebook is `claude/feel-and-interaction-spec.m
 
 ## Enforced by
 
-| Rule | Enforced by |
-| --- | --- |
-| Layer direction; other features only via `index.ts` | ESLint `no-restricted-imports` |
-| File ≤ 250 lines, function ≤ 60 (warn), complexity ≤ 10 | ESLint |
-| No classes, `console.log`, `useMemo`/`useCallback` | ESLint `no-restricted-syntax` |
-| Strict types, no unchecked index access | `tsconfig.app.json` |
-| Config present and valid at startup | `lib/config.ts` |
+| Rule                                                    | Enforced by                    |
+| ------------------------------------------------------- | ------------------------------ |
+| Layer direction; other features only via `index.ts`     | ESLint `no-restricted-imports` |
+| File ≤ 250 lines, function ≤ 60 (warn), complexity ≤ 10 | ESLint                         |
+| No classes, `console.log`, `useMemo`/`useCallback`      | ESLint `no-restricted-syntax`  |
+| Strict types, no unchecked index access                 | `tsconfig.app.json`            |
+| Config present and valid at startup                     | `lib/config.ts`                |
 
 ## List and page building blocks
 
@@ -217,3 +217,24 @@ so no screen writes its own. The rulebook is `claude/feel-and-interaction-spec.m
 3. Export its routes and add them to `app/routes.tsx`.
 4. Handle all four states.
 5. Run `npm run check` before pushing.
+
+## Scales (the Apple pass)
+
+Every size in the app is one of a short named set, defined once in `styles/tokens.css`. A component never writes a raw
+number for any of these.
+
+- **Type:** `--type-caption` 12, `footnote` 13, `body` 14, `callout` 15, `headline` 16, `title3` 18, `title2` 20, `title1` 24,
+  `large` 30, `display-s` 36, `display` 48, `hero` 60. Nothing is smaller than 12px. A card's title is `headline`, 600.
+- **Spacing:** `--s-2 4 6 8 12 16 20 24 32 40 48`. Gaps and padding use these; an odd value (3, 9, 10, 14, 18, 22) is a bug.
+- **Radius:** `--radius-xs` 6, `sm` 8, `radius` 12, `field` 14, `pop` 22, `lg` 26 (cards), `float` 30 (panels), `pill`. A nested
+  shape's radius is its parent's minus the padding between them; the row hover tile is the exception (a capsule, on purpose).
+- **Controls:** `--control` 40 and `--control-sm` 32 for buttons; `--pill-h` 36 and `--filter-h` 32 for pills and filters,
+  both 40 at 900px and below. On touch the press area is 44: a control that looks smaller extends it with an invisible
+  `::after`, so nothing moves.
+- **Motion:** `--t-fast` 150, `--t-base` 220, `--t-spring` 300, `--t-enter` 420, `--t-exit` 180, `--t-grow` 700.
+  `--ease-settle` (a few percent of overshoot) is for things arriving and morphing; `--spring` is only for a press
+  release, a toggle or a hint. Exits are quicker than entrances.
+- **Row tile:** `.liquid-row`'s tile is concentric with its row: about 12px from its edge to the avatar and to the ⋯ circle,
+  the same as above and below. A row whose padding differs sets `--tile-l`, `--tile-e` and `--tile-y`.
+
+Website and Auth are outside this pass and keep their own sizes.
