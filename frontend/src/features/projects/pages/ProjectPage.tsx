@@ -28,7 +28,7 @@ import { EditProjectSheet } from "../components/form/EditProjectSheet";
 import styles from "./ProjectPage.module.css";
 import { ProjectDetails } from "../components/profile/ProjectDetails";
 import { ProjectHeader } from "../components/profile/ProjectHeader";
-import { ProjectProgress } from "../components/profile/ProjectProgress";
+import { ProjectSummary } from "../components/profile/ProjectSummary";
 
 // One project: what it is for, how far along it is, and what has been given towards it.
 export function ProjectPage() {
@@ -104,8 +104,7 @@ function Detail({ project: p }: { project: Project }) {
       />
       <StatStrip
         label="Project figures"
-        stats={projectFigures(p, summary.data?.totalContributions, todayText())}
-        busy={summary.isPending}
+        stats={projectFigures(p, todayText())}
       />
       <Tabs
         label="Project"
@@ -121,13 +120,20 @@ function Detail({ project: p }: { project: Project }) {
         className={styles.panel}
       >
         {tab === "details" && <ProjectDetails project={p} />}
-        {tab === "summary" && <ProjectProgress project={p} />}
+        {tab === "summary" && (
+          <ProjectSummary
+            project={p}
+            onPickMethod={(method) => {
+              update({ method, window: "all" });
+              setTab("contributions");
+            }}
+          />
+        )}
         {tab === "contributions" && (
           <ContributionsSection
             filters={filters}
             onChange={update}
             list={list}
-            summary={summary}
             onRecord={() => setRecording(true)}
             onAction={(contribution, start) =>
               setOpened({ contribution, start })

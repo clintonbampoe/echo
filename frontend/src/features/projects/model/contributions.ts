@@ -8,7 +8,7 @@ import {
 import { ALL_TIME, monthStart } from "@/lib/dates";
 import { formatMoney, formatNumber } from "@/lib/format";
 import { urlFilters } from "@/lib/urlFilters";
-import { type Option, type Stat } from "@/ui";
+import { type Option, type Ranked, type Stat } from "@/ui";
 import { withAny } from "@/lib/options";
 import type {
   ContributionFilters,
@@ -111,4 +111,33 @@ export function contributionStats(s: ContributionSummary | undefined): Stat[] {
       note: "By number",
     },
   ];
+}
+
+// Every gift towards a project, whenever it was given: the Summary tab's own range, whatever the Contributions tab is filtered to.
+export const allTimeFilters = (projectId: string): ContributionFilters => ({
+  projectId,
+  ...ALL_TIME,
+});
+
+// How it was given: the biggest four ways, the rest folded into "Other" (which opens nothing). Ways that brought in nothing
+// are left out.
+export function methodParts(
+  totals: { method: PaymentMethod; total: number }[],
+): Ranked[] {
+  const rows = totals
+    .filter((t) => t.total > 0)
+    .sort((a, b) => b.total - a.total);
+  const part = (key: string, label: string, value: number): Ranked => ({
+    key,
+    label,
+    value,
+    text: formatMoney(value),
+  });
+  const top = rows
+    .slice(0, 4)
+    .map((t) => part(t.method, paymentLabel[t.method], t.total));
+  const rest = rows.slice(4).reduce((sum, t) => sum + t.total, 0);
+  return rest > 0
+    ? [...top, { ...part("other", "Other", rest), closed: true }]
+    : top;
 }

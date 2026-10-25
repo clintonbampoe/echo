@@ -1,0 +1,240 @@
+.dist {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+/* The bar is slim; a hovered segment grows to nearly twice its height from its centre. */
+.bar {
+  display: flex;
+  gap: 3px;
+  height: 8px;
+}
+.seg {
+  position: relative;
+  min-width: 4px;
+  border-radius: 4px;
+  cursor: pointer;
+  transform-origin: center center;
+  transition:
+    transform 450ms var(--spring),
+    opacity var(--t-base),
+    filter var(--t-fast),
+    box-shadow var(--t-base);
+}
+.c0 {
+  background: #0a0a0b;
+}
+.c1 {
+  background: #6a6a72;
+}
+.c2 {
+  background: #c9c9cf;
+}
+.c3 {
+  background: #e6e6ea;
+}
+.c4 {
+  background: #cfcfd5;
+}
+.seg[data-picked="true"] {
+  box-shadow:
+    0 0 0 2px var(--surface),
+    0 0 0 3.5px var(--text);
+}
+
+.legend {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 40px;
+  padding: 0 10px;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-option);
+  color: inherit;
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+  transition:
+    background-color var(--t-fast) var(--ease-soft),
+    box-shadow var(--t-base);
+}
+button.row {
+  cursor: pointer;
+}
+button.row:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: -2px;
+}
+.swatch {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+.name {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.amount {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.share {
+  min-width: 40px;
+  font-size: 13px;
+  text-align: right;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (hover: hover) {
+  .seg:hover {
+    transform: scaleY(1.9) scaleX(1.02);
+    filter: brightness(0.88);
+    box-shadow: 0 8px 14px -8px rgb(10 10 11 / 50%);
+  }
+  .bar:has(.seg:hover) .seg:not(:hover) {
+    opacity: 0.5;
+  }
+  button.row:hover {
+    background: var(--glass-tile);
+    box-shadow:
+      var(--glass-edge),
+      inset 0 0 0 1px var(--glass-tile-edge);
+  }
+  /* The pill is drawn in the segment, so it is counter-scaled to keep its own shape while the segment grows. */
+  .seg:hover::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: calc(100% + 9px);
+    left: 50%;
+    z-index: 5;
+    padding: 6px 11px;
+    background: rgb(10 10 11 / 86%);
+    border-radius: 999px;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 500;
+    pointer-events: none;
+    transform: translateX(-50%) scaleY(0.53);
+    white-space: nowrap;
+  }
+  /* Segments and legend rows light each other up, for as many parts as a distribution shows (seven at most). */
+  .dist:has(.lrow:nth-child(1):hover) .seg:nth-child(1),
+  .dist:has(.lrow:nth-child(1) :focus-visible) .seg:nth-child(1) {
+    transform: scaleY(1.9);
+    filter: brightness(0.88);
+  }
+  .dist:has(.lrow:nth-child(1):hover) .seg:not(:nth-child(1)) {
+    opacity: 0.5;
+  }
+  .dist:has(.seg:nth-child(1):hover) .lrow:nth-child(1) .row {
+    background: var(--glass-tile);
+    box-shadow:
+      var(--glass-edge),
+      inset 0 0 0 1px var(--glass-tile-edge);
+  }
+  .dist:has(.lrow:nth-child(2):hover) .seg:nth-child(2),
+  .dist:has(.lrow:nth-child(2) :focus-visible) .seg:nth-child(2) {
+    transform: scaleY(1.9);
+    filter: brightness(0.88);
+  }
+  .dist:has(.lrow:nth-child(2):hover) .seg:not(:nth-child(2)) {
+    opacity: 0.5;
+  }
+  .dist:has(.seg:nth-child(2):hover) .lrow:nth-child(2) .row {
+    background: var(--glass-tile);
+    box-shadow:
+      var(--glass-edge),
+      inset 0 0 0 1px var(--glass-tile-edge);
+  }
+  .dist:has(.lrow:nth-child(3):hover) .seg:nth-child(3),
+  .dist:has(.lrow:nth-child(3) :focus-visible) .seg:nth-child(3) {
+    transform: scaleY(1.9);
+    filter: brightness(0.88);
+  }
+  .dist:has(.lrow:nth-child(3):hover) .seg:not(:nth-child(3)) {
+    opacity: 0.5;
+  }
+  .dist:has(.seg:nth-child(3):hover) .lrow:nth-child(3) .row {
+    background: var(--glass-tile);
+    box-shadow:
+      var(--glass-edge),
+      inset 0 0 0 1px var(--glass-tile-edge);
+  }
+  .dist:has(.lrow:nth-child(4):hover) .seg:nth-child(4),
+  .dist:has(.lrow:nth-child(4) :focus-visible) .seg:nth-child(4) {
+    transform: scaleY(1.9);
+    filter: brightness(0.88);
+  }
+  .dist:has(.lrow:nth-child(4):hover) .seg:not(:nth-child(4)) {
+    opacity: 0.5;
+  }
+  .dist:has(.seg:nth-child(4):hover) .lrow:nth-child(4) .row {
+    background: var(--glass-tile);
+    box-shadow:
+      var(--glass-edge),
+      inset 0 0 0 1px var(--glass-tile-edge);
+  }
+  .dist:has(.lrow:nth-child(5):hover) .seg:nth-child(5),
+  .dist:has(.lrow:nth-child(5) :focus-visible) .seg:nth-child(5) {
+    transform: scaleY(1.9);
+    filter: brightness(0.88);
+  }
+  .dist:has(.lrow:nth-child(5):hover) .seg:not(:nth-child(5)) {
+    opacity: 0.5;
+  }
+  .dist:has(.seg:nth-child(5):hover) .lrow:nth-child(5) .row {
+    background: var(--glass-tile);
+    box-shadow:
+      var(--glass-edge),
+      inset 0 0 0 1px var(--glass-tile-edge);
+  }
+  .dist:has(.lrow:nth-child(6):hover) .seg:nth-child(6),
+  .dist:has(.lrow:nth-child(6) :focus-visible) .seg:nth-child(6) {
+    transform: scaleY(1.9);
+    filter: brightness(0.88);
+  }
+  .dist:has(.lrow:nth-child(6):hover) .seg:not(:nth-child(6)) {
+    opacity: 0.5;
+  }
+  .dist:has(.seg:nth-child(6):hover) .lrow:nth-child(6) .row {
+    background: var(--glass-tile);
+    box-shadow:
+      var(--glass-edge),
+      inset 0 0 0 1px var(--glass-tile-edge);
+  }
+  .dist:has(.lrow:nth-child(7):hover) .seg:nth-child(7),
+  .dist:has(.lrow:nth-child(7) :focus-visible) .seg:nth-child(7) {
+    transform: scaleY(1.9);
+    filter: brightness(0.88);
+  }
+  .dist:has(.lrow:nth-child(7):hover) .seg:not(:nth-child(7)) {
+    opacity: 0.5;
+  }
+  .dist:has(.seg:nth-child(7):hover) .lrow:nth-child(7) .row {
+    background: var(--glass-tile);
+    box-shadow:
+      var(--glass-edge),
+      inset 0 0 0 1px var(--glass-tile-edge);
+  }
+}
+.row:active {
+  transform: scale(0.99);
+}
+@media (prefers-reduced-motion: reduce) {
+  .seg:hover {
+    transform: none;
+  }
+}

@@ -5,6 +5,7 @@ import {
   methodName,
   remaining,
   toContributionFilters,
+  methodParts,
 } from "./contributions";
 
 describe("contribution view", () => {
@@ -86,5 +87,35 @@ describe("contribution view", () => {
         "2026-10-19",
       ).paymentMethod,
     ).toBeUndefined();
+  });
+});
+
+describe("methodParts", () => {
+  it("ranks the ways of giving, leaves out those that brought in nothing and folds the fifth into a closed Other", () => {
+    const parts = methodParts([
+      { method: "Cash", total: 300 },
+      { method: "MobileMoney", total: 900 },
+      { method: "Cheque", total: 0 },
+      { method: "BankTransfer", total: 200 },
+      { method: "CreditCard", total: 100 },
+    ]);
+    expect(parts.map((p) => [p.key, p.value])).toEqual([
+      ["MobileMoney", 900],
+      ["Cash", 300],
+      ["BankTransfer", 200],
+      ["CreditCard", 100],
+    ]);
+    const folded = methodParts([
+      { method: "MobileMoney", total: 500 },
+      { method: "Cash", total: 400 },
+      { method: "BankTransfer", total: 300 },
+      { method: "CreditCard", total: 200 },
+      { method: "Cheque", total: 100 },
+    ]);
+    expect(folded.at(-1)).toMatchObject({
+      key: "other",
+      value: 100,
+      closed: true,
+    });
   });
 });

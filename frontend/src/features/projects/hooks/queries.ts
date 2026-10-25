@@ -1,4 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQueries, useQuery } from "@tanstack/react-query";
+import type { PaymentMethod } from "@/features/transactions";
 import { ALL_TIME } from "@/lib/dates";
 import { usePagedList } from "@/lib/paged";
 import { listProjectCategories } from "../api/categories";
@@ -53,6 +54,27 @@ export const useContributionSummary = (filters: ContributionFilters) =>
   useQuery({
     queryKey: projectKeys.contributionSummary(filters),
     queryFn: ({ signal }) => getContributionSummary(filters, signal),
+  });
+
+// What each way of giving brought in towards one project, for "How it was given". It asks the summary once per method,
+// so the split follows the project's own numbers without the API needing a new endpoint.
+export const useContributionsByMethod = (
+  filters: ContributionFilters,
+  methods: readonly PaymentMethod[],
+) =>
+  useQueries({
+    queries: methods.map((paymentMethod) => {
+      const f = { ...filters, paymentMethod };
+      return {
+        queryKey: projectKeys.contributionSummary(f),
+        queryFn: ({ signal }: { signal: AbortSignal }) =>
+          getContributionSummary(f, signal),
+        select: (s: { totalContributed: number }) => ({
+          method: paymentMethod,
+          total: s.totalContributed,
+        }),
+      };
+    }),
   });
 
 // Every category, for the filter and (later) the form. They change rarely, so they are kept for a few minutes.

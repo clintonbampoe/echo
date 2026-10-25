@@ -1,13 +1,8 @@
-import type { UseQueryResult } from "@tanstack/react-query";
 import type { Paged } from "@/lib/paged";
 import { Button, EmptyState, FilterSelect, Icon } from "@/ui";
-import type {
-  Contribution,
-  ContributionSummary as Summary,
-} from "../../api/contributions";
+import type { Contribution } from "../../api/contributions";
 import {
   contributionFilters,
-  contributionStats,
   givenOptions,
   methodOptions,
   type GivenFilters,
@@ -15,24 +10,21 @@ import {
 import type { ContributionStart } from "./ContributionDialogs";
 import { ContributionList } from "./ContributionList";
 import styles from "./ContributionsSection.module.css";
-import { ContributionSummary } from "./ContributionSummary";
 
 type Props = {
   filters: GivenFilters;
   onChange: (change: Partial<GivenFilters>) => void;
   list: Paged<Contribution>;
-  summary: UseQueryResult<Summary>;
   onRecord: () => void;
   onAction: (contribution: Contribution, start: ContributionStart) => void;
 };
 
-// What has been given towards the project: the numbers, a Method and period filter, and every gift. With none at all
+// What has been given towards the project: a Method and period filter, and every gift. With none at all
 // the whole section gives way to an invitation, because there is nothing to filter.
 export function ContributionsSection({
   filters,
   onChange,
   list,
-  summary,
   onRecord,
   onAction,
 }: Props) {
@@ -62,10 +54,6 @@ export function ContributionsSection({
   return (
     <section aria-label="Contributions">
       <h2 className={styles.title}>Contributions</h2>
-      <ContributionSummary
-        stats={contributionStats(summary.data)}
-        busy={summary.isPending}
-      />
       <div className={styles.bar}>
         <FilterSelect
           label="Method"

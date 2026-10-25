@@ -74,10 +74,10 @@ export function managerOptions(
   return withAny("Manager", people);
 }
 
-// The four numbers on a project's page. "Days left" counts to the end date and stops at 0; with no end date it is a dash.
+// The three numbers on a project's page. The count of gifts is on the Summary tab, with the rest of what was given.
+// "Days left" counts to the end date and stops at 0; with no end date it is a dash.
 export function projectFigures(
   p: Pick<Project, "raisedAmount" | "targetAmount" | "endDate">,
-  contributions: number | undefined,
   today: string,
 ): Stat[] {
   const left = p.endDate ? Math.max(0, daysBetween(today, p.endDate)) : null;
@@ -92,11 +92,6 @@ export function projectFigures(
       label: "Goal",
       value: formatNumber(p.targetAmount),
       unit: "GHS",
-      note: "",
-    },
-    {
-      label: "Contributions",
-      value: contributions === undefined ? "–" : formatNumber(contributions),
       note: "",
     },
     {

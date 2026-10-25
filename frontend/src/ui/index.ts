@@ -19,6 +19,7 @@ export { DeleteDialog } from "./overlays/DeleteDialog";
 export { DetailBlock, DetailCard, DetailGroup } from "./layout/DetailCard";
 export { Disclosure } from "./layout/Disclosure";
 export { WithSide } from "./layout/WithSide";
+export { DistributionBar } from "./data/DistributionBar";
 export { RankedBars, type Ranked } from "./data/RankedBars";
 export { Drawer } from "./overlays/Drawer";
 export { useSlidingThumb } from "./motion/useSlidingThumb";

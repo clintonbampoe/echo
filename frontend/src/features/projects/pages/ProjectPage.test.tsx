@@ -169,6 +169,8 @@ describe("project page", () => {
     const figures = screen.getByRole("region", { name: "Project figures" });
     expect(await within(figures).findByText("48.2k")).toBeInTheDocument();
     expect(within(figures).getByText("80k")).toBeInTheDocument();
+    // Three figures: the count of gifts is on the Summary tab.
+    expect(within(figures).queryByText("Contributions")).toBeNull();
     const details = screen.getByRole("region", { name: "Project details" });
     expect(within(details).getByText("Ama Boateng")).toBeInTheDocument();
     expect(within(details).getByText("01 Mar 2026")).toBeInTheDocument();
@@ -180,13 +182,33 @@ describe("project page", () => {
       within(progress).getByText("Still to raise GH₵ 31.8k"),
     ).toBeInTheDocument();
     expect(within(progress).getByText(/60%/)).toBeInTheDocument();
+    const strip = screen.getByRole("region", { name: "Contributions summary" });
+    expect(await within(strip).findByText("GH₵ 7.05k")).toBeInTheDocument();
+    expect(within(strip).getByText("Mobile money")).toBeInTheDocument();
+    expect(
+      await screen.findByRole("group", { name: "How it was given" }),
+    ).toBeInTheDocument();
     await goTo("Contributions");
     const table = await screen.findByRole("list", { name: "Contributions" });
     expect(within(table).getByText("Sunday appeal")).toBeInTheDocument();
     expect(within(table).getByText("GH₵ 4.2k")).toBeInTheDocument();
-    const strip = screen.getByRole("region", { name: "Contributions summary" });
-    expect(await within(strip).findByText("GH₵ 7.05k")).toBeInTheDocument();
-    expect(within(strip).getByText("Mobile money")).toBeInTheDocument();
+    expect(
+      screen.queryByRole("region", { name: "Contributions summary" }),
+    ).toBeNull();
+  });
+
+  it("opens the Contributions tab narrowed to a way of giving chosen in How it was given", async () => {
+    const user = userEvent.setup();
+    await openOn("Summary");
+    await user.click(await screen.findByRole("button", { name: /^Cash/ }));
+    await screen.findByRole("list", { name: "Contributions" });
+    await waitFor(() =>
+      expect(
+        asked("/project-contributions").some(
+          (u) => u.searchParams.get("paymentMethod") === "Cash",
+        ),
+      ).toBe(true),
+    );
   });
 
   it("asks for all time at first, and for one method when it is chosen", async () => {

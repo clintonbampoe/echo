@@ -1,6 +1,7 @@
 export { projectKeys } from "./keys";
 export {
   useContributionSummary,
+  useContributionsByMethod,
   useContributions,
   useManagedProjects,
   useProject,
