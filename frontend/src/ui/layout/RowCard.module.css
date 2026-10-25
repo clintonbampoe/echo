@@ -20,6 +20,12 @@
 .row + .row {
   border-top: 1px solid var(--line);
 }
+@media (hover: hover) {
+  .row:hover,
+  .row:hover + .row {
+    border-top-color: transparent;
+  }
+}
 .tile {
   flex: none;
   display: flex;

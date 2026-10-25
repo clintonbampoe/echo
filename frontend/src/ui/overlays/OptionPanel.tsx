@@ -1,10 +1,10 @@
-import { useState } from "react";
-import { BottomSheet } from "./BottomSheet";
+import { useState, type CSSProperties } from "react";
+import { CenterPanel } from "./CenterPanel";
 import { Icon } from "../layout/Icon";
 import { filterOptions, SEARCH_MIN } from "../inputs/options";
 import { SearchField } from "../inputs/SearchField";
 import type { Option } from "../inputs/selectTypes";
-import styles from "./OptionSheet.module.css";
+import styles from "./OptionPanel.module.css";
 
 type Props = {
   open: boolean;
@@ -17,11 +17,11 @@ type Props = {
 };
 
 // The choice list for a touch screen: a bottom sheet with 52px rows. A long list gets a search box first.
-export function OptionSheet({ open, onClose, title, ...body }: Props) {
+export function OptionPanel({ open, onClose, title, ...body }: Props) {
   return (
-    <BottomSheet open={open} onClose={onClose} title={title}>
+    <CenterPanel open={open} onClose={onClose} title={title}>
       <Body title={title} onClose={onClose} {...body} />
-    </BottomSheet>
+    </CenterPanel>
   );
 }
 
@@ -43,9 +43,10 @@ function Body({ title, options, value, onPick, onClose }: Omit<Props, "open">) {
         />
       )}
       <div role="listbox" aria-label={title} className={styles.list}>
-        {shown.map((o) => (
+        {shown.map((o, i) => (
           <button
             key={o.value}
+            style={{ "--i": Math.min(i, 8) } as CSSProperties}
             type="button"
             role="option"
             aria-selected={o.value === value}

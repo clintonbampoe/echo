@@ -1,8 +1,9 @@
 import { useEffect, useId, useRef, type ReactNode } from "react";
 import { createPortal } from "react-dom";
+import { Icon } from "../layout/Icon";
 import { useDragDismiss } from "../motion/useDragDismiss";
 import { usePresence } from "./usePresence";
-import styles from "./BottomSheet.module.css";
+import styles from "./CenterPanel.module.css";
 
 type Props = {
   open: boolean;
@@ -11,9 +12,10 @@ type Props = {
   children: ReactNode;
 };
 
-// A short panel that rises from the bottom of the screen, for a small choice on a touch screen (design
-// rule S3). Escape or a tap outside closes it. Focus moves in when it opens and back when it closes.
-export function BottomSheet({ open, onClose, title, children }: Props) {
+// A short glass panel in the middle of the screen, for a small choice on a touch screen (a dropdown, a wheel, a
+// date range): auto height, 12px from the sides, never a bottom sheet. A tap outside, the round close button,
+// Escape or a drag down closes it. Focus moves in when it opens and back when it closes.
+export function CenterPanel({ open, onClose, title, children }: Props) {
   const panel = useRef<HTMLDivElement>(null);
   const titleId = useId();
   const { mounted, closing } = usePresence(open, 200);
@@ -32,7 +34,7 @@ export function BottomSheet({ open, onClose, title, children }: Props) {
   return createPortal(
     <div className={styles.root}>
       <div
-        className={`${styles.scrim} scrim-fade`}
+        className={`${styles.scrim} glass-scrim`}
         data-closing={closing}
         onClick={onClose}
         aria-hidden="true"
@@ -43,15 +45,24 @@ export function BottomSheet({ open, onClose, title, children }: Props) {
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
-        className={`${styles.panel} sheet-rise`}
+        className={`${styles.panel} glass-panel`}
         data-closing={closing}
         onKeyDown={(e) => e.key === "Escape" && onClose()}
       >
-        <span className={styles.handle} aria-hidden="true" {...drag} />
-        <h2 id={titleId} className={styles.title} {...drag}>
-          {title}
-        </h2>
-        {children}
+        <header className={styles.header} {...drag}>
+          <h2 id={titleId} className={styles.title}>
+            {title}
+          </h2>
+          <button
+            type="button"
+            aria-label="Close"
+            className={styles.close}
+            onClick={onClose}
+          >
+            <Icon name="x" size={18} />
+          </button>
+        </header>
+        <div className={styles.body}>{children}</div>
       </div>
     </div>,
     document.body,

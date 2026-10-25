@@ -34,7 +34,7 @@
 .tail {
   grid-template-columns:
     minmax(0, 2fr) repeat(calc(var(--cols) - 1), minmax(0, 1fr))
-    32px;
+    36px;
 }
 .head {
   padding-block: 12px;
@@ -61,11 +61,12 @@
 /* A row that leads somewhere: the title is a real link, stretched over the whole row so any click lands on it. */
 .clickable {
   position: relative;
-  transition: background-color var(--fast) ease;
 }
-@media (hover: hover) {
-  .clickable:hover {
-    background: var(--hover);
+/* Hovering a row lights a glass tile behind it (.liquid-row), so the hairlines either side of it go. */
+@media (hover: hover) and (min-width: 901px) {
+  .row:hover,
+  .row:hover + .row {
+    border-top-color: transparent;
   }
 }
 .link {
@@ -196,8 +197,8 @@
   .row:first-child {
     border-top: 1px solid var(--line);
   }
-  .clickable:hover {
-    background: var(--surface);
+  .row:global(.liquid-row)::before {
+    display: none;
   }
   .link:focus-visible {
     border-radius: var(--radius-lg);

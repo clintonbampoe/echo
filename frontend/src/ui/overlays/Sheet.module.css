@@ -7,7 +7,6 @@
 .scrim {
   position: absolute;
   inset: 0;
-  background: rgb(10 10 10 / 32%);
 }
 
 /* A floating panel, inset from the edges, with a round corner and no divider lines. */
@@ -19,19 +18,16 @@
   display: flex;
   flex-direction: column;
   width: min(440px, calc(100% - 24px));
-  background: var(--surface);
-  border: 1px solid var(--line);
   border-radius: var(--radius-float);
-  box-shadow: var(--shadow-sheet);
   overflow: hidden;
+  animation: ePanelIn 500ms var(--spring) both;
+  transform-origin: top right;
+}
+.panel[data-closing="true"] {
+  animation: echoSlideOut 200ms ease-in both;
 }
 .panel:focus {
   outline: none;
-}
-
-/* The grab handle shows on a phone only. */
-.grabber {
-  display: none;
 }
 
 .header {
@@ -96,38 +92,25 @@
   }
 }
 
-/* A phone: a sheet rising from the bottom, inset 8px, with a grabber. */
+/* A phone: a floating glass panel, centred, 12px from the sides. No bottom sheet and no grabber: it materialises
+   in place, and drags down to dismiss from its header. */
 @media (max-width: 560px) {
   .panel {
-    top: auto;
-    right: 8px;
-    bottom: 8px;
-    left: 8px;
+    top: 50%;
+    right: 12px;
+    bottom: auto;
+    left: 12px;
     width: auto;
-    max-height: calc(100% - 48px);
+    max-height: calc(100% - 96px);
+    transform: translateY(-50%);
+    transform-origin: center;
+    animation: eMat 500ms var(--spring) both;
   }
-  .root .panel {
-    animation: sheetRise 340ms var(--ease) both;
-  }
-  .root .panel[data-closing="true"] {
-    animation: sheetDrop 200ms ease-in both;
-  }
-  /* The visible bar is 5px; the touch target around it is taller, and the header too is a place to grab. */
-  .grabber {
-    display: block;
-    flex: none;
-    box-sizing: content-box;
-    width: 36px;
-    height: 5px;
-    margin: 0 auto;
-    padding: 8px 0 4px;
-    background: var(--line-2);
-    background-clip: content-box;
-    border-radius: 3px;
-    touch-action: none;
+  .panel[data-closing="true"] {
+    animation: sheetOut 200ms ease-in both;
   }
   .header {
-    padding: 8px 20px 4px;
+    padding: 20px 20px 4px;
     touch-action: none;
   }
   .body {
@@ -138,16 +121,10 @@
   }
 }
 
-@keyframes sheetRise {
-  from {
-    transform: translateY(48px);
-    opacity: 0;
-  }
-}
-@keyframes sheetDrop {
+@keyframes sheetOut {
   to {
-    transform: translateY(48px);
     opacity: 0;
+    transform: translateY(-50%) scale(0.94);
   }
 }
 

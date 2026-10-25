@@ -248,7 +248,7 @@ function Row<T>({
   const name = rowName?.(row) ?? "";
   return (
     <li
-      className={`${styles.row} ${leads ? styles.clickable : ""} ${tail}`}
+      className={`${styles.row} liquid-row ${leads ? styles.clickable : ""} ${tail}`}
       style={cols}
     >
       <div className={styles.title}>

@@ -2,7 +2,7 @@ import { useId } from "react";
 import { Shell, type Shared } from "./FieldShell";
 import { Listbox } from "./Listbox";
 import type { ControlProps } from "./selectTypes";
-import { SheetSelect } from "../overlays/SheetSelect";
+import { PanelSelect } from "../overlays/PanelSelect";
 import { useFinePointer } from "../hooks/useFinePointer";
 
 type Props = Shared &
@@ -41,7 +41,7 @@ export function SelectField({
       {useFinePointer() ? (
         <Listbox {...control} />
       ) : (
-        <SheetSelect {...control} />
+        <PanelSelect {...control} />
       )}
     </Shell>
   );

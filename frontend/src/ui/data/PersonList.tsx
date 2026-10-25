@@ -118,7 +118,7 @@ type RowProps<T> = {
 function Row<T>({ row, index, person: p, columns, items, grid }: RowProps<T>) {
   return (
     <li
-      className={`${styles.row} stagger`}
+      className={`${styles.row} liquid-row stagger`}
       // Only the first screenful is staggered; later rows (Load more) arrive together.
       style={cssVars({ "--i": Math.min(index, 12) }, grid)}
     >

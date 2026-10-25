@@ -1,33 +1,3 @@
-.trigger {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  background: transparent;
-  border: 0;
-  border-radius: 50%;
-  color: var(--text-3);
-  transition:
-    background-color var(--t-fast) var(--ease-soft),
-    color var(--t-fast) var(--ease-soft),
-    transform var(--t-spring) var(--ease-spring);
-}
-/* A step darker than the row's own hover colour, so the button still stands out inside a hovered row. */
-@media (hover: hover) {
-  .trigger:hover {
-    background: var(--hover-dots-strong);
-    color: var(--text);
-  }
-}
-.trigger[aria-expanded="true"] {
-  background: var(--hover-dots-strong);
-  color: var(--text);
-}
-.trigger:active {
-  transform: scale(var(--press-icon));
-}
-
 .root {
   position: fixed;
   inset: 0;
@@ -36,42 +6,39 @@
 .scrim {
   position: absolute;
   inset: 0;
-  animation-duration: var(--fast);
 }
 
-/* With a mouse: a small dropdown under the button. */
+/* A glass popover anchored to its button, on every screen. The glass comes from .glass-pop. */
 .menu {
   position: fixed;
   top: var(--top, 0);
-  right: var(--right, 0);
-  min-width: 180px;
-  padding: 8px;
-  background: var(--surface);
-  border: 1px solid var(--line);
+  right: max(8px, var(--right, 0px));
+  min-width: 200px;
+  max-width: calc(100% - 16px);
+  padding: 6px;
   border-radius: var(--radius-pop);
-  box-shadow: var(--shadow-pop);
-  transform-origin: top right;
-  animation: open var(--t-enter) var(--ease-spring) both;
 }
 .menu[data-closing="true"] {
   animation: openOut 120ms ease-in both;
 }
 .title {
-  display: none;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 .items {
   display: contents;
-}
-.cancel {
-  display: none;
 }
 
 .item {
   display: flex;
   align-items: center;
   width: 100%;
-  height: 40px;
-  padding: 0 12px;
+  height: 44px;
+  padding: 0 14px;
   background: transparent;
   border: 0;
   border-radius: var(--radius-option);
@@ -79,13 +46,24 @@
   text-align: left;
   transition:
     background-color var(--t-fast) var(--ease-soft),
-    transform var(--t-base) var(--ease-out);
+    box-shadow var(--t-base),
+    transform 450ms var(--spring);
 }
-.item:hover,
+@media (hover: hover) {
+  .item:hover,
+  .item:focus-visible {
+    background: rgb(255 255 255 / 96%);
+    box-shadow:
+      inset 0 1px 0 #fff,
+      0 0 0 1px rgb(128 128 140 / 16%),
+      0 10px 20px -12px rgb(10 10 11 / 32%);
+    outline: none;
+    transform: scale(1.015);
+  }
+}
 .item:focus-visible {
-  background: var(--hover-option);
   outline: none;
-  transform: translateX(2px);
+  background: rgb(255 255 255 / 96%);
 }
 .item:active {
   scale: 0.98;
@@ -118,19 +96,14 @@
   background: var(--accent);
   border-color: var(--accent);
 }
+/* Destructive options come last, after a gap. */
 .rule {
   height: 0;
   margin: 6px -6px;
   border: 0;
-  border-top: 1px solid var(--line);
+  border-top: 1px solid rgb(128 128 140 / 18%);
 }
 
-@keyframes open {
-  from {
-    opacity: 0;
-    transform: scale(0.9) translateY(-6px);
-  }
-}
 @keyframes openOut {
   to {
     opacity: 0;
@@ -138,97 +111,10 @@
   }
 }
 
-/* Phone and any touch tablet, however wide: a sheet from the bottom of the screen, headed by the row's name.
-   A dropdown under a finger-sized target can end up off screen, so touch never gets one. */
-@media (max-width: 900px), (pointer: coarse) {
-  .scrim {
-    background: rgb(10 10 10 / 32%);
-  }
-  .menu {
-    top: auto;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    /* On a wide tablet the sheet stays a readable width, centred on the screen. */
-    width: min(calc(100% - 16px), 560px);
-    margin-inline: auto;
-    padding: 8px 16px 16px;
-    max-height: 80dvh;
-    overflow-y: auto;
-    border: 1px solid var(--line);
-    border-radius: var(--radius-float);
-    bottom: calc(8px + env(safe-area-inset-bottom));
-    left: 8px;
-    right: 8px;
-    transform-origin: bottom;
-    box-shadow: var(--shadow-sheet);
-    animation-name: lift;
-  }
-  .menu[data-closing="true"] {
-    animation-name: liftOut;
-  }
-  .menu::before {
-    content: "";
-    display: block;
-    width: 36px;
-    height: 4px;
-    margin: 0 auto 8px;
-    background: var(--line-2);
-    border-radius: 2px;
-  }
-  .title {
-    display: block;
-    padding: 4px 4px 8px;
-    font-size: 13px;
-    color: var(--text-3);
-  }
-  /* The choices are one rounded group; Cancel stands apart beneath it. */
-  .items {
-    display: block;
-    overflow: hidden;
-    background: var(--sel);
-    border-radius: 22px;
-  }
+/* On touch the options are 52px rows, easy to hit with a thumb. */
+@media (pointer: coarse), (max-width: 560px) {
   .item {
-    height: 54px;
-    padding: 0 16px;
-    border-radius: 0;
-    font-size: 16px;
-    transform: none;
-  }
-  .item:hover,
-  .item:focus-visible {
-    background: var(--line);
-  }
-  .cancel {
-    display: block;
-    width: 100%;
-    height: 54px;
-    margin-top: 10px;
-    background: var(--sel);
-    border: 0;
-    border-radius: 22px;
-    font-size: 16px;
-    font-weight: 600;
-  }
-  .group {
-    padding: 8px 4px 4px;
-    text-align: left;
-    font-size: 13px;
-  }
-  .rule {
-    margin: 0;
-  }
-}
-@keyframes lift {
-  from {
-    transform: translateY(40px);
-    opacity: 0;
-  }
-}
-@keyframes liftOut {
-  to {
-    transform: translateY(40px);
-    opacity: 0;
+    height: 52px;
+    font-size: 15px;
   }
 }

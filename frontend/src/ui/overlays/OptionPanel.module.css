@@ -13,24 +13,30 @@
   gap: 12px;
   width: 100%;
   height: 52px;
-  padding: 0 4px;
+  padding: 0 12px;
   border: 0;
-  border-bottom: 1px solid var(--line);
-  border-radius: 0;
+  border-radius: var(--radius-option);
   background: transparent;
   color: inherit;
   font-size: 16px;
   text-align: left;
 }
-.row:last-child {
-  border-bottom: 0;
-}
 .row {
-  transition: background-color var(--t-fast) var(--ease-soft);
+  animation: eOpt 380ms var(--grow) both;
+  animation-delay: calc(var(--i, 0) * 25ms);
+  transition:
+    background-color var(--t-fast) var(--ease-soft),
+    box-shadow var(--t-base),
+    transform 450ms var(--spring);
 }
 @media (hover: hover) {
   .row:hover {
-    background: var(--hover-option);
+    background: rgb(255 255 255 / 96%);
+    box-shadow:
+      inset 0 1px 0 #fff,
+      0 0 0 1px rgb(128 128 140 / 16%),
+      0 10px 20px -12px rgb(10 10 11 / 32%);
+    transform: scale(1.015);
   }
 }
 .row:active {

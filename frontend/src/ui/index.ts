@@ -2,7 +2,7 @@
 export { ActionMenu, type MenuItem } from "./overlays/ActionMenu";
 export { Alert } from "./feedback/Alert";
 export { Avatar } from "./layout/Avatar";
-export { BottomSheet } from "./overlays/BottomSheet";
+export { CenterPanel } from "./overlays/CenterPanel";
 export { Button, LinkButton } from "./layout/Button";
 export { CellStrip, type Cell } from "./data/CellStrip";
 export { Chip, type ChipTone } from "./layout/Chip";

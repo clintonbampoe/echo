@@ -18,8 +18,8 @@ type Props = {
   children: ReactNode;
 };
 
-// A panel for a form or a detail. It floats in from the right on a wide screen or tablet and rises from the
-// bottom on a phone. Escape or the close button closes it.
+// A glass panel for a form or a detail. It floats in from the right on a wide screen or tablet and, on a phone,
+// materialises in the middle of the screen (never a bottom sheet). Escape or the close button closes it.
 // Focus moves in when it opens and goes back to where it was when it closes; the page behind
 // does not scroll while it is open.
 export function Sheet({
@@ -59,7 +59,7 @@ export function Sheet({
   return createPortal(
     <div className={styles.root}>
       <div
-        className={`${styles.scrim} scrim-fade`}
+        className={`${styles.scrim} glass-scrim`}
         data-closing={closing}
         onClick={onClose}
         aria-hidden="true"
@@ -70,12 +70,11 @@ export function Sheet({
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
-        className={`${styles.panel} slide-in`}
+        className={`${styles.panel} glass-panel`}
         data-closing={closing}
         data-shaking={shaking || undefined}
         onKeyDown={(e) => e.key === "Escape" && onClose()}
       >
-        <span aria-hidden="true" className={styles.grabber} {...drag} />
         <header className={styles.header} {...drag}>
           <div>
             <h2 id={titleId} className={styles.title}>

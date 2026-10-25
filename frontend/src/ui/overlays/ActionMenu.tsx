@@ -3,11 +3,13 @@ import {
   useId,
   useRef,
   useState,
+  type CSSProperties,
   type KeyboardEvent,
   type RefObject,
 } from "react";
 import { createPortal } from "react-dom";
 import { Icon } from "../layout/Icon";
+import { DotsButton } from "./DotsButton";
 import { usePresence } from "./usePresence";
 import styles from "./ActionMenu.module.css";
 
@@ -32,8 +34,8 @@ type Props = {
   items: MenuItem[];
 };
 
-// Puts the menu just under the button (or above it when there is no room below). On a touch
-// screen the CSS ignores these numbers and docks the menu to the bottom of the screen instead.
+// Puts the menu just under the button (or above it when there is no room below), with its right edge on the
+// button's. The origin of its entrance is the button's centre, so it visibly grows out of it.
 function place(trigger: HTMLElement | null) {
   return (menu: HTMLElement | null) => {
     if (!menu || !trigger) return;
@@ -44,8 +46,10 @@ function place(trigger: HTMLElement | null) {
     );
     menu.style.setProperty("--top", `${t.bottom + 6}px`);
     const m = menu.getBoundingClientRect();
-    if (m.bottom > window.innerHeight - 8)
+    const above = m.bottom > window.innerHeight - 8;
+    if (above)
       menu.style.setProperty("--top", `${Math.max(8, t.top - m.height - 6)}px`);
+    menu.style.setProperty("--origin", `right ${above ? "bottom" : "top"}`);
   };
 }
 
@@ -106,12 +110,13 @@ function useDismissOnMove(
 
 type RowProps = {
   item: MenuItem;
+  index: number;
   newGroup: boolean;
   onChoose: (item: MenuItem) => void;
 };
 
 // One line of the menu: its heading and separator when it has them, then the button.
-function MenuRow({ item, newGroup, onChoose }: RowProps) {
+function MenuRow({ item, index, newGroup, onChoose }: RowProps) {
   return (
     <>
       {newGroup && <p className={styles.group}>{item.group}</p>}
@@ -120,7 +125,8 @@ function MenuRow({ item, newGroup, onChoose }: RowProps) {
         type="button"
         role={item.checked === undefined ? "menuitem" : "menuitemradio"}
         aria-checked={item.checked}
-        className={`${styles.item} ${item.danger ? styles.danger : ""}`}
+        className={`${styles.item} glass-opt ${item.danger ? styles.danger : ""}`}
+        style={{ "--i": Math.min(index, 8) } as CSSProperties}
         onClick={() => onChoose(item)}
       >
         {item.checked !== undefined && (
@@ -137,8 +143,9 @@ function MenuRow({ item, newGroup, onChoose }: RowProps) {
   );
 }
 
-// A ⋯ button that opens a short list of actions for one row. A dropdown with a mouse, a sheet
-// from the bottom on a phone. Arrow keys move, Escape closes, and focus returns to the button.
+// A ⋯ button that opens a short list of actions for one row, as a glass popover anchored to the button on every
+// screen (never a bottom sheet). It grows out of the button, which stays pressed while it is open. Arrow keys move,
+// Escape closes, and focus returns to the button.
 export function ActionMenu({ label, title, items }: Props) {
   const [open, setOpen] = useState(false);
   const trigger = useRef<HTMLButtonElement>(null);
@@ -160,22 +167,18 @@ export function ActionMenu({ label, title, items }: Props) {
 
   return (
     <>
-      <button
+      <DotsButton
         ref={trigger}
-        type="button"
         aria-label={label}
         aria-haspopup="menu"
         aria-expanded={open}
-        className={styles.trigger}
         onClick={() => setOpen(!open)}
-      >
-        <Icon name="more" size={18} />
-      </button>
+      />
       {mounted &&
         createPortal(
           <div className={styles.root}>
             <div
-              className={`${styles.scrim} scrim-fade`}
+              className={`${styles.scrim} glass-scrim-lite`}
               data-closing={closing}
               onClick={close}
               aria-hidden="true"
@@ -187,7 +190,7 @@ export function ActionMenu({ label, title, items }: Props) {
               }}
               role="menu"
               aria-labelledby={titleId}
-              className={styles.menu}
+              className={`${styles.menu} glass-pop glass-in-menu`}
               data-closing={closing}
               onKeyDown={(e) =>
                 navigate(e, menu.current, close, () => setOpen(false))
@@ -201,6 +204,7 @@ export function ActionMenu({ label, title, items }: Props) {
                   <MenuRow
                     key={item.label}
                     item={item}
+                    index={i}
                     newGroup={
                       !!item.group && item.group !== items[i - 1]?.group
                     }
@@ -208,10 +212,6 @@ export function ActionMenu({ label, title, items }: Props) {
                   />
                 ))}
               </div>
-              {/* Only drawn in the bottom sheet, where there is no click-outside to lean on. */}
-              <button type="button" className={styles.cancel} onClick={close}>
-                Cancel
-              </button>
             </div>
           </div>,
           document.body,

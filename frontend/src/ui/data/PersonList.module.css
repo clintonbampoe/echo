@@ -41,7 +41,7 @@
     border-radius: var(--radius);
   }
   /* The divider is a straight line inside the row, so a rounded row does not curl it at the ends. */
-  .row:not(:first-child)::before {
+  .row:not(:first-child)::after {
     content: "";
     position: absolute;
     top: 0;
@@ -51,24 +51,15 @@
     background: var(--line);
     transition: opacity var(--t-fast) var(--ease-soft);
   }
-  .row:has(+ .row:hover)::before,
-  .row:hover + .row::before,
-  .row:hover::before,
-  .row[data-selected="true"]::before {
+  .row:has(+ .row:hover)::after,
+  .row:hover + .row::after,
+  .row:hover::after,
+  .row[data-selected="true"]::after {
     opacity: 0;
   }
   .row[data-selected="true"] {
     background: var(--hover-row);
     box-shadow: inset 2px 0 0 var(--accent);
-  }
-}
-@media (hover: hover) {
-  .row:hover {
-    background: var(--hover-row);
-  }
-  .row:hover :global(.av) {
-    transform: scale(1.08);
-    box-shadow: 0 0 0 3px rgb(128 128 140 / 20%);
   }
 }
 .row:active {
@@ -180,6 +171,9 @@
   }
   .row:hover {
     background: var(--card-bg);
+  }
+  .row:global(.liquid-row)::before {
+    display: none;
   }
   .who {
     grid-column: 1 / -1;

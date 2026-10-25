@@ -60,7 +60,7 @@ export function RecordLines<T>({
           return (
             <li
               key={rowKey(row)}
-              className={`${styles.row} stagger`}
+              className={`${styles.row} liquid-row stagger`}
               style={{ "--i": Math.min(i, 12) } as React.CSSProperties}
             >
               {typeof l.lead === "string" ? (

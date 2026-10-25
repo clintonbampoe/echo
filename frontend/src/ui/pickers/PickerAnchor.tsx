@@ -5,7 +5,7 @@ import {
   type KeyboardEvent,
   type ReactNode,
 } from "react";
-import { BottomSheet } from "../overlays/BottomSheet";
+import { CenterPanel } from "../overlays/CenterPanel";
 import { keepOnScreen } from "../overlays/placement";
 import { useFinePointer } from "../hooks/useFinePointer";
 import styles from "./PickerAnchor.module.css";
@@ -91,9 +91,9 @@ export function PickerAnchor({
         </div>
       )}
       {!fine && (
-        <BottomSheet open={open} onClose={onClose} title={title}>
+        <CenterPanel open={open} onClose={onClose} title={title}>
           {panel}
-        </BottomSheet>
+        </CenterPanel>
       )}
     </div>
   );

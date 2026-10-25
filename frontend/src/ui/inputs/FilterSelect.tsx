@@ -1,7 +1,7 @@
 import { useId, useRef, useState, type FocusEvent } from "react";
 import { Icon } from "../layout/Icon";
 import { OptionList } from "./OptionList";
-import { OptionSheet } from "../overlays/OptionSheet";
+import { OptionPanel } from "../overlays/OptionPanel";
 import type { Option } from "./selectTypes";
 import { useFinePointer } from "../hooks/useFinePointer";
 import { useListbox } from "./useListbox";
@@ -23,7 +23,7 @@ type Props = {
 
 // A pill that narrows a list. With a mouse it opens our menu; on a touch screen a bottom sheet.
 export function FilterSelect(props: Props) {
-  return useFinePointer() ? <MenuPill {...props} /> : <SheetPill {...props} />;
+  return useFinePointer() ? <MenuPill {...props} /> : <PanelPill {...props} />;
 }
 
 const applied = (value: string, quiet?: boolean) => !!value && !quiet;
@@ -103,7 +103,7 @@ function MenuPill(props: Props) {
 }
 
 // On a touch screen the pill opens the choices in a bottom sheet.
-function SheetPill(props: Props) {
+function PanelPill(props: Props) {
   const { label, options, value, onChange, quiet } = props;
   const [open, setOpen] = useState(false);
   return (
@@ -126,7 +126,7 @@ function SheetPill(props: Props) {
         show={applied(value, quiet)}
         onClear={() => onChange("")}
       />
-      <OptionSheet
+      <OptionPanel
         open={open}
         onClose={() => setOpen(false)}
         title={label}

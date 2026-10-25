@@ -1,11 +1,11 @@
 import { useState } from "react";
 import fieldStyles from "../inputs/Field.module.css";
 import { Icon } from "../layout/Icon";
-import { OptionSheet } from "./OptionSheet";
+import { OptionPanel } from "./OptionPanel";
 import type { ControlProps } from "../inputs/selectTypes";
 
 // The dropdown for a touch screen: a field that opens the choices in a bottom sheet.
-export function SheetSelect({
+export function PanelSelect({
   id,
   label,
   options,
@@ -13,6 +13,7 @@ export function SheetSelect({
   onChange,
   onBlur,
   disabled,
+  placeholder,
   invalid,
   describedBy,
 }: ControlProps) {
@@ -38,15 +39,11 @@ export function SheetSelect({
         onClick={() => setOpen(true)}
       >
         <span id={`${id}-value`}>
-          {options.find((o) => o.value === value)?.label}
+          {options.find((o) => o.value === value)?.label ?? placeholder}
         </span>
-        <Icon
-          name="chevrons-up-down"
-          size={16}
-          className={fieldStyles.chevron}
-        />
+        <Icon name="chevron-down" size={16} className={fieldStyles.chevron} />
       </button>
-      <OptionSheet
+      <OptionPanel
         open={open}
         onClose={close}
         title={label}
