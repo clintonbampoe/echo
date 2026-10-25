@@ -13,7 +13,7 @@ import { MembersFilterBar } from "./MembersFilterBar";
 import styles from "./OrganizationMembers.module.css";
 import { useMemberFilters } from "../../hooks/memberFilters";
 import { roles } from "../../model/display";
-import { useMembershipPanels } from "../../../attendance/useMembershipPanels";
+import { useMembershipPanels } from "../../../attendance/components/profile/useMembershipPanels";
 
 const columns: PersonColumn<OrganizationMember>[] = [
   {

@@ -1,7 +1,7 @@
 import type { RouteObject } from "react-router-dom";
 
 const records = async () => ({
-  Component: (await import("./components/RecordsPage")).RecordsPage,
+  Component: (await import("./pages/RecordsPage")).RecordsPage,
 });
 
 // The pages load on demand, so the attendance code only downloads when someone opens Attendance.
@@ -9,7 +9,7 @@ export const attendanceRoutes: RouteObject[] = [
   {
     path: "attendance",
     lazy: async () => ({
-      Component: (await import("./components/AttendancePage")).AttendancePage,
+      Component: (await import("./pages/AttendancePage")).AttendancePage,
     }),
   },
   { path: "attendance/records", lazy: records },
@@ -17,14 +17,13 @@ export const attendanceRoutes: RouteObject[] = [
   {
     path: "attendance/labels",
     lazy: async () => ({
-      Component: (await import("./components/SessionTypesPage"))
-        .SessionTypesPage,
+      Component: (await import("./pages/SessionTypesPage")).SessionTypesPage,
     }),
   },
   {
     path: "attendance/sessions/:id",
     lazy: async () => ({
-      Component: (await import("./components/SessionPage")).SessionPage,
+      Component: (await import("./pages/SessionPage")).SessionPage,
     }),
   },
 ];
