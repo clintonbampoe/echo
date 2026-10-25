@@ -5,13 +5,13 @@ export const visitorRoutes: RouteObject[] = [
   {
     path: "visitors",
     lazy: async () => ({
-      Component: (await import("./VisitorsPage")).VisitorsPage,
+      Component: (await import("./pages/VisitorsPage")).VisitorsPage,
     }),
   },
   {
     path: "visitors/:id",
     lazy: async () => ({
-      Component: (await import("./VisitorPage")).VisitorPage,
+      Component: (await import("./pages/VisitorPage")).VisitorPage,
     }),
   },
 ];
