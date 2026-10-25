@@ -1,3 +1,20 @@
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 14px;
+  background: none;
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius-pill);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  cursor: pointer;
+}
+.pill:hover {
+  background: var(--hover);
+}
 .root {
   position: fixed;
   inset: 0;
