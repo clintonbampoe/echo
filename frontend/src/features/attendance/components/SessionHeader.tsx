@@ -5,16 +5,18 @@ import styles from "./SessionHeader.module.css";
 
 type Props = {
   session: Session;
+  onMark: () => void;
   onEdit: () => void;
   onDelete: () => void;
   onComplete: () => void;
   onCancel: () => void;
 };
 
-// Who this session is, when it was, and what can be done to it: the main step (complete it) and a ⋯ menu for the
-// rest. Only a session still ahead can be completed or cancelled.
+// Who this session is, when it was, and what can be done to it: Mark present (the thing done as people arrive) and a ⋯
+// menu for the rest. Only a session still ahead can be completed or cancelled.
 export function SessionHeader({
   session: s,
+  onMark,
   onEdit,
   onDelete,
   onComplete,
@@ -25,6 +27,7 @@ export function SessionHeader({
     .filter(Boolean)
     .join(" · ");
   const items = [
+    ...(scheduled ? [{ label: "Mark completed", onSelect: onComplete }] : []),
     { label: "Edit", onSelect: onEdit },
     ...(scheduled ? [{ label: "Cancel session", onSelect: onCancel }] : []),
     { label: "Delete", danger: true, onSelect: onDelete },
@@ -39,16 +42,9 @@ export function SessionHeader({
           )}
         </h1>
         <p className={styles.meta}>{line}</p>
-        {(s.notes || s.createdByName) && (
-          <p className={styles.notes}>
-            {s.notes}
-            {s.notes && s.createdByName ? " " : ""}
-            {s.createdByName && `Created by ${s.createdByName}.`}
-          </p>
-        )}
       </div>
       <div className={styles.buttons}>
-        {scheduled && <Button onClick={onComplete}>Mark completed</Button>}
+        <Button onClick={onMark}>Mark present</Button>
         <ActionMenu
           label={`More actions for ${sessionTitle(s)}`}
           title={sessionTitle(s)}

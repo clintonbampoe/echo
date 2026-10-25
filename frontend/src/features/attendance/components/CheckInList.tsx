@@ -8,7 +8,6 @@ type Props = {
   filtered: boolean;
   onClear: () => void;
   onOpen: (checkIn: CheckIn) => void;
-  onRemove: (checkIn: CheckIn) => void;
 };
 
 const columns: PersonColumn<CheckIn>[] = [
@@ -16,18 +15,13 @@ const columns: PersonColumn<CheckIn>[] = [
     header: "Checked in",
     width: "120px",
     end: true,
+    keep: true,
     cell: (c) => formatTime(c.checkedInAt),
   },
 ];
 
-// Who is marked present at a session, newest first. A row opens their check-in panel; the ⋯ menu undoes it.
-export function CheckInList({
-  list,
-  filtered,
-  onClear,
-  onOpen,
-  onRemove,
-}: Props) {
+// Who is marked present at a session, newest first. A row opens their record, where it can be changed or removed.
+export function CheckInList({ list, filtered, onClear, onOpen }: Props) {
   return (
     <ListBody
       list={list}
@@ -53,13 +47,8 @@ export function CheckInList({
           })}
           columns={columns}
           footer={footer}
-          actions={(c) => [
-            {
-              label: "Remove from session",
-              danger: true,
-              onSelect: () => onRemove(c),
-            },
-          ]}
+          compact
+          flat
         />
       )}
     </ListBody>

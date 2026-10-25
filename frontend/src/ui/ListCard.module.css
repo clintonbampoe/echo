@@ -1,0 +1,18 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+.toolbar {
+  padding: 16px 22px 8px;
+}
+@media (max-width: 900px) {
+  .toolbar {
+    padding: 16px 16px 8px;
+  }
+}

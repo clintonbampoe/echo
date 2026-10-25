@@ -4,11 +4,12 @@ import { isApiError } from "@/lib/api";
 import { paths } from "@/lib/paths";
 import { Alert, BackLink, Button, StatStrip } from "@/ui";
 import type { Session } from "../api";
-import { dayName, presenceStats } from "../day";
+import { presenceStats } from "../day";
 import { useAttendanceSummary, useCheckIns, useSession } from "../hooks";
 import { CheckInPanel } from "./CheckInPanel";
 import { EditSessionSheet } from "./EditSessionSheet";
 import { DeleteSessionDialog, StatusDialog } from "./SessionDialogs";
+import { MarkSheet } from "./MarkSheet";
 import { SessionCheckIns } from "./SessionCheckIns";
 import { SessionHeader } from "./SessionHeader";
 import styles from "./SessionPage.module.css";
@@ -51,7 +52,7 @@ export function SessionPage() {
   return <Loaded session={session.data} />;
 }
 
-type Dialog = "edit" | "delete" | "complete" | "cancel" | null;
+type Dialog = "edit" | "delete" | "complete" | "cancel" | "mark" | null;
 
 function Loaded({ session }: { session: Session }) {
   const navigate = useNavigate();
@@ -63,11 +64,10 @@ function Loaded({ session }: { session: Session }) {
 
   return (
     <div className="anim-rise">
-      <BackLink to={paths.attendanceDay(session.date)}>
-        {dayName(session.date)}
-      </BackLink>
+      <BackLink to={paths.attendanceDay(session.date)}>Attendance</BackLink>
       <SessionHeader
         session={session}
+        onMark={() => setDialog("mark")}
         onEdit={() => setDialog("edit")}
         onDelete={() => setDialog("delete")}
         onComplete={() => setDialog("complete")}
@@ -94,6 +94,9 @@ function Loaded({ session }: { session: Session }) {
       </div>
       {dialog === "edit" && (
         <EditSessionSheet session={session} onClose={close} />
+      )}
+      {dialog === "mark" && (
+        <MarkSheet session={session} rows={everyone.rows} onClose={close} />
       )}
       {dialog === "complete" && (
         <StatusDialog session={session} status="Completed" onClose={close} />

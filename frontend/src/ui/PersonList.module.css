@@ -240,11 +240,24 @@
     top: auto;
     right: auto;
   }
-  .compact .cell:not(.chip) {
+  .compact .cell:not(.chip):not(.keep) {
     display: none;
   }
   .compact .chip {
     grid-column: auto;
     order: 0;
   }
+}
+
+.compact .keep::before {
+  display: none;
+}
+
+/* Inside a ListCard: the card around it already draws the edge. */
+.flat {
+  overflow: visible;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
 }

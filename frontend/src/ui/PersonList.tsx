@@ -16,6 +16,8 @@ export type PersonColumn<T> = {
   chip?: boolean;
   // Numbers line up on the right (on a phone the cards read left to right as usual).
   end?: boolean;
+  // Stays on a compact list's phone row (a time, say) when the other columns are left out.
+  keep?: boolean;
 };
 
 // `detail` is the line under the name (an email, or "phone · city"); `plain` leaves it out for rows that have
@@ -42,6 +44,8 @@ type Props<T> = {
   compact?: boolean;
   // Sits at the bottom of the card, under the rows (the count and "Load more").
   footer?: ReactNode;
+  // Drops the card, for a list that sits inside a ListCard that already has one.
+  flat?: boolean;
 };
 
 const NAME = "minmax(220px, 2.4fr)";
@@ -59,6 +63,7 @@ export function PersonList<T>({
   actions,
   compact,
   footer,
+  flat,
 }: Props<T>) {
   const widths = (list: PersonColumn<T>[]) =>
     [NAME, ...list.map((c) => c.width), ...(actions ? [ACTIONS] : [])].join(
@@ -69,7 +74,11 @@ export function PersonList<T>({
     "--cols-mid": widths(columns.filter((c) => !c.low)),
   } as CSSProperties;
   return (
-    <div className={`${styles.card} ${compact ? styles.compact : ""}`}>
+    <div
+      className={[styles.card, compact && styles.compact, flat && styles.flat]
+        .filter(Boolean)
+        .join(" ")}
+    >
       <ul aria-label={label} className={styles.list}>
         {rows.map((row, i) => (
           <Row
@@ -130,6 +139,7 @@ function Row<T>({ row, index, person: p, columns, items, grid }: RowProps<T>) {
             c.low && styles.low,
             c.chip && styles.chip,
             c.end && styles.end,
+            c.keep && styles.keep,
           ]
             .filter(Boolean)
             .join(" ")}

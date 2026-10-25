@@ -1,6 +1,6 @@
 import { formatClock, formatDayMonth } from "@/lib/format";
 import { paths } from "@/lib/paths";
-import { Button, Chip, DetailGroup, Sheet } from "@/ui";
+import { PersonRecord, RecordActions, Sheet } from "@/ui";
 import {
   missingText,
   panelTitle,
@@ -8,8 +8,6 @@ import {
   type EventPerson,
 } from "../eventPerson";
 import type { Phase } from "../roster";
-import styles from "./EventPersonPanel.module.css";
-import { PanelIdentity } from "@/ui/PanelIdentity";
 
 type Props = {
   person: EventPerson;
@@ -34,80 +32,46 @@ export function EventPersonPanel({
   onRemoveCheckIn,
 }: Props) {
   const { registration, checkIn } = person;
-  const footer = (
-    <div className={styles.footer}>
-      <Button variant="secondary" onClick={onClose}>
-        Close
-      </Button>
-      {checkIn && (
-        <Button variant="secondary" onClick={onEditTime}>
-          Edit check-in time
-        </Button>
-      )}
-    </div>
-  );
-
+  const remove = [
+    ...(checkIn
+      ? [{ label: "Delete check-in", onClick: onRemoveCheckIn }]
+      : []),
+    ...(registration
+      ? [{ label: "Remove registration", onClick: onRemoveRegistration }]
+      : []),
+  ];
   return (
     <Sheet
       open
       onClose={onClose}
       title={panelTitle(person)}
-      subtitle={`At ${eventName}`}
-      footer={footer}
-    >
-      <div className={styles.body}>
-        <PanelIdentity
-          name={person.name}
-          meta={
-            checkIn ? (
-              <Chip tone="positive">Checked in</Chip>
-            ) : (
-              <Chip tone={phase === "over" ? "warning" : "neutral"}>
-                {missingText(phase)}
-              </Chip>
-            )
+      footer={
+        <RecordActions
+          edit={
+            checkIn
+              ? { label: "Edit check-in time", onClick: onEditTime }
+              : undefined
           }
-          profileHref={paths.member(person.memberId, "events")}
+          remove={remove}
         />
-        <DetailGroup
-          title="Registration"
-          rows={[
-            [
-              "Signed up",
-              signedUpText(
-                person,
-                (day) => `Registered ${formatDayMonth(day)}`,
-              ),
-            ],
-          ]}
-        />
-        <DetailGroup
-          title="Check-in"
-          rows={[
-            [
-              "Arrived",
-              checkIn ? formatClock(checkIn.checkInTime) : missingText(phase),
-            ],
-          ]}
-        />
-        <div className={styles.remove}>
-          <p className={styles.removeText}>
-            Removing a record here keeps them as a church member.
-          </p>
-          <div className={styles.removeActions}>
-            {registration && (
-              <Button variant="secondary" onClick={onRemoveRegistration}>
-                Remove registration
-              </Button>
-            )}
-            {checkIn && (
-              <Button variant="secondary" onClick={onRemoveCheckIn}>
-                Remove check-in
-              </Button>
-            )}
-          </div>
-        </div>
-      </div>
+      }
+    >
+      <PersonRecord
+        name={person.name}
+        meta={`${person.registered ? "Registered" : "Walk-in"} · ${
+          checkIn ? "Checked in" : missingText(phase)
+        }`}
+        rows={[
+          ["Event", eventName],
+          ["Registered", signedUpText(person, (day) => formatDayMonth(day))],
+          [
+            "Checked in",
+            checkIn ? formatClock(checkIn.checkInTime) : missingText(phase),
+          ],
+        ]}
+        profileHref={paths.member(person.memberId, "events")}
+        profileNote={`${person.name} · opens the Events tab`}
+      />
     </Sheet>
   );
 }

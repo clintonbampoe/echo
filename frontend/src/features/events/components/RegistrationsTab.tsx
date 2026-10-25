@@ -7,6 +7,7 @@ import {
   ListBody,
   PersonList,
   type PersonColumn,
+  ListCard,
 } from "@/ui";
 import type { EventCheckIn, EventRegistration } from "../api";
 import { filterGuests, guestStatus, type Guest, type Phase } from "../roster";
@@ -85,48 +86,55 @@ export function RegistrationsTab({ guests, eventName, phase, state }: Props) {
 
   return (
     <>
-      <FilterBar
-        searchLabel="Search registrations"
-        search={name}
-        onSearch={setName}
-        resetKey={resetKey}
-        active={status ? 1 : 0}
-        filtered={filtered}
-        onClear={clear}
+      <ListCard
+        toolbar={
+          <FilterBar
+            searchLabel="Search registrations"
+            search={name}
+            onSearch={setName}
+            resetKey={resetKey}
+            active={status ? 1 : 0}
+            filtered={filtered}
+            onClear={clear}
+          >
+            <FilterSelect
+              label="Status"
+              options={statusOptions(phase)}
+              value={status}
+              onChange={setStatus}
+            />
+          </FilterBar>
+        }
       >
-        <FilterSelect
-          label="Status"
-          options={statusOptions(phase)}
-          value={status}
-          onChange={setStatus}
-        />
-      </FilterBar>
-      <ListBody
-        list={rosterList(filterGuests(guests, name, status), state)}
-        icon="user"
-        noun={["registration", "registrations"]}
-        emptyText="People who register for this event will appear here."
-        filtered={filtered}
-        noMatchText="No one signed up matches that."
-        onClear={clear}
-        order="Sign-up order."
-        footerInside
-      >
-        {(rows, footer) => (
-          <PersonList
-            label="Registrations"
-            rows={rows}
-            rowKey={(g) => g.registration.id}
-            person={(g) => ({
-              name: g.registration.memberName,
-              onOpen: () => setViewing(g),
-              plain: true,
-            })}
-            columns={columns(phase)}
-            footer={footer}
-          />
-        )}
-      </ListBody>
+        <ListBody
+          list={rosterList(filterGuests(guests, name, status), state)}
+          icon="user"
+          noun={["registration", "registrations"]}
+          emptyText="People who register for this event will appear here."
+          filtered={filtered}
+          noMatchText="No one signed up matches that."
+          onClear={clear}
+          order="Sign-up order."
+          footerInside
+        >
+          {(rows, footer) => (
+            <PersonList
+              label="Registrations"
+              rows={rows}
+              rowKey={(g) => g.registration.id}
+              person={(g) => ({
+                name: g.registration.memberName,
+                onOpen: () => setViewing(g),
+                plain: true,
+              })}
+              columns={columns(phase)}
+              footer={footer}
+              compact
+              flat
+            />
+          )}
+        </ListBody>
+      </ListCard>
       {viewing && (
         <EventPersonPanel
           person={guestPerson(viewing)}
@@ -138,24 +146,51 @@ export function RegistrationsTab({ guests, eventName, phase, state }: Props) {
           onRemoveCheckIn={() => hand(viewing.checkIn, setRemovingCheckIn)}
         />
       )}
+      <Pending
+        eventName={eventName}
+        editing={editing}
+        removing={removing}
+        removingCheckIn={removingCheckIn}
+        onDone={() => {
+          setEditing(null);
+          setRemoving(null);
+          setRemovingCheckIn(null);
+        }}
+      />
+    </>
+  );
+}
+
+type PendingProps = {
+  eventName: string;
+  editing: EventCheckIn | null;
+  removing: EventRegistration | null;
+  removingCheckIn: EventCheckIn | null;
+  onDone: () => void;
+};
+
+// The sheet or dialog a person's panel handed over to: change a check-in time, or undo a sign-up or a check-in.
+function Pending({
+  eventName,
+  editing,
+  removing,
+  removingCheckIn,
+  onDone,
+}: PendingProps) {
+  return (
+    <>
       {editing && (
         <EditCheckInTimeSheet
           checkIn={editing}
           eventName={eventName}
-          onClose={() => setEditing(null)}
+          onClose={onDone}
         />
       )}
       {removing && (
-        <RemoveRegistrationDialog
-          record={removing}
-          onClose={() => setRemoving(null)}
-        />
+        <RemoveRegistrationDialog record={removing} onClose={onDone} />
       )}
       {removingCheckIn && (
-        <RemoveCheckInDialog
-          record={removingCheckIn}
-          onClose={() => setRemovingCheckIn(null)}
-        />
+        <RemoveCheckInDialog record={removingCheckIn} onClose={onDone} />
       )}
     </>
   );

@@ -7,6 +7,7 @@ import {
   ListBody,
   PersonList,
   type PersonColumn,
+  ListCard,
 } from "@/ui";
 import type { EventCheckIn } from "../api";
 import { filterArrivals, type Arrival, type Phase } from "../roster";
@@ -73,48 +74,55 @@ export function CheckInsTab({ arrivals, eventName, phase, state }: Props) {
 
   return (
     <>
-      <FilterBar
-        searchLabel="Search check-ins"
-        search={name}
-        onSearch={setName}
-        resetKey={resetKey}
-        active={kind ? 1 : 0}
-        filtered={filtered}
-        onClear={clear}
+      <ListCard
+        toolbar={
+          <FilterBar
+            searchLabel="Search check-ins"
+            search={name}
+            onSearch={setName}
+            resetKey={resetKey}
+            active={kind ? 1 : 0}
+            filtered={filtered}
+            onClear={clear}
+          >
+            <FilterSelect
+              label="Type"
+              options={options}
+              value={kind}
+              onChange={setKind}
+            />
+          </FilterBar>
+        }
       >
-        <FilterSelect
-          label="Type"
-          options={options}
-          value={kind}
-          onChange={setKind}
-        />
-      </FilterBar>
-      <ListBody
-        list={rosterList(filterArrivals(arrivals, name, kind), state)}
-        icon="calendar-check"
-        noun={["check-in", "check-ins"]}
-        emptyText="People who come to this event will appear here."
-        filtered={filtered}
-        noMatchText="No one checked in matches that."
-        onClear={clear}
-        order="Arrival order."
-        footerInside
-      >
-        {(rows, footer) => (
-          <PersonList
-            label="Check-ins"
-            rows={rows}
-            rowKey={(a) => a.checkIn.id}
-            person={(a) => ({
-              name: a.checkIn.memberName,
-              onOpen: () => setViewing(a),
-              plain: true,
-            })}
-            columns={columns}
-            footer={footer}
-          />
-        )}
-      </ListBody>
+        <ListBody
+          list={rosterList(filterArrivals(arrivals, name, kind), state)}
+          icon="calendar-check"
+          noun={["check-in", "check-ins"]}
+          emptyText="People who come to this event will appear here."
+          filtered={filtered}
+          noMatchText="No one checked in matches that."
+          onClear={clear}
+          order="Arrival order."
+          footerInside
+        >
+          {(rows, footer) => (
+            <PersonList
+              label="Check-ins"
+              rows={rows}
+              rowKey={(a) => a.checkIn.id}
+              person={(a) => ({
+                name: a.checkIn.memberName,
+                onOpen: () => setViewing(a),
+                plain: true,
+              })}
+              columns={columns}
+              footer={footer}
+              compact
+              flat
+            />
+          )}
+        </ListBody>
+      </ListCard>
       {viewing && (
         <EventPersonPanel
           person={arrivalPerson(viewing)}

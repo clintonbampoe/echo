@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FilterBar, FilterSelect } from "@/ui";
+import { FilterBar, FilterSelect, ListCard } from "@/ui";
 import type { PersonKind, Session } from "../api";
 import { useCheckIns } from "../hooks";
 import { CheckInList } from "./CheckInList";
@@ -16,7 +16,7 @@ export function SessionCheckIns({ session }: { session: Session }) {
   const [name, setName] = useState("");
   const [kind, setKind] = useState("");
   const [resetKey, setResetKey] = useState(0);
-  const { open, remove, panels } = useCheckInPanels();
+  const { open, panels } = useCheckInPanels();
   const list = useCheckIns(session.id, {
     name: name || undefined,
     kind: (kind || undefined) as PersonKind | undefined,
@@ -31,29 +31,33 @@ export function SessionCheckIns({ session }: { session: Session }) {
 
   return (
     <>
-      <FilterBar
-        searchLabel="Search check-ins"
-        search={name}
-        onSearch={setName}
-        resetKey={resetKey}
-        active={kind ? 1 : 0}
-        filtered={filtered}
-        onClear={clear}
+      <ListCard
+        toolbar={
+          <FilterBar
+            searchLabel="Search check-ins"
+            search={name}
+            onSearch={setName}
+            resetKey={resetKey}
+            active={kind ? 1 : 0}
+            filtered={filtered}
+            onClear={clear}
+          >
+            <FilterSelect
+              label="Kind"
+              options={kinds}
+              value={kind}
+              onChange={setKind}
+            />
+          </FilterBar>
+        }
       >
-        <FilterSelect
-          label="Kind"
-          options={kinds}
-          value={kind}
-          onChange={setKind}
+        <CheckInList
+          list={list}
+          filtered={filtered}
+          onClear={clear}
+          onOpen={open}
         />
-      </FilterBar>
-      <CheckInList
-        list={list}
-        filtered={filtered}
-        onClear={clear}
-        onOpen={open}
-        onRemove={remove}
-      />
+      </ListCard>
       {panels}
     </>
   );

@@ -97,12 +97,10 @@ describe("session page", () => {
       await screen.findByRole("heading", { name: /Sunday Service/ }),
     ).toBeInTheDocument();
     expect(screen.getByText(/Walking in Faith/)).toBeInTheDocument();
-    expect(
-      screen.getByText(/Created by Ama Serwaa Boateng\./),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("link", { name: /Sunday, 11 October/ }),
-    ).toHaveAttribute("href", "/attendance?day=2026-10-11");
+    expect(screen.getByRole("link", { name: "Attendance" })).toHaveAttribute(
+      "href",
+      "/attendance?day=2026-10-11",
+    );
     const list = await screen.findByRole("list", { name: "Check-ins" });
     expect(
       within(list).getByRole("button", { name: "Kwame Asante" }),
@@ -248,10 +246,10 @@ describe("session page", () => {
   it("removes a check-in after asking", async () => {
     open();
     await userEvent.click(
-      await screen.findByRole("button", { name: "Actions for Esi Owusu" }),
+      await screen.findByRole("button", { name: "Esi Owusu" }),
     );
     await userEvent.click(
-      await screen.findByRole("menuitem", { name: "Remove from session" }),
+      await screen.findByRole("button", { name: "Delete record" }),
     );
     expect(
       await screen.findByText("Remove Esi Owusu from this session?"),
@@ -269,9 +267,11 @@ describe("session page", () => {
     await userEvent.click(
       await screen.findByRole("button", { name: "Kwame Asante" }),
     );
-    const panel = await screen.findByRole("dialog", { name: "Check-in" });
+    const panel = await screen.findByRole("dialog", {
+      name: "Attendance record",
+    });
     expect(
-      within(panel).getByRole("link", { name: "View profile" }),
+      within(panel).getByRole("link", { name: /View profile/ }),
     ).toHaveAttribute("href", "/members/m1?tab=attendance");
     expect(within(panel).getByText("9:04 am")).toBeInTheDocument();
   });
@@ -281,9 +281,7 @@ describe("session page", () => {
     await userEvent.click(
       await screen.findByRole("button", { name: "Kwame Asante" }),
     );
-    await userEvent.click(
-      await screen.findByRole("button", { name: "Edit check-in" }),
-    );
+    await userEvent.click(await screen.findByRole("button", { name: "Edit" }));
     const sheet = await screen.findByRole("dialog", {
       name: "Edit check-in time",
     });
@@ -304,7 +302,12 @@ describe("session page", () => {
   it("marks a scheduled session completed after asking", async () => {
     open();
     await userEvent.click(
-      await screen.findByRole("button", { name: "Mark completed" }),
+      await screen.findByRole("button", {
+        name: "More actions for Sunday Service",
+      }),
+    );
+    await userEvent.click(
+      await screen.findByRole("menuitem", { name: "Mark completed" }),
     );
     expect(
       await screen.findByText(/2 people marked present will count/),
@@ -326,8 +329,15 @@ describe("session page", () => {
     current = session({ status: "Completed" });
     open();
     await screen.findByRole("heading", { name: /Sunday Service/ });
-    expect(screen.queryByRole("button", { name: "Mark completed" })).toBeNull();
-    expect(screen.queryByRole("button", { name: "Cancel session" })).toBeNull();
+    await userEvent.click(
+      screen.getByRole("button", { name: "More actions for Sunday Service" }),
+    );
+    expect(
+      screen.queryByRole("menuitem", { name: "Mark completed" }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole("menuitem", { name: "Cancel session" }),
+    ).toBeNull();
   });
 
   it("says when the session is gone", async () => {

@@ -9,10 +9,15 @@ import styles from "./CheckInPanel.module.css";
 import { MatchList } from "./MatchList";
 import { NewVisitor } from "./NewVisitor";
 
-type Props = { session: Session; rows: CheckIn[] };
+type Props = {
+  session: Session;
+  rows: CheckIn[];
+  // Inside a sheet that already has the title and the edge.
+  flat?: boolean;
+};
 
 // Where people are marked present: pick who is arriving, search, tap. Each person is saved as you go.
-export function CheckInPanel({ session, rows }: Props) {
+export function CheckInPanel({ session, rows, flat }: Props) {
   const [kind, setKind] = useState<PersonKind>("Member");
   const [text, setText] = useState("");
   const input = useRef<HTMLInputElement>(null);
@@ -33,9 +38,12 @@ export function CheckInPanel({ session, rows }: Props) {
   }
 
   return (
-    <aside aria-label="Mark present" className={styles.panel}>
+    <aside
+      aria-label="Mark present"
+      className={flat ? styles.flat : styles.panel}
+    >
       <div className={styles.head}>
-        <h2 className={styles.title}>Mark present</h2>
+        {!flat && <h2 className={styles.title}>Mark present</h2>}
         <SegmentedField
           label="Who is arriving"
           hideLabel

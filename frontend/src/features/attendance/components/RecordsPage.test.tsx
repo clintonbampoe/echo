@@ -88,19 +88,20 @@ describe("attendance records", () => {
     await userEvent.click(
       within(list).getByRole("button", { name: "Kwame Asante" }),
     );
-    const panel = await screen.findByRole("dialog", { name: "Check-in" });
+    const panel = await screen.findByRole("dialog", {
+      name: "Attendance record",
+    });
     expect(
-      within(panel).getByRole("link", { name: "View profile" }),
+      within(panel).getByRole("link", { name: /View profile/ }),
     ).toHaveAttribute("href", "/members/m1?tab=attendance");
     await userEvent.click(within(panel).getByRole("button", { name: "Close" }));
     await userEvent.click(
       within(list).getByRole("button", { name: "Efua Mensah" }),
     );
     expect(
-      within(await screen.findByRole("dialog", { name: "Check-in" })).getByRole(
-        "link",
-        { name: "View profile" },
-      ),
+      within(
+        await screen.findByRole("dialog", { name: "Attendance record" }),
+      ).getByRole("link", { name: /View profile/ }),
     ).toHaveAttribute("href", "/visitors/v1");
   });
 

@@ -1,0 +1,97 @@
+.body {
+  display: grid;
+  gap: 20px;
+  padding-top: 4px;
+}
+.who {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.names {
+  min-width: 0;
+}
+.name {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+}
+.meta {
+  margin: 2px 0 0;
+  font-size: 14px;
+  color: var(--text-3);
+}
+.card {
+  margin: 0;
+  overflow: hidden;
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 52px;
+  padding: 0 22px;
+  font-size: 14px;
+  font-weight: 500;
+  border-top: 1px solid var(--line);
+}
+.row:first-child {
+  border-top: 0;
+}
+.row dt {
+  flex: none;
+  font-weight: 400;
+  color: var(--text-3);
+}
+.row dd {
+  margin: 0;
+  min-width: 0;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+.profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  color: inherit;
+  text-decoration: none;
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  transition: background-color var(--fast) ease;
+}
+.profile:hover {
+  background: var(--hover);
+}
+.profile:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+}
+.text {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.link {
+  align-self: flex-start;
+  font-size: 15px;
+  font-weight: 500;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.note {
+  font-size: 13px;
+  color: var(--text-3);
+  overflow-wrap: anywhere;
+}

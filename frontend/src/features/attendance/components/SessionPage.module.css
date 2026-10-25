@@ -39,3 +39,10 @@
     position: static;
   }
 }
+
+/* A phone or tablet: Mark present opens the panel over the page instead of keeping it above the list. */
+@media (max-width: 900px) {
+  .panel {
+    display: none;
+  }
+}

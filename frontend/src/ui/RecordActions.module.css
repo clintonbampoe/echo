@@ -1,0 +1,22 @@
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.remove {
+  height: 46px;
+  background: none;
+  border: 0;
+  border-radius: 999px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--neg);
+  cursor: pointer;
+}
+.remove:hover {
+  background: var(--hover);
+}
+.remove:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+}

@@ -180,9 +180,9 @@ describe("event page", () => {
     );
     const panel = await screen.findByRole("dialog", { name: "Registration" });
     expect(
-      within(panel).getByRole("link", { name: "View profile" }),
+      within(panel).getByRole("link", { name: /View profile/ }),
     ).toHaveAttribute("href", "/members/m2?tab=events");
-    expect(within(panel).getByText("Registered 14 Sep")).toBeInTheDocument();
+    expect(within(panel).getByText("14 Sep")).toBeInTheDocument();
     await user.click(
       within(panel).getByRole("button", { name: "Remove registration" }),
     );
@@ -212,7 +212,7 @@ describe("event page", () => {
       within(panel).queryByRole("button", { name: "Remove registration" }),
     ).toBeNull();
     expect(
-      within(panel).getByRole("button", { name: "Remove check-in" }),
+      within(panel).getByRole("button", { name: "Delete check-in" }),
     ).toBeInTheDocument();
   });
 

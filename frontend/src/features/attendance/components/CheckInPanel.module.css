@@ -52,3 +52,8 @@
   font-size: 13px;
   color: var(--neg);
 }
+
+/* In a sheet: no card of its own. */
+.flat .head {
+  justify-content: flex-start;
+}
