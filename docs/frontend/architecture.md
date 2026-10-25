@@ -1,7 +1,7 @@
 # Frontend Architecture
 
 **Written by:** @clintonbampoe
-**Last updated:** 2026-10-15 by @clintonbampoe
+**Last updated:** 2026-10-25 by @clintonbampoe
 
 How the Echo web app is organised. The goal is low cognitive load: open a file and know what it is,
 what it may import, and that it fits on a screen or two.
@@ -44,8 +44,9 @@ lib        plain TypeScript: API client, dates, formatting
 
 ## Inside a feature
 
-`features/members` is the model. Features still in the older flat shape (`api.ts`, `hooks.ts`) move to it as
-their screens are redesigned.
+`features/members` is the model, and every feature with a screen now has the same shape (`account`,
+`invitations` and `settings` are small and carry only the folders they need; `website` is the public site and
+keeps its own).
 
 ```text
 features/members/
@@ -74,7 +75,9 @@ Use these before writing your own. A new list page is about 40 lines made from t
 | `lib` | `dates`, `format`, `validation`, `regions`, `paths` | days, money, required fields, links |
 | `ui` | `PageHeader`, `FilterBar`, `SearchBox`, `ListBody` | the shell of a list page. `FilterBar` folds filters behind a "Filters" button on a phone or tablet, even for one filter |
 | `ui` | `ListCard`, `ListHeader`, `PersonList`, `RecordTable`, `RecordLines` | every list card opens with a `ListHeader` (title left, count right), drawn from the list's `title`; pages never hand-build one |
-| `ui` | `Section`, `StatStrip`, `CellStrip`, `RankedBars`, `EmptyState` | numbers, the strip of squares, ranked bars (Finance categories) |
+| `ui` | `Section`, `StatStrip`, `HistoryTrack`, `RankedBars`, `DistributionBar`, `EmptyState` | numbers, the history track (a line of dots joined by a rail), ranked bars (Finance categories), a distribution bar with its legend (Tithes methods, Projects, the dashboard) |
+| `ui` | `WithSide` | a page whose list sits beside a column of figures (Finance, Tithes: 8 + 4) and stacks on a tablet |
+| `ui` | `Lookup`, `PickerAnchor`, `PanelSelect` | one family of pickers: a searchable lookup (member picker), and the anchor that places a picker panel under its field |
 | `ui` | `FormSheet`, `FormSection`, `Field`, `ControlledSelect`, `DeleteDialog`, `Notice` | forms, delete and notes inside a form |
 | `ui` | `MonthYearPill`, `MonthBars` | picking a month, and a month-by-month chart |
 | `ui` | `Chip` + `ChipTone`, `plainOptions`, `withAny` | status labels, dropdown lists |
@@ -84,6 +87,22 @@ Use these before writing your own. A new list page is about 40 lines made from t
 | `test` | `kit` (`renderApp`, `signIn`, `json`, `pathOf`), `pickers` | what component tests share. Don't copy these into a test |
 
 Features import `ui` only through `ui/index.ts`, which stays alphabetical.
+
+## Liquid glass
+
+Menus, panels, sheets, pickers and tooltips share one material, defined once in `styles/glass.css`: `.glass-pop`
+(small floating things), `.glass-panel` (sheets, dialogs, pickers), `.glass-scrim`, `.glass-tip` (the dark pill
+tooltip), `.glass-opt` (an option that staggers in with `--i`). Lists get `.liquid-row` (a tile that lifts behind
+a row on hover), people get `.liquid-av`, dates `.liquid-date`. Nothing writes its own blur or shadow.
+
+The platform rule is "less, not smaller": a phone shows fewer things, never the same things shrunk. A control
+that would shrink below a comfortable touch size is folded away instead (filters behind one button, one pill
+of dates, two chart ranges).
+
+Charts are doors. A bar, a segment or a rank row is a button: hover or focus lifts it from its centre and dims
+its siblings, a dark pill says what it is, and a press either narrows the page (`selected` / `onPick`) or opens
+the filtered list (`to`). Segments and legend rows light each other up (`:has()`). A distribution shows its top
+four and one "Other", which opens nothing.
 
 ## Interaction
 
@@ -103,9 +122,9 @@ so no screen writes its own. The rulebook is `claude/feel-and-interaction-spec.m
 - **Pop and exit**: menus, dropdowns, sheets, dialogs and toasts animate in and out. `usePresence` keeps a
   closing thing on the page until its exit has played. A sheet or dialog that is mounted only while wanted is
   wrapped in `<Presence open>`, with `useHeld` keeping what it showed.
-- **Touch gestures**: a phone's bottom sheet (`Sheet`, `BottomSheet`) is pulled down to close by its grabber or
-  header (`useDragDismiss`: follows the finger, closes past a quarter of its height or on a flick, springs back,
-  and comes back up if a dirty form refuses). The shell (`app/shell`) owns two app-wide gestures: pulling the page
+- **Touch gestures**: there are no bottom sheets. On a phone `Sheet` and `CenterPanel` materialise in the middle of
+  the screen as glass panels; a drag moves them and a flick or a quarter-distance drag closes them
+  (`useDragDismiss`: follows the finger, springs back, and comes back if a dirty form refuses). The shell (`app/shell`) owns two app-wide gestures: pulling the page
   down from the top refreshes every query (`PullToRefresh`, never on forms or dialogs) and holding a row opens its
   ⋯ menu (`useLongPressMenu`, which presses the row's own menu button). Lists build neither.
 - **Loading**: shimmer skeletons shaped like what will arrive (`.skeleton`, `PersonListSkeleton`, `StatStrip busy`).
