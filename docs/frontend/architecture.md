@@ -93,11 +93,18 @@ Features import `ui` only through `ui/index.ts`, which stays alphabetical.
 Menus, panels, sheets, pickers and tooltips share one material, defined once in `styles/glass.css`: `.glass-pop`
 (small floating things), `.glass-panel` (sheets, dialogs, pickers), `.glass-scrim`, `.glass-tip` (the dark pill
 tooltip), `.glass-opt` (an option that staggers in with `--i`). Lists get `.liquid-row` (a tile that lifts behind
-a row on hover), people get `.liquid-av`, dates `.liquid-date`. Nothing writes its own blur or shadow.
+a row on hover: very round, and the row's own content swells with it), people get `.liquid-av`, dates
+`.liquid-date` (both take the tile's tone on hover, so they read as part of the row). Nothing writes its own blur or
+shadow. Dialogs, drawers and sheets all blur what is behind them through `.glass-scrim`; dropdown options are
+`.glass-opt` pills and never shift on hover.
+
+Things arrive like water: `.anim-rise` (pages) and `.stagger` (rows, cards) settle with a small overshoot
+(`eJellyPage`, `eJelly`), and horizontal bars are fully round and grow with a soft overshoot.
 
 The platform rule is "less, not smaller": a phone shows fewer things, never the same things shrunk. A control
 that would shrink below a comfortable touch size is folded away instead (filters behind one button, one pill
-of dates, two chart ranges).
+of dates, two chart ranges). On the dashboard, `Pager` shows one card per page at 900px and below, all the same
+height, with the dots as the only hint of the next one; a wide card (Members) is split into small ones.
 
 Charts are doors. A bar, a segment or a rank row is a button: hover or focus lifts it from its centre and dims
 its siblings, a dark pill says what it is, and a press either narrows the page (`selected` / `onPick`) or opens
@@ -116,7 +123,8 @@ so no screen writes its own. The rulebook is `claude/feel-and-interaction-spec.m
   stronger border, a shadow and a 3px lift, and presses to `--press-card`.
 - **One element never crowds another.** A reaction moves or fills only its own element (a row's hover fill is
   inset, the dividers on both sides hide, a nav item slides its content not its box).
-- **Press**: every `button` and `[role=button]` shrinks to `--press` and springs back. Opt out with `data-press="none"`.
+- **Press**: every `button` and `[role=button]` shrinks to `--press` and springs back. Opt out with `data-press="none"`, which a
+  stretched-link row button must set, otherwise a press shrinks the button and the click misses it.
 - **Liquid pill**: `Tabs`, joined `SegmentedField` and the sidebar's `NavList` glide one thumb to the pick
   (`useSlidingThumb` measures and sets `--x/--w/--y/--h`; CSS does the rest). Tab panels fade and rise.
 - **Pop and exit**: menus, dropdowns, sheets, dialogs and toasts animate in and out. `usePresence` keeps a
