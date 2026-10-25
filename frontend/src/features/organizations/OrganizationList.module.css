@@ -16,11 +16,26 @@
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow);
-  transition: background-color var(--fast) ease;
+  transition:
+    border-color var(--t-base) var(--ease-soft),
+    box-shadow var(--t-base) var(--ease-soft),
+    transform var(--t-base) var(--ease-out);
 }
+/* The whole card opens the group, so it lifts: 3px up on hover, a little down when pressed. */
 @media (hover: hover) {
   .card:hover {
-    background: var(--surface-2);
+    border-color: var(--line-hover);
+    box-shadow: var(--shadow-hover);
+    transform: var(--lift-3);
+  }
+}
+.card:active {
+  transform: scale(var(--press-card));
+}
+@media (prefers-reduced-motion: reduce) {
+  .card:hover,
+  .card:active {
+    transform: none;
   }
 }
 .card:has(.name:focus-visible) {
@@ -83,22 +98,5 @@
   }
   .card {
     padding: 18px 20px;
-  }
-}
-
-/* Design round 8: a card answers the pointer. */
-.card {
-  transition:
-    border-color var(--fast) ease,
-    box-shadow var(--fast) ease,
-    background var(--fast) ease,
-    transform var(--base) var(--ease);
-}
-
-@media (hover: hover) {
-  .card:hover {
-    border-color: var(--line-hover);
-    box-shadow: var(--shadow-hover);
-    transform: translateY(-3px);
   }
 }

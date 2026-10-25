@@ -38,6 +38,9 @@
     translate var(--t-enter) var(--ease-out),
     height var(--t-base) var(--ease-out);
 }
+.column[data-has="false"] .slot {
+  opacity: 0;
+}
 .thumb {
   position: absolute;
   inset: 0;

@@ -100,3 +100,13 @@
     transform: translateY(-3px);
   }
 }
+
+.card:active {
+  transform: scale(var(--press-card));
+}
+@media (prefers-reduced-motion: reduce) {
+  .card:hover,
+  .card:active {
+    transform: none;
+  }
+}

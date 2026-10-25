@@ -14,6 +14,8 @@ export function useSlidingThumb(selected: string) {
       const on = el.querySelector<HTMLElement>(
         '[data-selected="true"], [aria-current="page"]',
       );
+      // Nothing picked (a page that is not in the list): the thumb has nowhere to be, so it hides.
+      el.dataset.has = on ? "true" : "false";
       el.style.setProperty("--x", `${on?.offsetLeft ?? 0}px`);
       el.style.setProperty("--w", `${on?.offsetWidth ?? 0}px`);
       // A column of choices (the sidebar) slides up and down by the same measure.
