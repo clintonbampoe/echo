@@ -3,12 +3,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { isApiError } from "@/lib/api";
 import { Button, Field } from "@/ui";
-import { forgotPassword } from "../api";
+import { forgotPassword } from "../api/auth";
 import { BackLink } from "../components/AuthLinks";
 import { AuthScreen } from "../components/AuthScreen";
 import { ResendButton } from "../components/ResendButton";
-import { useForgotPassword } from "../hooks";
-import { emailOnlySchema, type EmailOnlyValues } from "../schema";
+import { useForgotPassword } from "../hooks/mutations";
+import { emailOnlySchema, type EmailOnlyValues } from "../forms/schema";
 import styles from "./form.module.css";
 
 export function ForgotPage() {

@@ -2,7 +2,7 @@ import { Navigate, useLocation } from "react-router-dom";
 import { BackLink } from "../components/AuthLinks";
 import { ResendButton } from "../components/ResendButton";
 import { AuthScreen } from "../components/AuthScreen";
-import { sendVerificationLink } from "../api";
+import { sendVerificationLink } from "../api/auth";
 import styles from "./form.module.css";
 
 // "We sent you a link." The address arrives from the page that registered (or signed in),

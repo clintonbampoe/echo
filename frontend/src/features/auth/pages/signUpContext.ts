@@ -1,5 +1,5 @@
 import { useOutletContext } from "react-router-dom";
-import type { AccountValues } from "../schema";
+import type { AccountValues } from "../forms/schema";
 
 export type SignUpContext = {
   account: AccountValues | null;

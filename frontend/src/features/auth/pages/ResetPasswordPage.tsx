@@ -6,8 +6,8 @@ import { isApiError } from "@/lib/api";
 import { Alert, Button, LinkButton, PasswordField } from "@/ui";
 import { BackLink } from "../components/AuthLinks";
 import { AuthScreen } from "../components/AuthScreen";
-import { useResetPassword } from "../hooks";
-import { resetSchema, type ResetValues } from "../schema";
+import { useResetPassword } from "../hooks/mutations";
+import { resetSchema, type ResetValues } from "../forms/schema";
 import styles from "./form.module.css";
 
 const expired = (

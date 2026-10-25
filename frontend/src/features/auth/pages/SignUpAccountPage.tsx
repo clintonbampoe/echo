@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Button, Field, PasswordField } from "@/ui";
 import { AuthLinks } from "../components/AuthLinks";
 import { AuthScreen } from "../components/AuthScreen";
-import { accountSchema, type AccountValues } from "../schema";
+import { accountSchema, type AccountValues } from "../forms/schema";
 import { useSignUp } from "./signUpContext";
 import styles from "./form.module.css";
 

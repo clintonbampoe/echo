@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { LinkButton } from "@/ui";
-import type { InvitationInfo } from "../api";
-import { useInvitation } from "../hooks";
+import type { InvitationInfo } from "../api/auth";
+import { useInvitation } from "../hooks/queries";
 import { AuthScreen } from "./AuthScreen";
 import styles from "../pages/form.module.css";
 

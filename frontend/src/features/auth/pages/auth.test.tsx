@@ -7,7 +7,7 @@ import {
   type RouteObject,
 } from "react-router-dom";
 import { getTokens } from "@/lib/tokens";
-import { authRoutes } from "./routes";
+import { authRoutes } from "../routes";
 
 const json = (status: number, body?: unknown) =>
   new Response(body === undefined ? null : JSON.stringify(body), { status });

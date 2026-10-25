@@ -1,5 +1,5 @@
 import { regionLabel } from "@/lib/regions";
-import type { InvitationInfo } from "../api";
+import type { InvitationInfo } from "../api/auth";
 import styles from "./InvitationCard.module.css";
 
 // "Grace Chapel, Osu, Greater Accra" with the church's initials, and who invited you.

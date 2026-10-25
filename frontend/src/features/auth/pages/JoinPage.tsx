@@ -11,9 +11,9 @@ import {
   InvalidInvitation,
   InvitationGate,
 } from "../components/InvitationGate";
-import type { InvitationInfo } from "../api";
-import { useRegisterMember } from "../hooks";
-import { joinSchema, type JoinValues } from "../schema";
+import type { InvitationInfo } from "../api/auth";
+import { useRegisterMember } from "../hooks/mutations";
+import { joinSchema, type JoinValues } from "../forms/schema";
 import styles from "./form.module.css";
 
 const FIELD_MAP = {

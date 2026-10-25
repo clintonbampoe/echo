@@ -6,8 +6,8 @@ import { isApiError } from "@/lib/api";
 import { Alert, Button, Field } from "@/ui";
 import { BackLink } from "../components/AuthLinks";
 import { AuthScreen } from "../components/AuthScreen";
-import { useCheckInvitation } from "../hooks";
-import { codeSchema, type CodeValues } from "../schema";
+import { useCheckInvitation } from "../hooks/mutations";
+import { codeSchema, type CodeValues } from "../forms/schema";
 import styles from "./form.module.css";
 
 // "Enter your invitation code". The code is checked here, so a typo is caught on this screen.

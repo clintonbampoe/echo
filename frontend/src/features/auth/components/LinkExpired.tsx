@@ -4,8 +4,8 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { isApiError } from "@/lib/api";
 import { Button, Field } from "@/ui";
-import { useSendVerification } from "../hooks";
-import { emailOnlySchema, type EmailOnlyValues } from "../schema";
+import { useSendVerification } from "../hooks/mutations";
+import { emailOnlySchema, type EmailOnlyValues } from "../forms/schema";
 import { AuthScreen } from "./AuthScreen";
 import styles from "./LinkExpired.module.css";
 

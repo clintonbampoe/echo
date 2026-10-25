@@ -8,8 +8,8 @@ import { Button, Field, PasswordField } from "@/ui";
 import { AuthScreen } from "../components/AuthScreen";
 import { AuthLinks } from "../components/AuthLinks";
 import { SignInAlert } from "../components/SignInAlert";
-import { useSignIn } from "../hooks";
-import { signInSchema, type SignInValues } from "../schema";
+import { useSignIn } from "../hooks/mutations";
+import { signInSchema, type SignInValues } from "../forms/schema";
 import styles from "./form.module.css";
 
 // Where to go after signing in: back to the page that asked for it, otherwise the dashboard.

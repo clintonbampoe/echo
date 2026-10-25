@@ -7,8 +7,12 @@ import { handleSubmitError } from "@/lib/forms";
 import { Alert, Button } from "@/ui";
 import { BackLink } from "../components/AuthLinks";
 import { AuthScreen } from "../components/AuthScreen";
-import { useRegisterCongregation } from "../hooks";
-import { churchSchema, type AccountValues, type ChurchValues } from "../schema";
+import { useRegisterCongregation } from "../hooks/mutations";
+import {
+  churchSchema,
+  type AccountValues,
+  type ChurchValues,
+} from "../forms/schema";
 import { ChurchFields } from "./ChurchFields";
 import { useSignUp } from "./signUpContext";
 import styles from "./form.module.css";

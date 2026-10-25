@@ -3,7 +3,7 @@ import { LinkButton } from "@/ui";
 import { BackLink } from "../components/AuthLinks";
 import { LinkExpired } from "../components/LinkExpired";
 import { AuthScreen } from "../components/AuthScreen";
-import { useVerifyEmailLink } from "../hooks";
+import { useVerifyEmailLink } from "../hooks/queries";
 import styles from "./form.module.css";
 
 // Where the link in the verification email lands: /verify-email?token=...
