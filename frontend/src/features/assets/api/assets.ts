@@ -1,5 +1,5 @@
 import { api, type DateWindow, type Page } from "@/lib/api";
-import { PAGE_SIZE } from "@/lib/paged";
+import { pageSize } from "@/lib/paged";
 
 export type AssetStatus =
   "Active" | "InUse" | "InStorage" | "UnderMaintenance" | "Liquidated";
@@ -39,7 +39,7 @@ export const listAssets = (
   signal?: AbortSignal,
 ) =>
   api.get<Page<Asset>>("/v1/assets", {
-    query: { ...filters, cursor, pageSize: PAGE_SIZE },
+    query: { ...filters, cursor, pageSize: pageSize() },
     signal,
   });
 

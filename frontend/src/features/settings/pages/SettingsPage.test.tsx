@@ -1,7 +1,7 @@
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { renderApp } from "@/test/kit";
-import { resetPreferences } from "@/lib/preferences";
+import { getPreferences, resetPreferences } from "@/lib/preferences";
 import { SettingsPage } from "./SettingsPage";
 
 afterEach(resetPreferences);
@@ -11,6 +11,18 @@ describe("SettingsPage", () => {
     renderApp(<SettingsPage />);
     await userEvent.click(screen.getByRole("radio", { name: "Compact" }));
     expect(document.documentElement.dataset.density).toBe("compact");
+  });
+
+  it("chooses how many rows a list loads, and remembers it", async () => {
+    renderApp(<SettingsPage />);
+    expect(screen.getByRole("radio", { name: "50" })).toBeChecked();
+    await userEvent.click(screen.getByRole("radio", { name: "25" }));
+    expect(getPreferences().pageSize).toBe(25);
+    expect(
+      JSON.parse(localStorage.getItem("echo.preferences") ?? "{}"),
+    ).toMatchObject({
+      pageSize: 25,
+    });
   });
 
   it("switches reduce motion on and off", async () => {

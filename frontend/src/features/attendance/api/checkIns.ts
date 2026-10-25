@@ -1,5 +1,5 @@
 import { api, type Page } from "@/lib/api";
-import { PAGE_SIZE } from "@/lib/paged";
+import { pageSize } from "@/lib/paged";
 
 export type PersonKind = "Member" | "Visitor";
 
@@ -37,7 +37,7 @@ export const listAttendance = (
   signal?: AbortSignal,
 ) =>
   api.get<Page<AttendanceRecord>>("/v1/attendance", {
-    query: { personId, ...filters, cursor, pageSize: PAGE_SIZE },
+    query: { personId, ...filters, cursor, pageSize: pageSize() },
     signal,
   });
 
@@ -52,7 +52,7 @@ export const listCheckIns = (
   signal?: AbortSignal,
 ) =>
   api.get<Page<CheckIn>>("/v1/attendance", {
-    query: { sessionId, ...filters, cursor, pageSize: PAGE_SIZE },
+    query: { sessionId, ...filters, cursor, pageSize: pageSize() },
     signal,
   });
 
@@ -73,7 +73,7 @@ export const listCheckInsBetween = (
   signal?: AbortSignal,
 ) =>
   api.get<Page<CheckIn>>("/v1/attendance", {
-    query: { ...query, cursor, pageSize: PAGE_SIZE },
+    query: { ...query, cursor, pageSize: pageSize() },
     signal,
   });
 

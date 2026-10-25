@@ -1,5 +1,5 @@
 import { api, type Page } from "@/lib/api";
-import { PAGE_SIZE } from "@/lib/paged";
+import { pageSize } from "@/lib/paged";
 
 // A person's part in one organization. (Not the same as what they may do in the app.)
 export type OrganizationRole = "Member" | "Secretary" | "Leader";
@@ -19,7 +19,7 @@ export const listPersonMemberships = (
   signal?: AbortSignal,
 ) =>
   api.get<Page<Membership>>(`/v1/organization-members/member/${personId}`, {
-    query: { cursor, pageSize: PAGE_SIZE },
+    query: { cursor, pageSize: pageSize() },
     signal,
   });
 
@@ -45,7 +45,7 @@ export const listOrganizationMembers = (
   api.get<Page<OrganizationMember>>(
     `/v1/organization-members/organization/${organizationId}`,
     {
-      query: { ...filters, cursor, pageSize: PAGE_SIZE },
+      query: { ...filters, cursor, pageSize: pageSize() },
       signal,
     },
   );

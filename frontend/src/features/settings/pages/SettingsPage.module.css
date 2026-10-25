@@ -10,17 +10,36 @@
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow);
 }
-.density {
+.section {
+  padding: 20px 22px 4px;
+}
+.heading {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+/* A setting with pills: its words, then a group with room inside it and between its pills. */
+.choice {
   display: flex;
   flex-direction: column;
   gap: 14px;
-  padding: 20px 22px;
+  padding: 16px 22px 20px;
 }
-.head {
+.choice + .choice {
+  border-top: 1px solid var(--line);
+}
+.pills {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-wrap: wrap;
   gap: 12px;
+  padding: 16px;
+  background: var(--fill);
+  border-radius: var(--radius-lg);
+}
+.pills fieldset {
+  min-width: 0;
 }
 .title {
   font-size: 15px;
@@ -52,9 +71,8 @@
   .page {
     gap: 16px;
   }
-  .head {
-    flex-direction: column;
-    align-items: stretch;
+  .pills > * {
+    flex: 1;
   }
 }
 

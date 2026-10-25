@@ -1,6 +1,6 @@
 import type { PaymentMethod } from "@/features/transactions";
 import { api, type DateWindow, type Page } from "@/lib/api";
-import { PAGE_SIZE } from "@/lib/paged";
+import { pageSize } from "@/lib/paged";
 
 // One gift towards a project. Contributions are not linked to a member.
 export type Contribution = {
@@ -28,7 +28,7 @@ export const listContributions = (
   signal?: AbortSignal,
 ) =>
   api.get<Page<Contribution>>("/v1/project-contributions", {
-    query: { ...filters, cursor, pageSize: PAGE_SIZE },
+    query: { ...filters, cursor, pageSize: pageSize() },
     signal,
   });
 

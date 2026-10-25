@@ -1,5 +1,5 @@
 import { api, type Page } from "@/lib/api";
-import { PAGE_SIZE } from "@/lib/paged";
+import { pageSize } from "@/lib/paged";
 import type { SessionCategory } from "./sessionLabels";
 
 export type SessionStatus = "Scheduled" | "Completed" | "Cancelled";
@@ -37,7 +37,7 @@ export const listSessions = (
   signal?: AbortSignal,
 ) =>
   api.get<Page<Session>>("/v1/attendance/sessions", {
-    query: { ...filters, cursor, pageSize: PAGE_SIZE },
+    query: { ...filters, cursor, pageSize: pageSize() },
     signal,
   });
 

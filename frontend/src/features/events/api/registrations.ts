@@ -1,5 +1,5 @@
 import { api, type Page } from "@/lib/api";
-import { PAGE_SIZE } from "@/lib/paged";
+import { pageSize } from "@/lib/paged";
 
 // A person's sign-up for an event. eventStartDate is the day it happens, registrationDate the day they signed up.
 export type Registration = {
@@ -16,7 +16,7 @@ export const listPersonRegistrations = (
   signal?: AbortSignal,
 ) =>
   api.get<Page<Registration>>(`/v1/event-registrations/member/${personId}`, {
-    query: { cursor, pageSize: PAGE_SIZE },
+    query: { cursor, pageSize: pageSize() },
     signal,
   });
 
@@ -36,7 +36,7 @@ export const listEventRegistrations = (
   signal?: AbortSignal,
 ) =>
   api.get<Page<EventRegistration>>(`/v1/event-registrations/event/${eventId}`, {
-    query: { cursor, pageSize: PAGE_SIZE },
+    query: { cursor, pageSize: pageSize() },
     signal,
   });
 

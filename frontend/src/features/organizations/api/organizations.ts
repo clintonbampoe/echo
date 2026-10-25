@@ -1,5 +1,5 @@
 import { api, type DateWindow, type Page } from "@/lib/api";
-import { PAGE_SIZE } from "@/lib/paged";
+import { pageSize } from "@/lib/paged";
 
 export type Organization = {
   id: string;
@@ -33,7 +33,7 @@ export const listOrganizations = (
   signal?: AbortSignal,
 ) =>
   api.get<Page<Organization>>("/v1/organizations", {
-    query: { ...filters, cursor, pageSize: PAGE_SIZE },
+    query: { ...filters, cursor, pageSize: pageSize() },
     signal,
   });
 

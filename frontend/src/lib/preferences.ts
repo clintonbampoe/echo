@@ -4,8 +4,13 @@ import { useSyncExternalStore } from "react";
 
 export type Density = "compact" | "comfortable" | "spacious";
 
+// How many rows a list loads before its "Load more" row.
+export const PAGE_SIZES = [10, 25, 50, 100] as const;
+export type PageSize = (typeof PAGE_SIZES)[number];
+
 export type Preferences = {
   density: Density;
+  pageSize: PageSize;
   // Calmer animations. On by itself when the device asks for less motion.
   reduceMotion: boolean;
   // "GH₵ 6,400" instead of "6,400".
@@ -16,6 +21,7 @@ const KEY = "echo.preferences";
 
 const defaults: Preferences = {
   density: "comfortable",
+  pageSize: 50,
   reduceMotion: false,
   currencySymbol: true,
 };
@@ -23,7 +29,11 @@ const defaults: Preferences = {
 function read(): Preferences {
   try {
     const saved: unknown = JSON.parse(localStorage.getItem(KEY) ?? "{}");
-    return { ...defaults, ...(typeof saved === "object" ? saved : {}) };
+    const merged = { ...defaults, ...(typeof saved === "object" ? saved : {}) };
+    // A size from an older version, or one typed into storage by hand, falls back to the default.
+    return PAGE_SIZES.includes(merged.pageSize)
+      ? merged
+      : { ...merged, pageSize: defaults.pageSize };
   } catch {
     return defaults;
   }

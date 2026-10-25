@@ -1,6 +1,6 @@
 // Invitations as the API sends them. No React in this file.
 import { api, type Page } from "@/lib/api";
-import { PAGE_SIZE } from "@/lib/paged";
+import { pageSize } from "@/lib/paged";
 import type { UserRole } from "@/features/account";
 
 export type InvitationStatus = "Active" | "Expired" | "Revoked";
@@ -35,7 +35,7 @@ export type InvitationInput = {
 
 export const listInvitations = (cursor?: string, signal?: AbortSignal) =>
   api.get<Page<Invitation>>("/v1/auth/invitations", {
-    query: { cursor, pageSize: PAGE_SIZE },
+    query: { cursor, pageSize: pageSize() },
     signal,
   });
 

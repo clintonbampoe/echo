@@ -1,6 +1,6 @@
 import { api, type Page } from "@/lib/api";
 import { ALL_TIME } from "@/lib/dates";
-import { PAGE_SIZE } from "@/lib/paged";
+import { pageSize } from "@/lib/paged";
 
 export type OrganizedEvent = {
   id: string;
@@ -23,7 +23,7 @@ export const listOrganizedEvents = (
       ...ALL_TIME,
       order: "Desc",
       cursor,
-      pageSize: PAGE_SIZE,
+      pageSize: pageSize(),
     },
     signal,
   });
@@ -54,7 +54,7 @@ export const listUpcomingEvents = (
       to: ALL_TIME.to,
       order: "Asc",
       cursor,
-      pageSize: PAGE_SIZE,
+      pageSize: pageSize(),
     },
     signal,
   });
@@ -99,12 +99,12 @@ export const listEvents = (
   q: EventQuery,
   cursor?: string,
   signal?: AbortSignal,
-  pageSize = PAGE_SIZE,
+  size: number = pageSize(),
 ): Promise<Page<EventItem>> =>
   q.from > q.to
     ? Promise.resolve(NONE)
     : api.get<Page<EventItem>>("/v1/events", {
-        query: { ...q, cursor, pageSize },
+        query: { ...q, cursor, pageSize: size },
         signal,
       });
 

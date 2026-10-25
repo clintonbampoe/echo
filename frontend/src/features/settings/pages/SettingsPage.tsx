@@ -1,4 +1,10 @@
-import { usePreferences, type Density } from "@/lib/preferences";
+import { useQueryClient } from "@tanstack/react-query";
+import {
+  PAGE_SIZES,
+  usePreferences,
+  type Density,
+  type PageSize,
+} from "@/lib/preferences";
 import { PageHeader, SegmentedField, Switch } from "@/ui";
 import styles from "./SettingsPage.module.css";
 
@@ -8,33 +14,65 @@ const densities: { value: Density; label: string }[] = [
   { value: "spacious", label: "Spacious" },
 ];
 
+const sizes = PAGE_SIZES.map((n) => ({ value: String(n), label: String(n) }));
+
 // Choices that stay on this device. Nothing here is sent to the server.
 export function SettingsPage() {
   const [prefs, set] = usePreferences();
+  const cache = useQueryClient();
+  // Lists already on screen were loaded in pages of the old size, so they are asked for again.
+  function choosePageSize(value: string) {
+    set({ pageSize: Number(value) as PageSize });
+    void cache.invalidateQueries();
+  }
   return (
     <div className={`${styles.page} anim-rise`}>
       <PageHeader title="Settings" />
-      <section className={styles.card}>
-        <div className={styles.density}>
-          <div className={styles.head}>
-            <h2 className={styles.title}>Density</h2>
-            <SegmentedField
-              label="Density"
-              hideLabel
-              joined
-              compact
-              options={densities}
-              value={prefs.density}
-              onChange={(density) => set({ density })}
-            />
-          </div>
-          <p className={styles.sub}>How much room lists and tables take.</p>
-        </div>
+      <section className={styles.card} aria-labelledby="lists">
+        <header className={styles.section}>
+          <h2 id="lists" className={styles.heading}>
+            Lists
+          </h2>
+          <p className={styles.sub}>Applies on every device</p>
+        </header>
+        <Choice
+          title="Density"
+          sub="How much room rows, tiles and tables take."
+        >
+          <SegmentedField
+            label="Density"
+            hideLabel
+            joined
+            compact
+            options={densities}
+            value={prefs.density}
+            onChange={(density) => set({ density })}
+          />
+        </Choice>
+        <Choice
+          title="Rows per page"
+          sub="How many rows a list loads before its Load more row."
+        >
+          <SegmentedField
+            label="Rows per page"
+            hideLabel
+            joined
+            compact
+            options={sizes}
+            value={String(prefs.pageSize)}
+            onChange={choosePageSize}
+          />
+        </Choice>
       </section>
-      <section className={styles.card}>
+      <section className={styles.card} aria-labelledby="feel">
+        <header className={styles.section}>
+          <h2 id="feel" className={styles.heading}>
+            Feel
+          </h2>
+        </header>
         <Setting
           title="Reduce motion"
-          sub="Calmer animations"
+          sub="Calmer animations. Follows your device setting until you change it."
           checked={prefs.reduceMotion}
           onChange={(reduceMotion) => set({ reduceMotion })}
         />
@@ -45,6 +83,21 @@ export function SettingsPage() {
           onChange={(currencySymbol) => set({ currencySymbol })}
         />
       </section>
+    </div>
+  );
+}
+
+type ChoiceProps = { title: string; sub: string; children: React.ReactNode };
+
+// A setting with a few choices: its name and what it does, and the pills to choose from with room around them.
+function Choice({ title, sub, children }: ChoiceProps) {
+  return (
+    <div className={styles.choice}>
+      <div>
+        <h3 className={styles.title}>{title}</h3>
+        <p className={styles.sub}>{sub}</p>
+      </div>
+      <div className={styles.pills}>{children}</div>
     </div>
   );
 }

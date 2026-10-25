@@ -1,5 +1,5 @@
 import { api, type DateWindow, type Page } from "@/lib/api";
-import { PAGE_SIZE } from "@/lib/paged";
+import { pageSize } from "@/lib/paged";
 
 export type PaymentMethod =
   "Cash" | "Cheque" | "CreditCard" | "MobileMoney" | "BankTransfer";
@@ -34,7 +34,7 @@ export const listTransactions = (
   signal?: AbortSignal,
 ) =>
   api.get<Page<Transaction>>("/v1/transactions", {
-    query: { ...filters, cursor, pageSize: PAGE_SIZE },
+    query: { ...filters, cursor, pageSize: pageSize() },
     signal,
   });
 

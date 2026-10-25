@@ -1,6 +1,6 @@
 // Members as the API sends them. No React in this file.
 import { api, type DateWindow, type Page } from "@/lib/api";
-import { PAGE_SIZE } from "@/lib/paged";
+import { pageSize } from "@/lib/paged";
 
 export type Gender = "Male" | "Female" | "Other";
 export type MaritalStatus = "Single" | "Married" | "Widowed";
@@ -57,7 +57,7 @@ export const listMembers = (
   signal?: AbortSignal,
 ) =>
   api.get<Page<Member>>("/v1/members", {
-    query: { ...filters, cursor, pageSize: PAGE_SIZE },
+    query: { ...filters, cursor, pageSize: pageSize() },
     signal,
   });
 

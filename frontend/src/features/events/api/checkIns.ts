@@ -1,5 +1,5 @@
 import { api, type Page } from "@/lib/api";
-import { PAGE_SIZE } from "@/lib/paged";
+import { pageSize } from "@/lib/paged";
 
 // A check-in at an event's door. checkInTime is a time of day ("08:42:00"); the day is eventStartDate.
 export type CheckIn = {
@@ -16,7 +16,7 @@ export const listPersonCheckIns = (
   signal?: AbortSignal,
 ) =>
   api.get<Page<CheckIn>>(`/v1/event-attendance/member/${personId}`, {
-    query: { cursor, pageSize: PAGE_SIZE },
+    query: { cursor, pageSize: pageSize() },
     signal,
   });
 
@@ -36,7 +36,7 @@ export const listEventCheckIns = (
   signal?: AbortSignal,
 ) =>
   api.get<Page<EventCheckIn>>(`/v1/event-attendance/event/${eventId}`, {
-    query: { cursor, pageSize: PAGE_SIZE },
+    query: { cursor, pageSize: pageSize() },
     signal,
   });
 

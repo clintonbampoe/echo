@@ -1,6 +1,6 @@
 import { api, type DateWindow, type Page } from "@/lib/api";
 import { ALL_TIME } from "@/lib/dates";
-import { PAGE_SIZE } from "@/lib/paged";
+import { pageSize } from "@/lib/paged";
 
 export type ProjectStatus =
   "Planning" | "OnTrack" | "AtRisk" | "Complete" | "Missed";
@@ -42,7 +42,7 @@ export const listProjects = (
   signal?: AbortSignal,
 ) =>
   api.get<Page<Project>>("/v1/projects", {
-    query: { ...filters, cursor, pageSize: PAGE_SIZE },
+    query: { ...filters, cursor, pageSize: pageSize() },
     signal,
   });
 

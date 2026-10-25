@@ -1,7 +1,7 @@
 // The tithe endpoints: what members give, month by month. No React in this file.
 import type { PaymentMethod } from "@/features/transactions";
 import { api, type DateWindow, type Page } from "@/lib/api";
-import { PAGE_SIZE } from "@/lib/paged";
+import { pageSize } from "@/lib/paged";
 
 // One tithe given. forMonth is the month's name ("October"), forYear its year.
 export type Tithe = {
@@ -48,7 +48,7 @@ export const listTithes = (
   signal?: AbortSignal,
 ) =>
   api.get<Page<Tithe>>("/v1/tithes", {
-    query: { ...filters, cursor, pageSize: PAGE_SIZE },
+    query: { ...filters, cursor, pageSize: pageSize() },
     signal,
   });
 
@@ -66,7 +66,7 @@ export const listMemberTithes = (
   signal?: AbortSignal,
 ) =>
   api.get<Page<Tithe>>(`/v1/tithes/member/${memberId}`, {
-    query: { ...filters, cursor, pageSize: PAGE_SIZE },
+    query: { ...filters, cursor, pageSize: pageSize() },
     signal,
   });
 

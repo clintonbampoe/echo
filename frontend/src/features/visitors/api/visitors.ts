@@ -1,7 +1,7 @@
 // Visitors as the API sends them. No React in this file.
 import { api, type DateWindow, type Page } from "@/lib/api";
 import { ALL_TIME } from "@/lib/dates";
-import { PAGE_SIZE } from "@/lib/paged";
+import { pageSize } from "@/lib/paged";
 import type { Member, MemberInput } from "@/features/members";
 
 export type Visitor = {
@@ -50,7 +50,7 @@ export const listVisitors = (
   signal?: AbortSignal,
 ) =>
   api.get<Page<Visitor>>("/v1/visitors", {
-    query: { ...filters, cursor, pageSize: PAGE_SIZE },
+    query: { ...filters, cursor, pageSize: pageSize() },
     signal,
   });
 
