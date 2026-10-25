@@ -3,7 +3,7 @@ import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { FilterSelect } from "./FilterSelect";
-import { plainOptions, withAny } from "./options";
+import { plainOptions, withAny } from "@/lib/options";
 
 const options = withAny("Any status", plainOptions(["Active", "Inactive"]));
 

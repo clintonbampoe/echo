@@ -5,7 +5,7 @@ import { Button, Field, PasswordField } from "@/ui";
 import { AuthLinks } from "../components/AuthLinks";
 import { AuthScreen } from "../components/AuthScreen";
 import { accountSchema, type AccountValues } from "../forms/schema";
-import { useSignUp } from "./signUpContext";
+import { useSignUp } from "../hooks/signUp";
 import styles from "./form.module.css";
 
 export function SignUpAccountPage() {

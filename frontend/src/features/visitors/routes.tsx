@@ -8,10 +8,4 @@ export const visitorRoutes: RouteObject[] = [
       Component: (await import("./pages/VisitorsPage")).VisitorsPage,
     }),
   },
-  {
-    path: "visitors/:id",
-    lazy: async () => ({
-      Component: (await import("./pages/VisitorPage")).VisitorPage,
-    }),
-  },
 ];

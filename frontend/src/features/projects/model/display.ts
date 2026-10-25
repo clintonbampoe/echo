@@ -2,7 +2,8 @@
 // check it without a screen.
 import { formatMonth, formatNumber } from "@/lib/format";
 import { daysBetween } from "@/lib/dates";
-import { withAny, type Option, type Stat } from "@/ui";
+import { type Option, type Stat } from "@/ui";
+import { withAny } from "@/lib/options";
 import type { Project, ProjectSummary } from "../api/projects";
 
 // How much of the target is raised, as a whole percent, rounded down so 100% means the target is really reached

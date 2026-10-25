@@ -5,7 +5,7 @@ import {
   server,
   showMembers,
   signedIn,
-} from "../testing/organizationPage";
+} from "./testing/organizationPage";
 
 beforeEach(signedIn);
 afterEach(() => vi.unstubAllGlobals());

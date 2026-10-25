@@ -3,7 +3,8 @@
 import { paymentLabel, type PaymentMethod } from "@/features/transactions";
 import { ALL_TIME, monthNames, monthStart, weekStart } from "@/lib/dates";
 import { urlFilters } from "@/lib/urlFilters";
-import { withAny, type Option } from "@/ui";
+import { type Option } from "@/ui";
+import { withAny } from "@/lib/options";
 import type { TitheFilters } from "../api/tithes";
 
 // When a tithe was collected. The default is this week, as the server's is.

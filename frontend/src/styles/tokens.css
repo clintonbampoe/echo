@@ -48,7 +48,9 @@
   --hover-row: rgb(128 128 140 / 8%);
   --hover-option: rgb(128 128 140 / 10%);
   --hover-tab: rgb(128 128 140 / 14%);
-  --hover-dots: rgb(128 128 140 / 16%); /* the ⋯ button while its row is hovered */
+  --hover-dots: rgb(
+    128 128 140 / 16%
+  ); /* the ⋯ button while its row is hovered */
   --hover-dots-strong: rgb(128 128 140 / 26%);
   --focus-ring: 0 0 0 4px rgb(128 128 140 / 22%); /* a field in focus */
 
@@ -82,7 +84,12 @@
   /* The feel spec's names (claude/feel-and-interaction-spec.md §1). The old names above stay for the pieces
      that already use them; new work uses these. */
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1); /* entrances, panels */
-  --ease-spring: cubic-bezier(0.3, 1.5, 0.5, 1); /* press release, toggles, tiles: small movement only */
+  --ease-spring: cubic-bezier(
+    0.3,
+    1.5,
+    0.5,
+    1
+  ); /* press release, toggles, tiles: small movement only */
   --ease-soft: cubic-bezier(0.4, 0, 0.2, 1); /* colour, background, border */
   --t-fast: 150ms; /* colour and background */
   --t-base: 220ms; /* lift, slide, border, shadow */

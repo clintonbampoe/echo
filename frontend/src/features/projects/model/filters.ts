@@ -2,7 +2,8 @@
 // this file says which filters projects have and how they become API filters. No React in this file.
 import { calendarYearDates } from "@/lib/dates";
 import { urlFilters } from "@/lib/urlFilters";
-import { withAny, type Option } from "@/ui";
+import { type Option } from "@/ui";
+import { withAny } from "@/lib/options";
 import type { ProjectCategory } from "../api/categories";
 import type { ProjectFilters, ProjectStatus } from "../api/projects";
 import { statusLabel } from "./labels";

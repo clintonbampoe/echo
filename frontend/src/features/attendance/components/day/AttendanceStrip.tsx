@@ -1,7 +1,7 @@
 import { formatDate } from "@/lib/format";
 import { paths } from "@/lib/paths";
 import { CellStrip, type Cell } from "@/ui";
-import { RECENT } from "../../api/sessions";
+import { RECENT } from "../../hooks";
 import type { Slot } from "../../model/display";
 
 type Props = {

@@ -14,6 +14,7 @@ import { projectRoutes } from "@/features/projects";
 import { transactionRoutes } from "@/features/transactions";
 import { visitorRoutes } from "@/features/visitors";
 import { websiteRoutes } from "@/features/website";
+import { pageRoutes } from "@/pages";
 import { NotFound } from "./NotFound";
 import { RequireAuth } from "./RequireAuth";
 import { AppShell } from "./shell";
@@ -47,6 +48,7 @@ const routes: RouteObject[] = [
               ...invitationRoutes,
               ...settingsRoutes,
               ...accountRoutes,
+              ...pageRoutes,
             ],
           },
         ],

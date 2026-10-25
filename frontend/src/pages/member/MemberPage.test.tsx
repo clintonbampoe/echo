@@ -2,7 +2,7 @@ import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Route, Routes } from "react-router-dom";
 import { json, pathOf, renderApp, signIn } from "@/test/kit";
-import { aMember } from "../testing/fixtures";
+import { aMember } from "@/features/members/testing/fixtures";
 import { MemberPage } from "./MemberPage";
 
 const member = aMember();

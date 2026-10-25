@@ -1,4 +1,6 @@
-export type Option = { value: string; label: string };
+import type { Option } from "@/lib/options";
+
+export type { Option };
 
 // What the two kinds of select (the menu for a mouse, the sheet for a touch screen) both receive.
 export type ControlProps = {

@@ -3,9 +3,9 @@ import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { saveTokens } from "@/lib/tokens";
-import type { Visitor } from "../api/visitors";
+import type { Visitor } from "@/features/visitors";
 import { VisitorPage } from "./VisitorPage";
-import { aVisitor } from "../testing/fixtures";
+import { aVisitor } from "@/features/visitors/testing/fixtures";
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status });

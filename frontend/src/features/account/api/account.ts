@@ -4,8 +4,6 @@ import { api } from "@/lib/api";
 // What someone may do in the app. (Not the same as a role inside an organization.)
 export type UserRole = "Admin" | "Accountant" | "Clerk" | "Member";
 
-export type CongregationType = "Church" | "Mosque" | "NonProfit" | "Other";
-
 export type Me = {
   id: string;
   name: string;

@@ -37,7 +37,6 @@ export { ListHeader } from "./data/ListHeader";
 export { MonthBars, type MonthBar } from "./data/MonthBars";
 export { MonthYearPill } from "./pickers/MonthYearPill";
 export { Notice } from "./feedback/Notice";
-export { plainOptions, withAny } from "./inputs/options";
 export { PageHeader } from "./layout/PageHeader";
 export { Pager } from "./layout/Pager";
 export { PanelIdentity } from "./layout/PanelIdentity";

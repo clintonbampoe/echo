@@ -8,10 +8,4 @@ export const organizationRoutes: RouteObject[] = [
       Component: (await import("./pages/OrganizationsPage")).OrganizationsPage,
     }),
   },
-  {
-    path: "organizations/:id",
-    lazy: async () => ({
-      Component: (await import("./pages/OrganizationPage")).OrganizationPage,
-    }),
-  },
 ];

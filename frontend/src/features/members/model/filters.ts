@@ -1,6 +1,6 @@
 // What the members list is narrowed by. The mechanics (reading and writing the address, the time range)
 // are shared in lib; this file only says which filters members have. No React in this file.
-import { withAny } from "@/ui";
+import { withAny } from "@/lib/options";
 import { regions } from "@/lib/regions";
 import { urlFilters } from "@/lib/urlFilters";
 import { windowDates, windowKeys, type WindowKey } from "@/lib/windows";

@@ -5,21 +5,22 @@ import { isApiError } from "@/lib/api";
 import { todayText } from "@/lib/dates";
 import { paths } from "@/lib/paths";
 import { Alert, BackLink, Button, StatStrip, Tabs } from "@/ui";
-import type { Organization } from "../api/organizations";
-import { AddMemberSheet } from "../components/members/AddMemberSheet";
-import { DeleteOrganizationDialog } from "../components/dialogs/DeleteOrganizationDialog";
-import { EditOrganizationSheet } from "../components/form/EditOrganizationSheet";
-import { useOrganization, useOrganizationMembers } from "../hooks/queries";
-import { OrganizationDetails } from "../components/profile/OrganizationDetails";
-import { OrganizationHeader } from "../components/profile/OrganizationHeader";
-import { OrganizationMembers } from "../components/members/OrganizationMembers";
-import styles from "./OrganizationPage.module.css";
 import {
+  AddMemberSheet,
   createdStat,
+  DeleteOrganizationDialog,
+  EditOrganizationSheet,
   ledByStat,
   membersStat,
+  OrganizationDetails,
+  OrganizationHeader,
+  OrganizationMembers,
   upcomingStat,
-} from "../model/figures";
+  useOrganization,
+  useOrganizationMembers,
+  type Organization,
+} from "@/features/organizations";
+import styles from "./OrganizationPage.module.css";
 
 // One organization: who it is, who leads it, its members and the events it is hosting.
 export function OrganizationPage() {

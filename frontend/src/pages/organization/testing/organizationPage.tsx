@@ -4,9 +4,12 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { saveTokens } from "@/lib/tokens";
-import type { OrganizationMember } from "../api/memberships";
-import { aMembership, anOrganization } from "./fixtures";
-import { OrganizationPage } from "../pages/OrganizationPage";
+import type { OrganizationMember } from "@/features/organizations";
+import {
+  aMembership,
+  anOrganization,
+} from "@/features/organizations/testing/fixtures";
+import { OrganizationPage } from "../OrganizationPage";
 
 export const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status });

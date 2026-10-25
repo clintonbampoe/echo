@@ -8,7 +8,8 @@ import {
 import { ALL_TIME, monthStart } from "@/lib/dates";
 import { formatMoney, formatNumber } from "@/lib/format";
 import { urlFilters } from "@/lib/urlFilters";
-import { withAny, type Option, type Stat } from "@/ui";
+import { type Option, type Stat } from "@/ui";
+import { withAny } from "@/lib/options";
 import type {
   ContributionFilters,
   ContributionSummary,

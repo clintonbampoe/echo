@@ -3,7 +3,7 @@ import type { Session } from "../../api/sessions";
 import { nearestSessionDay } from "../../model/day";
 import { EmptyDay } from "./EmptyDay";
 import { SessionList } from "./SessionCard";
-import styles from "../../pages/AttendancePage.module.css";
+import styles from "./DaySessions.module.css";
 
 type Props = {
   day: string;

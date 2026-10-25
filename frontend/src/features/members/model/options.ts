@@ -1,5 +1,5 @@
 // The fixed choices for a member, used by the list's filters and by the form.
-import { plainOptions } from "@/ui";
+import { plainOptions } from "@/lib/options";
 
 export const statusChoices = plainOptions([
   "Active",

@@ -7,6 +7,12 @@ export {
   useMemberSummary,
   useRefreshMembers,
 } from "./hooks";
+export {
+  MemberActionHost,
+  type MemberAction,
+} from "./components/dialogs/MemberActionHost";
+export { MemberDetails } from "./components/profile/MemberDetails";
+export { MemberHeader } from "./components/profile/MemberHeader";
 export { MemberFields } from "./components/form/MemberFields";
 export { MemberPicker } from "./components/picker/MemberPicker";
 export { memberRoutes } from "./routes";

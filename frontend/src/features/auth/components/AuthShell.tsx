@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
-import type { SignUpContext } from "../pages/signUpContext";
+import type { SignUpContext } from "../hooks/signUp";
 import type { AccountValues } from "../forms/schema";
 import { AuthLayout } from "./AuthLayout";
 

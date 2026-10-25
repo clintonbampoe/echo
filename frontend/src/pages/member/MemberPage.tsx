@@ -4,16 +4,16 @@ import { isApiError } from "@/lib/api";
 import { todayText } from "@/lib/dates";
 import { paths } from "@/lib/paths";
 import { Alert, BackLink, Button } from "@/ui";
-import type { Member } from "../api/members";
 import {
   MemberActionHost,
+  MemberDetails,
+  MemberHeader,
+  useMember,
+  type Member,
   type MemberAction,
-} from "../components/dialogs/MemberActionHost";
-import { MemberDetails } from "../components/profile/MemberDetails";
-import { MemberHeader } from "../components/profile/MemberHeader";
-import { ProfileFigures } from "../components/profile/ProfileFigures";
-import { ProfileTabs } from "../components/profile/ProfileTabs";
-import { useMember } from "../hooks";
+} from "@/features/members";
+import { ProfileFigures } from "./ProfileFigures";
+import { ProfileTabs } from "./ProfileTabs";
 import styles from "./MemberPage.module.css";
 
 // One member, all their details. Edit and Delete reuse the sheet and dialog from the list.

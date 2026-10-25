@@ -24,3 +24,4 @@ export {
   useUpdateSession,
   useUpdateSessionLabel,
 } from "./mutations";
+export { RECENT } from "../api/sessions";

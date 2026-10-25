@@ -14,7 +14,7 @@ import {
   type ChurchValues,
 } from "../forms/schema";
 import { ChurchFields } from "./ChurchFields";
-import { useSignUp } from "./signUpContext";
+import { useSignUp } from "../hooks/signUp";
 import styles from "./form.module.css";
 
 // Where the API's field paths land on this form.

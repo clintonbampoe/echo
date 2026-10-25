@@ -1,6 +1,7 @@
 import { useOrganizationChoices } from "@/features/organizations";
 import { windowOptions } from "@/lib/windows";
-import { FilterBar as Bar, FilterSelect, withAny } from "@/ui";
+import { FilterBar as Bar, FilterSelect } from "@/ui";
+import { withAny } from "@/lib/options";
 import {
   countActive,
   eventFilters,

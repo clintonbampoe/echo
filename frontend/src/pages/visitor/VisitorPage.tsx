@@ -15,20 +15,20 @@ import {
   StatStrip,
   Tabs,
 } from "@/ui";
-import type { Visitor } from "../api/visitors";
-import { ConvertedBanner } from "../components/profile/ConvertedBanner";
-import { ConvertSheet } from "../components/convert/ConvertSheet";
-import { DeleteVisitorDialog } from "../components/dialogs/DeleteVisitorDialog";
-import { EditVisitorSheet } from "../components/form/EditVisitorSheet";
-import { useVisitor } from "../hooks";
 import {
   becameStat,
+  ConvertedBanner,
+  ConvertSheet,
+  DeleteVisitorDialog,
   daysSinceStat,
+  EditVisitorSheet,
   firstVisitStat,
+  memberIdOf,
+  useVisitor,
+  VisitorDetails,
   visitsStat,
-} from "../model/figures";
-import { memberIdOf } from "../model/display";
-import { VisitorDetails } from "../components/profile/VisitorDetails";
+  type Visitor,
+} from "@/features/visitors";
 import styles from "./VisitorPage.module.css";
 
 // One visitor: who they are, how often they have come, and every session they were marked present at.

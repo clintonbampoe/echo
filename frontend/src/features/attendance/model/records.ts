@@ -1,7 +1,8 @@
 // What the Records tab is narrowed by, and how that becomes what the API is asked. No React in this file.
 import { ALL_TIME, monthStart, monthsBefore, weekStart } from "@/lib/dates";
 import { urlFilters } from "@/lib/urlFilters";
-import { withAny, type Option } from "@/ui";
+import { type Option } from "@/ui";
+import { withAny } from "@/lib/options";
 import type { PersonKind, RecordsQuery } from "../api/checkIns";
 import type { SessionFilters, SessionStatus } from "../api/sessions";
 import type { SessionLabel } from "../api/sessionLabels";

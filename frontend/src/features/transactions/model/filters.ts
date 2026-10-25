@@ -2,7 +2,8 @@
 // this file says which filters finance has and how they become API filters. No React in this file.
 import { ALL_TIME, monthNames, monthStart, weekStart } from "@/lib/dates";
 import { urlFilters } from "@/lib/urlFilters";
-import { withAny, type Option } from "@/ui";
+import { type Option } from "@/ui";
+import { withAny } from "@/lib/options";
 import type { Category } from "../api/categories";
 import type { TransactionFilters, TransactionType } from "../api/transactions";
 
