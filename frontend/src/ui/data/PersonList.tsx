@@ -131,7 +131,12 @@ function Row<T>({ row, index, person: p, columns, items, grid }: RowProps<T>) {
                 {p.name}
               </Link>
             ) : (
-              <button type="button" className={styles.link} onClick={p.onOpen}>
+              <button
+                type="button"
+                data-press="none"
+                className={styles.link}
+                onClick={p.onOpen}
+              >
                 {p.name}
               </button>
             )}

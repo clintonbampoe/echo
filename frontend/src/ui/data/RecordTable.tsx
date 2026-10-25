@@ -259,6 +259,7 @@ function Row<T>({
         ) : onOpen ? (
           <button
             type="button"
+            data-press="none"
             className={styles.link}
             onClick={() => onOpen(row)}
           >

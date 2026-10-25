@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { useLastSeen, PersonVisits, RecentVisits } from "@/features/attendance";
+import { useLastSeen, PersonVisits } from "@/features/attendance";
 import { isApiError } from "@/lib/api";
 import { todayText } from "@/lib/dates";
 import { paths } from "@/lib/paths";
@@ -139,10 +139,7 @@ function Profile({ visitor: v }: { visitor: Visitor }) {
         aria-labelledby={`visitor-tab-${tab}`}
       >
         {tab === "details" ? (
-          <div className={styles.two}>
-            <VisitorDetails v={v} today={today} />
-            <RecentVisits personId={v.id} />
-          </div>
+          <VisitorDetails v={v} today={today} />
         ) : (
           <PersonVisits personId={v.id} name={v.name} />
         )}

@@ -326,3 +326,8 @@ html[data-reduce-motion="true"] .liquid-row:hover {
     box-shadow var(--t-base),
     opacity var(--t-base);
 }
+
+/* A row gives a little under the finger. */
+.liquid-row:active {
+  scale: 0.994;
+}
