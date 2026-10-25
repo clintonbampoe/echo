@@ -54,7 +54,11 @@ export function AssetList({ list, filtered, onAction }: Props) {
       large
       href={(a) => paths.asset(a.id)}
       line={(a) => ({
-        lead: <IconTile icon="assets" />,
+        lead: (
+          <span className={styles.mark}>
+            <IconTile icon="assets" />
+          </span>
+        ),
         title: a.name,
         sub: a.categoryName,
         end: (

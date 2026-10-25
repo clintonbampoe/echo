@@ -28,3 +28,12 @@
   min-width: 72px;
   text-align: right;
 }
+/* Less, not smaller: on a phone the icon tile goes, so the names do not truncate. */
+.mark {
+  display: contents;
+}
+@media (max-width: 600px) {
+  .mark {
+    display: none;
+  }
+}

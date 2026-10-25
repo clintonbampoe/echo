@@ -57,13 +57,26 @@
   }
 }
 
+/* Less, not smaller: a tablet keeps the first three figures and a phone the first two. */
+@media (max-width: 900px) {
+  .strip {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .item:nth-child(n + 4) {
+    display: none;
+  }
+  .item:nth-child(n + 2) {
+    border-left: 1px solid var(--line);
+  }
+}
+
 @media (max-width: 600px) {
   .strip {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     padding: 16px 0;
   }
-  .item:nth-child(odd) {
-    border-left: 0;
+  .item:nth-child(n + 3) {
+    display: none;
   }
   .value {
     font-size: 20px;

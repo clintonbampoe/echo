@@ -61,9 +61,15 @@
   font-weight: 600;
   color: var(--text);
 }
+/* Less, not smaller: a phone keeps the month, its figure and the bars. The title, the range note and the
+   highest month go. */
 @media (max-width: 560px) {
   .card {
     padding: 18px 18px 14px;
+  }
+  .head,
+  .line {
+    display: none;
   }
   .big {
     font-size: 36px;
