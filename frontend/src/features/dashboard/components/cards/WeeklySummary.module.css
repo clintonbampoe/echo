@@ -29,17 +29,13 @@
 .scrim {
   position: absolute;
   inset: 0;
-  background: rgb(10 10 10 / 45%);
 }
 .panel {
   position: relative;
   width: 100%;
   max-width: 440px;
   padding: 20px 24px 20px;
-  background: var(--card-bg);
-  border-radius: 28px;
-  box-shadow: 0 24px 64px rgb(10 10 10 / 24%);
-  animation: pop 320ms var(--spring) both;
+  border-radius: 30px;
 }
 .head {
   display: flex;

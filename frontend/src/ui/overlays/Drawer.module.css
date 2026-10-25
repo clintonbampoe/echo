@@ -7,8 +7,6 @@
 .scrim {
   position: absolute;
   inset: 0;
-  background: rgb(10 10 10 / 40%);
-  animation-duration: var(--base);
 }
 
 .panel {
@@ -19,8 +17,6 @@
   width: min(300px, 86vw);
   padding: 12px;
   overflow-y: auto;
-  background: var(--bg);
-  box-shadow: 0 12px 32px rgb(10 10 10 / 18%);
   animation: slide var(--base) var(--ease) both;
 }
 .panel:focus {

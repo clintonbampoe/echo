@@ -53,12 +53,16 @@ export function WeeklySummary({ today, onClose }: Props) {
 
   return createPortal(
     <div className={styles.root}>
-      <div className={styles.scrim} onClick={onClose} aria-hidden="true" />
+      <div
+        className={`${styles.scrim} glass-scrim`}
+        onClick={onClose}
+        aria-hidden="true"
+      />
       <div
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className={styles.panel}
+        className={`${styles.panel} glass-panel glass-in-centre`}
       >
         <header className={styles.head}>
           <FilterSelect

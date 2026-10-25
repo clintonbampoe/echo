@@ -56,7 +56,7 @@ export function ConfirmDialog({
   return createPortal(
     <div className={styles.root}>
       <div
-        className={`${styles.scrim} scrim-fade`}
+        className={`${styles.scrim} glass-scrim`}
         data-closing={closing}
         onClick={busy ? undefined : cancel}
         aria-hidden="true"
@@ -66,7 +66,7 @@ export function ConfirmDialog({
         aria-modal="true"
         aria-labelledby={titleId}
         aria-describedby={bodyId}
-        className={styles.panel}
+        className={`${styles.panel} glass-panel`}
         data-closing={closing}
         onKeyDown={(e) => e.key === "Escape" && !busy && cancel()}
       >

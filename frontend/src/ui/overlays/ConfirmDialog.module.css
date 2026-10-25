@@ -10,7 +10,6 @@
 .scrim {
   position: absolute;
   inset: 0;
-  background: rgb(10 10 10 / 32%);
 }
 
 .panel {
@@ -18,12 +17,10 @@
   width: 100%;
   max-width: 380px;
   padding: 28px 24px 20px;
-  background: var(--card-bg);
-  border: 1px solid var(--line);
   border-radius: var(--radius-float);
-  box-shadow: var(--shadow-sheet);
   text-align: center;
-  animation: pop var(--t-enter) var(--ease-spring) both;
+  transform-origin: center;
+  animation: eCenter 500ms var(--spring) both;
 }
 .panel[data-closing="true"] {
   animation: popOut 140ms ease-in both;

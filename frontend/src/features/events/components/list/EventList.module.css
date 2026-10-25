@@ -20,6 +20,21 @@
   align-items: center;
   padding-right: 14px;
 }
+/* The row is a glass tile on hover (.liquid-row); the card clips, so the tile stays inside its edges. */
+.item:global(.liquid-row)::before {
+  inset: 3px 10px;
+}
+.row::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+@media (hover: hover) and (min-width: 561px) {
+  .item:hover,
+  .item:hover + .item {
+    border-top-color: transparent;
+  }
+}
 .row {
   display: grid;
   flex: 1;
@@ -30,18 +45,15 @@
   padding: 12px 8px 12px 22px;
   color: inherit;
   text-decoration: none;
-  transition: background-color var(--fast) ease;
-}
-@media (hover: hover) {
-  .row:hover {
-    background: var(--hover);
-  }
 }
 .row:focus-visible {
   outline: 2px solid var(--text);
   outline-offset: -2px;
 }
+/* Above the row's stretched link, so the ⋯ button opens its menu instead of the event. */
 .menu {
+  position: relative;
+  z-index: 1;
   flex: none;
 }
 
@@ -124,21 +136,5 @@
     font-size: 13px;
     font-weight: 400;
     color: var(--text-3);
-  }
-}
-
-/* Design round 8: a card answers the pointer. */
-.card {
-  transition:
-    border-color var(--fast) ease,
-    box-shadow var(--fast) ease,
-    background var(--fast) ease,
-    transform var(--base) var(--ease);
-}
-
-@media (hover: hover) {
-  .card:hover {
-    border-color: var(--line-hover);
-    box-shadow: var(--shadow-hover);
   }
 }

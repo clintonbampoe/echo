@@ -4,23 +4,16 @@
 
 .menu {
   position: absolute;
-  top: calc(100% + 6px);
+  top: calc(100% + 8px);
   left: 0;
   right: 0;
   z-index: 20;
   padding: 8px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-pop);
-  box-shadow: var(--shadow-pop);
-  transform-origin: top left;
-  animation: open var(--t-enter) var(--ease-spring) both;
+  border-radius: 26px;
+  --origin: top center;
 }
 .menu[data-closing="true"] {
-  animation: close 120ms ease-in both;
-}
-:global([data-surface="dark"]) .menu {
-  box-shadow: 0 12px 32px rgb(0 0 0 / 50%);
+  animation: close 140ms ease-in both;
 }
 
 .search {
@@ -44,19 +37,16 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  height: 38px;
-  padding: 0 12px;
-  border-radius: var(--radius-option);
+  height: 42px;
+  padding: 0 16px;
+  border-radius: 999px;
   font-size: 14px;
   cursor: pointer;
-  transition:
-    background-color var(--t-fast) var(--ease-soft),
-    translate var(--t-base) var(--ease-out);
+  transition: background-color var(--t-fast) var(--ease-soft);
 }
-/* The option under the pointer or the keyboard slides 2px and fills. */
+/* The option under the pointer or the keyboard fills softly. Nothing moves. */
 .active {
-  background: var(--hover-option);
-  translate: 2px 0;
+  background: rgb(128 128 140 / 14%);
 }
 .selected {
   font-weight: 500;
@@ -70,11 +60,5 @@
   to {
     opacity: 0;
     transform: scale(0.96) translateY(-2px);
-  }
-}
-@keyframes open {
-  from {
-    opacity: 0;
-    transform: scale(0.92) translateY(-6px);
   }
 }

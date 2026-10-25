@@ -27,7 +27,7 @@ export function Drawer({ open, onClose, label, children }: Props) {
   return (
     <div className={styles.root}>
       <div
-        className={`${styles.scrim} anim-fade`}
+        className={`${styles.scrim} glass-scrim`}
         onClick={onClose}
         aria-hidden="true"
       />
@@ -37,7 +37,7 @@ export function Drawer({ open, onClose, label, children }: Props) {
         aria-modal="true"
         aria-label={label}
         tabIndex={-1}
-        className={styles.panel}
+        className={`${styles.panel} glass-panel`}
         onKeyDown={(e) => e.key === "Escape" && onClose()}
       >
         {children}

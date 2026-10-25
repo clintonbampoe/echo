@@ -20,27 +20,6 @@
   text-transform: uppercase;
   color: var(--text-3);
 }
-/* A setting with pills: its words, then a group with room inside it and between its pills. */
-.choice {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding: 16px 22px 20px;
-}
-.choice + .choice {
-  border-top: 1px solid var(--line);
-}
-.pills {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  padding: 16px;
-  background: var(--fill);
-  border-radius: var(--radius-lg);
-}
-.pills fieldset {
-  min-width: 0;
-}
 .title {
   font-size: 15px;
   font-weight: 600;
@@ -49,39 +28,38 @@
   font-size: 13px;
   color: var(--text-3);
 }
+/* Every setting is one row: its words on the left, its control on the right. Nothing in the row moves on hover. */
 .setting {
-  cursor: pointer;
-  transition: background-color var(--t-fast) var(--ease-soft);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  min-height: calc(64px * var(--density, 1));
-  padding: 0 22px;
+  gap: 24px;
+  min-height: calc(72px * var(--density, 1));
+  padding: 12px 22px;
 }
-.setting + .setting {
+.setting + .setting,
+.section + .setting {
   border-top: 1px solid var(--line);
+}
+.words {
+  min-width: 0;
+}
+/* Only a row that flips a switch answers the pointer: its tile is the glass row (.liquid-row). */
+.flip {
+  cursor: pointer;
 }
 .setting .title {
   font-size: 15px;
   font-weight: 500;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 700px) {
   .page {
     gap: 16px;
   }
-  .pills > * {
-    flex: 1;
+  .setting:not(.flip) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
   }
-}
-
-/* A row that flips a switch answers the pointer and the press. */
-@media (hover: hover) {
-  .setting:hover {
-    background: var(--hover-row);
-  }
-}
-.setting:active {
-  background: var(--hover-tab);
 }

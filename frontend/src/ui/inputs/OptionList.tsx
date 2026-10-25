@@ -1,4 +1,4 @@
-import type { KeyboardEvent, Ref } from "react";
+import type { CSSProperties, KeyboardEvent, Ref } from "react";
 import type { Option } from "./selectTypes";
 import { Icon } from "../layout/Icon";
 import { keepOnScreen } from "../overlays/placement";
@@ -52,7 +52,7 @@ export function OptionList({
   return (
     <div
       ref={keepOnScreen}
-      className={`${styles.menu} ${className ?? ""}`}
+      className={`${styles.menu} glass-pop glass-in-pop ${className ?? ""}`}
       data-closing={closing}
     >
       {search && (
@@ -83,7 +83,8 @@ export function OptionList({
             role="option"
             aria-selected={i === selected}
             ref={i === active ? scrollIntoView : undefined}
-            className={`${styles.option} ${i === active ? styles.active : ""} ${i === selected ? styles.selected : ""}`}
+            style={{ "--i": Math.min(i, 8) } as CSSProperties}
+            className={`${styles.option} glass-opt ${i === active ? styles.active : ""} ${i === selected ? styles.selected : ""}`}
             // Keep focus where it is while the pointer is on the menu.
             onMouseDown={(e) => e.preventDefault()}
             onMouseMove={() => onActive(i)}

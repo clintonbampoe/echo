@@ -46,7 +46,7 @@ export function EventList({ events, past, footer, onEdit, onDelete }: Props) {
         className={styles.list}
       >
         {events.map((e) => (
-          <li key={e.id} className={styles.item}>
+          <li key={e.id} className={`${styles.item} liquid-row`}>
             <Link to={paths.event(e.id)} className={styles.row}>
               <DateTile date={e.startDate} />
               <span className={styles.main}>

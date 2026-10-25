@@ -89,15 +89,15 @@ export function SettingsPage() {
 
 type ChoiceProps = { title: string; sub: string; children: React.ReactNode };
 
-// A setting with a few choices: its name and what it does, and the pills to choose from with room around them.
+// A setting with a few choices: its name and what it does on the left, the pills to choose from on the right.
 function Choice({ title, sub, children }: ChoiceProps) {
   return (
-    <div className={styles.choice}>
-      <div>
+    <div className={styles.setting}>
+      <div className={styles.words}>
         <h3 className={styles.title}>{title}</h3>
         <p className={styles.sub}>{sub}</p>
       </div>
-      <div className={styles.pills}>{children}</div>
+      {children}
     </div>
   );
 }
@@ -112,8 +112,8 @@ type SettingProps = {
 function Setting({ title, sub, checked, onChange }: SettingProps) {
   return (
     // A label, so pressing anywhere on the row flips the switch: nobody has to aim for the small control.
-    <label className={styles.setting}>
-      <div>
+    <label className={`${styles.setting} ${styles.flip} liquid-row`}>
+      <div className={styles.words}>
         <p className={styles.title}>{title}</p>
         <p className={styles.sub}>{sub}</p>
       </div>

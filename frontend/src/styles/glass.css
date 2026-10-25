@@ -221,66 +221,60 @@
 }
 
 /*
- * A row: the whole row is one glass tile that squashes in behind it, ⋯ cell included, so the highlight never leaves
- * the menu button outside. Put .liquid-row on the row; put .liquid-av on its avatar or icon tile, .liquid-date on a
- * date tile and .liquid-dots on its ⋯ button, and they react together with the row.
+ * A row: the whole row is one soft, very round glass tile that swells in behind it, ⋯ cell included, and the row's
+ * own content is the lens: text, avatar and ⋯ all magnify together with it. The avatar and date tile do not become
+ * separate objects on hover; they take the tile's own tone, so the whole row reads as one piece of liquid.
+ * Put .liquid-row on the row, .liquid-av on an avatar or icon tile, .liquid-date on a date tile, .liquid-dots on ⋯.
+ * Only `scale` is used (never `transform`, which entrance animations own), and it never changes layout.
  */
 .liquid-row {
   position: relative;
   isolation: isolate;
+  transform-origin: center;
+  transition: scale 520ms var(--spring);
 }
 .liquid-row::before {
   content: "";
   position: absolute;
-  inset: 3px -6px;
+  inset: 2px 6px;
   z-index: -1;
-  border-radius: 18px;
+  border-radius: 28px;
   pointer-events: none;
   opacity: 0;
-  background:
-    radial-gradient(
-      180px 80px at 10% 0,
-      rgb(255 255 255 / 95%),
-      rgb(255 255 255 / 0%) 70%
-    ),
-    linear-gradient(180deg, rgb(241 241 245 / 94%), rgb(233 233 239 / 90%));
+  background: linear-gradient(
+    180deg,
+    rgb(246 246 249 / 96%),
+    rgb(238 238 243 / 92%)
+  );
   box-shadow:
-    var(--glass-edge),
-    inset 0 0 0 1px var(--glass-tile-edge),
-    0 12px 26px -14px rgb(10 10 11 / 32%);
-  transition: opacity 200ms;
+    inset 0 1px 0 rgb(255 255 255 / 90%),
+    0 10px 24px -16px rgb(10 10 11 / 22%);
+  transition: opacity 240ms;
 }
 .liquid-av,
 .liquid-row .av,
 .liquid-date {
   transition:
-    transform var(--t-spring) var(--spring),
-    box-shadow var(--t-base),
-    background-color var(--t-base);
+    background-color var(--t-base),
+    box-shadow var(--t-base);
 }
 
 @media (hover: hover) {
+  .liquid-row:hover {
+    scale: 1.012;
+  }
   .liquid-row:hover::before {
     opacity: 1;
-    animation: eLiquid 500ms var(--spring) both;
+    animation: eLiquid 560ms var(--spring) both;
   }
   .liquid-row:hover .liquid-av,
-  .liquid-row:hover .av {
-    transform: scale(1.07);
-    box-shadow:
-      0 0 0 3px rgb(255 255 255 / 95%),
-      0 8px 16px -6px rgb(10 10 11 / 35%);
+  .liquid-row:hover .av,
+  .liquid-row:hover .liquid-date {
+    background: rgb(255 255 255 / 78%);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 95%);
   }
   .liquid-row:hover .liquid-dots {
     color: var(--text);
-  }
-  .liquid-row:hover .liquid-date {
-    background: var(--glass-white);
-    transform: translateY(-1px) scale(1.05);
-    box-shadow:
-      inset 0 1px 0 #fff,
-      0 0 0 1px rgb(128 128 140 / 20%),
-      0 10px 18px -10px rgb(10 10 11 / 40%);
   }
 }
 
@@ -294,18 +288,14 @@
     opacity var(--t-base);
 }
 
-/* Press and hover transforms are off when motion is reduced; colour and shadow changes stay. */
+/* The swell is off when motion is reduced; colour and shadow changes stay. */
 @media (prefers-reduced-motion: reduce) {
-  .liquid-row:hover .liquid-av,
-  .liquid-row:hover .av,
-  .liquid-row:hover .liquid-date {
-    transform: none;
+  .liquid-row:hover {
+    scale: 1;
   }
 }
-html[data-reduce-motion="true"] .liquid-row:hover .liquid-av,
-html[data-reduce-motion="true"] .liquid-row:hover .av,
-html[data-reduce-motion="true"] .liquid-row:hover .liquid-date {
-  transform: none;
+html[data-reduce-motion="true"] .liquid-row:hover {
+  scale: 1;
 }
 
 /*
