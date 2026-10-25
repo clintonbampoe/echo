@@ -253,7 +253,7 @@ describe("project page", () => {
     expect(
       await screen.findByText("Edit Church roof renovation"),
     ).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "Cancel" }));
+    await user.click(screen.getByRole("button", { name: "Close" }));
     await more();
     await user.click(screen.getByRole("menuitem", { name: "Delete" }));
     expect(
@@ -425,7 +425,7 @@ describe("project page", () => {
       expect(
         await screen.findByText("Edit contribution", { selector: "h2" }),
       ).toBeInTheDocument();
-      await user.click(screen.getByRole("button", { name: "Cancel" }));
+      await user.click(screen.getByRole("button", { name: "Close" }));
       await user.click(
         screen.getByRole("button", {
           name: "Actions for GH₵ 2,850 on 04 Oct 2026",

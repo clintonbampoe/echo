@@ -2,15 +2,18 @@
   margin-top: 16px;
 }
 
-/* Desktop: Cancel on the left, the saving buttons on the right. */
+/* Desktop: the second way to save on the left, the main button on the right. */
 .actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 10px;
 }
-.cancel {
+.another {
   margin-right: auto;
+}
+.primary {
+  margin-left: auto;
 }
 .problem,
 .note {
@@ -43,8 +46,5 @@
   }
   .another {
     order: 1;
-  }
-  .cancel {
-    order: 2;
   }
 }

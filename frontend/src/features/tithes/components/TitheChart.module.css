@@ -1,44 +1,71 @@
 .card {
-  padding: 16px 20px 12px;
-  background: var(--surface);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px 26px 20px;
+  background: var(--card-bg);
   border: 1px solid var(--line);
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
 }
 .head {
   display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: 6px 24px;
-  margin-bottom: 14px;
+  gap: 12px;
 }
 .title {
   margin: 0;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
 }
-/* The details sit at the top right, stacked and right-aligned; on a narrow screen they drop under the title. */
-.details {
+/* The chart always shows the last twelve months, so this says so rather than offering a choice. */
+.range {
+  padding: 5px 12px;
+  border: 1px dashed var(--line-2);
+  border-radius: var(--radius-pill);
+  font-size: 13px;
+  color: var(--text-2);
+}
+.figure {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  text-align: right;
+  gap: 4px;
 }
-.line {
+.month {
   margin: 0;
   font-size: 13px;
   color: var(--text-3);
 }
-/* The figures worth reading at a glance stand out from the sentence around them. */
+.big {
+  margin: 0;
+  font-size: 48px;
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+}
+.unit {
+  margin-left: 8px;
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--text-3);
+}
+.line {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: var(--text-3);
+}
 .line strong {
   font-weight: 600;
   color: var(--text);
 }
 @media (max-width: 560px) {
   .card {
-    padding: 14px 14px 10px;
+    padding: 18px 18px 14px;
   }
-  .details {
-    text-align: left;
+  .big {
+    font-size: 36px;
   }
 }

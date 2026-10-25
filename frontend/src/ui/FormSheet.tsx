@@ -28,7 +28,7 @@ type Props = {
   children: ReactNode;
 };
 
-// A sheet holding one form, with the footer every form shares: what is wrong, Cancel, and the save buttons.
+// A sheet holding one form, with the footer every form shares: what is wrong and the save buttons. The X in the corner is the one way out.
 // The form only exists while the sheet is mounted, so it starts blank or filled every time it opens.
 export function FormSheet({
   title,
@@ -57,9 +57,6 @@ export function FormSheet({
           {note}
         </p>
       )}
-      <Button variant="secondary" onClick={onClose} className={styles.cancel}>
-        Cancel
-      </Button>
       {another && (
         <Button
           variant="secondary"

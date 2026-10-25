@@ -1,4 +1,4 @@
-import { formatMoney } from "@/lib/format";
+import { formatMoney, formatNumber } from "@/lib/format";
 import { MonthBars } from "@/ui";
 import { methodOf, type ListFilters } from "../filters";
 import { useTitheMonths } from "../hooks";
@@ -23,6 +23,7 @@ export function TitheChart({ filters, today, onPick }: Props) {
   const chosen = /^\d{4}-\d{2}$/.test(filters.forMonth)
     ? filters.forMonth
     : today.slice(0, 7);
+  const picked = bars.find((b) => b.key === chosen);
   return (
     <section
       aria-label="Collected per month"
@@ -30,18 +31,21 @@ export function TitheChart({ filters, today, onPick }: Props) {
       className={styles.card}
     >
       <header className={styles.head}>
-        <h2 className={styles.title}>Collected per month</h2>
-        <div className={styles.details}>
-          {months.isError && (
-            <p className={styles.line}>
-              We could not load the months. Try again in a moment.
-            </p>
-          )}
-          {summary && (
-            <p className={styles.line}>
-              Last 12 months: <strong>{summary.range}</strong>
-            </p>
-          )}
+        <h2 className={styles.title}>Collected</h2>
+        <span className={styles.range}>12 months</span>
+      </header>
+      {months.isError && (
+        <p className={styles.line}>
+          We could not load the months. Try again in a moment.
+        </p>
+      )}
+      {picked && (
+        <div className={styles.figure}>
+          <p className={styles.month}>{picked.name}</p>
+          <p className={styles.big}>
+            {formatNumber(picked.value)}
+            <span className={styles.unit}>GHS</span>
+          </p>
           {summary?.highest && (
             <p className={styles.line}>
               Highest: <strong>{summary.highest.amount}</strong> in{" "}
@@ -49,7 +53,7 @@ export function TitheChart({ filters, today, onPick }: Props) {
             </p>
           )}
         </div>
-      </header>
+      )}
       {bars.length > 0 && (
         <MonthBars
           label="Collected per month"

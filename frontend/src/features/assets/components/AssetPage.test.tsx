@@ -132,7 +132,7 @@ describe("asset page", () => {
     expect(
       await screen.findByText("Edit asset", { selector: "h2" }),
     ).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "Cancel" }));
+    await user.click(screen.getByRole("button", { name: "Close" }));
     await user.click(
       screen.getByRole("button", {
         name: "More actions for Behringer X32 mixing desk",

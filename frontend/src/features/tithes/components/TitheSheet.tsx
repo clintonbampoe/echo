@@ -84,7 +84,7 @@ function RecordTithe({ today, onClose, onUpdate }: Omit<Props, "open">) {
       onClose={onClose}
       formId="tithe-form"
       onSubmit={form.handleSubmit((v) => save(v, false))}
-      submitLabel="Record tithe"
+      submitLabel="Save tithe"
       pending={create.isPending}
       blocked={Boolean(member && existing)}
       failures={Object.keys(form.formState.errors).length}

@@ -249,7 +249,7 @@ describe("tithes page", () => {
       await within(sheet).findByText(/Kofi Mensah already has a tithe for/),
     ).toBeInTheDocument();
     expect(
-      within(sheet).getByRole("button", { name: "Record tithe" }),
+      within(sheet).getByRole("button", { name: "Save tithe" }),
     ).toBeDisabled();
     expect(
       within(sheet).getByRole("button", { name: "Save and add another" }),
@@ -293,9 +293,7 @@ describe("tithes page", () => {
       await within(sheet).findByRole("button", { name: /Kofi Mensah/ }),
     );
     await user.type(within(sheet).getByLabelText("Amount"), "500");
-    await user.click(
-      within(sheet).getByRole("button", { name: "Record tithe" }),
-    );
+    await user.click(within(sheet).getByRole("button", { name: "Save tithe" }));
     expect(
       await within(sheet).findByText("We could not record this tithe"),
     ).toBeInTheDocument();
