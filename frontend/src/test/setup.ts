@@ -2,7 +2,7 @@ import "@testing-library/jest-dom/vitest";
 import { afterEach } from "vitest";
 import { cleanup, configure } from "@testing-library/react";
 import { clearTokens } from "@/lib/tokens";
-import { exitAnimations } from "@/ui/usePresence";
+import { exitAnimations } from "@/ui/overlays/usePresence";
 
 // Exit animations only slow the tests down: a closed dialog should be gone at once.
 exitAnimations.enabled = false;

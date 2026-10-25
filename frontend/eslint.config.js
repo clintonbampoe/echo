@@ -14,7 +14,7 @@ const above = (...layers) =>
   }));
 
 export default defineConfig([
-  globalIgnores(["dist", "src/ui/Icon.tsx"]),
+  globalIgnores(["dist", "src/ui/layout/Icon.tsx"]),
   {
     files: ["**/*.{ts,tsx}"],
     extends: [
