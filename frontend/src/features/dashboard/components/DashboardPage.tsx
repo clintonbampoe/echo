@@ -24,7 +24,10 @@ const groups = (today: string): Group[] => [
   {
     label: "This week",
     titles: ["Attendance", "Visitors"],
-    cards: [<AttendanceCard today={today} />, <VisitorsCard today={today} />],
+    cards: [
+      <AttendanceCard today={today} title="Attendance" />,
+      <VisitorsCard today={today} />,
+    ],
   },
   { label: "Money", titles: ["Money"], cards: [<MoneyCard today={today} />] },
   {
@@ -58,7 +61,10 @@ const rows = (today: string): Row[] => [
   {
     label: "Attendance and visitors",
     columns: "3fr 2fr",
-    cards: [<AttendanceCard today={today} />, <VisitorsCard today={today} />],
+    cards: [
+      <AttendanceCard today={today} title="Attendance" />,
+      <VisitorsCard today={today} />,
+    ],
   },
   { label: "Money", columns: "1fr", cards: [<MoneyCard today={today} />] },
   {

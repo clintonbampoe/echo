@@ -72,6 +72,14 @@ describe("attendance records", () => {
     expect(call?.url.searchParams.get("to")).toBeTruthy();
   });
 
+  it("draws attendance month by month above the list", async () => {
+    open();
+    expect(await screen.findByText("Attendance by month")).toBeInTheDocument();
+    expect(
+      screen.getByRole("list", { name: /Attendance for each of the last/ }),
+    ).toBeInTheDocument();
+  });
+
   it("has Day and Records tabs, with Records open", async () => {
     open();
     expect(

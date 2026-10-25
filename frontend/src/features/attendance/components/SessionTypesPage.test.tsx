@@ -52,7 +52,7 @@ describe("session types page", () => {
   it("creates a type with a name and a category", async () => {
     open();
     await userEvent.click(
-      await screen.findByRole("button", { name: "New session type" }),
+      await screen.findByRole("button", { name: "New type" }),
     );
     const sheet = await screen.findByRole("dialog", {
       name: "New session type",

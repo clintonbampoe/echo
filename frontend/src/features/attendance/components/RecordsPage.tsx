@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { AttendanceCard } from "@/features/dashboard";
 import { todayText } from "@/lib/dates";
 import { paths } from "@/lib/paths";
 import { useUrlFilters } from "@/lib/useUrlFilters";
@@ -60,6 +61,7 @@ export function RecordsPage() {
             busy={summary.isPending}
           />
         </div>
+        <AttendanceCard today={today} title="Attendance by month" />
         <RecordsFilters
           filters={filters}
           people={people}

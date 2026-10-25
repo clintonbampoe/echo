@@ -32,7 +32,8 @@ beforeEach(() => {
 });
 afterEach(() => vi.unstubAllGlobals());
 
-const show = () => renderCard(<AttendanceCard today="2026-10-19" />);
+const show = () =>
+  renderCard(<AttendanceCard today="2026-10-19" title="Attendance" />);
 const sides = () => within(screen.getByRole("group", { name: "Made up of" }));
 
 describe("attendance card", () => {

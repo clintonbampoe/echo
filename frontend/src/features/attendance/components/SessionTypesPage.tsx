@@ -31,7 +31,7 @@ export function SessionTypesPage() {
       <PageHeader
         title="Session types"
         add={{
-          label: "New session type",
+          label: "New type",
           onClick: () => setOpen({ kind: "new" }),
         }}
       />

@@ -11,7 +11,13 @@ const num = (n: number | undefined) =>
   n === undefined ? "–" : formatNumber(n);
 
 // People present, month by month. The month picked (the latest to begin with) is the one the figure speaks about.
-export function AttendanceCard({ today }: { today: string }) {
+export function AttendanceCard({
+  today,
+  title,
+}: {
+  today: string;
+  title: string;
+}) {
   const [range, setRange] = useState<MonthRange>("12");
   const [picked, setPicked] = useState<string | null>(null);
   const buckets = growthBuckets(today, Number(range));
@@ -23,7 +29,7 @@ export function AttendanceCard({ today }: { today: string }) {
 
   return (
     <DashCard
-      title="Attendance"
+      title={title}
       control={
         <RangeTabs
           label="Range"
