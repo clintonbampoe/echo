@@ -32,6 +32,7 @@ export function SessionRecords({ filters, narrowed }: Props) {
     <>
       <RecordTable
         label="Sessions"
+        title="Sessions"
         list={list}
         rowKey={(s) => s.id}
         href={(s) => paths.session(s.id)}

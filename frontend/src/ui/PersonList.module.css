@@ -25,16 +25,43 @@
   padding-block: 10px;
   border-top: 1px solid var(--line);
   cursor: pointer;
-  transition: background-color var(--fast) ease;
+  transition:
+    background-color var(--t-fast) var(--ease-soft),
+    border-color var(--t-fast) var(--ease-soft);
 }
 .row:first-child {
   border-top: 0;
 }
-.row:hover {
-  background: var(--hover);
+/* A wide screen: the row sits inset so its hover fill can be rounded, and the dividers beside it fade out. */
+@media (min-width: 901px) {
+  .row {
+    margin-inline: 8px;
+    padding-inline: 14px;
+    border-radius: var(--radius);
+  }
+  .row:has(+ .row:hover),
+  .row:hover + .row {
+    border-top-color: transparent;
+  }
+  .row:hover {
+    border-top-color: transparent;
+  }
+  .row[data-selected="true"] {
+    background: var(--hover-row);
+    box-shadow: inset 2px 0 0 var(--accent);
+  }
+}
+@media (hover: hover) {
+  .row:hover {
+    background: var(--hover-row);
+  }
+  .row:hover :global(.av) {
+    transform: scale(1.08);
+    box-shadow: 0 0 0 3px rgb(128 128 140 / 20%);
+  }
 }
 .row:active {
-  background: var(--sel);
+  background: var(--hover-tab);
 }
 
 /* Above the row's link, so the ⋯ button still opens the menu instead of the person. */
@@ -141,7 +168,7 @@
     border-top: 1px solid var(--line);
   }
   .row:hover {
-    background: var(--surface);
+    background: var(--card-bg);
   }
   .who {
     grid-column: 1 / -1;

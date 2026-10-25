@@ -17,7 +17,7 @@ export function Avatar({ name, size = 32, shape = "circle" }: Props) {
   return (
     <span
       aria-hidden="true"
-      className={`${styles.avatar} ${shape === "square" ? styles.square : styles[`tint${tint(name)}`]}`}
+      className={`av ${styles.avatar} ${shape === "square" ? styles.square : styles[`tint${tint(name)}`]}`}
       style={{ width: size, height: size, fontSize: Math.round(size * 0.34) }}
     >
       {initials(name)}

@@ -16,6 +16,7 @@ export function ContributionList({ list, onAction }: Props) {
   return (
     <RecordTable
       label="Contributions"
+      title="Contributions"
       list={list}
       rowKey={(c) => c.id}
       onOpen={(c) => onAction(c, "view")}

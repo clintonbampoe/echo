@@ -12,6 +12,7 @@ export function OrganizedEvents({ personId }: { personId: string }) {
     >
       <RecordTable
         label="Events organized"
+        title="Events organized"
         list={useOrganizedEvents(personId)}
         rowKey={(e) => e.id}
         href={(e) => paths.event(e.id)}

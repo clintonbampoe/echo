@@ -87,6 +87,7 @@ export function RegistrationsTab({ guests, eventName, phase, state }: Props) {
   return (
     <>
       <ListCard
+        title="Registrations"
         toolbar={
           <FilterBar
             searchLabel="Search registrations"
@@ -120,6 +121,7 @@ export function RegistrationsTab({ guests, eventName, phase, state }: Props) {
           {(rows, footer) => (
             <PersonList
               label="Registrations"
+              title="Registrations"
               rows={rows}
               rowKey={(g) => g.registration.id}
               person={(g) => ({

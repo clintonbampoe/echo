@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import type { Paged } from "@/lib/paged";
 import { ActionMenu, type MenuItem } from "./ActionMenu";
 import { Avatar } from "./Avatar";
+import { ListHeader } from "./ListHeader";
 import styles from "./RecordLines.module.css";
 
 // One row of a record list as the boards draw it: something on the left (an icon tile, a date, an avatar), a title
@@ -27,6 +28,9 @@ type Props<T> = {
   actions?: (row: T) => { label: string; title: string; items: MenuItem[] };
   // What the count calls a row ("asset" -> "Showing 6 assets").
   noun: [one: string, many: string];
+  // What the list holds, and the summary at the right of its header (default: how many rows are loaded).
+  title: string;
+  aside?: ReactNode;
 };
 
 // A card of rows with the count and "Load more" as its last row. The title is the real link or button; its ::after
@@ -40,10 +44,16 @@ export function RecordLines<T>({
   onOpen,
   actions,
   noun,
+  title,
+  aside,
 }: Props<T>) {
   const shown = list.rows.length;
   return (
     <div className={styles.card}>
+      <ListHeader
+        title={title}
+        summary={aside ?? `${shown}${list.hasMore ? "+" : ""}`}
+      />
       <ul aria-label={label} className={styles.list}>
         {list.rows.map((row, i) => {
           const l = line(row);

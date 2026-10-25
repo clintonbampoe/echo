@@ -37,6 +37,7 @@ export function MemberList({ members, footer, onAct }: Props) {
   return (
     <PersonList
       label="Members"
+      title="All members"
       rows={members}
       rowKey={(m) => m.id}
       person={(m) => ({

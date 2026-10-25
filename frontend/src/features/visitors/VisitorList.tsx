@@ -47,6 +47,7 @@ export function VisitorList({ visitors, footer, onAct }: Props) {
   return (
     <PersonList
       label="Visitors"
+      title="All visitors"
       rows={visitors}
       rowKey={(v) => v.id}
       person={(v) => ({

@@ -11,6 +11,7 @@ export function OrganizationEvents({ list }: { list: Paged<HostedEvent> }) {
     <Section hint="Events this group is hosting.">
       <RecordTable
         label="Upcoming events"
+        title="Upcoming events"
         list={list}
         rowKey={(e) => e.id}
         href={(e) => paths.event(e.id)}

@@ -11,6 +11,7 @@ export function PersonOrganizations({ personId }: { personId: string }) {
     <Section hint="Ministries, groups and teams this person belongs to.">
       <RecordTable
         label="Organizations"
+        title="Organizations"
         list={usePersonMemberships(personId)}
         rowKey={(m) => m.id}
         href={(m) => paths.organization(m.organizationId)}

@@ -9,6 +9,7 @@ export function AttendedEvents({ personId }: { personId: string }) {
     <Section title="Attended" hint="Checked in at the door.">
       <RecordTable
         label="Event attendance"
+        title="Event attendance"
         list={usePersonCheckIns(personId)}
         rowKey={(c) => c.id}
         href={(c) => paths.event(c.eventId)}

@@ -15,6 +15,7 @@ export function TitheTable({ memberId, filters, narrowed }: Props) {
   return (
     <RecordTable
       label="Tithes"
+      title="Tithes"
       list={list}
       rowKey={(t) => t.id}
       large

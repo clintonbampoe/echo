@@ -65,6 +65,7 @@ export function OrganizationMembers({
         {(members, footer) => (
           <PersonList
             label="Members"
+            title="Members"
             rows={members}
             rowKey={(m) => m.id}
             person={(m) => ({

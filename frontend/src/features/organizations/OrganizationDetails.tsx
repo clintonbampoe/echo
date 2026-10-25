@@ -21,6 +21,7 @@ export function OrganizationDetails({ organization: o, leaders }: Props) {
         <DashCard title="Leadership">
           <PersonList
             label="Leadership"
+            title="Leadership"
             rows={leaders}
             rowKey={(m) => m.id}
             person={(m) => ({

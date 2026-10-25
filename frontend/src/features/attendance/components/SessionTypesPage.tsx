@@ -37,6 +37,7 @@ export function SessionTypesPage() {
       />
       <RecordTable
         label="Session types"
+        title="Session types"
         columns={[{ header: "Name", cell: (l) => l.name }]}
         list={list}
         onOpen={(l) => setOpen({ kind: "edit", label: l })}

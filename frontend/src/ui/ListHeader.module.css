@@ -1,0 +1,22 @@
+/* Title left, count right, baseline-aligned, no divider under it (feel spec, List cards). */
+.header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 22px 24px 8px;
+}
+.title {
+  min-width: 0;
+  overflow: hidden;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.summary {
+  flex: none;
+  font-size: 13px;
+  color: var(--text-3);
+}

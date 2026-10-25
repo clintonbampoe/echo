@@ -16,15 +16,38 @@
   align-items: center;
   gap: 14px;
   min-height: calc(66px * var(--density, 1));
-  padding: 8px 22px;
+  margin-inline: 8px;
+  padding: 8px 14px;
   border-top: 1px solid var(--line);
-  transition: background-color var(--fast) ease;
+  border-radius: var(--radius);
+  transition:
+    background-color var(--t-fast) var(--ease-soft),
+    border-color var(--t-fast) var(--ease-soft);
 }
 .row:first-child {
   border-top: 0;
 }
+/* A hovered row gets a rounded soft fill and the dividers on both sides hide. */
+.row:has(+ .row:hover),
+.row:hover + .row,
 .row:hover {
-  background: var(--hover);
+  border-top-color: transparent;
+}
+.row[data-selected="true"] {
+  background: var(--hover-row);
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+@media (hover: hover) {
+  .row:hover {
+    background: var(--hover-row);
+  }
+  .row:hover :global(.av) {
+    transform: scale(1.08);
+    box-shadow: 0 0 0 3px rgb(128 128 140 / 20%);
+  }
+}
+.row:active {
+  background: var(--hover-tab);
 }
 .text {
   flex: 1;

@@ -33,7 +33,7 @@ type RowProps = {
 export function Row({ icon, title, sub, muted, end, actions }: RowProps) {
   return (
     <li className={`${styles.row} ${muted ? styles.muted : ""}`}>
-      <span className={styles.tile}>
+      <span className={`av ${styles.tile}`}>
         <Icon name={icon} size={20} />
       </span>
       <div className={styles.text}>

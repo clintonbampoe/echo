@@ -19,6 +19,7 @@ const show = (
     <MemoryRouter>
       <PersonList
         label="People"
+        title="People"
         rows={rows}
         rowKey={(r) => r.id}
         person={person}

@@ -9,11 +9,11 @@
   box-shadow: var(--shadow);
 }
 .toolbar {
-  padding: 16px 22px 8px;
+  padding: 8px 22px;
 }
 @media (max-width: 900px) {
   .toolbar {
-    padding: 16px 16px 8px;
+    padding: 8px 16px;
   }
 }
 

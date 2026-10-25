@@ -48,6 +48,7 @@ export function AssetList({ list, filtered, onAction }: Props) {
   return (
     <RecordTable
       label="Assets"
+      title="All assets"
       list={list}
       rowKey={(a) => a.id}
       large

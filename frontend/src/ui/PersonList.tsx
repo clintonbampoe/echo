@@ -2,6 +2,7 @@ import type { CSSProperties, ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { ActionMenu, type MenuItem } from "./ActionMenu";
 import { Avatar } from "./Avatar";
+import { ListHeader } from "./ListHeader";
 import { cssVars } from "./cssVars";
 import styles from "./PersonList.module.css";
 
@@ -46,6 +47,10 @@ type Props<T> = {
   footer?: ReactNode;
   // Drops the card, for a list that sits inside a ListCard that already has one.
   flat?: boolean;
+  // What the list holds ("All members"), and the count or summary at the right of its header. Left out, the
+  // summary is how many rows are showing. A flat list has no header of its own: its ListCard draws it.
+  title: string;
+  aside?: ReactNode;
 };
 
 const NAME = "minmax(220px, 2.4fr)";
@@ -64,6 +69,8 @@ export function PersonList<T>({
   compact,
   footer,
   flat,
+  title,
+  aside,
 }: Props<T>) {
   const widths = (list: PersonColumn<T>[]) =>
     [NAME, ...list.map((c) => c.width), ...(actions ? [ACTIONS] : [])].join(
@@ -79,6 +86,7 @@ export function PersonList<T>({
         .filter(Boolean)
         .join(" ")}
     >
+      {!flat && <ListHeader title={title} summary={aside ?? rows.length} />}
       <ul aria-label={label} className={styles.list}>
         {rows.map((row, i) => (
           <Row

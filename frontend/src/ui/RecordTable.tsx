@@ -5,6 +5,7 @@ import { ActionMenu, type MenuItem } from "./ActionMenu";
 import { Alert } from "./Alert";
 import { Button } from "./Button";
 import { EmptyState } from "./EmptyState";
+import { ListHeader } from "./ListHeader";
 import type { IconName } from "./Icon";
 import { RecordLines, type Line } from "./RecordLines";
 import { RecordSkeleton } from "./RecordSkeleton";
@@ -34,6 +35,10 @@ const cellClass = (c: { end?: boolean; full?: boolean; last?: boolean }) =>
 type Props<T> = {
   // Names the table for screen readers, e.g. "Tithes".
   label: string;
+  // What the list holds ("Transactions"), drawn as the card's header, and the summary at its right
+  // (default: how many rows are loaded).
+  title: string;
+  aside?: ReactNode;
   columns: Column<T>[];
   list: Paged<T>;
   rowKey: (row: T) => string;
@@ -96,6 +101,8 @@ export function RecordTable<T>(props: Props<T>) {
     return (
       <RecordLines
         label={label}
+        title={props.title}
+        aside={props.aside}
         list={list}
         rowKey={props.rowKey}
         line={props.line}
@@ -132,6 +139,8 @@ const scrolling = (label: string, scroll?: boolean) =>
 type RowsProps<T> = Pick<
   Props<T>,
   | "label"
+  | "title"
+  | "aside"
   | "columns"
   | "list"
   | "rowKey"
@@ -147,6 +156,8 @@ type RowsProps<T> = Pick<
 
 function Rows<T>({
   label,
+  title: heading,
+  aside,
   columns,
   list,
   rowKey,
@@ -164,6 +175,10 @@ function Rows<T>({
   const tail = (actions && styles.tail) || "";
   return (
     <div className={styles.wrap}>
+      <ListHeader
+        title={heading}
+        summary={aside ?? `${shown}${list.hasMore ? "+" : ""}`}
+      />
       <div className={`${styles.head} ${tail}`} aria-hidden="true" style={cols}>
         {columns.map((c) => (
           <span key={c.header} className={c.end ? styles.end : undefined}>

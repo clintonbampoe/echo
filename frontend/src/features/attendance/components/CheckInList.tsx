@@ -47,6 +47,7 @@ export function CheckInList({
       {(rows, footer) => (
         <PersonList
           label="Check-ins"
+          title="Check-ins"
           rows={rows}
           rowKey={(c) => c.id}
           person={(c) => ({

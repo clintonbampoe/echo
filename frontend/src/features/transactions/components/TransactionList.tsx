@@ -23,6 +23,7 @@ export function TransactionList({ list, filtered, period, onOpen }: Props) {
   return (
     <RecordTable
       label="Transactions"
+      title="Transactions"
       list={list}
       rowKey={(t) => t.id}
       large

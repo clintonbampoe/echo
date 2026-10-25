@@ -75,6 +75,7 @@ export function CheckInsTab({ arrivals, eventName, phase, state }: Props) {
   return (
     <>
       <ListCard
+        title="Check-ins"
         toolbar={
           <FilterBar
             searchLabel="Search check-ins"
@@ -108,6 +109,7 @@ export function CheckInsTab({ arrivals, eventName, phase, state }: Props) {
           {(rows, footer) => (
             <PersonList
               label="Check-ins"
+              title="Check-ins"
               rows={rows}
               rowKey={(a) => a.checkIn.id}
               person={(a) => ({

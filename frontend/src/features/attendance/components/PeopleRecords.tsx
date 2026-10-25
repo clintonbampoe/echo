@@ -38,6 +38,7 @@ export function PeopleRecords({ query, narrowed, onClear }: Props) {
         {(rows, footer) => (
           <PersonList
             label="Check-ins"
+            title="Check-ins"
             rows={rows}
             rowKey={(c) => c.id}
             person={(c) => ({

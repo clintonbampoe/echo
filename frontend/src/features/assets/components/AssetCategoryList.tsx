@@ -16,6 +16,7 @@ export function AssetCategoryList({ list, onOpen }: Props) {
   return (
     <RecordTable
       label="Asset categories"
+      title="Asset categories"
       list={list}
       rowKey={(c) => String(c.id)}
       large

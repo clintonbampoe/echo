@@ -32,6 +32,7 @@ export function SessionCheckIns({ session }: { session: Session }) {
   return (
     <>
       <ListCard
+        title="Check-ins"
         toolbar={
           <FilterBar
             searchLabel="Search check-ins"

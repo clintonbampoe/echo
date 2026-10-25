@@ -22,6 +22,7 @@ export function AttendanceTable({ list, narrowed }: Props) {
   return (
     <RecordTable
       label="Attendance"
+      title="Attendance"
       list={list}
       rowKey={(a) => a.id}
       href={(a) => paths.session(a.sessionId)}

@@ -441,3 +441,24 @@ html[data-reduce-motion="true"] a[data-press]:active {
 [role="tabpanel"] {
   animation: echoRiseIn var(--t-enter) var(--ease-out) both;
 }
+
+/* An avatar or icon tile inside a hovered row or card grows a little and gains a soft ring. */
+.av {
+  transition:
+    transform var(--t-spring) var(--ease-spring),
+    box-shadow var(--t-base) var(--ease-soft);
+}
+@media (hover: hover) {
+  .av:hover {
+    transform: scale(1.08);
+    box-shadow: 0 0 0 3px rgb(128 128 140 / 20%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .av:hover {
+    transform: none;
+  }
+}
+html[data-reduce-motion="true"] .av:hover {
+  transform: none;
+}

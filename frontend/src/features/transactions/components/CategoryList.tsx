@@ -27,6 +27,7 @@ export function CategoryList({ list, type, onOpen }: Props) {
   return (
     <RecordLines
       label="Categories"
+      title="Categories"
       list={list}
       rowKey={(c) => String(c.id)}
       line={(c) => ({

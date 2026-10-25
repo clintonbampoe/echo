@@ -13,6 +13,7 @@ export function ManagedProjects({ personId }: { personId: string }) {
     >
       <RecordTable
         label="Projects managed"
+        title="Projects managed"
         list={useManagedProjects(personId)}
         rowKey={(p) => p.id}
         href={(p) => paths.project(p.id)}
