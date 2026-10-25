@@ -1,12 +1,10 @@
 import { useState } from "react";
 import { formatNumber } from "@/lib/format";
-import { MonthBars } from "@/ui";
+import { DashCard, Figure, MonthBars } from "@/ui";
 import { growthBuckets } from "../growth";
 import { usePresenceSeries } from "../hooks";
 import { monthRanges, type MonthRange } from "../ranges";
-import { DashCard } from "./DashCard";
 import { CardFailed } from "./CardFailed";
-import { Figure } from "./Figure";
 import { RangeTabs } from "./RangeTabs";
 
 const num = (n: number | undefined) =>

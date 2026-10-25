@@ -3,6 +3,7 @@ import {
   chooseType,
   countActive,
   financeFilters,
+  monthDates,
   periodDates,
   toApiFilters,
   typeOf,
@@ -15,8 +16,8 @@ const categories: Category[] = [
 ];
 
 describe("the period", () => {
-  it("defaults to this week, as the server does", () => {
-    expect(financeFilters.empty.window).toBe("week");
+  it("defaults to this month, and knows this week", () => {
+    expect(financeFilters.empty.window).toBe("month");
     expect(periodDates("week", "2026-10-14")).toEqual({
       from: "2026-10-11",
       to: "2026-10-14",
@@ -45,10 +46,15 @@ describe("what the API is asked for", () => {
     expect(toApiFilters(financeFilters.empty, "2026-10-14")).toEqual({
       transactionType: undefined,
       categoryId: undefined,
-      from: "2026-10-11",
+      from: "2026-10-01",
       to: "2026-10-14",
     });
-    const picked = { type: "Income", category: "1", window: "year" };
+    const picked = {
+      type: "Income",
+      category: "1",
+      month: "",
+      window: "year",
+    };
     expect(toApiFilters(picked, "2026-10-14")).toMatchObject({
       transactionType: "Income",
       categoryId: 1,
@@ -58,8 +64,10 @@ describe("what the API is asked for", () => {
   it("ignores a type or a category id that is not real", () => {
     expect(typeOf("Nonsense")).toBeUndefined();
     expect(
-      toApiFilters({ type: "", category: "abc", window: "week" }, "2026-10-14")
-        .categoryId,
+      toApiFilters(
+        { type: "", category: "abc", month: "", window: "week" },
+        "2026-10-14",
+      ).categoryId,
     ).toBeUndefined();
   });
 });
@@ -78,7 +86,7 @@ describe("the category list", () => {
   });
 
   it("drops a chosen category that does not belong to the new type", () => {
-    const chosen = { type: "", category: "1", window: "week" };
+    const chosen = { type: "", category: "1", month: "", window: "week" };
     expect(chooseType(chosen, "Expense", categories)).toEqual({
       type: "Expense",
       category: "",
@@ -97,9 +105,36 @@ describe("the category list", () => {
 describe("counting what is narrowing the list", () => {
   it("counts the category and a period that is not the default, never the type switch", () => {
     expect(countActive(financeFilters.empty)).toBe(0);
-    expect(countActive({ type: "Income", category: "", window: "week" })).toBe(
-      0,
-    );
-    expect(countActive({ type: "", category: "1", window: "year" })).toBe(2);
+    expect(
+      countActive({ type: "Income", category: "", month: "", window: "month" }),
+    ).toBe(0);
+    expect(
+      countActive({ type: "", category: "1", month: "", window: "year" }),
+    ).toBe(2);
+    expect(
+      countActive({
+        type: "",
+        category: "",
+        month: "2026-09",
+        window: "month",
+      }),
+    ).toBe(1);
+  });
+});
+
+describe("a month picked", () => {
+  it("covers that month, or the whole year, and beats the period", () => {
+    expect(monthDates("2026-02")).toEqual({
+      from: "2026-02-01",
+      to: "2026-02-28",
+    });
+    expect(monthDates("2026")).toEqual({
+      from: "2026-01-01",
+      to: "2026-12-31",
+    });
+    expect(monthDates("")).toBeUndefined();
+    expect(
+      toApiFilters({ ...financeFilters.empty, month: "2026-09" }, "2026-10-14"),
+    ).toMatchObject({ from: "2026-09-01", to: "2026-09-30" });
   });
 });

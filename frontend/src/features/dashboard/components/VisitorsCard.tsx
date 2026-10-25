@@ -1,9 +1,8 @@
 import { Link } from "react-router-dom";
 import { daysAfter } from "@/lib/dates";
 import { formatDayTime, formatNumber } from "@/lib/format";
-import { Avatar } from "@/ui";
+import { Aside, Avatar, DashCard } from "@/ui";
 import { useRecentVisitors, useVisitors } from "../hooks";
-import { Aside, DashCard } from "./DashCard";
 import styles from "./VisitorsCard.module.css";
 
 const ROWS = 5;

@@ -2,13 +2,13 @@ import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Avatar } from "./Avatar";
 import { Icon } from "./Icon";
+import { FactList } from "./FactList";
 import styles from "./PersonRecord.module.css";
 
 type Props = {
   name: string;
   // Under the name, in words: "Member · Present".
   meta: ReactNode;
-  // Label and value lines. A missing value shows a dash so the rows never jump.
   rows: [label: string, value: string | null | undefined][];
   // The person's own page, and which tab of it the record is on: "Abena Mensah · opens the Events tab".
   profileHref: string;
@@ -35,14 +35,7 @@ export function PersonRecord({
           <p className={styles.meta}>{meta}</p>
         </div>
       </div>
-      <dl className={styles.card}>
-        {rows.map(([label, value]) => (
-          <div key={label} className={styles.row}>
-            <dt>{label}</dt>
-            <dd>{value || "–"}</dd>
-          </div>
-        ))}
-      </dl>
+      <FactList rows={rows} />
       <Link to={profileHref} className={styles.profile}>
         <Avatar name={name} size={40} />
         <span className={styles.text}>

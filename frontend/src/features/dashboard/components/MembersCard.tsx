@@ -1,11 +1,10 @@
 import { formatNumber } from "@/lib/format";
-import { ProgressBar } from "@/ui";
+import { Aside, DashCard, ProgressBar } from "@/ui";
 import type { AgeBand } from "../api";
 import { useMix, useNewMembers } from "../hooks";
 import { statusRows } from "../members";
 import { spanOf } from "../periods";
 import { CardFailed } from "./CardFailed";
-import { Aside, DashCard } from "./DashCard";
 import { Split } from "./Split";
 import styles from "./MembersCard.module.css";
 

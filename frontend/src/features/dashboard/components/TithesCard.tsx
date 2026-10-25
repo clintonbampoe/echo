@@ -1,12 +1,10 @@
 import { useState } from "react";
 import { formatMoney, formatNumber } from "@/lib/format";
-import { MonthBars } from "@/ui";
+import { DashCard, Figure, MonthBars } from "@/ui";
 import { growthBuckets } from "../growth";
 import { useTitheSeries } from "../hooks";
 import { monthRanges, type MonthRange } from "../ranges";
 import { CardFailed } from "./CardFailed";
-import { DashCard } from "./DashCard";
-import { Figure } from "./Figure";
 import { RangeTabs } from "./RangeTabs";
 
 const NONE = "–";

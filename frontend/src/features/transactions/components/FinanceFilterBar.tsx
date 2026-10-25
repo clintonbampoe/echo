@@ -1,4 +1,4 @@
-import { FilterBar, FilterSelect, SegmentedField } from "@/ui";
+import { FilterBar, FilterSelect, MonthYearPill } from "@/ui";
 import type { Category } from "../api";
 import {
   categoryOptions,
@@ -15,36 +15,26 @@ type Props = {
   onChange: (change: Partial<ListFilters>) => void;
   onClear: () => void;
   categories: Category[] | undefined;
+  today: string;
 };
 
-// The Finance filters. All / Income / Expenses is a mode switch, so it stays in view at every width and takes
-// the search box's place (the server cannot search transactions). The category and the period fold away behind
-// the Filters button on a phone or tablet (design rules S2 and S7).
+// The Finance filters: the month, the type and the category as pills, and the days to cover at the far right. The
+// server cannot search transactions, so there is no search box. On a phone or tablet they fold behind Filters.
 export function FinanceFilterBar({
   filters,
   onChange,
   onClear,
   categories,
+  today,
 }: Props) {
-  const types = (
-    <SegmentedField
-      label="Show"
-      hideLabel
-      joined
-      options={typeOptions}
-      value={filters.type}
-      onChange={(type) => onChange(chooseType(filters, type, categories))}
-    />
-  );
   return (
     <FilterBar
-      leading={types}
       active={countActive(filters)}
       filtered={financeFilters.isFiltered(filters)}
       onClear={onClear}
       trailing={
         <FilterSelect
-          label="This week"
+          label="Range"
           options={periodOptions}
           value={filters.window}
           quiet
@@ -52,6 +42,18 @@ export function FinanceFilterBar({
         />
       }
     >
+      <MonthYearPill
+        label="Month"
+        value={filters.month}
+        today={today}
+        onChange={(month) => onChange({ month })}
+      />
+      <FilterSelect
+        label="Type"
+        options={typeOptions}
+        value={filters.type}
+        onChange={(type) => onChange(chooseType(filters, type, categories))}
+      />
       <FilterSelect
         label="Category"
         options={categoryOptions(categories, filters.type)}

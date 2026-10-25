@@ -31,7 +31,7 @@ type LeadProps = Pick<
 // The left of the bar: the search box, or what a list the server cannot search puts in its place.
 function Lead({ searchLabel, search, onSearch, resetKey, leading }: LeadProps) {
   if (searchLabel === undefined || search === undefined || !onSearch)
-    return <div className={styles.search}>{leading}</div>;
+    return leading ? <div className={styles.search}>{leading}</div> : null;
   return (
     <SearchBox
       key={resetKey}

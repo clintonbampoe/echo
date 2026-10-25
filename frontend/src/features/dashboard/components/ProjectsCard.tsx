@@ -1,9 +1,7 @@
 import { formatNumber } from "@/lib/format";
-import { Chip } from "@/ui";
+import { Aside, Chip, DashCard, Figure } from "@/ui";
 import { useProjects } from "../hooks";
 import { CardFailed } from "./CardFailed";
-import { Aside, DashCard } from "./DashCard";
-import { Figure } from "./Figure";
 import { Split } from "./Split";
 
 const SHOWN = 4;

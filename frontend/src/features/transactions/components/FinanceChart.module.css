@@ -1,43 +1,18 @@
-.card {
-  padding: 18px 20px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-}
-.head {
+.body {
   display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 8px 20px;
-  margin-bottom: 18px;
-}
-.title {
-  margin: 0;
-  font-size: 14px;
-  font-weight: 600;
-}
-.details {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 16px;
-  flex: 1;
-  min-width: 0;
+  flex-direction: column;
+  gap: 16px;
 }
 .line {
   margin: 0;
   font-size: 13px;
   color: var(--text-3);
 }
-.line strong {
-  font-weight: 600;
-  color: var(--text);
-}
-
 .legend {
   display: flex;
   gap: 14px;
   margin: 0;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-2);
 }
 .key {
@@ -46,20 +21,12 @@
   gap: 6px;
 }
 .swatch {
-  width: 10px;
-  height: 10px;
+  width: 9px;
+  height: 9px;
   border-radius: 3px;
   background: var(--text);
 }
 .swatch.dim {
-  background: var(--line-2);
-}
-
-@media (max-width: 900px) {
-  .card {
-    padding: 16px;
-  }
-  .head {
-    margin-bottom: 14px;
-  }
+  background: var(--text-3);
+  opacity: 0.6;
 }

@@ -116,10 +116,10 @@ describe("finance page", () => {
     });
     expect(within(numbers).getByText("6,850")).toBeInTheDocument();
     expect(within(numbers).getByText("+4,710")).toBeInTheDocument();
-    expect(within(numbers).getAllByText("This week")).toHaveLength(2);
+    expect(within(numbers).getByText("Transactions")).toBeInTheDocument();
     expect(
-      await screen.findByRole("img", {
-        name: "October 2026: Income GH₵ 6,850, Expenses GH₵ 2,140",
+      await screen.findByRole("button", {
+        name: "October 2026: income GH₵ 6,850, expenses GH₵ 2,140",
       }),
     ).toBeInTheDocument();
     const table = await screen.findByRole("list", { name: "Transactions" });
@@ -130,12 +130,12 @@ describe("finance page", () => {
     ).toBeInTheDocument();
   });
 
-  it("asks for this week by default, and for the whole year when that is chosen", async () => {
+  it("asks for this month by default, and for the whole year when that is chosen", async () => {
     const user = userEvent.setup();
     open();
     await screen.findByRole("list", { name: "Transactions" });
     expect(asked()[0]?.searchParams.get("from")).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-    await user.click(screen.getByRole("button", { name: /This week/ }));
+    await user.click(screen.getByRole("button", { name: /Range/ }));
     await user.click(await screen.findByRole("option", { name: "This year" }));
     await waitFor(() =>
       expect(asked().at(-1)?.searchParams.get("from")).toMatch(/^\d{4}-01-01$/),
@@ -146,7 +146,8 @@ describe("finance page", () => {
     const user = userEvent.setup();
     open();
     await screen.findByRole("list", { name: "Transactions" });
-    await user.click(screen.getByRole("radio", { name: "Income" }));
+    await user.click(screen.getByRole("button", { name: /Type/ }));
+    await user.click(await screen.findByRole("option", { name: "Income" }));
     await waitFor(() =>
       expect(
         within(screen.getByRole("list", { name: "Transactions" })).queryByText(
@@ -161,7 +162,8 @@ describe("finance page", () => {
     const user = userEvent.setup();
     open();
     await screen.findByRole("list", { name: "Transactions" });
-    await user.click(screen.getByRole("radio", { name: "Expenses" }));
+    await user.click(screen.getByRole("button", { name: /Type/ }));
+    await user.click(await screen.findByRole("option", { name: "Expenses" }));
     await user.click(screen.getByRole("button", { name: /Category/ }));
     expect(
       await screen.findByRole("option", { name: "Utilities" }),
@@ -173,7 +175,7 @@ describe("finance page", () => {
     list = [];
     open();
     expect(
-      await screen.findByText("No transactions this week"),
+      await screen.findByText("No transactions this month"),
     ).toBeInTheDocument();
     expect(screen.queryByText("No transactions match")).toBeNull();
   });
@@ -219,9 +221,7 @@ describe("finance page", () => {
     };
     const openSheet = async (user: ReturnType<typeof userEvent.setup>) => {
       await screen.findByRole("list", { name: "Transactions" });
-      await user.click(
-        screen.getByRole("button", { name: /Record transaction/ }),
-      );
+      await user.click(screen.getByRole("button", { name: /New transaction/ }));
       return screen.findByRole("dialog");
     };
 
@@ -241,7 +241,7 @@ describe("finance page", () => {
       await pick(user, sheet, "Offerings");
       await user.type(within(sheet).getByLabelText("Amount"), "500");
       await user.click(
-        within(sheet).getByRole("button", { name: "Record transaction" }),
+        within(sheet).getByRole("button", { name: "Save transaction" }),
       );
       await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
       expect(sent("POST")?.url).toContain("/v1/transactions");
@@ -257,7 +257,7 @@ describe("finance page", () => {
       open();
       const sheet = await openSheet(user);
       await user.click(
-        within(sheet).getByRole("button", { name: "Record transaction" }),
+        within(sheet).getByRole("button", { name: "Save transaction" }),
       );
       // The dropdown still says "Choose a category"; the message under it says the same.
       await waitFor(() =>
@@ -319,14 +319,15 @@ describe("finance page", () => {
         }),
       );
       const panel = await screen.findByRole("dialog");
-      expect(within(panel).getByText("−GH₵ 1,240")).toBeInTheDocument();
+      expect(within(panel).getByText("GH₵ 1,240")).toBeInTheDocument();
       expect(
-        within(panel).getByText("ECG electricity bill, September"),
+        within(panel).getByText("Expense · Utilities"),
       ).toBeInTheDocument();
+      expect(
+        within(panel).getAllByText("ECG electricity bill, September"),
+      ).toHaveLength(2);
       expect(within(panel).queryByLabelText("Amount")).toBeNull();
-      await user.click(
-        within(panel).getByRole("button", { name: "Edit transaction" }),
-      );
+      await user.click(within(panel).getByRole("button", { name: "Edit" }));
       const sheet = await screen.findByRole("dialog", {
         name: /Edit transaction/,
       });
@@ -357,9 +358,7 @@ describe("finance page", () => {
           name: "ECG electricity bill, September",
         }),
       );
-      await user.click(
-        await screen.findByRole("button", { name: "Delete transaction" }),
-      );
+      await user.click(await screen.findByRole("button", { name: "Delete" }));
       const ask = await screen.findByRole("alertdialog");
       expect(
         within(ask).getByText(

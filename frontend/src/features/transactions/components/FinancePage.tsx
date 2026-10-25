@@ -2,15 +2,27 @@ import { useState } from "react";
 import { todayText } from "@/lib/dates";
 import { paths } from "@/lib/paths";
 import { useUrlFilters } from "@/lib/useUrlFilters";
-import { LinkButton, Notice, PageHeader, StatStrip } from "@/ui";
+import {
+  Aside,
+  DashCard,
+  Donut,
+  LinkButton,
+  PageHeader,
+  StatStrip,
+} from "@/ui";
 import type { Transaction } from "../api";
-import { financeFilters, periodOptions, toApiFilters } from "../filters";
+import {
+  financeFilters,
+  monthLabel,
+  periodOptions,
+  toApiFilters,
+} from "../filters";
 import {
   useCategories,
   useTransactions,
   useTransactionSummary,
 } from "../hooks";
-import { financeStats } from "../view";
+import { categorySlices, financeStats } from "../view";
 import { FinanceChart } from "./FinanceChart";
 import { FinanceFilterBar } from "./FinanceFilterBar";
 import styles from "./FinancePage.module.css";
@@ -36,8 +48,9 @@ export function FinancePage() {
   const query = toApiFilters(filters, today);
   const list = useTransactions(query);
   const summary = useTransactionSummary(query);
-  const period =
-    periodOptions.find((o) => o.value === filters.window)?.label ?? "";
+  const period = filters.month
+    ? monthLabel(filters.month)
+    : (periodOptions.find((o) => o.value === filters.window)?.label ?? "");
 
   return (
     <div className="anim-rise">
@@ -48,32 +61,44 @@ export function FinancePage() {
             Categories
           </LinkButton>
         }
-        add={{ label: "Record transaction", onClick: () => setRecording(true) }}
+        add={{ label: "New transaction", onClick: () => setRecording(true) }}
       />
-      <div className={styles.notice}>
-        <Notice
-          tone="warning"
-          title="Tithes and project contributions are recorded on their own pages and are not part of these totals."
-        />
-      </div>
       <StatStrip
         label="Finance summary"
-        stats={financeStats(summary.data, period)}
+        stats={financeStats(summary.data)}
         busy={summary.isPending}
       />
-      <FinanceChart today={today} />
+      <FinanceChart
+        today={today}
+        month={filters.month}
+        onPick={(month) => update({ month })}
+      />
       <FinanceFilterBar
         filters={filters}
         onChange={update}
         onClear={clear}
         categories={categories.data}
+        today={today}
       />
-      <TransactionList
-        list={list}
-        filtered={financeFilters.isFiltered(filters)}
-        period={period}
-        onOpen={(transaction, start) => setOpened({ transaction, start })}
-      />
+      <div className={styles.split}>
+        <TransactionList
+          list={list}
+          filtered={financeFilters.isFiltered(filters)}
+          period={period}
+          onOpen={(transaction, start) => setOpened({ transaction, start })}
+        />
+        <DashCard title="By category" control={<Aside>{period}</Aside>}>
+          <Donut
+            label="Transactions by category"
+            slices={categorySlices(summary.data, filters.type)}
+            stacked
+          />
+        </DashCard>
+      </div>
+      <p className={styles.note}>
+        Tithes and project contributions are recorded on their own pages and are
+        not part of these totals.
+      </p>
       <TransactionSheet
         open={recording}
         today={today}

@@ -2,7 +2,7 @@
 // Pure, so the tests can check it without a screen.
 import { monthNames } from "@/lib/dates";
 import { formatMoney, formatNumber } from "@/lib/format";
-import type { MonthBar, Stat } from "@/ui";
+import type { DonutSlice, FlowBar, Stat } from "@/ui";
 import type {
   Transaction,
   TransactionMonth,
@@ -18,24 +18,20 @@ export const transactionAmount = (
   t: Pick<Transaction, "amount" | "transactionType">,
 ) => signedMoney(t.amount, t.transactionType);
 
-// The four numbers above the list. `period` says which days they cover ("This week").
-export function financeStats(
-  summary: TransactionSummary | undefined,
-  period: string,
-): Stat[] {
+// The four numbers above the list: money in, money out, what is left, and how many transactions made them.
+export function financeStats(summary: TransactionSummary | undefined): Stat[] {
   const s = summary;
+  const count = s?.byCategory.reduce((sum, c) => sum + c.count, 0);
   return [
     {
       label: "Income",
       value: s ? formatNumber(s.totalIncome) : "–",
       unit: s ? "GHS" : undefined,
-      note: period,
     },
     {
       label: "Expenses",
       value: s ? formatNumber(s.totalExpenses) : "–",
       unit: s ? "GHS" : undefined,
-      note: period,
     },
     {
       label: "Net",
@@ -43,27 +39,44 @@ export function financeStats(
         ? `${s.net < 0 ? "−" : "+"}${formatNumber(Math.abs(s.net))}`
         : "–",
       unit: s ? "GHS" : undefined,
-      note: "Income minus expenses",
     },
     {
-      label: "Most active category",
-      value: s?.mostActiveCategory || "–",
-      note: "By number of transactions",
+      label: "Transactions",
+      value: count === undefined ? "–" : formatNumber(count),
     },
   ];
 }
 
-// One bar per month, carrying both totals. The black bar is income, the grey one expenses.
-export const chartBars = (rows: TransactionMonth[]): MonthBar[] =>
+// The biggest four categories as slices, the rest folded into "Other". Of the type on show, or of both.
+export function categorySlices(
+  summary: TransactionSummary | undefined,
+  type: string,
+): DonutSlice[] {
+  const rows = (summary?.byCategory ?? [])
+    .filter((c) => (!type || c.type === type) && c.total > 0)
+    .sort((a, b) => b.total - a.total);
+  const slice = (key: string, label: string, value: number): DonutSlice => ({
+    key,
+    label,
+    value,
+    text: formatMoney(value),
+  });
+  const top = rows
+    .slice(0, 4)
+    .map((c) => slice(String(c.categoryId), c.categoryName, c.total));
+  const rest = rows.slice(4).reduce((sum, c) => sum + c.total, 0);
+  return rest > 0 ? [...top, slice("other", "Other", rest)] : top;
+}
+
+// One month of the chart: both totals and what is left, for the figure above the bars.
+export const flowBars = (rows: TransactionMonth[]): FlowBar[] =>
   rows.map((r) => {
     const short = (monthNames[r.month - 1] ?? "").slice(0, 3);
     return {
       key: `${r.year}-${String(r.month).padStart(2, "0")}`,
       label: short,
       name: `${monthNames[r.month - 1] ?? ""} ${r.year}`,
-      tip: `${short} ${r.year}`,
-      value: r.totalIncome,
-      text: formatMoney(r.totalIncome),
-      compare: { value: r.totalExpenses, text: formatMoney(r.totalExpenses) },
+      income: r.totalIncome,
+      expenses: r.totalExpenses,
     };
   });

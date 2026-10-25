@@ -1,7 +1,8 @@
 import type { TransactionMonth, TransactionSummary } from "./api";
 import {
-  chartBars,
+  categorySlices,
   financeStats,
+  flowBars,
   signedMoney,
   transactionAmount,
 } from "./view";
@@ -16,7 +17,29 @@ const summary: TransactionSummary = {
   totalExpenses: 2140,
   net: 4710,
   mostActiveCategory: "Offerings",
-  byCategory: [],
+  byCategory: [
+    {
+      categoryId: 1,
+      categoryName: "Offerings",
+      type: "Income",
+      total: 6850,
+      count: 5,
+    },
+    {
+      categoryId: 2,
+      categoryName: "Utilities",
+      type: "Expense",
+      total: 1240,
+      count: 2,
+    },
+    {
+      categoryId: 3,
+      categoryName: "Printing",
+      type: "Expense",
+      total: 900,
+      count: 1,
+    },
+  ],
 };
 
 describe("the signed amount", () => {
@@ -35,20 +58,17 @@ describe("the signed amount", () => {
 });
 
 describe("the four numbers", () => {
-  it("names the period under income and expenses, and the busiest category", () => {
-    const stats = financeStats(summary, "This week");
-    expect(stats.map((s) => s.value)).toEqual([
+  it("gives money in, money out, what is left and how many transactions", () => {
+    expect(financeStats(summary).map((s) => s.value)).toEqual([
       "6,850",
       "2,140",
       "+4,710",
-      "Offerings",
+      "8",
     ]);
-    expect(stats[0]?.note).toBe("This week");
-    expect(stats[3]?.note).toBe("By number of transactions");
   });
 
   it("waits with dashes until the numbers arrive", () => {
-    expect(financeStats(undefined, "This week").map((s) => s.value)).toEqual([
+    expect(financeStats(undefined).map((s) => s.value)).toEqual([
       "–",
       "–",
       "–",
@@ -57,20 +77,48 @@ describe("the four numbers", () => {
   });
 });
 
+describe("the categories", () => {
+  it("shows the biggest of both types, largest first", () => {
+    expect(categorySlices(summary, "").map((c) => c.label)).toEqual([
+      "Offerings",
+      "Utilities",
+      "Printing",
+    ]);
+  });
+
+  it("keeps to the type on show, and folds the smallest into Other", () => {
+    expect(categorySlices(summary, "Expense").map((c) => c.label)).toEqual([
+      "Utilities",
+      "Printing",
+    ]);
+    const many = {
+      ...summary,
+      byCategory: [1, 2, 3, 4, 5, 6].map((n) => ({
+        categoryId: n,
+        categoryName: `C${n}`,
+        type: "Expense" as const,
+        total: 100 - n,
+        count: 1,
+      })),
+    };
+    const slices = categorySlices(many, "");
+    expect(slices).toHaveLength(5);
+    expect(slices[4]).toMatchObject({ label: "Other", value: 189 });
+  });
+});
+
 describe("the chart", () => {
-  it("gives every month both totals, income first", () => {
-    const bars = chartBars(months);
-    expect(bars[1]).toMatchObject({
+  it("gives every month both totals", () => {
+    expect(flowBars(months)[1]).toEqual({
       key: "2026-10",
       label: "Oct",
-      tip: "Oct 2026",
-      value: 6850,
-      text: "GH₵ 6,850",
+      name: "October 2026",
+      income: 6850,
+      expenses: 2140,
     });
-    expect(bars[1]?.compare).toEqual({ value: 2140, text: "GH₵ 2,140" });
   });
 
   it("draws nothing when there are no months", () => {
-    expect(chartBars([])).toEqual([]);
+    expect(flowBars([])).toEqual([]);
   });
 });

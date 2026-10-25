@@ -1,8 +1,7 @@
-import { formatDate } from "@/lib/format";
-import { Button, Chip, DetailGroup, Sheet } from "@/ui";
+import { formatDate, formatMoney } from "@/lib/format";
+import { FactList, RecordActions, Sheet } from "@/ui";
 import type { Transaction } from "../api";
-import { typeLabel, typeTone } from "../labels";
-import { transactionAmount } from "../view";
+import { typeLabel } from "../labels";
 import styles from "./ViewTransactionSheet.module.css";
 
 type Props = {
@@ -12,46 +11,40 @@ type Props = {
   onClose: () => void;
 };
 
-// A transaction as it was recorded, read only. Changing or removing it is a deliberate next step.
+// A transaction as it was recorded: what it was for, the amount, and the facts under it. Changing or removing it is
+// a deliberate next step, one tap on from here.
 export function ViewTransactionSheet({
   transaction: t,
   onEdit,
   onDelete,
   onClose,
 }: Props) {
-  const footer = (
-    <div className={styles.actions}>
-      <Button variant="secondary" onClick={onDelete} className={styles.delete}>
-        Delete transaction
-      </Button>
-      <Button onClick={onEdit}>Edit transaction</Button>
-    </div>
-  );
   return (
     <Sheet
       open
       onClose={onClose}
       title="Transaction"
-      subtitle={t.categoryName}
-      footer={footer}
+      footer={
+        <RecordActions
+          edit={{ label: "Edit", onClick: onEdit }}
+          remove={[{ label: "Delete", onClick: onDelete }]}
+        />
+      }
     >
       <div className={styles.body}>
-        <p
-          className={`${styles.amount} ${t.transactionType === "Income" ? styles.in : ""}`}
-        >
-          {transactionAmount(t)}
-        </p>
-        <div>
-          <Chip tone={typeTone[t.transactionType]}>
-            {typeLabel[t.transactionType]}
-          </Chip>
+        <div className={styles.head}>
+          <p className={styles.what}>{t.description || t.categoryName}</p>
+          <p className={styles.amount}>{formatMoney(Math.abs(t.amount))}</p>
+          <p className={styles.kind}>
+            {typeLabel[t.transactionType]} · {t.categoryName}
+          </p>
         </div>
-        <DetailGroup
-          title="Details"
+        <FactList
           rows={[
+            ["Type", typeLabel[t.transactionType]],
             ["Category", t.categoryName],
             ["Date", formatDate(t.transactionDate)],
-            ["Description", t.description],
+            ["Note", t.description],
             ["Recorded on", formatDate(t.createdAt.slice(0, 10))],
           ]}
         />

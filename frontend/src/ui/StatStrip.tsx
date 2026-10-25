@@ -8,7 +8,7 @@ import styles from "./StatStrip.module.css";
 export type Stat = {
   label: string;
   value: string;
-  note: string;
+  note?: string;
   change?: string;
   // A small unit after the value ("%", "GHS").
   unit?: string;
@@ -47,7 +47,9 @@ export function StatStrip({ label, stats, busy }: Props) {
             <div className={styles.bottom}>
               <p
                 className={styles.value}
-                title={`${s.value}${s.unit ?? ""} · ${s.note}`}
+                title={[`${s.value}${s.unit ?? ""}`, s.note]
+                  .filter(Boolean)
+                  .join(" · ")}
               >
                 {s.value}
                 {s.unit && <span className={styles.unit}>{s.unit}</span>}

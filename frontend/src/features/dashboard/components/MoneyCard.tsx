@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { formatNumber } from "@/lib/format";
 import { paths } from "@/lib/paths";
-import { Icon, MonthBars, SegmentedField } from "@/ui";
+import { DashCard, Figure, Icon, MonthBars, SegmentedField } from "@/ui";
 import { useCategories, useMoneyMonths } from "../hooks";
 import {
   monthFigures,
@@ -13,8 +13,6 @@ import {
 } from "../money";
 import { monthRanges, type MonthRange } from "../ranges";
 import { CardFailed } from "./CardFailed";
-import { DashCard } from "./DashCard";
-import { Figure } from "./Figure";
 import { RangeTabs } from "./RangeTabs";
 import { Split } from "./Split";
 import styles from "./MoneyCard.module.css";

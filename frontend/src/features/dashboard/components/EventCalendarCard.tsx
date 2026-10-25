@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { daysAfter, monthGrid, monthsAfter } from "@/lib/dates";
 import { formatDayTime } from "@/lib/format";
-import { DateTile, Icon } from "@/ui";
+import { DashCard, DateTile, Icon } from "@/ui";
 import { useEventsBetween } from "../hooks";
 import { defaultPick, eventDays, kindOf, monthTitle } from "../events";
 import { CardFailed } from "./CardFailed";
-import { DashCard } from "./DashCard";
 import styles from "./EventCalendarCard.module.css";
 
 const weekdays = ["S", "M", "T", "W", "T", "F", "S"];

@@ -1,11 +1,9 @@
 import { useState } from "react";
 import { formatNumber } from "@/lib/format";
-import { MonthBars } from "@/ui";
+import { Aside, DashCard, Figure, MonthBars } from "@/ui";
 import { growthBuckets } from "../growth";
 import { useGrowth, useMix } from "../hooks";
-import { Aside, DashCard } from "./DashCard";
 import { CardFailed } from "./CardFailed";
-import { Figure } from "./Figure";
 
 const MONTHS = 6;
 const num = (n: number | undefined) =>

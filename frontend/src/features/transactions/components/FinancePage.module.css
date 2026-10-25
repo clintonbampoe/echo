@@ -1,3 +1,17 @@
-.notice {
-  margin: 16px 0 24px;
+/* The list takes what room is left; the categories sit beside it, level with its top. */
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  align-items: start;
+  gap: 22px;
+}
+.note {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-3);
+}
+@media (max-width: 1100px) {
+  .split {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }

@@ -1,8 +1,7 @@
+import { Aside, DashCard, Figure } from "@/ui";
 import { formatNumber } from "@/lib/format";
 import { useAssets } from "../hooks";
 import { CardFailed } from "./CardFailed";
-import { Aside, DashCard } from "./DashCard";
-import { Figure } from "./Figure";
 import { Split } from "./Split";
 
 // What the church owns: what it is worth now, cut by category. Liquidated assets are not counted. The value

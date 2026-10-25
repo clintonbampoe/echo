@@ -1,10 +1,9 @@
 import { Link } from "react-router-dom";
 import { formatDayTime } from "@/lib/format";
-import { DateTile } from "@/ui";
+import { DashCard, DateTile, SeeLink } from "@/ui";
 import type { DashEvent } from "../api";
 import { useUpcomingEvents } from "../hooks";
 import { CardFailed } from "./CardFailed";
-import { DashCard, SeeLink } from "./DashCard";
 import styles from "./UpcomingEventsCard.module.css";
 
 // One event: its day in a tile, its name, and when and where.

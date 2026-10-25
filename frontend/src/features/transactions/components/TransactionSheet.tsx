@@ -52,12 +52,12 @@ function RecordTransaction({ today, onClose }: Omit<Props, "open">) {
 
   return (
     <FormSheet
-      title="Record transaction"
+      title="New transaction"
       subtitle="Money in or money out, apart from tithes."
       onClose={onClose}
       formId="transaction-form"
       onSubmit={form.handleSubmit((v) => save(v, false))}
-      submitLabel="Record transaction"
+      submitLabel="Save transaction"
       pending={create.isPending}
       failures={Object.keys(form.formState.errors).length}
       note={recorded.note || undefined}

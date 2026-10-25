@@ -1,23 +1,28 @@
 .body {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding: 24px;
+  display: grid;
+  gap: 20px;
+  padding-top: 4px;
+}
+.head {
+  display: grid;
+  gap: 4px;
+}
+.what {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-3);
+  overflow-wrap: anywhere;
 }
 .amount {
   margin: 0;
-  font-size: 32px;
+  font-size: 40px;
   font-weight: 600;
-  letter-spacing: -0.02em;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
 }
-.in {
-  color: var(--pos);
-}
-.actions {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-}
-.delete {
-  color: var(--neg);
+.kind {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-3);
 }
