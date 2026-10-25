@@ -1,0 +1,311 @@
+.card {
+  overflow: hidden;
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+
+/* One grid for the heading and every row, so the columns always line up. The widths come from the list. */
+.row {
+  display: grid;
+  grid-template-columns: var(--cols);
+  align-items: center;
+  gap: var(--s-16);
+  padding: 0 var(--s-24);
+}
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.row {
+  position: relative;
+  min-height: calc(66px * var(--density, 1));
+  padding-block: var(--s-12);
+  border-top: 1px solid var(--line);
+  cursor: pointer;
+  transition:
+    background-color var(--t-fast) var(--ease-soft),
+    border-color var(--t-fast) var(--ease-soft);
+}
+.row:first-child {
+  border-top: 0;
+}
+/* A wide screen: the row sits inset so its hover fill can be rounded, and the dividers beside it fade out. */
+@media (min-width: 901px) {
+  .row {
+    margin-inline: 8px;
+    padding-inline: var(--s-16);
+    border-top: 0;
+    border-radius: var(--radius);
+  }
+  /* The divider is a straight line inside the row, so a rounded row does not curl it at the ends. */
+  .row:not(:first-child)::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 14px;
+    left: 14px;
+    height: 1px;
+    background: var(--line);
+    transition: opacity var(--t-fast) var(--ease-soft);
+  }
+  .row:has(+ .row:hover)::after,
+  .row:hover + .row::after,
+  .row:hover::after,
+  .row[data-selected="true"]::after {
+    opacity: 0;
+  }
+  .row[data-selected="true"] {
+    background: var(--hover-row);
+    box-shadow: inset 2px 0 0 var(--accent);
+  }
+}
+.row:active {
+  background: var(--hover-tab);
+}
+
+/* Above the row's link, so the ⋯ button still opens the menu instead of the person. */
+.actions {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: flex-end;
+}
+.who {
+  display: flex;
+  align-items: center;
+  gap: var(--s-12);
+  min-width: 0;
+}
+.names {
+  min-width: 0;
+}
+.name {
+  font-size: var(--type-callout);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* The name is the real link (keyboard, screen readers, open in a new tab). Its ::after stretches over the
+   whole row, so clicking anywhere on the row opens the person. */
+.link {
+  padding: 0;
+  background: none;
+  border: 0;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+.link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+.link:focus-visible {
+  outline: none;
+}
+.link:focus-visible::after {
+  outline: 2px solid var(--text);
+  outline-offset: -2px;
+  border-radius: inherit;
+}
+
+.detail {
+  overflow: hidden;
+  font-size: var(--type-footnote);
+  color: var(--text-3);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.end {
+  text-align: right;
+}
+.cell {
+  min-width: 0;
+  overflow: hidden;
+  font-size: var(--type-body);
+  color: var(--text-3);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* A wide screen with the sidebar open is narrower than it looks: drop the less important columns. */
+@media (min-width: 901px) and (max-width: 1180px) {
+  .row {
+    grid-template-columns: var(--cols-mid);
+  }
+  .low {
+    display: none;
+  }
+}
+
+/* Phone and tablet: one card per person. Name on its own line, the chip under it, then label and value pairs. */
+@media (max-width: 900px) {
+  .card {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+    overflow: visible;
+  }
+  .list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+    gap: var(--s-12);
+  }
+  .row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--s-12) var(--s-16);
+    padding: var(--s-16) var(--s-16);
+    background: var(--card-bg);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+  }
+  .row:first-child {
+    border-top: 1px solid var(--line);
+  }
+  .row:hover {
+    background: var(--card-bg);
+  }
+  .row:global(.liquid-row)::before {
+    display: none;
+  }
+  .who {
+    grid-column: 1 / -1;
+    padding-right: var(--s-40);
+  }
+  .actions {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+  } /* stays above the link: z-index 1 */
+  .cell {
+    order: 2;
+    white-space: normal;
+  }
+  .end {
+    text-align: left;
+  }
+  .chip {
+    grid-column: 1 / -1;
+    order: 1;
+    overflow: visible;
+  } /* after .cell, so it wins */
+  .cell:not(.chip)::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: 2px;
+    font-size: var(--type-caption);
+    color: var(--text-3);
+  }
+}
+
+.skeletonRow {
+  display: flex;
+  align-items: center;
+  gap: var(--s-12);
+  min-height: calc(64px * var(--density, 1));
+  padding: var(--s-12) var(--s-20);
+  border-top: 1px solid var(--line);
+}
+.skeletonRow:first-child {
+  border-top: 0;
+}
+.skeletonAvatar {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+.skeletonLines {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 7px;
+}
+.skeletonTail {
+  width: 72px;
+  height: 12px;
+}
+
+/* A compact list stays one short line per person on a phone, in one card like a wide screen's. */
+@media (max-width: 900px) {
+  .compact {
+    overflow: hidden;
+    background: var(--card-bg);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+  }
+  .compact .list {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+  .compact .row {
+    grid-template-columns: minmax(0, 1fr);
+    grid-auto-flow: column;
+    grid-auto-columns: auto;
+    align-items: center;
+    gap: 0 var(--s-12);
+    min-height: calc(66px * var(--density, 1));
+    padding: 0 var(--s-16);
+    background: transparent;
+    border: 0;
+    /* The divider is inset to the content, as on a wide screen, not run to the card's edges. */
+    background: linear-gradient(var(--line), var(--line)) center top /
+      calc(100% - 2 * var(--s-16)) 1px no-repeat;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .compact .row:first-child {
+    background: none;
+  }
+  .compact .who {
+    grid-column: auto;
+    padding-right: 0;
+  }
+  .compact .actions {
+    position: relative;
+    top: auto;
+    right: auto;
+  }
+  .compact .cell:not(.chip):not(.keep) {
+    display: none;
+  }
+  .compact .chip {
+    grid-column: auto;
+    order: 0;
+  }
+}
+
+.compact .keep::before {
+  display: none;
+}
+
+/* Inside a ListCard: the card around it already draws the edge. */
+.flat {
+  overflow: visible;
+  background: none;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* A card answers the pointer: its border and shadow strengthen (feel spec, Cards). */
+.card {
+  transition:
+    border-color var(--t-base) var(--ease-soft),
+    box-shadow var(--t-base) var(--ease-soft),
+    transform var(--t-base) var(--ease-out);
+}
+@media (hover: hover) {
+  .card:hover {
+    border-color: var(--line-hover);
+    box-shadow: var(--shadow-hover);
+  }
+}

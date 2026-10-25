@@ -4,15 +4,15 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { isApiError } from "@/lib/api";
 import { Button, Field } from "@/ui";
-import { useSendVerification } from "../hooks";
-import { emailOnlySchema, type EmailOnlyValues } from "../schema";
-import { StatusScreen } from "./StatusScreen";
+import { useSendVerification } from "../hooks/mutations";
+import { emailOnlySchema, type EmailOnlyValues } from "../forms/schema";
+import { AuthScreen } from "./AuthScreen";
 import styles from "./LinkExpired.module.css";
 
-type Props = { title: string; text: string; children?: ReactNode };
+type Props = { title: string; text: string; links?: ReactNode };
 
 // "This link has expired. Enter your email and we will send a new one."
-export function LinkExpired({ title, text, children }: Props) {
+export function LinkExpired({ title, text, links }: Props) {
   const navigate = useNavigate();
   const send = useSendVerification();
   const [problem, setProblem] = useState("");
@@ -35,8 +35,12 @@ export function LinkExpired({ title, text, children }: Props) {
   }
 
   return (
-    <StatusScreen icon="clock" title={title} text={text}>
-      <form onSubmit={handleSubmit(onSubmit)} noValidate>
+    <AuthScreen title={title} text={text} links={links}>
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        noValidate
+        className={styles.form}
+      >
         <Field
           label="Email address"
           type="email"
@@ -48,6 +52,7 @@ export function LinkExpired({ title, text, children }: Props) {
         <Button
           type="submit"
           size="lg"
+          pill
           block
           loading={send.isPending}
           className={styles.submit}
@@ -55,7 +60,6 @@ export function LinkExpired({ title, text, children }: Props) {
           Send a new link
         </Button>
       </form>
-      {children}
-    </StatusScreen>
+    </AuthScreen>
   );
 }

@@ -1,0 +1,24 @@
+/* Title left, count right, baseline-aligned, no divider under it (feel spec, List cards). */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-12);
+  /* The same 32px title line as a DashCard's head, so two cards side by side have their titles on one line. */
+  min-height: calc(32px + var(--s-24) + var(--s-8));
+  padding: var(--s-24) var(--s-24) var(--s-8);
+}
+.title {
+  min-width: 0;
+  overflow: hidden;
+  font-size: var(--type-headline);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.summary {
+  flex: none;
+  font-size: var(--type-footnote);
+  color: var(--text-3);
+}

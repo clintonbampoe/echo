@@ -1,0 +1,46 @@
+.strip {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr auto;
+  align-items: center;
+  gap: 48px;
+  padding: 40px 44px;
+  border: 1px solid var(--card-line);
+  border-radius: 28px;
+  background: var(--card);
+  backdrop-filter: blur(24px);
+}
+.label {
+  margin: 0 0 8px;
+  font-size: 13.5px;
+  color: var(--text-3);
+}
+.title {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.035em;
+}
+.text {
+  margin: 0;
+  font-size: 15.5px;
+  line-height: 1.6;
+  color: var(--text-2);
+}
+.link {
+  font-size: 14.5px;
+  font-weight: 500;
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-color: var(--text-3);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+}
+
+@media (max-width: 999px) {
+  .strip {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 32px 28px;
+  }
+}

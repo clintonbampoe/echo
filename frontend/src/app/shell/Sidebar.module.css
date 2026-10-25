@@ -1,0 +1,120 @@
+.side {
+  flex: none;
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-24);
+  width: 244px;
+  height: 100vh;
+  padding: var(--s-20) var(--s-12) var(--s-16);
+  overflow-y: auto;
+  background: var(--side);
+  border-right: 1px solid var(--line-2);
+}
+
+.foot {
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+  margin-top: auto;
+  padding-top: var(--s-12);
+  border-top: 1px solid var(--line-2);
+}
+.me {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--s-12);
+  padding: var(--s-6) var(--s-8);
+  border-radius: var(--radius);
+  color: inherit;
+  text-decoration: none;
+  transition:
+    background-color var(--t-fast) var(--ease-soft),
+    transform var(--t-spring) var(--ease-spring);
+}
+@media (hover: hover) {
+  .me:hover {
+    background: var(--hover-tab);
+  }
+}
+.me:active,
+.gear:active {
+  transform: scale(var(--press-nav));
+}
+.text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--type-footnote);
+  font-weight: 500;
+}
+.church {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--type-caption);
+  color: var(--text-3);
+}
+.gear {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text-2);
+  transition:
+    background-color var(--t-fast) var(--ease-soft),
+    color var(--t-fast) var(--ease-soft),
+    transform var(--t-spring) var(--ease-spring);
+}
+.gear svg {
+  transition: rotate var(--t-enter) var(--ease-out);
+}
+@media (hover: hover) {
+  .gear:hover {
+    background: var(--hover-tab);
+    color: var(--text);
+  }
+  .gear:hover svg {
+    rotate: 45deg;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .me:active,
+  .gear:active {
+    transform: none;
+  }
+  .gear:hover svg {
+    rotate: none;
+  }
+}
+.me:focus-visible,
+.gear:focus-visible {
+  outline: var(--focus);
+  outline-offset: 2px;
+}
+
+@media (max-width: 900px) {
+  .side {
+    display: none;
+  }
+}
+
+.me[aria-current="page"],
+.gear[aria-current="page"] {
+  background: var(--surface);
+  box-shadow:
+    0 1px 2px rgb(10 10 11 / 8%),
+    0 0 0 1px var(--line-2);
+}

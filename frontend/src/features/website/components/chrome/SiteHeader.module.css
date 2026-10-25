@@ -1,0 +1,125 @@
+.header {
+  position: relative;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 64px;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  text-decoration: none;
+}
+.name {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.nav {
+  display: flex;
+  gap: 2px;
+  padding: 4px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--surface) 60%, transparent);
+  backdrop-filter: blur(14px);
+}
+.link {
+  padding: 8px 16px;
+  border-radius: var(--radius-pill);
+  font-size: 14.5px;
+  font-weight: 500;
+  color: var(--text-2);
+  text-decoration: none;
+  transition:
+    background-color var(--fast) ease,
+    color var(--fast) ease;
+}
+.link:hover,
+.active {
+  color: var(--text);
+  background: var(--hover);
+}
+.link:focus-visible {
+  outline: var(--focus);
+  outline-offset: 2px;
+}
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.signin {
+  padding: 0 4px;
+  font-size: 14.5px;
+  font-weight: 500;
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-color: var(--text-3);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+}
+.cta {
+  box-shadow: var(--glow);
+}
+.menu {
+  display: none;
+  height: 38px;
+  padding: 0 16px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--surface) 60%, transparent);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+@media (max-width: 999px) {
+  .header {
+    padding: 18px 40px;
+  }
+}
+@media (max-width: 819px) {
+  .menu {
+    display: inline-flex;
+    align-items: center;
+  }
+  .signin {
+    display: none;
+  }
+  .nav {
+    position: absolute;
+    top: 72px;
+    right: 40px;
+    left: 40px;
+    display: none;
+    flex-direction: column;
+    gap: 2px;
+    padding: 8px;
+    border-radius: 24px;
+    background: var(--surface);
+  }
+  .open {
+    display: flex;
+  }
+  .link {
+    padding: 14px 16px;
+    font-size: 16px;
+  }
+}
+@media (max-width: 599px) {
+  .header {
+    padding: 14px 20px;
+  }
+  .nav {
+    right: 20px;
+    left: 20px;
+  }
+  .cta {
+    display: none;
+  }
+}

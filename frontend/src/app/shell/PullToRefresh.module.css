@@ -1,0 +1,51 @@
+/* A round spinner that slides down from under the top edge as the page is pulled. It never takes the pointer. */
+.pull {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, calc(var(--pull, 0px) - 44px));
+}
+.pull[data-shown="true"] {
+  opacity: 1;
+}
+/* Letting go (or the data arriving) glides it back up. While the finger is on the screen it follows exactly. */
+.pull:not([data-dragging]) {
+  transition:
+    transform var(--t-spring) var(--ease-spring),
+    opacity var(--t-base) var(--ease-soft);
+}
+.dot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  color: var(--text-3);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  box-shadow: var(--shadow-btn);
+  transition: color var(--t-fast) var(--ease-soft);
+}
+.pull[data-ready="true"] .dot,
+.pull[data-busy="true"] .dot {
+  color: var(--text);
+}
+
+/* A mouse or a trackpad never pulls, so nothing is drawn there. */
+@media (hover: hover) and (pointer: fine) {
+  .pull {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pull {
+    transition: none;
+  }
+}
+html[data-reduce-motion="true"] .pull {
+  transition: none;
+}

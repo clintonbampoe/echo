@@ -1,0 +1,120 @@
+.root {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+}
+.scrim {
+  position: absolute;
+  inset: 0;
+}
+
+/* A glass popover anchored to its button, on every screen. The glass comes from .glass-pop. */
+.menu {
+  position: fixed;
+  top: var(--top, 0);
+  right: max(8px, var(--right, 0px));
+  min-width: 200px;
+  max-width: calc(100% - 16px);
+  padding: var(--s-6);
+  border-radius: var(--radius-pop);
+}
+.menu[data-closing="true"] {
+  animation: openOut var(--t-exit) ease-in both;
+}
+.title {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.items {
+  display: contents;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 44px;
+  padding: 0 var(--s-16);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-option);
+  font-size: var(--type-body);
+  text-align: left;
+  transition:
+    background-color var(--t-fast) var(--ease-soft),
+    box-shadow var(--t-base),
+    transform var(--t-enter) var(--ease-settle);
+}
+@media (hover: hover) {
+  .item:hover,
+  .item:focus-visible {
+    background: rgb(255 255 255 / 96%);
+    box-shadow:
+      inset 0 1px 0 #fff,
+      0 0 0 1px rgb(128 128 140 / 16%),
+      0 10px 20px -12px rgb(10 10 11 / 32%);
+    outline: none;
+    transform: scale(1.015);
+  }
+}
+.item:focus-visible {
+  outline: none;
+  background: rgb(255 255 255 / 96%);
+}
+.item:active {
+  scale: 0.98;
+}
+.danger {
+  color: var(--neg);
+}
+
+/* A choice among several: a heading, then a radio mark in front of each. */
+.group {
+  margin: 0;
+  padding: var(--s-6) var(--s-12) var(--s-4);
+  font-size: var(--type-caption);
+  text-align: right;
+  color: var(--text-3);
+}
+.radio {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-right: 10px;
+  border: 1.5px solid var(--line-2);
+  border-radius: 50%;
+  color: var(--on-accent);
+}
+.on {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+/* Destructive options come last, after a gap. */
+.rule {
+  height: 0;
+  margin: 6px -6px;
+  border: 0;
+  border-top: 1px solid rgb(128 128 140 / 18%);
+}
+
+@keyframes openOut {
+  to {
+    opacity: 0;
+    transform: scale(0.96) translateY(-2px);
+  }
+}
+
+/* On touch the options are 52px rows, easy to hit with a thumb. */
+@media (pointer: coarse), (max-width: 560px) {
+  .item {
+    height: 52px;
+    font-size: var(--type-callout);
+  }
+}

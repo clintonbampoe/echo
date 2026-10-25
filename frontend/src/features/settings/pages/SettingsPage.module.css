@@ -1,0 +1,66 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-24);
+}
+.card {
+  overflow: hidden;
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+.section {
+  padding: var(--s-20) var(--s-24) var(--s-4);
+}
+/* A card's name, in the same style as every other card's title. */
+.heading {
+  font-size: var(--type-headline);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+.title {
+  font-size: var(--type-callout);
+  font-weight: 600;
+}
+.sub {
+  font-size: var(--type-footnote);
+  color: var(--text-3);
+}
+/* Every setting is one row: its words on the left, its control on the right. Nothing in the row moves on hover. */
+.setting {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-24);
+  min-height: calc(72px * var(--density, 1));
+  padding: var(--s-12) var(--s-24);
+}
+.setting + .setting,
+.section + .setting {
+  border-top: 1px solid var(--line);
+}
+.words {
+  min-width: 0;
+}
+/* Only a row that flips a switch answers the pointer: its tile is the glass row (.liquid-row). */
+.flip {
+  --tile-l: 10px;
+  --tile-e: 10px;
+  cursor: pointer;
+}
+.setting .title {
+  font-size: var(--type-callout);
+  font-weight: 500;
+}
+
+@media (max-width: 700px) {
+  .page {
+    gap: var(--s-16);
+  }
+  .setting:not(.flip) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--s-12);
+  }
+}

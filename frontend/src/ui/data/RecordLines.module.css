@@ -1,0 +1,147 @@
+.card {
+  overflow: hidden;
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--s-16);
+  min-height: calc(66px * var(--density, 1));
+  margin-inline: 8px;
+  padding: var(--s-8) var(--s-16);
+  border-radius: var(--radius);
+  transition:
+    background-color var(--t-fast) var(--ease-soft),
+    border-color var(--t-fast) var(--ease-soft);
+}
+/* The divider is a straight line inside the row, so a rounded row does not curl it at the ends. */
+.row:not(:first-child)::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 14px;
+  left: 14px;
+  height: 1px;
+  background: var(--line);
+  transition: opacity var(--t-fast) var(--ease-soft);
+}
+/* A hovered row gets a rounded soft fill and the dividers on both sides hide. */
+@media (hover: hover) {
+  .row:has(+ .row:hover)::after,
+  .row:hover + .row::after,
+  .row:hover::after {
+    opacity: 0;
+  }
+}
+.row[data-selected="true"]::after {
+  opacity: 0;
+}
+.row[data-selected="true"] {
+  background: var(--hover-row);
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+.row:active {
+  background: var(--hover-tab);
+}
+.text {
+  flex: 1;
+  min-width: 0;
+}
+.title {
+  overflow: hidden;
+  font-size: var(--type-callout);
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sub {
+  overflow: hidden;
+  margin-top: 2px;
+  font-size: var(--type-footnote);
+  color: var(--text-3);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.link {
+  padding: 0;
+  background: none;
+  border: 0;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+.link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+.link:focus-visible {
+  outline: none;
+}
+.link:focus-visible::after {
+  outline: 2px solid var(--text);
+  outline-offset: -2px;
+  border-radius: inherit;
+}
+.end {
+  position: relative;
+  z-index: 1;
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: var(--s-12);
+  font-size: var(--type-body);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-3);
+}
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  padding: 0 var(--s-24);
+  border-top: 1px solid var(--line);
+  font-size: var(--type-footnote);
+  color: var(--text-3);
+}
+.more {
+  padding: var(--s-8) 0 var(--s-8) var(--s-12);
+  background: none;
+  border: 0;
+  font-size: var(--type-body);
+  font-weight: 500;
+  color: var(--text);
+}
+.more:disabled {
+  opacity: 0.5;
+}
+.more:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+  border-radius: var(--radius-xs);
+}
+
+/* A card answers the pointer: its border and shadow strengthen (feel spec, Cards). */
+.card {
+  transition:
+    border-color var(--t-base) var(--ease-soft),
+    box-shadow var(--t-base) var(--ease-soft),
+    transform var(--t-base) var(--ease-out);
+}
+@media (hover: hover) {
+  .card:hover {
+    border-color: var(--line-hover);
+    box-shadow: var(--shadow-hover);
+  }
+}

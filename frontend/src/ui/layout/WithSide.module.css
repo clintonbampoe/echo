@@ -1,0 +1,22 @@
+.split {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  align-items: start;
+  gap: var(--s-24);
+}
+.main {
+  grid-column: span 8;
+  min-width: 0;
+}
+.side {
+  grid-column: span 4;
+  min-width: 0;
+}
+@media (max-width: 1100px) {
+  .main {
+    grid-column: 1 / -1;
+  }
+  .side {
+    display: none;
+  }
+}

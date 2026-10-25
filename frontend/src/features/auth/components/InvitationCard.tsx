@@ -1,8 +1,8 @@
 import { regionLabel } from "@/lib/regions";
-import type { InvitationInfo } from "../api";
+import type { InvitationInfo } from "../api/auth";
 import styles from "./InvitationCard.module.css";
 
-// "You have been invited to join: Grace Chapel, Osu, Greater Accra, Member".
+// "Grace Chapel, Osu, Greater Accra" with the church's initials, and who invited you.
 export function InvitationCard({ invitation }: { invitation: InvitationInfo }) {
   const initials = invitation.congregationName
     .split(/\s+/)
@@ -19,8 +19,10 @@ export function InvitationCard({ invitation }: { invitation: InvitationInfo }) {
         <p className={styles.place}>
           {invitation.city}, {regionLabel(invitation.region)}
         </p>
+        {invitation.invitedBy && (
+          <p className={styles.place}>Invited by {invitation.invitedBy}</p>
+        )}
       </div>
-      <span className={styles.role}>{invitation.allowedRole}</span>
     </div>
   );
 }

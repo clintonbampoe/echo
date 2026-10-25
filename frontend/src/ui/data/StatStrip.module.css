@@ -1,0 +1,140 @@
+/* Desktop: one card cut into columns. Phone: separate tiles, two to a row, so the first two figures show. */
+.strip {
+  display: grid;
+  grid-template-columns: repeat(var(--count, 4), minmax(0, 1fr));
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.item {
+  min-width: 0;
+  min-height: 112px;
+  padding: var(--s-20) var(--s-24);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.item + .item {
+  border-left: 1px solid var(--line);
+}
+.label {
+  font-size: var(--type-footnote);
+  font-weight: 500;
+  color: var(--text-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.bottom {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--s-8);
+}
+.value {
+  min-width: 0;
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--s-6);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--type-large);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Less, not smaller: a tablet keeps the first three figures and a phone the first two. */
+@media (max-width: 900px) {
+  .strip {
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(0, 1fr);
+    gap: var(--s-12);
+    background: none;
+    border: 0;
+    box-shadow: none;
+    overflow: visible;
+  }
+  .item {
+    min-height: 96px;
+    padding: var(--s-16) var(--s-16);
+    background: var(--card-bg);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    box-shadow: var(--shadow);
+  }
+  .item + .item {
+    border-left: 1px solid var(--line);
+  }
+  .item:nth-child(n + 4) {
+    display: none;
+  }
+  .label {
+    font-size: var(--type-caption);
+  }
+  .value {
+    font-size: var(--type-title1);
+  }
+}
+@media (max-width: 600px) {
+  .item:nth-child(n + 3) {
+    display: none;
+  }
+}
+
+/* Stands where the value will be, the same height, so the strip does not jump when the numbers arrive. */
+.pending {
+  width: 60%;
+  height: 28px;
+}
+
+.unit {
+  font-size: var(--type-body);
+  font-weight: 400;
+  letter-spacing: 0;
+  opacity: 0.62;
+}
+.change {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: var(--s-4) var(--s-8) var(--s-4) 5px;
+  border-radius: var(--radius-pill);
+  background: var(--pos-bg);
+  color: var(--pos);
+  font-size: var(--type-caption);
+  font-weight: 600;
+  letter-spacing: 0;
+}
+.down {
+  background: var(--neg-bg);
+  color: var(--neg);
+}
+
+.note {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+/* On a phone the unit moves up into the label, as on the boards. */
+.labelUnit {
+  display: none;
+}
+@media (max-width: 900px) {
+  .labelUnit {
+    display: inline;
+  }
+  .unit {
+    display: none;
+  }
+}

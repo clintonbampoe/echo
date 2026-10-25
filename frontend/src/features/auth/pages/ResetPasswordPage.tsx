@@ -4,24 +4,22 @@ import { useForm } from "react-hook-form";
 import { useSearchParams } from "react-router-dom";
 import { isApiError } from "@/lib/api";
 import { Alert, Button, LinkButton, PasswordField } from "@/ui";
-import { AuthHeading } from "../components/AuthHeading";
 import { BackLink } from "../components/AuthLinks";
-import { StatusScreen } from "../components/StatusScreen";
-import { useResetPassword } from "../hooks";
-import { resetSchema, type ResetValues } from "../schema";
+import { AuthScreen } from "../components/AuthScreen";
+import { useResetPassword } from "../hooks/mutations";
+import { resetSchema, type ResetValues } from "../forms/schema";
 import styles from "./form.module.css";
 
 const expired = (
-  <StatusScreen
-    icon="clock"
+  <AuthScreen
     title="This link has expired"
     text="Reset links work once and expire after 1 hour. Request a new one to continue."
+    links={<BackLink />}
   >
-    <LinkButton to="/forgot" size="lg" block>
+    <LinkButton to="/forgot" size="lg" pill block>
       Request a new link
     </LinkButton>
-    <BackLink />
-  </StatusScreen>
+  </AuthScreen>
 );
 
 // Where the link in the reset email lands: /reset-password?token=...
@@ -53,32 +51,29 @@ export function ResetPasswordPage() {
   if (token === "" || linkDead) return expired;
   if (reset.isSuccess) {
     return (
-      <StatusScreen
-        icon="check"
+      <AuthScreen
         title="Password updated"
         text="You can now sign in with your new password. Any other devices have been signed out."
       >
-        <LinkButton to="/signin" size="lg" block>
+        <LinkButton to="/signin" size="lg" pill block>
           Continue to sign in
         </LinkButton>
-      </StatusScreen>
+      </AuthScreen>
     );
   }
 
   return (
-    <>
-      <AuthHeading icon="key" title="Choose a new password">
-        Pick something you have not used on Echo before.
-      </AuthHeading>
+    <AuthScreen
+      title="Choose a new password"
+      text="Pick something you will remember. At least 8 characters."
+    >
       {problem && (
-        <div className={styles.alert}>
-          <Alert title="We could not reset your password">{problem}</Alert>
-        </div>
+        <Alert title="We could not reset your password">{problem}</Alert>
       )}
       <form
         onSubmit={handleSubmit(onSubmit)}
         noValidate
-        className={`${styles.form} ${styles.tight}`}
+        className={styles.form}
       >
         <PasswordField
           label="New password"
@@ -96,13 +91,14 @@ export function ResetPasswordPage() {
         <Button
           type="submit"
           size="lg"
+          pill
           block
           loading={reset.isPending}
           className={styles.submit}
         >
-          Reset password
+          Save password
         </Button>
       </form>
-    </>
+    </AuthScreen>
   );
 }

@@ -1,7 +1,25 @@
-// What other features may use from organizations. A profile shows where a person belongs; the page for
-// an organization (not built yet) will live here too.
+// What other features and pages may use from organizations: where a person belongs, the choices for a form, and
+// the pieces the organization page (in pages/) is built from.
 export { organizationRoutes } from "./routes";
-export { PersonOrganizations } from "./components/PersonOrganizations";
-export { usePersonMemberships } from "./hooks";
-export { useOrganizationsStat } from "./useStat";
-export { useOrganizationChoices } from "./useChoices";
+export { PersonOrganizations } from "./components/profile/PersonOrganizations";
+export { AddMemberSheet } from "./components/members/AddMemberSheet";
+export { OrganizationMembers } from "./components/members/OrganizationMembers";
+export { DeleteOrganizationDialog } from "./components/dialogs/DeleteOrganizationDialog";
+export { EditOrganizationSheet } from "./components/form/EditOrganizationSheet";
+export { OrganizationDetails } from "./components/profile/OrganizationDetails";
+export { OrganizationHeader } from "./components/profile/OrganizationHeader";
+export {
+  useOrganization,
+  useOrganizationMembers,
+  usePersonMemberships,
+} from "./hooks";
+export { useOrganizationsStat } from "./hooks/figures";
+export { useOrganizationChoices } from "./hooks/choices";
+export {
+  createdStat,
+  ledByStat,
+  membersStat,
+  upcomingStat,
+} from "./model/figures";
+export type { Organization } from "./api/organizations";
+export type { OrganizationMember } from "./api/memberships";

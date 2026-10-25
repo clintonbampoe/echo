@@ -1,0 +1,28 @@
+.who {
+  display: flex;
+  align-items: center;
+  gap: var(--s-16);
+  padding-bottom: var(--s-20);
+  border-bottom: 1px solid var(--line);
+}
+.names {
+  display: grid;
+  gap: var(--s-6);
+  justify-items: start;
+  flex: 1;
+  min-width: 0;
+}
+.name {
+  margin: 0;
+  font-size: var(--type-title3);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+}
+
+/* Phone and tablet: the button drops onto its own line rather than squeezing the name. */
+@media (max-width: 900px) {
+  .who {
+    flex-wrap: wrap;
+  }
+}

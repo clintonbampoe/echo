@@ -57,52 +57,96 @@ function renderShell() {
 }
 
 describe("app shell", () => {
-  it("shows the page, the church and the signed-in person", async () => {
+  it("shows the page and, in the sidebar, who is signed in and where", async () => {
     renderShell();
     expect(screen.getByText("Dashboard page")).toBeInTheDocument();
-    expect(await screen.findByText("Grace Chapel")).toBeInTheDocument();
-    expect(screen.getByText("Administrator")).toBeInTheDocument();
-    expect(screen.getByText("Ama Mensah")).toBeInTheDocument();
-    expect(screen.getByText("ama@example.com")).toBeInTheDocument();
+    const sidebar = screen.getByRole("complementary", { name: "Sidebar" });
+    expect(await within(sidebar).findByText("Ama Mensah")).toBeInTheDocument();
+    expect(within(sidebar).getByText("Grace Chapel")).toBeInTheDocument();
+    expect(
+      within(sidebar).getByRole("link", { name: /Ama Mensah/ }),
+    ).toHaveAttribute("href", "/me");
+    expect(
+      within(sidebar).getByRole("link", { name: "Settings" }),
+    ).toHaveAttribute("href", "/settings");
   });
 
-  it("links pages that exist and marks the rest as coming soon", () => {
+  it("links every page, in the order of the design, and marks the current one", () => {
     renderShell();
     const sidebar = screen.getByRole("complementary", { name: "Sidebar" });
-    const current = within(sidebar).getByRole("link", { name: "Dashboard" });
-    expect(current).toHaveAttribute("aria-current", "page");
-    expect(
-      within(sidebar).getByRole("link", { name: "Members" }),
-    ).toHaveAttribute("href", "/members");
-    expect(
-      within(sidebar).getByRole("link", { name: "Visitors" }),
-    ).toHaveAttribute("href", "/visitors");
-    expect(
-      within(sidebar).getByRole("link", { name: "Organizations" }),
-    ).toHaveAttribute("href", "/organizations");
-    expect(
-      within(sidebar).getByRole("link", { name: "Attendance" }),
-    ).toHaveAttribute("href", "/attendance");
-    expect(
-      within(sidebar).getByText("Reports").closest("[aria-disabled]"),
-    ).toHaveAttribute("aria-disabled", "true");
+    const main = within(
+      within(sidebar).getByRole("navigation", { name: "Main" }),
+    );
+    expect(main.getAllByRole("link").map((l) => l.textContent)).toEqual([
+      "Dashboard",
+      "Members",
+      "Visitors",
+      "Attendance",
+      "Events",
+      "Finance",
+      "Tithes",
+      "Projects",
+      "Assets",
+      "Organizations",
+    ]);
+    expect(main.getByRole("link", { name: "Dashboard" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+    expect(main.getByRole("link", { name: "Members" })).toHaveAttribute(
+      "href",
+      "/members",
+    );
   });
 
-  it("opens the same menu in a drawer on a phone, and Escape closes it", async () => {
+  it("shows Invitations under Admin to an administrator only", async () => {
+    renderShell();
+    const sidebar = screen.getByRole("complementary", { name: "Sidebar" });
+    expect(
+      await within(sidebar).findByRole("link", { name: "Invitations" }),
+    ).toHaveAttribute("href", "/invitations");
+    expect(within(sidebar).getByText("Admin")).toBeInTheDocument();
+  });
+
+  it("hides the Admin group from anyone else", async () => {
+    me.role = "Clerk";
+    renderShell();
+    const sidebar = screen.getByRole("complementary", { name: "Sidebar" });
+    await within(sidebar).findByText("Ama Mensah");
+    expect(
+      within(sidebar).queryByRole("link", { name: "Invitations" }),
+    ).toBeNull();
+    me.role = "Admin";
+  });
+
+  it("opens the menu page on a phone, with the account, the pages, Settings and Sign out", async () => {
     const user = userEvent.setup();
     renderShell();
     await user.click(screen.getByRole("button", { name: "Open menu" }));
-    const drawer = screen.getByRole("dialog", { name: "Menu" });
+    const menu = screen.getByRole("dialog", { name: "Menu" });
     expect(
-      within(drawer).getByRole("link", { name: "Dashboard" }),
+      await within(menu).findByText("Administrator · Grace Chapel"),
     ).toBeInTheDocument();
-    await user.keyboard("{Escape}");
-    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(
+      within(menu).getByRole("link", { name: "Dashboard" }),
+    ).toBeInTheDocument();
+    expect(
+      within(menu).getByRole("link", { name: "Settings" }),
+    ).toHaveAttribute("href", "/settings");
+    expect(
+      within(menu).getByRole("button", { name: "Sign out" }),
+    ).toBeInTheDocument();
   });
 
-  it("closes the drawer after following a link", async () => {
+  it("closes the menu with Escape, with the close button, and after following a link", async () => {
     const user = userEvent.setup();
     renderShell();
+    await user.click(screen.getByRole("button", { name: "Open menu" }));
+    await user.keyboard("{Escape}");
+    expect(screen.queryByRole("dialog")).toBeNull();
+    await user.click(screen.getByRole("button", { name: "Open menu" }));
+    await user.click(screen.getByRole("button", { name: "Close menu" }));
+    expect(screen.queryByRole("dialog")).toBeNull();
     await user.click(screen.getByRole("button", { name: "Open menu" }));
     await user.click(
       within(screen.getByRole("dialog")).getByRole("link", {
@@ -112,26 +156,19 @@ describe("app shell", () => {
     expect(screen.queryByRole("dialog")).toBeNull();
   });
 
-  it("has the logo go to the dashboard and the account menu go to the homepage", async () => {
-    const user = userEvent.setup();
+  it("has the logo go to the dashboard", () => {
     renderShell();
-    expect(
-      screen.getByRole("link", { name: "Echo dashboard" }),
-    ).toHaveAttribute("href", "/dashboard");
-    await user.click(await screen.findByRole("button", { name: /Ama Mensah/ }));
-    expect(screen.getByRole("menuitem", { name: "Homepage" })).toHaveAttribute(
-      "href",
-      "/",
-    );
+    for (const logo of screen.getAllByRole("link", { name: "Echo dashboard" }))
+      expect(logo).toHaveAttribute("href", "/dashboard");
   });
 
-  it("signs out from the account menu and lands on sign in, without passing through anywhere else", async () => {
+  it("signs out from the menu and lands on sign in, without passing through anywhere else", async () => {
     const user = userEvent.setup();
     const router = renderShell();
     const visited: string[] = [];
     router.subscribe((state) => visited.push(state.location.pathname));
-    await user.click(await screen.findByRole("button", { name: /Ama Mensah/ }));
-    await user.click(screen.getByRole("menuitem", { name: "Sign out" }));
+    await user.click(screen.getByRole("button", { name: "Open menu" }));
+    await user.click(screen.getByRole("button", { name: "Sign out" }));
     expect(await screen.findByText("Sign in page")).toBeInTheDocument();
     await waitFor(() => expect(getTokens()).toBeNull());
     expect(visited.every((path) => path === "/signin")).toBe(true);

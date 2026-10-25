@@ -1,0 +1,185 @@
+.bars {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: var(--s-6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  /* In a card taller than its content the chart takes the spare height (up to 200px) instead of leaving it empty
+     below; past that the chart sits at the bottom of the card. */
+  flex: 1 1 auto;
+  align-self: stretch;
+  max-height: 232px;
+  margin-top: auto;
+}
+.item {
+  display: flex;
+  min-width: 0;
+}
+
+.cell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1;
+  gap: var(--s-8);
+  width: 100%;
+  padding: 0;
+  background: none;
+  border: 0;
+  color: inherit;
+  font: inherit;
+}
+button.cell {
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+}
+button.cell:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+}
+
+/* A month carries one bar, or two side by side sharing its width and the chart's scale. */
+.track {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: var(--s-4);
+  flex: 1;
+  width: 100%;
+  min-height: 96px;
+  max-height: 200px;
+}
+.bar {
+  width: min(100%, 46px);
+  background: var(--line-2);
+  border-radius: 14px 14px 4px 4px;
+  transform-origin: center center;
+  transition:
+    background-color var(--fast) ease,
+    height 600ms var(--grow),
+    transform var(--t-enter) var(--ease-settle),
+    filter var(--t-fast),
+    box-shadow var(--t-base);
+}
+/* The rise on mount must not hold the bar's transform afterwards, or the hover lift could not move it. */
+.bar:global(.grow-y) {
+  transform-origin: center bottom;
+  animation-fill-mode: backwards;
+}
+/* A bar grows from its centre, wider and a little taller, and the rest step back (see the items below). */
+@media (hover: hover) {
+  button.cell:hover .bar,
+  button.cell:focus-visible .bar {
+    transform: scale(1.18, 1.06);
+    filter: brightness(0.86);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 35%),
+      0 10px 16px -10px rgb(10 10 11 / 50%);
+  }
+}
+.bar.on {
+  background: var(--text);
+}
+/* The second bar of a pair is always the quiet one. A pair is two slim bars with rounded tops on a taller track. */
+.bar.second {
+  background: var(--line-2);
+}
+.track.pair {
+  height: 120px;
+}
+.pair .bar {
+  width: 22px;
+  max-width: 42%;
+  border-radius: 8px 8px 0 0;
+}
+
+.label {
+  font-size: var(--type-caption);
+  color: var(--text-3);
+}
+.current {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.tip {
+  position: absolute;
+  bottom: calc(var(--lift, 100%) + 10px);
+  left: 50%;
+  z-index: 2;
+  opacity: 0;
+  transform: translateX(-50%) translateY(4px) scale(0.96);
+  transition:
+    opacity var(--fast) ease,
+    transform var(--t-spring) var(--spring);
+}
+.tip strong {
+  display: block;
+  font-weight: 600;
+}
+.tip:has(.line) {
+  border-radius: var(--radius-field);
+}
+.line {
+  display: block;
+}
+.cell:hover .tip,
+.cell:focus-visible .tip {
+  opacity: 1;
+  transform: translateX(-50%);
+}
+/* The first and last bars sit at the edge of the card: keep their tooltip inside it. */
+.item:first-child .tip {
+  left: 0;
+  transform: translateY(4px) scale(0.96);
+}
+.item:last-child .tip {
+  right: 0;
+  left: auto;
+  transform: translateY(4px) scale(0.96);
+}
+.item:first-child .cell:hover .tip,
+.item:first-child .cell:focus-visible .tip,
+.item:last-child .cell:hover .tip,
+.item:last-child .cell:focus-visible .tip {
+  transform: none;
+}
+
+@media (max-width: 900px) {
+  .bars {
+    gap: var(--s-4);
+  }
+  .track {
+    height: 72px;
+  }
+  .track.pair {
+    height: 88px;
+  }
+  .label {
+    font-size: var(--type-caption);
+  }
+}
+
+/* While one month is under the pointer or in focus, the others step back to 60% so it reads first. */
+.item {
+  transition: opacity var(--t-base) var(--ease-soft);
+}
+@media (hover: hover) {
+  .bars:has(.cell:hover) .item:not(:hover),
+  .bars:has(.cell:focus-visible) .item:not(:focus-within) {
+    opacity: 0.6;
+  }
+}
+button.cell:active .bar {
+  transform: scale(1.08, 0.98);
+}
+@media (prefers-reduced-motion: reduce) {
+  button.cell:active .bar,
+  button.cell:hover .bar {
+    transform: none;
+  }
+}

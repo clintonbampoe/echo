@@ -1,0 +1,132 @@
+.root {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+}
+
+.scrim {
+  position: absolute;
+  inset: 0;
+}
+
+/* A floating panel, inset from the edges, with a round corner and no divider lines. */
+.panel {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  width: min(440px, calc(100% - 24px));
+  border-radius: var(--radius-float);
+  overflow: hidden;
+}
+.panel:focus {
+  outline: none;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--s-16);
+  padding: var(--s-24) var(--s-24) var(--s-8);
+}
+.title {
+  font-size: var(--type-title2);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.subtitle {
+  margin-top: 2px;
+  font-size: var(--type-body);
+  color: var(--text-2);
+}
+
+.close {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: var(--control);
+  margin: -2px -2px 0 0;
+  background: var(--fill);
+  border: 0;
+  border-radius: 50%;
+  color: var(--text-2);
+  transition:
+    background-color var(--t-fast) var(--ease-soft),
+    color var(--t-fast) var(--ease-soft),
+    transform var(--t-spring) var(--ease-spring);
+}
+@media (hover: hover) {
+  .close:hover {
+    background: var(--sel);
+    color: var(--text);
+  }
+}
+.close:active {
+  transform: scale(var(--press-icon));
+}
+
+.body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--s-8) var(--s-24) var(--s-24);
+}
+.footer {
+  padding: var(--s-8) var(--s-24) var(--s-24);
+}
+
+/* A tablet, where the panel is wider and the content keeps a readable width. */
+@media (min-width: 561px) and (max-width: 900px) {
+  .panel {
+    width: min(520px, calc(100% - 24px));
+  }
+}
+
+/* A phone: a floating glass panel, centred, 12px from the sides. No bottom sheet and no grabber: it materialises
+   in place, and drags down to dismiss from its header. */
+@media (max-width: 560px) {
+  .panel {
+    top: 50%;
+    right: 12px;
+    bottom: auto;
+    left: 12px;
+    width: auto;
+    max-height: calc(100% - 96px);
+    transform: translateY(-50%);
+  }
+  .header {
+    padding: var(--s-20) var(--s-20) var(--s-4);
+    touch-action: none;
+  }
+  .body {
+    padding: var(--s-4) var(--s-20) var(--s-20);
+  }
+  .footer {
+    padding: var(--s-4) var(--s-20) var(--s-20);
+  }
+}
+
+/* "Not yet": two quick 4px shakes (the same as a field with an error). */
+.panel[data-shaking="true"] {
+  animation: sheetShake 260ms var(--ease-out);
+}
+@keyframes sheetShake {
+  20%,
+  60% {
+    translate: -4px 0;
+  }
+  40%,
+  80% {
+    translate: 4px 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .panel[data-shaking="true"] {
+    animation: none;
+  }
+}

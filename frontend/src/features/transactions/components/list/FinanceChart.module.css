@@ -1,0 +1,32 @@
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-16);
+}
+.line {
+  margin: 0;
+  font-size: var(--type-footnote);
+  color: var(--text-3);
+}
+.legend {
+  display: flex;
+  gap: var(--s-16);
+  margin: 0;
+  font-size: var(--type-footnote);
+  color: var(--text-2);
+}
+.key {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-6);
+}
+.swatch {
+  width: 9px;
+  height: 9px;
+  border-radius: var(--radius-pill);
+  background: var(--text-3);
+  opacity: 0.55; /* the same tone as an income bar at rest */
+}
+.swatch.dim {
+  opacity: 0.3; /* and an expense bar */
+}

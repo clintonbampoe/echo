@@ -1,0 +1,64 @@
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-8);
+}
+.pill {
+  display: inline-flex;
+  align-items: center;
+  position: relative;
+  height: var(--pill-h);
+  padding: 0 var(--s-16);
+  background: var(--card-bg);
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius-pill);
+  font-size: var(--type-body);
+  font-weight: 500;
+  color: var(--text);
+  text-decoration: none;
+  transition:
+    background-color var(--t-fast) var(--ease-soft),
+    transform var(--t-spring) var(--ease-spring),
+    box-shadow var(--t-base) var(--ease-soft);
+}
+/* The pill looks 40px tall; the part you can press is 44. */
+.pill::after {
+  content: "";
+  position: absolute;
+  inset: -2px 0;
+}
+.pill:active {
+  transform: scale(var(--press));
+}
+@media (prefers-reduced-motion: reduce) {
+  /* The pill looks 40px tall; the part you can press is 44. */
+  .pill::after {
+    content: "";
+    position: absolute;
+    inset: -2px 0;
+  }
+  .pill:active {
+    transform: none;
+  }
+}
+@media (hover: hover) {
+  .pill:hover {
+    background: var(--hover-option);
+    transform: var(--lift-1);
+  }
+  .first:hover {
+    filter: brightness(1.07);
+    box-shadow: var(--shadow-btn);
+  }
+}
+.pill:focus-visible {
+  outline: var(--focus);
+  outline-offset: 2px;
+}
+.first,
+.first:hover {
+  background: var(--text);
+  border-color: var(--text);
+  color: var(--surface);
+}

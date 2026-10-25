@@ -1,0 +1,79 @@
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--s-32);
+}
+.heading {
+  margin: 0 0 12px;
+  font-size: var(--type-footnote);
+  color: var(--text-3);
+}
+.ages {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--s-12);
+  height: 120px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.age {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-end;
+  gap: var(--s-8);
+  height: 100%;
+  min-width: 0;
+  text-align: center;
+}
+.column {
+  display: block;
+  min-height: 6px;
+  background: var(--line-2);
+  border-radius: 6px 6px 0 0;
+  flex: none;
+  max-height: calc(100% - 28px);
+}
+.peak {
+  background: var(--text);
+}
+.band {
+  font-size: var(--type-caption);
+  color: var(--text-3);
+  white-space: nowrap;
+}
+.status {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-12);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.line {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-12);
+  margin-bottom: 6px;
+  font-size: var(--type-body);
+}
+.line > span:first-child {
+  flex: 1;
+}
+.line strong {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.share {
+  min-width: 36px;
+  text-align: right;
+  color: var(--text-3);
+}
+@container (min-width: 720px) {
+  .grid {
+    grid-template-columns: 1fr 1.4fr 1fr;
+    gap: var(--s-48);
+  }
+}

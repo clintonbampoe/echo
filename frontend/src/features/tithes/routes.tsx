@@ -5,7 +5,7 @@ export const titheRoutes: RouteObject[] = [
   {
     path: "tithes",
     lazy: async () => ({
-      Component: (await import("./components/TithesPage")).TithesPage,
+      Component: (await import("./pages/TithesPage")).TithesPage,
     }),
   },
 ];

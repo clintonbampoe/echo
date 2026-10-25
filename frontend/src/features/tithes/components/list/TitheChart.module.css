@@ -1,0 +1,77 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-16);
+  padding: var(--s-24) var(--s-24) var(--s-20);
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-12);
+}
+.title {
+  margin: 0;
+  font-size: var(--type-callout);
+  font-weight: 600;
+}
+/* The chart always shows the last twelve months, so this says so rather than offering a choice. */
+.range {
+  padding: 5px var(--s-12);
+  border: 1px dashed var(--line-2);
+  border-radius: var(--radius-pill);
+  font-size: var(--type-footnote);
+  color: var(--text-2);
+}
+.figure {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+}
+.month {
+  margin: 0;
+  font-size: var(--type-footnote);
+  color: var(--text-3);
+}
+.big {
+  margin: 0;
+  font-size: var(--type-display);
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+}
+.unit {
+  margin-left: 8px;
+  font-size: var(--type-body);
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--text-3);
+}
+.line {
+  margin: 4px 0 0;
+  font-size: var(--type-footnote);
+  color: var(--text-3);
+}
+.line strong {
+  font-weight: 600;
+  color: var(--text);
+}
+/* Less, not smaller: a phone keeps the month, its figure and the bars. The title, the range note and the
+   highest month go. */
+@media (max-width: 560px) {
+  .card {
+    padding: var(--s-20) var(--s-20) var(--s-16);
+  }
+  .head,
+  .line {
+    display: none;
+  }
+  .big {
+    font-size: var(--type-display-s);
+  }
+}

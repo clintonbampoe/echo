@@ -1,63 +1,22 @@
 import type { IconName } from "@/ui";
 
-export type NavItem = {
-  label: string;
-  to: string;
-  icon: IconName;
-  // false until the page exists. Such an item shows "Soon" and cannot be clicked.
-  ready: boolean;
-};
+export type NavItem = { label: string; to: string; icon: IconName };
 
-export type NavGroup = { title?: string; items: NavItem[] };
+// The whole menu, in one place: the app's pages in the order people reach for them, and the pages only
+// administrators can open, which sit under their own small heading.
+export const mainNav: NavItem[] = [
+  { label: "Dashboard", to: "/dashboard", icon: "dashboard" },
+  { label: "Members", to: "/members", icon: "user" },
+  { label: "Visitors", to: "/visitors", icon: "door-in" },
+  { label: "Attendance", to: "/attendance", icon: "calendar-check" },
+  { label: "Events", to: "/events", icon: "calendar" },
+  { label: "Finance", to: "/finance", icon: "finance" },
+  { label: "Tithes", to: "/tithes", icon: "tithes" },
+  { label: "Projects", to: "/projects", icon: "projects" },
+  { label: "Assets", to: "/assets", icon: "assets" },
+  { label: "Organizations", to: "/organizations", icon: "organizations" },
+];
 
-// The whole menu, in one place. Turn `ready` on as each page is built.
-export const navGroups: NavGroup[] = [
-  {
-    items: [
-      { label: "Dashboard", to: "/dashboard", icon: "dashboard", ready: true },
-    ],
-  },
-  {
-    title: "People",
-    items: [
-      { label: "Members", to: "/members", icon: "user", ready: true },
-      { label: "Visitors", to: "/visitors", icon: "visitor", ready: true },
-      {
-        label: "Organizations",
-        to: "/organizations",
-        icon: "organizations",
-        ready: true,
-      },
-    ],
-  },
-  {
-    title: "Worship",
-    items: [
-      {
-        label: "Attendance",
-        to: "/attendance",
-        icon: "calendar-check",
-        ready: true,
-      },
-      { label: "Events", to: "/events", icon: "calendar", ready: true },
-    ],
-  },
-  {
-    title: "Money",
-    items: [
-      { label: "Tithes", to: "/tithes", icon: "tithes", ready: true },
-      { label: "Finance", to: "/finance", icon: "finance", ready: true },
-      { label: "Projects", to: "/projects", icon: "projects", ready: true },
-    ],
-  },
-  {
-    title: "Church",
-    items: [{ label: "Assets", to: "/assets", icon: "assets", ready: true }],
-  },
-  {
-    title: "Insights",
-    items: [
-      { label: "Reports", to: "/reports", icon: "reports", ready: false },
-    ],
-  },
+export const adminNav: NavItem[] = [
+  { label: "Invitations", to: "/invitations", icon: "inbox" },
 ];

@@ -1,0 +1,49 @@
+.identity {
+  padding: var(--s-20);
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: var(--s-16);
+}
+.who {
+  min-width: 0;
+  flex: 1;
+}
+.name {
+  font-size: var(--type-title2);
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+}
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-6) var(--s-12);
+  margin-top: 6px;
+  font-size: var(--type-body);
+  color: var(--text-2);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-8);
+  margin-top: 16px;
+}
+.actions > * {
+  flex: 1;
+}
+
+@media (max-width: 900px) {
+  .actions > * {
+    height: 44px;
+  }
+}

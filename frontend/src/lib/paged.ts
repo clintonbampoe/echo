@@ -7,9 +7,10 @@ import {
   type UseInfiniteQueryResult,
 } from "@tanstack/react-query";
 import { nextCursor, type Page } from "./api";
+import { getPreferences } from "./preferences";
 
-// The largest page the API allows: most lists fit on one, and a tab can say "50+" when they do not.
-export const PAGE_SIZE = 50;
+// How many rows a request asks for: the "Rows per page" the person chose in Settings (50 until they choose).
+export const pageSize = () => getPreferences().pageSize;
 
 // What a list on screen needs: the rows so far, and the state around them.
 export type Paged<T> = {

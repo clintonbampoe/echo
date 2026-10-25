@@ -1,45 +1,24 @@
 import type { ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { getVerse } from "@/lib/verses";
-import { Icon, Quote, useSurface } from "@/ui";
+import { Atmosphere, Icon, ThemeToggle, usePublicSurface } from "@/ui";
 import styles from "./AuthLayout.module.css";
 
-// Every auth screen sits in this frame: a quiet verse on the left (large screens only) and
-// the screen's content on the right. Screens never build their own page chrome.
+// Every auth screen sits in this frame: the slow light behind, a light/dark button and a way
+// home at the edges, and the screen in the middle. Screens never build their own page chrome.
 export function AuthLayout({ children }: { children: ReactNode }) {
-  useSurface("dark");
+  usePublicSurface();
   const { pathname } = useLocation();
-  const verse = getVerse();
   return (
     <div className={styles.page}>
+      <Atmosphere />
       <Link to="/" className={styles.home}>
         <Icon name="arrow-right" size={16} className={styles.flip} />
         Back to home
       </Link>
-      <section className={styles.visual}>
-        <div className={`${styles.light} anim-settle`} aria-hidden="true">
-          <div className={styles.glowA} />
-          <div className={styles.glowB} />
-          <div className={styles.vignette} />
-        </div>
-        <svg aria-hidden="true" className={styles.grain}>
-          <filter id="grain">
-            <feTurbulence
-              type="fractalNoise"
-              baseFrequency="0.85"
-              numOctaves="2"
-              stitchTiles="stitch"
-            />
-          </filter>
-          <rect width="100%" height="100%" filter="url(#grain)" />
-        </svg>
-        <div className={styles.verse}>
-          <Quote text={verse.text} reference={verse.reference} />
-        </div>
-      </section>
+      <ThemeToggle className={styles.theme} />
       <main className={styles.main}>
         {/* Keyed by path: each new page rises into place while the frame stays put. */}
-        <div key={pathname} className={`${styles.card} anim-rise`}>
+        <div key={pathname} className="anim-rise">
           {children}
         </div>
       </main>

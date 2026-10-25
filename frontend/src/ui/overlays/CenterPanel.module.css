@@ -1,0 +1,65 @@
+/* Above a dialog, so a choice list opened inside one is not hidden by it. */
+.root {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+}
+.scrim {
+  position: absolute;
+  inset: 0;
+}
+/* Centred with auto margins, so the entrance can use transform freely. */
+.panel {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  width: min(440px, calc(100% - 24px));
+  height: fit-content;
+  max-height: calc(100% - 96px);
+  margin: auto;
+  border-radius: var(--radius-float);
+  overflow: hidden;
+}
+.panel[data-closing="true"] {
+  animation: centerOut var(--t-exit) ease-in both;
+}
+.panel:focus {
+  outline: none;
+}
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-12);
+  padding: var(--s-20) var(--s-16) var(--s-8) var(--s-20);
+  touch-action: none;
+}
+.title {
+  font-size: var(--type-headline);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.close {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: var(--control);
+  background: var(--fill);
+  border: 0;
+  border-radius: 50%;
+  color: var(--text-2);
+}
+.body {
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--s-4) var(--s-12) var(--s-16);
+}
+@keyframes centerOut {
+  to {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+}

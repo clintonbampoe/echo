@@ -5,49 +5,38 @@
   color: var(--text);
 }
 
-.side {
-  flex: none;
-  position: sticky;
-  top: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  width: 248px;
-  height: 100vh;
-  padding: 12px;
-}
-
+/* The page sits straight on the background, which fades a little darker at the top left. */
 .panel {
   flex: 1;
   min-width: 0;
-  margin: 8px 8px 8px 0;
-  overflow: hidden;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 16px;
+  background: radial-gradient(
+    900px 340px at 15% -60px,
+    rgb(10 10 11 / 4.5%),
+    transparent
+  );
 }
-
 .main {
-  padding: 28px 32px 40px;
+  padding: var(--s-40) 44px var(--s-48);
 }
-
-.drawerBody {
+/* A page is a column of sections, 22px apart (16px on a phone), as on the boards. */
+.main > div {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  height: 100%;
+  gap: var(--s-24);
 }
 
 @media (max-width: 900px) {
-  .side {
-    display: none;
-  }
   .panel {
-    margin: 0;
-    border: 0;
-    border-radius: 0;
+    background: radial-gradient(
+      520px 260px at 20% -40px,
+      rgb(10 10 11 / 4.5%),
+      transparent
+    );
   }
   .main {
-    padding: 20px 16px 32px;
+    padding: var(--s-8) var(--s-16) var(--s-40);
+  }
+  .main > div {
+    gap: var(--s-16);
   }
 }

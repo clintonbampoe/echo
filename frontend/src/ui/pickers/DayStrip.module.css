@@ -1,0 +1,201 @@
+.strip {
+  --card: 72px;
+  --gap: var(--s-8);
+  --height: 112px;
+  --edge: 6px;
+  display: flex;
+  align-items: center;
+  gap: var(--s-12);
+  padding: var(--s-16) var(--s-16);
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+.arrow {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: var(--control-sm);
+  height: var(--control-sm);
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text);
+  transition: background var(--fast) ease;
+}
+@media (hover: hover) {
+  .arrow:hover {
+    background: var(--hover);
+  }
+}
+.arrow:focus-visible,
+.day:focus-visible {
+  outline: var(--focus);
+  outline-offset: 2px;
+}
+
+.stage {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  padding: var(--edge) 0;
+  overflow: hidden;
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    #000 16%,
+    #000 84%,
+    transparent
+  );
+}
+/* The row is moved by one number, --pos, which the script writes: where the strip is, in days. Every day works out
+   from it how far it is from the middle (--away), and from that how filled (--t) and how faded (--q) it is. */
+.track {
+  display: flex;
+  gap: var(--gap);
+  width: max-content;
+  margin: 0 0 0 calc(50% - var(--card) / 2);
+  padding: 0;
+  list-style: none;
+  transform: translate3d(
+    calc(var(--pos, 0) * (var(--card) + var(--gap)) * -1),
+    0,
+    0
+  );
+  will-change: transform;
+  touch-action: pan-y;
+  user-select: none;
+  cursor: grab;
+}
+.track:active {
+  cursor: grabbing;
+}
+.item {
+  --away: abs(calc(var(--i) - var(--pos, 0)));
+  --t: clamp(0, calc((0.9 - var(--away)) / 0.55), 1);
+  --q: clamp(0, calc(1 - var(--away) / 3.2), 1);
+  flex: none;
+  width: var(--card);
+}
+
+.day {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-4);
+  box-sizing: border-box;
+  width: 100%;
+  height: var(--height);
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  color: var(--text);
+  opacity: calc(0.3 + 0.7 * var(--q));
+}
+@media (hover: hover) {
+  .day:hover {
+    opacity: 1;
+  }
+}
+/* The date is a circle that fills in as the day nears the middle. */
+.date {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: color-mix(
+    in srgb,
+    var(--accent) calc(var(--t) * 100%),
+    transparent
+  );
+  color: color-mix(
+    in srgb,
+    var(--on-accent) calc(var(--t) * 100%),
+    var(--text)
+  );
+  box-shadow: 0 8px 16px -8px
+    color-mix(in srgb, #000 calc(var(--t) * 45%), transparent);
+}
+.day[aria-pressed="true"]::after {
+  content: none;
+}
+.tag,
+.weekday {
+  color: var(--text-3);
+}
+.today .weekday,
+.today .tag {
+  color: var(--text);
+}
+.tag {
+  height: 12px;
+  font-size: var(--type-caption);
+  font-weight: 600;
+  line-height: 12px;
+  letter-spacing: 0.03em;
+}
+.weekday {
+  font-size: var(--type-caption);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.date {
+  font-size: var(--type-title1);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.marks {
+  display: flex;
+  gap: var(--s-4);
+  height: 6px;
+  margin-top: 8px;
+}
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentcolor;
+}
+.ahead {
+  opacity: 0.45;
+}
+
+@media (max-width: 520px) {
+  .strip {
+    --card: 46px;
+    --height: 96px;
+    gap: var(--s-4);
+    padding: var(--s-12) var(--s-8);
+  }
+  .date {
+    width: 42px;
+    height: 42px;
+    font-size: var(--type-title3);
+  }
+  .arrow {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .arrow {
+    transition: none;
+  }
+  .day[aria-pressed="true"]::after {
+    animation: none;
+  }
+}
+
+/* On a phone the arrows are as large as every other control. */
+@media (max-width: 900px) {
+  .arrow {
+    width: var(--control);
+    height: var(--control);
+  }
+}

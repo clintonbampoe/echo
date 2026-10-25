@@ -1,0 +1,60 @@
+.wrap {
+  position: relative;
+  display: inline-block;
+}
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-8);
+  height: var(--filter-h);
+  padding: 0 var(--s-12) 0 var(--s-16);
+  background: transparent;
+  border: 1px dashed var(--line-2);
+  border-radius: var(--radius-pill);
+  font-size: var(--type-footnote);
+  font-weight: 500;
+  white-space: nowrap;
+  color: var(--text);
+  transition:
+    background-color var(--t-fast) var(--ease-soft),
+    border-color var(--t-fast) var(--ease-soft),
+    transform var(--t-spring) var(--ease-spring);
+}
+/* Dashed at rest, solid when you point at it, solid and dark while its panel is open. */
+@media (hover: hover) {
+  .pill:hover {
+    background: var(--hover-tab);
+    border-style: solid;
+  }
+}
+.pill[aria-expanded="true"] {
+  background: var(--hover-tab);
+  border-style: solid;
+  border-color: var(--text);
+}
+.pill:active {
+  transform: scale(var(--press));
+}
+@media (prefers-reduced-motion: reduce) {
+  .pill:active {
+    transform: none;
+  }
+}
+.pill:focus-visible {
+  outline: var(--focus);
+  outline-offset: 2px;
+}
+.pill svg {
+  color: var(--text-3);
+}
+.on {
+  border-style: solid;
+  border-color: var(--text);
+}
+
+@media (max-width: 1180px) {
+  .pill {
+    height: 40px;
+    font-size: var(--type-body);
+  }
+}

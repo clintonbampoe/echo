@@ -1,0 +1,11 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-24);
+}
+
+@media (max-width: 700px) {
+  .panel {
+    gap: var(--s-16);
+  }
+}

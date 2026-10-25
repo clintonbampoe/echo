@@ -1,0 +1,111 @@
+.wrap {
+  position: relative;
+}
+.error {
+  margin: 6px 0 0;
+  font-size: var(--type-footnote);
+  color: var(--neg);
+}
+
+/* The glass popover under the box. It grows from the box's top left. */
+.panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  left: 0;
+  z-index: 20;
+  max-height: 320px;
+  padding: var(--s-6);
+  overflow-y: auto;
+  border-radius: var(--radius-pop);
+  transform-origin: top center;
+}
+.heading {
+  margin: 0;
+  padding: var(--s-8) var(--s-12) var(--s-4);
+  font-size: var(--type-caption);
+  font-weight: 500;
+  color: var(--text-3);
+}
+.note {
+  margin: 0;
+  padding: var(--s-12);
+  font-size: var(--type-body);
+  color: var(--text-3);
+}
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.option {
+  display: flex;
+  align-items: center;
+  gap: var(--s-12);
+  width: 100%;
+  padding: var(--s-8) var(--s-12);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-option);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background-color var(--t-fast) var(--ease-soft),
+    box-shadow var(--t-base),
+    transform var(--t-enter) var(--ease-settle);
+}
+@media (hover: hover) {
+  .option:hover:not(:disabled),
+  .option:focus-visible {
+    background: rgb(255 255 255 / 96%);
+    box-shadow:
+      inset 0 1px 0 #fff,
+      0 0 0 1px rgb(128 128 140 / 16%),
+      0 10px 20px -12px rgb(10 10 11 / 32%);
+    outline: none;
+    transform: scale(1.015);
+  }
+}
+.option:focus-visible {
+  outline: none;
+  background: rgb(255 255 255 / 96%);
+}
+.option:active:not(:disabled) {
+  transform: scale(0.98);
+}
+.option:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+.who {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+.name {
+  overflow: hidden;
+  font-size: var(--type-body);
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.sub {
+  font-size: var(--type-footnote);
+  color: var(--text-3);
+}
+.taken {
+  flex: none;
+  font-size: var(--type-caption);
+  color: var(--text-3);
+}
+@media (pointer: coarse), (max-width: 900px) {
+  .option {
+    min-height: 52px;
+  }
+  .name {
+    font-size: var(--type-headline);
+  }
+}

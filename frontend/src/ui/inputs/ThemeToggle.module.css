@@ -1,0 +1,28 @@
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--line-2);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--surface) 60%, transparent);
+  color: var(--text);
+  cursor: pointer;
+  transition:
+    transform var(--fast) var(--ease),
+    background-color var(--fast) ease;
+}
+@media (hover: hover) {
+  .toggle:hover {
+    background: var(--surface);
+  }
+}
+.toggle:active {
+  transform: scale(0.96);
+}
+.toggle:focus-visible {
+  outline: var(--focus);
+  outline-offset: 2px;
+}

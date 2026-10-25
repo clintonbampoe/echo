@@ -1,58 +1,111 @@
-.nav {
-  flex: 1;
-  margin-top: 8px;
-  overflow-y: auto;
+/* Space between links, so a hovered link never touches the open page's pill above or below it. */
+.nav,
+.admin {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
 }
-
-.group {
-  margin: 16px 10px 4px;
-  font-size: 12px;
+.admin {
+  gap: var(--s-6);
+}
+.heading {
+  padding: 0 var(--s-12);
+  font-size: var(--type-caption);
   font-weight: 500;
   color: var(--text-3);
+}
+
+/* The raised pill behind the open page. It glides up or down the column; the links sit above it. */
+.column {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-24);
+}
+.slot {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: var(--h, 0);
+  translate: 0 var(--y, 0);
+  opacity: 0;
+  pointer-events: none;
+}
+.column[data-ready="true"] .slot {
+  opacity: 1;
+  transition:
+    translate var(--t-enter) var(--ease-out),
+    height var(--t-base) var(--ease-out);
+}
+.column[data-has="false"] .slot {
+  opacity: 0;
+}
+.thumb {
+  position: absolute;
+  inset: 0;
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow:
+    0 1px 2px rgb(10 10 11 / 8%),
+    0 0 0 1px var(--line-2);
 }
 
 .item {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 10px;
-  height: 34px;
-  padding: 0 10px;
-  border-radius: var(--radius-sm);
+  gap: var(--s-12);
+  height: 36px;
+  padding: 0 var(--s-12);
+  border-radius: var(--radius);
   color: var(--text-2);
-  font-size: 14px;
-  font-weight: 500;
+  font-size: var(--type-body);
   text-decoration: none;
   transition:
-    background-color var(--fast) ease,
-    color var(--fast) ease;
+    background-color var(--t-fast) var(--ease-soft),
+    color var(--t-fast) var(--ease-soft),
+    transform var(--t-spring) var(--ease-spring);
 }
-a.item:hover {
-  background: var(--hover);
-  color: var(--text);
+/* Hover: a soft fill, and the icon and label ease 3px to the right. Touch gets only the press. */
+.item > * {
+  transition: translate var(--t-base) var(--ease-out);
 }
-a.item:focus-visible {
+@media (hover: hover) {
+  .item:hover {
+    background: var(--hover-tab);
+    color: var(--text);
+  }
+  .item:hover > * {
+    translate: 3px 0;
+  }
+}
+.item:active {
+  transform: scale(var(--press-nav));
+}
+.item:focus-visible {
   outline: var(--focus);
   outline-offset: 2px;
 }
-.on {
-  background: var(--sel);
+.item[aria-current="page"],
+.item[aria-current="page"]:hover {
+  background: transparent;
   color: var(--text);
-}
-
-.soon {
-  color: var(--text-3);
-  cursor: default;
-}
-.label {
-  flex: 1;
-}
-.badge {
-  padding: 3px 7px;
-  border: 1px solid var(--line-2);
-  border-radius: var(--radius-pill);
-  background: var(--surface);
-  color: var(--text-2);
-  font-size: 11px;
   font-weight: 500;
-  line-height: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .item:hover > * {
+    translate: none;
+  }
+  .item:active {
+    transform: none;
+  }
+}
+@media (hover: hover) {
+  html[data-reduce-motion="true"] .item:hover > * {
+    translate: none;
+  }
+}
+html[data-reduce-motion="true"] .item:active {
+  transform: none;
 }

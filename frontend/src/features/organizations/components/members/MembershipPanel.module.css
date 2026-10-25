@@ -1,0 +1,21 @@
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-20);
+  padding-top: var(--s-8);
+}
+.actions {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--s-12);
+}
+.delete {
+  color: var(--neg);
+}
+
+/* Phone and tablet: the buttons share the line so neither is a small target. */
+@media (max-width: 900px) {
+  .actions > * {
+    flex: 1 1 0;
+  }
+}

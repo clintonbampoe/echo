@@ -1,0 +1,17 @@
+.logo {
+  color: var(--text);
+}
+.outer,
+.inner {
+  stroke: currentcolor;
+  stroke-width: 1.5;
+}
+.outer {
+  stroke-opacity: 0.3;
+}
+.inner {
+  stroke-opacity: 0.65;
+}
+.core {
+  fill: currentcolor;
+}

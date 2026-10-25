@@ -41,4 +41,4 @@ needs a server. To look at a production build without Docker, run `npm run build
 | `npm run lint` | ESLint, including the layer and size rules |
 | `npm run typecheck` | `tsc -b` |
 | `npm test` | Vitest, once |
-| `npm run gen:icons` | regenerate `src/ui/Icon.tsx` from `scripts/icons.json` |
+| `npm run gen:icons` | regenerate `src/ui/layout/Icon.tsx` from `scripts/icons.json` |

@@ -1,0 +1,166 @@
+.bars {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: var(--s-8);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.item {
+  min-width: 0;
+}
+.cell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  padding: 0;
+  background: none;
+  border: 0;
+  color: inherit;
+  font: inherit;
+}
+button.cell {
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+}
+button.cell:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+}
+/* Both halves are as tall as the chart's tallest month, so the line between them stays level across the months. */
+.up,
+.down {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  height: 84px;
+}
+.up {
+  align-items: flex-end;
+  border-bottom: 1px solid var(--line-2);
+}
+.down {
+  align-items: flex-start;
+}
+.bar {
+  display: block;
+  width: min(34px, 70%);
+  height: var(--h);
+  background: var(--line-2);
+  transform-origin: center bottom;
+  animation: grow var(--t-grow) var(--grow) backwards;
+  animation-delay: calc(var(--i) * 25ms);
+  transition:
+    transform var(--t-enter) var(--ease-settle),
+    filter var(--t-fast),
+    opacity var(--t-base);
+}
+.up .bar {
+  background: var(--text-3);
+  border-radius: 14px 14px 4px 4px;
+  opacity: 0.55;
+}
+.down .bar {
+  border-radius: 4px 4px 14px 14px;
+  opacity: 0.3;
+  transform-origin: center top;
+}
+.down .bar {
+  background: var(--text-3);
+}
+[data-picked="true"] .bar {
+  background: var(--text);
+  opacity: 0.85;
+}
+.name {
+  margin-top: 12px;
+  font-size: var(--type-caption);
+  color: var(--text-3);
+}
+[data-picked="true"] .name {
+  font-weight: 600;
+  color: var(--text);
+}
+@keyframes grow {
+  from {
+    height: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bar {
+    animation: none;
+  }
+}
+@media (max-width: 560px) {
+  .bars {
+    gap: var(--s-4);
+  }
+  .up,
+  .down {
+    height: 64px;
+  }
+}
+
+/* A month is a door: under the pointer or the keyboard its bars grow from their centre, a dark pill says what
+   they are, and the other months step back. */
+.tip {
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  z-index: 2;
+  opacity: 0;
+  transform: translate(-50%, -100%) scale(0.96);
+  border-radius: var(--radius-field);
+  transition:
+    opacity var(--fast) ease,
+    transform var(--t-spring) var(--spring);
+}
+.tip strong {
+  display: block;
+  font-weight: 600;
+}
+.line {
+  display: block;
+}
+.cell:hover .tip,
+.cell:focus-visible .tip {
+  opacity: 1;
+  transform: translate(-50%, -100%);
+}
+.item:first-child .tip {
+  left: 0;
+  transform: translate(0, -100%) scale(0.96);
+}
+.item:last-child .tip {
+  right: 0;
+  left: auto;
+  transform: translate(0, -100%) scale(0.96);
+}
+.item:first-child .cell:hover .tip,
+.item:first-child .cell:focus-visible .tip,
+.item:last-child .cell:hover .tip,
+.item:last-child .cell:focus-visible .tip {
+  transform: translate(0, -100%);
+}
+.item {
+  transition: opacity var(--t-base) var(--ease-soft);
+}
+@media (hover: hover) {
+  .cell:hover .bar,
+  .cell:focus-visible .bar {
+    transform: scale(1.18, 1.06);
+    filter: brightness(0.82);
+  }
+  .bars:has(.cell:hover) .item:not(:hover),
+  .bars:has(.cell:focus-visible) .item:not(:focus-within) {
+    opacity: 0.6;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cell:hover .bar {
+    transform: none;
+  }
+}

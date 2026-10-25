@@ -1,0 +1,23 @@
+/* The rows of cards, one under the other. */
+.charts {
+  display: grid;
+  gap: var(--s-24);
+}
+
+/* On a phone the cards come in themed groups, and one label heads each. */
+.group {
+  display: grid;
+  gap: var(--s-12);
+}
+.groupHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-top: 8px;
+}
+.groupTitle {
+  margin: 0;
+  font-size: var(--type-headline);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}

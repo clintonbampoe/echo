@@ -1,0 +1,93 @@
+.anchor {
+  display: inline-block;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-8);
+  height: var(--pill-h);
+  padding: 0 var(--s-12);
+  font-size: var(--type-body);
+  font-weight: 500;
+  white-space: nowrap;
+  background: var(--surface);
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius);
+  transition:
+    background-color var(--t-fast) var(--ease-soft),
+    border-color var(--t-fast) var(--ease-soft);
+}
+.pill:hover,
+.pill[aria-expanded="true"] {
+  background: var(--hover);
+}
+.pill:focus-visible {
+  outline: var(--focus);
+  outline-offset: 2px;
+}
+.icon,
+.chevron {
+  flex: none;
+  color: var(--text-3);
+}
+.list {
+  display: flex;
+  flex-direction: column;
+  padding: var(--s-6);
+}
+.option {
+  display: flex;
+  align-items: center;
+  gap: var(--s-12);
+  height: var(--pill-h);
+  padding: 0 var(--s-8);
+  font-size: var(--type-body);
+  color: var(--text);
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-sm);
+}
+.option:hover,
+.option:focus-visible {
+  background: var(--hover);
+  outline: none;
+}
+.option:focus-visible {
+  outline: var(--focus);
+  outline-offset: -2px;
+}
+.selected {
+  font-weight: 500;
+}
+.check {
+  display: inline-flex;
+  flex: none;
+  justify-content: center;
+  width: 16px;
+}
+.when {
+  margin-left: auto;
+  font-size: var(--type-caption);
+  font-weight: 400;
+  color: var(--text-3);
+}
+
+/* In the bottom sheet: 52px rows, like every choice list on a touch screen. */
+@media (pointer: coarse) {
+  .list {
+    padding: 0;
+  }
+  .option {
+    height: 52px;
+    padding: 0 var(--s-4);
+    font-size: var(--type-headline);
+    border-radius: 0;
+  }
+  .when {
+    font-size: var(--type-body);
+  }
+}
+
+/* At every size the pill is as wide as its words, as on a wide screen. */

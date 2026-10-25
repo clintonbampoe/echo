@@ -1,0 +1,33 @@
+.who {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+.name {
+  margin: 0;
+  font-size: var(--type-body);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.phone {
+  margin: 0;
+  font-size: var(--type-footnote);
+  color: var(--text-3);
+}
+.picked {
+  display: flex;
+  align-items: center;
+  gap: var(--s-12);
+  padding: var(--s-12) var(--s-12);
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+@media (max-width: 900px) {
+  .name {
+    font-size: var(--type-headline);
+  }
+}

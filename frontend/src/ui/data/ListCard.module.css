@@ -1,0 +1,32 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+.toolbar {
+  padding: var(--s-8) var(--s-24);
+}
+@media (max-width: 900px) {
+  .toolbar {
+    padding: var(--s-8) var(--s-16);
+  }
+}
+
+/* A card answers the pointer: its border and shadow strengthen (feel spec, Cards). */
+.card {
+  transition:
+    border-color var(--t-base) var(--ease-soft),
+    box-shadow var(--t-base) var(--ease-soft),
+    transform var(--t-base) var(--ease-out);
+}
+@media (hover: hover) {
+  .card:hover {
+    border-color: var(--line-hover);
+    box-shadow: var(--shadow-hover);
+  }
+}

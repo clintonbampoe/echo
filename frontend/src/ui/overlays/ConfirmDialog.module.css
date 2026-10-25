@@ -1,0 +1,70 @@
+.root {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--s-16);
+}
+.scrim {
+  position: absolute;
+  inset: 0;
+}
+
+.panel {
+  position: relative;
+  width: 100%;
+  max-width: 380px;
+  padding: var(--s-32) var(--s-24) var(--s-20);
+  border-radius: var(--radius-float);
+  text-align: center;
+}
+.panel[data-closing="true"] {
+  animation: popOut var(--t-exit) ease-in both;
+}
+.title {
+  margin: 0 0 8px;
+  font-size: var(--type-title2);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.body {
+  color: var(--text-3);
+  font-size: var(--type-body);
+  line-height: 1.6;
+}
+.body p {
+  margin: 0 0 8px;
+}
+.error {
+  margin: 12px 0 0;
+  color: var(--neg);
+  font-size: var(--type-body);
+}
+/* A black button, then a plain Cancel under it. The select a dialog may carry reads left to right. */
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+  margin-top: 20px;
+}
+.actions > button {
+  height: 48px;
+}
+.body :where(label, [role="combobox"]) {
+  text-align: left;
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+@keyframes popOut {
+  to {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+}

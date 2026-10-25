@@ -1,0 +1,28 @@
+.body {
+  display: grid;
+  gap: var(--s-20);
+  padding-top: var(--s-4);
+}
+.head {
+  display: grid;
+  gap: var(--s-4);
+}
+.what {
+  margin: 0;
+  font-size: var(--type-body);
+  color: var(--text-3);
+  overflow-wrap: anywhere;
+}
+.amount {
+  margin: 0;
+  font-size: var(--type-display-s);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+.kind {
+  margin: 0;
+  font-size: var(--type-body);
+  color: var(--text-3);
+}

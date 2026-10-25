@@ -1,15 +1,20 @@
 import { createBrowserRouter, type RouteObject } from "react-router-dom";
+import { accountRoutes } from "@/features/account";
 import { assetRoutes } from "@/features/assets";
 import { attendanceRoutes } from "@/features/attendance";
 import { authRoutes } from "@/features/auth";
 import { dashboardRoutes } from "@/features/dashboard";
 import { eventRoutes } from "@/features/events";
+import { invitationRoutes } from "@/features/invitations";
 import { memberRoutes } from "@/features/members";
 import { organizationRoutes } from "@/features/organizations";
+import { settingsRoutes } from "@/features/settings";
 import { titheRoutes } from "@/features/tithes";
 import { projectRoutes } from "@/features/projects";
 import { transactionRoutes } from "@/features/transactions";
 import { visitorRoutes } from "@/features/visitors";
+import { websiteRoutes } from "@/features/website";
+import { pageRoutes } from "@/pages";
 import { NotFound } from "./NotFound";
 import { RequireAuth } from "./RequireAuth";
 import { AppShell } from "./shell";
@@ -22,12 +27,7 @@ const routes: RouteObject[] = [
     // background is already painted, so it just looks like the page arriving.
     HydrateFallback: () => null,
     children: [
-      {
-        path: "/",
-        lazy: async () => ({
-          Component: (await import("@/features/landing")).LandingPage,
-        }),
-      },
+      ...websiteRoutes,
       ...authRoutes,
       {
         Component: RequireAuth,
@@ -45,6 +45,10 @@ const routes: RouteObject[] = [
               ...transactionRoutes,
               ...projectRoutes,
               ...assetRoutes,
+              ...invitationRoutes,
+              ...settingsRoutes,
+              ...accountRoutes,
+              ...pageRoutes,
             ],
           },
         ],

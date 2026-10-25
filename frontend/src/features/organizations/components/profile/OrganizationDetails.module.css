@@ -1,0 +1,22 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s-24);
+  align-items: start;
+}
+.text {
+  margin: 0;
+  font-size: var(--type-callout);
+  line-height: 1.6;
+}
+.none {
+  margin: 0;
+  font-size: var(--type-body);
+  color: var(--text-3);
+}
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--s-16);
+  }
+}

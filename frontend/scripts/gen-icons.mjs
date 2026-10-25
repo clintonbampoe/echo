@@ -1,4 +1,4 @@
-// Generates src/ui/Icon.tsx from scripts/icons.json. Run: npm run gen:icons
+// Generates src/ui/layout/Icon.tsx from scripts/icons.json. Run: npm run gen:icons
 // The generated file is committed, so a normal build never depends on this script.
 import { readFileSync, writeFileSync } from "node:fs";
 
@@ -51,5 +51,5 @@ export function Icon({ name, size = 20, className }: Props) {
   )
 }
 `;
-writeFileSync(new URL("../src/ui/Icon.tsx", import.meta.url), out);
+writeFileSync(new URL("../src/ui/layout/Icon.tsx", import.meta.url), out);
 console.log(`wrote ${Object.keys(icons).length} icons`);

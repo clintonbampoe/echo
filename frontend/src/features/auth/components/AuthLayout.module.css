@@ -1,121 +1,27 @@
 .page {
   position: relative;
   display: flex;
+  flex-direction: column;
   min-height: 100vh;
+  overflow: hidden;
   background: var(--bg);
   color: var(--text);
 }
-
-.visual {
-  position: relative;
-  display: flex;
-  flex: 1 1 560px;
-  flex-direction: column;
-  justify-content: flex-end;
-  min-height: 420px;
-  padding: 56px;
-  overflow: hidden;
-}
-.light {
-  position: absolute;
-  inset: 0;
-}
-.glowA {
-  position: absolute;
-  left: -20%;
-  bottom: -38%;
-  width: 105%;
-  height: 100%;
-  background: radial-gradient(
-    closest-side,
-    rgb(255 255 255 / 26%),
-    rgb(255 255 255 / 7%) 55%,
-    rgb(255 255 255 / 0%) 100%
-  );
-  filter: blur(36px);
-  animation:
-    drift 18s ease-in-out infinite alternate,
-    breathe 8s ease-in-out infinite;
-}
-.glowB {
-  position: absolute;
-  right: -25%;
-  top: -30%;
-  width: 75%;
-  height: 75%;
-  background: radial-gradient(
-    closest-side,
-    rgb(255 255 255 / 9%),
-    rgb(255 255 255 / 0%) 100%
-  );
-  filter: blur(36px);
-  animation: breathe 11s ease-in-out -4s infinite;
-}
-.vignette {
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(
-    120% 90% at 30% 100%,
-    rgb(10 10 10 / 0%) 35%,
-    rgb(10 10 10 / 65%) 100%
-  );
-}
-.grain {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  opacity: 0.08;
-  mix-blend-mode: overlay;
-  pointer-events: none;
-}
-.verse {
-  position: relative;
-}
-
-/* The glows breathe: brighter and a little larger, then softer. Uses `scale` rather than
-   `transform` so it combines with the drift below instead of fighting it. */
-@keyframes breathe {
-  0%,
-  100% {
-    opacity: 0.55;
-    scale: 0.94;
-  }
-  50% {
-    opacity: 1;
-    scale: 1.08;
-  }
-}
-
-@keyframes drift {
-  from {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-  to {
-    transform: translate3d(3%, -4%, 0) scale(1.06);
-  }
-}
-
 .main {
+  position: relative;
+  z-index: 1;
   display: flex;
-  flex: 1 1 440px;
+  flex: 1;
   align-items: center;
   justify-content: center;
-  padding: 48px 32px;
-  background: var(--surface);
-  border-left: 1px solid var(--line);
-}
-.card {
-  width: 100%;
-  max-width: 380px;
+  padding: 88px 16px 56px;
 }
 
-/* A way back to the landing page, in the top-left corner of every auth screen. */
 .home {
   position: absolute;
-  top: 32px;
-  left: 52px;
-  z-index: 1;
+  top: 26px;
+  left: 32px;
+  z-index: 2;
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -126,8 +32,10 @@
   text-decoration: none;
   transition: color var(--fast) ease;
 }
-.home:hover {
-  color: var(--text);
+@media (hover: hover) {
+  .home:hover {
+    color: var(--text);
+  }
 }
 .home:focus-visible {
   outline: var(--focus);
@@ -136,27 +44,18 @@
 .flip {
   transform: scaleX(-1);
 }
-
-/* Below 1024px the verse is dropped and the card is centred on the plain page. */
-@media (max-width: 1023px) {
-  .visual {
-    display: none;
-  }
-  .main {
-    padding-top: 96px;
-    background: var(--bg);
-    border-left: 0;
-  }
-  .card {
-    max-width: 440px;
-  }
+.theme {
+  position: absolute;
+  top: 20px;
+  right: 32px;
+  z-index: 2;
 }
-@media (max-width: 480px) {
+
+@media (max-width: 599px) {
   .home {
-    top: 24px;
     left: 16px;
   }
-  .main {
-    padding: 88px 20px 32px;
+  .theme {
+    right: 16px;
   }
 }

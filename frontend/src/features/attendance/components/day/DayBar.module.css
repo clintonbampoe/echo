@@ -1,0 +1,25 @@
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-12);
+}
+.heading {
+  margin: 0;
+  font-size: var(--type-title2);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+.buttons {
+  display: flex;
+  gap: var(--s-8);
+}
+.pick {
+  position: relative;
+}
+
+@media (max-width: 700px) {
+  .heading {
+    font-size: var(--type-title3);
+  }
+}

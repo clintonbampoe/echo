@@ -1,0 +1,20 @@
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-20);
+  padding: var(--s-24);
+}
+.amount {
+  margin: 0;
+  font-size: var(--type-large);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.actions {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--s-12);
+}
+.delete {
+  color: var(--neg);
+}
