@@ -9,14 +9,23 @@
   border-radius: 50%;
   color: var(--text-3);
   transition:
-    background-color var(--fast) ease,
-    color var(--fast) ease;
+    background-color var(--t-fast) var(--ease-soft),
+    color var(--t-fast) var(--ease-soft),
+    transform var(--t-spring) var(--ease-spring);
 }
 /* A step darker than the row's own hover colour, so the button still stands out inside a hovered row. */
-.trigger:hover,
+@media (hover: hover) {
+  .trigger:hover {
+    background: var(--hover-dots-strong);
+    color: var(--text);
+  }
+}
 .trigger[aria-expanded="true"] {
-  background: var(--hover);
+  background: var(--hover-dots-strong);
   color: var(--text);
+}
+.trigger:active {
+  transform: scale(var(--press-icon));
 }
 
 .root {
@@ -38,12 +47,11 @@
   min-width: 180px;
   padding: 8px;
   background: var(--surface);
+  border: 1px solid var(--line);
   border-radius: var(--radius-pop);
-  box-shadow:
-    0 14px 36px -10px rgb(10 10 11 / 22%),
-    0 0 0 1px rgb(10 10 11 / 5%);
+  box-shadow: var(--shadow-pop);
   transform-origin: top right;
-  animation: open 260ms var(--spring) both;
+  animation: open var(--t-enter) var(--ease-spring) both;
 }
 .menu[data-closing="true"] {
   animation: openOut 120ms ease-in both;
@@ -70,12 +78,12 @@
   font-size: 14px;
   text-align: left;
   transition:
-    background-color var(--fast) ease,
-    transform var(--fast) var(--ease);
+    background-color var(--t-fast) var(--ease-soft),
+    transform var(--t-base) var(--ease-out);
 }
 .item:hover,
 .item:focus-visible {
-  background: var(--hover);
+  background: var(--hover-option);
   outline: none;
   transform: translateX(2px);
 }
@@ -134,7 +142,7 @@
    A dropdown under a finger-sized target can end up off screen, so touch never gets one. */
 @media (max-width: 900px), (pointer: coarse) {
   .scrim {
-    background: rgb(10 10 10 / 45%);
+    background: rgb(10 10 10 / 32%);
   }
   .menu {
     top: auto;
@@ -153,6 +161,7 @@
     left: 8px;
     right: 8px;
     transform-origin: bottom;
+    box-shadow: var(--shadow-sheet);
     animation-name: lift;
   }
   .menu[data-closing="true"] {

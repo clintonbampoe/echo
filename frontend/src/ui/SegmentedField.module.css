@@ -98,7 +98,7 @@
   /* Slides with translate and squishes with scale (motion.css), so the two do not fight. */
   translate: calc(var(--i) * 100%) 0;
   transition:
-    translate 520ms var(--spring),
+    translate var(--base) var(--ease-out),
     opacity var(--fast) ease;
 }
 .joined .face {
@@ -113,11 +113,21 @@
   font-weight: 500;
   transition:
     color var(--base) var(--ease),
-    background-color var(--fast) ease;
+    background-color var(--fast) ease,
+    transform var(--t-spring) var(--ease-spring);
 }
-.joined .option:hover .face {
-  color: var(--text);
-  background: var(--hover);
+@media (hover: hover) {
+  .joined .option:hover .face {
+    color: var(--text);
+    background: var(--hover-tab);
+  }
+}
+/* Pressing a choice gives a little under the finger; the thumb then slides and squishes. */
+.joined .option:active .face {
+  transform: scale(0.97);
+}
+.joined .input:checked + .face:hover {
+  background: transparent;
 }
 .joined.compact .face {
   font-size: 12px;

@@ -45,7 +45,8 @@ export function SegmentedField<V extends string>({
   value,
   onChange,
   hideLabel,
-  joined,
+  // Every segmented control is a fully round pill track (round 7); `joined` is kept so callers need no change.
+  joined = true,
   fill,
   compact,
   stretch,

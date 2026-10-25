@@ -29,22 +29,41 @@
   font-size: var(--control-font, 15px);
   line-height: 1;
   transition:
-    border-color var(--fast) ease,
-    box-shadow var(--fast) ease;
+    border-color var(--t-base) var(--ease-soft),
+    box-shadow var(--t-base) var(--ease-soft);
 }
 .control::placeholder {
   color: var(--text-4, var(--text-3));
 }
-.control:hover {
-  border-color: var(--text-3);
+@media (hover: hover) {
+  .control:hover:not(:disabled) {
+    border-color: var(--line-field-hover);
+  }
 }
+/* Focus: the border turns strong and a soft 4px ring grows around it. The label stays still. */
 .control:focus-visible {
-  outline: var(--focus);
-  outline-offset: 2px;
-  box-shadow: 0 0 0 6px rgb(10 10 11 / 7%);
+  outline: none;
+  border-color: var(--text);
+  box-shadow: var(--focus-ring);
 }
+/* An error: the border turns red and the field shakes 4px twice. It plays once, when the error appears. */
 .control[aria-invalid="true"] {
   border-color: var(--neg);
+  animation: shake 240ms var(--ease-soft) both;
+}
+.control[aria-invalid="true"]:focus-visible {
+  border-color: var(--neg);
+  box-shadow: 0 0 0 4px rgb(196 43 31 / 18%);
+}
+@keyframes shake {
+  20%,
+  60% {
+    translate: -4px 0;
+  }
+  40%,
+  80% {
+    translate: 4px 0;
+  }
 }
 
 .padRight {
@@ -79,6 +98,13 @@
 }
 .trigger[aria-expanded="true"] {
   border-color: var(--text-3);
+}
+/* The chevron turns over while the list is open. */
+.chevron {
+  transition: rotate var(--t-base) var(--ease-out);
+}
+.trigger[aria-expanded="true"] .chevron {
+  rotate: 180deg;
 }
 .trigger:disabled {
   cursor: default;
@@ -117,6 +143,8 @@
   font-size: 13px;
   color: var(--text-3);
 }
+/* An error message fades in under its field. */
 .error {
   color: var(--neg);
+  animation: fade var(--t-base) var(--ease-soft) both;
 }

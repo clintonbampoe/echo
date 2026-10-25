@@ -9,41 +9,83 @@
   line-height: 1;
   text-decoration: none;
   white-space: nowrap;
+  /* Lift and brightness come back on release with a spring (feel spec, Buttons). */
+  transition:
+    transform var(--t-spring) var(--ease-spring),
+    background-color var(--t-fast) var(--ease-soft),
+    border-color var(--t-fast) var(--ease-soft),
+    color var(--t-fast) var(--ease-soft),
+    box-shadow var(--t-base) var(--ease-soft),
+    filter var(--t-base) var(--ease-soft);
 }
 .button:disabled {
   cursor: not-allowed;
-  opacity: 0.55;
+  opacity: 0.5;
+}
+/* Loading: the label stays, the button ignores clicks, a press still animates. */
+.button[aria-busy="true"] {
+  cursor: progress;
+  opacity: 1;
+}
+.button:not(:disabled):active,
+.button[aria-busy="true"]:active {
+  transform: scale(var(--press));
+  box-shadow: none;
+  filter: none;
 }
 
 .primary {
   background: var(--accent);
   color: var(--on-accent);
 }
-.primary:hover:not(:disabled) {
-  background: var(--accent-hover);
-  filter: brightness(1.08);
-  transform: translateY(-1px);
-}
-
 .secondary {
   background: transparent;
   border-color: var(--line-2);
   color: var(--text);
   font-weight: 500;
 }
-.secondary:hover:not(:disabled) {
-  background: var(--hover);
-  transform: translateY(-1px);
-}
-
 .ghost {
   background: transparent;
   color: var(--text-2);
   font-weight: 500;
 }
-.ghost:hover:not(:disabled) {
-  background: var(--hover);
-  color: var(--text);
+/* Danger: only to confirm something destructive. Hover darkens a step, never brightens. */
+.danger {
+  background: var(--neg);
+  color: #fff;
+}
+
+@media (hover: hover) {
+  .primary:hover:not(:disabled) {
+    background: var(--accent-hover);
+    filter: brightness(1.07);
+    transform: var(--lift-1);
+    box-shadow: var(--shadow-btn);
+  }
+  .secondary:hover:not(:disabled),
+  .ghost:hover:not(:disabled) {
+    background: var(--hover-option);
+    transform: var(--lift-1);
+  }
+  .ghost:hover:not(:disabled) {
+    color: var(--text);
+  }
+  .danger:hover:not(:disabled) {
+    filter: brightness(0.9);
+    transform: var(--lift-1);
+    box-shadow: 0 8px 20px -10px rgb(196 43 31 / 55%);
+  }
+}
+
+/* An icon-only button (close, the ⋯ menu, back): a circle that fills on hover and gives more when pressed. */
+.icon {
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: 50%;
+}
+.icon:not(:disabled):active {
+  transform: scale(var(--press-icon));
 }
 
 .sm {

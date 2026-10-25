@@ -7,7 +7,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  height: 34px;
+  height: 32px;
   padding: 0 13px;
   background: transparent;
   border: 1px dashed var(--line-2);
@@ -17,22 +17,35 @@
   color: var(--text-2);
   white-space: nowrap;
   transition:
-    background-color var(--fast) ease,
-    border-color var(--fast) ease;
+    background-color var(--t-fast) var(--ease-soft),
+    border-color var(--t-fast) var(--ease-soft),
+    transform var(--t-spring) var(--ease-spring);
 }
-button.pill:hover,
+/* Hover fills the pill and the dashed border turns solid; open keeps a solid dark border. */
+@media (hover: hover) {
+  button.pill:hover {
+    background: var(--hover-tab);
+    border-style: solid;
+  }
+}
 button.pill[aria-expanded="true"] {
-  background: var(--hover);
+  background: var(--hover-option);
+  border-style: solid;
+  border-color: var(--text);
 }
-/* A pill that is filtering: solid, with room on the right for its ✕. */
+/* A pill that is filtering: a solid dark border and a fill, with room on the right for its ✕. */
 .on {
   padding-right: 34px;
   background: var(--sel);
-  border-color: transparent;
+  border-color: var(--text);
   border-style: solid;
   font-weight: 600;
 }
-button.on:hover,
+@media (hover: hover) {
+  button.on:hover {
+    background: var(--line-2);
+  }
+}
 button.on[aria-expanded="true"] {
   background: var(--line-2);
 }
@@ -50,10 +63,17 @@ button.on[aria-expanded="true"] {
   border: 0;
   border-radius: 50%;
   color: var(--text-2);
+  transition:
+    background-color var(--t-fast) var(--ease-soft),
+    rotate var(--t-spring) var(--ease-spring);
 }
 .clear:hover {
   background: var(--line-2);
   color: var(--text);
+}
+/* Pressing the clear button spins its ✕ a quarter turn. */
+.clear:active {
+  rotate: 90deg;
 }
 .clear:focus-visible {
   outline: 2px solid var(--text);
@@ -74,4 +94,10 @@ button.on[aria-expanded="true"] {
     height: 40px;
     font-size: 14px;
   }
+}
+.chevron {
+  transition: rotate var(--t-base) var(--ease-out);
+}
+button[aria-expanded="true"] .chevron {
+  rotate: 180deg;
 }

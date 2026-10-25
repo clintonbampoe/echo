@@ -52,6 +52,7 @@ export function DeleteDialog({
       confirmLabel={confirmLabel ?? `Delete ${noun}`}
       cancelLabel={cancelLabel ?? `Keep ${noun}`}
       busy={busy}
+      tone="danger"
       error={
         failed ? `We could not delete this ${noun}. Try again.` : undefined
       }

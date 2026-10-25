@@ -2,26 +2,26 @@
   flex: none;
   display: inline-flex;
   align-items: center;
-  width: 44px;
-  height: 26px;
+  width: 46px;
+  height: 28px;
   padding: 3px;
   border: 0;
   border-radius: var(--radius-pill);
   background: var(--fill-2);
-  transition: background-color var(--fast) ease;
+  transition: background-color var(--t-base) var(--ease-soft);
 }
 .track[aria-checked="true"] {
   background: var(--accent);
 }
 .thumb {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   background: #fff;
-  box-shadow: 0 1px 2px rgb(0 0 0 / 25%);
+  box-shadow: 0 2px 5px rgb(0 0 0 / 28%);
   transition:
-    translate var(--base) var(--spring),
-    width var(--fast) var(--spring);
+    translate 320ms var(--ease-spring),
+    width var(--t-base) var(--ease-spring);
 }
 .track[aria-checked="true"] .thumb {
   translate: 18px 0;
@@ -31,7 +31,7 @@
   width: 26px;
 }
 .track[aria-checked="true"]:active .thumb {
-  translate: 12px 0;
+  translate: 14px 0;
 }
 .track:focus-visible {
   outline: var(--focus);

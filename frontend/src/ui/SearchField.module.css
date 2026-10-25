@@ -16,17 +16,22 @@
   border: 1px solid var(--line-2);
   border-radius: var(--radius);
   font-size: 14px;
-  transition: border-color var(--fast) ease;
+  transition:
+    border-color var(--t-base) var(--ease-soft),
+    box-shadow var(--t-base) var(--ease-soft);
 }
 .input::placeholder {
   color: var(--text-3);
 }
-.input:hover {
-  border-color: var(--text-3);
+@media (hover: hover) {
+  .input:hover {
+    border-color: var(--line-field-hover);
+  }
 }
 .input:focus-visible {
-  outline: var(--focus);
-  outline-offset: 2px;
+  outline: none;
+  border-color: var(--text);
+  box-shadow: var(--focus-ring);
 }
 @media (max-width: 1180px) {
   .input {

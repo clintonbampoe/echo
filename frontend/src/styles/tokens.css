@@ -37,7 +37,20 @@
   --card-bg: linear-gradient(180deg, #ffffff, #fcfcfd);
   --shadow: 0 1px 2px rgb(10 10 11 / 5%), 0 12px 28px -16px rgb(10 10 11 / 10%);
   --shadow-hover:
-    0 1px 2px rgb(10 10 11 / 8%), 0 16px 32px -14px rgb(10 10 11 / 18%);
+    0 1px 2px rgb(10 10 11 / 6%), 0 20px 40px -20px rgb(10 10 11 / 22%);
+  --shadow-pop: 0 28px 70px -24px rgb(0 0 0 / 34%); /* popovers */
+  --shadow-sheet: 0 30px 80px -24px rgb(0 0 0 / 38%); /* sheets and dialogs */
+  --shadow-btn: 0 8px 20px -10px rgb(10 10 11 / 40%); /* a primary button on hover */
+  --line-hover: rgb(128 128 140 / 45%); /* a card's border on hover */
+  --line-field-hover: rgb(128 128 140 / 60%); /* a field's border on hover */
+
+  /* What a hover fills with: rows, options, then tabs and nav (feel spec §1). */
+  --hover-row: rgb(128 128 140 / 8%);
+  --hover-option: rgb(128 128 140 / 10%);
+  --hover-tab: rgb(128 128 140 / 14%);
+  --hover-dots: rgb(128 128 140 / 16%); /* the ⋯ button while its row is hovered */
+  --hover-dots-strong: rgb(128 128 140 / 26%);
+  --focus-ring: 0 0 0 4px rgb(128 128 140 / 22%); /* a field in focus */
 
   /* Type */
   --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
@@ -65,6 +78,21 @@
   --fast: 160ms;
   --base: 280ms;
   --slow: 700ms;
+
+  /* The feel spec's names (claude/feel-and-interaction-spec.md §1). The old names above stay for the pieces
+     that already use them; new work uses these. */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1); /* entrances, panels */
+  --ease-spring: cubic-bezier(0.3, 1.5, 0.5, 1); /* press release, toggles, tiles: small movement only */
+  --ease-soft: cubic-bezier(0.4, 0, 0.2, 1); /* colour, background, border */
+  --t-fast: 150ms; /* colour and background */
+  --t-base: 220ms; /* lift, slide, border, shadow */
+  --t-spring: 300ms; /* spring releases */
+  --t-enter: 320ms; /* popover, dialog and sheet entrances */
+  --lift-1: translateY(-1px); /* buttons */
+  --lift-3: translateY(-3px); /* clickable cards, strip cells */
+  --press-card: 0.995;
+  --press-icon: 0.92; /* a round icon button */
+  --press-nav: 0.97;
 
   /* How roomy list rows are: Settings > Density sets data-density on <html>. */
   --density: 1;

@@ -1,7 +1,7 @@
 import styles from "./Button.module.css";
 
 export type ButtonStyle = {
-  variant?: "primary" | "secondary" | "ghost";
+  variant?: "primary" | "secondary" | "ghost" | "danger";
   size?: "sm" | "md" | "lg" | "xl";
   // Buttons are fully round pills (design system §3). Pass pill={false} for a squarer button inside a dense control.
   pill?: boolean;

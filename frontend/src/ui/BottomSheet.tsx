@@ -41,7 +41,7 @@ export function BottomSheet({ open, onClose, title, children }: Props) {
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
-        className={`${styles.panel} lift`}
+        className={`${styles.panel} sheet-rise`}
         data-closing={closing}
         onKeyDown={(e) => e.key === "Escape" && onClose()}
       >

@@ -6,19 +6,20 @@
 .scrim {
   position: absolute;
   inset: 0;
-  background: rgb(10 10 10 / 45%);
+  background: rgb(10 10 10 / 32%);
 }
 .panel {
   position: absolute;
-  right: 0;
-  bottom: 0;
-  left: 0;
+  right: 8px;
+  bottom: calc(8px + env(safe-area-inset-bottom));
+  left: 8px;
   max-width: 560px;
   margin: 0 auto;
-  padding: 10px 16px max(20px, env(safe-area-inset-bottom));
+  padding: 8px 16px 20px;
   background: var(--surface);
-  border-radius: 16px 16px 0 0;
-  box-shadow: 0 -16px 48px rgb(10 10 10 / 12%);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-float);
+  box-shadow: var(--shadow-sheet);
 }
 .panel:focus {
   outline: none;
@@ -26,7 +27,7 @@
 .handle {
   display: block;
   width: 36px;
-  height: 4px;
+  height: 5px;
   margin: 0 auto 14px;
   border-radius: var(--radius-pill);
   background: var(--line-2);

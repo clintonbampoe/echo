@@ -1,5 +1,6 @@
 /*
- * Shared animations. Subtle on purpose: things settle into place, nothing bounces.
+ * Shared animations and reactions (claude/feel-and-interaction-spec.md). Springs are allowed, but only on small,
+ * quick things: a press release, a toggle, a tile, a popover. Big surfaces glide with --ease-out.
  * Use the classes; do not copy keyframes into component CSS.
  */
 @keyframes rise {
@@ -148,7 +149,7 @@ button:not([data-press="none"]),
 [role="button"]:not([data-press="none"]),
 a[data-press] {
   transition:
-    transform 180ms cubic-bezier(0.3, 1.4, 0.5, 1),
+    transform var(--t-spring) var(--ease-spring),
     background-color var(--fast) ease,
     border-color var(--fast) ease,
     color var(--fast) ease,
@@ -239,13 +240,13 @@ a[data-press]:active {
 }
 @keyframes echoSlideIn {
   from {
-    transform: translateX(32px);
+    transform: translateX(24px);
     opacity: 0;
   }
 }
 @keyframes echoSlideOut {
   to {
-    transform: translateX(32px);
+    transform: translateX(24px);
     opacity: 0;
   }
 }
@@ -261,10 +262,10 @@ a[data-press]:active {
 .pop[data-closing="true"] {
   animation: echoPopOut 120ms ease-in both;
 }
-.lift {
+.sheet-rise {
   animation: echoLift 340ms var(--spring) both;
 }
-.lift[data-closing="true"] {
+.sheet-rise[data-closing="true"] {
   animation: echoLiftOut 200ms ease-in both;
 }
 .slide-in {
@@ -335,4 +336,108 @@ a[data-press]:active {
   transform-origin: left;
   animation: echoGrowX 800ms var(--grow) both;
   animation-delay: calc(var(--i, 0) * 40ms);
+}
+
+/*
+ * Reactions (feel spec §1 and §2). Compose them with a second class; do not write hover rules in a component.
+ * Hover applies only where a pointer can hover. Touch gets the press instead.
+ */
+@keyframes echoPopIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.96);
+  }
+}
+@keyframes echoRiseIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+/* A control gives under the finger and springs back. */
+.press {
+  transition: transform var(--t-spring) var(--ease-spring);
+}
+.press:active {
+  transform: scale(var(--press));
+}
+
+/* Springs back from a hover or a press: tiles, toggles, avatars. */
+.spring {
+  transition: transform var(--t-spring) var(--ease-spring);
+}
+
+/* A clickable thing lifts. --lift-y sets how far (default 3px, a card). */
+.lift {
+  transition:
+    transform var(--t-base) var(--ease-out),
+    box-shadow var(--t-base) var(--ease-soft);
+}
+.lift:active {
+  transform: translateY(-1px) scale(var(--press-card));
+}
+
+/* A card: the border and shadow strengthen. */
+.card-hover {
+  transition:
+    border-color var(--t-base) var(--ease-soft),
+    box-shadow var(--t-base) var(--ease-soft),
+    transform var(--t-base) var(--ease-out);
+}
+
+/* A list row: a rounded soft fill. */
+.row-hover {
+  border-radius: var(--radius);
+  transition: background-color var(--t-fast) var(--ease-soft);
+}
+.row-hover:active {
+  background: var(--hover-option);
+}
+
+@media (hover: hover) {
+  .lift:hover {
+    transform: translateY(var(--lift-y, -3px));
+  }
+  .card-hover:hover {
+    border-color: var(--line-hover);
+    box-shadow: var(--shadow-hover);
+  }
+  .row-hover:hover {
+    background: var(--hover-row);
+  }
+}
+
+/* A popover, menu or option list springs in from its trigger; a panel or tab body fades and rises. */
+.pop-in {
+  transform-origin: var(--origin, top);
+  animation: echoPopIn var(--t-enter) var(--ease-spring) both;
+}
+.rise-in {
+  animation: echoRiseIn var(--t-enter) var(--ease-out) both;
+}
+
+/* Reduce motion: no lift, no scale, no spring. Colour changes still happen (reset.css makes them instant). */
+@media (prefers-reduced-motion: reduce) {
+  .lift:hover,
+  .lift:active,
+  .press:active,
+  button:active,
+  [role="button"]:active,
+  a[data-press]:active {
+    transform: none !important;
+  }
+}
+html[data-reduce-motion="true"] .lift:hover,
+html[data-reduce-motion="true"] .lift:active,
+html[data-reduce-motion="true"] .press:active,
+html[data-reduce-motion="true"] button:active,
+html[data-reduce-motion="true"] [role="button"]:active,
+html[data-reduce-motion="true"] a[data-press]:active {
+  transform: none !important;
+}
+
+/* The panel under a tab fades and rises 8px when it is shown. Scroll position is kept by the page, not here. */
+[role="tabpanel"] {
+  animation: echoRiseIn var(--t-enter) var(--ease-out) both;
 }

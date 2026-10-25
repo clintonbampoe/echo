@@ -7,7 +7,7 @@
 .scrim {
   position: absolute;
   inset: 0;
-  background: rgb(10 10 10 / 38%);
+  background: rgb(10 10 10 / 32%);
 }
 
 /* A floating panel, inset from the edges, with a round corner and no divider lines. */
@@ -22,7 +22,7 @@
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: var(--radius-float);
-  box-shadow: 0 24px 64px -12px rgb(10 10 10 / 28%);
+  box-shadow: var(--shadow-sheet);
   overflow: hidden;
 }
 .panel:focus {
@@ -65,13 +65,18 @@
   border-radius: 50%;
   color: var(--text-2);
   transition:
-    background-color var(--fast) ease,
-    color var(--fast) ease,
-    transform 180ms cubic-bezier(0.3, 1.4, 0.5, 1);
+    background-color var(--t-fast) var(--ease-soft),
+    color var(--t-fast) var(--ease-soft),
+    transform var(--t-spring) var(--ease-spring);
 }
-.close:hover {
-  background: var(--sel);
-  color: var(--text);
+@media (hover: hover) {
+  .close:hover {
+    background: var(--sel);
+    color: var(--text);
+  }
+}
+.close:active {
+  transform: scale(var(--press-icon));
 }
 
 .body {

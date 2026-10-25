@@ -65,16 +65,3 @@
   font-size: 13px;
 }
 
-/* Design round 8: a card answers the pointer. */
-.card {
-  transition:
-    border-color var(--fast) ease,
-    box-shadow var(--fast) ease,
-    background var(--fast) ease,
-    transform var(--base) var(--ease);
-}
-
-.card:hover {
-  border-color: var(--line-2);
-  box-shadow: var(--shadow-hover);
-}

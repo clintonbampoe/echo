@@ -31,8 +31,8 @@
 }
 .list[data-ready="true"] .slot {
   transition:
-    translate 520ms var(--spring),
-    width 520ms var(--spring);
+    translate var(--base) var(--ease-out),
+    width var(--base) var(--ease-out);
 }
 .thumb {
   position: absolute;
@@ -58,10 +58,20 @@
   font-size: 14px;
   font-weight: 500;
   color: var(--text-2);
-  transition: color var(--base) ease;
+  transition:
+    color var(--base) ease,
+    background-color var(--t-fast) var(--ease-soft),
+    transform var(--t-spring) var(--ease-spring);
 }
-.tab:hover {
-  color: var(--text);
+/* An idle tab fills softly under the pointer, with no lift. The picked one keeps its raised pill. */
+@media (hover: hover) {
+  .tab:hover:not(.selected) {
+    color: var(--text);
+    background: var(--hover-tab);
+  }
+}
+.tab:active {
+  transform: scale(var(--press));
 }
 .tab:focus-visible {
   outline: 2px solid var(--text);
