@@ -16,14 +16,32 @@
   font-weight: 500;
   white-space: nowrap;
   transition:
-    background-color var(--fast) ease,
-    border-color var(--fast) ease;
+    background-color var(--t-fast) var(--ease-soft),
+    border-color var(--t-fast) var(--ease-soft),
+    transform var(--t-spring) var(--ease-spring);
 }
-.pill:hover,
+/* Dashed at rest, solid when you point at it, solid and dark while its panel is open. */
+@media (hover: hover) {
+  .pill:hover {
+    background: var(--hover-tab);
+    border-style: solid;
+  }
+}
 .pill[aria-expanded="true"] {
-  background: var(--hover);
+  background: var(--hover-tab);
+  border-style: solid;
+  border-color: var(--text);
+}
+.pill:active {
+  transform: scale(var(--press));
+}
+@media (prefers-reduced-motion: reduce) {
+  .pill:active {
+    transform: none;
+  }
 }
 .on {
+  border-style: solid;
   border-color: var(--text);
 }
 .chevron {

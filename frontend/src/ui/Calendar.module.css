@@ -31,10 +31,18 @@
   font-weight: 500;
   font-variant-numeric: tabular-nums;
   color: var(--text);
-  transition: background-color var(--fast) ease;
+  transition:
+    background-color var(--t-fast) var(--ease-soft),
+    transform var(--t-spring) var(--ease-spring),
+    box-shadow var(--t-base) var(--ease-soft);
 }
-.day:hover:not(:disabled) {
-  background: var(--hover);
+@media (hover: hover) {
+  .day:hover:not(:disabled):not(.picked):not(.first):not(.last) {
+    background: var(--hover-option);
+  }
+}
+.day:active:not(:disabled) {
+  transform: scale(var(--press-icon));
 }
 .day:focus-visible {
   outline: var(--focus);
@@ -73,6 +81,7 @@
   border-radius: var(--radius-sm);
 }
 .day.picked {
+  animation: dayPick var(--t-spring) var(--ease-spring) both;
   background: var(--accent);
   color: var(--on-accent);
   box-shadow: 0 6px 14px rgb(10 10 10 / 22%);
@@ -97,5 +106,18 @@
   }
   .weekdays span {
     height: 32px;
+  }
+}
+@keyframes dayPick {
+  from {
+    transform: scale(0.85);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .day.picked {
+    animation: none;
+  }
+  .day:active:not(:disabled) {
+    transform: none;
   }
 }

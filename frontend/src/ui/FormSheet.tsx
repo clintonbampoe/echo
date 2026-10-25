@@ -1,6 +1,7 @@
-import type { FormEventHandler, ReactNode } from "react";
+import { useState, type FormEventHandler, type ReactNode } from "react";
 import { Alert } from "./Alert";
 import { Button } from "./Button";
+import { ConfirmDialog } from "./ConfirmDialog";
 import { Sheet } from "./Sheet";
 import styles from "./FormSheet.module.css";
 
@@ -45,6 +46,20 @@ export function FormSheet({
   another,
   children,
 }: Props) {
+  // Typing is remembered with the note showing at the time: once a save shows a new note, the form counts as clean.
+  const [typedAt, setTypedAt] = useState<{ note?: string } | null>(null);
+  const dirty = typedAt !== null && typedAt.note === note;
+  const [shaking, setShaking] = useState(false);
+  const [asking, setAsking] = useState(false);
+
+  // Closing a form that has been typed into shakes the sheet and asks first. An untouched form just closes.
+  function requestClose() {
+    if (!dirty || pending) return onClose();
+    setShaking(true);
+    window.setTimeout(() => setShaking(false), 280);
+    setAsking(true);
+  }
+
   const footer = (
     <div className={styles.actions}>
       {failures > 0 && (
@@ -81,19 +96,37 @@ export function FormSheet({
   return (
     <Sheet
       open
-      onClose={onClose}
+      onClose={requestClose}
       title={title}
       subtitle={subtitle}
       footer={footer}
+      shaking={shaking}
     >
       {problem && (
         <div className={styles.alert}>
           <Alert title={problem.title}>{problem.message}</Alert>
         </div>
       )}
-      <form id={formId} noValidate onSubmit={onSubmit}>
+      <form
+        id={formId}
+        noValidate
+        onSubmit={onSubmit}
+        onChange={() => setTypedAt({ note })}
+      >
         {children}
       </form>
+      {asking && (
+        <ConfirmDialog
+          title="Discard your changes?"
+          confirmLabel="Discard"
+          cancelLabel="Keep editing"
+          tone="danger"
+          onConfirm={onClose}
+          onCancel={() => setAsking(false)}
+        >
+          What you typed here has not been saved.
+        </ConfirmDialog>
+      )}
     </Sheet>
   );
 }

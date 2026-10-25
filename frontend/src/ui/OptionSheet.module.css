@@ -25,8 +25,16 @@
 .row:last-child {
   border-bottom: 0;
 }
+.row {
+  transition: background-color var(--t-fast) var(--ease-soft);
+}
+@media (hover: hover) {
+  .row:hover {
+    background: var(--hover-option);
+  }
+}
 .row:active {
-  background: var(--hover);
+  background: var(--hover-tab);
 }
 .row:focus-visible {
   outline: var(--focus);

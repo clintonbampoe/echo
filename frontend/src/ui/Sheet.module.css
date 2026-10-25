@@ -144,3 +144,23 @@
     opacity: 0;
   }
 }
+
+/* "Not yet": two quick 4px shakes (the same as a field with an error). */
+.panel[data-shaking="true"] {
+  animation: sheetShake 260ms var(--ease-out);
+}
+@keyframes sheetShake {
+  20%,
+  60% {
+    translate: -4px 0;
+  }
+  40%,
+  80% {
+    translate: 4px 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .panel[data-shaking="true"] {
+    animation: none;
+  }
+}

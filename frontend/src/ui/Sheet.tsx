@@ -12,6 +12,8 @@ type Props = {
   subtitle?: string;
   // The row of buttons at the bottom. It stays in view while the form scrolls.
   footer: ReactNode;
+  // Shakes the panel sideways, to say "not yet" (a form with unsaved changes was asked to close).
+  shaking?: boolean;
   children: ReactNode;
 };
 
@@ -25,6 +27,7 @@ export function Sheet({
   title,
   subtitle,
   footer,
+  shaking,
   children,
 }: Props) {
   const panel = useRef<HTMLDivElement>(null);
@@ -67,6 +70,7 @@ export function Sheet({
         tabIndex={-1}
         className={`${styles.panel} slide-in`}
         data-closing={closing}
+        data-shaking={shaking || undefined}
         onKeyDown={(e) => e.key === "Escape" && onClose()}
       >
         <span aria-hidden="true" className={styles.grabber} />

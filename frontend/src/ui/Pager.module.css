@@ -58,7 +58,14 @@
   height: 6px;
   background: var(--line-2);
   border-radius: 50%;
-  transition: width var(--fast) ease;
+  transition:
+    width var(--t-base) var(--ease-spring),
+    background-color var(--t-fast) var(--ease-soft);
+}
+@media (hover: hover) {
+  .dot:hover::before {
+    background: var(--text-3);
+  }
 }
 .dot[aria-current="true"]::before {
   width: 18px;
