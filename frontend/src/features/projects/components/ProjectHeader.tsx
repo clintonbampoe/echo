@@ -27,7 +27,9 @@ export function ProjectHeader({
         {p.description && <p className={styles.text}>{p.description}</p>}
       </div>
       <div className={styles.actions}>
-        <Button onClick={onRecord}>Add contribution</Button>
+        <Button className={styles.add} onClick={onRecord}>
+          Add contribution
+        </Button>
         <ActionMenu
           label={`More actions for ${p.name}`}
           title={p.name}

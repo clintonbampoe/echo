@@ -30,7 +30,21 @@
   gap: 10px;
 }
 
+/* A phone: the name and the ⋯ share a row, the one main action takes the full width under them. */
 @media (max-width: 900px) {
+  .header {
+    flex-wrap: wrap;
+  }
+  .main {
+    flex: 1;
+  }
+  .actions {
+    display: contents;
+  }
+  .add {
+    order: 3;
+    flex: 1 0 100%;
+  }
   .name {
     font-size: 24px;
   }

@@ -35,7 +35,11 @@ export function AssetValue({
         <h2 className={styles.title}>Value over time</h2>
         <p className={styles.sub}>Straight line, 10 years. An estimate.</p>
         <div className={styles.chart}>
-          <MonthBars label="Value by year" bars={bars} />
+          <MonthBars
+            label="Value by year"
+            bars={bars}
+            selected={String(thisYear)}
+          />
         </div>
       </section>
       <section aria-label="By year" className={styles.card}>
