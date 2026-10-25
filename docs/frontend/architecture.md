@@ -73,7 +73,8 @@ Use these before writing your own. A new list page is about 40 lines made from t
 | `lib` | `urlFilters`, `useUrlFilters`, `windows` | filters and date ranges kept in the URL. `resetKey` empties a search box after Clear |
 | `lib` | `dates`, `format`, `validation`, `regions`, `paths` | days, money, required fields, links |
 | `ui` | `PageHeader`, `FilterBar`, `SearchBox`, `ListBody` | the shell of a list page. `FilterBar` folds filters behind a "Filters" button on a phone or tablet, even for one filter |
-| `ui` | `RecordTable`, `Section`, `StatStrip`, `CellStrip`, `EmptyState` | tables and numbers |
+| `ui` | `ListCard`, `ListHeader`, `PersonList`, `RecordTable`, `RecordLines` | every list card opens with a `ListHeader` (title left, count right), drawn from the list's `title`; pages never hand-build one |
+| `ui` | `Section`, `StatStrip`, `CellStrip`, `RankedBars`, `EmptyState` | numbers, the strip of squares, ranked bars (Finance categories) |
 | `ui` | `FormSheet`, `FormSection`, `Field`, `ControlledSelect`, `DeleteDialog`, `Notice` | forms, delete and notes inside a form |
 | `ui` | `MonthYearPill`, `MonthBars` | picking a month, and a month-by-month chart |
 | `ui` | `Chip` + `ChipTone`, `plainOptions`, `withAny` | status labels, dropdown lists |
@@ -86,19 +87,36 @@ Features import `ui` only through `ui/index.ts`, which stays alphabetical.
 
 ## Interaction
 
-Everything reacts to the person, and it is all built once in `ui/` and `styles/motion.css` so no screen
-writes its own. Tokens are `--spring`, `--grow`, `--press`.
+Everything reacts to the person, and it is all built once in `ui/`, `styles/tokens.css` and `styles/motion.css`
+so no screen writes its own. The rulebook is `claude/feel-and-interaction-spec.md`; components use its tokens
+(`--ease-out`, `--ease-spring`, `--ease-soft`, `--t-fast`/`--t-base`/`--t-spring`/`--t-enter`, `--lift-1`, `--lift-3`,
+`--press*`, `--hover-*`, `--shadow-*`, `--focus-ring`), never their own numbers.
 
+- **Hover only where there is a hover.** Every hover reaction sits in `@media (hover: hover)`; a touch screen gets
+  the press state instead. A card that does nothing when clicked reacts to nothing. A clickable card gets a
+  stronger border, a shadow and a 3px lift, and presses to `--press-card`.
+- **One element never crowds another.** A reaction moves or fills only its own element (a row's hover fill is
+  inset, the dividers on both sides hide, a nav item slides its content not its box).
 - **Press**: every `button` and `[role=button]` shrinks to `--press` and springs back. Opt out with `data-press="none"`.
-- **Liquid pill**: `Tabs` and joined `SegmentedField` slide a dark thumb to the pick and squish it as it lands
-  (`useSlidingThumb` measures; `useFlip` replays the squish; CSS does the rest).
+- **Liquid pill**: `Tabs`, joined `SegmentedField` and the sidebar's `NavList` glide one thumb to the pick
+  (`useSlidingThumb` measures and sets `--x/--w/--y/--h`; CSS does the rest). Tab panels fade and rise.
 - **Pop and exit**: menus, dropdowns, sheets, dialogs and toasts animate in and out. `usePresence` keeps a
   closing thing on the page until its exit has played. A sheet or dialog that is mounted only while wanted is
   wrapped in `<Presence open>`, with `useHeld` keeping what it showed.
+- **Touch gestures**: a phone's bottom sheet (`Sheet`, `BottomSheet`) is pulled down to close by its grabber or
+  header (`useDragDismiss`: follows the finger, closes past a quarter of its height or on a flick, springs back,
+  and comes back up if a dirty form refuses). The shell (`app/shell`) owns two app-wide gestures: pulling the page
+  down from the top refreshes every query (`PullToRefresh`, never on forms or dialogs) and holding a row opens its
+  ⋯ menu (`useLongPressMenu`, which presses the row's own menu button). Lists build neither.
 - **Loading**: shimmer skeletons shaped like what will arrive (`.skeleton`, `PersonListSkeleton`, `StatStrip busy`).
   Bars and progress grow from the baseline (`.grow-y`, `.grow-x`, 40ms apart). Rows arrive one after another (`.stagger`).
-- **Reduced motion**: `reset.css` shortens every animation and transition. Exit waits are skipped too
-  (`exitDuration`). Tests turn exit animations off (`test/setup.ts`).
+- **Saying what happened**: `Toast` lasts 5s and holds while hovered; a list's header summary (`ListHeader`) is a
+  polite live region, so a filter that changes the count is read out.
+- **Numbers**: `formatNumber` writes whole numbers below 1,000, then `k` and `m` with up to two decimals and no
+  trailing zeros (2k, 2.05k, 15.64k). Exact values live in tooltips and detail panes.
+- **Reduced motion**: `reset.css` shortens every animation and transition, and the app's own Reduce motion
+  setting (`html[data-reduce-motion="true"]`) does the same: no lift, no scale, no spring. Exit waits are skipped
+  too (`exitDuration`). Tests turn exit animations off (`test/setup.ts`).
 
 ## State, errors and styling
 

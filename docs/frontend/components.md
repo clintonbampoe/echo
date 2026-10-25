@@ -68,6 +68,7 @@ Every feature imports these through `ui/index.ts` only. Each one holds no data, 
 | Section, StatStrip, CellStrip, Tabs | a titled block, the numbers (a value or note too long for its tile is cut with an ellipsis, full text on hover), the strip of squares (a square's `tip` is a shorter hover text), the tabs | profile pages, organizations |
 | ProfileLayout, BackLink, ProfileIdentity | a record's page: back link, name card, numbers and history | member and visitor pages |
 | DetailCard, DetailGroup, DetailBlock | the details card with titled blocks | member and visitor pages |
+| ListCard, ListHeader, RankedBars | a list's card and its header (`title` names the content, `summary` is the count on the right); a ranked-bar card (name, amount and share over a bar that fills from zero, the other rows dim on hover) | every list; Finance categories |
 | useMedia, useNarrowProfile, useSurface | screen-size and surface hooks | app, profile pages |
 | Pager | related dashboard cards: side by side on a wide screen, swipeable pages with a dot for each on a phone. `columns` sizes the halves ("3fr 2fr") | dashboard |
 
@@ -110,3 +111,4 @@ side (sidebar), nav-i (+ on, soon), grp, soon-b, top (mobile top bar), bottom ta
 ## Verify while building
 
 A few short class names (ex, n, pair, sr, acc, dn, dd) are not defined in any board stylesheet and appear in markup only. I'll confirm each when its screen is built.
+- **A record's page opens on Details, and its tabs carry no counts.** Member, visitor, organization, project, asset and event pages all start on Details; the other tabs follow, and the picked tab lives in the URL (`?tab=`). The count belongs in the tab's own list header, not on the tab.
