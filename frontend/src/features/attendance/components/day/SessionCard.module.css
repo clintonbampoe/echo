@@ -1,34 +1,76 @@
-.list {
-  display: grid;
-  gap: 12px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
 .card {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  min-height: 72px;
-  padding: 14px 24px;
+  overflow: hidden;
   background: var(--card-bg);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow);
-  transition: background var(--fast) ease;
+}
+.help {
+  margin: 0;
+  padding: 0 22px 10px;
+  font-size: 13px;
+  color: var(--text-3);
+}
+.list {
+  margin: 0;
+  padding: 0 0 8px;
+  list-style: none;
+}
+.row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 72px;
+  margin-inline: 8px;
+  padding: 8px 14px;
+}
+.row + .row {
+  border-top: 1px solid var(--line);
 }
 @media (hover: hover) {
-  .card:hover {
-    background: var(--surface-2);
+  .row:hover,
+  .row:hover + .row {
+    border-top-color: transparent;
   }
 }
-.card:has(.link:focus-visible) {
+.row:active {
+  background: var(--hover-tab);
+  border-radius: var(--radius);
+}
+.row:has(.link:focus-visible) {
   outline: var(--focus);
   outline-offset: 2px;
+  border-radius: var(--radius);
 }
+
+.tile {
+  flex: none;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: var(--fill);
+  color: var(--text);
+}
+.clock {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+.period {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
 .main {
+  flex: 1;
   min-width: 0;
 }
 .name {
@@ -47,7 +89,7 @@
 .link:focus-visible {
   outline: none;
 }
-/* The whole card is the click target; the name is the link screen readers and keys find. */
+/* The whole row is the click target; the name is the link screen readers and keys find. */
 .link::after {
   content: "";
   position: absolute;
@@ -68,7 +110,7 @@
 }
 .number {
   display: block;
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 600;
   line-height: 1;
   font-variant-numeric: tabular-nums;
@@ -79,34 +121,11 @@
 }
 
 @media (max-width: 700px) {
-  .card {
-    padding: 12px 16px;
+  .row {
+    margin-inline: 4px;
+    padding-inline: 10px;
   }
-}
-
-/* Design round 8: a card answers the pointer. */
-.card {
-  transition:
-    border-color var(--fast) ease,
-    box-shadow var(--fast) ease,
-    background var(--fast) ease,
-    transform var(--base) var(--ease);
-}
-
-@media (hover: hover) {
-  .card:hover {
-    border-color: var(--line-hover);
-    box-shadow: var(--shadow-hover);
-    transform: translateY(-3px);
-  }
-}
-
-.card:active {
-  transform: scale(var(--press-card));
-}
-@media (prefers-reduced-motion: reduce) {
-  .card:hover,
-  .card:active {
-    transform: none;
+  .help {
+    padding-inline: 16px;
   }
 }

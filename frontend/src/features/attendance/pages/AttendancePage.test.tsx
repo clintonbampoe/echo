@@ -67,6 +67,9 @@ describe("attendance page", () => {
     expect(within(list).getByText(/Walking in Faith/)).toBeInTheDocument();
     expect(within(list).getByText(/8:00 am/)).toBeInTheDocument();
     expect(within(list).getByText("Scheduled")).toBeInTheDocument();
+    expect(
+      screen.getByText(/Everything held on Sunday 11 Oct\. Open a session/),
+    ).toBeInTheDocument();
     expect(await screen.findByText("Across 2 sessions")).toBeInTheDocument();
   });
 

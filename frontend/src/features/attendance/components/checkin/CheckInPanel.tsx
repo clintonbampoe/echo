@@ -93,6 +93,7 @@ export function CheckInPanel({ session, rows, flat }: Props) {
           present={new Set([...already, ...now])}
           busy={marking.busy}
           onMark={(m) => void marking.mark(m)}
+          onMarkAll={(all) => void marking.markAll(all)}
         />
       )}
       <p role="status" className={styles.tail}>

@@ -36,6 +36,11 @@ export function useMarking(sessionId: string, onSettled: () => void) {
     onSettled();
   }
 
+  // Everyone in the list, one after the other, so each is saved (or found to be here already) on its own.
+  async function markAll(people: Match[]) {
+    for (const person of people) await mark(person);
+  }
+
   async function addVisitor(name: NewName) {
     setFailed(false);
     try {
@@ -64,6 +69,7 @@ export function useMarking(sessionId: string, onSettled: () => void) {
     busy: check.isPending || createVisitor.isPending,
     undoing: remove.isPending,
     mark,
+    markAll,
     addVisitor,
     undo,
   };

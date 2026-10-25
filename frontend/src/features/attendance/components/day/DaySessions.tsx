@@ -37,7 +37,7 @@ export function DaySessions({
           Check your connection and try again.
         </Alert>
       )}
-      {ready && here.length > 0 && <SessionList sessions={here} />}
+      {ready && here.length > 0 && <SessionList day={day} sessions={here} />}
       {ready && here.length === 0 && (
         <div className={styles.empty}>
           <EmptyDay
