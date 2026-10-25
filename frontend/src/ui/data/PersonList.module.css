@@ -256,12 +256,14 @@
     padding: 0 var(--s-16);
     background: transparent;
     border: 0;
-    border-top: 1px solid var(--line);
+    /* The divider is inset to the content, as on a wide screen, not run to the card's edges. */
+    background: linear-gradient(var(--line), var(--line)) center top /
+      calc(100% - 2 * var(--s-16)) 1px no-repeat;
     border-radius: 0;
     box-shadow: none;
   }
   .compact .row:first-child {
-    border-top: 0;
+    background: none;
   }
   .compact .who {
     grid-column: auto;

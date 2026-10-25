@@ -11,8 +11,10 @@
   padding: 0;
   list-style: none;
 }
+/* The divider is inset to the content, not run to the card's edges. */
 .item + .item {
-  border-top: 1px solid var(--line);
+  background: linear-gradient(var(--line), var(--line)) center top /
+    calc(100% - 2 * var(--s-16)) 1px no-repeat;
 }
 
 .item {
@@ -34,7 +36,7 @@
 @media (hover: hover) and (min-width: 561px) {
   .item:hover,
   .item:hover + .item {
-    border-top-color: transparent;
+    background-image: none;
   }
 }
 .row {

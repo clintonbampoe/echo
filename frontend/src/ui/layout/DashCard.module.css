@@ -55,6 +55,13 @@
   flex-direction: column;
   min-height: 0;
 }
+/* A card that is taller than its content, because the cards beside it on a phone share one height, centres what it
+   holds instead of leaving a blank block under it. */
+@media (max-width: 900px) {
+  .body {
+    justify-content: center;
+  }
+}
 @media (max-width: 700px) {
   .card {
     padding: var(--s-20) var(--s-20) var(--s-16);
