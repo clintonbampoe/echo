@@ -37,14 +37,25 @@
   .row {
     margin-inline: 8px;
     padding-inline: 14px;
+    border-top: 0;
     border-radius: var(--radius);
   }
-  .row:has(+ .row:hover),
-  .row:hover + .row {
-    border-top-color: transparent;
+  /* The divider is a straight line inside the row, so a rounded row does not curl it at the ends. */
+  .row:not(:first-child)::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 14px;
+    left: 14px;
+    height: 1px;
+    background: var(--line);
+    transition: opacity var(--t-fast) var(--ease-soft);
   }
-  .row:hover {
-    border-top-color: transparent;
+  .row:has(+ .row:hover)::before,
+  .row:hover + .row::before,
+  .row:hover::before,
+  .row[data-selected="true"]::before {
+    opacity: 0;
   }
   .row[data-selected="true"] {
     background: var(--hover-row);

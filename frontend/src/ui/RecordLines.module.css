@@ -18,22 +18,32 @@
   min-height: calc(66px * var(--density, 1));
   margin-inline: 8px;
   padding: 8px 14px;
-  border-top: 1px solid var(--line);
   border-radius: var(--radius);
   transition:
     background-color var(--t-fast) var(--ease-soft),
     border-color var(--t-fast) var(--ease-soft);
 }
-.row:first-child {
-  border-top: 0;
+/* The divider is a straight line inside the row, so a rounded row does not curl it at the ends. */
+.row:not(:first-child)::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 14px;
+  left: 14px;
+  height: 1px;
+  background: var(--line);
+  transition: opacity var(--t-fast) var(--ease-soft);
 }
 /* A hovered row gets a rounded soft fill and the dividers on both sides hide. */
 @media (hover: hover) {
-  .row:has(+ .row:hover),
-  .row:hover + .row,
-  .row:hover {
-    border-top-color: transparent;
+  .row:has(+ .row:hover)::before,
+  .row:hover + .row::before,
+  .row:hover::before {
+    opacity: 0;
   }
+}
+.row[data-selected="true"]::before {
+  opacity: 0;
 }
 .row[data-selected="true"] {
   background: var(--hover-row);
