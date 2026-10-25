@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { DatePill, FilterBar, FilterSelect } from "@/ui";
 import type { SessionLabel } from "../api";
 import {
@@ -19,6 +20,8 @@ type Props = {
   resetKey: number;
   narrowed: boolean;
   onClear: () => void;
+  // The Sessions / People switch, which sits right after the search box.
+  view: ReactNode;
 };
 
 // The Records filters: search, the type of session, then status (for sessions) or kind (for people), with the days
@@ -31,6 +34,7 @@ export function RecordsFilters({
   resetKey,
   narrowed,
   onClear,
+  view,
 }: Props) {
   return (
     <FilterBar
@@ -69,6 +73,7 @@ export function RecordsFilters({
         </span>
       }
     >
+      {view}
       <FilterSelect
         label="Type"
         options={typeOptions(labels)}

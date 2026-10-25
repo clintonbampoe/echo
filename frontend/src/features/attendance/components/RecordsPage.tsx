@@ -48,22 +48,6 @@ export function RecordsPage() {
         aria-labelledby="attendance-tab-records"
         className={styles.panel}
       >
-        <div className={styles.view}>
-          <SegmentedField
-            label="Show"
-            hideLabel
-            options={views}
-            value={people ? "people" : "sessions"}
-            onChange={(v) =>
-              navigate({
-                pathname: paths.attendanceRecords(
-                  v === "people" ? "people" : undefined,
-                ),
-                search,
-              })
-            }
-          />
-        </div>
         <div>
           <StatStrip
             label="Attendance in this period"
@@ -84,6 +68,24 @@ export function RecordsPage() {
           resetKey={resetKey}
           narrowed={narrowed}
           onClear={clear}
+          view={
+            <SegmentedField
+              label="Show"
+              hideLabel
+              joined
+              compact
+              options={views}
+              value={people ? "people" : "sessions"}
+              onChange={(v) =>
+                navigate({
+                  pathname: paths.attendanceRecords(
+                    v === "people" ? "people" : undefined,
+                  ),
+                  search,
+                })
+              }
+            />
+          }
         />
         {people ? (
           <PeopleRecords
