@@ -1,7 +1,9 @@
 import type { Paged } from "@/lib/paged";
 import { RecordTable } from "@/ui";
+import { formatNumber } from "@/lib/format";
 import type { AssetCategory } from "../../api/categories";
 import { usedBy } from "../../model/categories";
+import { CategoryMark } from "./CategoryMark";
 
 export type CategoryStart = "edit" | "delete";
 
@@ -16,8 +18,14 @@ export function AssetCategoryList({ list, onOpen }: Props) {
   return (
     <RecordTable
       label="Asset categories"
-      title="Asset categories"
+      title="Categories"
+      aside={`${formatNumber(list.rows.length)} ${list.rows.length === 1 ? "category" : "categories"} · ${usedBy(list.rows.reduce((sum, c) => sum + c.assetCount, 0))}`}
       list={list}
+      line={(c) => ({
+        lead: <CategoryMark name={c.name} />,
+        title: c.name,
+        sub: usedBy(c.assetCount),
+      })}
       rowKey={(c) => String(c.id)}
       large
       rowName={(c) => c.name}

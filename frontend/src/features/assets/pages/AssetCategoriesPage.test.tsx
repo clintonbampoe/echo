@@ -78,6 +78,7 @@ describe("asset categories page", () => {
     open();
     expect(await screen.findByText("Equipment")).toBeInTheDocument();
     expect(screen.getByText("3 assets")).toBeInTheDocument();
+    expect(screen.getByText("3 categories · 4 assets")).toBeInTheDocument();
     expect(screen.getByText("1 asset")).toBeInTheDocument();
     expect(screen.getByText("0 assets")).toBeInTheDocument();
   });
