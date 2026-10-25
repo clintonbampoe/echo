@@ -1,5 +1,5 @@
 import { formatDate, formatTime } from "@/lib/format";
-import { Chip, ListBody, PersonList, type PersonColumn } from "@/ui";
+import { ListBody, PersonList, type PersonColumn } from "@/ui";
 import type { CheckIn, RecordsQuery } from "../api";
 import { recordTitle } from "../day";
 import { useRecordCheckIns } from "../hooks";
@@ -9,29 +9,10 @@ type Props = { query: RecordsQuery; narrowed: boolean; onClear: () => void };
 
 const columns: PersonColumn<CheckIn>[] = [
   {
-    header: "Kind",
-    width: "110px",
-    chip: true,
-    cell: (c) => (
-      <Chip tone={c.personKind === "Member" ? "neutral" : "warning"}>
-        {c.personKind}
-      </Chip>
-    ),
-  },
-  {
-    header: "Session",
-    width: "minmax(140px, 1.4fr)",
-    cell: (c) => recordTitle(c),
-  },
-  {
     header: "Date",
-    width: "minmax(110px, 0.9fr)",
-    cell: (c) => formatDate(c.sessionDate),
-  },
-  {
-    header: "Checked in",
-    width: "110px",
-    cell: (c) => formatTime(c.checkedInAt),
+    width: "minmax(140px, 1fr)",
+    end: true,
+    cell: (c) => `${formatDate(c.sessionDate)} · ${formatTime(c.checkedInAt)}`,
   },
 ];
 
@@ -52,8 +33,9 @@ export function PeopleRecords({ query, narrowed, onClear }: Props) {
         filtered={narrowed}
         onClear={onClear}
         order="Latest session first."
+        footerInside
       >
-        {(rows) => (
+        {(rows, footer) => (
           <PersonList
             label="Check-ins"
             rows={rows}
@@ -61,9 +43,10 @@ export function PeopleRecords({ query, narrowed, onClear }: Props) {
             person={(c) => ({
               name: c.personName,
               onOpen: () => open(c),
-              plain: true,
+              detail: `${c.personKind} · ${recordTitle(c)}`,
             })}
             columns={columns}
+            footer={footer}
             actions={(c) => [
               {
                 label: "Remove from session",

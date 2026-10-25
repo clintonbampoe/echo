@@ -4,51 +4,17 @@ import { paths } from "@/lib/paths";
 import {
   ActionMenu,
   BackLink,
-  Chip,
+  IconTile,
   DeleteDialog,
   PageHeader,
   RecordTable,
-  type Column,
 } from "@/ui";
 import type { SessionLabel } from "../api";
 import { useDeleteSessionLabel, useSessionLabels } from "../hooks";
 import { SessionLabelSheet } from "./SessionLabelSheet";
-import styles from "./SessionTypesPage.module.css";
 
 type Open =
   { kind: "new" } | { kind: "edit" | "delete"; label: SessionLabel } | null;
-
-function typeColumns(
-  onEdit: (label: SessionLabel) => void,
-  onDelete: (label: SessionLabel) => void,
-): Column<SessionLabel>[] {
-  return [
-    { header: "Name", cell: (l) => l.name },
-    {
-      header: "Category",
-      cell: (l) => <Chip tone="outline">{l.category}</Chip>,
-    },
-    {
-      header: "",
-      end: true,
-      cell: (l) => (
-        <ActionMenu
-          label={`Actions for ${l.name}`}
-          title={l.name}
-          items={[
-            { label: "Edit", onSelect: () => onEdit(l) },
-            {
-              label: "Delete",
-              danger: true,
-              separated: true,
-              onSelect: () => onDelete(l),
-            },
-          ]}
-        />
-      ),
-    },
-  ];
-}
 
 // The kinds of gathering the church holds. Sessions are created from these, so the list comes first.
 export function SessionTypesPage() {
@@ -58,10 +24,6 @@ export function SessionTypesPage() {
   const close = () => setOpen(null);
 
   const list = plainList(labels.data ?? [], labels);
-  const columns = typeColumns(
-    (label) => setOpen({ kind: "edit", label }),
-    (label) => setOpen({ kind: "delete", label }),
-  );
 
   return (
     <div className="anim-rise">
@@ -73,21 +35,44 @@ export function SessionTypesPage() {
           onClick: () => setOpen({ kind: "new" }),
         }}
       />
-      <div className={styles.note}>
-        <RecordTable
-          label="Session types"
-          columns={columns}
-          list={list}
-          rowKey={(l) => String(l.id)}
-          empty={{
-            icon: "calendar-check",
-            title: "No session types yet",
-            text: "Add the kinds of gathering you hold, like Sunday Service or Bible Study. Then you can create sessions from them.",
-          }}
-          noun={["session type", "session types"]}
-          large
-        />
-      </div>
+      <RecordTable
+        label="Session types"
+        columns={[{ header: "Name", cell: (l) => l.name }]}
+        list={list}
+        onOpen={(l) => setOpen({ kind: "edit", label: l })}
+        rowName={(l) => l.name}
+        line={(l) => ({
+          lead: <IconTile icon="calendar-check" />,
+          title: l.name,
+          sub: l.category,
+          end: (
+            <ActionMenu
+              label={`Actions for ${l.name}`}
+              title={l.name}
+              items={[
+                {
+                  label: "Edit",
+                  onSelect: () => setOpen({ kind: "edit", label: l }),
+                },
+                {
+                  label: "Delete",
+                  danger: true,
+                  separated: true,
+                  onSelect: () => setOpen({ kind: "delete", label: l }),
+                },
+              ]}
+            />
+          ),
+        })}
+        rowKey={(l) => String(l.id)}
+        empty={{
+          icon: "calendar-check",
+          title: "No session types yet",
+          text: "Add the kinds of gathering you hold, like Sunday Service or Bible Study. Then you can create sessions from them.",
+        }}
+        noun={["session type", "session types"]}
+        large
+      />
       {open?.kind === "new" && <SessionLabelSheet onClose={close} />}
       {open?.kind === "edit" && (
         <SessionLabelSheet label={open.label} onClose={close} />

@@ -1,9 +1,9 @@
-import { formatDate } from "@/lib/format";
 import { paths } from "@/lib/paths";
-import { Chip, RecordTable } from "@/ui";
+import { Chip, DateTile, RecordTable } from "@/ui";
 import type { SessionFilters } from "../api";
 import { sessionTitle, statusTone } from "../day";
 import { useRecordSessions } from "../hooks";
+import styles from "./SessionRecords.module.css";
 
 type Props = { filters: SessionFilters; narrowed: boolean };
 
@@ -30,16 +30,23 @@ export function SessionRecords({ filters, narrowed }: Props) {
       large
       empty={narrowed ? nothingMatches : everything}
       noun={["session", "sessions"]}
-      columns={[
-        { header: "Session", cell: sessionTitle },
-        { header: "Type", cell: (s) => s.sessionLabelName },
-        { header: "Date", cell: (s) => formatDate(s.date) },
-        {
-          header: "Status",
-          cell: (s) => <Chip tone={statusTone[s.status]}>{s.status}</Chip>,
-        },
-        { header: "Present", end: true, cell: (s) => s.attendanceCount },
-      ]}
+      columns={[{ header: "Session", cell: sessionTitle }]}
+      line={(s) => ({
+        lead: <DateTile date={s.date} />,
+        title: sessionTitle(s),
+        sub: (
+          <>
+            {s.sessionLabelName}
+            {s.status !== "Completed" && (
+              <>
+                {" · "}
+                <Chip tone={statusTone[s.status]}>{s.status}</Chip>
+              </>
+            )}
+          </>
+        ),
+        end: <strong className={styles.count}>{s.attendanceCount}</strong>,
+      })}
     />
   );
 }
