@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { Link } from "react-router-dom";
 import { Icon } from "./Icon";
 import styles from "./CellStrip.module.css";
@@ -69,14 +70,19 @@ function Bones({ slots }: { slots: number }) {
   return (
     <div className={styles.cells} aria-hidden="true">
       {Array.from({ length: slots }, (_, i) => (
-        <span key={i} className={`${styles.cell} ${styles.bone}`} />
+        <span
+          key={i}
+          className={`${styles.cell} ${styles.bone}`}
+          style={{ "--i": i } as CSSProperties}
+        />
       ))}
     </div>
   );
 }
 
-function Square({ cell }: { cell: Cell }) {
+function Square({ cell, index }: { cell: Cell; index: number }) {
   const className = `${styles.cell} ${styles[cell.state]}`;
+  const stagger = { "--i": index } as CSSProperties;
   const tick = cell.state === "on" && <Icon name="check" size={14} />;
   if (cell.href)
     return (
@@ -85,6 +91,7 @@ function Square({ cell }: { cell: Cell }) {
         className={className}
         title={cell.tip ?? cell.name}
         aria-label={cell.name}
+        style={stagger}
       >
         {tick}
       </Link>
@@ -95,6 +102,7 @@ function Square({ cell }: { cell: Cell }) {
       title={cell.tip ?? cell.name}
       role="img"
       aria-label={cell.name}
+      style={stagger}
     >
       {tick}
     </span>
@@ -105,9 +113,9 @@ function Squares({ cells, ends }: { cells: Cell[]; ends?: [string, string] }) {
   return (
     <>
       <ul className={styles.cells}>
-        {cells.map((c) => (
+        {cells.map((c, i) => (
           <li key={c.id}>
-            <Square cell={c} />
+            <Square cell={c} index={i} />
             {c.caption && (
               <span className={styles.caption} aria-hidden="true">
                 {c.caption}

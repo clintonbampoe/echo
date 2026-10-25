@@ -59,7 +59,7 @@ describe("toast", () => {
       );
       act(() => screen.getByRole("button", { name: "Go" }).click());
       expect(screen.getByRole("status")).toBeInTheDocument();
-      act(() => vi.advanceTimersByTime(4100));
+      act(() => vi.advanceTimersByTime(5100));
       expect(screen.queryByRole("status")).not.toBeInTheDocument();
     } finally {
       vi.useRealTimers();

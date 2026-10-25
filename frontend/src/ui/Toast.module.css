@@ -22,7 +22,7 @@
   font-size: 14px;
   font-weight: 500;
   pointer-events: auto;
-  animation: in 380ms var(--spring) both;
+  animation: in var(--t-enter) var(--ease-spring) both;
 }
 .toast[data-closing="true"] {
   animation: out 200ms ease-in both;
@@ -40,8 +40,18 @@
   font-size: 13px;
   font-weight: 600;
 }
-.action:hover {
-  background: color-mix(in srgb, var(--bg) 28%, transparent);
+.action {
+  transition:
+    background-color var(--t-fast) var(--ease-soft),
+    transform var(--t-spring) var(--ease-spring);
+}
+@media (hover: hover) {
+  .action:hover {
+    background: color-mix(in srgb, var(--bg) 28%, transparent);
+  }
+}
+.action:active {
+  transform: scale(var(--press));
 }
 .action:focus-visible {
   outline: 2px solid var(--bg);
