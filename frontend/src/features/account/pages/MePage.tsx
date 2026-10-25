@@ -1,8 +1,8 @@
 import { useNavigate } from "react-router-dom";
 import { useSignOut } from "@/features/auth";
 import { Avatar, Icon, PageHeader } from "@/ui";
-import { roleLabel } from "../labels";
-import { useCongregation, useMe } from "../hooks";
+import { roleLabel } from "../model/labels";
+import { useCongregation, useMe } from "../hooks/queries";
 import styles from "./MePage.module.css";
 
 // Who is signed in, and the way out.

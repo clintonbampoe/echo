@@ -1,4 +1,4 @@
-import type { UserRole } from "./api";
+import type { UserRole } from "../api/account";
 
 const roleLabels: Record<UserRole, string> = {
   Admin: "Administrator",
