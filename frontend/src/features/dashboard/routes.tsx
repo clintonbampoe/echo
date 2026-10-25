@@ -5,7 +5,7 @@ export const dashboardRoutes: RouteObject[] = [
   {
     path: "dashboard",
     lazy: async () => ({
-      Component: (await import("./components/DashboardPage")).DashboardPage,
+      Component: (await import("./pages/DashboardPage")).DashboardPage,
     }),
   },
 ];

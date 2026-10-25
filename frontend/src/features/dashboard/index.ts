@@ -2,4 +2,4 @@
 export { dashboardRoutes } from "./routes";
 
 // The attendance chart is also the one on the Attendance records.
-export { AttendanceCard } from "./components/AttendanceCard";
+export { AttendanceCard } from "./components/cards/AttendanceCard";
