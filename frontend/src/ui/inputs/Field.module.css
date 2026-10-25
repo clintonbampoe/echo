@@ -146,5 +146,10 @@
 /* An error message fades in under its field. */
 .error {
   color: var(--neg);
-  animation: fade var(--t-base) var(--ease-soft) both;
+  animation: errorIn var(--t-base) var(--ease-soft) both;
+}
+@keyframes errorIn {
+  from {
+    opacity: 0;
+  }
 }

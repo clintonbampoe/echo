@@ -45,7 +45,7 @@ export function CenterPanel({ open, onClose, title, children }: Props) {
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
-        className={`${styles.panel} glass-panel`}
+        className={`${styles.panel} glass-panel glass-in-centre`}
         data-closing={closing}
         onKeyDown={(e) => e.key === "Escape" && onClose()}
       >

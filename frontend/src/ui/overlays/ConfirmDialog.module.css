@@ -19,8 +19,6 @@
   padding: var(--s-32) var(--s-24) var(--s-20);
   border-radius: var(--radius-float);
   text-align: center;
-  transform-origin: center;
-  animation: eCenter var(--t-enter) var(--ease-settle) both;
 }
 .panel[data-closing="true"] {
   animation: popOut var(--t-exit) ease-in both;

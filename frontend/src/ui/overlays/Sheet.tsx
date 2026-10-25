@@ -70,7 +70,7 @@ export function Sheet({
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
-        className={`${styles.panel} glass-panel`}
+        className={`${styles.panel} glass-panel glass-in-sheet`}
         data-closing={closing}
         data-shaking={shaking || undefined}
         onKeyDown={(e) => e.key === "Escape" && onClose()}

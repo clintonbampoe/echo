@@ -20,8 +20,6 @@
   margin: auto;
   border-radius: var(--radius-float);
   overflow: hidden;
-  transform-origin: center;
-  animation: eCenter var(--t-enter) var(--ease-settle) both;
 }
 .panel[data-closing="true"] {
   animation: centerOut var(--t-exit) ease-in both;

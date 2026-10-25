@@ -193,6 +193,36 @@
   transform-origin: center;
   animation: eMat var(--t-enter) var(--ease-settle) both;
 }
+/* The side panel: it comes in from the right, and out the same way. On a phone it is a centred glass panel
+   (translateY(-50%) puts it in the middle), so it materialises in place and leaves the same way. */
+.glass-in-sheet {
+  transform-origin: top right;
+  animation: ePanelIn var(--t-enter) var(--ease-settle) both;
+}
+.glass-in-sheet[data-closing="true"] {
+  animation: echoSlideOut var(--t-exit) ease-in both;
+}
+@media (max-width: 560px) {
+  .glass-in-sheet {
+    transform-origin: center;
+    animation-name: eMat;
+  }
+  .glass-in-sheet[data-closing="true"] {
+    animation-name: eMatOut;
+  }
+}
+@keyframes eMatOut {
+  to {
+    opacity: 0;
+    transform: translateY(-50%) scale(0.94);
+  }
+}
+/* The ⋯ button squashes like a drop when the pointer reaches it. */
+@media (hover: hover) {
+  .liquid-dots:hover {
+    animation: eBlob var(--t-enter) var(--ease-settle);
+  }
+}
 /* Options inside a popover come in one after another. Set --i on each. */
 .glass-opt {
   animation: eOpt var(--t-enter) var(--ease-settle) both;

@@ -45,7 +45,13 @@
   height: 3px;
   background: var(--text);
   border-radius: 2px;
-  animation: echoGrowX var(--t-grow) var(--grow) backwards;
+  transform-origin: left;
+  animation: lineGrow var(--t-grow) var(--grow) backwards;
+}
+@keyframes lineGrow {
+  from {
+    transform: scaleX(0);
+  }
 }
 
 .node {

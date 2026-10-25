@@ -44,7 +44,7 @@ export function RankedBars({ label, rows, selected, onPick }: Props) {
             </span>
             <span aria-hidden="true" className={styles.track}>
               <span
-                className={`${styles.bar} ${i === 0 || picked ? styles.first : ""}`}
+                className={`${styles.bar} grow-x ${i === 0 || picked ? styles.first : ""}`}
                 style={{
                   width: `${top > 0 ? Math.max(3, (r.value / top) * 100) : 0}%`,
                   ["--i" as string]: i,

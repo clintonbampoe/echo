@@ -50,7 +50,7 @@ function Body({ title, options, value, onPick, onClose }: Omit<Props, "open">) {
             type="button"
             role="option"
             aria-selected={o.value === value}
-            className={`${styles.row} ${o.value === value ? styles.selected : ""}`}
+            className={`${styles.row} glass-opt ${o.value === value ? styles.selected : ""}`}
             onClick={() => {
               onPick(o.value);
               onClose();

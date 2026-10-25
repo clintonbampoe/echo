@@ -30,7 +30,10 @@ function Fill({ event: e, past }: { event: EventItem; past: boolean }) {
       </span>
       {share !== null && (
         <span aria-hidden="true" className={styles.track}>
-          <span className={styles.bar} style={{ width: `${share * 100}%` }} />
+          <span
+            className={`${styles.bar} grow-x`}
+            style={{ width: `${share * 100}%` }}
+          />
         </span>
       )}
     </span>

@@ -71,9 +71,6 @@ button.row:active .track {
   height: 100%;
   background: #7f95ae;
   border-radius: var(--radius-pill);
-  transform-origin: left;
-  animation: echoGrowX var(--t-grow) var(--grow) backwards;
-  animation-delay: calc(var(--i, 0) * 40ms);
   transition:
     filter var(--t-fast),
     box-shadow var(--t-base),

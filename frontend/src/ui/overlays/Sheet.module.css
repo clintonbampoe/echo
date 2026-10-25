@@ -20,11 +20,6 @@
   width: min(440px, calc(100% - 24px));
   border-radius: var(--radius-float);
   overflow: hidden;
-  animation: ePanelIn var(--t-enter) var(--ease-settle) both;
-  transform-origin: top right;
-}
-.panel[data-closing="true"] {
-  animation: echoSlideOut var(--t-exit) ease-in both;
 }
 .panel:focus {
   outline: none;
@@ -103,11 +98,6 @@
     width: auto;
     max-height: calc(100% - 96px);
     transform: translateY(-50%);
-    transform-origin: center;
-    animation: eMat var(--t-enter) var(--ease-settle) both;
-  }
-  .panel[data-closing="true"] {
-    animation: sheetOut var(--t-exit) ease-in both;
   }
   .header {
     padding: var(--s-20) var(--s-20) var(--s-4);
@@ -118,13 +108,6 @@
   }
   .footer {
     padding: var(--s-4) var(--s-20) var(--s-20);
-  }
-}
-
-@keyframes sheetOut {
-  to {
-    opacity: 0;
-    transform: translateY(-50%) scale(0.94);
   }
 }
 
