@@ -9,8 +9,14 @@
   display: grid;
   gap: 12px;
 }
+.groupHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-top: 8px;
+}
 .groupTitle {
-  margin: 8px 0 0;
+  margin: 0;
   font-size: 17px;
   font-weight: 600;
   letter-spacing: -0.01em;

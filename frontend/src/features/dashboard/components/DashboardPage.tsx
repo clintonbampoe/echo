@@ -1,11 +1,11 @@
 import type { ReactNode } from "react";
 import { todayText } from "@/lib/dates";
-import { Pager, useMedia } from "@/ui";
+import { paths } from "@/lib/paths";
+import { Pager, SeeLink, useMedia } from "@/ui";
 import { usePeriod } from "../usePeriod";
 import { AssetsCard } from "./AssetsCard";
 import { AttendanceCard } from "./AttendanceCard";
 import { DashboardHeader } from "./DashboardHeader";
-import { EventCalendarCard } from "./EventCalendarCard";
 import { MemberGrowthCard } from "./MemberGrowthCard";
 import { MembersCard } from "./MembersCard";
 import { MoneyCard } from "./MoneyCard";
@@ -18,20 +18,32 @@ import { VisitorsCard } from "./VisitorsCard";
 import styles from "./DashboardPage.module.css";
 
 // A row of cards: side by side on a wide screen, pages to swipe through on a phone, where a label heads them.
-type Group = { label: string; titles: string[]; cards: ReactNode[] };
+type Group = {
+  label: string;
+  to: string;
+  titles: string[];
+  cards: ReactNode[];
+};
 
 const groups = (today: string): Group[] => [
   {
     label: "This week",
+    to: paths.attendance,
     titles: ["Attendance", "Visitors"],
     cards: [
       <AttendanceCard today={today} title="Attendance" />,
       <VisitorsCard today={today} />,
     ],
   },
-  { label: "Money", titles: ["Money"], cards: [<MoneyCard today={today} />] },
+  {
+    label: "Money",
+    to: paths.finance,
+    titles: ["Money"],
+    cards: [<MoneyCard today={today} />],
+  },
   {
     label: "Members",
+    to: paths.members,
     titles: ["Tithes", "Member growth", "Members"],
     cards: [
       <TithesCard today={today} />,
@@ -40,17 +52,16 @@ const groups = (today: string): Group[] => [
     ],
   },
   {
-    label: "Projects and assets",
-    titles: ["Projects", "Assets"],
-    cards: [<ProjectsCard />, <AssetsCard />],
+    label: "Projects and events",
+    to: paths.projects,
+    titles: ["Projects", "Upcoming events"],
+    cards: [<ProjectsCard />, <UpcomingEventsCard today={today} />],
   },
   {
-    label: "Events",
-    titles: ["Upcoming events", "Event calendar"],
-    cards: [
-      <UpcomingEventsCard today={today} />,
-      <EventCalendarCard today={today} />,
-    ],
+    label: "Assets",
+    to: paths.assets,
+    titles: ["Assets"],
+    cards: [<AssetsCard />],
   },
 ];
 
@@ -74,17 +85,10 @@ const rows = (today: string): Row[] => [
   },
   { label: "Members", columns: "1fr", cards: [<MembersCard today={today} />] },
   {
-    label: "Projects and assets",
-    cards: [<ProjectsCard />, <AssetsCard />],
+    label: "Projects and events",
+    cards: [<ProjectsCard />, <UpcomingEventsCard today={today} />],
   },
-  {
-    label: "Events",
-    columns: "3fr 2fr",
-    cards: [
-      <UpcomingEventsCard today={today} />,
-      <EventCalendarCard today={today} />,
-    ],
-  },
+  { label: "Assets", columns: "1fr", cards: [<AssetsCard />] },
 ];
 
 export function DashboardPage() {
@@ -103,7 +107,10 @@ export function DashboardPage() {
         {narrow
           ? groups(today).map((g) => (
               <section key={g.label} className={styles.group}>
-                <h2 className={styles.groupTitle}>{g.label}</h2>
+                <div className={styles.groupHead}>
+                  <h2 className={styles.groupTitle}>{g.label}</h2>
+                  <SeeLink to={g.to}>See all</SeeLink>
+                </div>
                 <Pager label={g.label} titles={g.titles}>
                   {g.cards.map((c, i) => (
                     <div key={g.titles[i]}>{c}</div>
