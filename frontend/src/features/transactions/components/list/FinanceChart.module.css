@@ -23,10 +23,10 @@
 .swatch {
   width: 9px;
   height: 9px;
-  border-radius: 3px;
-  background: var(--text);
+  border-radius: var(--radius-pill);
+  background: var(--text-3);
+  opacity: 0.55; /* the same tone as an income bar at rest */
 }
 .swatch.dim {
-  background: var(--text-3);
-  opacity: 0.6;
+  opacity: 0.3; /* and an expense bar */
 }

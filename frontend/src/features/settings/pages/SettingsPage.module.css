@@ -13,12 +13,11 @@
 .section {
   padding: var(--s-20) var(--s-24) var(--s-4);
 }
+/* A card's name, in the same style as every other card's title. */
 .heading {
-  font-size: var(--type-footnote);
+  font-size: var(--type-headline);
   font-weight: 600;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  color: var(--text-3);
+  letter-spacing: -0.015em;
 }
 .title {
   font-size: var(--type-callout);

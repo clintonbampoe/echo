@@ -20,8 +20,9 @@
 }
 .title {
   margin: 0;
-  font-size: var(--type-callout);
+  font-size: var(--type-headline);
   font-weight: 600;
+  letter-spacing: -0.015em;
 }
 .control {
   flex: none;

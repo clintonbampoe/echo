@@ -30,7 +30,8 @@ export function TransactionList({ list, filtered, period, onOpen }: Props) {
       onOpen={(t) => onOpen(t, "view")}
       line={(t) => ({
         title: t.description || t.categoryName,
-        sub: t.categoryName,
+        // With no description the category is already the title; saying it twice adds nothing.
+        sub: t.description ? t.categoryName : undefined,
         end: (
           <strong
             className={t.transactionType === "Income" ? styles.in : styles.out}

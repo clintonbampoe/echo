@@ -3,9 +3,10 @@
 }
 .heading {
   margin-bottom: 12px;
-  font-size: var(--type-caption);
-  font-weight: 500;
-  color: var(--text-3);
+  /* A group's title reads above the field labels inside it (13px, 500), not below them. */
+  font-size: var(--type-body);
+  font-weight: 600;
+  color: var(--text);
 }
 .grid {
   display: grid;

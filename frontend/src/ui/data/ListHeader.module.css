@@ -1,9 +1,11 @@
 /* Title left, count right, baseline-aligned, no divider under it (feel spec, List cards). */
 .header {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   gap: var(--s-12);
+  /* The same 32px title line as a DashCard's head, so two cards side by side have their titles on one line. */
+  min-height: calc(32px + var(--s-24) + var(--s-8));
   padding: var(--s-24) var(--s-24) var(--s-8);
 }
 .title {

@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { paths } from "@/lib/paths";
-import { ActionMenu, DateTile } from "@/ui";
+import { ActionMenu, DateTile, ListHeader } from "@/ui";
 import type { EventItem } from "../../api/events";
 import { countOf, fillOf } from "../../model/rows";
 import styles from "./EventList.module.css";
@@ -41,6 +41,10 @@ function Fill({ event: e, past }: { event: EventItem; past: boolean }) {
 export function EventList({ events, past, footer, onEdit, onDelete }: Props) {
   return (
     <div className={styles.card}>
+      <ListHeader
+        title={past ? "Past events" : "Upcoming events"}
+        summary={events.length}
+      />
       <ul
         aria-label={past ? "Past events" : "Upcoming events"}
         className={styles.list}
