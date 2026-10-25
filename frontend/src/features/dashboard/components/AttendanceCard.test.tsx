@@ -58,15 +58,15 @@ describe("attendance card", () => {
     expect(screen.getByText("October 2026")).toBeInTheDocument();
   });
 
-  it("draws six months when asked", async () => {
+  it("draws six months at first, and twelve when asked", async () => {
     show();
     await screen.findByText("912", { selector: "p" });
+    expect(screen.getAllByRole("button", { name: /20\d\d: / })).toHaveLength(6);
+    await userEvent.click(screen.getByRole("button", { name: /Range/ }));
+    await userEvent.click(screen.getByRole("option", { name: "12 months" }));
     expect(screen.getAllByRole("button", { name: /20\d\d: / })).toHaveLength(
       12,
     );
-    await userEvent.click(screen.getByRole("button", { name: /Range/ }));
-    await userEvent.click(screen.getByRole("option", { name: "6 months" }));
-    expect(screen.getAllByRole("button", { name: /20\d\d: / })).toHaveLength(6);
   });
 
   it("says so when it could not load", async () => {

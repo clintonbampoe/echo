@@ -24,7 +24,7 @@ const kinds = [
 // Income or expenses over the last six or twelve months: the total and a bar for each month on the left, and on
 // the right where the money came from (or went to), biggest first.
 export function MoneyCard({ today }: { today: string }) {
-  const [range, setRange] = useState<MonthRange>("12");
+  const [range, setRange] = useState<MonthRange>("6");
   const [kind, setKind] = useState<MoneyKind>("Income");
   const months = Number(range);
   const { from, to } = moneyRange(today, months);

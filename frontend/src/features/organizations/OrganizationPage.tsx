@@ -12,6 +12,7 @@ import { AddMemberSheet } from "./AddMemberSheet";
 import { DeleteOrganizationDialog } from "./DeleteOrganizationDialog";
 import { EditOrganizationSheet } from "./EditOrganizationSheet";
 import { useOrganization, useOrganizationMembers } from "./hooks";
+import { OrganizationDetails } from "./OrganizationDetails";
 import { OrganizationHeader } from "./OrganizationHeader";
 import { OrganizationMembers } from "./OrganizationMembers";
 import styles from "./OrganizationPage.module.css";
@@ -61,7 +62,7 @@ export function OrganizationPage() {
 
 function Detail({ organization: o }: { organization: Organization }) {
   const navigate = useNavigate();
-  const [tab, setTab] = useState("members");
+  const [tab, setTab] = useState("details");
   const [editing, setEditing] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [adding, setAdding] = useState(false);
@@ -85,6 +86,7 @@ function Detail({ organization: o }: { organization: Organization }) {
     createdStat(o, today),
   ];
   const tabs = [
+    { id: "details", label: "Details" },
     { id: "members", label: "Members", count: formatNumber(o.memberCount) },
     {
       id: "events",
@@ -120,11 +122,14 @@ function Detail({ organization: o }: { organization: Organization }) {
         id={`organization-panel-${tab}`}
         aria-labelledby={`organization-tab-${tab}`}
       >
-        {tab === "members" ? (
-          <OrganizationMembers organization={o} />
-        ) : (
-          <OrganizationEvents list={events} />
+        {tab === "details" && (
+          <OrganizationDetails
+            organization={o}
+            leaders={everyone.rows.filter((m) => m.role !== "Member")}
+          />
         )}
+        {tab === "members" && <OrganizationMembers organization={o} />}
+        {tab === "events" && <OrganizationEvents list={events} />}
       </div>
       {editing && (
         <EditOrganizationSheet

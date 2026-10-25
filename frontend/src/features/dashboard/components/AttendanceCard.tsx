@@ -18,7 +18,7 @@ export function AttendanceCard({
   today: string;
   title: string;
 }) {
-  const [range, setRange] = useState<MonthRange>("12");
+  const [range, setRange] = useState<MonthRange>("6");
   const [picked, setPicked] = useState<string | null>(null);
   const buckets = growthBuckets(today, Number(range));
   const series = usePresenceSeries(buckets);

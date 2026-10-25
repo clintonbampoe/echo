@@ -18,6 +18,7 @@ export { DeleteDialog } from "./DeleteDialog";
 export { DetailBlock, DetailCard, DetailGroup } from "./DetailCard";
 export { Disclosure } from "./Disclosure";
 export { Donut, type DonutSlice } from "./Donut";
+export { RankedBars, type Ranked } from "./RankedBars";
 export { Drawer } from "./Drawer";
 export { EmptyState } from "./EmptyState";
 export { Field, PasswordField } from "./Field";

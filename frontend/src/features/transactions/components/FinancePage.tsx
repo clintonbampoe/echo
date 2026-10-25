@@ -5,7 +5,7 @@ import { useUrlFilters } from "@/lib/useUrlFilters";
 import {
   Aside,
   DashCard,
-  Donut,
+  RankedBars,
   LinkButton,
   PageHeader,
   StatStrip,
@@ -88,10 +88,9 @@ export function FinancePage() {
           onOpen={(transaction, start) => setOpened({ transaction, start })}
         />
         <DashCard title="By category" control={<Aside>{period}</Aside>}>
-          <Donut
+          <RankedBars
             label="Transactions by category"
-            slices={categorySlices(summary.data, filters.type)}
-            stacked
+            rows={categorySlices(summary.data, filters.type)}
           />
         </DashCard>
       </div>

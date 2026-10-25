@@ -116,6 +116,15 @@ function show(handler: (url: string, init?: RequestInit) => Promise<Response>) {
   return fetchMock;
 }
 
+// Opens the page and then its Members tab, which is where the people are.
+async function showMembers(
+  handler: (url: string, init?: RequestInit) => Promise<Response>,
+) {
+  const fetchMock = show(handler);
+  await userEvent.click(await screen.findByRole("tab", { name: /Members/ }));
+  return fetchMock;
+}
+
 describe("organization page", () => {
   it("shows the group, who leads it and its members", async () => {
     show(server());
@@ -123,6 +132,7 @@ describe("organization page", () => {
       await screen.findByRole("heading", { name: "Church Choir" }),
     ).toBeInTheDocument();
     expect(screen.getByText("Leads worship on Sundays.")).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("tab", { name: /Members/ }));
     expect(
       await screen.findByRole("button", { name: /^Comfort Addo$/ }),
     ).toBeInTheDocument();
@@ -136,7 +146,7 @@ describe("organization page", () => {
 
   it("asks only for the people with the role chosen in the filter", async () => {
     const user = userEvent.setup();
-    const fetchMock = show(server());
+    const fetchMock = await showMembers(server());
     await screen.findByRole("button", { name: /^Kwame Asante$/ });
     await user.click(screen.getByRole("button", { name: /Role/ }));
     await user.click(await screen.findByRole("option", { name: "Secretary" }));
@@ -157,7 +167,7 @@ describe("organization page", () => {
 
   it("searches the group’s members by name", async () => {
     const user = userEvent.setup();
-    const fetchMock = show(server());
+    const fetchMock = await showMembers(server());
     await screen.findByRole("button", { name: /^Kwame Asante$/ });
     await user.type(
       screen.getByRole("searchbox", { name: "Search this group" }),
@@ -184,7 +194,7 @@ describe("organization page", () => {
 
   it("empties the search box as well as the role when the filters are cleared", async () => {
     const user = userEvent.setup();
-    show(server());
+    await showMembers(server());
     await screen.findByRole("button", { name: /^Kwame Asante$/ });
     await user.type(
       screen.getByRole("searchbox", { name: "Search this group" }),
@@ -259,7 +269,7 @@ describe("organization page", () => {
 
   it("changes a member’s role from their ⋯ menu", async () => {
     const user = userEvent.setup();
-    const fetchMock = show(server());
+    const fetchMock = await showMembers(server());
     await user.click(
       await screen.findByRole("button", { name: "Actions for Kwame Asante" }),
     );
@@ -284,7 +294,7 @@ describe("organization page", () => {
 
   it("does not call the server when the role chosen is the one they already have", async () => {
     const user = userEvent.setup();
-    const fetchMock = show(server());
+    const fetchMock = await showMembers(server());
     await user.click(
       await screen.findByRole("button", { name: "Actions for Kwame Asante" }),
     );
@@ -299,7 +309,7 @@ describe("organization page", () => {
   it("tells the person when a role change fails", async () => {
     const user = userEvent.setup();
     const handler = server();
-    show(async (url, init) =>
+    await showMembers(async (url, init) =>
       init?.method === "PUT"
         ? json({ title: "Boom" }, 500)
         : handler(url, init),
@@ -315,7 +325,7 @@ describe("organization page", () => {
 
   it("removes a member from the group after asking", async () => {
     const user = userEvent.setup();
-    const fetchMock = show(server());
+    const fetchMock = await showMembers(server());
     await user.click(
       await screen.findByRole("button", { name: "Actions for Kwame Asante" }),
     );
@@ -339,7 +349,7 @@ describe("organization page", () => {
 
   it("opens Add member and adds the person chosen from the search", async () => {
     const user = userEvent.setup();
-    const fetchMock = show(server());
+    const fetchMock = await showMembers(server());
     await user.click(await screen.findByRole("button", { name: "Add member" }));
     await user.type(
       await screen.findByRole("searchbox", { name: "Search members" }),
@@ -362,7 +372,7 @@ describe("organization page", () => {
 
   it("opens the membership panel from a name, with a link to the profile as the only way out", async () => {
     const user = userEvent.setup();
-    show(server());
+    await showMembers(server());
     await user.click(
       await screen.findByRole("button", { name: /^Comfort Addo$/ }),
     );
@@ -380,7 +390,7 @@ describe("organization page", () => {
 
   it("saves a role changed in the membership panel", async () => {
     const user = userEvent.setup();
-    const fetchMock = show(server());
+    const fetchMock = await showMembers(server());
     await user.click(
       await screen.findByRole("button", { name: /^Kwame Asante$/ }),
     );
@@ -421,7 +431,7 @@ describe("organization page", () => {
 
   it("closes the panel and asks before removing when Remove from group is chosen in it", async () => {
     const user = userEvent.setup();
-    show(server());
+    await showMembers(server());
     await user.click(
       await screen.findByRole("button", { name: /^Kwame Asante$/ }),
     );

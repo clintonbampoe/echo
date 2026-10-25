@@ -12,7 +12,7 @@ const NONE = "–";
 // Tithes month by month. The month picked (the latest to begin with) gives the figure, how many people gave
 // and what the average gift was.
 export function TithesCard({ today }: { today: string }) {
-  const [range, setRange] = useState<MonthRange>("12");
+  const [range, setRange] = useState<MonthRange>("6");
   const [picked, setPicked] = useState<string | null>(null);
   const buckets = growthBuckets(today, Number(range));
   const series = useTitheSeries(buckets);

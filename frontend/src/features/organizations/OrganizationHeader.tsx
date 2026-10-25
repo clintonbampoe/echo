@@ -10,7 +10,7 @@ type Props = {
   onAdd?: () => void;
 };
 
-// The top of an organization's page: its name and description, the one main action and a ⋯ menu for the rest.
+// The top of an organization's page: its name, the one main action and a ⋯ menu for the rest.
 export function OrganizationHeader({
   organization: o,
   onEdit,
@@ -21,7 +21,6 @@ export function OrganizationHeader({
     <header className={styles.header}>
       <div className={styles.who}>
         <h1 className={styles.name}>{o.name}</h1>
-        {o.description && <p className={styles.text}>{o.description}</p>}
       </div>
       <div className={styles.actions}>
         {onAdd && <Button onClick={onAdd}>Add member</Button>}
