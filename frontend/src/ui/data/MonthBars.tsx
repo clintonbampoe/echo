@@ -60,7 +60,7 @@ function Mark({ bar: b, index, top, picked, legend }: MarkProps) {
         className={`${styles.track} ${b.compare ? styles.pair : ""}`}
         style={lift}
       >
-        <span className={styles.tip} aria-hidden="true">
+        <span className={`${styles.tip} glass-tip`} aria-hidden="true">
           <strong>{b.tip}</strong>
           {b.compare && legend ? (
             <>

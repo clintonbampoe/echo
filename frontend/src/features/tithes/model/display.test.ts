@@ -1,6 +1,7 @@
 import {
   chartBars,
   chartSummary,
+  methodSlices,
   titheMonths,
   titheStats,
   yearSlots,
@@ -123,5 +124,38 @@ describe("chartSummary", () => {
       chartSummary(chartBars([{ year: 2026, month: 10, totalCollected: 0 }])),
     ).toEqual({ range: "Oct 2026 – Oct 2026", highest: undefined });
     expect(chartSummary([])).toBeNull();
+  });
+});
+
+describe("methodSlices", () => {
+  it("ranks the ways of paying, leaves out those that brought in nothing and folds the fifth into Other", () => {
+    const rows = methodSlices([
+      { method: "Cash", total: 300 },
+      { method: "MobileMoney", total: 900 },
+      { method: "Cheque", total: 0 },
+      { method: "BankTransfer", total: 200 },
+      { method: "CreditCard", total: 100 },
+    ]);
+    expect(rows.map((r) => [r.key, r.label, r.value])).toEqual([
+      ["MobileMoney", "Mobile money", 900],
+      ["Cash", "Cash", 300],
+      ["BankTransfer", "Bank transfer", 200],
+      ["CreditCard", "Credit card", 100],
+    ]);
+  });
+
+  it("folds everything past the fourth into a closed Other row", () => {
+    const rows = methodSlices([
+      { method: "MobileMoney", total: 500 },
+      { method: "Cash", total: 400 },
+      { method: "BankTransfer", total: 300 },
+      { method: "CreditCard", total: 200 },
+      { method: "Cheque", total: 100 },
+    ]);
+    expect(rows.at(-1)).toMatchObject({
+      key: "other",
+      value: 100,
+      closed: true,
+    });
   });
 });

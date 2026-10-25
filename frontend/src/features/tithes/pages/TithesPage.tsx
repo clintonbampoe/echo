@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { todayText } from "@/lib/dates";
 import { useUrlFilters } from "@/lib/useUrlFilters";
-import { ListBody, PageHeader } from "@/ui";
+import { ListBody, PageHeader, WithSide } from "@/ui";
 import type { Tithe } from "../api/tithes";
 import {
   chooseForMonth,
@@ -17,6 +17,7 @@ import {
   type TitheStart,
 } from "../components/dialogs/TitheDialogs";
 import { TitheFilterBar } from "../components/list/TitheFilterBar";
+import { TitheMethods } from "../components/list/TitheMethods";
 import { TitheList } from "../components/list/TitheList";
 import { TitheSheet } from "../components/form/TitheSheet";
 import { TitheStats } from "../components/list/TitheStats";
@@ -60,24 +61,35 @@ export function TithesPage() {
         onClear={clear}
         today={today}
       />
-      <ListBody
-        list={list}
-        icon="tithes"
-        noun={["tithe", "tithes"]}
-        emptyTitle={`No tithes ${collected.toLowerCase()}`}
-        emptyText="Record a tithe, or choose a wider range."
-        filtered={titheFilters.isFiltered(filters)}
-        onClear={clear}
-        footerInside
-      >
-        {(tithes, footer) => (
-          <TitheList
-            footer={footer}
-            tithes={tithes}
-            onOpen={(tithe, start) => setOpened({ tithe, start })}
+      <WithSide
+        side={
+          <TitheMethods
+            filters={query}
+            period={collected.replace("Collected ", "")}
+            selected={filters.method}
+            onPick={(method) => update({ method })}
           />
-        )}
-      </ListBody>
+        }
+      >
+        <ListBody
+          list={list}
+          icon="tithes"
+          noun={["tithe", "tithes"]}
+          emptyTitle={`No tithes ${collected.toLowerCase()}`}
+          emptyText="Record a tithe, or choose a wider range."
+          filtered={titheFilters.isFiltered(filters)}
+          onClear={clear}
+          footerInside
+        >
+          {(tithes, footer) => (
+            <TitheList
+              footer={footer}
+              tithes={tithes}
+              onOpen={(tithe, start) => setOpened({ tithe, start })}
+            />
+          )}
+        </ListBody>
+      </WithSide>
       <TitheSheet
         open={recording}
         today={today}

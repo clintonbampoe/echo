@@ -1,0 +1,198 @@
+.track {
+  margin-top: 16px;
+  padding: 16px;
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+.head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.title {
+  font-size: 14px;
+  font-weight: 600;
+}
+.count {
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.nodes {
+  display: flex;
+  margin: 18px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.slot {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+/* The rail: an ink line from the middle of the node before to the middle of this one, behind both. */
+.slot[data-joined="true"]::before {
+  content: "";
+  position: absolute;
+  top: 17px;
+  right: 50%;
+  width: 100%;
+  height: 3px;
+  background: var(--text);
+  border-radius: 2px;
+  animation: echoGrowX 600ms var(--grow) backwards;
+}
+
+.node {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  animation: cellPop var(--t-enter) var(--ease-spring) both;
+  animation-delay: calc(var(--i, 0) * 28ms);
+  transform-origin: center center;
+  transition:
+    transform 450ms var(--spring),
+    box-shadow var(--t-base) var(--ease-soft),
+    opacity var(--t-base) var(--ease-soft);
+}
+@keyframes cellPop {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+.on {
+  background: var(--text);
+  color: var(--surface);
+}
+.off {
+  background: var(--card-bg);
+  box-shadow: inset 0 0 0 2px var(--line-2);
+}
+.dot {
+  width: 6px;
+  height: 6px;
+  background: var(--line-2);
+  border-radius: 50%;
+}
+.future {
+  border: 1.5px dashed var(--line-2);
+  opacity: 0.7;
+}
+.node:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 3px;
+}
+
+/* A node answers the pointer whether it opens something or not: it lifts, the rest step back, a pill names it. */
+.tip {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 50%;
+  z-index: 3;
+  opacity: 0;
+  transform: translateX(-50%) translateY(4px) scale(0.96);
+  transition:
+    opacity var(--fast) ease,
+    transform 350ms var(--spring);
+}
+.slot:first-child .tip {
+  left: 0;
+  transform: translateY(4px) scale(0.96);
+}
+.slot:last-child .tip {
+  right: 0;
+  left: auto;
+  transform: translateY(4px) scale(0.96);
+}
+@media (hover: hover) {
+  .node:not(.bone):hover {
+    transform: scale(1.14);
+    box-shadow:
+      inset 0 0 0 2px var(--line-2),
+      0 10px 16px -8px rgb(10 10 11 / 45%);
+  }
+  .on:hover {
+    box-shadow: 0 10px 16px -8px rgb(10 10 11 / 55%);
+  }
+  .nodes:has(.node:hover) .slot:not(:hover) .node {
+    opacity: 0.6;
+  }
+  .node:hover .tip,
+  .node:focus-visible .tip {
+    opacity: 1;
+    transform: translateX(-50%);
+  }
+  .slot:first-child .node:hover .tip,
+  .slot:first-child .node:focus-visible .tip,
+  .slot:last-child .node:hover .tip,
+  .slot:last-child .node:focus-visible .tip {
+    transform: none;
+  }
+}
+.node:not(.bone):active {
+  transform: scale(0.94);
+}
+
+.bone {
+  background: linear-gradient(
+    90deg,
+    var(--sel) 0%,
+    var(--hover) 50%,
+    var(--sel) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+  animation-delay: calc(var(--i, 0) * 80ms);
+}
+@keyframes shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+
+.caption {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--text-3);
+}
+.ends {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--text-3);
+}
+
+@media (max-width: 600px) {
+  .node {
+    width: 40px;
+  }
+  .slot[data-joined="true"]::before {
+    top: 18px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bone,
+  .node,
+  .slot[data-joined="true"]::before {
+    animation: none;
+  }
+  .node:not(.bone):hover,
+  .node:not(.bone):active {
+    transform: none;
+  }
+}

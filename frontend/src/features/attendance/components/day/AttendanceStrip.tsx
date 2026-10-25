@@ -1,6 +1,6 @@
 import { formatDate } from "@/lib/format";
 import { paths } from "@/lib/paths";
-import { CellStrip, type Cell } from "@/ui";
+import { HistoryTrack, type TrackNode } from "@/ui";
 import { RECENT } from "../../hooks";
 import type { Slot } from "../../model/display";
 
@@ -10,14 +10,14 @@ type Props = {
   typeName?: string;
   loading: boolean;
   failed: boolean;
-  // How many squares: the latest sessions held.
+  // How many nodes: the latest sessions held.
   size?: number;
 };
 
 const say = (s: Slot) =>
   `${s.name}, ${formatDate(s.date)}: ${s.present ? "attended" : "missed"}`;
-// The hover shows only which session; the square itself (ticked or empty) already says whether they came.
-const toCell = (s: Slot): Cell => ({
+// The hover shows only which session; the node itself (ticked or empty) already says whether they came.
+const toNode = (s: Slot): TrackNode => ({
   id: s.id,
   name: say(s),
   tip: `${s.name}, ${formatDate(s.date)}`,
@@ -25,8 +25,8 @@ const toCell = (s: Slot): Cell => ({
   href: paths.session(s.id),
 });
 
-// The last few sessions as a row of squares, oldest to newest: ticked where the person was there, empty
-// where they were not. Each square opens that session. Nothing at all when none have been held.
+// The last few sessions as a track of nodes, oldest to newest: ticked where the person was there, empty
+// where they were not. Each node opens that session. Nothing at all when none have been held.
 export function AttendanceStrip({
   slots,
   typeName,
@@ -41,11 +41,11 @@ export function AttendanceStrip({
   const last = slots.at(-1);
 
   return (
-    <CellStrip
+    <HistoryTrack
       label="Recent sessions"
       title={`Last ${size} ${typeName ? `${typeName} ` : ""}sessions`}
       summary={`${present} of ${slots.length} attended`}
-      cells={slots.map(toCell)}
+      nodes={slots.map(toNode)}
       slots={size}
       status={loading ? "loading" : failed ? "failed" : "ready"}
       ends={

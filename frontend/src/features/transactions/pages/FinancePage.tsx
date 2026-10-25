@@ -9,6 +9,7 @@ import {
   LinkButton,
   PageHeader,
   StatStrip,
+  WithSide,
 } from "@/ui";
 import type { Transaction } from "../api/transactions";
 import {
@@ -80,20 +81,27 @@ export function FinancePage() {
         categories={categories.data}
         today={today}
       />
-      <div className={styles.split}>
+      <WithSide
+        side={
+          <DashCard title="By category" control={<Aside>{period}</Aside>}>
+            <RankedBars
+              label="Transactions by category"
+              rows={categorySlices(summary.data, filters.type)}
+              selected={filters.category}
+              onPick={(key) =>
+                update({ category: key === filters.category ? "" : key })
+              }
+            />
+          </DashCard>
+        }
+      >
         <TransactionList
           list={list}
           filtered={financeFilters.isFiltered(filters)}
           period={period}
           onOpen={(transaction, start) => setOpened({ transaction, start })}
         />
-        <DashCard title="By category" control={<Aside>{period}</Aside>}>
-          <RankedBars
-            label="Transactions by category"
-            rows={categorySlices(summary.data, filters.type)}
-          />
-        </DashCard>
-      </div>
+      </WithSide>
       <p className={styles.note}>
         Tithes and project contributions are recorded on their own pages and are
         not part of these totals.

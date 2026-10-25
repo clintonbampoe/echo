@@ -44,16 +44,30 @@ button.cell:focus-visible {
   height: 96px;
 }
 .bar {
-  width: min(100%, 34px);
+  width: min(100%, 46px);
   background: var(--line-2);
-  border-radius: 4px 4px 0 0;
+  border-radius: 10px 10px 0 0;
+  transform-origin: center center;
   transition:
     background-color var(--fast) ease,
-    height 600ms var(--grow);
+    height 600ms var(--grow),
+    transform 450ms var(--spring),
+    filter var(--t-fast),
+    box-shadow var(--t-base);
 }
+/* The rise on mount must not hold the bar's transform afterwards, or the hover lift could not move it. */
+.bar:global(.grow-y) {
+  animation-fill-mode: backwards;
+}
+/* A bar grows from its centre, wider and a little taller, and the rest step back (see the items below). */
 @media (hover: hover) {
-  button.cell:hover .bar:not(.on) {
-    background: var(--text-3);
+  button.cell:hover .bar,
+  button.cell:focus-visible .bar {
+    transform: scale(1.18, 1.06);
+    filter: brightness(0.86);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 35%),
+      0 10px 16px -10px rgb(10 10 11 / 50%);
   }
 }
 .bar.on {
@@ -63,17 +77,13 @@ button.cell:focus-visible {
 .bar.second {
   background: var(--line-2);
 }
-@media (hover: hover) {
-  button.cell:hover .bar.second {
-    background: var(--line-2);
-  }
-}
 .track.pair {
   height: 120px;
 }
 .pair .bar {
-  width: 14px;
-  border-radius: 5px 5px 2px 2px;
+  width: 22px;
+  max-width: 42%;
+  border-radius: 8px 8px 0 0;
 }
 
 .label {
@@ -87,23 +97,21 @@ button.cell:focus-visible {
 
 .tip {
   position: absolute;
-  bottom: calc(var(--lift, 100%) + 6px);
+  bottom: calc(var(--lift, 100%) + 10px);
   left: 50%;
   z-index: 2;
-  padding: 4px 8px;
-  background: var(--text);
-  border-radius: var(--radius-sm);
-  color: var(--surface);
-  font-size: 12px;
-  white-space: nowrap;
   opacity: 0;
-  pointer-events: none;
-  transform: translateX(-50%);
-  transition: opacity var(--fast) ease;
+  transform: translateX(-50%) translateY(4px) scale(0.96);
+  transition:
+    opacity var(--fast) ease,
+    transform 350ms var(--spring);
 }
 .tip strong {
   display: block;
   font-weight: 600;
+}
+.tip:has(.line) {
+  border-radius: 14px;
 }
 .line {
   display: block;
@@ -111,15 +119,22 @@ button.cell:focus-visible {
 .cell:hover .tip,
 .cell:focus-visible .tip {
   opacity: 1;
+  transform: translateX(-50%);
 }
 /* The first and last bars sit at the edge of the card: keep their tooltip inside it. */
 .item:first-child .tip {
   left: 0;
-  transform: none;
+  transform: translateY(4px) scale(0.96);
 }
 .item:last-child .tip {
   right: 0;
   left: auto;
+  transform: translateY(4px) scale(0.96);
+}
+.item:first-child .cell:hover .tip,
+.item:first-child .cell:focus-visible .tip,
+.item:last-child .cell:hover .tip,
+.item:last-child .cell:focus-visible .tip {
   transform: none;
 }
 
@@ -149,11 +164,11 @@ button.cell:focus-visible {
   }
 }
 button.cell:active .bar {
-  transform: scaleY(0.97);
-  transform-origin: bottom;
+  transform: scale(1.08, 0.98);
 }
 @media (prefers-reduced-motion: reduce) {
-  button.cell:active .bar {
+  button.cell:active .bar,
+  button.cell:hover .bar {
     transform: none;
   }
 }

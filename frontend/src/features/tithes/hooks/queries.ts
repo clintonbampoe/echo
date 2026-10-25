@@ -1,4 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQueries, useQuery } from "@tanstack/react-query";
+import type { PaymentMethod } from "@/features/transactions";
 import { usePagedList } from "@/lib/paged";
 import type { TitheFilters, TitheMonthsFor } from "../api/tithes";
 import {
@@ -25,6 +26,27 @@ export const useTitheSummary = (filters: TitheFilters) =>
   useQuery({
     queryKey: titheKeys.summary(filters),
     queryFn: ({ signal }) => getTitheSummary(filters, signal),
+  });
+
+// What each way of paying brought in under the same filters, for the "How it was paid" card. It asks the summary once
+// per method, so the split follows the filters exactly without the API needing a new endpoint.
+export const useTitheByMethod = (
+  filters: TitheFilters,
+  methods: readonly PaymentMethod[],
+) =>
+  useQueries({
+    queries: methods.map((paymentMethod) => {
+      const f = { ...filters, paymentMethod };
+      return {
+        queryKey: titheKeys.summary(f),
+        queryFn: ({ signal }: { signal: AbortSignal }) =>
+          getTitheSummary(f, signal),
+        select: (s: { totalCollected: number }) => ({
+          method: paymentMethod,
+          total: s.totalCollected,
+        }),
+      };
+    }),
   });
 
 // The tithes one member gave that match the filters (all of them with none), newest first.

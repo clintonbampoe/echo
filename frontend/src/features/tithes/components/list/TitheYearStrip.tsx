@@ -1,10 +1,10 @@
 import { thisYear } from "@/lib/dates";
 import { paths } from "@/lib/paths";
-import { CellStrip, type Cell } from "@/ui";
+import { HistoryTrack, type TrackNode } from "@/ui";
 import { useMemberTithes, useTitheMonths } from "../../hooks/queries";
 import { titheMonths, yearSlots, type YearSlot } from "../../model/display";
 
-const toCell = (s: YearSlot, year: number, titheId?: string): Cell => ({
+const toNode = (s: YearSlot, year: number, titheId?: string): TrackNode => ({
   id: String(s.month),
   name: `${s.name} ${year}: ${s.state === "on" ? "given" : s.state === "off" ? "not given" : "not reached yet"}`,
   tip: `${s.name.slice(0, 3)} ${year}`,
@@ -14,7 +14,7 @@ const toCell = (s: YearSlot, year: number, titheId?: string): Cell => ({
   href: s.state === "on" && titheId ? paths.tithe(titheId) : undefined,
 });
 
-// This year at a glance, one square a month: ticked where they gave, empty where they did not.
+// This year at a glance, one node a month: ticked where they gave, empty where they did not.
 export function TitheYearStrip({
   memberId,
   today,
@@ -31,11 +31,11 @@ export function TitheYearStrip({
   const { given, elapsed } = titheMonths(rows, today);
 
   return (
-    <CellStrip
+    <HistoryTrack
       label="Tithes this year"
       title={`Given in ${year}`}
       summary={`${given} of ${elapsed} months`}
-      cells={yearSlots(rows, today).map((s) => toCell(s, year, idOf(s.name)))}
+      nodes={yearSlots(rows, today).map((s) => toNode(s, year, idOf(s.name)))}
       slots={12}
       status={
         months.isPending ? "loading" : months.isError ? "failed" : "ready"

@@ -2,7 +2,7 @@
 // Pure, so the tests can check it without a screen.
 import { monthNames } from "@/lib/dates";
 import { formatMoney, formatNumber } from "@/lib/format";
-import type { DonutSlice, FlowBar, Stat } from "@/ui";
+import type { Ranked, FlowBar, Stat } from "@/ui";
 import type {
   Transaction,
   TransactionMonth,
@@ -51,11 +51,11 @@ export function financeStats(summary: TransactionSummary | undefined): Stat[] {
 export function categorySlices(
   summary: TransactionSummary | undefined,
   type: string,
-): DonutSlice[] {
+): Ranked[] {
   const rows = (summary?.byCategory ?? [])
     .filter((c) => (!type || c.type === type) && c.total > 0)
     .sort((a, b) => b.total - a.total);
-  const slice = (key: string, label: string, value: number): DonutSlice => ({
+  const slice = (key: string, label: string, value: number): Ranked => ({
     key,
     label,
     value,
@@ -65,7 +65,10 @@ export function categorySlices(
     .slice(0, 4)
     .map((c) => slice(String(c.categoryId), c.categoryName, c.total));
   const rest = rows.slice(4).reduce((sum, c) => sum + c.total, 0);
-  return rest > 0 ? [...top, slice("other", "Other", rest)] : top;
+  // Other never lists what is inside it, so it opens nothing.
+  return rest > 0
+    ? [...top, { ...slice("other", "Other", rest), closed: true }]
+    : top;
 }
 
 // One month of the chart: both totals and what is left, for the figure above the bars.

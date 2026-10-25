@@ -2,7 +2,7 @@
 import { paymentLabel, type PaymentMethod } from "@/features/transactions";
 import { monthNames } from "@/lib/dates";
 import { formatMoney, formatNumber } from "@/lib/format";
-import type { Stat } from "@/ui";
+import type { Ranked, Stat } from "@/ui";
 import type { TitheMonth, TitheSummary } from "../api/tithes";
 
 type Month = Pick<TitheMonth, "month" | "totalCollected">;
@@ -116,4 +116,27 @@ export function titheStats(
       note: "Of the tithes this period",
     },
   ];
+}
+
+// How the tithes were paid: the biggest four ways, the rest folded into "Other" (which opens nothing). Ways that
+// brought in nothing are left out.
+export function methodSlices(
+  totals: { method: PaymentMethod; total: number }[],
+): Ranked[] {
+  const rows = totals
+    .filter((t) => t.total > 0)
+    .sort((a, b) => b.total - a.total);
+  const slice = (key: string, label: string, value: number): Ranked => ({
+    key,
+    label,
+    value,
+    text: formatMoney(value),
+  });
+  const top = rows
+    .slice(0, 4)
+    .map((t) => slice(t.method, paymentLabel[t.method], t.total));
+  const rest = rows.slice(4).reduce((sum, t) => sum + t.total, 0);
+  return rest > 0
+    ? [...top, { ...slice("other", "Other", rest), closed: true }]
+    : top;
 }

@@ -307,3 +307,32 @@ html[data-reduce-motion="true"] .liquid-row:hover .av,
 html[data-reduce-motion="true"] .liquid-row:hover .liquid-date {
   transform: none;
 }
+
+/*
+ * Data doors. A chart mark (a bar, a segment, a node) is a button that opens its own records. On hover or focus it
+ * lifts from its centre, the others step back, and a dark glass pill names the value.
+ */
+.glass-tip {
+  padding: 6px 11px;
+  background: rgb(10 10 11 / 86%);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border-radius: 999px;
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 18%),
+    0 10px 20px -10px rgb(10 10 11 / 50%);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.35;
+  white-space: nowrap;
+  pointer-events: none;
+}
+.glass-door-lift {
+  transform-origin: center center;
+  transition:
+    transform 450ms var(--spring),
+    filter var(--t-fast),
+    box-shadow var(--t-base),
+    opacity var(--t-base);
+}

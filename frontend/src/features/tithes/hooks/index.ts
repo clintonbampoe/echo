@@ -4,6 +4,7 @@ export {
   useMemberTithes,
   useSameMonthTithes,
   useTithe,
+  useTitheByMethod,
   useTitheMonths,
   useTitheSummary,
   useTithes,
