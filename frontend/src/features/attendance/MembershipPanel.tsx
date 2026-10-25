@@ -2,8 +2,9 @@ import { formatDate, formatMonth } from "@/lib/format";
 import { paths } from "@/lib/paths";
 import { Button, Chip, DetailGroup, PanelIdentity, Sheet } from "@/ui";
 import styles from "./MembershipPanel.module.css";
-import type { Organization, OrganizationMember } from "../organizations/api";
-import { roleLabel, roleTone } from "../organizations/labels";
+import type { Organization } from "../organizations/api/organizations";
+import type { OrganizationMember } from "../organizations/api/memberships";
+import { roleLabel, roleTone } from "../organizations/model/labels";
 
 type Props = {
   organization: Organization;

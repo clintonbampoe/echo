@@ -1,8 +1,9 @@
 import { useState, type ReactNode } from "react";
 import { EditMembershipSheet } from "./EditMembershipSheet";
 import { MembershipPanel } from "./MembershipPanel";
-import type { Organization, OrganizationMember } from "../organizations/api";
-import { RemoveMemberDialog } from "../organizations/RemoveMemberDialog";
+import type { Organization } from "../organizations/api/organizations";
+import type { OrganizationMember } from "../organizations/api/memberships";
+import { RemoveMemberDialog } from "../organizations/components/members/RemoveMemberDialog";
 
 type Panels = {
   open: (member: OrganizationMember) => void;

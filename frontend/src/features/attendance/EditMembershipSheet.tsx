@@ -6,16 +6,17 @@ import { todayText } from "@/lib/dates";
 import { handleSubmitError } from "@/lib/forms";
 import { ControlledDate, FormSheet, SegmentedField } from "@/ui";
 import styles from "./EditMembershipSheet.module.css";
-import type { Organization, OrganizationMember } from "../organizations/api";
-import { useUpdateOrganizationMember } from "../organizations/hooks";
-import { roles } from "../organizations/view";
+import type { Organization } from "../organizations/api/organizations";
+import type { OrganizationMember } from "../organizations/api/memberships";
+import { useUpdateOrganizationMember } from "../organizations/hooks/mutations";
+import { roles } from "../organizations/model/display";
 import {
   fromMembership,
   membershipSchema,
   toMembershipInput,
   type MembershipValues,
-} from "../organizations/membership";
-import { roleLabel } from "../organizations/labels";
+} from "../organizations/model/membership";
+import { roleLabel } from "../organizations/model/labels";
 
 type Props = {
   organization: Organization;
