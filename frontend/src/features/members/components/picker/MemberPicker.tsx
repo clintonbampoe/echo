@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useDebounced } from "@/lib/useDebounced";
-import { Avatar, Button, SearchField } from "@/ui";
+import { Avatar, Button, Lookup } from "@/ui";
 import type { MemberMatch } from "../../api/members";
-import { useMemberSearch } from "../../hooks";
+import { useMemberSearch, useRecentMembers } from "../../hooks";
 import styles from "./MemberPicker.module.css";
 
 type Props = {
@@ -39,98 +39,70 @@ export function MemberPicker({
     );
   }
   return (
-    <div>
-      <SearchField
-        label="Search members"
-        placeholder="Search by name or phone"
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-      />
-      {error && (
-        <p role="alert" className={styles.error}>
-          {error}
-        </p>
-      )}
-      <Results
-        text={text.trim()}
-        onPick={onChange}
-        taken={taken}
-        takenText={takenText}
-      />
-    </div>
+    <Finder
+      text={text}
+      onText={setText}
+      onPick={onChange}
+      taken={taken}
+      takenText={takenText}
+      error={error}
+    />
   );
 }
 
-type ResultsProps = {
+type FinderProps = {
   text: string;
+  onText: (text: string) => void;
   onPick: (m: MemberMatch) => void;
   taken?: ReadonlySet<string>;
   takenText: string;
+  error?: string;
 };
 
-// What sits under the search box: a hint, "Searching…", a problem, nothing found, or the matches.
-function Results({ text, onPick, taken, takenText }: ResultsProps) {
-  const q = useDebounced(text);
+// The search box and what it finds. It asks once typing has paused for 250 ms, and remembers who was picked last.
+function Finder({
+  text,
+  onText,
+  onPick,
+  taken,
+  takenText,
+  error,
+}: FinderProps) {
+  const q = useDebounced(text.trim(), 250);
   const search = useMemberSearch(q);
+  const { recent, remember } = useRecentMembers();
+  const settled = q === text.trim();
+  const item = (m: MemberMatch) => ({
+    id: m.id,
+    label: m.name,
+    sub: m.phoneNumber,
+    disabled: taken?.has(m.id),
+    note: taken?.has(m.id) ? takenText : undefined,
+    member: m,
+  });
+  const status =
+    !settled || search.isPending
+      ? "searching"
+      : search.isError
+        ? "error"
+        : "ready";
   return (
-    <div aria-live="polite" className={styles.results}>
-      <Message
-        text={text}
-        settled={q === text}
-        loading={search.isPending}
-        failed={search.isError}
-        count={search.data?.length}
-      />
-      {search.data && q === text && search.data.length > 0 && (
-        <ul aria-label="Matching members" className={styles.list}>
-          {search.data.map((m) => (
-            <li key={m.id}>
-              <button
-                type="button"
-                className={styles.option}
-                disabled={taken?.has(m.id)}
-                onClick={() => onPick(m)}
-              >
-                <Avatar name={m.name} size={32} />
-                <span className={styles.who}>
-                  <span className={styles.name}>{m.name}</span>
-                  <span className={styles.phone}>{m.phoneNumber}</span>
-                </span>
-                {taken?.has(m.id) && (
-                  <span className={styles.taken}>{takenText}</span>
-                )}
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+    <Lookup
+      label="Search members"
+      placeholder="Search by name or phone"
+      text={text}
+      onText={onText}
+      status={status}
+      items={(settled ? (search.data ?? []) : []).map(item)}
+      recent={recent.map(item)}
+      noMatch="No member found. Check the spelling, or search by phone number."
+      failed="We could not search right now. Try again in a moment."
+      lead={(i) => <Avatar name={i.label} size={32} />}
+      onPick={(i) => {
+        remember(i.member);
+        onPick(i.member);
+      }}
+      error={error}
+    />
   );
-}
-
-type MessageProps = {
-  text: string;
-  settled: boolean;
-  loading: boolean;
-  failed: boolean;
-  count?: number;
-};
-
-function Message({ text, settled, loading, failed, count }: MessageProps) {
-  if (text.length < 2)
-    return <p className={styles.note}>Type at least two letters.</p>;
-  if (!settled || loading) return <p className={styles.note}>Searching…</p>;
-  if (failed)
-    return (
-      <p className={styles.note}>
-        We could not search right now. Try again in a moment.
-      </p>
-    );
-  if (count === 0)
-    return (
-      <p className={styles.note}>
-        No member found. Check the spelling, or search by phone number.
-      </p>
-    );
-  return null;
 }

@@ -24,7 +24,10 @@ beforeEach(() => {
   );
   vi.stubGlobal("fetch", fetchMock);
 });
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+  vi.unstubAllGlobals();
+  localStorage.clear();
+});
 
 function Harness({ taken }: { taken?: ReadonlySet<string> }) {
   const [value, setValue] = useState<MemberMatch | null>(null);
@@ -53,12 +56,48 @@ describe("member picker", () => {
   it("asks for two letters and searches nothing before that", async () => {
     const user = userEvent.setup();
     wrap(<Harness />);
+    await user.click(screen.getByRole("searchbox", { name: "Search members" }));
     expect(screen.getByText("Type at least two letters.")).toBeInTheDocument();
     await user.type(
       screen.getByRole("searchbox", { name: "Search members" }),
       "k",
     );
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("offers the people picked last when the box is focused and empty", async () => {
+    localStorage.setItem("echo.recent-members", JSON.stringify([found[1]]));
+    const user = userEvent.setup();
+    wrap(<Harness />);
+    expect(screen.queryByText("Recent")).toBeNull();
+    await user.click(screen.getByRole("searchbox", { name: "Search members" }));
+    expect(screen.getByText("Recent")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: /Kojo Antwi/ }));
+    expect(screen.queryByRole("searchbox")).toBeNull();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("remembers who was picked", async () => {
+    const user = userEvent.setup();
+    wrap(<Harness />);
+    await user.type(
+      screen.getByRole("searchbox", { name: "Search members" }),
+      "ko",
+    );
+    await user.click(
+      await screen.findByRole("button", { name: /Kofi Mensah/ }),
+    );
+    expect(
+      JSON.parse(localStorage.getItem("echo.recent-members") ?? "[]"),
+    ).toEqual([found[0]]);
+  });
+
+  it("closes on Escape", async () => {
+    const user = userEvent.setup();
+    wrap(<Harness />);
+    await user.click(screen.getByRole("searchbox", { name: "Search members" }));
+    await user.keyboard("{Escape}");
+    expect(screen.queryByText("Type at least two letters.")).toBeNull();
   });
 
   it("lists matches, picks one and can change the pick", async () => {

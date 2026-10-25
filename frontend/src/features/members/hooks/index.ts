@@ -13,3 +13,4 @@ export {
   useMemberSummary,
 } from "./queries";
 export { useMemberFigures } from "./figures";
+export { useRecentMembers } from "./recent";

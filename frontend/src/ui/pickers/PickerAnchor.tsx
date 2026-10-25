@@ -23,7 +23,7 @@ type Props = {
 };
 
 // Holds a trigger and the panel it opens. With a mouse the panel hangs under the trigger as a popover; on a touch
-// screen it rises from the bottom. The popover takes focus when it opens, gives it back when it closes, and closes
+// screen it is a centred glass panel. The popover takes focus when it opens, gives it back when it closes, and closes
 // on Escape, on a click outside, or when focus tabs away.
 export function PickerAnchor({
   open,
@@ -85,7 +85,7 @@ export function PickerAnchor({
           ref={keepOnScreen}
           role="dialog"
           aria-label={title}
-          className={styles.popover}
+          className={`${styles.popover} glass-pop glass-in-pop`}
         >
           {panel}
         </div>

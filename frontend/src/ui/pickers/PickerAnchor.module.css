@@ -2,25 +2,13 @@
   position: relative;
 }
 
+/* The glass comes from .glass-pop; this is only where it sits and how it opens. */
 .popover {
   position: absolute;
-  top: calc(100% + 6px);
+  top: calc(100% + 8px);
   left: 0;
   z-index: 20;
-  min-width: 304px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-field);
-  box-shadow: 0 12px 32px rgb(10 10 10 / 14%);
-  animation: open var(--fast) var(--ease) both;
-}
-:global([data-surface="dark"]) .popover {
-  box-shadow: 0 12px 32px rgb(0 0 0 / 50%);
-}
-
-@keyframes open {
-  from {
-    opacity: 0;
-    transform: translateY(-4px);
-  }
+  min-width: 316px;
+  border-radius: 26px;
+  transform-origin: top left;
 }

@@ -60,6 +60,7 @@ export { BackLink, ProfileLayout } from "./layout/ProfileLayout";
 export { RecordTable, type Column } from "./data/RecordTable";
 export { Reveal } from "./layout/Reveal";
 export { Row, RowCard } from "./layout/RowCard";
+export { Lookup, type LookupItem } from "./inputs/Lookup";
 export { SearchBox } from "./inputs/SearchBox";
 export { SearchField } from "./inputs/SearchField";
 export { Section } from "./layout/Section";
