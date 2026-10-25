@@ -13,7 +13,7 @@
   --origin: top center;
 }
 .menu[data-closing="true"] {
-  animation: close 140ms ease-in both;
+  animation: close var(--t-exit) ease-in both;
 }
 
 .search {

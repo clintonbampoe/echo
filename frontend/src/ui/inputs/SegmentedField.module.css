@@ -146,7 +146,7 @@
   width: 100%;
 }
 .stretch .face {
-  height: 38px;
+  height: var(--control);
 }
 @media (max-width: 900px) {
   .group.fill {

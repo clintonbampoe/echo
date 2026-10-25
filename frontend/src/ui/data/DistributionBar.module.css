@@ -16,7 +16,7 @@
   cursor: pointer;
   transform-origin: center center;
   transition:
-    transform 450ms var(--spring),
+    transform var(--t-enter) var(--ease-settle),
     opacity var(--t-base),
     filter var(--t-fast),
     box-shadow var(--t-base);

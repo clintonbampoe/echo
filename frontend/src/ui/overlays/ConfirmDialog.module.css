@@ -20,10 +20,10 @@
   border-radius: var(--radius-float);
   text-align: center;
   transform-origin: center;
-  animation: eCenter 500ms var(--spring) both;
+  animation: eCenter var(--t-enter) var(--ease-settle) both;
 }
 .panel[data-closing="true"] {
-  animation: popOut 140ms ease-in both;
+  animation: popOut var(--t-exit) ease-in both;
 }
 .title {
   margin: 0 0 8px;

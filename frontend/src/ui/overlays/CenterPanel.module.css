@@ -21,10 +21,10 @@
   border-radius: var(--radius-float);
   overflow: hidden;
   transform-origin: center;
-  animation: eCenter 500ms var(--spring) both;
+  animation: eCenter var(--t-enter) var(--ease-settle) both;
 }
 .panel[data-closing="true"] {
-  animation: centerOut 200ms ease-in both;
+  animation: centerOut var(--t-exit) ease-in both;
 }
 .panel:focus {
   outline: none;
@@ -48,7 +48,7 @@
   align-items: center;
   justify-content: center;
   width: 36px;
-  height: 36px;
+  height: var(--control);
   background: var(--fill);
   border: 0;
   border-radius: 50%;

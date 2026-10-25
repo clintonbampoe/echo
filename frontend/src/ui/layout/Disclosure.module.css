@@ -44,7 +44,7 @@
   margin-left: auto;
   flex: none;
   color: var(--text-3);
-  transition: transform 360ms var(--spring);
+  transition: transform var(--t-enter) var(--ease-settle);
 }
 .toggle[aria-expanded="true"] .chevron {
   transform: rotate(180deg);

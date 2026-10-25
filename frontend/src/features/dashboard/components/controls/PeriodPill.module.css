@@ -6,7 +6,7 @@
   display: inline-flex;
   align-items: center;
   gap: var(--s-8);
-  height: 36px;
+  height: var(--pill-h);
   padding: 0 var(--s-12);
   font-size: var(--type-body);
   font-weight: 500;
@@ -40,7 +40,7 @@
   display: flex;
   align-items: center;
   gap: var(--s-12);
-  height: 38px;
+  height: var(--pill-h);
   padding: 0 var(--s-8);
   font-size: var(--type-body);
   color: var(--text);

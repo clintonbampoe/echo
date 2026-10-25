@@ -47,7 +47,7 @@
   background: transparent;
   transform-origin: center center;
   transition:
-    transform 350ms var(--spring),
+    transform var(--t-spring) var(--spring),
     background-color var(--t-fast) var(--ease-soft),
     box-shadow var(--t-base) var(--ease-soft);
 }
@@ -106,7 +106,7 @@
   color: var(--on-accent);
 }
 .day.picked::before {
-  animation: dayPick 350ms var(--spring) both;
+  animation: dayPick var(--t-spring) var(--spring) both;
   box-shadow: 0 6px 14px rgb(10 10 10 / 22%);
 }
 

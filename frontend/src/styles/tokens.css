@@ -71,6 +71,13 @@
   --type-display: 48px;
   --type-hero: 60px;
 
+  /* Control heights: pills, filters, tabs and buttons are one of these. 44 is the size of what you can press on touch;
+     a control smaller than that gets the rest as an invisible hit area. */
+  --control: 40px;
+  --control-sm: 32px;
+  --pill-h: 36px; /* a pill, a tab, a quick action (the design system: 36, and 44 on touch) */
+  --filter-h: 32px; /* a dashed filter pill */
+
   /* Spacing ladder. Gaps and padding are one of these. */
   --s-2: 2px;
   --s-4: 4px;
@@ -122,7 +129,15 @@
   --t-fast: 150ms; /* colour and background */
   --t-base: 220ms; /* lift, slide, border, shadow */
   --t-spring: 300ms; /* spring releases */
-  --t-enter: 320ms; /* popover, dialog and sheet entrances */
+  --t-enter: 420ms; /* popover, dialog and sheet entrances: a soft settle, not a bounce */
+  --t-exit: 180ms; /* anything leaving: quicker than it arrived */
+  --t-grow: 700ms; /* a bar or line growing from its baseline */
+  --ease-settle: cubic-bezier(
+    0.22,
+    1.1,
+    0.36,
+    1
+  ); /* arrives, overshoots by a few percent, rests */
   --lift-1: translateY(-1px); /* buttons */
   --lift-3: translateY(-3px); /* clickable cards, strip cells */
   --press-card: 0.995;
@@ -134,6 +149,14 @@
 
   /* Focus */
   --focus: 2px solid var(--text);
+}
+
+/* On a phone or tablet every pill and filter is 40px tall, and gets the rest of the 44px as hit area. */
+@media (max-width: 900px) {
+  :root {
+    --pill-h: 40px;
+    --filter-h: 40px;
+  }
 }
 
 [data-surface="light"] {

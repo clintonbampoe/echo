@@ -45,7 +45,7 @@
   height: 3px;
   background: var(--text);
   border-radius: 2px;
-  animation: echoGrowX 600ms var(--grow) backwards;
+  animation: echoGrowX var(--t-grow) var(--grow) backwards;
 }
 
 .node {
@@ -60,7 +60,7 @@
   animation-delay: calc(var(--i, 0) * 28ms);
   transform-origin: center center;
   transition:
-    transform 450ms var(--spring),
+    transform var(--t-enter) var(--ease-settle),
     box-shadow var(--t-base) var(--ease-soft),
     opacity var(--t-base) var(--ease-soft);
 }
@@ -103,7 +103,7 @@
   transform: translateX(-50%) translateY(4px) scale(0.96);
   transition:
     opacity var(--fast) ease,
-    transform 350ms var(--spring);
+    transform var(--t-spring) var(--spring);
 }
 .slot:first-child .tip {
   left: 0;

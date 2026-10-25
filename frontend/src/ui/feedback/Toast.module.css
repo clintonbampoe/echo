@@ -25,7 +25,7 @@
   animation: in var(--t-enter) var(--ease-spring) both;
 }
 .toast[data-closing="true"] {
-  animation: out 200ms ease-in both;
+  animation: out var(--t-exit) ease-in both;
 }
 .toast:not(:has(.action)) {
   padding-right: var(--s-20);

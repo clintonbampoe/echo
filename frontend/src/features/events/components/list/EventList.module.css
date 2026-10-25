@@ -109,7 +109,7 @@
   background: var(--text);
   border-radius: var(--radius-pill);
   transform-origin: left;
-  animation: echoGrowX 700ms var(--grow) backwards;
+  animation: echoGrowX var(--t-grow) var(--grow) backwards;
 }
 
 .value {

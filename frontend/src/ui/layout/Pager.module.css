@@ -46,12 +46,12 @@
   }
 }
 
-/* 24px to tap, 6px to see. The page you are on is the long one. */
+/* 32px to tap (and a few more around it), 6px to see. The page you are on is the long one. */
 .dot {
   display: grid;
   place-items: center;
-  width: 24px;
-  height: 24px;
+  width: 32px;
+  height: 32px;
   padding: 0;
   background: none;
   border: 0;

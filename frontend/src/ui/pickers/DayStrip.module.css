@@ -16,8 +16,8 @@
   display: grid;
   flex: none;
   place-items: center;
-  width: 32px;
-  height: 32px;
+  width: var(--control-sm);
+  height: var(--control-sm);
   border: 0;
   border-radius: 50%;
   background: transparent;
@@ -189,5 +189,13 @@
   }
   .day[aria-pressed="true"]::after {
     animation: none;
+  }
+}
+
+/* On a phone the arrows are as large as every other control. */
+@media (max-width: 900px) {
+  .arrow {
+    width: var(--control);
+    height: var(--control);
   }
 }

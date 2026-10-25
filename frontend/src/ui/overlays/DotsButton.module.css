@@ -16,7 +16,7 @@
     background-color var(--t-fast) var(--ease-soft),
     color var(--t-fast) var(--ease-soft),
     box-shadow var(--t-base),
-    transform 450ms var(--spring);
+    transform var(--t-enter) var(--ease-settle);
 }
 /* A 44px target around the 36px circle, on touch. */
 @media (pointer: coarse) {
@@ -32,7 +32,7 @@
     background: var(--glass-white);
     color: var(--text);
     transform: scale(1.1);
-    animation: eBlob 550ms var(--spring);
+    animation: eBlob var(--t-enter) var(--ease-settle);
   }
 }
 .dots:active {

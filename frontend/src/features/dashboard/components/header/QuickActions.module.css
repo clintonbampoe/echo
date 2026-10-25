@@ -8,7 +8,7 @@
   display: inline-flex;
   align-items: center;
   position: relative;
-  height: 40px;
+  height: var(--pill-h);
   padding: 0 var(--s-16);
   background: var(--card-bg);
   border: 1px solid var(--line-2);

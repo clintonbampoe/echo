@@ -74,7 +74,7 @@
 /* Plays once when the element mounts. Stagger with style={{ '--delay': '120ms' }}. */
 .anim-rise {
   transform-origin: 50% 0;
-  animation: eJellyPage 700ms var(--spring) both;
+  animation: eJellyPage 600ms var(--ease) both;
   animation-delay: var(--delay, 0ms);
 }
 .anim-fade {
@@ -298,34 +298,34 @@ a[data-press]:active {
 }
 .pop {
   transform-origin: var(--origin, top);
-  animation: echoPop 260ms var(--spring) both;
+  animation: echoPop var(--t-enter) var(--ease-settle) both;
 }
 .pop[data-closing="true"] {
-  animation: echoPopOut 120ms ease-in both;
+  animation: echoPopOut var(--t-exit) ease-in both;
 }
 .sheet-rise {
-  animation: echoLift 340ms var(--spring) both;
+  animation: echoLift var(--t-enter) var(--ease-settle) both;
 }
 .sheet-rise[data-closing="true"] {
-  animation: echoLiftOut 200ms ease-in both;
+  animation: echoLiftOut var(--t-exit) ease-in both;
 }
 .slide-in {
-  animation: echoSlideIn 340ms var(--ease) both;
+  animation: echoSlideIn var(--t-enter) var(--ease-settle) both;
 }
 .slide-in[data-closing="true"] {
-  animation: echoSlideOut 200ms ease-in both;
+  animation: echoSlideOut var(--t-exit) ease-in both;
 }
 .scrim-fade {
   animation: fade var(--base) ease both;
 }
 .scrim-fade[data-closing="true"] {
-  animation: echoFadeOut 200ms ease both;
+  animation: echoFadeOut var(--t-exit) ease both;
 }
 
 /* A list row or card that arrives with its neighbours, one after the other. */
 .stagger {
   transform-origin: 50% 100%;
-  animation: eJelly 640ms var(--spring) both;
+  animation: eJelly 520ms var(--ease) both;
   animation-delay: calc(var(--i, 0) * 28ms);
 }
 
@@ -355,28 +355,28 @@ a[data-press]:active {
   }
 }
 [data-flip="a"]:not([data-squish]) {
-  animation: echoPill 550ms var(--spring) both;
+  animation: echoPill var(--t-enter) var(--ease-settle) both;
 }
 [data-flip="b"]:not([data-squish]) {
-  animation: echoPillB 550ms var(--spring) both;
+  animation: echoPillB var(--t-enter) var(--ease-settle) both;
 }
 /* data-squish="before": the element's ::before is the thumb, so it is the one that squishes. */
 [data-flip="a"][data-squish="before"]::before {
-  animation: echoPill 550ms var(--spring) both;
+  animation: echoPill var(--t-enter) var(--ease-settle) both;
 }
 [data-flip="b"][data-squish="before"]::before {
-  animation: echoPillB 550ms var(--spring) both;
+  animation: echoPillB var(--t-enter) var(--ease-settle) both;
 }
 
 /* Bars rise from their baseline, one after another (set --i). Plays when the chart mounts. */
 .grow-y {
   transform-origin: bottom;
-  animation: echoGrow 800ms var(--grow) both;
+  animation: echoGrow var(--t-grow) var(--grow) both;
   animation-delay: calc(var(--i, 0) * 40ms);
 }
 .grow-x {
   transform-origin: left;
-  animation: echoGrowX 800ms var(--grow) both;
+  animation: echoGrowX var(--t-grow) var(--grow) both;
   animation-delay: calc(var(--i, 0) * 40ms);
 }
 

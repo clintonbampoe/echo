@@ -120,3 +120,10 @@
 .spinner {
   flex: none;
 }
+
+/* On a phone even the small button is as tall as every other control. */
+@media (max-width: 900px) {
+  .sm {
+    height: var(--control);
+  }
+}

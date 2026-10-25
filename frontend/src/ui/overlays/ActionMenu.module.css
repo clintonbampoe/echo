@@ -19,7 +19,7 @@
   border-radius: var(--radius-pop);
 }
 .menu[data-closing="true"] {
-  animation: openOut 120ms ease-in both;
+  animation: openOut var(--t-exit) ease-in both;
 }
 .title {
   position: absolute;
@@ -47,7 +47,7 @@
   transition:
     background-color var(--t-fast) var(--ease-soft),
     box-shadow var(--t-base),
-    transform 450ms var(--spring);
+    transform var(--t-enter) var(--ease-settle);
 }
 @media (hover: hover) {
   .item:hover,

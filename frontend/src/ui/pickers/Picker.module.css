@@ -23,7 +23,7 @@
   aspect-ratio: 1 / 1;
   border-radius: 50%;
   transition:
-    transform 350ms var(--spring),
+    transform var(--t-spring) var(--spring),
     background-color var(--t-fast) var(--ease-soft);
 }
 @media (hover: hover) {
@@ -44,7 +44,7 @@
 }
 .my {
   gap: var(--s-6);
-  height: 36px;
+  height: var(--control);
   padding: 0 var(--s-12);
   border-radius: var(--radius-pill);
   font-size: var(--type-body);
@@ -89,7 +89,7 @@
   font-weight: 500;
   color: var(--text-2);
   transition:
-    transform 350ms var(--spring),
+    transform var(--t-spring) var(--spring),
     background-color var(--t-fast) var(--ease-soft),
     color var(--t-fast) var(--ease-soft);
 }

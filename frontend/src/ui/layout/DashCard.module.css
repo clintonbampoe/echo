@@ -32,6 +32,10 @@
   color: var(--text-3);
 }
 .see {
+  /* The link is a line of text; the padding is its 44px of press area, taken back with the negative margin. */
+  display: inline-block;
+  padding: var(--s-12) var(--s-8);
+  margin: calc(var(--s-12) * -1) calc(var(--s-8) * -1);
   font-size: var(--type-footnote);
   font-weight: 500;
   color: var(--text);

@@ -22,12 +22,12 @@
   text-align: left;
 }
 .row {
-  animation: eOpt 380ms var(--grow) both;
+  animation: eOpt var(--t-enter) var(--ease-settle) both;
   animation-delay: calc(var(--i, 0) * 25ms);
   transition:
     background-color var(--t-fast) var(--ease-soft),
     box-shadow var(--t-base),
-    transform 450ms var(--spring);
+    transform var(--t-enter) var(--ease-settle);
 }
 @media (hover: hover) {
   .row:hover {

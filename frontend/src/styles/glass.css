@@ -174,33 +174,33 @@
 /* Entrances. A popover grows out of its trigger (set --origin); a menu grows from its corner. */
 .glass-in-pop {
   transform-origin: var(--origin, top left);
-  animation: ePopIn 420ms var(--spring) both;
+  animation: ePopIn var(--t-enter) var(--ease-settle) both;
 }
 .glass-in-menu {
   transform-origin: var(--origin, top right);
-  animation: eMenu 450ms var(--spring) both;
+  animation: eMenu var(--t-enter) var(--ease-settle) both;
 }
 .glass-in-side {
   transform-origin: top right;
-  animation: ePanelIn 500ms var(--spring) both;
+  animation: ePanelIn var(--t-enter) var(--ease-settle) both;
 }
 .glass-in-centre {
   transform-origin: center;
-  animation: eCenter 500ms var(--spring) both;
+  animation: eCenter var(--t-enter) var(--ease-settle) both;
 }
 /* A panel that is also centred by translateY(-50%) (the phone panel). */
 .glass-in-centre-y {
   transform-origin: center;
-  animation: eMat 500ms var(--spring) both;
+  animation: eMat var(--t-enter) var(--ease-settle) both;
 }
 /* Options inside a popover come in one after another. Set --i on each. */
 .glass-opt {
-  animation: eOpt 380ms var(--grow) both;
+  animation: eOpt var(--t-enter) var(--ease-settle) both;
   animation-delay: calc(var(--i, 0) * 25ms);
 }
 .glass-scrim[data-closing="true"],
 .glass-scrim-lite[data-closing="true"] {
-  animation: echoFadeOut 200ms ease both;
+  animation: echoFadeOut var(--t-exit) ease both;
 }
 
 /* The dots that say "looking": <span class="liquid-load"><i></i><i></i><i></i></span> */
@@ -234,7 +234,7 @@
   position: relative;
   isolation: isolate;
   transform-origin: center;
-  transition: scale 520ms var(--spring);
+  transition: scale var(--t-enter) var(--ease-settle);
 }
 .liquid-row::before {
   content: "";
@@ -253,7 +253,7 @@
   box-shadow:
     inset 0 1px 0 rgb(255 255 255 / 90%),
     0 10px 24px -16px rgb(10 10 11 / 22%);
-  transition: opacity 240ms;
+  transition: opacity var(--t-base);
 }
 .liquid-av,
 .liquid-row .av,
@@ -269,7 +269,7 @@
   }
   .liquid-row:hover::before {
     opacity: 1;
-    animation: eLiquid 560ms var(--spring) both;
+    animation: eLiquid var(--t-enter) var(--ease-settle) both;
   }
   .liquid-row:hover .liquid-av,
   .liquid-row:hover .av,
@@ -286,7 +286,7 @@
 .liquid-lens {
   transform-origin: center center;
   transition:
-    transform 450ms var(--spring),
+    transform var(--t-enter) var(--ease-settle),
     filter var(--t-fast),
     box-shadow var(--t-base),
     opacity var(--t-base);
@@ -325,7 +325,7 @@ html[data-reduce-motion="true"] .liquid-row:hover {
 .glass-door-lift {
   transform-origin: center center;
   transition:
-    transform 450ms var(--spring),
+    transform var(--t-enter) var(--ease-settle),
     filter var(--t-fast),
     box-shadow var(--t-base),
     opacity var(--t-base);

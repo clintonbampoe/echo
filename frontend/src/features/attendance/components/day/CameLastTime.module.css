@@ -55,14 +55,14 @@
 .all,
 .mark {
   flex: none;
-  height: 36px;
+  height: var(--pill-h);
   padding: 0 var(--s-16);
   border: 0;
   border-radius: var(--radius-pill);
   font-size: var(--type-footnote);
   font-weight: 500;
   transition:
-    transform 350ms var(--spring),
+    transform var(--t-spring) var(--spring),
     background-color var(--t-fast) var(--ease-soft),
     box-shadow var(--t-base);
 }

@@ -50,7 +50,7 @@
   align-items: center;
   gap: var(--s-8);
   flex: none;
-  height: 38px;
+  height: var(--pill-h);
   padding: 0 var(--s-20);
   background: transparent;
   border: 0;

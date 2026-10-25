@@ -54,7 +54,7 @@
   transition:
     background-color var(--t-fast) var(--ease-soft),
     box-shadow var(--t-base),
-    transform 450ms var(--spring);
+    transform var(--t-enter) var(--ease-settle);
 }
 @media (hover: hover) {
   .option:hover:not(:disabled),
