@@ -7,17 +7,7 @@
   color: var(--text-3);
 }
 
-/* Details on the left, the contributions beside it. Narrower than a laptop, everything stacks, details first. */
-.layout {
-  display: grid;
-  grid-template-columns: 340px minmax(0, 1fr);
-  gap: 16px;
-  align-items: start;
-}
-
-@media (max-width: 1180px) {
-  .layout {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 24px;
-  }
+/* The tab's panel sits a step under the tabs. */
+.panel {
+  margin-top: 16px;
 }

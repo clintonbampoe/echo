@@ -33,6 +33,7 @@ export { Icon, type IconName } from "./Icon";
 export { initials } from "./initials";
 export { ListBody } from "./ListBody";
 export { Logo } from "./Logo";
+export { ListHeader } from "./ListHeader";
 export { MonthBars, type MonthBar } from "./MonthBars";
 export { MonthYearPill } from "./MonthYearPill";
 export { Notice } from "./Notice";

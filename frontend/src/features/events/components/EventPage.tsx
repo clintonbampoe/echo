@@ -96,7 +96,7 @@ function TabBody({ tab, event, guests, arrivals, phase, state }: BodyProps) {
 
 function Detail({ event: e }: { event: EventItem }) {
   const navigate = useNavigate();
-  const [tab, setTab] = useState("registrations");
+  const [tab, setTab] = useState("details");
   const [editing, setEditing] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [recording, setRecording] = useState<Mode | null>(null);
@@ -115,9 +115,9 @@ function Detail({ event: e }: { event: EventItem }) {
     ? rosterStats({ event: e, arrivals, phase })
     : waitingStats(e, state.failed);
   const tabs = [
+    { id: "details", label: "Details" },
     { id: "registrations", label: "Registrations" },
     { id: "check-ins", label: "Check-ins" },
-    { id: "details", label: "Details" },
   ];
 
   return (

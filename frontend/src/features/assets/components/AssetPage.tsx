@@ -2,12 +2,13 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { isApiError } from "@/lib/api";
 import { paths } from "@/lib/paths";
-import { Alert, BackLink, Button, StatStrip } from "@/ui";
+import { Alert, BackLink, Button, StatStrip, Tabs } from "@/ui";
 import type { Asset } from "../api";
 import { useAsset } from "../hooks";
 import { assetFigures } from "../view";
 import { AssetDetails } from "./AssetDetails";
 import { AssetHeader } from "./AssetHeader";
+import { AssetValue } from "./AssetValue";
 import styles from "./AssetPage.module.css";
 import { DeleteAssetDialog } from "./DeleteAssetDialog";
 import { EditAssetSheet } from "./EditAssetSheet";
@@ -50,10 +51,16 @@ export function AssetPage() {
   return <Detail asset={asset.data} />;
 }
 
+const tabs = [
+  { id: "details", label: "Details" },
+  { id: "value", label: "Value" },
+];
+
 function Detail({ asset: a }: { asset: Asset }) {
   const navigate = useNavigate();
   const [editing, setEditing] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [tab, setTab] = useState("details");
 
   return (
     <div className="anim-rise">
@@ -64,7 +71,24 @@ function Detail({ asset: a }: { asset: Asset }) {
         onDelete={() => setDeleting(true)}
       />
       <StatStrip label="Asset figures" stats={assetFigures(a)} />
-      <AssetDetails asset={a} />
+      <Tabs
+        label="Asset"
+        tabs={tabs}
+        value={tab}
+        onChange={setTab}
+        idPrefix="asset"
+      />
+      <div
+        role="tabpanel"
+        id={`asset-panel-${tab}`}
+        aria-labelledby={`asset-tab-${tab}`}
+        className={styles.panel}
+      >
+        {tab === "details" && <AssetDetails asset={a} />}
+        {tab === "value" && (
+          <AssetValue asset={a} thisYear={new Date().getFullYear()} />
+        )}
+      </div>
       {editing && (
         <EditAssetSheet asset={a} onClose={() => setEditing(false)} />
       )}

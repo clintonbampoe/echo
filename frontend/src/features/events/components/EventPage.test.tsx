@@ -97,6 +97,14 @@ const open = () =>
     </QueryClientProvider>,
   );
 
+// The page opens on Details; the roster is one click away.
+async function openRegistrations() {
+  open();
+  await userEvent
+    .setup()
+    .click(await screen.findByRole("tab", { name: "Registrations" }));
+}
+
 const sent = (method: string) => {
   const call = fetchMock.mock.calls.find(
     ([, i]) => (i as RequestInit | undefined)?.method === method,
@@ -111,7 +119,7 @@ const sent = (method: string) => {
 
 describe("event page", () => {
   it("shows the event, its numbers and who signed up with whether they came", async () => {
-    open();
+    await openRegistrations();
     expect(
       await screen.findByRole("heading", { name: "Prayer Retreat" }),
     ).toBeInTheDocument();
@@ -147,7 +155,7 @@ describe("event page", () => {
 
   it("narrows the registrations by name and by status", async () => {
     const user = userEvent.setup();
-    open();
+    await openRegistrations();
     await user.type(
       await screen.findByRole("searchbox", { name: "Search registrations" }),
       "comfort",
@@ -165,7 +173,7 @@ describe("event page", () => {
   it("marks the guests of an event still to come as not checked in, not as no-shows", async () => {
     event = { ...retreat, startDate: "2099-10-03", endDate: "2099-10-03" };
     checks = [];
-    open();
+    await openRegistrations();
     const list = await screen.findByRole("list", { name: "Registrations" });
     expect(within(list).getAllByText("Not checked in")).toHaveLength(3);
     expect(screen.queryByText("No-show")).toBeNull();
@@ -174,7 +182,7 @@ describe("event page", () => {
 
   it("opens a panel from a row, with the way out to the member page, and removes the registration", async () => {
     const user = userEvent.setup();
-    open();
+    await openRegistrations();
     await user.click(
       await screen.findByRole("button", { name: "Comfort Addo" }),
     );

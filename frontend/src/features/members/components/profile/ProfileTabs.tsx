@@ -1,25 +1,12 @@
 import type { ReactNode } from "react";
 import { useSearchParams } from "react-router-dom";
-import { countLabel } from "@/lib/paged";
 import { Tabs } from "@/ui";
-import { PersonAttendance, useAttendance } from "@/features/attendance";
-import {
-  OrganizedEvents,
-  PersonEvents,
-  usePersonRegistrations,
-} from "@/features/events";
-import {
-  PersonOrganizations,
-  usePersonMemberships,
-} from "@/features/organizations";
+import { PersonAttendance } from "@/features/attendance";
+import { OrganizedEvents, PersonEvents } from "@/features/events";
+import { PersonOrganizations } from "@/features/organizations";
 import { ManagedProjects } from "@/features/projects";
-import { MemberTithes, useMemberTithes } from "@/features/tithes";
+import { MemberTithes } from "@/features/tithes";
 import styles from "./ProfileTabs.module.css";
-
-const badge = (l: { rows: unknown[]; hasMore: boolean; loading: boolean }) =>
-  l.loading || l.rows.length === 0
-    ? null
-    : countLabel(l.rows.length, l.hasMore);
 
 const ids = [
   "details",
@@ -49,17 +36,12 @@ export function ProfileTabs({
   const [params, setParams] = useSearchParams();
   const tab = pickTab(params.get("tab"));
 
-  // The same queries the tabs use, so the badges cost nothing extra.
   const tabs = [
     { id: "details", label: "Details" },
-    { id: "attendance", label: "Attendance", count: badge(useAttendance(id)) },
-    { id: "events", label: "Events", count: badge(usePersonRegistrations(id)) },
-    { id: "tithes", label: "Tithes", count: badge(useMemberTithes(id)) },
-    {
-      id: "organizations",
-      label: "Organizations",
-      count: badge(usePersonMemberships(id)),
-    },
+    { id: "attendance", label: "Attendance" },
+    { id: "events", label: "Events" },
+    { id: "tithes", label: "Tithes" },
+    { id: "organizations", label: "Organizations" },
     { id: "responsibilities", label: "Responsibilities" },
   ];
 

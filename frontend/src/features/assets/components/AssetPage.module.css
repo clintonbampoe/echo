@@ -6,3 +6,8 @@
   padding: 24px 0;
   color: var(--text-3);
 }
+
+/* The tab's panel sits a step under the tabs. */
+.panel {
+  margin-top: 16px;
+}

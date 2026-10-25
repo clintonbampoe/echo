@@ -140,6 +140,15 @@ const open = (address = "/projects/p1") =>
     </QueryClientProvider>,
   );
 
+// The page opens on Details; the other tabs are one click away.
+async function goTo(name: string) {
+  await userEvent.setup().click(await screen.findByRole("tab", { name }));
+}
+async function openOn(name: string, address?: string) {
+  open(address);
+  await goTo(name);
+}
+
 const asked = (path: string) =>
   fetchMock.mock.calls
     .map(([u]) => new URL(u as string, "http://x"))
@@ -155,6 +164,13 @@ describe("project page", () => {
     expect(
       screen.getByText("Replace the sanctuary roof sheets."),
     ).toBeInTheDocument();
+    const figures = screen.getByRole("region", { name: "Project figures" });
+    expect(await within(figures).findByText("48.2k")).toBeInTheDocument();
+    expect(within(figures).getByText("80k")).toBeInTheDocument();
+    const details = screen.getByRole("region", { name: "Project details" });
+    expect(within(details).getByText("Ama Boateng")).toBeInTheDocument();
+    expect(within(details).getByText("01 Mar 2026")).toBeInTheDocument();
+    await goTo("Summary");
     const progress = screen.getByRole("region", {
       name: "Raised against target",
     });
@@ -162,12 +178,7 @@ describe("project page", () => {
       within(progress).getByText("Still to raise GH₵ 31.8k"),
     ).toBeInTheDocument();
     expect(within(progress).getByText(/60%/)).toBeInTheDocument();
-    const figures = screen.getByRole("region", { name: "Project figures" });
-    expect(await within(figures).findByText("48.2k")).toBeInTheDocument();
-    expect(within(figures).getByText("80k")).toBeInTheDocument();
-    const details = screen.getByRole("region", { name: "Project details" });
-    expect(within(details).getByText("Ama Boateng")).toBeInTheDocument();
-    expect(within(details).getByText("01 Mar 2026")).toBeInTheDocument();
+    await goTo("Contributions");
     const table = await screen.findByRole("list", { name: "Contributions" });
     expect(within(table).getByText("Sunday appeal")).toBeInTheDocument();
     expect(within(table).getByText("GH₵ 4.2k")).toBeInTheDocument();
@@ -177,7 +188,7 @@ describe("project page", () => {
   });
 
   it("asks for all time at first, and for one method when it is chosen", async () => {
-    open();
+    await openOn("Contributions");
     await screen.findByRole("list", { name: "Contributions" });
     expect(asked("/project-contributions")[0]?.searchParams.get("from")).toBe(
       "2000-01-01",
@@ -201,7 +212,7 @@ describe("project page", () => {
 
   it("says it is over the target when it is", async () => {
     project = { ...roof, raisedAmount: 85000 };
-    open();
+    await openOn("Summary");
     const progress = await screen.findByRole("region", {
       name: "Raised against target",
     });
@@ -213,7 +224,7 @@ describe("project page", () => {
 
   it("invites the first contribution when there are none, with nothing to filter", async () => {
     given = [];
-    open();
+    await openOn("Contributions");
     expect(await screen.findByText("No contributions yet")).toBeInTheDocument();
     expect(
       screen.queryByRole("region", { name: "Contributions summary" }),
@@ -222,7 +233,7 @@ describe("project page", () => {
 
   it("says nothing matches when a filter leaves none", async () => {
     given = [];
-    open("/projects/p1?method=Cheque");
+    await openOn("Contributions", "/projects/p1?method=Cheque");
     expect(
       await screen.findByText("No contributions found"),
     ).toBeInTheDocument();
@@ -363,7 +374,7 @@ describe("project page", () => {
     it("invites the first contribution from the empty state", async () => {
       given = [];
       const user = userEvent.setup();
-      open();
+      await openOn("Contributions");
       await screen.findByText("No contributions yet");
       await user.click(
         screen.getByRole("button", { name: "Record contribution" }),
@@ -377,7 +388,7 @@ describe("project page", () => {
 
     it("opens a contribution to read, then edits it, sending only what the form holds and no project", async () => {
       const user = userEvent.setup();
-      open();
+      await openOn("Contributions");
       const table = await screen.findByRole("list", { name: "Contributions" });
       await user.click(
         within(table).getAllByRole("button", { name: /Mobile money/ })[0]!,
@@ -411,7 +422,7 @@ describe("project page", () => {
 
     it("goes straight to editing or deleting from the ⋯ menu", async () => {
       const user = userEvent.setup();
-      open();
+      await openOn("Contributions");
       await screen.findByRole("list", { name: "Contributions" });
       await user.click(
         screen.getByRole("button", {
@@ -447,7 +458,7 @@ describe("project page", () => {
 
     it("deletes from the panel, and Keep leaves it be", async () => {
       const user = userEvent.setup();
-      open();
+      await openOn("Contributions");
       const table = await screen.findByRole("list", { name: "Contributions" });
       await user.click(
         within(table).getAllByRole("button", { name: /Mobile money/ })[0]!,

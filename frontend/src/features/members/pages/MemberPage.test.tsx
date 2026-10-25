@@ -133,9 +133,6 @@ describe("the numbers and the tabs", () => {
     expect(await screen.findByText("86")).toBeInTheDocument();
     expect(screen.getByText("38 of 44 sessions this year")).toBeInTheDocument();
     expect(screen.getAllByText("11 Oct").length).toBeGreaterThan(0);
-    expect(
-      screen.getByRole("tab", { name: /Organizations/ }),
-    ).toHaveTextContent("1");
   });
 
   it("opens on Details and switches tabs", async () => {

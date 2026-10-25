@@ -5,7 +5,13 @@ import {
   periodDates,
   toApiFilters,
 } from "./filters";
-import { assetFigures, assetStats, purchased, valueChange } from "./view";
+import {
+  assetFigures,
+  assetStats,
+  purchased,
+  valueChange,
+  valueByYear,
+} from "./view";
 
 const asset = (over: Partial<Asset> = {}): Asset => ({
   id: "a1",
@@ -65,7 +71,12 @@ describe("asset view", () => {
       "All time",
       true,
     );
-    expect(stats.map((s) => s.value)).toEqual(["177.9k", "325.2k", "147.3k", "5"]);
+    expect(stats.map((s) => s.value)).toEqual([
+      "177.9k",
+      "325.2k",
+      "147.3k",
+      "5",
+    ]);
     expect(stats[3]?.note).toBe("All time");
     expect(stats[0]?.note).toBe("Not counting liquidated");
   });
@@ -172,5 +183,37 @@ describe("asset filters", () => {
       categoryId: undefined,
       from: "2000-01-01",
     });
+  });
+});
+
+describe("valueByYear", () => {
+  it("spreads the cost evenly over ten years, from the year it was bought", () => {
+    const years = valueByYear(
+      { purchaseDate: "2023-10-04T00:00:00Z", purchaseCost: 23000 },
+      2026,
+    );
+    expect(years.map((y) => y.year)).toEqual([2023, 2024, 2025, 2026]);
+    expect(years.map((y) => Math.round(y.value))).toEqual([
+      23000, 20700, 18400, 16100,
+    ]);
+    expect(years[0]?.drop).toBe(0);
+    expect(years[1]?.drop).toBeCloseTo(2300);
+  });
+
+  it("has nothing to draw without a purchase date or a cost", () => {
+    expect(
+      valueByYear({ purchaseDate: null, purchaseCost: 500 }, 2026),
+    ).toEqual([]);
+    expect(
+      valueByYear({ purchaseDate: "2020-01-01", purchaseCost: 0 }, 2026),
+    ).toEqual([]);
+  });
+
+  it("never goes below zero", () => {
+    const years = valueByYear(
+      { purchaseDate: "2000-01-01", purchaseCost: 1000 },
+      2026,
+    );
+    expect(years.at(-1)?.value).toBe(0);
   });
 });

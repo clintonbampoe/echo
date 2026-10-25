@@ -4,7 +4,7 @@ import { isApiError } from "@/lib/api";
 import { todayText } from "@/lib/dates";
 import { paths } from "@/lib/paths";
 import { useUrlFilters } from "@/lib/useUrlFilters";
-import { Alert, BackLink, Button, StatStrip } from "@/ui";
+import { Alert, BackLink, Button, StatStrip, Tabs } from "@/ui";
 import type { Contribution, Project } from "../api";
 import {
   contributionFilters,
@@ -63,7 +63,14 @@ export function ProjectPage() {
   return <Detail project={project.data} />;
 }
 
+const tabs = [
+  { id: "details", label: "Details" },
+  { id: "summary", label: "Summary" },
+  { id: "contributions", label: "Contributions" },
+];
+
 function Detail({ project: p }: { project: Project }) {
+  const [tab, setTab] = useState("details");
   const navigate = useNavigate();
   const [editing, setEditing] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -95,17 +102,33 @@ function Detail({ project: p }: { project: Project }) {
         stats={projectFigures(p, summary.data?.totalContributions, todayText())}
         busy={summary.isPending}
       />
-      <ProjectProgress project={p} />
-      <div className={styles.layout}>
-        <ProjectDetails project={p} />
-        <ContributionsSection
-          filters={filters}
-          onChange={update}
-          list={list}
-          summary={summary}
-          onRecord={() => setRecording(true)}
-          onAction={(contribution, start) => setOpened({ contribution, start })}
-        />
+      <Tabs
+        label="Project"
+        tabs={tabs}
+        value={tab}
+        onChange={setTab}
+        idPrefix="project"
+      />
+      <div
+        role="tabpanel"
+        id={`project-panel-${tab}`}
+        aria-labelledby={`project-tab-${tab}`}
+        className={styles.panel}
+      >
+        {tab === "details" && <ProjectDetails project={p} />}
+        {tab === "summary" && <ProjectProgress project={p} />}
+        {tab === "contributions" && (
+          <ContributionsSection
+            filters={filters}
+            onChange={update}
+            list={list}
+            summary={summary}
+            onRecord={() => setRecording(true)}
+            onAction={(contribution, start) =>
+              setOpened({ contribution, start })
+            }
+          />
+        )}
       </div>
       <ContributionSheet
         open={recording}

@@ -101,3 +101,23 @@ export function assetFigures(a: Asset): Stat[] {
     },
   ];
 }
+
+// The straight-line value an asset has had at the end of each year since it was bought, over `LIFE_YEARS` years, to
+// the year `thisYear`. An estimate drawn from the cost; the asset's own current value is the one typed in by hand.
+export const LIFE_YEARS = 10;
+export type YearValue = { year: number; value: number; drop: number };
+
+export function valueByYear(
+  a: Pick<Asset, "purchaseDate" | "purchaseCost">,
+  thisYear: number,
+): YearValue[] {
+  if (!a.purchaseDate || a.purchaseCost <= 0) return [];
+  const first = Number(a.purchaseDate.slice(0, 4));
+  const yearly = a.purchaseCost / LIFE_YEARS;
+  const years: YearValue[] = [];
+  for (let y = first; y <= thisYear; y++) {
+    const value = Math.max(0, a.purchaseCost - yearly * (y - first));
+    years.push({ year: y, value, drop: y === first ? 0 : yearly });
+  }
+  return years;
+}

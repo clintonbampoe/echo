@@ -3,8 +3,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import { OrganizationEvents, useUpcomingEvents } from "@/features/events";
 import { isApiError } from "@/lib/api";
 import { todayText } from "@/lib/dates";
-import { formatNumber } from "@/lib/format";
-import { countLabel } from "@/lib/paged";
 import { paths } from "@/lib/paths";
 import { Alert, BackLink, Button, StatStrip, Tabs } from "@/ui";
 import type { Organization } from "./api";
@@ -87,15 +85,8 @@ function Detail({ organization: o }: { organization: Organization }) {
   ];
   const tabs = [
     { id: "details", label: "Details" },
-    { id: "members", label: "Members", count: formatNumber(o.memberCount) },
-    {
-      id: "events",
-      label: "Events",
-      count:
-        events.loading || events.failed
-          ? null
-          : countLabel(events.rows.length, events.hasMore),
-    },
+    { id: "members", label: "Members" },
+    { id: "events", label: "Events" },
   ];
 
   return (
