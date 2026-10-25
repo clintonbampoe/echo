@@ -129,7 +129,7 @@ function Actions({ onClose }: { onClose: () => void }) {
 }
 
 const Tile = ({ icon }: { icon: IconName }) => (
-  <span className={styles.tile}>
+  <span className={`av ${styles.tile}`}>
     <Icon name={icon} size={16} />
   </span>
 );

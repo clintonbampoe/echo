@@ -14,7 +14,41 @@
   color: var(--text-3);
 }
 
+/* The raised pill behind the open page. It glides up or down the column; the links sit above it. */
+.column {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.slot {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: var(--h, 0);
+  translate: 0 var(--y, 0);
+  opacity: 0;
+  pointer-events: none;
+}
+.column[data-ready="true"] .slot {
+  opacity: 1;
+  transition:
+    translate var(--t-enter) var(--ease-out),
+    height var(--t-base) var(--ease-out);
+}
+.thumb {
+  position: absolute;
+  inset: 0;
+  background: var(--surface);
+  border-radius: 10px;
+  box-shadow:
+    0 1px 2px rgb(10 10 11 / 8%),
+    0 0 0 1px var(--line-2);
+}
+
 .item {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 11px;
@@ -25,24 +59,47 @@
   font-size: 14px;
   text-decoration: none;
   transition:
-    background-color var(--fast) ease,
-    color var(--fast) ease,
-    box-shadow var(--fast) ease;
+    background-color var(--t-fast) var(--ease-soft),
+    color var(--t-fast) var(--ease-soft),
+    transform var(--t-spring) var(--ease-spring);
 }
-.item:hover {
-  background: var(--hover);
-  color: var(--text);
+/* Hover: a soft fill, and the icon and label ease 3px to the right. Touch gets only the press. */
+.item > * {
+  transition: translate var(--t-base) var(--ease-out);
+}
+@media (hover: hover) {
+  .item:hover {
+    background: var(--hover-tab);
+    color: var(--text);
+  }
+  .item:hover > * {
+    translate: 3px 0;
+  }
+}
+.item:active {
+  transform: scale(var(--press-nav));
 }
 .item:focus-visible {
   outline: var(--focus);
   outline-offset: 2px;
 }
-.on,
-.on:hover {
-  background: var(--surface);
+.item[aria-current="page"],
+.item[aria-current="page"]:hover {
+  background: transparent;
   color: var(--text);
   font-weight: 500;
-  box-shadow:
-    0 1px 2px rgb(10 10 11 / 8%),
-    0 0 0 1px #e0e0e4;
+}
+@media (prefers-reduced-motion: reduce) {
+  .item:hover > * {
+    translate: none;
+  }
+  .item:active {
+    transform: none;
+  }
+}
+html[data-reduce-motion="true"] .item:hover > * {
+  translate: none;
+}
+html[data-reduce-motion="true"] .item:active {
+  transform: none;
 }

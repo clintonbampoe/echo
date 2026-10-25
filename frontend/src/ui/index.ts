@@ -20,6 +20,7 @@ export { Disclosure } from "./Disclosure";
 export { Donut, type DonutSlice } from "./Donut";
 export { RankedBars, type Ranked } from "./RankedBars";
 export { Drawer } from "./Drawer";
+export { useSlidingThumb } from "./useSlidingThumb";
 export { EmptyState } from "./EmptyState";
 export { Field, PasswordField } from "./Field";
 export { FlowBars, type FlowBar } from "./FlowBars";
