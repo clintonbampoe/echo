@@ -41,6 +41,7 @@ export function MergeAssetCategoryDialog({
     <ConfirmDialog
       title={`Move ${plural(n, "asset")} from ${category.name}`}
       confirmLabel="Move and delete"
+      tone="danger"
       cancelLabel="Cancel"
       confirmDisabled={!target}
       busy={merge.isPending}

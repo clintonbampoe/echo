@@ -38,6 +38,7 @@ export function MergeCategoryDialog({ category, categories, onClose }: Props) {
     <ConfirmDialog
       title={`${category.name} is still in use`}
       confirmLabel="Move and delete"
+      tone="danger"
       cancelLabel="Cancel"
       confirmDisabled={!target}
       busy={merge.isPending}

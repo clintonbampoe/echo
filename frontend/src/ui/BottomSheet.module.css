@@ -24,16 +24,22 @@
 .panel:focus {
   outline: none;
 }
+/* The visible bar is 5px; the touch target around it is taller. */
 .handle {
   display: block;
+  box-sizing: content-box;
   width: 36px;
   height: 5px;
-  margin: 0 auto 14px;
+  margin: 0 auto 6px;
+  padding: 8px 0;
   border-radius: var(--radius-pill);
   background: var(--line-2);
+  background-clip: content-box;
+  touch-action: none;
 }
 .title {
   margin-bottom: 12px;
+  touch-action: none;
   font-size: 16px;
   font-weight: 600;
 }

@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { Icon } from "./Icon";
 import { useLeaving } from "./presenceContext";
+import { useDragDismiss } from "./useDragDismiss";
 import { usePresence } from "./usePresence";
 import styles from "./Sheet.module.css";
 
@@ -35,6 +36,7 @@ export function Sheet({
   const presence = usePresence(open, 220);
   const leaving = useLeaving();
   const { mounted } = presence;
+  const drag = useDragDismiss(onClose);
   const closing = presence.closing || leaving;
 
   useEffect(() => {
@@ -73,8 +75,8 @@ export function Sheet({
         data-shaking={shaking || undefined}
         onKeyDown={(e) => e.key === "Escape" && onClose()}
       >
-        <span aria-hidden="true" className={styles.grabber} />
-        <header className={styles.header}>
+        <span aria-hidden="true" className={styles.grabber} {...drag} />
+        <header className={styles.header} {...drag}>
           <div>
             <h2 id={titleId} className={styles.title}>
               {title}

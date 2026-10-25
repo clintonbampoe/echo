@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, type ReactNode } from "react";
 import { createPortal } from "react-dom";
+import { useDragDismiss } from "./useDragDismiss";
 import { usePresence } from "./usePresence";
 import styles from "./BottomSheet.module.css";
 
@@ -16,6 +17,7 @@ export function BottomSheet({ open, onClose, title, children }: Props) {
   const panel = useRef<HTMLDivElement>(null);
   const titleId = useId();
   const { mounted, closing } = usePresence(open, 200);
+  const drag = useDragDismiss(onClose, "all");
 
   useEffect(() => {
     if (!open) return;
@@ -45,8 +47,8 @@ export function BottomSheet({ open, onClose, title, children }: Props) {
         data-closing={closing}
         onKeyDown={(e) => e.key === "Escape" && onClose()}
       >
-        <span className={styles.handle} aria-hidden="true" />
-        <h2 id={titleId} className={styles.title}>
+        <span className={styles.handle} aria-hidden="true" {...drag} />
+        <h2 id={titleId} className={styles.title} {...drag}>
           {title}
         </h2>
         {children}
