@@ -116,17 +116,14 @@ describe("event page", () => {
       await screen.findByRole("heading", { name: "Prayer Retreat" }),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(
-        "Sat 3 Oct 2020, 6:00 am to 6:00 pm. Aburi Mountain Lodge. Organized by Efua Quaye.",
-      ),
+      screen.getByText("Sat 3 Oct · Aburi Mountain Lodge"),
     ).toBeInTheDocument();
-    expect(screen.getByText("A day of prayer.")).toBeInTheDocument();
-    expect(await screen.findByText("3 of 60")).toBeInTheDocument();
-    const numbers = screen.getByRole("region", { name: "Event numbers" });
     expect(
-      within(numbers).getByText("67% of those registered"),
+      await screen.findByText("67% of those registered"),
     ).toBeInTheDocument();
-    expect(within(numbers).getAllByText("1")).toHaveLength(2);
+    const numbers = screen.getByRole("region", { name: "Event numbers" });
+    expect(within(numbers).getByText("Show rate")).toBeInTheDocument();
+    expect(within(numbers).getAllByText("1")).toHaveLength(1);
     const list = await screen.findByRole("list", { name: "Registrations" });
     const rows = within(list).getAllByRole("listitem");
     expect(rows).toHaveLength(3);
@@ -268,9 +265,40 @@ describe("event page", () => {
     ).toBeInTheDocument();
   });
 
-  it("shows Full beside the group once every spot is taken", async () => {
+  it("says when every spot is taken, and shows who hosts the event and what it is about under Details", async () => {
+    const user = userEvent.setup();
     event = { ...retreat, capacity: 3 };
     open();
-    expect(await screen.findByText("Full")).toBeInTheDocument();
+    expect(await screen.findByText("All 3 spots taken")).toBeInTheDocument();
+    await user.click(screen.getByRole("tab", { name: "Details" }));
+    const details = within(
+      screen.getByRole("region", { name: "Event details" }),
+    );
+    expect(details.getByText("Efua Quaye")).toBeInTheDocument();
+    expect(details.getByText("A day of prayer.")).toBeInTheDocument();
+    expect(details.getByText("Aburi Mountain Lodge")).toBeInTheDocument();
+  });
+
+  it("opens the check-in panel from the Check in button, and registering from the menu", async () => {
+    const user = userEvent.setup();
+    open();
+    await user.click(await screen.findByRole("button", { name: "Check in" }));
+    const sheet = await screen.findByRole("dialog", { name: "Check in" });
+    expect(
+      within(sheet).getByRole("radio", { name: "Check in" }),
+    ).toBeChecked();
+    await user.click(within(sheet).getByRole("button", { name: "Done" }));
+    await user.click(
+      screen.getByRole("button", { name: "More actions for Prayer Retreat" }),
+    );
+    await user.click(
+      screen.getByRole("menuitem", { name: "Register someone" }),
+    );
+    expect(
+      within(await screen.findByRole("dialog", { name: "Register" })).getByRole(
+        "radio",
+        { name: "Register" },
+      ),
+    ).toBeChecked();
   });
 });

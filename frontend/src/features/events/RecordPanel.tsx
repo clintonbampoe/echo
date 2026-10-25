@@ -9,6 +9,8 @@ import type { EventItem } from "./api";
 
 type Props = {
   event: EventItem;
+  // Which of the two to start on.
+  initial: Mode;
   // Who has signed up and who has come already, to mark them in the search.
   registered: ReadonlySet<string>;
   checkedIn: ReadonlySet<string>;
@@ -21,22 +23,14 @@ const modes = [
 
 // Sign people up, or check them in at the door: search for a member, then tap. Each one is saved as it is tapped.
 // When every spot is taken, registering stops (with the way to raise the capacity), and checking in carries on.
-export function RecordPanel({ event, registered, checkedIn }: Props) {
-  const [mode, setMode] = useState<Mode>("register");
+export function RecordPanel({ event, initial, registered, checkedIn }: Props) {
+  const [mode, setMode] = useState<Mode>(initial);
   const [text, setText] = useState("");
   const { done, busy, problem, record } = useRecorder(event.id);
   const closed = isFull(event) && mode === "register";
 
   return (
-    <section aria-labelledby="record-title" className={styles.panel}>
-      <div>
-        <h2 id="record-title" className={styles.title}>
-          Register or check in
-        </h2>
-        <p className={styles.hint}>
-          Search for a member, then tap. Each one is saved as you go.
-        </p>
-      </div>
+    <section aria-label="Register or check in" className={styles.panel}>
       <SegmentedField
         label="What are you recording"
         options={modes}

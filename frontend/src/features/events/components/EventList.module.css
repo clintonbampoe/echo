@@ -17,7 +17,7 @@
 
 .row {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) minmax(0, 260px) auto;
+  grid-template-columns: auto minmax(0, 1fr) minmax(0, 300px);
   align-items: center;
   gap: 20px;
   padding: 12px 22px;
@@ -33,41 +33,10 @@
   outline-offset: -2px;
 }
 
-.tile {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  background: var(--fill);
-  border-radius: 13px;
-  line-height: 1;
-}
-.month {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--text-3);
-}
-.date {
-  margin-top: 1px;
-  font-size: 17px;
-  font-weight: 600;
-}
-
 .main {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  min-width: 0;
-}
-.top {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px 10px;
+  gap: 2px;
   min-width: 0;
 }
 .name {
@@ -92,12 +61,14 @@
   display: flex;
   justify-content: space-between;
   gap: 12px;
-  font-weight: 500;
-}
-.cap {
-  font-weight: 400;
-  color: var(--text-3);
   white-space: nowrap;
+}
+.nums strong {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.label {
+  color: var(--text-3);
 }
 .track {
   display: block;
@@ -109,15 +80,8 @@
 .bar {
   display: block;
   height: 100%;
-  background: var(--accent);
+  background: var(--text);
   border-radius: 3px;
-}
-.sub {
-  font-size: 13px;
-  color: var(--text-3);
-}
-.go {
-  color: var(--text-3);
 }
 
 @media (max-width: 900px) {
@@ -142,25 +106,17 @@
   .row:hover {
     background: var(--surface);
   }
-  .top {
-    flex-direction: column;
-    align-items: flex-start;
-  }
 }
 
 /* A phone: the numbers drop under the name, across the card. */
 @media (max-width: 560px) {
   .row {
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-columns: auto minmax(0, 1fr);
     gap: 14px;
     padding: 16px;
   }
   .fill {
     grid-column: 1 / -1;
     grid-row: 2;
-  }
-  .go {
-    grid-column: 3;
-    grid-row: 1;
   }
 }

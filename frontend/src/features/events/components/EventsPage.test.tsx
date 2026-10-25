@@ -92,22 +92,19 @@ const open = (tab: "upcoming" | "past" = "upcoming", address = "/events") =>
   );
 
 describe("events page", () => {
-  it("shows the numbers, the tab counts and a row for each event, linking to its page", async () => {
+  it("shows the numbers, the two tabs and a row for each event, linking to its page", async () => {
     open();
     const row = await screen.findByRole("link", { name: /Youth Rally/ });
     expect(row).toHaveAttribute("href", "/events/e1");
-    expect(row).toHaveTextContent("Youth Ministry");
-    expect(row).toHaveTextContent("Sat 17 Oct, 4:00 pm · Main Auditorium");
-    expect(row).toHaveTextContent("84 registered");
-    expect(row).toHaveTextContent("of 150");
+    expect(row).toHaveTextContent("Sat 17 Oct · Main Auditorium");
+    expect(row).toHaveTextContent("Registered");
+    expect(row).toHaveTextContent("56% of 150");
     expect(
       screen.getByRole("link", { name: /Christmas Carols/ }),
     ).toHaveTextContent("No limit");
     expect(await screen.findByText("1,284")).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: /Upcoming/ })).toHaveTextContent(
-      "6",
-    );
-    expect(screen.getByRole("tab", { name: /Past/ })).toHaveTextContent("18");
+    expect(screen.getByRole("tab", { name: "Upcoming" })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Past" })).toBeInTheDocument();
   });
 
   it("asks the upcoming tab for events from today, soonest first", async () => {
@@ -124,7 +121,7 @@ describe("events page", () => {
     );
   });
 
-  it("asks the past tab for the newest first, and shows how many came when it is known", async () => {
+  it("asks the past tab for the newest first, and shows how many of those registered came when it is known", async () => {
     rows = [
       {
         ...rally,
@@ -134,7 +131,8 @@ describe("events page", () => {
       },
     ];
     open("past", "/events/past?window=all");
-    expect(await screen.findByText("41 checked in")).toBeInTheDocument();
+    expect(await screen.findByText("Came")).toBeInTheDocument();
+    expect(screen.getByText("49% of 84")).toBeInTheDocument();
     const list = urls.find(
       (u) =>
         u.pathname.endsWith("/events") &&

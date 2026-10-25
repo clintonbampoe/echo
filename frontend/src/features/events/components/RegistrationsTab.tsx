@@ -110,8 +110,9 @@ export function RegistrationsTab({ guests, eventName, phase, state }: Props) {
         noMatchText="No one signed up matches that."
         onClear={clear}
         order="Sign-up order."
+        footerInside
       >
-        {(rows) => (
+        {(rows, footer) => (
           <PersonList
             label="Registrations"
             rows={rows}
@@ -122,6 +123,7 @@ export function RegistrationsTab({ guests, eventName, phase, state }: Props) {
               plain: true,
             })}
             columns={columns(phase)}
+            footer={footer}
           />
         )}
       </ListBody>

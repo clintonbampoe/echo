@@ -66,6 +66,7 @@ const open = (
       <MemoryRouter>
         <RecordPanel
           event={event}
+          initial="register"
           registered={new Set(registered)}
           checkedIn={new Set(checkedIn)}
         />

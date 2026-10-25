@@ -1,47 +1,25 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { formatNumber } from "@/lib/format";
 import { paths } from "@/lib/paths";
-import { Chip, Icon } from "@/ui";
+import { DateTile } from "@/ui";
 import type { EventItem } from "../api";
-import {
-  capacityLabel,
-  capacityShare,
-  dateTile,
-  eventWhere,
-  registeredLabel,
-} from "../rows";
+import { eventSub, fillOf } from "../rows";
 import styles from "./EventList.module.css";
 
 type Props = { events: EventItem[]; past: boolean; footer?: ReactNode };
 
-function DateTile({ day }: { day: string }) {
-  const { month, date } = dateTile(day);
-  return (
-    <span aria-hidden="true" className={styles.tile}>
-      <span className={styles.month}>{month}</span>
-      <span className={styles.date}>{date}</span>
-    </span>
-  );
-}
-
-// How many signed up, out of how many it takes. A past event also says how many came, when the list knows.
-function Registered({ event: e, past }: { event: EventItem; past: boolean }) {
-  const share = capacityShare(e.registrationCount, e.capacity);
+// The right of a row: what it measures, the share and the room, and a bar for how far along that is.
+function Fill({ event: e, past }: { event: EventItem; past: boolean }) {
+  const { label, text, share } = fillOf(e, past);
   return (
     <span className={styles.fill}>
       <span className={styles.nums}>
-        <span>{registeredLabel(e.registrationCount)}</span>
-        <span className={styles.cap}>{capacityLabel(e.capacity)}</span>
+        <span className={styles.label}>{label}</span>
+        <strong>{text}</strong>
       </span>
       {share !== null && (
         <span aria-hidden="true" className={styles.track}>
           <span className={styles.bar} style={{ width: `${share * 100}%` }} />
-        </span>
-      )}
-      {past && e.attendanceCount !== undefined && (
-        <span className={styles.sub}>
-          {formatNumber(e.attendanceCount)} checked in
         </span>
       )}
     </span>
@@ -59,16 +37,12 @@ export function EventList({ events, past, footer }: Props) {
         {events.map((e) => (
           <li key={e.id} className={styles.item}>
             <Link to={paths.event(e.id)} className={styles.row}>
-              <DateTile day={e.startDate} />
+              <DateTile date={e.startDate} />
               <span className={styles.main}>
-                <span className={styles.top}>
-                  <span className={styles.name}>{e.name}</span>
-                  <Chip>{e.organizationName}</Chip>
-                </span>
-                <span className={styles.when}>{eventWhere(e)}</span>
+                <span className={styles.name}>{e.name}</span>
+                <span className={styles.when}>{eventSub(e)}</span>
               </span>
-              <Registered event={e} past={past} />
-              <Icon name="arrow-right" size={16} className={styles.go} />
+              <Fill event={e} past={past} />
             </Link>
           </li>
         ))}

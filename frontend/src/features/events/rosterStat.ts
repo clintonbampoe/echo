@@ -2,11 +2,11 @@
 import { formatNumber } from "@/lib/format";
 import type { Stat } from "@/ui";
 import type { EventItem } from "./api";
-import type { Arrival, Guest, Phase } from "./roster";
+import type { Arrival, Phase } from "./roster";
 
 const n = formatNumber;
 
-// "47 of 60" with "13 spots left", or just "47" when there is no limit.
+// How many signed up, with how many spots are left when there is a limit.
 function registered(
   e: Pick<EventItem, "registrationCount" | "capacity">,
 ): Stat {
@@ -16,11 +16,11 @@ function registered(
   const left = Math.max(0, e.capacity - count);
   return {
     label: "Registered",
-    value: `${n(count)} of ${n(e.capacity)}`,
+    value: n(count),
     note:
       left === 0
-        ? "No spots left"
-        : `${n(left)} ${left === 1 ? "spot" : "spots"} left`,
+        ? `All ${n(e.capacity)} spots taken`
+        : `${n(left)} ${left === 1 ? "spot" : "spots"} left of ${n(e.capacity)}`,
   };
 }
 
@@ -38,28 +38,33 @@ function cameNote(
 
 type Rows = {
   event: Pick<EventItem, "registrationCount" | "capacity">;
-  guests: Guest[];
   arrivals: Arrival[];
   phase: Phase;
 };
 
-export function rosterStats({ event, guests, arrivals, phase }: Rows): Stat[] {
+// Of those who signed up, the share who came, as a number. Nothing before the event, or with no sign-ups.
+function showRate(signedUp: number, came: number, phase: Phase): Stat {
+  const known = phase !== "upcoming" && signedUp > 0;
+  return {
+    label: "Show rate",
+    value: known ? String(Math.round((came / signedUp) * 100)) : "–",
+    unit: known ? "%" : undefined,
+    note: known ? "Of those registered" : "After the event",
+  };
+}
+
+export function rosterStats({ event, arrivals, phase }: Rows): Stat[] {
   const walkIns = arrivals.filter((a) => a.walkIn).length;
-  const missing = guests.filter((g) => !g.checkIn).length;
-  const over = phase === "over";
+  const came = arrivals.length - walkIns;
   return [
     registered(event),
     {
       label: "Checked in",
       value: n(arrivals.length),
-      note: cameNote(event.registrationCount, arrivals.length - walkIns, phase),
+      note: cameNote(event.registrationCount, came, phase),
     },
+    showRate(event.registrationCount, came, phase),
     { label: "Walk-ins", value: n(walkIns), note: "Came without registering" },
-    {
-      label: "No-shows",
-      value: over ? n(missing) : "–",
-      note: over ? "Registered but did not come" : "After the event",
-    },
   ];
 }
 
@@ -72,7 +77,7 @@ export function waitingStats(
   const note = failed ? "Could not load" : "Loading";
   return [
     registered(event),
-    ...["Checked in", "Walk-ins", "No-shows"].map((label) => ({
+    ...["Checked in", "Show rate", "Walk-ins"].map((label) => ({
       label,
       value: "–",
       note,

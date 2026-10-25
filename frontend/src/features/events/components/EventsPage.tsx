@@ -13,11 +13,12 @@ import {
 } from "@/ui";
 import { eventFilters, toApiFilters, type EventTab } from "../filters";
 import { useEvents, useEventSummary, useNextEvent } from "../hooks";
-import { summaryStats, tabCounts } from "../stat";
+import { summaryStats } from "../stat";
 import { EventList } from "./EventList";
 import { EventSheet } from "./EventSheet";
 import { EventsFilterBar } from "./EventsFilterBar";
 import { useUrlFlag } from "@/lib/useUrlFlag";
+import styles from "./EventsPage.module.css";
 
 const text = {
   upcoming: {
@@ -44,7 +45,6 @@ export function EventsPage({ tab }: { tab: EventTab }) {
   const summary = useEventSummary(filters.organization || undefined);
   const next = useNextEvent(filters.organization || undefined, today);
   const filtered = eventFilters.isFiltered(filters);
-  const counts = tabCounts(summary.data);
   const none = !filtered && summary.data?.totalEvents === 0;
   const t = text[tab];
   const add = (
@@ -54,8 +54,8 @@ export function EventsPage({ tab }: { tab: EventTab }) {
     </Button>
   );
   const tabs = [
-    { id: "upcoming", label: "Upcoming", count: counts.upcoming },
-    { id: "past", label: "Past", count: counts.past },
+    { id: "upcoming", label: "Upcoming" },
+    { id: "past", label: "Past" },
   ];
 
   return (
@@ -83,13 +83,14 @@ export function EventsPage({ tab }: { tab: EventTab }) {
           />
           <StatStrip
             label="Event summary"
-            stats={summaryStats(summary.data, next.data)}
+            stats={summaryStats(summary.data, next.data, tab)}
             busy={!summary.data}
           />
           <div
             role="tabpanel"
             id={`events-panel-${tab}`}
             aria-labelledby={`events-tab-${tab}`}
+            className={styles.panel}
           >
             <EventsFilterBar
               filters={filters}

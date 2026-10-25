@@ -1,31 +1,41 @@
-import { ActionMenu, Button, Chip } from "@/ui";
+import { ActionMenu, Button } from "@/ui";
 import type { EventItem } from "../api";
-import { eventHeadline } from "../headline";
+import { eventSub } from "../rows";
 import styles from "./EventHeader.module.css";
-import { isFull } from "../record";
 
-type Props = { event: EventItem; onEdit: () => void; onDelete: () => void };
+type Props = {
+  event: EventItem;
+  onCheckIn: () => void;
+  onRegister: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
+};
 
-// The top of an event's page: its name, group and when and where it is, what it is about, Edit, and a ⋯ menu for
-// Delete. "Full" shows once every spot is taken, so it is clear why no one more can be registered.
-export function EventHeader({ event: e, onEdit, onDelete }: Props) {
+// The top of an event's page: its name, the day and place, Check in (the thing done at the door), and a ⋯ menu for
+// the rest: registering someone, editing and deleting. Who hosts it and what it is about are under Details.
+export function EventHeader({
+  event: e,
+  onCheckIn,
+  onRegister,
+  onEdit,
+  onDelete,
+}: Props) {
   return (
     <header className={styles.header}>
       <div className={styles.main}>
-        <div className={styles.title}>
-          <h1 className={styles.name}>{e.name}</h1>
-          <Chip>{e.organizationName}</Chip>
-          {isFull(e) && <Chip tone="warning">Full</Chip>}
-        </div>
-        <p className={styles.text}>{eventHeadline(e)}</p>
-        {e.description && <p className={styles.text}>{e.description}</p>}
+        <h1 className={styles.name}>{e.name}</h1>
+        <p className={styles.text}>{eventSub(e)}</p>
       </div>
       <div className={styles.actions}>
-        <Button onClick={onEdit}>Edit</Button>
+        <Button onClick={onCheckIn}>Check in</Button>
         <ActionMenu
           label={`More actions for ${e.name}`}
           title={e.name}
-          items={[{ label: "Delete", danger: true, onSelect: onDelete }]}
+          items={[
+            { label: "Register someone", onSelect: onRegister },
+            { label: "Edit", onSelect: onEdit },
+            { label: "Delete", danger: true, onSelect: onDelete },
+          ]}
         />
       </div>
     </header>

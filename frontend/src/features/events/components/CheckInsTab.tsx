@@ -98,8 +98,9 @@ export function CheckInsTab({ arrivals, eventName, phase, state }: Props) {
         noMatchText="No one checked in matches that."
         onClear={clear}
         order="Arrival order."
+        footerInside
       >
-        {(rows) => (
+        {(rows, footer) => (
           <PersonList
             label="Check-ins"
             rows={rows}
@@ -110,6 +111,7 @@ export function CheckInsTab({ arrivals, eventName, phase, state }: Props) {
               plain: true,
             })}
             columns={columns}
+            footer={footer}
           />
         )}
       </ListBody>
