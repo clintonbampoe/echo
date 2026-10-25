@@ -19,11 +19,14 @@ describe("format", () => {
 
   it("writes whole numbers, with k from a thousand and m from a million", () => {
     expect(formatNumber(640)).toBe("640");
-    expect(formatNumber(1284)).toBe("1k");
-    expect(formatNumber(999_600)).toBe("1m");
-    expect(formatNumber(2_400_000)).toBe("2m");
+    expect(formatNumber(1284)).toBe("1.28k");
+    expect(formatNumber(6000)).toBe("6k");
+    expect(formatNumber(999_600)).toBe("999.6k");
+    expect(formatNumber(999_999)).toBe("1m");
+    expect(formatNumber(1_250_000)).toBe("1.25m");
+    expect(formatNumber(2_400_000)).toBe("2.4m");
     expect(formatNumber(12.6)).toBe("13");
-    expect(formatNumber(-4710)).toBe("−5k");
+    expect(formatNumber(-4710)).toBe("−4.71k");
   });
 
   it("writes a time of day the short way", () => {
@@ -39,7 +42,7 @@ describe("format", () => {
   });
 
   it("writes money in cedis", () => {
-    expect(formatMoney(6400)).toBe("GH₵ 6k");
+    expect(formatMoney(6400)).toBe("GH₵ 6.4k");
     expect(formatMoney(850)).toBe("GH₵ 850");
   });
 
@@ -75,7 +78,7 @@ describe("plural", () => {
   it("says one of a thing in the singular and any other number in the plural", () => {
     expect(plural(1, "asset")).toBe("1 asset");
     expect(plural(0, "asset")).toBe("0 assets");
-    expect(plural(1284, "asset")).toBe("1k assets");
+    expect(plural(1284, "asset")).toBe("1.28k assets");
     expect(plural(2, "category", "categories")).toBe("2 categories");
   });
 });

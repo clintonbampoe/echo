@@ -26,7 +26,7 @@ describe("organization page stats", () => {
 
   it("counts the members", () => {
     expect(membersStat({ memberCount: 1204 })).toMatchObject({
-      value: "1k",
+      value: "1.2k",
       note: "In this group",
     });
   });

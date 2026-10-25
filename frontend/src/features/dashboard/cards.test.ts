@@ -49,7 +49,7 @@ describe("buildCards", () => {
   it("shows the four numbers, each with what it is compared against", () => {
     const [members, present, tithes, net] = buildCards(numbers(), lastWeek);
     expect(members).toMatchObject({
-      value: "1k",
+      value: "1.28k",
       chip: { text: "9 new", tone: "positive" },
       note: "last week",
     });
@@ -58,9 +58,9 @@ describe("buildCards", () => {
       chip: { text: "10%" },
       note: "vs the week before",
     });
-    expect(tithes?.value).toBe("GH₵ 11k");
+    expect(tithes?.value).toBe("GH₵ 11.3k");
     expect(net).toMatchObject({
-      value: "GH₵ 5k",
+      value: "GH₵ 5.12k",
       chip: { tone: "negative" },
     });
   });

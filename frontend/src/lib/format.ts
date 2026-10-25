@@ -16,16 +16,21 @@ export function formatDayMonth(value: string): string {
   return `${Number(day)} ${months[Number(month) - 1] ?? ""}`;
 }
 
-// Whole numbers, with k from a thousand and m from a million: 640 -> "640", 1284 -> "1k", 2400000 -> "2m". The design
-// shows every figure this way.
+// Whole below a thousand, then k and m with at most two decimals, trimmed: 640 -> "640", 1284 -> "1.28k",
+// 6400 -> "6.4k", 2400000 -> "2.4m". The design (round 8) shows every figure this way.
 export function formatNumber(n: number): string {
   const sign = n < 0 ? "−" : "";
-  const abs = Math.round(Math.abs(n));
-  const thousands = Math.round(abs / 1000);
-  if (abs < 1000) return `${sign}${abs}`;
-  if (thousands < 1000) return `${sign}${thousands}k`;
-  return `${sign}${Math.round(abs / 1_000_000)}m`;
+  const abs = Math.abs(n);
+  if (Math.round(abs) < 1000) return `${sign}${Math.round(abs)}`;
+  const thousands = scaled(abs / 1000);
+  if (thousands < 1000) return `${sign}${trim(thousands)}k`;
+  return `${sign}${trim(scaled(abs / 1_000_000))}m`;
 }
+
+// Two decimals at most: 1.2549 -> 1.25.
+const scaled = (v: number) => Math.round(v * 100) / 100;
+// ...and no trailing zeros: 6 -> "6", 1.5 -> "1.5".
+const trim = (v: number) => String(v);
 
 // How many of something, with the right word: plural(1, 'asset') -> "1 asset", plural(3, 'asset') -> "3 assets".
 export const plural = (n: number, one: string, many = `${one}s`): string =>

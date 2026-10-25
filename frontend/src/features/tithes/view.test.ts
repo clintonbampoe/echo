@@ -79,7 +79,7 @@ describe("tithe page numbers", () => {
     expect(titheStats(summary, 214, "Collected this week")).toEqual([
       {
         label: "Collected",
-        value: "18k",
+        value: "18.45k",
         unit: "GHS",
         note: "Collected this week",
       },

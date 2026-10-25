@@ -65,7 +65,7 @@ describe("asset view", () => {
       "All time",
       true,
     );
-    expect(stats.map((s) => s.value)).toEqual(["178k", "325k", "147k", "5"]);
+    expect(stats.map((s) => s.value)).toEqual(["177.9k", "325.2k", "147.3k", "5"]);
     expect(stats[3]?.note).toBe("All time");
     expect(stats[0]?.note).toBe("Not counting liquidated");
   });
@@ -106,7 +106,7 @@ describe("asset view", () => {
     expect(assetFigures(asset())).toEqual([
       {
         label: "Current value",
-        value: "32k",
+        value: "31.5k",
         unit: "GHS",
         note: "As last entered",
       },
@@ -118,7 +118,7 @@ describe("asset view", () => {
       },
       {
         label: "Lost value",
-        value: "11k",
+        value: "10.5k",
         unit: "GHS",
         note: "25% below cost",
       },

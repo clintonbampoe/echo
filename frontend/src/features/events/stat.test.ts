@@ -14,7 +14,7 @@ describe("event summary", () => {
     const stats = summaryStats(s, next, "upcoming");
     expect(stats.map((x) => [x.label, x.value])).toEqual([
       ["Upcoming", "6"],
-      ["Registered", "1k"],
+      ["Registered", "1.28k"],
       ["Next event", "17 Oct"],
     ]);
   });
@@ -23,7 +23,7 @@ describe("event summary", () => {
     const stats = summaryStats(s, next, "past");
     expect(stats.map((x) => [x.label, x.value])).toEqual([
       ["Events held", "18"],
-      ["Check-ins", "1k"],
+      ["Check-ins", "1.1k"],
       ["Average", "61"],
     ]);
   });

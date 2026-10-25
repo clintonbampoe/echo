@@ -31,6 +31,7 @@ export function RankedBars({ label, rows }: Props) {
                 className={`${styles.bar} ${i === 0 ? styles.first : ""}`}
                 style={{
                   width: `${top > 0 ? Math.max(3, (r.value / top) * 100) : 0}%`,
+                  ["--i" as string]: i,
                 }}
               />
             </span>

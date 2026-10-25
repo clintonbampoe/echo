@@ -15,10 +15,21 @@
   color: inherit;
   text-decoration: none;
   border-radius: var(--radius-option);
-  transition: background-color var(--fast) ease;
+  transition:
+    background-color var(--t-fast) var(--ease-soft),
+    opacity var(--t-base) var(--ease-soft);
 }
-a.row:hover {
-  background: var(--hover);
+@media (hover: hover) {
+  a.row:hover {
+    background: var(--hover-row);
+  }
+  /* The row under the pointer reads first; the rest step back to 60%. */
+  .list:has(.row:hover) .row:not(:hover) {
+    opacity: 0.6;
+  }
+}
+a.row:active {
+  background: var(--hover-tab);
 }
 .line {
   display: flex;
@@ -48,6 +59,7 @@ a.row:hover {
   border-radius: 3px;
   transform-origin: left;
   animation: echoGrowX 700ms var(--grow) both;
+  animation-delay: calc(var(--i, 0) * 40ms);
 }
 .first {
   background: var(--text);

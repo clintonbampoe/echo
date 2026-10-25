@@ -34,18 +34,18 @@ const sides = () => within(screen.getByRole("group", { name: "Made up of" }));
 describe("tithes card", () => {
   it("shows this month's tithes, how many people gave and the average gift", async () => {
     renderCard(<TithesCard today="2026-10-19" />);
-    expect(await screen.findByText("11k")).toBeInTheDocument();
+    expect(await screen.findByText("11.3k")).toBeInTheDocument();
     expect(sides().getByText("214")).toBeInTheDocument();
     expect(sides().getByText("53")).toBeInTheDocument();
   });
 
   it("speaks about the month picked", async () => {
     renderCard(<TithesCard today="2026-10-19" />);
-    await screen.findByText("11k");
+    await screen.findByText("11.3k");
     await userEvent.click(
-      screen.getByRole("button", { name: "September 2026: GH₵ 11k" }),
+      screen.getByRole("button", { name: "September 2026: GH₵ 10.64k" }),
     );
-    expect(screen.getByText("11k")).toBeInTheDocument();
+    expect(screen.getByText("10.64k")).toBeInTheDocument();
     expect(screen.getByText("September 2026")).toBeInTheDocument();
   });
 

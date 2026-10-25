@@ -114,17 +114,17 @@ describe("finance page", () => {
     const numbers = await screen.findByRole("region", {
       name: "Finance summary",
     });
-    expect(within(numbers).getByText("7k")).toBeInTheDocument();
-    expect(within(numbers).getByText("+5k")).toBeInTheDocument();
+    expect(within(numbers).getByText("6.85k")).toBeInTheDocument();
+    expect(within(numbers).getByText("+4.71k")).toBeInTheDocument();
     expect(within(numbers).getByText("Transactions")).toBeInTheDocument();
     expect(
       await screen.findByRole("button", {
-        name: "October 2026: income GH₵ 7k, expenses GH₵ 2k",
+        name: "October 2026: income GH₵ 6.85k, expenses GH₵ 2.14k",
       }),
     ).toBeInTheDocument();
     const table = await screen.findByRole("list", { name: "Transactions" });
-    expect(within(table).getByText("−1k")).toBeInTheDocument();
-    expect(within(table).getByText("+7k")).toBeInTheDocument();
+    expect(within(table).getByText("−1.24k")).toBeInTheDocument();
+    expect(within(table).getByText("+6.85k")).toBeInTheDocument();
     expect(
       within(table).getByText("ECG electricity bill, September"),
     ).toBeInTheDocument();
@@ -298,7 +298,7 @@ describe("finance page", () => {
       );
       expect(
         await within(sheet).findByText(
-          "Recorded GH₵ 1k as an expense under Utilities. Type and date are kept for the next one.",
+          "Recorded GH₵ 1.24k as an expense under Utilities. Type and date are kept for the next one.",
         ),
       ).toBeInTheDocument();
       expect(
@@ -319,7 +319,7 @@ describe("finance page", () => {
         }),
       );
       const panel = await screen.findByRole("dialog");
-      expect(within(panel).getByText("GH₵ 1k")).toBeInTheDocument();
+      expect(within(panel).getByText("GH₵ 1.24k")).toBeInTheDocument();
       expect(
         within(panel).getByText("Expense · Utilities"),
       ).toBeInTheDocument();
@@ -362,7 +362,7 @@ describe("finance page", () => {
       const ask = await screen.findByRole("alertdialog");
       expect(
         within(ask).getByText(
-          /ECG electricity bill, September for GHS 1k will be removed from October.s totals/,
+          /ECG electricity bill, September for GHS 1.24k will be removed from October.s totals/,
         ),
       ).toBeInTheDocument();
       await user.click(

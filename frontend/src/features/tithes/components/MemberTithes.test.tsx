@@ -79,7 +79,7 @@ describe("a member's tithes", () => {
     expect(await screen.findByText("September 2026")).toBeInTheDocument();
     expect(screen.getByText("Mobile money")).toBeInTheDocument();
     expect(screen.getByRole("status")).toHaveTextContent("2 tithes recorded");
-    expect(await screen.findByText("GH₵ 2k")).toBeInTheDocument();
+    expect(await screen.findByText("GH₵ 1.6k")).toBeInTheDocument();
     expect(
       screen.getByRole("region", { name: "Tithes this year" }),
     ).toBeInTheDocument();

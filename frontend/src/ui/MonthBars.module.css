@@ -133,3 +133,23 @@ button.cell:hover .bar.second {
     font-size: 11px;
   }
 }
+
+/* While one month is under the pointer or in focus, the others step back to 60% so it reads first. */
+.item {
+  transition: opacity var(--t-base) var(--ease-soft);
+}
+@media (hover: hover) {
+  .bars:has(.cell:hover) .item:not(:hover),
+  .bars:has(.cell:focus-visible) .item:not(:focus-within) {
+    opacity: 0.6;
+  }
+}
+button.cell:active .bar {
+  transform: scaleY(0.97);
+  transform-origin: bottom;
+}
+@media (prefers-reduced-motion: reduce) {
+  button.cell:active .bar {
+    transform: none;
+  }
+}

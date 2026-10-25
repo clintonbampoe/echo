@@ -159,20 +159,20 @@ describe("project page", () => {
       name: "Raised against target",
     });
     expect(
-      within(progress).getByText("Still to raise GH₵ 32k"),
+      within(progress).getByText("Still to raise GH₵ 31.8k"),
     ).toBeInTheDocument();
     expect(within(progress).getByText(/60%/)).toBeInTheDocument();
     const figures = screen.getByRole("region", { name: "Project figures" });
-    expect(await within(figures).findByText("48k")).toBeInTheDocument();
+    expect(await within(figures).findByText("48.2k")).toBeInTheDocument();
     expect(within(figures).getByText("80k")).toBeInTheDocument();
     const details = screen.getByRole("region", { name: "Project details" });
     expect(within(details).getByText("Ama Boateng")).toBeInTheDocument();
     expect(within(details).getByText("01 Mar 2026")).toBeInTheDocument();
     const table = await screen.findByRole("list", { name: "Contributions" });
     expect(within(table).getByText("Sunday appeal")).toBeInTheDocument();
-    expect(within(table).getByText("GH₵ 4k")).toBeInTheDocument();
+    expect(within(table).getByText("GH₵ 4.2k")).toBeInTheDocument();
     const strip = screen.getByRole("region", { name: "Contributions summary" });
-    expect(await within(strip).findByText("GH₵ 7k")).toBeInTheDocument();
+    expect(await within(strip).findByText("GH₵ 7.05k")).toBeInTheDocument();
     expect(within(strip).getByText("Mobile money")).toBeInTheDocument();
   });
 
@@ -195,7 +195,7 @@ describe("project page", () => {
         ),
       ).toBe(true),
     );
-    expect(await screen.findByText("GH₵ 3k")).toBeInTheDocument();
+    expect(await screen.findByText("GH₵ 2.85k")).toBeInTheDocument();
     expect(screen.queryByText("Sunday appeal")).not.toBeInTheDocument();
   });
 
@@ -415,7 +415,7 @@ describe("project page", () => {
       await screen.findByRole("list", { name: "Contributions" });
       await user.click(
         screen.getByRole("button", {
-          name: "Actions for GH₵ 3k on 04 Oct 2026",
+          name: "Actions for GH₵ 2.85k on 04 Oct 2026",
         }),
       );
       await user.click(
@@ -427,7 +427,7 @@ describe("project page", () => {
       await user.click(screen.getByRole("button", { name: "Close" }));
       await user.click(
         screen.getByRole("button", {
-          name: "Actions for GH₵ 3k on 04 Oct 2026",
+          name: "Actions for GH₵ 2.85k on 04 Oct 2026",
         }),
       );
       await user.click(
