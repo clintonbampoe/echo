@@ -1,6 +1,12 @@
 import { useState } from "react";
 import { formatNumber } from "@/lib/format";
-import { DashCard, Figure, MonthBars, SegmentedField } from "@/ui";
+import {
+  DashCard,
+  DistributionBar,
+  Figure,
+  MonthBars,
+  SegmentedField,
+} from "@/ui";
 import { useCategories, useMoneyMonths } from "../../hooks/money";
 import {
   monthFigures,
@@ -13,7 +19,6 @@ import { monthRanges, type MonthRange } from "../../model/ranges";
 import { CardFailed } from "./CardFailed";
 import { RangeTabs } from "../controls/RangeTabs";
 import { SummaryButton } from "./WeeklySummary";
-import { Split } from "./Split";
 import styles from "./MoneyCard.module.css";
 
 const kinds = [
@@ -96,12 +101,12 @@ export function MoneyCard({ today }: { today: string }) {
             <p className={styles.heading}>
               {income ? "Where it came from" : "Where it went"}
             </p>
-            <Split
+            <DistributionBar
               label={income ? "Income by category" : "Expenses by category"}
               empty="Nothing recorded yet"
               parts={slices.map((s) => ({
                 key: s.key,
-                name: s.name,
+                label: s.name,
                 value: s.total,
                 text: formatNumber(s.total),
                 share: `${s.percent}%`,

@@ -68,10 +68,13 @@
     background-color var(--t-fast) var(--ease-soft),
     box-shadow var(--t-base);
 }
-button.row {
+button.row,
+a.row {
   cursor: pointer;
+  text-decoration: none;
 }
-button.row:focus-visible {
+button.row:focus-visible,
+a.row:focus-visible {
   outline: 2px solid var(--text);
   outline-offset: -2px;
 }
@@ -107,7 +110,8 @@ button.row:focus-visible {
   .bar:has(.seg:hover) .seg:not(:hover) {
     opacity: 0.5;
   }
-  button.row:hover {
+  button.row:hover,
+  a.row:hover {
     background: var(--glass-tile);
     box-shadow:
       var(--glass-edge),
@@ -237,4 +241,10 @@ button.row:focus-visible {
   .seg:hover {
     transform: none;
   }
+}
+
+.empty {
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-3);
 }

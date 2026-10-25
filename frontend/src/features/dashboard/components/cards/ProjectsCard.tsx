@@ -1,8 +1,8 @@
 import { formatNumber } from "@/lib/format";
-import { Aside, Chip, DashCard, Figure } from "@/ui";
+import { paths } from "@/lib/paths";
+import { Aside, Chip, DashCard, DistributionBar, Figure } from "@/ui";
 import { useProjects } from "../../hooks/projects";
 import { CardFailed } from "./CardFailed";
-import { Split } from "./Split";
 
 const SHOWN = 4;
 
@@ -30,13 +30,14 @@ export function ProjectsCard() {
             value={projects ? formatNumber(total) : "–"}
             unit="GHS raised"
           />
-          <Split
+          <DistributionBar
             label="Raised by project"
             empty="Nothing raised yet"
             parts={[
               ...shown.map((p) => ({
                 key: p.id,
-                name: p.name,
+                label: p.name,
+                to: paths.project(p.id),
                 value: p.raised,
                 text: short(p.raised),
                 share:
@@ -49,9 +50,10 @@ export function ProjectsCard() {
                 ? [
                     {
                       key: "rest",
-                      name: `Other, ${rest.length} projects`,
+                      label: `Other, ${rest.length} projects`,
                       value: restRaised,
                       text: short(restRaised),
+                      closed: true,
                     },
                   ]
                 : []),

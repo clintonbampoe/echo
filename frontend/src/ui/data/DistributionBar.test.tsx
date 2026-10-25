@@ -1,6 +1,10 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { MemoryRouter } from "react-router-dom";
 import { DistributionBar } from "./DistributionBar";
+
+const inRouter = (ui: React.ReactElement) =>
+  render(<MemoryRouter>{ui}</MemoryRouter>);
 
 const parts = [
   { key: "momo", label: "Mobile money", value: 400, text: "GH₵ 400" },
@@ -11,8 +15,8 @@ const parts = [
 
 describe("distribution bar", () => {
   it("lists each part with its amount and share, and leaves out what is empty", () => {
-    render(<DistributionBar label="How it was given" parts={parts} />);
-    const group = screen.getByRole("group", { name: "How it was given" });
+    inRouter(<DistributionBar label="How it was given" parts={parts} />);
+    const group = screen.getByRole("list", { name: "How it was given" });
     expect(group).toHaveTextContent("Mobile money");
     expect(group).toHaveTextContent("40%");
     expect(group).toHaveTextContent("20%");
@@ -22,7 +26,7 @@ describe("distribution bar", () => {
   it("makes a legend row a button that picks its part, but not a closed one", async () => {
     const user = userEvent.setup();
     const onPick = vi.fn();
-    render(
+    inRouter(
       <DistributionBar
         label="How it was given"
         parts={parts}
@@ -40,7 +44,7 @@ describe("distribution bar", () => {
   });
 
   it("gives each segment a pill with its name, amount and share", () => {
-    const { container } = render(
+    const { container } = inRouter(
       <DistributionBar label="How it was given" parts={parts} />,
     );
     const tips = [...container.querySelectorAll("[data-tip]")].map((e) =>

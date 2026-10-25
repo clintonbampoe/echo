@@ -1,21 +1,38 @@
-import { Aside, DashCard, Figure } from "@/ui";
+import { paths } from "@/lib/paths";
+import { Aside, DashCard, DistributionBar, Figure } from "@/ui";
 import { formatNumber } from "@/lib/format";
 import { useAssets } from "../../hooks/assets";
 import { CardFailed } from "./CardFailed";
-import { Split } from "./Split";
+
+const SHOWN = 4;
 
 // What the church owns: what it is worth now, cut by category. Liquidated assets are not counted. The value
 // is typed in by hand, Echo does not depreciate it.
 export function AssetsCard() {
   const { figures, rows, failed, retry } = useAssets();
-  const parts = [...(rows ?? [])]
-    .sort((a, b) => b.value - a.value)
-    .map((r) => ({
+  const sorted = [...(rows ?? [])].sort((a, b) => b.value - a.value);
+  const rest = sorted.slice(SHOWN).reduce((sum, r) => sum + r.value, 0);
+  // The four worth the most, then one Other. Other never lists what is inside it; Categories holds the full breakdown.
+  const parts = [
+    ...sorted.slice(0, SHOWN).map((r) => ({
       key: r.key,
-      name: r.name,
+      label: r.name,
       value: r.value,
       text: formatNumber(r.value),
-    }));
+      to: `${paths.assets}?category=${r.key}`,
+    })),
+    ...(sorted.length > SHOWN
+      ? [
+          {
+            key: "other",
+            label: "Other",
+            value: rest,
+            text: formatNumber(rest),
+            closed: true,
+          },
+        ]
+      : []),
+  ];
   return (
     <DashCard title="Assets" control={<Aside>Current value</Aside>}>
       {failed ? (
@@ -27,7 +44,7 @@ export function AssetsCard() {
             value={figures ? formatNumber(figures.value) : "–"}
             unit="GHS"
           />
-          <Split
+          <DistributionBar
             label="Assets by category"
             empty="No assets yet"
             parts={parts}

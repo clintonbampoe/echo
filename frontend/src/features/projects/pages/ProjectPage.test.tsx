@@ -186,7 +186,7 @@ describe("project page", () => {
     expect(await within(strip).findByText("GH₵ 7.05k")).toBeInTheDocument();
     expect(within(strip).getByText("Mobile money")).toBeInTheDocument();
     expect(
-      await screen.findByRole("group", { name: "How it was given" }),
+      await screen.findByRole("list", { name: "How it was given" }),
     ).toBeInTheDocument();
     await goTo("Contributions");
     const table = await screen.findByRole("list", { name: "Contributions" });

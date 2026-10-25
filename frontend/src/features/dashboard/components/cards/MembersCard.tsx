@@ -1,12 +1,12 @@
 import { formatNumber } from "@/lib/format";
-import { Aside, DashCard, ProgressBar } from "@/ui";
+import { paths } from "@/lib/paths";
+import { Aside, DashCard, DistributionBar, ProgressBar } from "@/ui";
 import type { AgeBand } from "../../api/members";
 import { useMix } from "../../hooks/people";
 import { useNewMembers } from "../../hooks/numbers";
 import { statusRows } from "../../model/members";
 import { spanOf } from "../../model/periods";
 import { CardFailed } from "./CardFailed";
-import { Split } from "./Split";
 import styles from "./MembersCard.module.css";
 
 const percent = (n: number, of: number) =>
@@ -53,7 +53,7 @@ export function MembersCard({ today }: { today: string }) {
         <div className={styles.grid} aria-busy={!mix}>
           <section aria-label="Gender">
             <p className={styles.heading}>Gender</p>
-            <Split
+            <DistributionBar
               label="Women and men"
               empty="No members yet"
               parts={
@@ -61,14 +61,16 @@ export function MembersCard({ today }: { today: string }) {
                   ? [
                       {
                         key: "f",
-                        name: "Women",
+                        label: "Women",
+                        to: `${paths.members}?gender=Female`,
                         value: mix.female,
                         text: formatNumber(mix.female),
                         share: percent(mix.female, total),
                       },
                       {
                         key: "m",
-                        name: "Men",
+                        label: "Men",
+                        to: `${paths.members}?gender=Male`,
                         value: mix.male,
                         text: formatNumber(mix.male),
                         share: percent(mix.male, total),
