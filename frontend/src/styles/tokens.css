@@ -36,6 +36,8 @@
   --warn-line: #f0d9a8;
   --card-bg: linear-gradient(180deg, #ffffff, #fcfcfd);
   --shadow: 0 1px 2px rgb(10 10 11 / 5%), 0 12px 28px -16px rgb(10 10 11 / 10%);
+  --shadow-hover:
+    0 1px 2px rgb(10 10 11 / 8%), 0 16px 32px -14px rgb(10 10 11 / 18%);
 
   /* Type */
   --font-sans: "Geist", ui-sans-serif, system-ui, sans-serif;
@@ -43,7 +45,10 @@
   /* Shape */
   --radius-sm: 8px;
   --radius: 12px;
-  --radius-lg: 20px;
+  --radius-lg: 26px; /* cards */
+  --radius-float: 30px; /* sheets, dialogs and every floating surface */
+  --radius-pop: 22px; /* popovers and dropdowns */
+  --radius-option: 14px; /* an option row inside one */
   --radius-field: 14px;
   --radius-pill: 999px;
 

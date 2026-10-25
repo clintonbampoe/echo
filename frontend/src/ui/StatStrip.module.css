@@ -130,3 +130,17 @@
     display: none;
   }
 }
+
+/* Design round 8: a card answers the pointer. */
+.strip {
+  transition:
+    border-color var(--fast) ease,
+    box-shadow var(--fast) ease,
+    background var(--fast) ease,
+    transform var(--base) var(--ease);
+}
+
+.strip:hover {
+  border-color: var(--line-2);
+  box-shadow: var(--shadow-hover);
+}

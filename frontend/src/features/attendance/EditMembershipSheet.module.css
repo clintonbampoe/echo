@@ -3,7 +3,7 @@
   display: grid;
   gap: 16px;
   padding-top: 8px;
-  --control-height: 40px;
+  --control-height: 48px;
   --control-gap: 6px;
   --control-font: 14px;
 }

@@ -5,6 +5,7 @@ import { paths } from "@/lib/paths";
 import {
   ControlledDate,
   ControlledSelect,
+  Disclosure,
   Field,
   Icon,
   SegmentedField,
@@ -25,8 +26,8 @@ type Props = {
 };
 
 const types = [
-  { value: "Income", label: "Income", icon: "arrow-down" },
-  { value: "Expense", label: "Expense", icon: "arrow-up" },
+  { value: "Income", label: "Income" },
+  { value: "Expense", label: "Expense" },
 ] as const;
 
 // Every input of the transaction form. Record and edit use the same fields. Choosing the other type clears a category
@@ -41,6 +42,7 @@ export function TransactionFields({ form, categories }: Props) {
   } = form;
   const type = useWatch({ control, name: "transactionType" });
   const category = useWatch({ control, name: "categoryId" });
+  const description = useWatch({ control, name: "description" });
   const [cleared, setCleared] = useState(false);
 
   function chooseType(next: TransactionType) {
@@ -57,6 +59,16 @@ export function TransactionFields({ form, categories }: Props) {
         options={types}
         value={type}
         onChange={chooseType}
+        joined
+      />
+      <Field
+        label="Amount"
+        unit="GH₵"
+        inputMode="decimal"
+        autoComplete="off"
+        placeholder="0.00"
+        error={e.amount?.message}
+        {...register("amount")}
       />
       <div>
         <ControlledSelect
@@ -78,26 +90,21 @@ export function TransactionFields({ form, categories }: Props) {
           </p>
         )}
       </div>
-      <div className={styles.pair}>
-        <Field
-          label="Amount"
-          unit="GH₵"
-          inputMode="decimal"
-          autoComplete="off"
-          placeholder="0.00"
-          error={e.amount?.message}
-          {...register("amount")}
+      <ControlledDate control={control} name="transactionDate" label="Date" />
+      <Disclosure
+        title="More details"
+        hint="description"
+        forceOpen={!!e.description || !!description}
+      >
+        <TextAreaField
+          label="Description"
+          optional
+          placeholder="e.g. ECG bill for September"
+          maxLength={NOTE_MAX}
+          error={e.description?.message}
+          {...register("description")}
         />
-        <ControlledDate control={control} name="transactionDate" label="Date" />
-      </div>
-      <TextAreaField
-        label="Description"
-        optional
-        placeholder="e.g. ECG bill for September"
-        maxLength={NOTE_MAX}
-        error={e.description?.message}
-        {...register("description")}
-      />
+      </Disclosure>
     </div>
   );
 }

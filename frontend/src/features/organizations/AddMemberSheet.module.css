@@ -2,7 +2,7 @@
 .fields {
   display: grid;
   gap: 16px;
-  --control-height: 40px;
+  --control-height: 48px;
   --control-gap: 6px;
   --control-font: 14px;
 }

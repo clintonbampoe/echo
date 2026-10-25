@@ -28,23 +28,29 @@
   color: var(--pos);
 }
 
-/* Phone and tablet: big full-width buttons, the main one first. */
-@media (max-width: 900px) {
-  .actions {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
-  }
-  .actions > button {
-    width: 100%;
-    height: 48px;
-    margin: 0;
-    font-size: 15px;
-  }
-  .primary {
-    order: 0;
-  }
-  .another {
-    order: 1;
-  }
+/* Every width: a full-width pill for the main action, the second one as quiet text under it. */
+.actions {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+}
+.actions > button {
+  width: 100%;
+  margin: 0;
+}
+.actions > button.primary {
+  height: 48px;
+  font-size: 15px;
+  order: 0;
+}
+.actions > button.another {
+  height: 44px;
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-2);
+  order: 1;
+}
+.actions > button.another:hover:not(:disabled) {
+  background: var(--hover);
+  color: var(--text);
 }

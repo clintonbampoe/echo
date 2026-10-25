@@ -36,9 +36,9 @@
   top: var(--top, 0);
   right: var(--right, 0);
   min-width: 180px;
-  padding: 6px;
+  padding: 8px;
   background: var(--surface);
-  border-radius: 14px;
+  border-radius: var(--radius-pop);
   box-shadow:
     0 14px 36px -10px rgb(10 10 11 / 22%),
     0 0 0 1px rgb(10 10 11 / 5%);
@@ -66,14 +66,18 @@
   padding: 0 12px;
   background: transparent;
   border: 0;
-  border-radius: 9px;
+  border-radius: var(--radius-option);
   font-size: 14px;
   text-align: left;
+  transition:
+    background-color var(--fast) ease,
+    transform var(--fast) var(--ease);
 }
 .item:hover,
 .item:focus-visible {
   background: var(--hover);
   outline: none;
+  transform: translateX(2px);
 }
 .item:active {
   scale: 0.98;
@@ -138,13 +142,16 @@
     bottom: 0;
     left: 0;
     /* On a wide tablet the sheet stays a readable width, centred on the screen. */
-    width: min(100%, 560px);
+    width: min(calc(100% - 16px), 560px);
     margin-inline: auto;
-    padding: 8px 16px calc(20px + env(safe-area-inset-bottom));
+    padding: 8px 16px 16px;
     max-height: 80dvh;
     overflow-y: auto;
-    border: 0;
-    border-radius: 16px 16px 0 0;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-float);
+    bottom: calc(8px + env(safe-area-inset-bottom));
+    left: 8px;
+    right: 8px;
     transform-origin: bottom;
     animation-name: lift;
   }
@@ -171,13 +178,14 @@
     display: block;
     overflow: hidden;
     background: var(--sel);
-    border-radius: 16px;
+    border-radius: 22px;
   }
   .item {
     height: 54px;
     padding: 0 16px;
     border-radius: 0;
     font-size: 16px;
+    transform: none;
   }
   .item:hover,
   .item:focus-visible {
@@ -190,7 +198,7 @@
     margin-top: 10px;
     background: var(--sel);
     border: 0;
-    border-radius: 16px;
+    border-radius: 22px;
     font-size: 16px;
     font-weight: 600;
   }

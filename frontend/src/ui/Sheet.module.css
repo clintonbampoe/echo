@@ -7,23 +7,31 @@
 .scrim {
   position: absolute;
   inset: 0;
-  background: rgb(10 10 10 / 45%);
+  background: rgb(10 10 10 / 38%);
 }
 
+/* A floating panel, inset from the edges, with a round corner and no divider lines. */
 .panel {
   position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
+  top: 12px;
+  right: 12px;
+  bottom: 12px;
   display: flex;
   flex-direction: column;
-  width: min(520px, 100%);
+  width: min(440px, calc(100% - 24px));
   background: var(--surface);
-  border-left: 1px solid var(--line);
-  box-shadow: -16px 0 48px rgb(10 10 10 / 12%);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-float);
+  box-shadow: 0 24px 64px -12px rgb(10 10 10 / 28%);
+  overflow: hidden;
 }
 .panel:focus {
   outline: none;
+}
+
+/* The grab handle shows on a phone only. */
+.grabber {
+  display: none;
 }
 
 .header {
@@ -31,13 +39,12 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
-  padding: 20px 24px;
-  border-bottom: 1px solid var(--line);
+  padding: 24px 24px 8px;
 }
 .title {
-  font-size: 18px;
+  font-size: 21px;
   font-weight: 600;
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
 }
 .subtitle {
   margin-top: 2px;
@@ -52,17 +59,18 @@
   justify-content: center;
   width: 36px;
   height: 36px;
-  margin: -4px -8px 0 0;
-  background: transparent;
+  margin: -2px -2px 0 0;
+  background: var(--fill);
   border: 0;
-  border-radius: var(--radius-sm);
+  border-radius: 50%;
   color: var(--text-2);
   transition:
     background-color var(--fast) ease,
-    color var(--fast) ease;
+    color var(--fast) ease,
+    transform 180ms cubic-bezier(0.3, 1.4, 0.5, 1);
 }
 .close:hover {
-  background: var(--hover);
+  background: var(--sel);
   color: var(--text);
 }
 
@@ -73,37 +81,61 @@
   padding: 8px 24px 24px;
 }
 .footer {
-  padding: 16px 24px;
-  border-top: 1px solid var(--line);
-  background: var(--surface);
+  padding: 8px 24px 24px;
 }
 
-/* Phone and tablet: the sheet is the whole screen, with the content kept to a readable width
-   (the side padding grows on a wide tablet so the lines still run edge to edge). */
-@media (max-width: 900px) {
-  .scrim {
-    display: none;
-  }
+/* A tablet, where the panel is wider and the content keeps a readable width. */
+@media (min-width: 561px) and (max-width: 900px) {
   .panel {
-    width: 100%;
-    border-left: 0;
-    box-shadow: none;
+    width: min(520px, calc(100% - 24px));
+  }
+}
+
+/* A phone: a sheet rising from the bottom, inset 8px, with a grabber. */
+@media (max-width: 560px) {
+  .panel {
+    top: auto;
+    right: 8px;
+    bottom: 8px;
+    left: 8px;
+    width: auto;
+    max-height: calc(100% - 48px);
+  }
+  .root .panel {
+    animation: sheetRise 340ms var(--ease) both;
+  }
+  .root .panel[data-closing="true"] {
+    animation: sheetDrop 200ms ease-in both;
+  }
+  .grabber {
+    display: block;
+    flex: none;
+    width: 36px;
+    height: 5px;
+    margin: 8px auto 0;
+    background: var(--line-2);
+    border-radius: 3px;
   }
   .header {
-    align-items: center;
-    min-height: 60px;
-    padding: 8px max(8px, calc((100% - 640px) / 2)) 8px
-      max(16px, calc((100% - 640px) / 2));
-  }
-  .close {
-    width: 44px;
-    height: 44px;
-    margin: 0;
+    padding: 12px 20px 4px;
   }
   .body {
-    padding: 4px max(16px, calc((100% - 640px) / 2)) 24px;
+    padding: 4px 20px 20px;
   }
   .footer {
-    padding: 12px max(16px, calc((100% - 640px) / 2)) 20px;
+    padding: 4px 20px 20px;
+  }
+}
+
+@keyframes sheetRise {
+  from {
+    transform: translateY(48px);
+    opacity: 0;
+  }
+}
+@keyframes sheetDrop {
+  to {
+    transform: translateY(48px);
+    opacity: 0;
   }
 }

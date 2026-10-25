@@ -19,10 +19,19 @@
   border-radius: 50%;
   background: #fff;
   box-shadow: 0 1px 2px rgb(0 0 0 / 25%);
-  transition: translate var(--base) var(--spring);
+  transition:
+    translate var(--base) var(--spring),
+    width var(--fast) var(--spring);
 }
 .track[aria-checked="true"] .thumb {
   translate: 18px 0;
+}
+/* The knob stretches under a finger. */
+.track:active .thumb {
+  width: 26px;
+}
+.track[aria-checked="true"]:active .thumb {
+  translate: 12px 0;
 }
 .track:focus-visible {
   outline: var(--focus);

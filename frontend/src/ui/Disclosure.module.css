@@ -1,17 +1,17 @@
 .wrap {
-  margin-top: 20px;
-  border-top: 1px solid var(--line);
+  margin-top: 8px;
 }
 .toggle {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0;
   width: 100%;
   min-height: 52px;
-  padding: 0;
+  padding: 0 16px;
   background: none;
-  border: 0;
-  border-radius: var(--radius-sm);
+  border: 1px dashed var(--line-2);
+  border-radius: var(--radius-field);
+  transition: background-color var(--fast) ease;
   font-size: 14px;
   text-align: left;
 }
@@ -19,17 +19,27 @@
   outline: 2px solid var(--text);
   outline-offset: 2px;
 }
+.toggle:hover {
+  background: var(--hover);
+}
 .title {
-  font-weight: 600;
+  color: var(--text-2);
 }
 .hint {
   min-width: 0;
+  flex: 1;
   overflow: hidden;
   color: var(--text-3);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.hint::before {
+  content: ": ";
+  white-space: pre;
+}
 .chevron {
+  order: 2;
+  margin-left: auto;
   flex: none;
   color: var(--text-3);
   transition: transform 360ms var(--spring);

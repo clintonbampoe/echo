@@ -15,8 +15,8 @@ type Props = {
   children: ReactNode;
 };
 
-// A panel for a form or a detail. It slides in from the right on a wide screen and fills the
-// screen on a phone or tablet. Escape or the close button closes it.
+// A panel for a form or a detail. It floats in from the right on a wide screen or tablet and rises from the
+// bottom on a phone. Escape or the close button closes it.
 // Focus moves in when it opens and goes back to where it was when it closes; the page behind
 // does not scroll while it is open.
 export function Sheet({
@@ -69,6 +69,7 @@ export function Sheet({
         data-closing={closing}
         onKeyDown={(e) => e.key === "Escape" && onClose()}
       >
+        <span aria-hidden="true" className={styles.grabber} />
         <header className={styles.header}>
           <div>
             <h2 id={titleId} className={styles.title}>

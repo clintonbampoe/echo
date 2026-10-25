@@ -19,7 +19,7 @@
   max-width: 380px;
   padding: 28px 24px 20px;
   background: var(--card-bg);
-  border-radius: 28px;
+  border-radius: var(--radius-float);
   box-shadow: 0 24px 64px rgb(10 10 10 / 24%);
   text-align: center;
   animation: pop 320ms var(--spring) both;

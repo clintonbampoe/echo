@@ -62,3 +62,17 @@
   color: var(--text-3);
   overflow-wrap: anywhere;
 }
+
+/* Design round 8: a card answers the pointer. */
+.profile {
+  transition:
+    border-color var(--fast) ease,
+    box-shadow var(--fast) ease,
+    background var(--fast) ease,
+    transform var(--base) var(--ease);
+}
+
+.profile:hover {
+  border-color: var(--line-2);
+  box-shadow: var(--shadow-hover);
+}

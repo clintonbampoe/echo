@@ -41,6 +41,7 @@
 .control:focus-visible {
   outline: var(--focus);
   outline-offset: 2px;
+  box-shadow: 0 0 0 6px rgb(10 10 11 / 7%);
 }
 .control[aria-invalid="true"] {
   border-color: var(--neg);

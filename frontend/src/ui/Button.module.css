@@ -21,6 +21,8 @@
 }
 .primary:hover:not(:disabled) {
   background: var(--accent-hover);
+  filter: brightness(1.08);
+  transform: translateY(-1px);
 }
 
 .secondary {
@@ -31,6 +33,7 @@
 }
 .secondary:hover:not(:disabled) {
   background: var(--hover);
+  transform: translateY(-1px);
 }
 
 .ghost {
