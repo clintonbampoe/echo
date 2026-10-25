@@ -37,7 +37,7 @@ export function AssetsPage() {
             Categories
           </LinkButton>
         }
-        add={{ label: "New asset", onClick: () => setCreating(true) }}
+        add={{ label: "Add asset", onClick: () => setCreating(true) }}
       />
       <StatStrip
         label="Assets summary"

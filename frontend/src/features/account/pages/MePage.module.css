@@ -14,13 +14,13 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 20px 22px;
+  padding: 24px 24px 28px;
 }
 .who {
   min-width: 0;
 }
 .name {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 600;
 }
 .sub {
@@ -35,9 +35,10 @@
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  width: 100%;
+  width: calc(100% - 24px);
+  margin: 0 12px;
   min-height: 64px;
-  padding: 10px 22px;
+  padding: 10px;
   border: 0;
   border-top: 1px solid var(--line);
   background: transparent;
@@ -65,4 +66,7 @@ button.line:hover {
   .page {
     gap: 16px;
   }
+}
+.card > .line:last-child {
+  margin-bottom: 4px;
 }

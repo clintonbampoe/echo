@@ -192,7 +192,7 @@ describe("assets page", () => {
     expect(
       await screen.findByRole("link", { name: "Categories" }),
     ).toHaveAttribute("href", "/assets/categories");
-    await user.click(screen.getByRole("button", { name: /new asset/i }));
+    await user.click(screen.getByRole("button", { name: /add asset/i }));
     expect(
       await screen.findByRole("link", { name: "Manage categories" }),
     ).toHaveAttribute("href", "/assets/categories");

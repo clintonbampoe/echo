@@ -23,7 +23,7 @@ export function MePage() {
       <PageHeader title="Me" />
       <section className={styles.card}>
         <div className={styles.identity}>
-          <Avatar name={me?.name ?? ""} size={56} />
+          <Avatar name={me?.name ?? ""} size={64} />
           <div className={styles.who}>
             <h2 className={styles.name}>{me?.name ?? "Loading…"}</h2>
             <p className={styles.sub}>{me?.emailAddress}</p>

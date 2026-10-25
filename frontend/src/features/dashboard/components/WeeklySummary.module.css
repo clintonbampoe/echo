@@ -1,0 +1,79 @@
+.root {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.scrim {
+  position: absolute;
+  inset: 0;
+  background: rgb(10 10 10 / 45%);
+}
+.panel {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  padding: 20px 24px 20px;
+  background: var(--card-bg);
+  border-radius: 28px;
+  box-shadow: 0 24px 64px rgb(10 10 10 / 24%);
+  animation: pop 320ms var(--spring) both;
+}
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.close {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: var(--sel);
+  border: 0;
+  border-radius: 50%;
+  color: var(--text);
+}
+.message {
+  margin: 22px 0 0;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--line);
+  font-size: 22px;
+  font-weight: 500;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+}
+.numbers {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin: 16px 0 20px;
+}
+.numbers dt {
+  font-size: 13px;
+  color: var(--text-3);
+}
+.numbers dd {
+  margin: 2px 0 0;
+  font-size: 18px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.actions > button {
+  height: 48px;
+}
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.94);
+  }
+}

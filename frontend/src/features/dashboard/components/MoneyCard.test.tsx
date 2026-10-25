@@ -18,6 +18,7 @@ beforeEach(() => {
           { year: 2026, month: 10, totalIncome: 30000, totalExpenses: 8000 },
         ]);
       return json({
+        totalPresent: 196,
         byCategory: [
           {
             categoryId: 1,
@@ -74,11 +75,24 @@ describe("money card", () => {
     ).toBeInTheDocument();
   });
 
-  it("links to the finance page", async () => {
+  it("opens a weekly summary in words that can be copied", async () => {
     show();
+    await userEvent.click(
+      await screen.findByRole("button", { name: /Summary/ }),
+    );
+    const dialog = await screen.findByRole("dialog");
     expect(
-      await screen.findByRole("link", { name: /Summary/ }),
-    ).toHaveAttribute("href", "/finance");
+      await within(dialog).findByText(
+        /we received GHS 50,000 and spent 13,000. 196 people came/,
+      ),
+    ).toBeInTheDocument();
+    expect(
+      within(dialog).getByRole("button", { name: "Copy message" }),
+    ).toBeEnabled();
+    await userEvent.click(
+      within(dialog).getByRole("button", { name: "Close" }),
+    );
+    expect(screen.queryByRole("dialog")).toBeNull();
   });
 
   it("says so when it could not load", async () => {

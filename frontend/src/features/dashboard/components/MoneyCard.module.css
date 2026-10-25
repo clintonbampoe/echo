@@ -14,7 +14,8 @@
   font-size: 13px;
   font-weight: 500;
   color: var(--text);
-  text-decoration: none;
+  background: none;
+  cursor: pointer;
 }
 .summary:hover {
   background: var(--hover);

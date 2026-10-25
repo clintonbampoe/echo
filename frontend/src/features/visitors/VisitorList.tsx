@@ -1,12 +1,15 @@
 import type { ReactNode } from "react";
 import { formatDayMonth } from "@/lib/format";
 import { paths } from "@/lib/paths";
-import { Chip, PersonList, type PersonColumn } from "@/ui";
+import { Chip, PersonList, type MenuItem, type PersonColumn } from "@/ui";
 import type { Visitor } from "./api";
+
+export type VisitorAction = "edit" | "convert" | "delete";
 
 type Props = {
   visitors: Visitor[];
   footer?: ReactNode;
+  onAct: (visitor: Visitor, action: VisitorAction) => void;
 };
 
 // Which columns a visitor row shows: "Joined" for someone who became a member, and when they last came.
@@ -26,7 +29,21 @@ const columns: PersonColumn<Visitor>[] = [
   },
 ];
 
-export function VisitorList({ visitors, footer }: Props) {
+// The ⋯ menu of a row: what can be done without opening the visitor. Someone who has joined cannot be made a member again.
+const menu = (v: Visitor, onAct: Props["onAct"]): MenuItem[] => [
+  { label: "Edit visitor", onSelect: () => onAct(v, "edit") },
+  ...(v.convertedAt
+    ? []
+    : [{ label: "Make a member", onSelect: () => onAct(v, "convert") }]),
+  {
+    label: "Delete visitor",
+    danger: true,
+    separated: true,
+    onSelect: () => onAct(v, "delete"),
+  },
+];
+
+export function VisitorList({ visitors, footer, onAct }: Props) {
   return (
     <PersonList
       label="Visitors"
@@ -38,6 +55,7 @@ export function VisitorList({ visitors, footer }: Props) {
         href: paths.visitor(v.id),
       })}
       columns={columns}
+      actions={(v) => menu(v, onAct)}
       compact
       footer={footer}
     />

@@ -1,7 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
 import { formatNumber } from "@/lib/format";
-import { paths } from "@/lib/paths";
 import { DashCard, Figure, Icon, MonthBars, SegmentedField } from "@/ui";
 import { useCategories, useMoneyMonths } from "../hooks";
 import {
@@ -14,6 +12,7 @@ import {
 import { monthRanges, type MonthRange } from "../ranges";
 import { CardFailed } from "./CardFailed";
 import { RangeTabs } from "./RangeTabs";
+import { WeeklySummary } from "./WeeklySummary";
 import { Split } from "./Split";
 import styles from "./MoneyCard.module.css";
 
@@ -27,6 +26,7 @@ const kinds = [
 export function MoneyCard({ today }: { today: string }) {
   const [range, setRange] = useState<MonthRange>("12");
   const [kind, setKind] = useState<MoneyKind>("Income");
+  const [summary, setSummary] = useState(false);
   const months = Number(range);
   const { from, to } = moneyRange(today, months);
   const money = useMoneyMonths(from, to);
@@ -44,10 +44,14 @@ export function MoneyCard({ today }: { today: string }) {
       title="Money"
       control={
         <span className={styles.controls}>
-          <Link to={paths.finance} className={styles.summary}>
+          <button
+            type="button"
+            className={styles.summary}
+            onClick={() => setSummary(true)}
+          >
             <Icon name="reports" size={14} />
             Summary
-          </Link>
+          </button>
           <RangeTabs
             label="Range"
             options={monthRanges}
@@ -113,6 +117,9 @@ export function MoneyCard({ today }: { today: string }) {
             />
           </div>
         </div>
+      )}
+      {summary && (
+        <WeeklySummary today={today} onClose={() => setSummary(false)} />
       )}
     </DashCard>
   );

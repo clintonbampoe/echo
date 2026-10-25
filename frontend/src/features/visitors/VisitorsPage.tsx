@@ -1,11 +1,16 @@
+import { useState } from "react";
 import { useUrlFilters } from "@/lib/useUrlFilters";
 import { windowOptions } from "@/lib/windows";
 import { ListBody, PageHeader } from "@/ui";
+import type { Visitor } from "./api";
+import { ConvertSheet } from "./ConvertSheet";
+import { DeleteVisitorDialog } from "./DeleteVisitorDialog";
+import { EditVisitorSheet } from "./EditVisitorSheet";
 import { FilterBar } from "./FilterBar";
 import { toApiFilters, toSummaryFilters, visitorFilters } from "./filters";
 import { useVisitors, useVisitorSummary } from "./hooks";
 import { SummaryStrip } from "./SummaryStrip";
-import { VisitorList } from "./VisitorList";
+import { VisitorList, type VisitorAction } from "./VisitorList";
 import { VisitorSheet } from "./VisitorSheet";
 import { useUrlFlag } from "@/lib/useUrlFlag";
 
@@ -13,6 +18,11 @@ import { useUrlFlag } from "@/lib/useUrlFlag";
 export function VisitorsPage() {
   const { filters, update, clear, resetKey } = useUrlFilters(visitorFilters);
   const [adding, setAdding] = useUrlFlag("new");
+  const [acting, setActing] = useState<{
+    visitor: Visitor;
+    action: VisitorAction;
+  } | null>(null);
+  const close = () => setActing(null);
   const list = useVisitors(toApiFilters(filters));
   const summary = useVisitorSummary(toSummaryFilters(filters));
   const windowLabel =
@@ -41,10 +51,23 @@ export function VisitorsPage() {
         footerInside
       >
         {(visitors, footer) => (
-          <VisitorList visitors={visitors} footer={footer} />
+          <VisitorList
+            visitors={visitors}
+            footer={footer}
+            onAct={(visitor, action) => setActing({ visitor, action })}
+          />
         )}
       </ListBody>
       <VisitorSheet open={adding} onClose={() => setAdding(false)} />
+      {acting?.action === "edit" && (
+        <EditVisitorSheet visitor={acting.visitor} onClose={close} />
+      )}
+      {acting?.action === "convert" && (
+        <ConvertSheet visitor={acting.visitor} onClose={close} />
+      )}
+      {acting?.action === "delete" && (
+        <DeleteVisitorDialog visitor={acting.visitor} onClose={close} />
+      )}
     </div>
   );
 }
