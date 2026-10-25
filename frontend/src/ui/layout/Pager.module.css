@@ -15,7 +15,7 @@
   .track {
     display: flex;
     gap: 12px;
-    align-items: flex-start;
+    align-items: stretch;
     overflow-x: auto;
     overscroll-behavior-x: contain;
     scroll-behavior: smooth;
@@ -25,14 +25,18 @@
   .track::-webkit-scrollbar {
     display: none;
   }
+  /* One card at a time: the next one never peeks, the dots say there is more. Every page is as tall as the
+     tallest, and its card fills it. */
   .track > * {
+    display: flex;
     flex: none;
-    width: 88%;
-    scroll-snap-align: start;
-  }
-  /* A row of one has nothing after it to peek. */
-  .track > :only-child {
     width: 100%;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+  .track > * > * {
+    flex: 1;
+    min-width: 0;
   }
   .dots {
     display: flex;

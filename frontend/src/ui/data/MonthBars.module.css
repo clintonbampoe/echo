@@ -46,7 +46,7 @@ button.cell:focus-visible {
 .bar {
   width: min(100%, 46px);
   background: var(--line-2);
-  border-radius: 10px 10px 0 0;
+  border-radius: 14px 14px 4px 4px;
   transform-origin: center center;
   transition:
     background-color var(--fast) ease,
@@ -57,6 +57,7 @@ button.cell:focus-visible {
 }
 /* The rise on mount must not hold the bar's transform afterwards, or the hover lift could not move it. */
 .bar:global(.grow-y) {
+  transform-origin: center bottom;
   animation-fill-mode: backwards;
 }
 /* A bar grows from its centre, wider and a little taller, and the rest step back (see the items below). */

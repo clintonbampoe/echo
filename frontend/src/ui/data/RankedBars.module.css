@@ -62,7 +62,7 @@ button.row:active .track {
   display: block;
   height: 6px;
   background: var(--fill-2);
-  border-radius: 3px;
+  border-radius: 999px;
   transform-origin: center center;
   transition: transform 450ms var(--spring);
 }
@@ -70,7 +70,7 @@ button.row:active .track {
   display: block;
   height: 100%;
   background: #7f95ae;
-  border-radius: 3px;
+  border-radius: 999px;
   transform-origin: left;
   animation: echoGrowX 700ms var(--grow) backwards;
   animation-delay: calc(var(--i, 0) * 40ms);

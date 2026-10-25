@@ -31,6 +31,11 @@ export function FlowBars({ label, bars, selected, onPick, format }: Props) {
         const spoken = `${b.name}: income ${format(b.income)}, expenses ${format(b.expenses)}`;
         const mark = (
           <>
+            <span className={`${styles.tip} glass-tip`} aria-hidden="true">
+              <strong>{b.name}</strong>
+              <span className={styles.line}>Income {format(b.income)}</span>
+              <span className={styles.line}>Expenses {format(b.expenses)}</span>
+            </span>
             <span className={styles.up}>
               <span
                 className={styles.bar}

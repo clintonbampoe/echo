@@ -38,17 +38,18 @@ const groups = (today: string): Group[] => [
   {
     label: "Money",
     to: paths.finance,
-    titles: ["Money"],
-    cards: [<MoneyCard today={today} />],
+    titles: ["Money", "Tithes"],
+    cards: [<MoneyCard today={today} />, <TithesCard today={today} />],
   },
   {
     label: "Members",
     to: paths.members,
-    titles: ["Tithes", "Member growth", "Members"],
+    titles: ["Member growth", "Gender", "Age", "Status"],
     cards: [
-      <TithesCard today={today} />,
       <MemberGrowthCard today={today} />,
-      <MembersCard today={today} />,
+      <MembersCard today={today} part="gender" />,
+      <MembersCard today={today} part="age" />,
+      <MembersCard today={today} part="status" />,
     ],
   },
   {

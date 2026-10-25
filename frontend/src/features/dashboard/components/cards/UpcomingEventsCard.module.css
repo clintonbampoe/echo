@@ -10,15 +10,9 @@
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 4px 0;
-  border-radius: var(--radius-sm);
+  padding: 6px 12px;
   color: inherit;
   text-decoration: none;
-}
-@media (hover: hover) {
-  .row:hover .name {
-    text-decoration: underline;
-  }
 }
 .row:focus-visible {
   outline: var(--focus);
@@ -44,4 +38,12 @@
   margin: 0;
   font-size: 14px;
   color: var(--text-3);
+}
+
+/* Less, not smaller: a phone shows the next three, each with its day tile and its name. */
+@media (max-width: 900px) {
+  .list li:nth-child(n + 4),
+  .when {
+    display: none;
+  }
 }

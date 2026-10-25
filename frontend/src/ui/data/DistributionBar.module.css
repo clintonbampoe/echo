@@ -11,8 +11,8 @@
 }
 .seg {
   position: relative;
-  min-width: 4px;
-  border-radius: 4px;
+  min-width: 8px;
+  border-radius: 999px;
   cursor: pointer;
   transform-origin: center center;
   transition:
@@ -247,4 +247,11 @@ a.row:focus-visible {
   margin: 0;
   font-size: 14px;
   color: var(--text-3);
+}
+
+/* On a phone or tablet the legend keeps its three biggest parts; the bar above still shows all of them. */
+@media (max-width: 900px) {
+  .legend .lrow:nth-child(n + 4) {
+    display: none;
+  }
 }

@@ -90,7 +90,7 @@ export function EventsPage({ tab }: { tab: EventTab }) {
           <StatStrip
             label="Event summary"
             stats={summaryStats(summary.data, next.data, tab)}
-            busy={!summary.data}
+            busy={summary.isPending}
           />
           <div
             role="tabpanel"

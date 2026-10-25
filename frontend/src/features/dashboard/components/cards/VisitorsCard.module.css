@@ -27,15 +27,9 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 6px 0;
-  border-radius: var(--radius-sm);
+  padding: 8px 12px;
   color: inherit;
   text-decoration: none;
-}
-@media (hover: hover) {
-  .row:hover .name {
-    text-decoration: underline;
-  }
 }
 .row:focus-visible {
   outline: var(--focus);
@@ -61,4 +55,12 @@
   margin: 0;
   font-size: 14px;
   color: var(--text-3);
+}
+
+/* Less, not smaller: a phone shows the three newest and only their names. */
+@media (max-width: 900px) {
+  .list li:nth-child(n + 4),
+  .when {
+    display: none;
+  }
 }

@@ -73,11 +73,16 @@ function SessionRow({
             {sessionTitle(s)}
           </Link>
           {s.status !== "Completed" && (
-            <Chip tone={statusTone[s.status]}>{s.status}</Chip>
+            <span
+              className={s.status === "Cancelled" ? undefined : styles.quiet}
+            >
+              <Chip tone={statusTone[s.status]}>{s.status}</Chip>
+            </span>
           )}
         </p>
         <p className={styles.topic}>
-          {[when, s.topic].filter(Boolean).join(" · ")}
+          {when}
+          {s.topic && <span className={styles.extra}> · {s.topic}</span>}
         </p>
       </div>
       <p className={styles.count}>

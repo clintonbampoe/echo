@@ -37,9 +37,44 @@
   }
 }
 
+/* Things arrive like water, not like a slide: they come from a little below and settle into their shape with a
+   soft overshoot, subtle and round. A page uses the gentle one, a row or a card the livelier one. */
+@keyframes eJellyPage {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0) scale(0.985, 0.965);
+  }
+  55% {
+    opacity: 1;
+    transform: translate3d(0, -1px, 0) scale(1.003, 1.012);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes eJelly {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0) scale(0.955, 0.86);
+  }
+  50% {
+    opacity: 1;
+    transform: translate3d(0, -1px, 0) scale(1.014, 1.05);
+  }
+  78% {
+    transform: scale(0.997, 0.985);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 /* Plays once when the element mounts. Stagger with style={{ '--delay': '120ms' }}. */
 .anim-rise {
-  animation: rise var(--slow) var(--ease) both;
+  transform-origin: 50% 0;
+  animation: eJellyPage 700ms var(--spring) both;
   animation-delay: var(--delay, 0ms);
 }
 .anim-fade {
@@ -167,6 +202,9 @@ a[data-press]:active {
   from {
     transform: scaleY(0);
   }
+  70% {
+    transform: scaleY(1.05);
+  }
   to {
     transform: scaleY(1);
   }
@@ -174,6 +212,9 @@ a[data-press]:active {
 @keyframes echoGrowX {
   from {
     transform: scaleX(0);
+  }
+  70% {
+    transform: scaleX(1.035);
   }
   to {
     transform: scaleX(1);
@@ -283,7 +324,8 @@ a[data-press]:active {
 
 /* A list row or card that arrives with its neighbours, one after the other. */
 .stagger {
-  animation: rise 420ms var(--ease) both;
+  transform-origin: 50% 100%;
+  animation: eJelly 640ms var(--spring) both;
   animation-delay: calc(var(--i, 0) * 28ms);
 }
 

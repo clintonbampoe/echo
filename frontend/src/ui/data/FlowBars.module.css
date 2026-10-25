@@ -11,6 +11,7 @@
   min-width: 0;
 }
 .cell {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -49,17 +50,23 @@ button.cell:focus-visible {
   width: min(34px, 70%);
   height: var(--h);
   background: var(--line-2);
-  animation: grow 420ms ease both;
+  transform-origin: center bottom;
+  animation: grow 420ms ease backwards;
   animation-delay: calc(var(--i) * 25ms);
+  transition:
+    transform 450ms var(--spring),
+    filter var(--t-fast),
+    opacity var(--t-base);
 }
 .up .bar {
   background: var(--text-3);
-  border-radius: 8px 8px 2px 2px;
+  border-radius: 14px 14px 4px 4px;
   opacity: 0.35;
 }
 .down .bar {
-  border-radius: 2px 2px 8px 8px;
+  border-radius: 4px 4px 14px 14px;
   opacity: 0.25;
+  transform-origin: center top;
 }
 .down .bar {
   background: var(--text-3);
@@ -94,5 +101,66 @@ button.cell:focus-visible {
   .up,
   .down {
     height: 64px;
+  }
+}
+
+/* A month is a door: under the pointer or the keyboard its bars grow from their centre, a dark pill says what
+   they are, and the other months step back. */
+.tip {
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  z-index: 2;
+  opacity: 0;
+  transform: translate(-50%, -100%) scale(0.96);
+  border-radius: 14px;
+  transition:
+    opacity var(--fast) ease,
+    transform 350ms var(--spring);
+}
+.tip strong {
+  display: block;
+  font-weight: 600;
+}
+.line {
+  display: block;
+}
+.cell:hover .tip,
+.cell:focus-visible .tip {
+  opacity: 1;
+  transform: translate(-50%, -100%);
+}
+.item:first-child .tip {
+  left: 0;
+  transform: translate(0, -100%) scale(0.96);
+}
+.item:last-child .tip {
+  right: 0;
+  left: auto;
+  transform: translate(0, -100%) scale(0.96);
+}
+.item:first-child .cell:hover .tip,
+.item:first-child .cell:focus-visible .tip,
+.item:last-child .cell:hover .tip,
+.item:last-child .cell:focus-visible .tip {
+  transform: translate(0, -100%);
+}
+.item {
+  transition: opacity var(--t-base) var(--ease-soft);
+}
+@media (hover: hover) {
+  .cell:hover .bar,
+  .cell:focus-visible .bar {
+    transform: scale(1.18, 1.06);
+    filter: brightness(0.82);
+  }
+  .bars:has(.cell:hover) .item:not(:hover),
+  .bars:has(.cell:focus-visible) .item:not(:focus-within) {
+    opacity: 0.6;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cell:hover .bar {
+    transform: none;
   }
 }

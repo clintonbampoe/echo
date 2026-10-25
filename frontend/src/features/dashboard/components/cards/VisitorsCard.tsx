@@ -35,7 +35,10 @@ export function VisitorsCard({ today }: { today: string }) {
         <ul aria-busy={!rows} className={styles.list}>
           {(rows ?? []).map((v) => (
             <li key={v.id}>
-              <Link to={`/visitors/${v.id}`} className={styles.row}>
+              <Link
+                to={`/visitors/${v.id}`}
+                className={`${styles.row} liquid-row`}
+              >
                 <Avatar name={v.name} size={36} />
                 <span className={styles.text}>
                   <span className={styles.name}>{v.name}</span>

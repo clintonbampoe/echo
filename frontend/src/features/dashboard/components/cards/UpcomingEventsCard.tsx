@@ -10,7 +10,7 @@ import styles from "./UpcomingEventsCard.module.css";
 function Row({ event: e }: { event: DashEvent }) {
   return (
     <li>
-      <Link to={`/events/${e.id}`} className={styles.row}>
+      <Link to={`/events/${e.id}`} className={`${styles.row} liquid-row`}>
         <DateTile date={e.startDate} />
         <span className={styles.text}>
           <span className={styles.name}>{e.name}</span>

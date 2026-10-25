@@ -9,6 +9,7 @@ import { spanOf } from "../../model/periods";
 import { CardFailed } from "./CardFailed";
 import styles from "./MembersCard.module.css";
 
+const PART_TITLE = { gender: "Gender", age: "Age", status: "Status" } as const;
 const percent = (n: number, of: number) =>
   of > 0 ? `${Math.round((n / of) * 100)}%` : "0%";
 
@@ -35,8 +36,97 @@ function Ages({ bands }: { bands: readonly AgeBand[] }) {
   );
 }
 
+export type MembersPart = "gender" | "age" | "status";
+const shows = (part: MembersPart | undefined, name: MembersPart) =>
+  !part || part === name;
+
+type Mix = NonNullable<ReturnType<typeof useMix>["mix"]>;
+
+function Genders({ mix, total }: { mix: Mix | undefined; total: number }) {
+  const side = (key: string, label: string, gender: string, n: number) => ({
+    key,
+    label,
+    to: `${paths.members}?gender=${gender}`,
+    value: n,
+    text: formatNumber(n),
+    share: percent(n, total),
+  });
+  return (
+    <section aria-label="Gender">
+      <p className={styles.heading}>Gender</p>
+      <DistributionBar
+        label="Women and men"
+        empty="No members yet"
+        parts={
+          mix
+            ? [
+                side("f", "Women", "Female", mix.female),
+                side("m", "Men", "Male", mix.male),
+              ]
+            : []
+        }
+      />
+    </section>
+  );
+}
+
+function Statuses({
+  rows,
+  total,
+}: {
+  rows: ReturnType<typeof statusRows>;
+  total: number;
+}) {
+  return (
+    <section aria-label="Status">
+      <p className={styles.heading}>Status</p>
+      <ul aria-label="Members by status" className={styles.status}>
+        {rows.map((s) => (
+          <li key={s.key}>
+            <div className={styles.line}>
+              <span>{s.name}</span>
+              <strong>{formatNumber(s.count)}</strong>
+              <span className={styles.share}>{percent(s.count, total)}</span>
+            </div>
+            <ProgressBar
+              label={s.name}
+              value={total > 0 ? s.count / total : 0}
+            />
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+function MembersBody({
+  mix,
+  part,
+  status,
+}: {
+  mix: Mix | undefined;
+  part: MembersPart | undefined;
+  status: ReturnType<typeof statusRows>;
+}) {
+  const total = mix?.total ?? 0;
+  return (
+    <div className={styles.grid} aria-busy={!mix}>
+      {shows(part, "gender") && <Genders mix={mix} total={total} />}
+      {shows(part, "age") && <Ages bands={mix?.bands ?? []} />}
+      {shows(part, "status") && <Statuses rows={status} total={total} />}
+    </div>
+  );
+}
+
 // Everyone in the church at a glance: women and men, how old they are, and how many are active. Not the period.
-export function MembersCard({ today }: { today: string }) {
+// On a phone the card is three small ones, one for each part (`part`), so each has its own page.
+export function MembersCard({
+  today,
+  part,
+}: {
+  today: string;
+  part?: MembersPart;
+}) {
   const { mix, failed, retry } = useMix();
   const fresh = useNewMembers(spanOf("this-year", today)).value;
   const total = mix?.total ?? 0;
@@ -44,64 +134,13 @@ export function MembersCard({ today }: { today: string }) {
 
   return (
     <DashCard
-      title="Members"
+      title={part ? PART_TITLE[part] : "Members"}
       control={<Aside>{mix ? `${formatNumber(total)} total` : ""}</Aside>}
     >
       {failed ? (
         <CardFailed onRetry={retry} />
       ) : (
-        <div className={styles.grid} aria-busy={!mix}>
-          <section aria-label="Gender">
-            <p className={styles.heading}>Gender</p>
-            <DistributionBar
-              label="Women and men"
-              empty="No members yet"
-              parts={
-                mix
-                  ? [
-                      {
-                        key: "f",
-                        label: "Women",
-                        to: `${paths.members}?gender=Female`,
-                        value: mix.female,
-                        text: formatNumber(mix.female),
-                        share: percent(mix.female, total),
-                      },
-                      {
-                        key: "m",
-                        label: "Men",
-                        to: `${paths.members}?gender=Male`,
-                        value: mix.male,
-                        text: formatNumber(mix.male),
-                        share: percent(mix.male, total),
-                      },
-                    ]
-                  : []
-              }
-            />
-          </section>
-          <Ages bands={mix?.bands ?? []} />
-          <section aria-label="Status">
-            <p className={styles.heading}>Status</p>
-            <ul aria-label="Members by status" className={styles.status}>
-              {status.map((s) => (
-                <li key={s.key}>
-                  <div className={styles.line}>
-                    <span>{s.name}</span>
-                    <strong>{formatNumber(s.count)}</strong>
-                    <span className={styles.share}>
-                      {percent(s.count, total)}
-                    </span>
-                  </div>
-                  <ProgressBar
-                    label={s.name}
-                    value={total > 0 ? s.count / total : 0}
-                  />
-                </li>
-              ))}
-            </ul>
-          </section>
-        </div>
+        <MembersBody mix={mix} part={part} status={status} />
       )}
     </DashCard>
   );
