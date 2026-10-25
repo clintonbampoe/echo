@@ -4,10 +4,8 @@ import { paths } from "@/lib/paths";
 import {
   ActionMenu,
   BackLink,
-  Button,
   Chip,
   DeleteDialog,
-  Icon,
   PageHeader,
   RecordTable,
   type Column,
@@ -70,12 +68,10 @@ export function SessionTypesPage() {
       <BackLink to={paths.attendance}>Attendance</BackLink>
       <PageHeader
         title="Session types"
-        action={
-          <Button onClick={() => setOpen({ kind: "new" })}>
-            <Icon name="plus" size={16} />
-            New session type
-          </Button>
-        }
+        add={{
+          label: "New session type",
+          onClick: () => setOpen({ kind: "new" }),
+        }}
       />
       <div className={styles.note}>
         <RecordTable

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { plainList } from "@/lib/paged";
 import { paths } from "@/lib/paths";
-import { BackLink, Button, Icon, PageHeader } from "@/ui";
+import { BackLink, PageHeader } from "@/ui";
 import type { ProjectCategory } from "../api";
 import { useProjectCategories } from "../hooks";
 import { ProjectCategoryDialogs } from "./ProjectCategoryDialogs";
@@ -22,12 +22,7 @@ export function ProjectCategoriesPage() {
       <BackLink to={paths.projects}>Projects</BackLink>
       <PageHeader
         title="Project categories"
-        action={
-          <Button onClick={() => setOpen({ kind: "new" })}>
-            <Icon name="plus" size={16} />
-            New category
-          </Button>
-        }
+        add={{ label: "New category", onClick: () => setOpen({ kind: "new" }) }}
       />
       <ProjectCategoryList
         list={plainList(categories.data ?? [], categories)}

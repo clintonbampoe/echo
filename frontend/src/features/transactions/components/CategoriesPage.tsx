@@ -2,7 +2,7 @@ import { useState } from "react";
 import { plainList } from "@/lib/paged";
 import { paths } from "@/lib/paths";
 import { useUrlFilters } from "@/lib/useUrlFilters";
-import { BackLink, Button, Icon, PageHeader, SegmentedField } from "@/ui";
+import { BackLink, PageHeader, SegmentedField } from "@/ui";
 import type { Category } from "../api";
 import { categoriesOfType, categoryFilters } from "../categories";
 import { typeOptions } from "../filters";
@@ -28,12 +28,7 @@ export function CategoriesPage() {
       <BackLink to={paths.finance}>Finance</BackLink>
       <PageHeader
         title="Categories"
-        action={
-          <Button onClick={() => setOpen({ kind: "new" })}>
-            <Icon name="plus" size={16} />
-            New category
-          </Button>
-        }
+        add={{ label: "New category", onClick: () => setOpen({ kind: "new" }) }}
       />
       <div className={styles.switch}>
         <SegmentedField

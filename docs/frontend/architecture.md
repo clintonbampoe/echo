@@ -139,6 +139,20 @@ writes its own. Tokens are `--spring`, `--grow`, `--press`.
 | Strict types, no unchecked index access | `tsconfig.app.json` |
 | Config present and valid at startup | `lib/config.ts` |
 
+## List and page building blocks
+
+- **Page rhythm**: the shell makes a page's root a column with a 22px gap (16px on a phone). Pages do not add their
+  own `margin-top` between sections.
+- **Headers**: `PageHeader` has one main button (`add`: a pill on a wide screen, a round + on a phone) and an optional
+  `action` for a second button. A record's page uses `ProfileHeader` or its own header: the main action plus an
+  `ActionMenu` (⋯) for Edit and Delete.
+- **Lists**: `ListBody` does loading, failed, empty and the count. With `footerInside` it hands its footer to the list,
+  which puts it at the bottom of its own card. `PersonList` (people rows), `RecordTable` (`line` mode gives
+  `RecordLines`, a row with a title, a line under it and figures on the right) and card grids (projects, organizations)
+  are the three shapes. A whole row or card opens the record.
+- **Figures**: `StatStrip` is one card on a wide screen. A `Stat` may carry a `unit` and a `delta`. `IconTile` and
+  `DateTile` mark the start of a row. `DayStrip` is the day wheel, drawn as one card.
+
 ## Routing, security, tests
 
 - Every URL is in `app/routes.tsx`; features export their own routes. A page not built yet is a

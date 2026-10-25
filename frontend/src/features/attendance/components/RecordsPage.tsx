@@ -46,6 +46,7 @@ export function RecordsPage() {
         role="tabpanel"
         id="attendance-panel-records"
         aria-labelledby="attendance-tab-records"
+        className={styles.panel}
       >
         <div className={styles.view}>
           <SegmentedField
@@ -63,7 +64,7 @@ export function RecordsPage() {
             }
           />
         </div>
-        <div className={styles.stats}>
+        <div>
           <StatStrip
             label="Attendance in this period"
             stats={presenceStats(

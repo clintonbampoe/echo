@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { plainList } from "@/lib/paged";
 import { paths } from "@/lib/paths";
-import { BackLink, Button, Icon, PageHeader } from "@/ui";
+import { BackLink, PageHeader } from "@/ui";
 import type { AssetCategory } from "../api";
 import { AssetCategoryDialogs } from "./AssetCategoryDialogs";
 import { AssetCategoryList, type CategoryStart } from "./AssetCategoryList";
@@ -22,12 +22,7 @@ export function AssetCategoriesPage() {
       <BackLink to={paths.assets}>Assets</BackLink>
       <PageHeader
         title="Asset categories"
-        action={
-          <Button onClick={() => setOpen({ kind: "new" })}>
-            <Icon name="plus" size={16} />
-            New category
-          </Button>
-        }
+        add={{ label: "New category", onClick: () => setOpen({ kind: "new" }) }}
       />
       <AssetCategoryList
         list={plainList(categories.data ?? [], categories)}
