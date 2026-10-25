@@ -5,13 +5,13 @@ export const transactionRoutes: RouteObject[] = [
   {
     path: "finance",
     lazy: async () => ({
-      Component: (await import("./components/FinancePage")).FinancePage,
+      Component: (await import("./pages/FinancePage")).FinancePage,
     }),
   },
   {
     path: "finance/categories",
     lazy: async () => ({
-      Component: (await import("./components/CategoriesPage")).CategoriesPage,
+      Component: (await import("./pages/CategoriesPage")).CategoriesPage,
     }),
   },
 ];
