@@ -43,9 +43,9 @@ describe("contribution view", () => {
       mostUsedPaymentMethod: "MobileMoney",
     });
     expect(stats.map((s) => s.value)).toEqual([
-      "GH₵ 26,800",
+      "GH₵ 27k",
       "6",
-      "GH₵ 4,467",
+      "GH₵ 4k",
       "Mobile money",
     ]);
   });

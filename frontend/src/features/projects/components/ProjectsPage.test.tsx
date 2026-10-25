@@ -125,12 +125,12 @@ describe("projects page", () => {
       .closest("li") as HTMLElement;
     expect(within(roof).getByText("Building")).toBeInTheDocument();
     expect(within(roof).getByText("At risk")).toBeInTheDocument();
-    expect(within(roof).getByText("GH₵ 48,200")).toBeInTheDocument();
-    expect(within(roof).getByText("of GH₵ 80,000")).toBeInTheDocument();
+    expect(within(roof).getByText("GH₵ 48k")).toBeInTheDocument();
+    expect(within(roof).getByText("of GH₵ 80k")).toBeInTheDocument();
     expect(within(roof).getByText(/60%/)).toBeInTheDocument();
     const strip = screen.getByRole("region", { name: "Projects summary" });
-    expect(await within(strip).findByText("57,300")).toBeInTheDocument();
-    expect(within(strip).getByText("97,000")).toBeInTheDocument();
+    expect(await within(strip).findByText("57k")).toBeInTheDocument();
+    expect(within(strip).getByText("97k")).toBeInTheDocument();
     expect(within(strip).getByText("This year")).toBeInTheDocument();
   });
 

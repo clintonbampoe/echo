@@ -65,12 +65,7 @@ describe("asset view", () => {
       "All time",
       true,
     );
-    expect(stats.map((s) => s.value)).toEqual([
-      "177,900",
-      "325,200",
-      "147,300",
-      "5",
-    ]);
+    expect(stats.map((s) => s.value)).toEqual(["178k", "325k", "147k", "5"]);
     expect(stats[3]?.note).toBe("All time");
     expect(stats[0]?.note).toBe("Not counting liquidated");
   });
@@ -102,7 +97,7 @@ describe("asset view", () => {
     );
     expect(stats[2]).toMatchObject({
       label: "Gained value",
-      value: "50,000",
+      value: "50k",
       note: "Current value minus cost",
     });
   });
@@ -111,19 +106,19 @@ describe("asset view", () => {
     expect(assetFigures(asset())).toEqual([
       {
         label: "Current value",
-        value: "31,500",
+        value: "32k",
         unit: "GHS",
         note: "As last entered",
       },
       {
         label: "Purchase cost",
-        value: "42,000",
+        value: "42k",
         unit: "GHS",
         note: "12 Mar 2023",
       },
       {
         label: "Lost value",
-        value: "10,500",
+        value: "11k",
         unit: "GHS",
         note: "25% below cost",
       },

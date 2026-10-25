@@ -45,11 +45,11 @@ const summary: TransactionSummary = {
 describe("the signed amount", () => {
   it("marks money in with a plus and money out with a minus sign", () => {
     expect(transactionAmount({ amount: 6850, transactionType: "Income" })).toBe(
-      "+GH₵ 6,850",
+      "+GH₵ 7k",
     );
     expect(
       transactionAmount({ amount: 1240, transactionType: "Expense" }),
-    ).toBe("−GH₵ 1,240");
+    ).toBe("−GH₵ 1k");
   });
 
   it("shows a net loss as a minus, never as a double sign", () => {
@@ -60,9 +60,9 @@ describe("the signed amount", () => {
 describe("the four numbers", () => {
   it("gives money in, money out, what is left and how many transactions", () => {
     expect(financeStats(summary).map((s) => s.value)).toEqual([
-      "6,850",
-      "2,140",
-      "+4,710",
+      "7k",
+      "2k",
+      "+5k",
       "8",
     ]);
   });

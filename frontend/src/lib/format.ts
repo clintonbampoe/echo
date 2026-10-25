@@ -16,8 +16,16 @@ export function formatDayMonth(value: string): string {
   return `${Number(day)} ${months[Number(month) - 1] ?? ""}`;
 }
 
-// 1284 -> "1,284"
-export const formatNumber = (n: number): string => n.toLocaleString("en-GB");
+// Whole numbers, with k from a thousand and m from a million: 640 -> "640", 1284 -> "1k", 2400000 -> "2m". The design
+// shows every figure this way.
+export function formatNumber(n: number): string {
+  const sign = n < 0 ? "−" : "";
+  const abs = Math.round(Math.abs(n));
+  const thousands = Math.round(abs / 1000);
+  if (abs < 1000) return `${sign}${abs}`;
+  if (thousands < 1000) return `${sign}${thousands}k`;
+  return `${sign}${Math.round(abs / 1_000_000)}m`;
+}
 
 // How many of something, with the right word: plural(1, 'asset') -> "1 asset", plural(3, 'asset') -> "3 assets".
 export const plural = (n: number, one: string, many = `${one}s`): string =>
@@ -34,14 +42,9 @@ export function formatTime(value: string): string {
     .replace(/\s?(am|pm)/i, (_, half: string) => ` ${half.toLowerCase()}`);
 }
 
-// 6400 -> "GH₵ 6,400" (or "6,400" when the person turned the symbol off in Settings). Whole cedis when there are no
-// pesewas, two places otherwise.
+// 6400 -> "GH₵ 6k" (or "6k" when the person turned the symbol off in Settings). Whole cedis, written like any figure.
 export function formatMoney(amount: number): string {
-  const whole = Number.isInteger(amount);
-  const figure = amount.toLocaleString("en-GB", {
-    minimumFractionDigits: whole ? 0 : 2,
-    maximumFractionDigits: 2,
-  });
+  const figure = formatNumber(amount);
   return getPreferences().currencySymbol ? `GH₵ ${figure}` : figure;
 }
 

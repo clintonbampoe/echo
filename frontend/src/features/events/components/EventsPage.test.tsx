@@ -102,7 +102,7 @@ describe("events page", () => {
     expect(
       screen.getByRole("link", { name: /Christmas Carols/ }),
     ).toHaveTextContent("No limit");
-    expect(await screen.findByText("1,284")).toBeInTheDocument();
+    expect(await screen.findByText("1k")).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: "Upcoming" })).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: "Past" })).toBeInTheDocument();
   });

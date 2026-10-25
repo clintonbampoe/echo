@@ -22,14 +22,14 @@ const numbers = (over: Partial<Numbers> = {}): Numbers => ({
 const lastWeek = periodOf("last-week");
 
 describe("change", () => {
-  it("says how far a number moved, to one decimal", () => {
+  it("says how far a number moved, in whole percent", () => {
     expect(change(912, 828)).toEqual({
-      text: "10.1%",
+      text: "10%",
       tone: "positive",
       arrow: "up",
     });
     expect(change(5120, 5300)).toEqual({
-      text: "3.4%",
+      text: "3%",
       tone: "negative",
       arrow: "down",
     });
@@ -49,18 +49,18 @@ describe("buildCards", () => {
   it("shows the four numbers, each with what it is compared against", () => {
     const [members, present, tithes, net] = buildCards(numbers(), lastWeek);
     expect(members).toMatchObject({
-      value: "1,284",
+      value: "1k",
       chip: { text: "9 new", tone: "positive" },
       note: "last week",
     });
     expect(present).toMatchObject({
       value: "912",
-      chip: { text: "10.1%" },
+      chip: { text: "10%" },
       note: "vs the week before",
     });
-    expect(tithes?.value).toBe("GH₵ 11,300");
+    expect(tithes?.value).toBe("GH₵ 11k");
     expect(net).toMatchObject({
-      value: "GH₵ 5,120",
+      value: "GH₵ 5k",
       chip: { tone: "negative" },
     });
   });

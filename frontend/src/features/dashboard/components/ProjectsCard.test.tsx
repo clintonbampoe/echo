@@ -42,7 +42,7 @@ describe("projects card", () => {
     expect(rows.getByText("At risk")).toBeInTheDocument();
     expect(rows.getByText("4k")).toBeInTheDocument();
     expect(rows.getByText("25%")).toBeInTheDocument();
-    expect(screen.getByText("16,000")).toBeInTheDocument();
+    expect(screen.getByText("16k")).toBeInTheDocument();
   });
 
   it("says so when nothing has been raised", async () => {

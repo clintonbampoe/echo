@@ -33,7 +33,7 @@ describe("the weekly summary", () => {
     );
     expect(f).toEqual({ received: 38200, spent: 14300, present: 196 });
     expect(weekMessage("last", f)).toBe(
-      "Last week we received GHS 38,200 and spent 14,300. 196 people came. Thank you for giving.",
+      "Last week we received GHS 38k and spent 14k. 196 people came. Thank you for giving.",
     );
   });
 

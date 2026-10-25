@@ -51,14 +51,14 @@ afterEach(() => vi.unstubAllGlobals());
 describe("assets card", () => {
   it("shows what they are worth now, and each category's value, biggest first", async () => {
     renderCard(<AssetsCard />);
-    expect(await screen.findByText("77,000")).toBeInTheDocument();
+    expect(await screen.findByText("77k")).toBeInTheDocument();
     const rows = within(
       await screen.findByRole("list", { name: "Assets by category" }),
     );
     expect(await rows.findByText("Vehicles")).toBeInTheDocument();
-    expect(rows.getByText("46,000")).toBeInTheDocument();
+    expect(rows.getByText("46k")).toBeInTheDocument();
     expect(rows.getByText("Sound equipment")).toBeInTheDocument();
-    expect(rows.getByText("31,000")).toBeInTheDocument();
+    expect(rows.getByText("31k")).toBeInTheDocument();
     expect(rows.queryByText("Furniture")).not.toBeInTheDocument();
   });
 

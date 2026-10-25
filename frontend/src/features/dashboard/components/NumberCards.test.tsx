@@ -51,20 +51,20 @@ const show = () =>
 describe("number cards", () => {
   it("shows the four numbers in one strip, each against the week before", async () => {
     show();
-    expect(await screen.findByText("1,284")).toBeInTheDocument();
+    expect(await screen.findByText("1k")).toBeInTheDocument();
     expect(screen.getByText("9 new")).toBeInTheDocument();
     expect(screen.getByText("912")).toBeInTheDocument();
-    expect(screen.getByText("10.1%")).toBeInTheDocument();
-    expect(screen.getByText("11,300")).toBeInTheDocument();
-    expect(screen.getByText("6.2%")).toBeInTheDocument();
-    expect(screen.getByText("5,120")).toBeInTheDocument();
-    expect(screen.getByText("3.4%")).toBeInTheDocument();
+    expect(screen.getByText("10%")).toBeInTheDocument();
+    expect(screen.getByText("11k")).toBeInTheDocument();
+    expect(screen.getByText("6%")).toBeInTheDocument();
+    expect(screen.getByText("5k")).toBeInTheDocument();
+    expect(screen.getByText("3%")).toBeInTheDocument();
   });
 
   it("says so on the one that could not load, and the others carry on", async () => {
     answers["/v1/attendance/summary"] = {};
     show();
-    expect(await screen.findByText("11,300")).toBeInTheDocument();
+    expect(await screen.findByText("11k")).toBeInTheDocument();
     expect(screen.getByText("Could not load")).toBeInTheDocument();
   });
 
@@ -74,8 +74,8 @@ describe("number cards", () => {
       [key("2026-10-04", "2026-10-10")]: { totalCollected: 0 },
     };
     show();
-    expect(await screen.findByText("11,300")).toBeInTheDocument();
-    expect(screen.getByText("3.4%")).toBeInTheDocument();
-    expect(screen.queryByText("6.2%")).not.toBeInTheDocument();
+    expect(await screen.findByText("11k")).toBeInTheDocument();
+    expect(screen.getByText("3%")).toBeInTheDocument();
+    expect(screen.queryByText("6%")).not.toBeInTheDocument();
   });
 });

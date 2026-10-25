@@ -42,7 +42,7 @@ describe("member growth card", () => {
     renderCard(<MemberGrowthCard today="2026-10-19" />);
     expect(await screen.findByText("+9")).toBeInTheDocument();
     expect(screen.getByText("October 2026")).toBeInTheDocument();
-    expect(await screen.findByText("1,284")).toBeInTheDocument();
+    expect(await screen.findByText("1k")).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: "October 2026: 9" }),
     ).toBeInTheDocument();

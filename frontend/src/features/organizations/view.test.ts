@@ -5,7 +5,7 @@ describe("organization view", () => {
     expect(memberCountLabel(61)).toBe("61 members");
     expect(memberCountLabel(1)).toBe("1 member");
     expect(memberCountLabel(0)).toBe("0 members");
-    expect(memberCountLabel(1204)).toBe("1,204 members");
+    expect(memberCountLabel(1204)).toBe("1k members");
   });
 
   it("turns the role filter into what the API takes, ignoring anything that is not a role", () => {

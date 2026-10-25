@@ -50,7 +50,7 @@ const show = () => renderCard(<MoneyCard today="2026-10-19" />);
 describe("money card", () => {
   it("adds up the income of the months and says where it came from, with each share", async () => {
     show();
-    expect(await screen.findByText("50,000")).toBeInTheDocument();
+    expect(await screen.findByText("50k")).toBeInTheDocument();
     const rows = within(
       screen.getByRole("list", { name: "Income by category" }),
     );
@@ -62,10 +62,10 @@ describe("money card", () => {
 
   it("switches to expenses", async () => {
     show();
-    await screen.findByText("50,000");
+    await screen.findByText("50k");
     await userEvent.click(screen.getByRole("radio", { name: "Expenses" }));
     expect(
-      await screen.findByText("13,000", { selector: "p" }),
+      await screen.findByText("13k", { selector: "p" }),
     ).toBeInTheDocument();
     expect(screen.getByText("Where it went")).toBeInTheDocument();
     expect(
@@ -83,7 +83,7 @@ describe("money card", () => {
     const dialog = await screen.findByRole("dialog");
     expect(
       await within(dialog).findByText(
-        /we received GHS 50,000 and spent 13,000. 196 people came/,
+        /we received GHS 50k and spent 13k. 196 people came/,
       ),
     ).toBeInTheDocument();
     expect(

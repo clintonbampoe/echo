@@ -159,21 +159,21 @@ describe("project page", () => {
       name: "Raised against target",
     });
     expect(
-      within(progress).getByText("Still to raise GH₵ 31,800"),
+      within(progress).getByText("Still to raise GH₵ 32k"),
     ).toBeInTheDocument();
     expect(within(progress).getByText(/60%/)).toBeInTheDocument();
     const figures = screen.getByRole("region", { name: "Project figures" });
-    expect(await within(figures).findByText("48,200")).toBeInTheDocument();
-    expect(within(figures).getByText("80,000")).toBeInTheDocument();
+    expect(await within(figures).findByText("48k")).toBeInTheDocument();
+    expect(within(figures).getByText("80k")).toBeInTheDocument();
     const details = screen.getByRole("region", { name: "Project details" });
     expect(within(details).getByText("Ama Boateng")).toBeInTheDocument();
     expect(within(details).getByText("01 Mar 2026")).toBeInTheDocument();
     const table = await screen.findByRole("list", { name: "Contributions" });
     expect(within(table).getByText("Sunday appeal")).toBeInTheDocument();
     expect(within(table).getByText("No note")).toBeInTheDocument();
-    expect(within(table).getByText("GH₵ 4,200")).toBeInTheDocument();
+    expect(within(table).getByText("GH₵ 4k")).toBeInTheDocument();
     const strip = screen.getByRole("region", { name: "Contributions summary" });
-    expect(await within(strip).findByText("GH₵ 7,050")).toBeInTheDocument();
+    expect(await within(strip).findByText("GH₵ 7k")).toBeInTheDocument();
     expect(within(strip).getByText("Mobile money")).toBeInTheDocument();
   });
 
@@ -196,7 +196,7 @@ describe("project page", () => {
         ),
       ).toBe(true),
     );
-    expect(await screen.findByText("GH₵ 2,850")).toBeInTheDocument();
+    expect(await screen.findByText("GH₵ 3k")).toBeInTheDocument();
     expect(screen.queryByText("Sunday appeal")).not.toBeInTheDocument();
   });
 
@@ -207,7 +207,7 @@ describe("project page", () => {
       name: "Raised against target",
     });
     expect(
-      within(progress).getByText("Over the target by GH₵ 5,000"),
+      within(progress).getByText("Over the target by GH₵ 5k"),
     ).toBeInTheDocument();
     expect(within(progress).getByText(/106%/)).toBeInTheDocument();
   });
@@ -416,7 +416,7 @@ describe("project page", () => {
       await screen.findByRole("list", { name: "Contributions" });
       await user.click(
         screen.getByRole("button", {
-          name: "Actions for GH₵ 2,850 on 04 Oct 2026",
+          name: "Actions for GH₵ 3k on 04 Oct 2026",
         }),
       );
       await user.click(
@@ -428,7 +428,7 @@ describe("project page", () => {
       await user.click(screen.getByRole("button", { name: "Close" }));
       await user.click(
         screen.getByRole("button", {
-          name: "Actions for GH₵ 2,850 on 04 Oct 2026",
+          name: "Actions for GH₵ 3k on 04 Oct 2026",
         }),
       );
       await user.click(

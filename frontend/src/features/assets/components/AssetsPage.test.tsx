@@ -122,12 +122,12 @@ describe("assets page", () => {
       .getByText("Behringer X32 mixing desk")
       .closest("li") as HTMLElement;
     expect(within(desk).getByText("Equipment")).toBeInTheDocument();
-    expect(within(desk).getByText("31,500")).toBeInTheDocument();
+    expect(within(desk).getByText("32k")).toBeInTheDocument();
     expect(within(desk).getByText("Mar 2023")).toBeInTheDocument();
     const strip = screen.getByRole("region", { name: "Assets summary" });
-    expect(await within(strip).findByText("49,500")).toBeInTheDocument();
-    expect(within(strip).getByText("87,000")).toBeInTheDocument();
-    expect(within(strip).getByText("37,500")).toBeInTheDocument();
+    expect(await within(strip).findByText("50k")).toBeInTheDocument();
+    expect(within(strip).getByText("87k")).toBeInTheDocument();
+    expect(within(strip).getByText("38k")).toBeInTheDocument();
     expect(within(strip).getByText("All time")).toBeInTheDocument();
     expect(
       within(strip).getByText("Not counting liquidated"),
@@ -159,7 +159,7 @@ describe("assets page", () => {
   it("counts liquidated assets in the numbers when the list is of them", async () => {
     open("/assets?status=Liquidated");
     const strip = await screen.findByRole("region", { name: "Assets summary" });
-    expect(await within(strip).findByText("49,500")).toBeInTheDocument();
+    expect(await within(strip).findByText("50k")).toBeInTheDocument();
     expect(
       within(strip).queryByText("Not counting liquidated"),
     ).not.toBeInTheDocument();
