@@ -16,6 +16,8 @@
   gap: var(--s-16);
   min-height: calc(72px * var(--density, 1));
   padding: 0 var(--s-8) 0 var(--s-16);
+  --tile-l: 4px;
+  --tile-e: 0;
 }
 .row + .row {
   border-top: 1px solid var(--line);

@@ -7,7 +7,8 @@
 .pill {
   display: inline-flex;
   align-items: center;
-  height: 36px;
+  position: relative;
+  height: 40px;
   padding: 0 var(--s-16);
   background: var(--card-bg);
   border: 1px solid var(--line-2);
@@ -21,10 +22,22 @@
     transform var(--t-spring) var(--ease-spring),
     box-shadow var(--t-base) var(--ease-soft);
 }
+/* The pill looks 40px tall; the part you can press is 44. */
+.pill::after {
+  content: "";
+  position: absolute;
+  inset: -2px 0;
+}
 .pill:active {
   transform: scale(var(--press));
 }
 @media (prefers-reduced-motion: reduce) {
+  /* The pill looks 40px tall; the part you can press is 44. */
+  .pill::after {
+    content: "";
+    position: absolute;
+    inset: -2px 0;
+  }
   .pill:active {
     transform: none;
   }

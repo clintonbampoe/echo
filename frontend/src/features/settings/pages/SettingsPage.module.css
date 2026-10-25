@@ -46,6 +46,8 @@
 }
 /* Only a row that flips a switch answers the pointer: its tile is the glass row (.liquid-row). */
 .flip {
+  --tile-l: 10px;
+  --tile-e: 10px;
   cursor: pointer;
 }
 .setting .title {

@@ -21,8 +21,10 @@
   padding-right: var(--s-16);
 }
 /* The row is a glass tile on hover (.liquid-row); the card clips, so the tile stays inside its edges. */
-.item:global(.liquid-row)::before {
-  inset: 3px 10px;
+.item:global(.liquid-row) {
+  --tile-l: 12px;
+  --tile-e: 4px;
+  --tile-y: 3px;
 }
 .row::after {
   content: "";
