@@ -1,25 +1,6 @@
 // How the Events row says things, and which days of a month have an event. Pure.
 import { daysAfter, monthNames } from "@/lib/dates";
-import { formatDayTime } from "@/lib/format";
 import type { DashEvent } from "./api";
-
-// "Sat 24 Oct, 4:00 pm". Over several days: "Fri 30 Oct to Sun 1 Nov".
-export function whenOf(
-  e: Pick<DashEvent, "startDate" | "endDate" | "startTime">,
-): string {
-  return e.endDate > e.startDate
-    ? `${formatDayTime(e.startDate)} to ${formatDayTime(e.endDate)}`
-    : formatDayTime(e.startDate, e.startTime);
-}
-
-// The square at the start of a row: "Oct" over "24".
-export function tileOf(day: string): { month: string; date: string } {
-  const [, month = "1", date = "1"] = day.split("-");
-  return {
-    month: (monthNames[Number(month) - 1] ?? "").slice(0, 3),
-    date: String(Number(date)),
-  };
-}
 
 // "October 2026" for "2026-10".
 export function monthTitle(month: string): string {
@@ -59,18 +40,4 @@ export function defaultPick(
 ): string | undefined {
   const sorted = [...days.keys()].sort();
   return sorted.find((d) => d >= today) ?? sorted[sorted.length - 1];
-}
-
-// The line beside the legend: "Sat 24 Oct, Youth Rally", "... and 1 more", or why there is nothing.
-export function detailOf(
-  day: string | undefined,
-  days: ReadonlyMap<string, string[]>,
-  ready: boolean,
-): string {
-  const names = day ? days.get(day) : undefined;
-  const first = names?.[0];
-  if (!day || !names || !first)
-    return ready ? "No events this month" : "\u00a0";
-  const more = names.length - 1;
-  return `${formatDayTime(day)}, ${first}${more > 0 ? ` and ${more} more` : ""}`;
 }

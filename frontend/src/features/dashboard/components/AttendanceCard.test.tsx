@@ -3,16 +3,10 @@ import userEvent from "@testing-library/user-event";
 import { renderCard, signIn, json, asked } from "../dashboardTestKit";
 import { AttendanceCard } from "./AttendanceCard";
 
-// People present in each of the last eight weeks, by the day the week began. Any other day answers 500.
-const weeks: Record<string, number> = {
-  "2026-08-23": 800,
-  "2026-08-30": 820,
-  "2026-09-06": 810,
-  "2026-09-13": 840,
-  "2026-09-20": 830,
-  "2026-09-27": 930,
-  "2026-10-04": 860,
-  "2026-10-11": 912,
+// Who was present in each month, by the day the month began. Any other month answers with 100.
+const months: Record<string, [number, number, number]> = {
+  "2026-09-01": [880, 700, 180],
+  "2026-10-01": [912, 764, 148],
 };
 
 let broken: boolean;
@@ -25,8 +19,13 @@ beforeEach(() => {
       const { path, query } = asked(url);
       if (broken || path !== "/v1/attendance/summary")
         return json({ title: "Server error", status: 500 }, 500);
+      const [total, members, visitors] = months[query.get("from") ?? ""] ?? [
+        100, 80, 20,
+      ];
       return json({
-        totalPresent: weeks[query.get("from") ?? ""] ?? 500,
+        totalPresent: total,
+        membersPresent: members,
+        visitorsPresent: visitors,
       });
     }),
   );
@@ -34,47 +33,44 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals());
 
 const show = () => renderCard(<AttendanceCard today="2026-10-19" />);
-
-const summary = () => within(screen.getByRole("group", { name: "Summary" }));
+const sides = () => within(screen.getByRole("group", { name: "Made up of" }));
 
 describe("attendance card", () => {
-  it("shows the last week, the average and the best week", async () => {
+  it("speaks about this month: who was present, and how many were members and visitors", async () => {
     show();
-    expect(await summary().findByText("912")).toBeInTheDocument();
-    expect(summary().getByText("850")).toBeInTheDocument();
-    expect(summary().getByText("930")).toBeInTheDocument();
-    expect(summary().getByText("Average per week")).toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: "Week of 11 Oct: 912" }),
+      await screen.findByText("912", { selector: "p" }),
     ).toBeInTheDocument();
+    expect(screen.getByText("October 2026")).toBeInTheDocument();
+    expect(sides().getByText("764")).toBeInTheDocument();
+    expect(sides().getByText("148")).toBeInTheDocument();
   });
 
-  it("speaks about the week picked, and goes back to the latest", async () => {
+  it("speaks about the month picked, and goes back to the latest when it is picked again", async () => {
     show();
-    await summary().findByText("912");
-    const bar = screen.getByRole("button", { name: "Week of 4 Oct: 860" });
+    await screen.findByText("912", { selector: "p" });
+    const bar = screen.getByRole("button", { name: "September 2026: 880" });
     await userEvent.click(bar);
-    expect(summary().getByText("Week of 4 Oct")).toBeInTheDocument();
-    expect(summary().getByText("860")).toBeInTheDocument();
+    expect(screen.getByText("September 2026")).toBeInTheDocument();
+    expect(sides().getByText("700")).toBeInTheDocument();
     await userEvent.click(bar);
-    expect(summary().getByText("Last week")).toBeInTheDocument();
+    expect(screen.getByText("October 2026")).toBeInTheDocument();
   });
 
-  it("counts months when asked for six months", async () => {
+  it("draws six months when asked", async () => {
     show();
-    await userEvent.click(screen.getByRole("radio", { name: "6 months" }));
-    expect(await summary().findByText("Average per month")).toBeInTheDocument();
-    expect(
-      await screen.findByRole("button", { name: "April 2026: 500" }),
-    ).toBeInTheDocument();
+    await screen.findByText("912", { selector: "p" });
+    expect(screen.getAllByRole("button", { name: /20\d\d: / })).toHaveLength(
+      12,
+    );
+    await userEvent.click(screen.getByRole("button", { name: /Range/ }));
+    await userEvent.click(screen.getByRole("option", { name: "6 months" }));
+    expect(screen.getAllByRole("button", { name: /20\d\d: / })).toHaveLength(6);
   });
 
-  it("says so when it could not load, and offers another try", async () => {
+  it("says so when it could not load", async () => {
     broken = true;
     show();
     expect(await screen.findByText("Could not load")).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "Try again" }),
-    ).toBeInTheDocument();
   });
 });

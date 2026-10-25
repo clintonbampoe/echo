@@ -1,15 +1,9 @@
 import { useState } from "react";
 import { daysAfter, monthGrid, monthsAfter } from "@/lib/dates";
 import { formatDayTime } from "@/lib/format";
-import { Icon } from "@/ui";
+import { DateTile, Icon } from "@/ui";
 import { useEventsBetween } from "../hooks";
-import {
-  defaultPick,
-  detailOf,
-  eventDays,
-  kindOf,
-  monthTitle,
-} from "../events";
+import { defaultPick, eventDays, kindOf, monthTitle } from "../events";
 import { CardFailed } from "./CardFailed";
 import { DashCard } from "./DashCard";
 import styles from "./EventCalendarCard.module.css";
@@ -55,6 +49,35 @@ function Day({ day, month, today, names, picked, onPick }: DayProps) {
   );
 }
 
+// What is on the day picked: its date in a tile, the event's name and the day in words.
+function Chosen({
+  day,
+  names,
+  ready,
+}: {
+  day: string | undefined;
+  names: string[] | undefined;
+  ready: boolean;
+}) {
+  const first = names?.[0];
+  if (!day || !names || !first)
+    return (
+      <p className={styles.none}>{ready ? "No events this month" : "\u00a0"}</p>
+    );
+  return (
+    <div className={styles.foot}>
+      <DateTile date={day} />
+      <span className={styles.detail}>
+        <span className={styles.name}>
+          {first}
+          {names.length > 1 ? ` and ${names.length - 1} more` : ""}
+        </span>
+        <span className={styles.when}>{formatDayTime(day)}</span>
+      </span>
+    </div>
+  );
+}
+
 // A month of days with the ones that have an event marked: filled dark when still to come, filled light when
 // held, and a ring on today. The line under the grid says what is on the day picked.
 export function EventCalendarCard({ today }: { today: string }) {
@@ -72,7 +95,7 @@ export function EventCalendarCard({ today }: { today: string }) {
   const nav = (
     label: string,
     by: number,
-    icon: "arrow-left" | "arrow-right",
+    icon: "chevron-left" | "chevron-right",
   ) => (
     <button
       type="button"
@@ -84,15 +107,16 @@ export function EventCalendarCard({ today }: { today: string }) {
     </button>
   );
 
+  const names = chosen ? days.get(chosen) : undefined;
+
   return (
     <DashCard
       title="Event calendar"
-      hint="Days with an event are marked"
-      to="/events"
       control={
         <div className={styles.nav}>
-          {nav("Previous month", -1, "arrow-left")}
-          {nav("Next month", 1, "arrow-right")}
+          <span className={styles.month}>{monthTitle(month)}</span>
+          {nav("Previous month", -1, "chevron-left")}
+          {nav("Next month", 1, "chevron-right")}
         </div>
       }
     >
@@ -100,7 +124,6 @@ export function EventCalendarCard({ today }: { today: string }) {
         <CardFailed onRetry={data.retry} />
       ) : (
         <div className={styles.content} aria-busy={!data.events}>
-          <p className={styles.month}>{monthTitle(month)}</p>
           <div className={styles.weekdays} aria-hidden="true">
             {weekdays.map((d, i) => (
               <span key={i}>{d}</span>
@@ -123,21 +146,7 @@ export function EventCalendarCard({ today }: { today: string }) {
               />
             ))}
           </div>
-          <div className={styles.foot}>
-            <span className={styles.key}>
-              <span>
-                <i className={styles.upcoming} />
-                Upcoming
-              </span>
-              <span>
-                <i className={styles.held} />
-                Held
-              </span>
-            </span>
-            <span className={styles.detail}>
-              {detailOf(chosen, days, data.events !== undefined)}
-            </span>
-          </div>
+          <Chosen day={chosen} names={names} ready={!!data.events} />
         </div>
       )}
     </DashCard>

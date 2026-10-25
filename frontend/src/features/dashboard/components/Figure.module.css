@@ -1,0 +1,41 @@
+.figure {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.label {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-3);
+}
+.big {
+  margin: 0;
+  font-size: 48px;
+  font-weight: 600;
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+}
+.unit {
+  margin-left: 8px;
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--text-3);
+}
+.sides {
+  display: flex;
+  gap: 24px;
+  margin-top: 8px;
+}
+.side {
+  margin: 2px 0 0;
+  font-size: 18px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+@container (max-width: 459px) {
+  .big {
+    font-size: 36px;
+  }
+}

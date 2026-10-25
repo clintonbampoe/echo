@@ -2,11 +2,13 @@ import { screen, within } from "@testing-library/react";
 import { json, renderCard, signIn } from "../dashboardTestKit";
 import { ProjectsCard } from "./ProjectsCard";
 
-const project = (id: string, name: string, raisedAmount: number) => ({
-  id,
-  name,
-  raisedAmount,
-});
+const project = (
+  id: string,
+  name: string,
+  raisedAmount: number,
+  targetAmount = 16000,
+  status = "Active",
+) => ({ id, name, raisedAmount, targetAmount, status });
 
 let answer: () => Response;
 beforeEach(() => {
@@ -23,7 +25,7 @@ describe("projects card", () => {
     answer = () =>
       json({
         data: [
-          project("p1", "Borehole", 12000),
+          project("p1", "Borehole", 12000, 16000, "AtRisk"),
           project("p2", "Church roof", 4000),
         ],
         hasMore: false,
@@ -32,10 +34,15 @@ describe("projects card", () => {
     renderCard(<ProjectsCard />);
     // Wait for the rows instead of the list: the list is on screen while it is still loading.
     await screen.findByText("Borehole");
-    const rows = within(screen.getByRole("list"));
-    expect(rows.getByText("Borehole")).toBeInTheDocument();
+    const rows = within(
+      screen.getByRole("list", { name: "Raised by project" }),
+    );
+    expect(rows.getByText("12k")).toBeInTheDocument();
     expect(rows.getByText("75%")).toBeInTheDocument();
-    expect(rows.getByText("GH₵ 4,000")).toBeInTheDocument();
+    expect(rows.getByText("At risk")).toBeInTheDocument();
+    expect(rows.getByText("4k")).toBeInTheDocument();
+    expect(rows.getByText("25%")).toBeInTheDocument();
+    expect(screen.getByText("16,000")).toBeInTheDocument();
   });
 
   it("says so when nothing has been raised", async () => {

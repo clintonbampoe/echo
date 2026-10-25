@@ -1,36 +1,44 @@
 import { render, screen, within } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import userEvent from "@testing-library/user-event";
+import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { QuickActions } from "./QuickActions";
-import { quickActions } from "../quickActions";
 
-function shortcuts() {
+function show() {
   render(
     <MemoryRouter>
-      <QuickActions />
+      <Routes>
+        <Route path="/" element={<QuickActions />} />
+        <Route path="/events" element={<p>Events page</p>} />
+      </Routes>
     </MemoryRouter>,
   );
-  return within(
-    screen.getByRole("region", { name: "Quick actions" }),
-  ).getAllByRole("link");
+  return within(screen.getByRole("navigation", { name: "Quick actions" }));
 }
 
 describe("QuickActions", () => {
-  it("shows the six shortcuts in order, each a link to the page that owns the record", () => {
-    expect(shortcuts().map((l) => l.getAttribute("href"))).toEqual([
-      "/tithes?new=1",
-      "/attendance",
-      "/members?new=1",
-      "/visitors?new=1",
-      "/finance?new=1",
-      "/events?new=1",
+  it("leads with the three shortcuts used most, each a link to the page that owns the record", () => {
+    const nav = show();
+    expect(
+      nav
+        .getAllByRole("link")
+        .map((l) => [l.textContent, l.getAttribute("href")]),
+    ).toEqual([
+      ["Take attendance", "/attendance"],
+      ["Record tithe", "/tithes?new=1"],
+      ["New member", "/members?new=1"],
     ]);
   });
 
-  it("gives every tile a name and a hint", () => {
-    const links = shortcuts();
-    quickActions.forEach((a, i) => {
-      expect(links[i]).toHaveTextContent(a.label);
-      expect(links[i]).toHaveTextContent(a.hint);
-    });
+  it("keeps the rest under More, and goes to the one picked", async () => {
+    const nav = show();
+    await userEvent.click(nav.getByRole("button", { name: /More/ }));
+    expect(screen.getAllByRole("option").map((o) => o.textContent)).toEqual([
+      "More",
+      "Add visitor",
+      "Record transaction",
+      "New event",
+    ]);
+    await userEvent.click(screen.getByRole("option", { name: "New event" }));
+    expect(await screen.findByText("Events page")).toBeInTheDocument();
   });
 });

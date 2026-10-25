@@ -1,29 +1,22 @@
 import { Link } from "react-router-dom";
-import { formatNumber } from "@/lib/format";
+import { formatDayTime } from "@/lib/format";
+import { DateTile } from "@/ui";
 import type { DashEvent } from "../api";
-import { tileOf, whenOf } from "../events";
 import { useUpcomingEvents } from "../hooks";
 import { CardFailed } from "./CardFailed";
 import { DashCard, SeeLink } from "./DashCard";
 import styles from "./UpcomingEventsCard.module.css";
 
-// One event: a link to it, with the day in a square, its name, and when. A wide card adds how many registered.
+// One event: its day in a tile, its name, and when and where.
 function Row({ event: e }: { event: DashEvent }) {
-  const tile = tileOf(e.startDate);
   return (
-    <li className={styles.row}>
-      <Link to={`/events/${e.id}`} className={styles.link}>
-        <span className={styles.tile} aria-hidden="true">
-          <i>{tile.month}</i>
-          <b>{tile.date}</b>
-        </span>
+    <li>
+      <Link to={`/events/${e.id}`} className={styles.row}>
+        <DateTile date={e.startDate} />
         <span className={styles.text}>
-          <strong className={styles.name}>{e.name}</strong>
+          <span className={styles.name}>{e.name}</span>
           <span className={styles.when}>
-            {whenOf(e)}
-            <span className={styles.reg}>
-              . {formatNumber(e.registrationCount)} registered
-            </span>
+            {formatDayTime(e.startDate, e.startTime)}
           </span>
         </span>
       </Link>
@@ -31,41 +24,24 @@ function Row({ event: e }: { event: DashEvent }) {
   );
 }
 
-function Rows({ events }: { events: DashEvent[] | undefined }) {
-  if (!events)
-    return (
-      <ul aria-busy="true" className={styles.list}>
-        {[0, 1, 2].map((i) => (
-          <li key={i} className={styles.row}>
-            <span className={styles.ghost} />
-          </li>
-        ))}
-      </ul>
-    );
-  if (events.length === 0)
-    return <p className={styles.empty}>No upcoming events</p>;
-  return (
-    <ul className={styles.list}>
-      {events.map((e) => (
-        <Row key={e.id} event={e} />
-      ))}
-    </ul>
-  );
-}
-
-// The next events, soonest first. Five rows on a wide card, three on a narrow one.
+// The next five events, soonest first.
 export function UpcomingEventsCard({ today }: { today: string }) {
   const data = useUpcomingEvents(today);
   return (
     <DashCard
       title="Upcoming events"
-      to="/events"
-      control={<SeeLink to="/events">All events</SeeLink>}
+      control={<SeeLink to="/events">View all</SeeLink>}
     >
       {data.failed ? (
         <CardFailed onRetry={data.retry} />
+      ) : data.events?.length === 0 ? (
+        <p className={styles.empty}>No upcoming events</p>
       ) : (
-        <Rows events={data.events} />
+        <ul aria-busy={!data.events} className={styles.list}>
+          {(data.events ?? []).map((e) => (
+            <Row key={e.id} event={e} />
+          ))}
+        </ul>
       )}
     </DashCard>
   );

@@ -1,5 +1,4 @@
 import { screen, within } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { json, renderCard, signIn, asked } from "../dashboardTestKit";
 import { AssetsCard } from "./AssetsCard";
 
@@ -50,38 +49,17 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals());
 
 describe("assets card", () => {
-  it("shows the value against the cost, and each category's share of the value", async () => {
+  it("shows what they are worth now, and each category's value, biggest first", async () => {
     renderCard(<AssetsCard />);
-    expect(
-      await screen.findByText("77% of what they cost"),
-    ).toBeInTheDocument();
-    expect(screen.getByText("GH₵ 100,000")).toBeInTheDocument();
-    const rows = within(await screen.findByRole("list"));
-    expect(rows.getByText("Vehicles")).toBeInTheDocument();
-    expect(rows.getByText("60%")).toBeInTheDocument();
+    expect(await screen.findByText("77,000")).toBeInTheDocument();
+    const rows = within(
+      await screen.findByRole("list", { name: "Assets by category" }),
+    );
+    expect(await rows.findByText("Vehicles")).toBeInTheDocument();
+    expect(rows.getByText("46,000")).toBeInTheDocument();
+    expect(rows.getByText("Sound equipment")).toBeInTheDocument();
+    expect(rows.getByText("31,000")).toBeInTheDocument();
     expect(rows.queryByText("Furniture")).not.toBeInTheDocument();
-  });
-
-  it("gives the value and the categories a card each when split", async () => {
-    renderCard(<AssetsCard split />);
-    expect(
-      await screen.findByText("77% of what they cost"),
-    ).toBeInTheDocument();
-    expect(screen.getByRole("region", { name: "Assets" })).toBeInTheDocument();
-    expect(
-      screen.getByRole("region", { name: "Assets by category" }),
-    ).toBeInTheDocument();
-    expect(screen.getByRole("radio", { name: "Count" })).toBeInTheDocument();
-  });
-
-  it("counts assets instead of their value when asked", async () => {
-    renderCard(<AssetsCard />);
-    await screen.findByRole("list");
-    await userEvent.click(screen.getByRole("radio", { name: "Count" }));
-    expect(
-      await within(screen.getByRole("list")).findByText("60%"),
-    ).toBeInTheDocument();
-    expect(within(screen.getByRole("list")).getByText("3")).toBeInTheDocument();
   });
 
   it("says so when it could not load", async () => {

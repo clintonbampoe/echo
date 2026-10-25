@@ -104,6 +104,10 @@ export type Series = {
 export const useSeries = (buckets: readonly Bucket[]): Series =>
   useBuckets("present", buckets, api.getPresent);
 
+// People present in each stretch, split into members and visitors.
+export const usePresenceSeries = (buckets: readonly Bucket[]) =>
+  useBuckets("presence", buckets, api.getPresence);
+
 // Tithes, tithers and the average tithe in each stretch.
 export const useTitheSeries = (buckets: readonly Bucket[]) =>
   useBuckets("tithe-figures", buckets, api.getTitheFigures);
@@ -236,19 +240,13 @@ export function useRecentVisitors(today: string) {
   return { visitors: data, failed, retry };
 }
 
-// The projects At Risk (the server's own status) and, of every project, how many are At Risk. No period.
-export function useProjectsAtRisk() {
-  const rows = useOnce("projects-at-risk", api.getProjectsAtRisk);
-  const totals = useOnce("project-totals", api.getProjectTotals);
-  return {
-    projects: rows.data,
-    totals: totals.data,
-    failed: rows.failed || totals.failed,
-    retry: () => {
-      rows.retry();
-      totals.retry();
-    },
-  };
+// Of every project, how many are At Risk. No period.
+export function useProjectTotals() {
+  const { data, failed, retry } = useOnce(
+    "project-totals",
+    api.getProjectTotals,
+  );
+  return { totals: data, failed, retry };
 }
 
 // The assets as a whole, and each category's share. The server has no breakdown by category, so this asks

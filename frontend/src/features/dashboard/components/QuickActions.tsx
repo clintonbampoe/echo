@@ -1,39 +1,36 @@
-import { useId } from "react";
-import { Link } from "react-router-dom";
-import { Icon } from "@/ui";
-import styles from "./QuickActions.module.css";
+import { Link, useNavigate } from "react-router-dom";
+import { FilterSelect } from "@/ui";
 import { quickActions } from "../quickActions";
+import styles from "./QuickActions.module.css";
 
-// Six shortcuts to the pages that own each record. Every tile is the same size and holds an icon,
-// a name and a hint, so nothing moves whichever words are inside. Wide enough, the six sit in one
-// row; narrower, the same tiles scroll sideways (see the CSS).
+const SHOWN = 3;
+
+// The shortcuts to the pages that own each record, as pills. The first is the main one, drawn dark. The rest
+// wait under "More".
 export function QuickActions() {
-  const id = useId();
+  const navigate = useNavigate();
+  const more = quickActions.slice(SHOWN);
   return (
-    <section aria-labelledby={id} className={styles.section}>
-      <h2 id={id} className={styles.heading}>
-        Quick actions
-      </h2>
-      <ul className={styles.row}>
-        {quickActions.map((a) => (
-          <li key={a.key} className={styles.item}>
-            <Link
-              to={a.to}
-              className={
-                a.primary ? `${styles.tile} ${styles.first}` : styles.tile
-              }
-            >
-              <span className={styles.icon}>
-                <Icon name={a.icon} />
-              </span>
-              <span className={styles.text}>
-                <span className={styles.label}>{a.label}</span>
-                <span className={styles.hint}>{a.hint}</span>
-              </span>
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </section>
+    <nav aria-label="Quick actions" className={styles.row}>
+      {quickActions.slice(0, SHOWN).map((a) => (
+        <Link
+          key={a.key}
+          to={a.to}
+          className={`${styles.pill} ${a.primary ? styles.first : ""}`}
+        >
+          {a.label}
+        </Link>
+      ))}
+      <FilterSelect
+        quiet
+        label="More"
+        value=""
+        options={[
+          { value: "", label: "More" },
+          ...more.map((a) => ({ value: a.to, label: a.label })),
+        ]}
+        onChange={(to) => to && navigate(to)}
+      />
+    </nav>
   );
 }

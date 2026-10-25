@@ -1,146 +1,57 @@
-/* The card measures itself, so what is inside changes layout with the card's width, not the screen's.
-   The height comes from the row the card sits in (the boards draw each row at its own height); a card
-   on its own is a plain panel's height. A phone gives every card the same, taller shape. */
+/* The card measures itself, so what is inside changes layout with the card's width, not the screen's. */
 .card {
   container-type: inline-size;
   display: flex;
   flex-direction: column;
-  height: var(--dash-h, 368px);
-  padding: 20px;
+  gap: 28px;
+  height: 100%;
+  padding: 24px 26px 22px;
   background: var(--card-bg);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow);
 }
-@media (max-width: 900px) {
-  .card {
-    height: 402px;
-  }
-}
-
 .head {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
   min-height: 32px;
 }
-.titles {
-  min-width: 0;
-}
 .title {
   margin: 0;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
-  letter-spacing: -0.01em;
-}
-/* A phone card's title is a shade smaller, as the phone board draws it: it shares its line with the
-   range switch, and the longest titles ("Income and expenses") only fit at 15px. */
-@container (max-width: 459px) {
-  .title {
-    font-size: 15px;
-  }
-}
-.link {
-  display: inline-flex;
-  align-items: center;
-  color: inherit;
-  text-decoration: none;
-}
-.link:hover {
-  text-decoration: underline;
-}
-.link:focus-visible {
-  outline: var(--focus);
-  outline-offset: 2px;
-  border-radius: var(--radius-sm);
-}
-.go {
-  margin-left: 2px;
-  color: var(--text-3);
-}
-/* A card is "wide" once its inside has room for the wide form. The card measures its content box
-   (padding and border taken off), so the half-width cards of a desktop row (≈480 wide inside) clear
-   this, and the cards of a phone or a narrow tablet row do not. On a wide card the title is plain:
-   the records get their own link instead. */
-@container (min-width: 460px) {
-  .go {
-    display: none;
-  }
-}
-.hint {
-  margin: 4px 0 0;
-  font-size: 13px;
-  color: var(--text-3);
-}
-@container (max-width: 459px) {
-  .hint {
-    display: none;
-  }
 }
 .control {
   flex: none;
   white-space: nowrap;
 }
-
-/* The link to the records, as the boards draw it: small words and a right arrow. */
-.see {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
+.aside {
   font-size: 13px;
-  font-weight: 600;
-  color: var(--text-2);
-  text-decoration: none;
+  color: var(--text-3);
 }
-.see:hover {
-  color: var(--text-1);
+.see {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
   text-decoration: underline;
+  text-underline-offset: 3px;
 }
 .see:focus-visible {
   outline: var(--focus);
   outline-offset: 2px;
   border-radius: var(--radius-sm);
 }
-.seeArrow {
-  color: var(--text-3);
-}
-/* As a heading link (e.g. "All events"), it goes away on a phone, where the title leads instead. */
-@container (max-width: 459px) {
-  .see {
-    display: none;
-  }
-}
-
-/* The row under the card: a hairline, the reason on the left and the link on the right. On a phone
-   there is no room for it, so it goes away and the title's chevron does the leading. */
-.foot {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 16px;
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid var(--line);
-  white-space: nowrap;
-}
-.note {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-size: 13px;
-  color: var(--text-3);
-}
-@container (max-width: 459px) {
-  .foot {
-    display: none;
-  }
-}
-
-/* Whatever goes in the body fills what is left of the card. */
 .body {
   display: flex;
+  gap: 28px;
   flex: 1;
   flex-direction: column;
   min-height: 0;
-  margin-top: 16px;
+}
+@media (max-width: 700px) {
+  .card {
+    padding: 18px 18px 16px;
+  }
 }

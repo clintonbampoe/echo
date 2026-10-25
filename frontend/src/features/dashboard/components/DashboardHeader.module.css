@@ -1,0 +1,23 @@
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.title {
+  margin: 0;
+  font-size: 30px;
+  line-height: 1.15;
+  font-weight: 600;
+  letter-spacing: -0.025em;
+}
+.text {
+  margin: 6px 0 0;
+  font-size: 14px;
+  color: var(--text-2);
+}
+@media (max-width: 700px) {
+  .header {
+    flex-wrap: wrap;
+  }
+}

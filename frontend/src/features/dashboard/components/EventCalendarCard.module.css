@@ -1,150 +1,117 @@
-.content {
-  --day: 40px;
-  --gap: 4px;
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  min-height: 0;
-}
-/* The phone and tablet tree gives every card 402px; six rows of 40px days would push the foot out of it,
-   so the discs shrink there. A 40% card of a desktop row is 461px and keeps the 40px ones. */
-@media (max-width: 900px) {
-  .content {
-    --day: 32px;
-    --gap: 2px;
-  }
-}
-
 .nav {
   display: flex;
-  gap: 8px;
+  align-items: center;
+  gap: 4px;
+}
+.month {
+  margin-right: 8px;
+  font-size: 13px;
+  color: var(--text-2);
 }
 .step {
-  display: grid;
-  place-items: center;
-  width: 32px;
-  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
   padding: 0;
-  color: var(--text);
-  background: transparent;
-  border: 1px solid var(--line-2);
-  border-radius: 8px;
+  background: none;
+  border: 0;
+  border-radius: 50%;
+  color: var(--text-2);
 }
 .step:hover {
   background: var(--hover);
 }
 .step:focus-visible {
   outline: var(--focus);
-  outline-offset: 2px;
 }
-
-.month {
-  margin: 0;
-  font-size: 15px;
-  font-weight: 600;
-  line-height: 20px;
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.weekdays,
+.days {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  text-align: center;
 }
 .weekdays {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  margin-top: 6px;
   font-size: 12px;
-  line-height: 20px;
-  text-align: center;
   color: var(--text-3);
 }
 .days {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  grid-template-rows: repeat(6, var(--day));
-  row-gap: var(--gap);
-  margin-top: 4px;
+  row-gap: 2px;
 }
-
 .day,
 .blank {
-  display: flex;
+  position: relative;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   justify-self: center;
-  width: var(--day);
-  height: var(--day);
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 12px;
   font-size: 14px;
   font-variant-numeric: tabular-nums;
-  color: var(--text);
-  border-radius: 50%;
 }
 button.day {
-  padding: 0;
-  font: inherit;
-  background: none;
-  border: 0;
   cursor: pointer;
 }
-button.day:focus-visible {
-  outline: var(--focus);
-  outline-offset: 2px;
-}
-
-/* Today is a ring. An event day is a filled disc: dark while it is still to come, light once held. */
-.today {
-  font-weight: 600;
-  box-shadow: inset 0 0 0 1.5px var(--text);
-}
-.day.upcoming {
-  font-weight: 600;
-  color: var(--surface);
+/* A day with an event carries a dot under its number: dark when still to come, quiet when held. */
+.upcoming::after,
+.held::after {
+  content: "";
+  position: absolute;
+  bottom: 3px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
   background: var(--text);
 }
-.day.held {
+.held::after {
+  background: var(--line-2);
+}
+.today {
   font-weight: 600;
-  background: #b3c2d3;
 }
-.day.upcoming.today {
-  box-shadow:
-    0 0 0 2px var(--surface),
-    0 0 0 3.5px var(--text);
+.picked {
+  border-color: var(--text);
 }
-.day.picked {
-  outline: 2px solid var(--text);
-  outline-offset: 2px;
+.day:focus-visible {
+  outline: var(--focus);
 }
-
 .foot {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-top: auto;
-  padding-top: 10px;
-  font-size: 12px;
-  color: var(--text-3);
-}
-.key {
-  display: inline-flex;
-  flex: none;
-  gap: 16px;
-}
-.key span {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-.key i {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-}
-.key .upcoming {
-  background: var(--text);
-}
-.key .held {
-  background: #b3c2d3;
+  gap: 14px;
+  margin-top: 8px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
 }
 .detail {
+  display: flex;
+  flex-direction: column;
   min-width: 0;
+}
+.name {
   overflow: hidden;
-  white-space: nowrap;
+  font-size: 14.5px;
+  font-weight: 500;
   text-overflow: ellipsis;
-  color: var(--text-2);
+  white-space: nowrap;
+}
+.when {
+  font-size: 13px;
+  color: var(--text-3);
+}
+.none {
+  margin: 8px 0 0;
+  font-size: 14px;
+  color: var(--text-3);
 }

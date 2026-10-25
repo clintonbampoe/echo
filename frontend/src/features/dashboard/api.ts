@@ -22,6 +22,20 @@ export const getPresent = (from: string, to: string, signal?: AbortSignal) =>
     signal,
   ).then((r) => r.totalPresent);
 
+// Who was present in the range: everyone, and the members and visitors among them.
+export type Presence = { present: number; members: number; visitors: number };
+
+export const getPresence = (from: string, to: string, signal?: AbortSignal) =>
+  get<{
+    totalPresent: number;
+    membersPresent: number;
+    visitorsPresent: number;
+  }>("/v1/attendance/summary", from, to, signal).then((r): Presence => ({
+    present: r.totalPresent,
+    members: r.membersPresent,
+    visitors: r.visitorsPresent,
+  }));
+
 export const getTithes = (from: string, to: string, signal?: AbortSignal) =>
   get<{ totalCollected: number }>("/v1/tithes/summary", from, to, signal).then(
     (r) => r.totalCollected,
@@ -112,22 +126,35 @@ export const getEvents = (
 
 // A project and what it has raised. All time, and the first 50 projects the server sends: a church with more
 // than that would see only those.
-export type DashProject = { id: string; name: string; raised: number };
+export type DashProject = {
+  id: string;
+  name: string;
+  raised: number;
+  target: number;
+  atRisk: boolean;
+};
 
 export const getProjects = (signal?: AbortSignal) =>
   api
-    .get<{ data: { id: string; name: string; raisedAmount: number }[] }>(
-      "/v1/projects",
-      {
-        query: { from: ALL_TIME.from, to: ALL_TIME.to, pageSize: 50 },
-        signal,
-      },
-    )
+    .get<{
+      data: {
+        id: string;
+        name: string;
+        raisedAmount: number;
+        targetAmount: number;
+        status: string;
+      }[];
+    }>("/v1/projects", {
+      query: { from: ALL_TIME.from, to: ALL_TIME.to, pageSize: 50 },
+      signal,
+    })
     .then((r) =>
       r.data.map((p): DashProject => ({
         id: p.id,
         name: p.name,
         raised: p.raisedAmount,
+        target: p.targetAmount,
+        atRisk: p.status === "AtRisk",
       })),
     );
 
@@ -214,46 +241,6 @@ export const getRecentVisitors = (today: string, signal?: AbortSignal) =>
       })),
     );
 
-// A project under way and its money, for the projects-at-risk card. `endDate` is plain "2026-10-24"
-// or missing, the same shape as DashEvent.
-export type TrackedProject = {
-  id: string;
-  name: string;
-  raised: number;
-  target: number;
-  endDate?: string;
-};
-
-// The projects whose status the server has marked At Risk, all time. Ordered by start date, name as the tiebreaker.
-export const getProjectsAtRisk = (signal?: AbortSignal) =>
-  api
-    .get<{
-      data: {
-        id: string;
-        name: string;
-        raisedAmount: number;
-        targetAmount: number;
-        endDate?: string | null;
-      }[];
-    }>("/v1/projects", {
-      query: {
-        from: ALL_TIME.from,
-        to: ALL_TIME.to,
-        status: "AtRisk",
-        pageSize: 50,
-      },
-      signal,
-    })
-    .then((r) =>
-      r.data.map((p): TrackedProject => ({
-        id: p.id,
-        name: p.name,
-        raised: p.raisedAmount,
-        target: p.targetAmount,
-        endDate: p.endDate ? p.endDate.slice(0, 10) : undefined,
-      })),
-    );
-
 // What the projects-at-risk card says beside its rows: of every project, how many are At Risk. All time.
 export type ProjectTotals = { total: number; atRisk: number };
 
@@ -274,11 +261,16 @@ export type GenderFigures = { total: number; male: number; female: number };
 
 export type AgeBand = { label: string; count: number };
 
-export type MemberMix = GenderFigures & { average: number; bands: AgeBand[] };
+export type MemberMix = GenderFigures & {
+  active: number;
+  average: number;
+  bands: AgeBand[];
+};
 
 export const getMix = (signal?: AbortSignal) =>
   get<{
     totalMembers: number;
+    activeMembers: number;
     maleCount: number;
     femaleCount: number;
     averageAge: number;
@@ -286,6 +278,7 @@ export const getMix = (signal?: AbortSignal) =>
   }>("/v1/members/summary", ALL_TIME.from, ALL_TIME.to, signal).then(
     (r): MemberMix => ({
       total: r.totalMembers,
+      active: r.activeMembers,
       male: r.maleCount,
       female: r.femaleCount,
       average: r.averageAge,

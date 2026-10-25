@@ -39,7 +39,8 @@ describe("event calendar card", () => {
     expect(await screen.findByText("October 2026")).toBeInTheDocument();
     const day = await screen.findByRole("button", { name: /Youth Rally/ });
     expect(day).toHaveTextContent("24");
-    expect(screen.getByText("Sat 24 Oct, Youth Rally")).toBeInTheDocument();
+    expect(screen.getByText("Youth Rally")).toBeInTheDocument();
+    expect(screen.getByText("Sat 24 Oct")).toBeInTheDocument();
     // Only days of this month are drawn: the 1 November event is not a button yet.
     expect(
       screen.queryByRole("button", { name: /Harvest/ }),

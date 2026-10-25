@@ -15,6 +15,7 @@
   .track {
     display: flex;
     gap: 12px;
+    align-items: flex-start;
     overflow-x: auto;
     overscroll-behavior-x: contain;
     scroll-behavior: smooth;
@@ -26,8 +27,12 @@
   }
   .track > * {
     flex: none;
-    width: 100%;
+    width: 88%;
     scroll-snap-align: start;
+  }
+  /* A row of one has nothing after it to peek. */
+  .track > :only-child {
+    width: 100%;
   }
   .dots {
     display: flex;

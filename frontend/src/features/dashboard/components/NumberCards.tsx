@@ -1,23 +1,32 @@
-import { buildCards } from "../cards";
+import { StatStrip, type Stat } from "@/ui";
+import { buildCards, type CardView } from "../cards";
 import { useNumbers } from "../hooks";
 import { periodOf, spanOf, type PeriodKey } from "../periods";
-import { NumberCard } from "./NumberCard";
-import styles from "./NumberCards.module.css";
 
 type Props = { period: PeriodKey; today: string };
 
-// Members, Present, Tithes and Net income for the period picked. Each card asks for its own
-// numbers, so one that fails says so by itself and the rest carry on.
+// The strip's chip: the move against the stretch before, or how many are new.
+const changeOf = (c: CardView) =>
+  c.chip && (c.chip.arrow === "down" ? `−${c.chip.text}` : c.chip.text);
+
+const money = new Set(["tithes", "net"]);
+
+// Members, Present, Tithes and Net income for the period picked, in one strip.
 export function NumberCards({ period, today }: Props) {
   const numbers = useNumbers(spanOf(period, today), today);
   const cards = buildCards(numbers, periodOf(period));
+  const stats: Stat[] = cards.map((c) => ({
+    label: c.label,
+    value: money.has(c.key) ? c.value.replace(/^GH₵\s*/, "") : c.value,
+    unit: money.has(c.key) ? "GHS" : undefined,
+    note: c.note,
+    change: changeOf(c),
+  }));
   return (
-    <section aria-label="Numbers for the period" className={styles.wrap}>
-      <div className={styles.grid}>
-        {cards.map((c) => (
-          <NumberCard key={c.key} card={c} />
-        ))}
-      </div>
-    </section>
+    <StatStrip
+      label="Numbers for the period"
+      stats={stats}
+      busy={cards.some((c) => c.state === "loading")}
+    />
   );
 }
