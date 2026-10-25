@@ -1,4 +1,4 @@
-import { formatDate, formatDayTime, formatNumber } from "@/lib/format";
+import { formatDate, formatNumber } from "@/lib/format";
 import type { Paged } from "@/lib/paged";
 import { Chip, RecordTable } from "@/ui";
 import type { Transaction } from "../api";
@@ -7,7 +7,6 @@ import { transactionAmount } from "../view";
 import styles from "./TransactionList.module.css";
 import type { TransactionStart } from "./TransactionDialogs";
 
-const formatWeekdayDay = (day: string) => formatDayTime(day);
 const signedAmount = (t: Transaction) =>
   `${t.transactionType === "Income" ? "+" : "−"}${formatNumber(Math.abs(t.amount))}`;
 
@@ -30,7 +29,7 @@ export function TransactionList({ list, filtered, period, onOpen }: Props) {
       onOpen={(t) => onOpen(t, "view")}
       line={(t) => ({
         title: t.description || t.categoryName,
-        sub: `${t.categoryName} · ${formatWeekdayDay(t.transactionDate)}`,
+        sub: t.categoryName,
         end: (
           <strong
             className={t.transactionType === "Income" ? styles.in : styles.out}

@@ -170,7 +170,6 @@ describe("project page", () => {
     expect(within(details).getByText("01 Mar 2026")).toBeInTheDocument();
     const table = await screen.findByRole("list", { name: "Contributions" });
     expect(within(table).getByText("Sunday appeal")).toBeInTheDocument();
-    expect(within(table).getByText("No note")).toBeInTheDocument();
     expect(within(table).getByText("GH₵ 4k")).toBeInTheDocument();
     const strip = screen.getByRole("region", { name: "Contributions summary" });
     expect(await within(strip).findByText("GH₵ 7k")).toBeInTheDocument();
@@ -381,7 +380,7 @@ describe("project page", () => {
       open();
       const table = await screen.findByRole("list", { name: "Contributions" });
       await user.click(
-        within(table).getByRole("button", { name: "11 Oct 2026" }),
+        within(table).getAllByRole("button", { name: /Mobile money/ })[0]!,
       );
       expect(
         await screen.findByText("Towards Church roof renovation"),
@@ -451,7 +450,7 @@ describe("project page", () => {
       open();
       const table = await screen.findByRole("list", { name: "Contributions" });
       await user.click(
-        within(table).getByRole("button", { name: "11 Oct 2026" }),
+        within(table).getAllByRole("button", { name: /Mobile money/ })[0]!,
       );
       await user.click(
         await screen.findByRole("button", { name: "Delete contribution" }),

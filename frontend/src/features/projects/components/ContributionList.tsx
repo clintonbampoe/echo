@@ -1,7 +1,7 @@
 import { formatDate, formatMoney } from "@/lib/format";
 import type { Paged } from "@/lib/paged";
 import { paymentLabel } from "@/features/transactions";
-import { RecordTable } from "@/ui";
+import { DateTile, RecordTable } from "@/ui";
 import type { Contribution } from "../api";
 import type { ContributionStart } from "./ContributionDialogs";
 
@@ -30,6 +30,12 @@ export function ContributionList({ list, onAction }: Props) {
           onSelect: () => onAction(c, "delete"),
         },
       ]}
+      line={(c) => ({
+        lead: <DateTile date={c.dateContributed} />,
+        title: paymentLabel[c.paymentMethod],
+        sub: c.description,
+        end: <strong>{formatMoney(c.amount)}</strong>,
+      })}
       noun={["contribution", "contributions"]}
       summary=". Newest first."
       empty={{
