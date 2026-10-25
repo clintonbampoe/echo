@@ -13,8 +13,10 @@
   color: var(--neg);
   cursor: pointer;
 }
-.remove:hover {
-  background: var(--hover);
+@media (hover: hover) {
+  .remove:hover {
+    background: var(--hover);
+  }
 }
 .remove:focus-visible {
   outline: 2px solid var(--text);

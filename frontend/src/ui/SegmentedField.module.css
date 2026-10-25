@@ -44,8 +44,10 @@
     border-color var(--fast) ease,
     box-shadow var(--fast) ease;
 }
-.option:hover .face {
-  border-color: var(--text-3);
+@media (hover: hover) {
+  .option:hover .face {
+    border-color: var(--text-3);
+  }
 }
 .input:checked + .face {
   border-color: var(--text);
@@ -126,8 +128,10 @@
 .joined .option:active .face {
   transform: scale(0.97);
 }
-.joined .input:checked + .face:hover {
-  background: transparent;
+@media (hover: hover) {
+  .joined .input:checked + .face:hover {
+    background: transparent;
+  }
 }
 .joined.compact .face {
   font-size: 12px;

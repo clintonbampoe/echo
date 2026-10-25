@@ -51,8 +51,10 @@ button.cell:focus-visible {
     background-color var(--fast) ease,
     height 600ms var(--grow);
 }
-button.cell:hover .bar:not(.on) {
-  background: var(--text-3);
+@media (hover: hover) {
+  button.cell:hover .bar:not(.on) {
+    background: var(--text-3);
+  }
 }
 .bar.on {
   background: var(--text);
@@ -61,8 +63,10 @@ button.cell:hover .bar:not(.on) {
 .bar.second {
   background: var(--line-2);
 }
-button.cell:hover .bar.second {
-  background: var(--line-2);
+@media (hover: hover) {
+  button.cell:hover .bar.second {
+    background: var(--line-2);
+  }
 }
 .track.pair {
   height: 120px;

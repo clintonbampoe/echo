@@ -36,8 +36,10 @@
   box-shadow: var(--shadow);
   transition: background-color var(--fast) ease;
 }
-.profile:hover {
-  background: var(--hover);
+@media (hover: hover) {
+  .profile:hover {
+    background: var(--hover);
+  }
 }
 .profile:focus-visible {
   outline: 2px solid var(--text);

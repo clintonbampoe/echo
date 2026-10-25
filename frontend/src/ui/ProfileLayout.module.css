@@ -7,8 +7,10 @@
   color: var(--text-3);
   text-decoration: none;
 }
-.back:hover {
-  color: var(--text);
+@media (hover: hover) {
+  .back:hover {
+    color: var(--text);
+  }
 }
 
 /* Wide: who they are and their details in one card on the left, numbers and history on the right. */

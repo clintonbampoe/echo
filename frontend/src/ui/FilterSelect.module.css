@@ -67,9 +67,11 @@ button.on[aria-expanded="true"] {
     background-color var(--t-fast) var(--ease-soft),
     rotate var(--t-spring) var(--ease-spring);
 }
-.clear:hover {
-  background: var(--line-2);
-  color: var(--text);
+@media (hover: hover) {
+  .clear:hover {
+    background: var(--line-2);
+    color: var(--text);
+  }
 }
 /* Pressing the clear button spins its ✕ a quarter turn. */
 .clear:active {

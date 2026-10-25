@@ -49,8 +49,10 @@
   text-decoration: none;
   transition: transform var(--fast) var(--ease);
 }
-.topic:hover {
-  transform: translateY(-2px);
+@media (hover: hover) {
+  .topic:hover {
+    transform: translateY(-2px);
+  }
 }
 .topic:focus-visible {
   outline: var(--focus);
@@ -89,9 +91,11 @@
   color: var(--text);
   text-decoration: none;
 }
-.popular a:hover {
-  text-decoration: underline;
-  text-underline-offset: 4px;
+@media (hover: hover) {
+  .popular a:hover {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
 }
 .ask {
   margin: 32px 0 0;

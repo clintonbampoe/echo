@@ -6,8 +6,10 @@
   text-decoration-thickness: 1px;
   text-underline-offset: 4px;
 }
-.link:hover {
-  text-decoration-color: var(--text);
+@media (hover: hover) {
+  .link:hover {
+    text-decoration-color: var(--text);
+  }
 }
 .link:focus-visible {
   outline: var(--focus);

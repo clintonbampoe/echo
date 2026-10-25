@@ -29,8 +29,10 @@
   color: var(--text-2);
   text-decoration: none;
 }
-.tocLink:hover {
-  color: var(--text);
+@media (hover: hover) {
+  .tocLink:hover {
+    color: var(--text);
+  }
 }
 .body {
   max-width: 680px;

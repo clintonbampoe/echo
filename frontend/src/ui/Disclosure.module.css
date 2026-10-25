@@ -19,8 +19,10 @@
   outline: 2px solid var(--text);
   outline-offset: 2px;
 }
-.toggle:hover {
-  background: var(--hover);
+@media (hover: hover) {
+  .toggle:hover {
+    background: var(--hover);
+  }
 }
 .title {
   color: var(--text-2);

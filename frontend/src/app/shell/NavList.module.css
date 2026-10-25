@@ -98,8 +98,10 @@
     transform: none;
   }
 }
-html[data-reduce-motion="true"] .item:hover > * {
-  translate: none;
+@media (hover: hover) {
+  html[data-reduce-motion="true"] .item:hover > * {
+    translate: none;
+  }
 }
 html[data-reduce-motion="true"] .item:active {
   transform: none;

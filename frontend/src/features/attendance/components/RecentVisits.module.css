@@ -25,8 +25,10 @@
   border-top: 1px solid var(--line);
   transition: background var(--fast) ease;
 }
-.row:hover {
-  background: var(--surface-2);
+@media (hover: hover) {
+  .row:hover {
+    background: var(--surface-2);
+  }
 }
 .name {
   font-size: 15px;
@@ -65,7 +67,9 @@
     transform var(--base) var(--ease);
 }
 
-.card:hover {
-  border-color: var(--line-hover);
-  box-shadow: var(--shadow-hover);
+@media (hover: hover) {
+  .card:hover {
+    border-color: var(--line-hover);
+    box-shadow: var(--shadow-hover);
+  }
 }

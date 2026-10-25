@@ -28,10 +28,12 @@
   border-top: 0;
 }
 /* A hovered row gets a rounded soft fill and the dividers on both sides hide. */
-.row:has(+ .row:hover),
-.row:hover + .row,
-.row:hover {
-  border-top-color: transparent;
+@media (hover: hover) {
+  .row:has(+ .row:hover),
+  .row:hover + .row,
+  .row:hover {
+    border-top-color: transparent;
+  }
 }
 .row[data-selected="true"] {
   background: var(--hover-row);

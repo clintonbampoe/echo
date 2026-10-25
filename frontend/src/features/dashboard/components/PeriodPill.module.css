@@ -14,7 +14,9 @@
   background: var(--surface);
   border: 1px solid var(--line-2);
   border-radius: var(--radius);
-  transition: background-color var(--fast) ease;
+  transition:
+    background-color var(--t-fast) var(--ease-soft),
+    border-color var(--t-fast) var(--ease-soft);
 }
 .pill:hover,
 .pill[aria-expanded="true"] {

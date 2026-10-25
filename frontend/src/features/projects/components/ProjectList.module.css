@@ -18,8 +18,10 @@
   box-shadow: var(--shadow);
   transition: background var(--fast) ease;
 }
-.card:hover {
-  background: var(--surface-2);
+@media (hover: hover) {
+  .card:hover {
+    background: var(--surface-2);
+  }
 }
 .card:has(.name:focus-visible) {
   outline: var(--focus);
@@ -111,8 +113,10 @@
     transform var(--base) var(--ease);
 }
 
-.card:hover {
-  border-color: var(--line-hover);
-  box-shadow: var(--shadow-hover);
-  transform: translateY(-3px);
+@media (hover: hover) {
+  .card:hover {
+    border-color: var(--line-hover);
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-3px);
+  }
 }

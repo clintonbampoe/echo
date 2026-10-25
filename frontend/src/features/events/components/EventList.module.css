@@ -32,8 +32,10 @@
   text-decoration: none;
   transition: background-color var(--fast) ease;
 }
-.row:hover {
-  background: var(--hover);
+@media (hover: hover) {
+  .row:hover {
+    background: var(--hover);
+  }
 }
 .row:focus-visible {
   outline: 2px solid var(--text);
@@ -134,7 +136,9 @@
     transform var(--base) var(--ease);
 }
 
-.card:hover {
-  border-color: var(--line-hover);
-  box-shadow: var(--shadow-hover);
+@media (hover: hover) {
+  .card:hover {
+    border-color: var(--line-hover);
+    box-shadow: var(--shadow-hover);
+  }
 }

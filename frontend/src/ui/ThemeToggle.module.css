@@ -14,8 +14,10 @@
     transform var(--fast) var(--ease),
     background-color var(--fast) ease;
 }
-.toggle:hover {
-  background: var(--surface);
+@media (hover: hover) {
+  .toggle:hover {
+    background: var(--surface);
+  }
 }
 .toggle:active {
   transform: scale(0.96);

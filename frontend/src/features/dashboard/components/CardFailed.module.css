@@ -19,8 +19,10 @@
   border: 1px solid var(--line-2);
   border-radius: var(--radius-pill);
 }
-.retry:hover {
-  background: var(--hover);
+@media (hover: hover) {
+  .retry:hover {
+    background: var(--hover);
+  }
 }
 .retry:focus-visible {
   outline: var(--focus);

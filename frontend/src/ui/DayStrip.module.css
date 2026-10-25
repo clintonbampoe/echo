@@ -24,8 +24,10 @@
   color: var(--text);
   transition: background var(--fast) ease;
 }
-.arrow:hover {
-  background: var(--hover);
+@media (hover: hover) {
+  .arrow:hover {
+    background: var(--hover);
+  }
 }
 .arrow:focus-visible,
 .day:focus-visible {
@@ -95,8 +97,10 @@
   color: var(--text);
   opacity: calc(0.3 + 0.7 * var(--q));
 }
-.day:hover {
-  opacity: 1;
+@media (hover: hover) {
+  .day:hover {
+    opacity: 1;
+  }
 }
 /* The date is a circle that fills in as the day nears the middle. */
 .date {

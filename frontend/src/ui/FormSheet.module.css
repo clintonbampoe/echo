@@ -50,7 +50,9 @@
   color: var(--text-2);
   order: 1;
 }
-.actions > button.another:hover:not(:disabled) {
-  background: var(--hover);
-  color: var(--text);
+@media (hover: hover) {
+  .actions > button.another:hover:not(:disabled) {
+    background: var(--hover);
+    color: var(--text);
+  }
 }

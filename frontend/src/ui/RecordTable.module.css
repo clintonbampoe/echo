@@ -63,8 +63,10 @@
   position: relative;
   transition: background-color var(--fast) ease;
 }
-.clickable:hover {
-  background: var(--hover);
+@media (hover: hover) {
+  .clickable:hover {
+    background: var(--hover);
+  }
 }
 .link {
   padding: 0;
@@ -81,9 +83,11 @@
   position: absolute;
   inset: 0;
 }
-.clickable:hover .link {
-  text-decoration: underline;
-  text-underline-offset: 3px;
+@media (hover: hover) {
+  .clickable:hover .link {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
 }
 .link:focus-visible {
   outline: 2px solid var(--text);

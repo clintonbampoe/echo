@@ -12,8 +12,10 @@
   color: var(--text);
   cursor: pointer;
 }
-.pill:hover {
-  background: var(--hover);
+@media (hover: hover) {
+  .pill:hover {
+    background: var(--hover);
+  }
 }
 .root {
   position: fixed;

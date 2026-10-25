@@ -16,10 +16,28 @@
   font-weight: 500;
   color: var(--text);
   text-decoration: none;
-  transition: background-color var(--fast) ease;
+  transition:
+    background-color var(--t-fast) var(--ease-soft),
+    transform var(--t-spring) var(--ease-spring),
+    box-shadow var(--t-base) var(--ease-soft);
 }
-.pill:hover {
-  background: var(--hover);
+.pill:active {
+  transform: scale(var(--press));
+}
+@media (prefers-reduced-motion: reduce) {
+  .pill:active {
+    transform: none;
+  }
+}
+@media (hover: hover) {
+  .pill:hover {
+    background: var(--hover-option);
+    transform: var(--lift-1);
+  }
+  .first:hover {
+    filter: brightness(1.07);
+    box-shadow: var(--shadow-btn);
+  }
 }
 .pill:focus-visible {
   outline: var(--focus);

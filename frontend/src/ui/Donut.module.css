@@ -32,8 +32,10 @@
   color: var(--text);
   text-decoration: none;
 }
-a.row:hover {
-  background: var(--hover);
+@media (hover: hover) {
+  a.row:hover {
+    background: var(--hover);
+  }
 }
 .swatch {
   flex: none;

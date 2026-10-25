@@ -36,8 +36,10 @@
   cursor: pointer;
   transition: background var(--fast) ease;
 }
-.option:hover:not(:disabled) {
-  background: var(--hover);
+@media (hover: hover) {
+  .option:hover:not(:disabled) {
+    background: var(--hover);
+  }
 }
 .option:focus-visible {
   outline: var(--focus);

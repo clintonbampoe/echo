@@ -23,10 +23,12 @@
   height: 36px;
   border-radius: var(--radius-sm);
 }
-.step:hover:not(:disabled),
-.my:hover {
-  background: var(--hover);
-  color: var(--text);
+@media (hover: hover) {
+  .step:hover:not(:disabled),
+  .my:hover {
+    background: var(--hover);
+    color: var(--text);
+  }
 }
 .step:disabled {
   opacity: 0.35;
@@ -77,9 +79,11 @@
   font-weight: 500;
   color: var(--text-2);
 }
-.tx:hover:not(:disabled) {
-  background: var(--hover);
-  color: var(--text);
+@media (hover: hover) {
+  .tx:hover:not(:disabled) {
+    background: var(--hover);
+    color: var(--text);
+  }
 }
 .tx:disabled {
   opacity: 0.4;
