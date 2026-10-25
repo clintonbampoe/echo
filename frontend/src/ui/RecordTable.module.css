@@ -235,17 +235,3 @@
     flex-wrap: wrap;
   }
 }
-
-/* Design round 8: a card answers the pointer. */
-.wrap {
-  transition:
-    border-color var(--fast) ease,
-    box-shadow var(--fast) ease,
-    background var(--fast) ease,
-    transform var(--base) var(--ease);
-}
-
-.wrap:hover {
-  border-color: var(--line-2);
-  box-shadow: var(--shadow-hover);
-}

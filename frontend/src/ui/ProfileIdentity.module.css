@@ -47,17 +47,3 @@
     height: 44px;
   }
 }
-
-/* Design round 8: a card answers the pointer. */
-.identity {
-  transition:
-    border-color var(--fast) ease,
-    box-shadow var(--fast) ease,
-    background var(--fast) ease,
-    transform var(--base) var(--ease);
-}
-
-.identity:hover {
-  border-color: var(--line-2);
-  box-shadow: var(--shadow-hover);
-}

@@ -66,6 +66,6 @@
 }
 
 .card:hover {
-  border-color: var(--line-2);
+  border-color: var(--line-hover);
   box-shadow: var(--shadow-hover);
 }

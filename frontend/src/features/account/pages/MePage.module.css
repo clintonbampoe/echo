@@ -47,8 +47,34 @@
 .card > .line:first-child {
   border-top: 0;
 }
-button.line:hover {
-  background: var(--hover);
+button.line {
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition:
+    background-color var(--t-fast) var(--ease-soft),
+    transform var(--t-spring) var(--ease-spring);
+}
+@media (hover: hover) {
+  button.line:hover {
+    background: var(--hover-row);
+  }
+  button.line:hover .chevron {
+    translate: 2px 0;
+  }
+}
+button.line:active {
+  background: var(--hover-tab);
+  transform: scale(var(--press-card));
+}
+button.line:focus-visible {
+  outline: var(--focus);
+  outline-offset: -2px;
+}
+button.line:disabled {
+  opacity: 0.5;
+}
+.chevron {
+  transition: translate var(--t-base) var(--ease-out);
 }
 .title {
   font-size: 15px;
@@ -69,18 +95,4 @@ button.line:hover {
 }
 .card > .line:last-child {
   margin-bottom: 4px;
-}
-
-/* Design round 8: a card answers the pointer. */
-.card {
-  transition:
-    border-color var(--fast) ease,
-    box-shadow var(--fast) ease,
-    background var(--fast) ease,
-    transform var(--base) var(--ease);
-}
-
-.card:hover {
-  border-color: var(--line-2);
-  box-shadow: var(--shadow-hover);
 }

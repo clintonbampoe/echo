@@ -58,12 +58,13 @@ type SettingProps = {
 
 function Setting({ title, sub, checked, onChange }: SettingProps) {
   return (
-    <div className={styles.setting}>
+    // A label, so pressing anywhere on the row flips the switch: nobody has to aim for the small control.
+    <label className={styles.setting}>
       <div>
         <p className={styles.title}>{title}</p>
         <p className={styles.sub}>{sub}</p>
       </div>
       <Switch label={title} checked={checked} onChange={onChange} />
-    </div>
+    </label>
   );
 }

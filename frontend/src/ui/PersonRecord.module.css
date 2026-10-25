@@ -72,7 +72,19 @@
     transform var(--base) var(--ease);
 }
 
-.profile:hover {
-  border-color: var(--line-2);
-  box-shadow: var(--shadow-hover);
+@media (hover: hover) {
+  .profile:hover {
+    border-color: var(--line-hover);
+    box-shadow: var(--shadow-hover);
+    transform: var(--lift-3);
+  }
+}
+.profile:active {
+  transform: scale(var(--press-card));
+}
+@media (prefers-reduced-motion: reduce) {
+  .profile:hover,
+  .profile:active {
+    transform: none;
+  }
 }

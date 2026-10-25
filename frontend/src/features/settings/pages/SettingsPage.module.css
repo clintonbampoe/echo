@@ -31,6 +31,8 @@
   color: var(--text-3);
 }
 .setting {
+  cursor: pointer;
+  transition: background-color var(--t-fast) var(--ease-soft);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -56,16 +58,12 @@
   }
 }
 
-/* Design round 8: a card answers the pointer. */
-.card {
-  transition:
-    border-color var(--fast) ease,
-    box-shadow var(--fast) ease,
-    background var(--fast) ease,
-    transform var(--base) var(--ease);
+/* A row that flips a switch answers the pointer and the press. */
+@media (hover: hover) {
+  .setting:hover {
+    background: var(--hover-row);
+  }
 }
-
-.card:hover {
-  border-color: var(--line-2);
-  box-shadow: var(--shadow-hover);
+.setting:active {
+  background: var(--hover-tab);
 }
