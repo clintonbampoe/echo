@@ -12,7 +12,11 @@ public class EventCapacityTests
     [InlineData(60, 60, true)] // exactly full
     [InlineData(60, 75, true)] // capacity lowered below the registrations: still full
     [InlineData(0, 0, true)]
-    public void IsFull_WhenTheRegistrationsHaveReachedTheCapacity(int? capacity, int registered, bool expected)
+    public void IsFull_WhenTheRegistrationsHaveReachedTheCapacity(
+        int? capacity,
+        int registered,
+        bool expected
+    )
     {
         Assert.Equal(expected, EventCapacity.IsFull(capacity, registered));
     }

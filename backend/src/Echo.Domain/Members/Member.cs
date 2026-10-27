@@ -8,20 +8,22 @@ public class Member : ISoftDeletable
     public Person Person { get; set; } = null!;
 
     public Guid CongregationId { get; set; }
-    public Congregation Congregation { get; set; } = null!;
 
     public DateOnly DateOfBirth { get; set; }
     public DateOnly? JoinedDate { get; set; }
+
+    /// <summary>The day the member was baptised, if they were.</summary>
+    public DateOnly? BaptisedDate { get; set; }
     public Gender Gender { get; set; }
-    public string ResidentialAddress { get; set; } = string.Empty;
-    public string City { get; set; } = string.Empty;
-    public string Hometown { get; set; } = string.Empty;
-    public Region Region { get; set; }
+    public string? ResidentialAddress { get; set; }
+    public string? City { get; set; }
+    public string? Hometown { get; set; }
+    public Region? Region { get; set; }
     public string? GpsAddress { get; set; }
-    public MaritalStatus MaritalStatus { get; set; }
-    public string NextOfKin { get; set; } = string.Empty;
-    public string EmergencyContactName { get; set; } = string.Empty;
-    public string EmergencyContactPhoneNumber { get; set; } = string.Empty;
+    public MaritalStatus? MaritalStatus { get; set; }
+    public string? NextOfKin { get; set; }
+    public string? EmergencyContactName { get; set; }
+    public string? EmergencyContactPhoneNumber { get; set; }
     public MemberStatus Status { get; set; }
 
     public DateTime CreatedAt { get; set; }

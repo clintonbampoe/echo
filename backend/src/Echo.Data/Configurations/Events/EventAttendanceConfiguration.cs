@@ -1,3 +1,4 @@
+using Echo.Domain.Congregations;
 using Echo.Domain.Events;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -17,15 +18,23 @@ public class EventAttendanceConfiguration : IEntityTypeConfiguration<EventAttend
             .IsUnique()
             .HasFilter("deleted_at IS NULL");
 
-        builder.HasIndex(ea => new { ea.CheckInTime, ea.Id }).HasFilter("deleted_at IS NULL");
-
         builder
-            .HasOne(e => e.Congregation)
+            .HasOne<Congregation>()
             .WithMany()
             .HasForeignKey(e => e.CongregationId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Restrict)
+            .IsRequired();
 
-        builder.HasIndex(e => e.CongregationId);
+        // The list: latest check-in time first, cursor on check_in_time + id.
+        builder
+            .HasIndex(ea => new
+            {
+                ea.CongregationId,
+                ea.CheckInTime,
+                ea.Id,
+            })
+            .IsDescending(false, true, false)
+            .HasFilter("deleted_at IS NULL");
 
         builder
             .HasOne(ea => ea.Member)

@@ -53,8 +53,11 @@ public static class EventAttendanceEndpoints
                 ### Ordering
                 Records are ordered by check-in time, most recent first. Stable across pages.
 
-                ### Pagination
-                Pass the `next` cursor from the previous response as the `cursor` query parameter. When `hasMore` is `false`, `next` is null.
+                ### Paging
+                - `cursor` — leave it out for the first page. For the next page, send the `next` value from the previous response unchanged. It records where the last page stopped, so use it only with the same filters it came from.
+                - `pageSize` — how many rows to return, from 1 to 50. Defaults to 50; a larger number is reduced to 50.
+
+                Keep asking for the next page while `hasMore` is `true`. When it is `false`, `next` is `null` and that was the last page.
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
@@ -89,6 +92,9 @@ public static class EventAttendanceEndpoints
                 Returns one event attendance record, scoped to the caller's congregation.
 
                 The response includes the resolved `eventName` and `memberName`, so no follow-up calls are needed to render the record.
+
+                ### Path parameters
+                - `id` — the event check-in's id, as returned by the list and create endpoints.
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
@@ -139,6 +145,12 @@ public static class EventAttendanceEndpoints
                 ### What this does not include
                 This returns only members who **attended**. Members who registered but did not show up do **not** appear here — query `GET /event-registrations/event/{id}` and cross-reference to find the "registered but not attended" gap.
 
+                ### Paging
+                - `cursor` — leave it out for the first page. For the next page, send the `next` value from the previous response unchanged. It records where the last page stopped, so use it only with the same filters it came from.
+                - `pageSize` — how many rows to return, from 1 to 50. Defaults to 50; a larger number is reduced to 50.
+
+                Keep asking for the next page while `hasMore` is `true`. When it is `false`, `next` is `null` and that was the last page.
+
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
                 - `404 NOT_FOUND` — no event exists with the given ID in this congregation.
@@ -187,6 +199,12 @@ public static class EventAttendanceEndpoints
 
                 ### Use case
                 Show a member's engagement over time — how many events they've attended, most recently, etc. Combine with `GET /event-registrations/member/{id}` to see registrations versus actual attendance.
+
+                ### Paging
+                - `cursor` — leave it out for the first page. For the next page, send the `next` value from the previous response unchanged. It records where the last page stopped, so use it only with the same filters it came from.
+                - `pageSize` — how many rows to return, from 1 to 50. Defaults to 50; a larger number is reduced to 50.
+
+                Keep asking for the next page while `hasMore` is `true`. When it is `false`, `next` is `null` and that was the last page.
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
@@ -292,6 +310,9 @@ public static class EventAttendanceEndpoints
                 ### On success
                 Returns `200 OK` with the full updated `EventAttendanceResponseDto`.
 
+                ### Path parameters
+                - `id` — the event check-in's id, as returned by the list and create endpoints.
+
                 ### Failure modes
                 - `400 BAD_REQUEST` — the request body is malformed.
                 - `400 VALIDATION_ERROR` — `checkInTime` failed validation.
@@ -335,6 +356,9 @@ public static class EventAttendanceEndpoints
                 ### Side effects
                 - The record is marked as deleted.
                 - Any event summary derived from attendance is recalculated on next query — the deletion is reflected in `GET /events/summary` counts.
+
+                ### Path parameters
+                - `id` — the event check-in's id, as returned by the list and create endpoints.
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.

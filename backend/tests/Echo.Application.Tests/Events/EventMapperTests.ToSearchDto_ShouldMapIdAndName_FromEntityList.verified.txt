@@ -1,0 +1,14 @@
+﻿[
+  {
+    Id: Guid_1,
+    Name: Christmas Service
+  },
+  {
+    Id: Guid_2,
+    Name: Christmas Service
+  },
+  {
+    Id: Guid_3,
+    Name: Christmas Service
+  }
+]

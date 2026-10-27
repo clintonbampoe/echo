@@ -1,0 +1,6 @@
+﻿{
+  SessionId: Guid_1,
+  PersonId: Guid_2,
+  CheckedInAt: DateTime_1,
+  IsFirstVisit: false
+}

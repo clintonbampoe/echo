@@ -65,6 +65,9 @@ public record AssetResponseDto
     public decimal PurchaseCost { get; init; }
     public decimal CurrentValue { get; init; }
     public AssetStatus Status { get; init; }
+
+    /// <summary>The day it was liquidated; none while the church still owns it.</summary>
+    public DateOnly? LiquidatedOn { get; init; }
     public string? Description { get; init; }
     public DateTime CreatedAt { get; init; }
 }
@@ -106,5 +109,49 @@ public record AssetSummaryDto
     public decimal TotalCurrentValue { get; init; }
     public decimal TotalPurchaseCost { get; init; }
     public decimal TotalDepreciation { get; init; }
+
+    /// <summary>
+    /// How old the assets are on average, in years, over those with a purchase date. Zero when none
+    /// has one.
+    /// </summary>
+    public double AverageAgeYears { get; init; }
     public DateWindow? Window { get; init; }
+}
+
+/// <summary>What the assets of one category cost and are worth.</summary>
+public record AssetCategoryTotalDto
+{
+    public int CategoryId { get; init; }
+    public required string CategoryName { get; init; }
+    public int Count { get; init; }
+    public decimal TotalPurchaseCost { get; init; }
+    public decimal TotalCurrentValue { get; init; }
+    public decimal TotalDepreciation { get; init; }
+}
+
+/// <summary>
+/// Narrows the monthly chart. The dates choose the months, not the assets: a purchase date puts an
+/// asset in its month, a liquidation date puts it in another.
+/// </summary>
+public record AssetMonthlyFilters
+{
+    public int? CategoryId { get; init; }
+
+    /// <summary>How many months to return, ending with the month of <see cref="To"/>.</summary>
+    [Range(1, MonthRange.MaxMonths)]
+    public int Months { get; init; } = MonthRange.DefaultMonths;
+
+    /// <summary>Any day in the last month to return. This month when not given.</summary>
+    public DateOnly? To { get; init; }
+}
+
+/// <summary>One month of assets bought and assets lost (liquidated). Costs are purchase costs.</summary>
+public record AssetMonthlyDto
+{
+    public int Year { get; init; }
+    public int Month { get; init; }
+    public int AcquiredCount { get; init; }
+    public decimal AcquiredCost { get; init; }
+    public int LostCount { get; init; }
+    public decimal LostCost { get; init; }
 }

@@ -141,4 +141,43 @@ public class DateWindowsTests
             w
         );
     }
+
+    [Fact]
+    public void ChartMonths_WithNoEndDay_EndsWithThisMonth()
+    {
+        var months = Wednesday.ChartMonths(12, null);
+
+        Assert.Equal(12, months.Count);
+        Assert.Equal(new YearMonth(2025, 11), months[0]);
+        Assert.Equal(new YearMonth(2026, 10), months[^1]);
+    }
+
+    [Fact]
+    public void ChartMonths_WithAnEndDay_EndsWithTheMonthOfThatDay()
+    {
+        var months = Wednesday.ChartMonths(3, new DateOnly(2026, 4, 3));
+
+        Assert.Equal([new YearMonth(2026, 2), new YearMonth(2026, 3), new YearMonth(2026, 4)], months);
+    }
+
+    [Fact]
+    public void Previous_IsTheSameNumberOfDaysEndingTheDayBeforeTheWindowStarts()
+    {
+        var window = new DateWindow(new DateOnly(2026, 10, 5), new DateOnly(2026, 10, 14), true);
+
+        var previous = window.Previous();
+
+        Assert.Equal(new DateWindow(new DateOnly(2026, 9, 25), new DateOnly(2026, 10, 4), true), previous);
+    }
+
+    [Fact]
+    public void Previous_AcrossAYearBoundary_ReachesIntoThePreviousYear()
+    {
+        var window = new DateWindow(new DateOnly(2026, 1, 1), new DateOnly(2026, 1, 31), false);
+
+        Assert.Equal(
+            new DateWindow(new DateOnly(2025, 12, 1), new DateOnly(2025, 12, 31), false),
+            window.Previous()
+        );
+    }
 }

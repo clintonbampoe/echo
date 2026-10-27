@@ -178,10 +178,15 @@ public sealed class AttendanceSimulator
         {
             var already = new HashSet<Session>();
 
+            // The sessions come oldest first, so the first one is the visitor's first visit.
             foreach (var session in VisitSessions(visitor))
             {
-                if (session is not null && already.Add(session))
-                    yield return Record(session, visitor.Id, PersonKind.Visitor, visitor: true);
+                if (session is null || !already.Add(session))
+                    continue;
+
+                var attendance = Record(session, visitor.Id, PersonKind.Visitor, visitor: true);
+                attendance.IsFirstVisit = already.Count == 1;
+                yield return attendance;
             }
         }
     }
@@ -249,6 +254,7 @@ public sealed class AttendanceSimulator
             CongregationId = _seed.Id,
             SessionId = session.Id,
             Session = session,
+            SessionDate = session.Date,
             PersonId = personId,
             PersonKindAtTime = kind,
             CheckedInAt = checkedInAt,

@@ -1,0 +1,7 @@
+﻿{
+  Id: Guid_1,
+  Name: Jane Doe,
+  EmailAddress: jane@echo.test,
+  VerifiedAt: DateTime_1,
+  CreatedAt: DateTime_2
+}

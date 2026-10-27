@@ -1,0 +1,23 @@
+﻿{
+  Id: Guid_1,
+  Name: Jane Doe,
+  FirstName: Jane,
+  LastName: Doe,
+  OtherNames: v1,
+  EmailAddress: v3,
+  PhoneNumber: v2,
+  DateOfBirth: Date_1,
+  JoinedDate: Date_2,
+  BaptisedDate: Date_3,
+  Gender: Female,
+  ResidentialAddress: 12 Grace Way,
+  City: Kumasi,
+  Hometown: Sunyani,
+  Region: Ahafo,
+  GpsAddress: v4,
+  MaritalStatus: Married,
+  NextOfKin: Kwame Doe,
+  EmergencyContactName: Ama Doe,
+  EmergencyContactPhoneNumber: 0244000000,
+  CreatedAt: DateTime_1
+}

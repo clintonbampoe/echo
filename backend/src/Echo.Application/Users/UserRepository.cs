@@ -87,10 +87,12 @@ internal static class UserQueryExtensions
         int pageSize
     )
     {
+        // The leading >= is redundant but gives the index a bound to start from; without it
+        // the OR below is only a filter and a deep page walks every earlier name.
         if (cursor is not null)
             query = query.Where(u =>
-                string.Compare(u.Name, cursor.Name) > 0
-                || (u.Name == cursor.Name && u.Id > cursor.Id)
+                string.Compare(u.Name, cursor.Name) >= 0
+                && (string.Compare(u.Name, cursor.Name) > 0 || u.Id > cursor.Id)
             );
 
         query = query.Take(pageSize);

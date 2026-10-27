@@ -1,12 +1,12 @@
 using Echo.Data;
 using Echo.Domain.Assets;
 using Echo.Shared.Query;
+using Echo.Shared.Utilities;
 using Microsoft.EntityFrameworkCore;
-using Echo.Domain.Congregations;
 
 namespace Echo.Application.Assets;
 
-public class AssetRepository(AppDbContext context)
+public class AssetRepository(AppDbContext context, TimeProvider timeProvider)
 {
     private readonly DbSet<Asset> _dbSet = context.Set<Asset>();
 
@@ -55,15 +55,50 @@ public class AssetRepository(AppDbContext context)
         CancellationToken ct = default
     )
     {
-        var assets = _dbSet
+        var today = DateUtils.GetDateToday(timeProvider);
+        var stats = await Scope(congregationId, filters).SummarizeAssets(today).FirstOrDefaultAsync(ct);
+        return stats ?? new AssetStats(0, 0m, 0m, 0d);
+    }
+
+    public async Task<List<AssetCategoryTotalDto>> GetCategoryTotals(
+        Guid congregationId,
+        AssetFilters filters,
+        CancellationToken ct = default
+    ) =>
+        await Scope(congregationId, filters)
+            .TotalsByCategory(context.Set<AssetCategory>())
+            .ToListAsync(ct);
+
+    public async Task<List<AssetMonthRow>> GetAcquiredByMonth(
+        Guid congregationId,
+        int? categoryId,
+        DateOnly from,
+        DateOnly to,
+        CancellationToken ct = default
+    ) =>
+        await Scope(congregationId, new AssetFilters { CategoryId = categoryId })
+            .Where(a => a.PurchaseDate >= from && a.PurchaseDate <= to)
+            .AcquiredByMonth()
+            .ToListAsync(ct);
+
+    public async Task<List<AssetMonthRow>> GetLostByMonth(
+        Guid congregationId,
+        int? categoryId,
+        DateOnly from,
+        DateOnly to,
+        CancellationToken ct = default
+    ) =>
+        await Scope(congregationId, new AssetFilters { CategoryId = categoryId })
+            .Where(a => a.LiquidatedOn >= from && a.LiquidatedOn <= to)
+            .LostByMonth()
+            .ToListAsync(ct);
+
+    private IQueryable<Asset> Scope(Guid congregationId, AssetFilters filters) =>
+        _dbSet
             .AsNoTracking()
             .FilterDeleted()
             .Where(a => a.CongregationId == congregationId)
             .Filter(filters);
-
-        var stats = await context.OneRow(congregationId).SummarizeAssets(assets).FirstOrDefaultAsync(ct);
-        return stats ?? new AssetStats(0, 0m, 0m);
-    }
 
     public void Create(Asset entity)
     {
@@ -88,27 +123,101 @@ public class AssetRepository(AppDbContext context)
             .CountAsync(ct);
 }
 
-public record AssetStats(int Count, decimal CurrentValue, decimal PurchaseCost);
+public record AssetStats(int Count, decimal CurrentValue, decimal PurchaseCost, double AverageAgeYears);
+
+public record AssetMonthRow(int Year, int Month, int Count, decimal Cost);
 
 internal static class AssetQueryExtensions
 {
+    // One pass over the assets for every figure. Age is counted in whole months between the purchase
+    // and today, and only over assets that have a purchase date.
     internal static IQueryable<AssetStats> SummarizeAssets(
-        this IQueryable<Congregation> oneRow,
-        IQueryable<Asset> assets
+        this IQueryable<Asset> assets,
+        DateOnly today
     ) =>
-        oneRow.Select(_ => new AssetStats(
-            assets.Count(),
-            assets.Sum(a => a.CurrentValue),
-            assets.Sum(a => a.PurchaseCost)
-        ));
+        assets
+            .GroupBy(a => a.CongregationId)
+            .Select(group => new AssetStats(
+                group.Count(),
+                group.Sum(a => a.CurrentValue),
+                group.Sum(a => a.PurchaseCost),
+                (
+                    group.Average(a =>
+                        a.PurchaseDate == null
+                            ? null
+                            : (double?)(
+                                (today.Year - a.PurchaseDate.Value.Year) * 12
+                                + today.Month
+                                - a.PurchaseDate.Value.Month
+                            )
+                    ) ?? 0d
+                ) / 12
+            ));
+
+    // Groups first and looks the names up after, so only the few totals go through the join.
+    internal static IQueryable<AssetCategoryTotalDto> TotalsByCategory(
+        this IQueryable<Asset> assets,
+        IQueryable<AssetCategory> categories
+    ) =>
+        assets
+            .GroupBy(a => a.CategoryId)
+            .Select(group => new
+            {
+                CategoryId = group.Key,
+                Count = group.Count(),
+                Cost = group.Sum(a => a.PurchaseCost),
+                Value = group.Sum(a => a.CurrentValue),
+            })
+            .Join(
+                categories,
+                total => total.CategoryId,
+                category => category.Id,
+                (total, category) =>
+                    new AssetCategoryTotalDto
+                    {
+                        CategoryId = category.Id,
+                        CategoryName = category.Name,
+                        Count = total.Count,
+                        TotalPurchaseCost = total.Cost,
+                        TotalCurrentValue = total.Value,
+                        TotalDepreciation = total.Cost - total.Value,
+                    }
+            )
+            .OrderByDescending(c => c.TotalCurrentValue)
+            .ThenBy(c => c.CategoryName);
+
+    internal static IQueryable<AssetMonthRow> AcquiredByMonth(this IQueryable<Asset> assets) =>
+        assets
+            .Where(a => a.PurchaseDate != null)
+            .GroupBy(a => new { a.PurchaseDate!.Value.Year, a.PurchaseDate.Value.Month })
+            .Select(g => new AssetMonthRow(
+                g.Key.Year,
+                g.Key.Month,
+                g.Count(),
+                g.Sum(a => a.PurchaseCost)
+            ));
+
+    internal static IQueryable<AssetMonthRow> LostByMonth(this IQueryable<Asset> assets) =>
+        assets
+            .Where(a => a.LiquidatedOn != null)
+            .GroupBy(a => new { a.LiquidatedOn!.Value.Year, a.LiquidatedOn.Value.Month })
+            .Select(g => new AssetMonthRow(
+                g.Key.Year,
+                g.Key.Month,
+                g.Count(),
+                g.Sum(a => a.PurchaseCost)
+            ));
 
     internal static IQueryable<Asset> Filter(
         this IQueryable<Asset> query,
         AssetFilters filters
     )
     {
-        if (filters.Name is not null)
-            query = query.Where(a => EF.Functions.ILike(a.Name, $"%{filters.Name}%"));
+        if (!string.IsNullOrWhiteSpace(filters.Name))
+        {
+            var pattern = $"%{Echo.Shared.Query.Extensions.EscapeLike(filters.Name.Trim())}%";
+            query = query.Where(a => EF.Functions.ILike(a.Name, pattern));
+        }
 
         if (filters.CategoryId is not null)
             query = query.Where(a => a.CategoryId == filters.CategoryId);
@@ -133,10 +242,12 @@ internal static class AssetQueryExtensions
         int pageSize
     )
     {
+        // The leading >= is redundant but gives the index a bound to start from; without it
+        // the OR below is only a filter and a deep page walks every earlier name.
         if (cursor is not null)
             query = query.Where(a =>
-                string.Compare(a.Name, cursor.Name) > 0
-                || (a.Name == cursor.Name && a.Id > cursor.Id)
+                string.Compare(a.Name, cursor.Name) >= 0
+                && (string.Compare(a.Name, cursor.Name) > 0 || a.Id > cursor.Id)
             );
 
         query = query.Take(pageSize);

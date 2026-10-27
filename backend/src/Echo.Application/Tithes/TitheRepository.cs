@@ -45,7 +45,7 @@ public class TitheRepository(AppDbContext context)
     public async Task<List<Tithe>> GetByMemberId(
         Guid congregationId,
         Guid memberId,
-        TitheFilters filters,
+        MemberTitheFilters filters,
         TitheCursor? cursor,
         int pageSize,
         CancellationToken ct
@@ -127,11 +127,13 @@ public class TitheRepository(AppDbContext context)
             .Where(t => t.CongregationId == congregationId)
             .Filter(filters);
 
-        var stats = await context
+        var totals = await context
             .OneRow(congregationId)
             .SummarizeTithes(tithes)
             .FirstOrDefaultAsync(ct);
-        return stats ?? new TitheStats(0m, 0, null);
+        var byMethod = await tithes.ByMethod().ToListAsync(ct);
+
+        return new TitheStats(totals?.Total ?? 0m, totals?.UniqueTithers ?? 0, totals?.Largest ?? 0m, byMethod);
     }
 
     public void Create(Tithe entity) => _dbSet.Add(entity);
@@ -141,23 +143,44 @@ public class TitheRepository(AppDbContext context)
 
 internal record TitheMonthRow(int Year, MonthOfYear Month, decimal Total, int UniqueTithers);
 
-public record TitheStats(decimal Total, int UniqueTithers, PaymentMethod? MostUsedPaymentMethod);
+public record TitheTotals(decimal Total, int UniqueTithers, decimal Largest);
+
+public record MethodShare(PaymentMethod Method, int Count, decimal Total);
+
+public record TitheStats(
+    decimal Total,
+    int UniqueTithers,
+    decimal Largest,
+    IReadOnlyList<MethodShare> ByMethod
+)
+{
+    // The method most tithes were paid with; a tie goes to the method that sorts first, so the
+    // answer is stable.
+    public static PaymentMethod? MostUsed(IReadOnlyList<MethodShare> shares) =>
+        shares
+            .OrderByDescending(s => s.Count)
+            .ThenBy(s => s.Method)
+            .Select(s => (PaymentMethod?)s.Method)
+            .FirstOrDefault();
+}
 
 internal static class TitheQueryExtensions
 {
-    internal static IQueryable<TitheStats> SummarizeTithes(
+    internal static IQueryable<TitheTotals> SummarizeTithes(
         this IQueryable<Congregation> oneRow,
         IQueryable<Tithe> tithes
     ) =>
-        oneRow.Select(_ => new TitheStats(
+        oneRow.Select(_ => new TitheTotals(
             tithes.Sum(t => t.Amount),
             tithes.Select(t => t.MemberId).Distinct().Count(),
-            tithes
-                .GroupBy(t => t.PaymentMethod)
-                .OrderByDescending(g => g.Count())
-                .Select(g => (PaymentMethod?)g.Key)
-                .FirstOrDefault()
+            tithes.Max(t => (decimal?)t.Amount) ?? 0m
         ));
+
+    // How the tithes were paid: how many and how much for each method.
+    internal static IQueryable<MethodShare> ByMethod(this IQueryable<Tithe> tithes) =>
+        tithes
+            .GroupBy(t => t.PaymentMethod)
+            .Select(g => new MethodShare(g.Key, g.Count(), g.Sum(t => t.Amount)));
 
     // Narrows to the years the chart covers. The month is stored as text, so it cannot be compared or added to a
     // number in SQL; months outside the range come back as extra rows and FillMonths leaves them out.
@@ -175,7 +198,8 @@ internal static class TitheQueryExtensions
                 g.Key.ForYear,
                 g.Key.ForMonth,
                 g.Sum(t => t.Amount),
-                g.Select(t => t.MemberId).Distinct().Count()
+                // A member has at most one live tithe a month (unique index), so rows are tithers.
+                g.Count()
             ));
 
     internal static TitheMonthlyDto ToDto(this TitheMonthRow row) =>
@@ -185,8 +209,10 @@ internal static class TitheQueryExtensions
             Month = (int)row.Month,
             TotalCollected = row.Total,
             UniqueTithers = row.UniqueTithers,
+            AveragePerMember = TitheService.AveragePerMember(row.Total, row.UniqueTithers),
         };
 
+    // Which members' tithes, then everything a single member's tithes can be narrowed by.
     internal static IQueryable<Tithe> Filter(this IQueryable<Tithe> query, TitheFilters filters)
     {
         if (filters.MemberId is not null)
@@ -198,6 +224,14 @@ internal static class TitheQueryExtensions
             query = query.Where(t => EF.Functions.ILike(t.Member.Person.Name, pattern));
         }
 
+        return query.Filter((MemberTitheFilters)filters);
+    }
+
+    internal static IQueryable<Tithe> Filter(
+        this IQueryable<Tithe> query,
+        MemberTitheFilters filters
+    )
+    {
         if (filters.PaymentMethod is not null)
             query = query.Where(t => t.PaymentMethod == filters.PaymentMethod);
 
@@ -226,10 +260,12 @@ internal static class TitheQueryExtensions
         int pageSize
     )
     {
+        // The leading <= is redundant but gives the index a bound to start from; without it
+        // the OR below is only a filter and a deep page walks every newer row.
         if (cursor is not null)
             query = query.Where(t =>
-                t.CollectionDate < cursor.CollectionDate
-                || (t.CollectionDate == cursor.CollectionDate && t.Id > cursor.Id)
+                t.CollectionDate <= cursor.CollectionDate
+                && (t.CollectionDate < cursor.CollectionDate || t.Id > cursor.Id)
             );
 
         return query.Take(pageSize);

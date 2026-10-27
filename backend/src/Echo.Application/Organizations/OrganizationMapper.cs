@@ -6,14 +6,14 @@ namespace Echo.Application.Organizations;
 [Mapper]
 public partial class OrganizationMapper : IOrganizationMapper
 {
-    [MapperIgnoreSource(nameof(entity.Congregation))]
     [MapperIgnoreSource(nameof(entity.CongregationId))]
     [MapperIgnoreSource(nameof(entity.DeletedAt))]
-    // Filled by the service from a batched count query.
+    // Filled by the service from batched queries.
     [MapperIgnoreTarget(nameof(OrganizationResponseDto.MemberCount))]
+    [MapperIgnoreTarget(nameof(OrganizationResponseDto.LeaderName))]
+    [MapperIgnoreTarget(nameof(OrganizationResponseDto.AverageAge))]
     public partial OrganizationResponseDto ToDto(Organization entity);
 
-    [MapperIgnoreTarget(nameof(Organization.Congregation))]
     [MapperIgnoreTarget(nameof(Organization.CongregationId))]
     [MapperIgnoreTarget(nameof(Organization.Id))]
     [MapperIgnoreTarget(nameof(Organization.CreatedAt))]
@@ -36,5 +36,9 @@ public partial class OrganizationMapper : IOrganizationMapper
             entity.Name = dto.Name;
         if (dto.Description != null)
             entity.Description = dto.Description;
+        if (dto.Kind.HasValue)
+            entity.Kind = dto.Kind.Value;
+        if (dto.MeetingDay.HasValue)
+            entity.MeetingDay = dto.MeetingDay.Value;
     }
 }

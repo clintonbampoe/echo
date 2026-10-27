@@ -1,4 +1,5 @@
 using Echo.Domain.Attendances;
+using Echo.Domain.Congregations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -13,10 +14,13 @@ public class SessionLabelConfiguration : IEntityTypeConfiguration<SessionLabel>
         builder.Property(st => st.CreatedAt).HasDefaultValueSql("now()").ValueGeneratedOnAdd();
 
         builder
-            .HasOne(st => st.Congregation)
+            .HasOne<Congregation>()
             .WithMany()
             .HasForeignKey(st => st.CongregationId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Restrict)
+            .IsRequired();
+
+        builder.HasIndex(st => st.CongregationId);
 
         builder.Property(st => st.Name).IsRequired().HasMaxLength(100);
 
@@ -24,8 +28,6 @@ public class SessionLabelConfiguration : IEntityTypeConfiguration<SessionLabel>
         // cross-congregation analytics can group by category even when
         // congregations rename the display name.
         builder.Property(st => st.Category).IsRequired();
-
-        builder.HasIndex(st => st.CongregationId);
 
         builder.HasIndex(st => new { st.CongregationId, st.Name }).HasFilter("deleted_at IS NULL");
 

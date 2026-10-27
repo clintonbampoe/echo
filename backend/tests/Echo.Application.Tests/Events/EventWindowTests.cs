@@ -14,7 +14,7 @@ public class EventWindowTests
 
     private static Event StartingOn(DateOnly date)
     {
-        var entity = EventFactory.NewEntity();
+        var entity = TestData.Shared.CreateEvent();
         entity.StartDate = date;
         return entity;
     }

@@ -8,7 +8,6 @@ public class Event : ISearchable, ISoftDeletable
 {
     public Guid Id { get; set; }
     public Guid CongregationId { get; set; }
-    public Congregation Congregation { get; set; } = null!;
 
     public Guid OrganizationId { get; set; }
     public Organization Organization { get; set; } = null!;

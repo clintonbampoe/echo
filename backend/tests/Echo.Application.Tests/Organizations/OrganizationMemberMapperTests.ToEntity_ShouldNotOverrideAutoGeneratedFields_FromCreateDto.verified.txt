@@ -1,0 +1,5 @@
+﻿{
+  MemberId: Guid_1,
+  OrganizationId: Guid_2,
+  JoinedAt: Date_1
+}

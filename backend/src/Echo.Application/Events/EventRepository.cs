@@ -16,7 +16,7 @@ public class EventRepository(AppDbContext context, TimeProvider timeProvider)
 
     public async Task<List<Event>> List(
         Guid congregationId,
-        EventFilters filters,
+        EventListFilters filters,
         EventCursor? cursor,
         int pageSize,
         CancellationToken ct
@@ -56,8 +56,10 @@ public class EventRepository(AppDbContext context, TimeProvider timeProvider)
             .ToListAsync(ct);
     }
 
+    // The event ids come from a query already limited to the congregation, so the rows are not
+    // limited again: a congregation filter would send the database to the table for every row
+    // instead of counting from the (event, member) index.
     public async Task<Dictionary<Guid, int>> GetRegistrationCounts(
-        Guid congregationId,
         IReadOnlyList<Guid> eventIds,
         CancellationToken ct = default
     )
@@ -65,13 +67,63 @@ public class EventRepository(AppDbContext context, TimeProvider timeProvider)
         if (eventIds.Count == 0)
             return [];
 
-        return await context
-            .Set<EventRegistration>()
+        return await _registrationDbSet
             .AsNoTracking()
-            .Where(r => r.CongregationId == congregationId)
             .CountPerEvent(eventIds)
             .ToDictionaryAsync(x => x.Id, x => x.Count, ct);
     }
+
+    public async Task<Dictionary<Guid, int>> GetAttendanceCounts(
+        IReadOnlyList<Guid> eventIds,
+        CancellationToken ct = default
+    )
+    {
+        if (eventIds.Count == 0)
+            return [];
+
+        return await _attendanceDbSet
+            .AsNoTracking()
+            .CountPerEvent(eventIds)
+            .ToDictionaryAsync(x => x.Id, x => x.Count, ct);
+    }
+
+    // The newest events in the filters, each with how many registered and how many came.
+    public async Task<List<EventSeriesDto>> GetSeries(
+        Guid congregationId,
+        EventFilters filters,
+        int limit,
+        CancellationToken ct = default
+    ) =>
+        await Scope(congregationId, filters)
+            .Series(_registrationDbSet.FilterDeleted(), _attendanceDbSet.FilterDeleted(), limit)
+            .ToListAsync(ct);
+
+    public async Task<List<EventMonthRow>> GetMonthlyTotals(
+        Guid congregationId,
+        EventMonthlyFilters filters,
+        DateOnly from,
+        DateOnly to,
+        CancellationToken ct = default
+    ) =>
+        await Scope(
+                congregationId,
+                new EventFilters
+                {
+                    OrganizationId = filters.OrganizationId,
+                    OrganizerId = filters.OrganizerId,
+                    From = from,
+                    To = to,
+                }
+            )
+            .MonthlyTotals(_registrationDbSet.FilterDeleted(), _attendanceDbSet.FilterDeleted())
+            .ToListAsync(ct);
+
+    private IQueryable<Event> Scope(Guid congregationId, EventFilters filters) =>
+        _dbSet
+            .AsNoTracking()
+            .FilterDeleted()
+            .Where(e => e.CongregationId == congregationId)
+            .Filter(filters);
 
     public async Task<EventStats> GetSummaryStats(
         Guid congregationId,
@@ -111,6 +163,8 @@ public class EventRepository(AppDbContext context, TimeProvider timeProvider)
 
 public record EventStats(int Total, int Upcoming, int Registrations, int Attendees);
 
+public record EventMonthRow(int Year, int Month, int Events, int Registrations, int Attendance);
+
 internal static class EventQueryExtensions
 {
     internal static IQueryable<ParentCount> CountPerEvent(
@@ -122,6 +176,61 @@ internal static class EventQueryExtensions
             .Where(r => eventIds.Contains(r.EventId))
             .GroupBy(r => r.EventId)
             .Select(g => new ParentCount(g.Key, g.Count()));
+
+    internal static IQueryable<ParentCount> CountPerEvent(
+        this IQueryable<EventAttendance> query,
+        IReadOnlyList<Guid> eventIds
+    ) =>
+        query
+            .FilterDeleted()
+            .Where(a => eventIds.Contains(a.EventId))
+            .GroupBy(a => a.EventId)
+            .Select(g => new ParentCount(g.Key, g.Count()));
+
+    // The newest events first. Each count is a count from the (event, member) index.
+    internal static IQueryable<EventSeriesDto> Series(
+        this IQueryable<Event> events,
+        IQueryable<EventRegistration> registrations,
+        IQueryable<EventAttendance> attendance,
+        int limit
+    ) =>
+        events
+            .OrderByDescending(e => e.StartDate)
+            .ThenByDescending(e => e.Id)
+            .Take(limit)
+            .Select(e => new EventSeriesDto
+            {
+                EventId = e.Id,
+                Name = e.Name,
+                StartDate = e.StartDate,
+                Capacity = e.Capacity,
+                RegistrationCount = registrations.Count(r => r.EventId == e.Id),
+                AttendanceCount = attendance.Count(a => a.EventId == e.Id),
+            });
+
+    // The events grouped by the month they start in; each event's counts are taken first, so the
+    // groups only add them up.
+    internal static IQueryable<EventMonthRow> MonthlyTotals(
+        this IQueryable<Event> events,
+        IQueryable<EventRegistration> registrations,
+        IQueryable<EventAttendance> attendance
+    ) =>
+        events
+            .Select(e => new
+            {
+                e.StartDate.Year,
+                e.StartDate.Month,
+                Registered = registrations.Count(r => r.EventId == e.Id),
+                CameIn = attendance.Count(a => a.EventId == e.Id),
+            })
+            .GroupBy(x => new { x.Year, x.Month })
+            .Select(g => new EventMonthRow(
+                g.Key.Year,
+                g.Key.Month,
+                g.Count(),
+                g.Sum(x => x.Registered),
+                g.Sum(x => x.CameIn)
+            ));
 
     // Upcoming means "starts today or later", whatever date window the list is showing. The other
     // filters (name, organization, organizer) still apply.
@@ -150,8 +259,11 @@ internal static class EventQueryExtensions
         EventFilters filters
     )
     {
-        if (filters.Name is not null)
-            query = query.Where(e => EF.Functions.ILike(e.Name, $"%{filters.Name}%"));
+        if (!string.IsNullOrWhiteSpace(filters.Name))
+        {
+            var pattern = $"%{Echo.Shared.Query.Extensions.EscapeLike(filters.Name.Trim())}%";
+            query = query.Where(e => EF.Functions.ILike(e.Name, pattern));
+        }
 
         if (filters.OrganizerId is not null)
             query = query.Where(e => e.OrganizerId == filters.OrganizerId);
@@ -176,7 +288,9 @@ internal static class EventQueryExtensions
             ? query.OrderByDescending(e => e.StartDate).ThenByDescending(e => e.Id)
             : query.OrderBy(e => e.StartDate).ThenBy(e => e.Id);
 
-    // The cursor is the last row of the previous page and says which direction it was listed in.
+    // The cursor is the last row of the previous page and says which direction it was listed in. The
+    // leading date bound is redundant but gives the index a bound to start from; without it the OR
+    // is only a filter and a deep page walks every row before it.
     internal static IQueryable<Event> Paginate(
         this IQueryable<Event> query,
         EventCursor? cursor,
@@ -187,12 +301,12 @@ internal static class EventQueryExtensions
             query =
                 cursor.Order == SortDirection.Desc
                     ? query.Where(e =>
-                        e.StartDate < cursor.StartDate
-                        || (e.StartDate == cursor.StartDate && e.Id < cursor.Id)
+                        e.StartDate <= cursor.StartDate
+                        && (e.StartDate < cursor.StartDate || e.Id < cursor.Id)
                     )
                     : query.Where(e =>
-                        e.StartDate > cursor.StartDate
-                        || (e.StartDate == cursor.StartDate && e.Id > cursor.Id)
+                        e.StartDate >= cursor.StartDate
+                        && (e.StartDate > cursor.StartDate || e.Id > cursor.Id)
                     );
 
         return query.Take(pageSize);

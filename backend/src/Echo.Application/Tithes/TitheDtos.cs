@@ -23,8 +23,6 @@ public record TitheCreateDto
     public string? Description { get; init; }
 }
 
-// The member a tithe belongs to is fixed when it is recorded, so an update has no member. A tithe recorded
-// against the wrong member is deleted and recorded again.
 public record TitheUpdateDto
 {
     [Range(0.01, 1_000_000)]
@@ -62,18 +60,24 @@ public record TitheCursor
 }
 
 /// <summary>
-/// Default window when From/To are omitted: this week to today (by CollectionDate).
-/// No default window when MemberId, Year or Month is set.
+/// Default window when From/To are omitted: this week to
+/// today (by CollectionDate). No default window when
+/// MemberId, Year or Month is set.
 /// </summary>
-public record TitheFilters
+public record MemberTitheFilters
 {
-    public Guid? MemberId { get; init; }
-    public string? MemberName { get; init; } // partial, case-insensitive match on the member's name
     public PaymentMethod? PaymentMethod { get; init; }
     public int? Year { get; init; }
     public MonthOfYear? Month { get; init; }
     public DateOnly? From { get; init; }
-    public DateOnly? To { get; init; } // on CollectionDate
+    public DateOnly? To { get; init; }
+}
+
+/// <summary>The filters of the whole congregation's tithes: those of one member's, and which members.</summary>
+public record TitheFilters : MemberTitheFilters
+{
+    public Guid? MemberId { get; init; }
+    public string? MemberName { get; init; }
 }
 
 public record TitheSummaryDto
@@ -82,20 +86,39 @@ public record TitheSummaryDto
     public int UniqueTithers { get; init; }
     public string? MostUsedPaymentMethod { get; init; }
     public decimal AveragePerMember { get; init; }
+
+    /// <summary>The biggest single tithe in the window. Zero when there are none.</summary>
+    public decimal LargestTithe { get; init; }
+
+    /// <summary>How the tithes were paid, the method with the most tithes first.</summary>
+    public IReadOnlyList<TitheMethodDto> ByMethod { get; init; } = [];
     public DateWindow? Window { get; init; }
 }
 
 /// <summary>
-/// Filters for the monthly summary. From and To choose the months to chart (any day in the first
-/// and last month); tithes are grouped by the month they are for, not by collection date.
+/// Filters for the monthly summary. Months and To choose the months to chart; the other filters
+/// choose the tithes. Tithes are grouped by the month they are for, not by collection date.
 /// </summary>
 public record TitheMonthlyFilters
 {
     public Guid? MemberId { get; init; }
-    public string? MemberName { get; init; } // partial, case-insensitive match on the member's name
+    public string? MemberName { get; init; }
     public PaymentMethod? PaymentMethod { get; init; }
-    public DateOnly? From { get; init; }
+
+    /// <summary>How many months to return, ending with the month of <see cref="To"/>.</summary>
+    [Range(1, MonthRange.MaxMonths)]
+    public int Months { get; init; } = MonthRange.DefaultMonths;
+
+    /// <summary>Any day in the last month to return. This month when not given.</summary>
     public DateOnly? To { get; init; }
+}
+
+/// <summary>How many tithes were paid one way, and how much they came to.</summary>
+public record TitheMethodDto
+{
+    public required string Method { get; init; }
+    public int Count { get; init; }
+    public decimal Total { get; init; }
 }
 
 public record TitheMonthlyDto
@@ -104,4 +127,7 @@ public record TitheMonthlyDto
     public int Month { get; init; }
     public decimal TotalCollected { get; init; }
     public int UniqueTithers { get; init; }
+
+    /// <summary>What a tither gave on average this month: the total over the people who gave.</summary>
+    public decimal AveragePerMember { get; init; }
 }

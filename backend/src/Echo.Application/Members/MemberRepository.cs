@@ -1,6 +1,7 @@
 using Echo.Data;
 using Echo.Domain.Congregations;
 using Echo.Domain.Members;
+using Echo.Domain.Organizations;
 using Echo.Shared.Query;
 using Echo.Shared.Utilities;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +11,8 @@ namespace Echo.Application.Members;
 public class MemberRepository(AppDbContext context, TimeProvider timeProvider)
 {
     private readonly DbSet<Member> _dbSet = context.Set<Member>();
+    private readonly DbSet<OrganizationMember> _organizationMemberDbSet =
+        context.Set<OrganizationMember>();
 
     public async Task<List<Member>> List(
         Guid congregationId,
@@ -19,12 +22,11 @@ public class MemberRepository(AppDbContext context, TimeProvider timeProvider)
         CancellationToken ct = default
     )
     {
-        return await _dbSet
-            .AsNoTracking()
-            .FilterDeleted()
-            .Where(m => m.CongregationId == congregationId)
+        return await Scope(congregationId, filters)
+            // A member's person is always in the same congregation. Saying so lets the database
+            // read the people in name order from the (congregation, name) index.
+            .Where(m => m.Person.CongregationId == congregationId)
             .Include(m => m.Person)
-            .Filter(filters)
             .OrderBy(m => m.Person.Name)
             .ThenBy(m => m.PersonId)
             .Paginate(cursor, pageSize)
@@ -57,24 +59,84 @@ public class MemberRepository(AppDbContext context, TimeProvider timeProvider)
         CancellationToken ct = default
     )
     {
+        var today = DateUtils.GetDateToday(timeProvider);
+
+        // One query, one pass: every count below is a FILTER aggregate over the same scan.
+        var stats = await Scope(congregationId, filters)
+            .SummarizeMembers(today)
+            .FirstOrDefaultAsync(ct);
+
+        return stats ?? new MemberStats(0, 0, 0, 0, 0d, 0, 0, 0, 0, 0, 0);
+    }
+
+    // How many members joined in the window, in the window before it, and this calendar year. The
+    // filters' dates are left out: they say which members to list, not which joins to count.
+    public async Task<JoinedCounts> GetJoinedCounts(
+        Guid congregationId,
+        MemberFilters filters,
+        DateWindow window,
+        CancellationToken ct = default
+    )
+    {
+        var today = DateUtils.GetDateToday(timeProvider);
+        var counts = await Scope(congregationId, filters with { From = null, To = null })
+            .JoinedCounts(window, window.Previous(), new DateOnly(today.Year, 1, 1), today)
+            .FirstOrDefaultAsync(ct);
+
+        return counts ?? new JoinedCounts(0, 0, 0);
+    }
+
+    private IQueryable<Member> Scope(Guid congregationId, MemberFilters filters)
+    {
         var members = _dbSet
             .AsNoTracking()
             .FilterDeleted()
             .Where(m => m.CongregationId == congregationId)
             .Filter(filters);
 
-        var today = DateUtils.GetDateToday(timeProvider);
+        if (filters.OrganizationId is { } organizationId)
+            members = members.Where(m =>
+                _organizationMemberDbSet.Any(om =>
+                    om.MemberId == m.PersonId
+                    && om.OrganizationId == organizationId
+                    && om.DeletedAt == null
+                )
+            );
 
-        // One query, one pass: every count below is a FILTER aggregate over the same scan.
-        var stats = await members.SummarizeMembers(today).FirstOrDefaultAsync(ct);
+        return members;
+    }
 
-        return stats ?? new MemberStats(0, 0, 0, 0, 0d, 0, 0, 0, 0, 0);
+    public async Task<List<MemberMonthRow>> GetMonthlyTotals(
+        Guid congregationId,
+        MemberMonthlyFilters filters,
+        DateOnly from,
+        DateOnly to,
+        CancellationToken ct = default
+    )
+    {
+        var members = _dbSet
+            .AsNoTracking()
+            .FilterDeleted()
+            .Where(m => m.CongregationId == congregationId)
+            .Where(m => m.JoinedDate >= from && m.JoinedDate <= to);
+
+        if (filters.Status is not null)
+            members = members.Where(m => m.Status == filters.Status);
+
+        if (filters.Gender is not null)
+            members = members.Where(m => m.Gender == filters.Gender);
+
+        return await members.JoinedByMonth().ToListAsync(ct);
     }
 
     public void Create(Member entity) => _dbSet.Add(entity);
 
     public void SoftDelete(Member entity) => entity.DeletedAt = DateTime.UtcNow;
 }
+
+public record MemberMonthRow(int Year, int Month, int Count);
+
+public record JoinedCounts(int InWindow, int InPreviousWindow, int ThisYear);
 
 public record MemberStats(
     int Total,
@@ -86,13 +148,44 @@ public record MemberStats(
     int Age18To29,
     int Age30To44,
     int Age45To59,
-    int Age60Plus
+    int Age60Plus,
+    int Baptised
 );
 
 internal static class MemberQueryExtensions
 {
+    // Joins inside the window, inside the one before it, and since the start of the year (one scan).
+    internal static IQueryable<JoinedCounts> JoinedCounts(
+        this IQueryable<Member> members,
+        DateWindow window,
+        DateWindow previous,
+        DateOnly yearStart,
+        DateOnly today
+    )
+    {
+        var earliest = previous.From < yearStart ? previous.From : yearStart;
+        var latest = window.To > today ? window.To : today;
+
+        return members
+            .Where(m => m.JoinedDate >= earliest && m.JoinedDate <= latest)
+            .GroupBy(_ => 1)
+            .Select(g => new JoinedCounts(
+                g.Count(m => m.JoinedDate >= window.From && m.JoinedDate <= window.To),
+                g.Count(m => m.JoinedDate >= previous.From && m.JoinedDate <= previous.To),
+                g.Count(m => m.JoinedDate >= yearStart && m.JoinedDate <= today)
+            ));
+    }
+
+    // New members by the month they joined; members with no join date are not in any month.
+    internal static IQueryable<MemberMonthRow> JoinedByMonth(this IQueryable<Member> members) =>
+        members
+            .Where(m => m.JoinedDate != null)
+            .GroupBy(m => new { m.JoinedDate!.Value.Year, m.JoinedDate.Value.Month })
+            .Select(g => new MemberMonthRow(g.Key.Year, g.Key.Month, g.Count()));
+
     // Reads only congregation_id, joined_date, status, gender and date_of_birth, all of which are in
-    // the covering index on members, so the database can answer from the index alone.
+    // the (congregation, joined_date) covering index on members, so the database can answer from
+    // the index alone.
     internal static IQueryable<MemberStats> SummarizeMembers(
         this IQueryable<Member> query,
         DateOnly today
@@ -131,14 +224,18 @@ internal static class MemberQueryExtensions
                 group.Count(m => m.DateOfBirth <= born18 && m.DateOfBirth > born30),
                 group.Count(m => m.DateOfBirth <= born30 && m.DateOfBirth > born45),
                 group.Count(m => m.DateOfBirth <= born45 && m.DateOfBirth > born60),
-                group.Count(m => m.DateOfBirth <= born60)
+                group.Count(m => m.DateOfBirth <= born60),
+                group.Count(m => m.BaptisedDate != null)
             ));
     }
 
     internal static IQueryable<Member> Filter(this IQueryable<Member> query, MemberFilters filters)
     {
-        if (filters.Name is not null)
-            query = query.Where(m => EF.Functions.ILike(m.Person.Name, $"%{filters.Name}%"));
+        if (!string.IsNullOrWhiteSpace(filters.Name))
+        {
+            var pattern = $"%{Echo.Shared.Query.Extensions.EscapeLike(filters.Name.Trim())}%";
+            query = query.Where(m => EF.Functions.ILike(m.Person.Name, pattern));
+        }
 
         if (filters.Status.HasValue)
             query = query.Where(m => m.Status == filters.Status.Value);
@@ -173,10 +270,15 @@ internal static class MemberQueryExtensions
         int pageSize
     )
     {
+        // The leading >= is redundant but gives the index a bound to start from; without it
+        // the OR below is only a filter and a deep page walks every earlier name.
         if (cursor is not null)
             query = query.Where(m =>
-                string.Compare(m.Person.Name, cursor.Name) > 0
-                || (m.Person.Name == cursor.Name && m.PersonId > cursor.Id)
+                string.Compare(m.Person.Name, cursor.Name) >= 0
+                && (
+                    string.Compare(m.Person.Name, cursor.Name) > 0
+                    || m.PersonId > cursor.Id
+                )
             );
 
         return query.Take(pageSize);
@@ -184,8 +286,9 @@ internal static class MemberQueryExtensions
 
     internal static IQueryable<Member> SearchName(this IQueryable<Member> query, string name)
     {
+        var pattern = $"%{Echo.Shared.Query.Extensions.EscapeLike(name.Trim())}%";
         return query
-            .Where(x => EF.Functions.ILike(x.Person.Name, $"%{name}%"))
+            .Where(x => EF.Functions.ILike(x.Person.Name, pattern))
             .OrderByDescending(x => EF.Functions.TrigramsSimilarity(x.Person.Name, name))
             .Take(5);
     }

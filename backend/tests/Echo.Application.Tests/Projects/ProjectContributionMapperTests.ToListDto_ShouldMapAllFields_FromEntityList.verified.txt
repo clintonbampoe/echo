@@ -1,0 +1,32 @@
+﻿[
+  {
+    Id: Guid_1,
+    ProjectId: Guid_2,
+    ProjectName: Borehole Fund,
+    Amount: 250.0,
+    DateContributed: Date_1,
+    PaymentMethod: BankTransfer,
+    Description: Monthly standing order,
+    CreatedAt: DateTime_1
+  },
+  {
+    Id: Guid_3,
+    ProjectId: Guid_4,
+    ProjectName: Borehole Fund,
+    Amount: 250.0,
+    DateContributed: Date_2,
+    PaymentMethod: BankTransfer,
+    Description: Monthly standing order,
+    CreatedAt: DateTime_2
+  },
+  {
+    Id: Guid_5,
+    ProjectId: Guid_6,
+    ProjectName: Borehole Fund,
+    Amount: 250.0,
+    DateContributed: Date_3,
+    PaymentMethod: BankTransfer,
+    Description: Monthly standing order,
+    CreatedAt: DateTime_3
+  }
+]

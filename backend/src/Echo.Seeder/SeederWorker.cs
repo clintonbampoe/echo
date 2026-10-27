@@ -71,6 +71,7 @@ public sealed class SeederWorker(
                 new AttendancePhase(),
                 new FinancesPhase(),
                 new AssetsPhase(),
+                new AnalyzePhase(),
             ];
 
             foreach (var phase in phases)

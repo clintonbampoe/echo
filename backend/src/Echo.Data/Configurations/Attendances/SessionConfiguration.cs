@@ -1,4 +1,5 @@
 using Echo.Domain.Attendances;
+using Echo.Domain.Congregations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -13,10 +14,11 @@ public class SessionConfiguration : IEntityTypeConfiguration<Session>
         builder.Property(s => s.CreatedAt).HasDefaultValueSql("now()").ValueGeneratedOnAdd();
 
         builder
-            .HasOne(s => s.Congregation)
+            .HasOne<Congregation>()
             .WithMany()
             .HasForeignKey(s => s.CongregationId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Restrict)
+            .IsRequired();
 
         builder
             .HasOne(s => s.SessionLabel)
@@ -35,6 +37,7 @@ public class SessionConfiguration : IEntityTypeConfiguration<Session>
         builder.Property(s => s.Name).HasMaxLength(200);
         builder.Property(s => s.Topic).HasMaxLength(500);
         builder.Property(s => s.Notes).HasMaxLength(2000);
+        builder.Property(s => s.Location).HasMaxLength(200);
         builder.Property(s => s.Status).IsRequired();
 
         // Sessions are almost always queried "for this congregation, on this

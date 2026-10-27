@@ -1,9 +1,9 @@
 using Echo.Data;
 using Echo.Domain.Attendances;
-using Echo.Domain.Congregations;
 using Echo.Domain.Members;
 using Echo.Shared.Query;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace Echo.Application.Attendances;
 
@@ -27,7 +27,7 @@ public class AttendanceRepository(AppDbContext context)
             .Include(a => a.Session)
                 .ThenInclude(s => s.SessionLabel)
             .Filter(filters)
-            .OrderByDescending(a => a.Session.Date)
+            .OrderByDescending(a => a.SessionDate)
             .ThenByDescending(a => a.Id)
             .Paginate(cursor, pageSize)
             .ToListAsync(ct);
@@ -49,7 +49,7 @@ public class AttendanceRepository(AppDbContext context)
     }
 
     /// <summary>
-    /// Used by the QR check-in flow to detect a prior check-in for the same
+    /// Used to detect a prior check-in for the same
     /// person at the same session.
     /// </summary>
     public Task<bool> ExistsForSessionAndPerson(
@@ -71,31 +71,48 @@ public class AttendanceRepository(AppDbContext context)
 
     /// <summary>
     /// Members and visitors are counted by the person's role at the time the attendance was
-    /// recorded, not their current role.
+    /// recorded, not their current role. The filter parameters are the same ones the list
+    /// endpoint takes, so a summary and its corresponding list describe the same records.
     /// </summary>
-    public async Task<AttendanceStats> GetSummaryStats(
+    public Task<AttendanceStats> GetSummary(
         Guid congregationId,
-        AttendanceFilters filters,
-        CancellationToken ct = default
-    )
-    {
-        var records = _dbSet
-            .AsNoTracking()
-            .Live()
-            .Where(a => a.CongregationId == congregationId)
-            .Filter(filters);
+        AttendanceFilters f,
+        CancellationToken ct
+    ) =>
+        Scope(congregationId, f)
+            .GroupBy(_ => 1)
+            .Select(g => new AttendanceStats(
+                g.Count(),
+                g.Count(a => a.PersonKindAtTime == PersonKind.Member),
+                g.Count(a => a.PersonKindAtTime == PersonKind.Visitor),
+                g.Count(a => a.IsFirstVisit)
+            ))
+            .FirstOrDefaultAsync(ct)
+            .ContinueWith(t => t.Result ?? new AttendanceStats(0, 0, 0, 0), ct);
 
-        var stats = await context
-            .OneRow(congregationId)
-            .SummarizeAttendance(records, _dbSet.Live())
-            .FirstOrDefaultAsync(ct);
-        return stats ?? new AttendanceStats(0, 0, 0, 0);
-    }
+    public async Task<List<AttendanceMonthlyDto>> GetMonthlyTotals(
+        Guid congregationId,
+        AttendanceMonthlyFilters filters,
+        DateOnly from,
+        DateOnly to,
+        CancellationToken ct = default
+    ) =>
+        await Scope(
+                congregationId,
+                new AttendanceFilters
+                {
+                    SessionLabelId = filters.SessionLabelId,
+                    From = from,
+                    To = to,
+                }
+            )
+            .MonthlyTotals()
+            .ToListAsync(ct);
 
     public async Task<HashSet<Guid>> PersonIdsPresent(
         Guid congregationId,
         Guid sessionId,
-        IReadOnlyList<Guid> personIds,
+        List<Guid> personIds,
         CancellationToken ct = default
     )
     {
@@ -110,48 +127,106 @@ public class AttendanceRepository(AppDbContext context)
             .Select(a => a.PersonId)
             .ToListAsync(ct);
 
-        return present.ToHashSet();
+        return [.. present];
     }
 
     public void CreateMany(IEnumerable<Attendance> entities) => _dbSet.AddRange(entities);
 
     public void Create(Attendance entity) => _dbSet.Add(entity);
 
+    public Task<List<Attendance>> ListForSession(Guid sessionId, CancellationToken ct = default) =>
+        _dbSet.Live().Where(a => a.SessionId == sessionId).ToListAsync(ct);
+
+    /// <summary>
+    /// A visitor's first visit is their earliest live attendance as a visitor. Recomputes the
+    /// flag for the visitors among <paramref name="changed"/> after any write that could move it,
+    /// touching only rows whose flag actually changes. Idempotent, so a failed or repeated call
+    /// is repaired by the next one.
+    /// </summary>
+    public async Task RefreshFirstVisits(
+        IEnumerable<Attendance> changed,
+        CancellationToken ct = default
+    )
+    {
+        var visitorIds = changed
+            .Where(a => a.PersonKindAtTime == PersonKind.Visitor)
+            .Select(a => a.PersonId)
+            .Distinct()
+            .ToArray();
+            
+        if (visitorIds.Length == 0)
+            return;
+
+        await context.Database.ExecuteSqlAsync(
+            $@"
+            WITH ranked AS (
+                SELECT id,
+                       is_first_visit AS current,
+                       row_number() OVER (PARTITION BY person_id ORDER BY session_date, id) = 1 AS should_be
+                FROM attendance
+                WHERE person_id = ANY({visitorIds})
+                  AND person_kind_at_time = 'Visitor'
+                  AND deleted_at IS NULL
+            )
+            UPDATE attendance a
+            SET is_first_visit = r.should_be
+            FROM ranked r
+            WHERE a.id = r.id AND r.current <> r.should_be",
+            ct
+        );
+    }
+
     public void SoftDelete(Attendance entity) => entity.DeletedAt = DateTime.UtcNow;
+
+    private IQueryable<Attendance> Scope(Guid congregationId, AttendanceFilters filters)
+    {
+        return context
+            .Attendances.AsNoTracking()
+            .Where(a => a.CongregationId == congregationId)
+            .Live()
+            .Filter(filters);
+    }
 }
 
 public record AttendanceStats(int Total, int Members, int Visitors, int FirstTimeVisitors);
 
 internal static class AttendanceQueryExtensions
 {
-    // allLive is every live attendance record, not just the ones in scope: a visitor is a first-time
-    // visitor when they have no earlier visit at all.
-    internal static IQueryable<AttendanceStats> SummarizeAttendance(
-        this IQueryable<Congregation> oneRow,
-        IQueryable<Attendance> records,
-        IQueryable<Attendance> allLive
+    // Who was present at each of the sessions, split by what they were when they came.
+    internal static IQueryable<SessionAttendance> AttendancePerSession(
+        this IQueryable<Attendance> query,
+        IReadOnlyList<Guid> sessionIds
     ) =>
-        oneRow.Select(_ => new AttendanceStats(
-            records.Count(),
-            records.Count(a => a.PersonKindAtTime == PersonKind.Member),
-            records.Count(a => a.PersonKindAtTime == PersonKind.Visitor),
-            records
-                .Where(a =>
-                    a.PersonKindAtTime == PersonKind.Visitor
-                    && !allLive.Any(prev =>
-                        prev.PersonId == a.PersonId
-                        && prev.PersonKindAtTime == PersonKind.Visitor
-                        && prev.Session.Date < a.Session.Date
-                    )
-                )
-                .Select(a => a.PersonId)
-                .Distinct()
-                .Count()
-        ));
+        query
+            .Live()
+            .Where(a => sessionIds.Contains(a.SessionId))
+            .GroupBy(a => a.SessionId)
+            .Select(g => new SessionAttendance(
+                g.Key,
+                g.Count(),
+                g.Count(a => a.PersonKindAtTime == PersonKind.Member),
+                g.Count(a => a.PersonKindAtTime == PersonKind.Visitor),
+                g.Count(a => a.IsFirstVisit)
+            ));
 
-    // An attendance record is visible only while both it and its session are not deleted.
+    internal static IQueryable<AttendanceMonthlyDto> MonthlyTotals(
+        this IQueryable<Attendance> query
+    ) =>
+        query
+            .GroupBy(a => new { a.SessionDate.Year, a.SessionDate.Month })
+            .Select(g => new AttendanceMonthlyDto
+            {
+                Year = g.Key.Year,
+                Month = g.Key.Month,
+                TotalPresent = g.Count(),
+                MembersPresent = g.Count(a => a.PersonKindAtTime == PersonKind.Member),
+                VisitorsPresent = g.Count(a => a.PersonKindAtTime == PersonKind.Visitor),
+                FirstTimeVisitors = g.Count(a => a.IsFirstVisit),
+            });
+
+    // Deleting a session soft-deletes its attendance, so a record's own DeletedAt decides visibility.
     internal static IQueryable<Attendance> Live(this IQueryable<Attendance> query) =>
-        query.FilterDeleted().Where(a => a.Session.DeletedAt == null);
+        query.FilterDeleted();
 
     internal static IQueryable<Attendance> InSessions(
         this IQueryable<Attendance> query,
@@ -176,10 +251,10 @@ internal static class AttendanceQueryExtensions
             query = query.Where(a => a.PersonKindAtTime == filters.Kind);
 
         if (filters.From is not null)
-            query = query.Where(a => a.Session.Date >= filters.From);
+            query = query.Where(a => a.SessionDate >= filters.From);
 
         if (filters.To is not null)
-            query = query.Where(a => a.Session.Date <= filters.To);
+            query = query.Where(a => a.SessionDate <= filters.To);
 
         if (!string.IsNullOrWhiteSpace(filters.Name))
         {
@@ -196,10 +271,12 @@ internal static class AttendanceQueryExtensions
         int pageSize
     )
     {
+        // The leading <= is redundant but gives the index a bound to start from; without it
+        // the OR below is only a filter and a deep page walks every newer row.
         if (cursor is not null)
             query = query.Where(a =>
-                a.Session.Date < cursor.SessionDate
-                || (a.Session.Date == cursor.SessionDate && a.Id < cursor.Id)
+                a.SessionDate <= cursor.SessionDate
+                && (a.SessionDate < cursor.SessionDate || a.Id < cursor.Id)
             );
 
         return query.Take(pageSize);

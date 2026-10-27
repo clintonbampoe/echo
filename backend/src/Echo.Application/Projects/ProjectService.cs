@@ -1,3 +1,4 @@
+using Echo.Application.Caching;
 using Echo.Application.Members;
 using Echo.Data;
 using Echo.Domain.Members;
@@ -24,6 +25,7 @@ public class ProjectService(
     ApplicationInstrumentation instrumentation,
     LinkGenerator linker,
     DateWindows dateWindows,
+    SummaryCache summaries,
     ILogger<ProjectService> logger
 )
 {
@@ -62,14 +64,11 @@ public class ProjectService(
 
         var nextCursor = hasMore ? encoder.Encode(BuildCursor(entities.Last())) : null;
 
-        var counts = await repository.GetRaisedAmounts(
-            congregationId,
+        var totals = await repository.GetContributionTotals(
             entities.Select(x => x.Id).ToList(),
             ct
         );
-        var data = entities
-            .Select(x => mapper.ToDto(x) with { RaisedAmount = counts.GetValueOrDefault(x.Id) })
-            .ToList();
+        var data = entities.Select(x => WithTotals(mapper.ToDto(x), totals)).ToList();
         activity?.SetTag("project.count", data.Count);
         ProjectLog.Listed(logger, congregationId, data.Count);
 
@@ -280,7 +279,20 @@ public class ProjectService(
         return new SuccessResult<List<ProjectSearchResultDto>>(res);
     }
 
-    public async Task<IOperationResult> Summary(
+    public Task<IOperationResult> Summary(
+        Guid congregationId,
+        ProjectFilters filters,
+        CancellationToken ct
+    ) =>
+        summaries.Serve(
+            "projects",
+            congregationId,
+            filters,
+            token => ComputeSummary(congregationId, filters, token),
+            ct
+        );
+
+    private async Task<ProjectSummaryDto> ComputeSummary(
         Guid congregationId,
         ProjectFilters filters,
         CancellationToken ct
@@ -292,6 +304,10 @@ public class ProjectService(
         using var activity = instrumentation.ActivitySource.StartActivity("svc.project.summary");
 
         var stats = await repository.GetSummaryStats(congregationId, filters, ct);
+        // With no window (a manager's projects, all time) there is no period to compare.
+        var raised = window is { } w
+            ? await repository.GetRaisedInWindows(congregationId, filters, w, ct)
+            : new RaisedInWindows(0m, 0m);
 
         var res = new ProjectSummaryDto
         {
@@ -300,12 +316,66 @@ public class ProjectService(
             TotalRaised = stats.Raised,
             TotalTarget = stats.Target,
             AtRiskCount = stats.AtRisk,
+            RaisedInWindow = raised.Current,
+            PreviousRaised = raised.Previous,
         };
 
         activity?.SetTag("project.summary.total", res.TotalProjects);
         ProjectLog.Summarized(logger, congregationId, res.TotalProjects);
 
-        return new SuccessResult<ProjectSummaryDto>(res);
+        return res;
+    }
+
+    public Task<IOperationResult> CategorySummary(
+        Guid congregationId,
+        ProjectFilters filters,
+        CancellationToken ct
+    ) =>
+        summaries.Serve(
+            "projects.by-category",
+            congregationId,
+            filters,
+            token => ComputeCategorySummary(congregationId, filters, token),
+            ct
+        );
+
+    private async Task<List<ProjectCategoryTotalDto>> ComputeCategorySummary(
+        Guid congregationId,
+        ProjectFilters filters,
+        CancellationToken ct
+    )
+    {
+        var window = ResolveWindow(filters, dateWindows);
+        filters = filters with { From = window?.From, To = window?.To };
+
+        using var activity = instrumentation.ActivitySource.StartActivity(
+            "svc.project.category_summary"
+        );
+
+        var rows = await repository.GetCategoryTotals(congregationId, filters, ct);
+        return WithOther(rows);
+    }
+
+    // At most five rows, so a chart stays readable: the four categories that raised the most, then
+    // one "Other" row adding up all the rest. The rows come in biggest first.
+    internal const int MaxCategoryRows = 5;
+
+    internal static List<ProjectCategoryTotalDto> WithOther(IReadOnlyList<ProjectCategoryTotalDto> rows)
+    {
+        if (rows.Count <= MaxCategoryRows)
+            return [.. rows];
+
+        var rest = rows.Skip(MaxCategoryRows - 1).ToList();
+        var other = new ProjectCategoryTotalDto
+        {
+            CategoryId = null,
+            CategoryName = "Other",
+            ProjectCount = rest.Sum(c => c.ProjectCount),
+            TotalTarget = rest.Sum(c => c.TotalTarget),
+            TotalRaised = rest.Sum(c => c.TotalRaised),
+        };
+
+        return [.. rows.Take(MaxCategoryRows - 1), other];
     }
 
     private static ProjectCursor BuildCursor(Project last)
@@ -319,7 +389,16 @@ public class ProjectService(
         CancellationToken ct
     )
     {
-        var counts = await repository.GetRaisedAmounts(congregationId, [entity.Id], ct);
-        return mapper.ToDto(entity) with { RaisedAmount = counts.GetValueOrDefault(entity.Id) };
+        var totals = await repository.GetContributionTotals([entity.Id], ct);
+        return WithTotals(mapper.ToDto(entity), totals);
     }
+
+    // A project with no gifts has no row in the totals.
+    private static ProjectResponseDto WithTotals(
+        ProjectResponseDto dto,
+        Dictionary<Guid, ProjectContributionTotal> totals
+    ) =>
+        totals.TryGetValue(dto.Id, out var total)
+            ? dto with { RaisedAmount = total.Amount, TotalContributions = total.Count }
+            : dto;
 }

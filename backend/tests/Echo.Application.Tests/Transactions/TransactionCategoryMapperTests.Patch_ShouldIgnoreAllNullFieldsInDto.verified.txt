@@ -1,0 +1,8 @@
+﻿{
+  Id: 1,
+  CongregationId: Guid_1,
+  Name: Tithes,
+  CategoryType: Expense,
+  CreatedAt: DateTime_1,
+  DeletedAt: DateTime_2
+}

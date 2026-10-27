@@ -24,7 +24,12 @@ public class VisitorRepository(AppDbContext context)
             .AsNoTracking()
             .FilterDeleted()
             .Where(v => v.CongregationId == congregationId)
+            // A visitor's person is always in the same congregation. Saying so lets the database
+            // read the people in name order from the (congregation, name) index.
+            .Where(v => v.Person.CongregationId == congregationId)
             .Include(v => v.Person)
+            .Include(v => v.InvitedBy)
+                .ThenInclude(m => m.Person)
             .Filter(filters)
             .OrderBy(v => v.Person.Name)
             .ThenBy(v => v.PersonId)
@@ -38,6 +43,8 @@ public class VisitorRepository(AppDbContext context)
             .FilterDeleted()
             .Where(v => v.PersonId == id && v.CongregationId == congregationId)
             .Include(v => v.Person)
+            .Include(v => v.InvitedBy)
+                .ThenInclude(m => m.Person)
             .FirstOrDefaultAsync(ct);
     }
 
@@ -80,7 +87,10 @@ public class VisitorRepository(AppDbContext context)
             .FilterDeleted()
             .Where(v => v.CongregationId == congregationId);
         var named = everyone.WithName(filters.Name);
-        var attendance = context.Set<Attendance>().Live();
+        var attendance = context
+            .Set<Attendance>()
+            .Live()
+            .Where(a => a.CongregationId == congregationId);
 
         var stats = await context
             .OneRow(congregationId)
@@ -91,7 +101,7 @@ public class VisitorRepository(AppDbContext context)
                 attendance
             )
             .FirstOrDefaultAsync(ct);
-        return stats ?? new VisitorStats(0, 0, 0, 0);
+        return stats ?? new VisitorStats(0, 0, 0, 0, 0, 0, 0);
     }
 
     public void Create(Visitor entity) => _dbSet.Add(entity);
@@ -99,7 +109,15 @@ public class VisitorRepository(AppDbContext context)
     public void SoftDelete(Visitor entity) => entity.DeletedAt = DateTime.UtcNow;
 }
 
-public record VisitorStats(int Total, int New, int Converted, int Recurring);
+public record VisitorStats(
+    int Total,
+    int New,
+    int Converted,
+    int Recurring,
+    int Invited,
+    int Male,
+    int Female
+);
 
 internal readonly record struct VisitStats(Guid PersonId, int Count, DateOnly LastDate);
 
@@ -114,7 +132,7 @@ internal static class VisitorQueryExtensions
             .Live()
             .Where(a => personIds.Contains(a.PersonId) && a.PersonKindAtTime == PersonKind.Visitor)
             .GroupBy(a => a.PersonId)
-            .Select(g => new VisitStats(g.Key, g.Count(), g.Max(a => a.Session.Date)));
+            .Select(g => new VisitStats(g.Key, g.Count(), g.Max(a => a.SessionDate)));
 
     // visitors is the visitor list for the filters; created and converted are everyone created or
     // converted in the window, whatever their current status.
@@ -129,7 +147,17 @@ internal static class VisitorQueryExtensions
             visitors.Count(),
             created.Count(),
             converted.Count(),
-            visitors.Count(v => attendance.Count(a => a.PersonId == v.PersonId) > 1)
+            // Came more than once: has a visit as a visitor that was not their first.
+            visitors.Count(v =>
+                attendance.Any(a =>
+                    a.PersonId == v.PersonId
+                    && a.PersonKindAtTime == PersonKind.Visitor
+                    && !a.IsFirstVisit
+                )
+            ),
+            visitors.Count(v => v.Source == VisitorSource.Invited),
+            visitors.Count(v => v.Gender == Gender.Male),
+            visitors.Count(v => v.Gender == Gender.Female)
         ));
 
     internal static IQueryable<Visitor> Filter(
@@ -138,6 +166,15 @@ internal static class VisitorQueryExtensions
     )
     {
         query = query.WithName(filters.Name);
+
+        if (filters.Gender is not null)
+            query = query.Where(v => v.Gender == filters.Gender);
+
+        if (filters.Source is not null)
+            query = query.Where(v => v.Source == filters.Source);
+
+        if (filters.InvitedByMemberId is not null)
+            query = query.Where(v => v.InvitedByMemberId == filters.InvitedByMemberId);
 
         // Default is "current visitors only" (ConvertedAt IS NULL), windowed by when they were created.
         // Pass Converted = true for the historical view: converted visitors, windowed by when they
@@ -148,9 +185,14 @@ internal static class VisitorQueryExtensions
     }
 
     internal static IQueryable<Visitor> WithName(this IQueryable<Visitor> query, string? name) =>
-        name is null
+        string.IsNullOrWhiteSpace(name)
             ? query
-            : query.Where(v => EF.Functions.ILike(v.Person.Name, $"%{name}%"));
+            : query.Where(v =>
+                EF.Functions.ILike(
+                    v.Person.Name,
+                    $"%{Echo.Shared.Query.Extensions.EscapeLike(name.Trim())}%"
+                )
+            );
 
     internal static IQueryable<Visitor> CreatedBetween(
         this IQueryable<Visitor> query,
@@ -159,10 +201,16 @@ internal static class VisitorQueryExtensions
     )
     {
         if (from is not null)
-            query = query.Where(v => DateOnly.FromDateTime(v.CreatedAt) >= from);
+        {
+            var start = StartOf(from.Value);
+            query = query.Where(v => v.CreatedAt >= start);
+        }
 
         if (to is not null)
-            query = query.Where(v => DateOnly.FromDateTime(v.CreatedAt) <= to);
+        {
+            var end = EndOf(to.Value);
+            query = query.Where(v => v.CreatedAt < end);
+        }
 
         return query;
     }
@@ -176,13 +224,26 @@ internal static class VisitorQueryExtensions
         query = query.Where(v => v.ConvertedAt != null);
 
         if (from is not null)
-            query = query.Where(v => DateOnly.FromDateTime(v.ConvertedAt!.Value) >= from);
+        {
+            var start = StartOf(from.Value);
+            query = query.Where(v => v.ConvertedAt >= start);
+        }
 
         if (to is not null)
-            query = query.Where(v => DateOnly.FromDateTime(v.ConvertedAt!.Value) <= to);
+        {
+            var end = EndOf(to.Value);
+            query = query.Where(v => v.ConvertedAt < end);
+        }
 
         return query;
     }
+
+    // A day as a range of instants, so the database can seek the timestamp index instead of casting
+    // every row to a date.
+    private static DateTime StartOf(DateOnly day) => day.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+
+    private static DateTime EndOf(DateOnly day) =>
+        day == DateOnly.MaxValue ? DateTime.MaxValue : StartOf(day.AddDays(1));
 
     internal static IQueryable<Visitor> Paginate(
         this IQueryable<Visitor> query,
@@ -190,10 +251,15 @@ internal static class VisitorQueryExtensions
         int pageSize
     )
     {
+        // The leading >= is redundant but gives the index a bound to start from; without it
+        // the OR below is only a filter and a deep page walks every earlier name.
         if (cursor is not null)
             query = query.Where(v =>
-                string.Compare(v.Person.Name, cursor.Name) > 0
-                || (v.Person.Name == cursor.Name && v.PersonId > cursor.Id)
+                string.Compare(v.Person.Name, cursor.Name) >= 0
+                && (
+                    string.Compare(v.Person.Name, cursor.Name) > 0
+                    || v.PersonId > cursor.Id
+                )
             );
 
         return query.Take(pageSize);
@@ -201,8 +267,9 @@ internal static class VisitorQueryExtensions
 
     internal static IQueryable<Visitor> SearchName(this IQueryable<Visitor> query, string name)
     {
+        var pattern = $"%{Echo.Shared.Query.Extensions.EscapeLike(name.Trim())}%";
         return query
-            .Where(v => EF.Functions.ILike(v.Person.Name, $"%{name}%"))
+            .Where(v => EF.Functions.ILike(v.Person.Name, pattern))
             .OrderByDescending(v => EF.Functions.TrigramsSimilarity(v.Person.Name, name))
             .Take(5);
     }

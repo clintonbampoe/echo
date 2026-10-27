@@ -61,8 +61,11 @@ public static class ProjectContributionEndpoints
                 ### Ordering
                 Contributions are ordered by contribution date, most recent first. Stable across pages.
 
-                ### Pagination
-                Pass the `next` cursor from the previous response as the `cursor` query parameter. When `hasMore` is `false`, `next` is null.
+                ### Paging
+                - `cursor` — leave it out for the first page. For the next page, send the `next` value from the previous response unchanged. It records where the last page stopped, so use it only with the same filters it came from.
+                - `pageSize` — how many rows to return, from 1 to 50. Defaults to 50; a larger number is reduced to 50.
+
+                Keep asking for the next page while `hasMore` is `true`. When it is `false`, `next` is `null` and that was the last page.
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
@@ -97,6 +100,9 @@ public static class ProjectContributionEndpoints
                 Returns the full Project Contribution record for the given ID, scoped to the caller's congregation.
 
                 The response includes the resolved `projectName` — no follow-up call needed.
+
+                ### Path parameters
+                - `id` — the project contribution's id, as returned by the list and create endpoints.
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
@@ -209,6 +215,9 @@ public static class ProjectContributionEndpoints
                 ### Side effects
                 - If the amount changed, `GET /projects/summary` recalculates `totalRaised` on next call.
 
+                ### Path parameters
+                - `id` — the project contribution's id, as returned by the list and create endpoints.
+
                 ### Failure modes
                 - `400 BAD_REQUEST` — the request body is malformed.
                 - `400 VALIDATION_ERROR` — one or more fields failed validation.
@@ -257,6 +266,9 @@ public static class ProjectContributionEndpoints
                 - The contribution was entered by mistake.
                 - The contribution was refunded or reversed and the congregation does not want it in the totals.
 
+                ### Path parameters
+                - `id` — the project contribution's id, as returned by the list and create endpoints.
+
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
                 - `404 NOT_FOUND` — no contribution exists with the given ID in this congregation, or the record has already been soft-deleted.
@@ -304,11 +316,73 @@ public static class ProjectContributionEndpoints
                 ### Difference from `/projects/summary`
                 This endpoint aggregates across **all** contributions unless filtered by `projectId`. `GET /projects/summary` aggregates per project. Use this one when you want congregation-wide contribution stats; use that one when you want per-project funding progress.
 
+                ### Filters
+                All optional, and the same as on the list endpoint.
+                - `minAmount` / `maxAmount` — only contributions inside this amount range.
+                - `paymentMethod` — only contributions paid this way.
+                - `from` / `to` — only contributions made inside this date range.
+
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
                 """
             )
             .Produces<ProjectContributionSummaryDto>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status401Unauthorized);
+
+        group
+            .MapGet(
+                "/summary/monthly",
+                async (
+                    [AsParameters] ProjectContributionMonthlyFilters filters,
+                    ProjectContributionService service,
+                    HttpContext context,
+                    CancellationToken ct
+                ) =>
+                {
+                    using var span = EndpointInstrumentation.StartSpan(
+                        context,
+                        instrumentation,
+                        "endpoint.project_contribution.monthly_summary"
+                    );
+                    var result = await service.MonthlySummary(
+                        context.User.GetCongregationId(),
+                        filters,
+                        ct
+                    );
+                    return result.ToResult();
+                }
+            )
+            .WithName("GetProjectContributionMonthlySummary")
+            .WithSummary("Returns money given to projects per month.")
+            .WithDescription(
+                """
+                Returns one row per calendar month, so the Projects page can chart what has been brought in from a single request. Give `projectId` for one project's own series.
+
+                Contributions are grouped by the month they were given (`dateContributed`).
+
+                ### Query parameters
+                - `months` — how many months to return, from 1 to 12. Defaults to 12. The rows end with the month of `to`, so `months=6` is the last six months.
+                - `to` — any day in the last month to return. Defaults to today, so the last row is this month so far (a part month). Send an earlier date to look back in time: `months=6&to=2026-03-15` returns October 2025 to March 2026.
+                - `projectId` — only contributions to this project.
+                - `categoryId` — only contributions to projects of this category.
+                - `paymentMethod` — only contributions made this way: `Cash`, `Cheque`, `CreditCard`, `MobileMoney` or `BankTransfer`.
+
+                ### Response
+                A list of `{ year, month, totalRaised, contributionCount }`. Oldest month first. A month with nothing in it is returned with zeros, so there are no gaps and the list always has exactly `months` rows.
+
+                ### Why it is one endpoint
+                This is the only monthly endpoint for project contributions: it serves a dashboard card (`months=6`), a full-year chart, or a donut over the months. The shape is always the same list, so the page decides how to draw it.
+
+                ### Caching
+                The answer is cached for 2 minutes per congregation and per set of parameters, so asking again straight away costs nothing. A change shows up within 2 minutes.
+
+                ### Failure modes
+                - `400 BAD_REQUEST` — `months` is not between 1 and 12.
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                """
+            )
+            .Produces<List<ProjectContributionMonthlyDto>>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status401Unauthorized);
 
         return app;

@@ -14,7 +14,7 @@ public class AssetWindowTests
 
     private static Asset BoughtOn(DateOnly date)
     {
-        var asset = AssetFactory.NewEntity();
+        var asset = TestData.Shared.CreateAsset();
         asset.PurchaseDate = date;
         return asset;
     }
@@ -24,10 +24,7 @@ public class AssetWindowTests
     {
         var w = AssetService.ResolveWindow(new AssetFilters(), _windows);
 
-        Assert.Equal(
-            new DateWindow(new DateOnly(2026, 1, 1), new DateOnly(2026, 12, 31), true),
-            w
-        );
+        Assert.Equal(new DateWindow(new DateOnly(2026, 1, 1), new DateOnly(2026, 12, 31), true), w);
     }
 
     [Fact]

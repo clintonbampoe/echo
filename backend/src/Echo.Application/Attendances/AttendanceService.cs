@@ -1,3 +1,4 @@
+using Echo.Application.Caching;
 using Echo.Application.Members;
 using Echo.Data;
 using Echo.Domain.Attendances;
@@ -26,6 +27,7 @@ public class AttendanceService(
     TimeProvider timeProvider,
     ApplicationInstrumentation instrumentation,
     LinkGenerator linker,
+    SummaryCache summaries,
     ILogger<AttendanceService> logger
 )
 {
@@ -150,15 +152,17 @@ public class AttendanceService(
         entity.Id = idGenerator.Generate();
         entity.CongregationId = congregationId;
         entity.Session = session;
+        entity.SessionDate = session.Date;
         entity.Person = person;
         entity.PersonKindAtTime = person.Kind;
         entity.CheckedInAt = dto.CheckedInAt ?? timeProvider.GetUtcNow().UtcDateTime;
-        entity.RecordedBy = null; // populated when user-scoped auth lands
+        entity.RecordedBy = null;
 
         using (instrumentation.ActivitySource.StartActivity("svc.attendance.persist"))
         {
             repository.Create(entity);
             await unitOfWork.CommitAsync(ct);
+            await repository.RefreshFirstVisits([entity], ct);
         }
 
         activity?.SetTag("attendance.id", entity.Id);
@@ -229,6 +233,7 @@ public class AttendanceService(
         {
             repository.SoftDelete(entity);
             await unitOfWork.CommitAsync(ct);
+            await repository.RefreshFirstVisits([entity], ct);
         }
 
         AttendanceLog.Deleted(logger, congregationId, id);
@@ -236,7 +241,20 @@ public class AttendanceService(
         return new NoContentResult();
     }
 
-    public async Task<IOperationResult> Summary(
+    public Task<IOperationResult> Summary(
+        Guid congregationId,
+        AttendanceFilters filters,
+        CancellationToken ct
+    ) =>
+        summaries.Serve(
+            "attendance",
+            congregationId,
+            filters,
+            token => ComputeSummary(congregationId, filters, token),
+            ct
+        );
+
+    private async Task<AttendanceSummaryDto> ComputeSummary(
         Guid congregationId,
         AttendanceFilters filters,
         CancellationToken ct
@@ -247,7 +265,17 @@ public class AttendanceService(
         var window = ResolveWindow(filters, dateWindows);
         filters = filters with { From = window?.From, To = window?.To };
 
-        var stats = await repository.GetSummaryStats(congregationId, filters, ct);
+        var stats = await repository.GetSummary(congregationId, filters, ct);
+        var sessions = await sessionRepository.CountCompleted(
+            congregationId,
+            new SessionFilters
+            {
+                SessionLabelId = filters.SessionLabelId,
+                From = filters.From,
+                To = filters.To,
+            },
+            ct
+        );
 
         var res = new AttendanceSummaryDto
         {
@@ -255,13 +283,51 @@ public class AttendanceService(
             MembersPresent = stats.Members,
             VisitorsPresent = stats.Visitors,
             FirstTimeVisitors = stats.FirstTimeVisitors,
+            Sessions = sessions,
+            AveragePerSession = SessionService.AverageAttendance(stats.Total, sessions),
             Window = window,
         };
 
         activity?.SetTag("attendance.summary.total", res.TotalPresent);
         AttendanceLog.Summarized(logger, congregationId, res.TotalPresent);
 
-        return new SuccessResult<AttendanceSummaryDto>(res);
+        return res;
+    }
+
+    public async Task<IOperationResult> MonthlySummary(
+        Guid congregationId,
+        AttendanceMonthlyFilters filters,
+        CancellationToken ct
+    )
+    {
+        if (MonthRange.Problem(filters.Months) is { } problem)
+            return new BadRequestResult(problem);
+
+        return await summaries.Serve(
+            "attendance.monthly",
+            congregationId,
+            filters,
+            token => ComputeMonthly(congregationId, filters, token),
+            ct
+        );
+    }
+
+    private async Task<List<AttendanceMonthlyDto>> ComputeMonthly(
+        Guid congregationId,
+        AttendanceMonthlyFilters filters,
+        CancellationToken ct
+    )
+    {
+        var months = dateWindows.ChartMonths(filters.Months, filters.To);
+        var (from, to) = MonthRange.Bounds(months);
+        var rows = await repository.GetMonthlyTotals(congregationId, filters, from, to, ct);
+
+        return MonthRange.Fill(
+            months,
+            rows,
+            r => new YearMonth(r.Year, r.Month),
+            m => new AttendanceMonthlyDto { Year = m.Year, Month = m.Month }
+        );
     }
 
     public async Task<IOperationResult> CreateBulk(
@@ -299,6 +365,7 @@ public class AttendanceService(
                 CongregationId = congregationId,
                 SessionId = session.Id,
                 Session = session,
+                SessionDate = session.Date,
                 PersonId = person.Id,
                 Person = person,
                 PersonKindAtTime = person.Kind,
@@ -324,6 +391,8 @@ public class AttendanceService(
                     "ATTENDANCE_CONFLICT"
                 );
             }
+
+            await repository.RefreshFirstVisits(created, ct);
         }
 
         AttendanceLog.BulkCreated(
@@ -337,7 +406,7 @@ public class AttendanceService(
         return new SuccessResult<BulkAttendanceResponseDto>(
             new BulkAttendanceResponseDto
             {
-                Created = created.Select(a => mapper.ToDto(a)).ToList(),
+                Created = [.. created.Select(mapper.ToDto)],
                 Skipped = plan.Skipped,
             }
         );
@@ -374,5 +443,5 @@ public class AttendanceService(
     internal sealed record BulkPlan(List<Person> ToCreate, List<BulkSkippedDto> Skipped);
 
     private static AttendanceCursor BuildCursor(Attendance last) =>
-        new() { SessionDate = last.Session.Date, Id = last.Id };
+        new() { SessionDate = last.SessionDate, Id = last.Id };
 }

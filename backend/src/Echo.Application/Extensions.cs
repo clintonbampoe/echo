@@ -1,5 +1,6 @@
 using Echo.Application.Assets;
 using Echo.Application.Attendances;
+using Echo.Application.Caching;
 using Echo.Application.Congregations;
 using Echo.Application.Events;
 using Echo.Application.Members;
@@ -25,6 +26,9 @@ public static class Extensions
 
         // Enforce the DataAnnotations on endpoint parameters and request DTOs
         services.AddValidation();
+
+        // Every summary is cached and logged through this
+        services.AddScoped<SummaryCache>();
 
         // Person
         services.AddScoped<PersonRepository>();

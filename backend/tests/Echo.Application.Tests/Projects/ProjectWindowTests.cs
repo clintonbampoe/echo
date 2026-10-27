@@ -14,7 +14,7 @@ public class ProjectWindowTests
 
     private static Project Spanning(DateOnly start, DateOnly? end)
     {
-        var project = ProjectFactory.NewEntity();
+        var project = TestData.Shared.CreateProject();
         project.StartDate = start;
         project.EndDate = end;
         return project;

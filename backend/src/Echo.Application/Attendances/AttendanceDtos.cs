@@ -73,12 +73,46 @@ public record AttendanceFilters
     public DateOnly? To { get; init; }
 }
 
+/// <summary>
+/// Narrows the monthly summary. Months and To choose the months; the other filter chooses the
+/// attendance.
+/// </summary>
+public record AttendanceMonthlyFilters
+{
+    /// <summary>Only attendance at sessions with this label (for example "Sunday Service").</summary>
+    public int? SessionLabelId { get; init; }
+
+    /// <summary>How many months to return, ending with the month of <see cref="To"/>.</summary>
+    [Range(1, MonthRange.MaxMonths)]
+    public int Months { get; init; } = MonthRange.DefaultMonths;
+
+    /// <summary>Any day in the last month to return. This month when not given.</summary>
+    public DateOnly? To { get; init; }
+}
+
+/// <summary>The attendance of one month, split into members, visitors and first-time visitors.</summary>
+public record AttendanceMonthlyDto
+{
+    public int Year { get; init; }
+    public int Month { get; init; }
+    public int TotalPresent { get; init; }
+    public int MembersPresent { get; init; }
+    public int VisitorsPresent { get; init; }
+    public int FirstTimeVisitors { get; init; }
+}
+
 public record AttendanceSummaryDto
 {
     public int TotalPresent { get; init; }
     public int MembersPresent { get; init; }
     public int VisitorsPresent { get; init; }
     public int FirstTimeVisitors { get; init; }
+
+    /// <summary>How many sessions were held (completed) in the window, among the ones `sessionLabelId` picks.</summary>
+    public int Sessions { get; init; }
+
+    /// <summary><see cref="TotalPresent"/> over <see cref="Sessions"/>: how many people a session draws. Zero when none was held.</summary>
+    public double AveragePerSession { get; init; }
     public DateWindow? Window { get; init; }
 }
 

@@ -1,3 +1,4 @@
+using Echo.Application.Caching;
 using Echo.Application.Members;
 using Echo.Application.Organizations;
 using Echo.Data;
@@ -26,6 +27,7 @@ public class EventService(
     ApplicationInstrumentation instrumentation,
     LinkGenerator linker,
     DateWindows dateWindows,
+    SummaryCache summaries,
     ILogger<EventService> logger
 )
 {
@@ -34,7 +36,7 @@ public class EventService(
 
     public async Task<IOperationResult> List(
         Guid congregationId,
-        EventFilters filters,
+        EventListFilters filters,
         PaginationRequest pagination,
         CancellationToken ct
     )
@@ -66,19 +68,7 @@ public class EventService(
             ? encoder.Encode(BuildCursor(entities.Last(), filters.Order))
             : null;
 
-        var counts = await repository.GetRegistrationCounts(
-            congregationId,
-            entities.Select(x => x.Id).ToList(),
-            ct
-        );
-        var data = entities
-            .Select(x =>
-                mapper.ToDto(x) with
-                {
-                    RegistrationCount = counts.GetValueOrDefault(x.Id),
-                }
-            )
-            .ToList();
+        var data = await WithCounts(entities, ct);
         activity?.SetTag("event.count", data.Count);
         EventLog.Listed(logger, congregationId, data.Count);
 
@@ -105,7 +95,7 @@ public class EventService(
         }
 
         EventLog.Found(logger, congregationId, id);
-        var res = await WithCount(entity, congregationId, ct);
+        var res = await WithCount(entity, ct);
         return new SuccessResult<EventResponseDto>(res);
     }
 
@@ -245,7 +235,7 @@ public class EventService(
         }
 
         EventLog.Updated(logger, congregationId, id);
-        var res = await WithCount(entity, congregationId, ct);
+        var res = await WithCount(entity, ct);
         return new SuccessResult<EventResponseDto>(res);
     }
 
@@ -299,7 +289,20 @@ public class EventService(
         return new SuccessResult<List<EventSearchResultDto>>(res);
     }
 
-    public async Task<IOperationResult> Summary(
+    public Task<IOperationResult> Summary(
+        Guid congregationId,
+        EventFilters filters,
+        CancellationToken ct
+    ) =>
+        summaries.Serve(
+            "events",
+            congregationId,
+            filters,
+            token => ComputeSummary(congregationId, filters, token),
+            ct
+        );
+
+    private async Task<EventSummaryDto> ComputeSummary(
         Guid congregationId,
         EventFilters filters,
         CancellationToken ct
@@ -324,7 +327,77 @@ public class EventService(
         activity?.SetTag("event.summary.total", res.TotalEvents);
         EventLog.Summarized(logger, congregationId, res.TotalEvents);
 
-        return new SuccessResult<EventSummaryDto>(res);
+        return res;
+    }
+
+    public Task<IOperationResult> SeriesSummary(
+        Guid congregationId,
+        EventSeriesFilters filters,
+        CancellationToken ct
+    ) =>
+        summaries.Serve(
+            "events.by-event",
+            congregationId,
+            filters,
+            token => ComputeSeries(congregationId, filters, token),
+            ct
+        );
+
+    private async Task<List<EventSeriesDto>> ComputeSeries(
+        Guid congregationId,
+        EventSeriesFilters filters,
+        CancellationToken ct
+    )
+    {
+        var window = ResolveWindow(filters, dateWindows);
+        var scope = (EventFilters)filters with { From = window?.From, To = window?.To };
+
+        using var activity = instrumentation.ActivitySource.StartActivity("svc.event.series_summary");
+
+        return await repository.GetSeries(congregationId, scope, filters.Limit, ct);
+    }
+
+    public async Task<IOperationResult> MonthlySummary(
+        Guid congregationId,
+        EventMonthlyFilters filters,
+        CancellationToken ct
+    )
+    {
+        if (MonthRange.Problem(filters.Months) is { } problem)
+            return new BadRequestResult(problem);
+
+        return await summaries.Serve(
+            "events.monthly",
+            congregationId,
+            filters,
+            token => ComputeMonthly(congregationId, filters, token),
+            ct
+        );
+    }
+
+    private async Task<List<EventMonthlyDto>> ComputeMonthly(
+        Guid congregationId,
+        EventMonthlyFilters filters,
+        CancellationToken ct
+    )
+    {
+        var months = dateWindows.ChartMonths(filters.Months, filters.To);
+        var (from, to) = MonthRange.Bounds(months);
+        var rows = await repository.GetMonthlyTotals(congregationId, filters, from, to, ct);
+
+        return MonthRange.Fill(
+            months,
+            rows.Select(r => new EventMonthlyDto
+            {
+                Year = r.Year,
+                Month = r.Month,
+                EventCount = r.Events,
+                RegistrationCount = r.Registrations,
+                AttendanceCount = r.Attendance,
+            }),
+            m => new YearMonth(m.Year, m.Month),
+            m => new EventMonthlyDto { Year = m.Year, Month = m.Month }
+        );
     }
 
     private static EventCursor BuildCursor(Event last, SortDirection order)
@@ -342,16 +415,27 @@ public class EventService(
     internal static EventCursor? UsableCursor(EventCursor? cursor, SortDirection order) =>
         cursor is not null && cursor.Order == order ? cursor : null;
 
-    private async Task<EventResponseDto> WithCount(
-        Event entity,
-        Guid congregationId,
+    private async Task<EventResponseDto> WithCount(Event entity, CancellationToken ct) =>
+        (await WithCounts([entity], ct))[0];
+
+    private async Task<List<EventResponseDto>> WithCounts(
+        IReadOnlyList<Event> entities,
         CancellationToken ct
     )
     {
-        var counts = await repository.GetRegistrationCounts(congregationId, [entity.Id], ct);
-        return mapper.ToDto(entity) with
-        {
-            RegistrationCount = counts.GetValueOrDefault(entity.Id),
-        };
+        var ids = entities.Select(x => x.Id).ToList();
+        var registered = await repository.GetRegistrationCounts(ids, ct);
+        var attended = await repository.GetAttendanceCounts(ids, ct);
+
+        return
+        [
+            .. entities.Select(x =>
+                mapper.ToDto(x) with
+                {
+                    RegistrationCount = registered.GetValueOrDefault(x.Id),
+                    AttendanceCount = attended.GetValueOrDefault(x.Id),
+                }
+            ),
+        ];
     }
 }

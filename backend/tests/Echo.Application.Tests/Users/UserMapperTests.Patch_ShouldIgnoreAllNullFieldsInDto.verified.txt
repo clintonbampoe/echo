@@ -1,0 +1,13 @@
+﻿{
+  Id: Guid_1,
+  CongregationId: Guid_2,
+  EmailAddress: jane@echo.test,
+  PasswordHash: v1,
+  EmailVerifiedAt: DateTime_1,
+  FirstName: v2,
+  LastName: v3,
+  OtherNames: v4,
+  Name: Jane Doe,
+  CreatedAt: DateTime_2,
+  DeletedAt: DateTime_3
+}

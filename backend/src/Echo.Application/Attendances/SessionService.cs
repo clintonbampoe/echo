@@ -1,3 +1,4 @@
+using Echo.Application.Caching;
 using Echo.Data;
 using Echo.Domain.Attendances;
 using Echo.Shared.HttpResults;
@@ -13,6 +14,7 @@ namespace Echo.Application.Attendances;
 
 public class SessionService(
     SessionRepository repository,
+    AttendanceRepository attendanceRepository,
     SessionLabelRepository sessionLabelRepository,
     IUnitOfWork unitOfWork,
     ISessionMapper mapper,
@@ -21,12 +23,28 @@ public class SessionService(
     ApplicationInstrumentation instrumentation,
     LinkGenerator linker,
     DateWindows dateWindows,
+    SummaryCache summaries,
     ILogger<SessionService> logger
 )
 {
     // Scheduled and cancelled sessions have no attendance, so only completed ones count.
     internal static double AverageAttendance(int attendance, int completedSessions) =>
         completedSessions == 0 ? 0.0 : (double)attendance / completedSessions;
+
+    // A session nobody was marked present at has no entry, so its counts stay at zero.
+    internal static SessionResponseDto WithAttendance(
+        SessionResponseDto dto,
+        Dictionary<Guid, SessionAttendance> attendance
+    ) =>
+        attendance.TryGetValue(dto.Id, out var counts)
+            ? dto with
+            {
+                AttendanceCount = counts.Total,
+                MembersPresent = counts.Members,
+                VisitorsPresent = counts.Visitors,
+                FirstTimeVisitors = counts.FirstTime,
+            }
+            : dto;
 
     internal static DateWindow? ResolveWindow(SessionFilters filters, DateWindows dateWindows) =>
         dateWindows.ThisWeek(
@@ -68,11 +86,9 @@ public class SessionService(
         var nextCursor = hasMore ? encoder.Encode(BuildCursor(entities.Last())) : null;
 
         var ids = entities.Select(s => s.Id).ToList();
-        var counts = await repository.GetAttendanceCounts(congregationId, ids, ct);
+        var attendance = await repository.GetAttendance(ids, ct);
 
-        var data = entities
-            .Select(s => mapper.ToDto(s) with { AttendanceCount = counts.GetValueOrDefault(s.Id) })
-            .ToList();
+        var data = entities.Select(s => WithAttendance(mapper.ToDto(s), attendance)).ToList();
 
         activity?.SetTag("session.count", data.Count);
         SessionLog.Listed(logger, congregationId, data.Count);
@@ -99,8 +115,8 @@ public class SessionService(
             return new NotFoundResult(id.ToString());
         }
 
-        var counts = await repository.GetAttendanceCounts(congregationId, [id], ct);
-        var res = mapper.ToDto(entity) with { AttendanceCount = counts.GetValueOrDefault(id) };
+        var attendance = await repository.GetAttendance([id], ct);
+        var res = WithAttendance(mapper.ToDto(entity), attendance);
 
         SessionLog.Found(logger, congregationId, id);
         return new SuccessResult<SessionResponseDto>(res);
@@ -143,7 +159,7 @@ public class SessionService(
         activity?.SetTag("session.id", entity.Id);
         SessionLog.Created(logger, congregationId, entity.Id);
 
-        var res = mapper.ToDto(entity) with { AttendanceCount = 0 };
+        var res = mapper.ToDto(entity);
         var location =
             linker.GetPathByName(httpContext, "GetSessionById", new { id = res.Id })
             ?? throw new InvalidOperationException("Route 'GetSessionById' is not registered.");
@@ -182,8 +198,8 @@ public class SessionService(
 
         SessionLog.Updated(logger, congregationId, id);
 
-        var counts = await repository.GetAttendanceCounts(congregationId, [id], ct);
-        var res = mapper.ToDto(entity) with { AttendanceCount = counts.GetValueOrDefault(id) };
+        var attendance = await repository.GetAttendance([id], ct);
+        var res = WithAttendance(mapper.ToDto(entity), attendance);
         return new SuccessResult<SessionResponseDto>(res);
     }
 
@@ -207,8 +223,13 @@ public class SessionService(
 
         using (instrumentation.ActivitySource.StartActivity("svc.session.persist"))
         {
+            var records = await attendanceRepository.ListForSession(id, ct);
+            foreach (var record in records)
+                attendanceRepository.SoftDelete(record);
+
             repository.SoftDelete(entity);
             await unitOfWork.CommitAsync(ct);
+            await attendanceRepository.RefreshFirstVisits(records, ct);
         }
 
         SessionLog.Deleted(logger, congregationId, id);
@@ -216,7 +237,20 @@ public class SessionService(
         return new NoContentResult();
     }
 
-    public async Task<IOperationResult> Summary(
+    public Task<IOperationResult> Summary(
+        Guid congregationId,
+        SessionFilters filters,
+        CancellationToken ct
+    ) =>
+        summaries.Serve(
+            "sessions",
+            congregationId,
+            filters,
+            token => ComputeSummary(congregationId, filters, token),
+            ct
+        );
+
+    private async Task<SessionSummaryDto> ComputeSummary(
         Guid congregationId,
         SessionFilters filters,
         CancellationToken ct
@@ -243,7 +277,7 @@ public class SessionService(
         activity?.SetTag("session.summary.total", res.TotalSessions);
         SessionLog.Summarized(logger, congregationId, res.TotalSessions);
 
-        return new SuccessResult<SessionSummaryDto>(res);
+        return res;
     }
 
     private static SessionCursor BuildCursor(Session last) =>

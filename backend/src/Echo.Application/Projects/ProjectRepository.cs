@@ -1,8 +1,8 @@
 using Echo.Data;
 using Echo.Domain.Projects;
 using Echo.Shared.Query;
+using Echo.Shared.Utilities;
 using Microsoft.EntityFrameworkCore;
-using Echo.Domain.Congregations;
 
 namespace Echo.Application.Projects;
 
@@ -55,8 +55,9 @@ public class ProjectRepository(AppDbContext context)
             .ToListAsync(ct);
     }
 
-    public async Task<Dictionary<Guid, decimal>> GetRaisedAmounts(
-        Guid congregationId,
+    // The project ids come from a query already limited to the congregation, so the gifts are not
+    // limited again: a congregation filter would send the database to the table for every row.
+    public async Task<Dictionary<Guid, ProjectContributionTotal>> GetContributionTotals(
         IReadOnlyList<Guid> projectIds,
         CancellationToken ct = default
     )
@@ -66,9 +67,8 @@ public class ProjectRepository(AppDbContext context)
 
         return await _contributionDbSet
             .AsNoTracking()
-            .Where(c => c.CongregationId == congregationId)
-            .RaisedPerProject(projectIds)
-            .ToDictionaryAsync(x => x.Id, x => x.Amount, ct);
+            .ContributionTotalsPerProject(projectIds)
+            .ToDictionaryAsync(x => x.Id, ct);
     }
 
     public async Task<ProjectStats> GetSummaryStats(
@@ -77,18 +77,54 @@ public class ProjectRepository(AppDbContext context)
         CancellationToken ct = default
     )
     {
-        var projects = _dbSet
+        var stats = await Scope(congregationId, filters)
+            .SummarizeProjects(Gifts(congregationId))
+            .FirstOrDefaultAsync(ct);
+        return stats ?? new ProjectStats(0, 0m, 0m, 0);
+    }
+
+    // Money given in the window and in the one before it, to the projects the filters pick. The
+    // filters' dates are left out: they say when a project ran, not when money was given.
+    public async Task<RaisedInWindows> GetRaisedInWindows(
+        Guid congregationId,
+        ProjectFilters filters,
+        DateWindow window,
+        CancellationToken ct = default
+    )
+    {
+        var previous = window.Previous();
+        var projects = Scope(congregationId, filters with { From = null, To = null });
+
+        var raised = await Gifts(congregationId)
+            .Where(c => projects.Any(p => p.Id == c.ProjectId))
+            .RaisedInWindows(window, previous)
+            .FirstOrDefaultAsync(ct);
+        return raised ?? new RaisedInWindows(0m, 0m);
+    }
+
+    public async Task<List<ProjectCategoryTotalDto>> GetCategoryTotals(
+        Guid congregationId,
+        ProjectFilters filters,
+        CancellationToken ct = default
+    ) =>
+        await Scope(congregationId, filters)
+            // Summed per project through the project index, so the gifts are not limited to the
+            // congregation here either.
+            .TotalsByCategory(context.Set<ProjectCategory>(), _contributionDbSet.FilterDeleted())
+            .ToListAsync(ct);
+
+    private IQueryable<Project> Scope(Guid congregationId, ProjectFilters filters) =>
+        _dbSet
             .AsNoTracking()
             .FilterDeleted()
             .Where(p => p.CongregationId == congregationId)
             .Filter(filters);
 
-        var stats = await context
-            .OneRow(congregationId)
-            .SummarizeProjects(projects, _contributionDbSet.FilterDeleted())
-            .FirstOrDefaultAsync(ct);
-        return stats ?? new ProjectStats(0, 0m, 0m, 0);
-    }
+    private IQueryable<ProjectContribution> Gifts(Guid congregationId) =>
+        _contributionDbSet
+            .AsNoTracking()
+            .FilterDeleted()
+            .Where(c => c.CongregationId == congregationId);
 
     public void Create(Project entity) => _dbSet.Add(entity);
 
@@ -97,11 +133,13 @@ public class ProjectRepository(AppDbContext context)
 
 public record ProjectStats(int Count, decimal Raised, decimal Target, int AtRisk);
 
-internal readonly record struct ParentAmount(Guid Id, decimal Amount);
+public record ProjectContributionTotal(Guid Id, decimal Amount, int Count);
+
+public record RaisedInWindows(decimal Current, decimal Previous);
 
 internal static class ProjectQueryExtensions
 {
-    internal static IQueryable<ParentAmount> RaisedPerProject(
+    internal static IQueryable<ProjectContributionTotal> ContributionTotalsPerProject(
         this IQueryable<ProjectContribution> query,
         IReadOnlyList<Guid> projectIds
     ) =>
@@ -109,27 +147,72 @@ internal static class ProjectQueryExtensions
             .FilterDeleted()
             .Where(c => projectIds.Contains(c.ProjectId))
             .GroupBy(c => c.ProjectId)
-            .Select(g => new ParentAmount(g.Key, g.Sum(c => c.Amount)));
+            .Select(g => new ProjectContributionTotal(g.Key, g.Sum(c => c.Amount), g.Count()));
 
+    // One pass over the projects for every figure; what was raised is the gifts to those projects,
+    // summed once rather than joined to each project.
     internal static IQueryable<ProjectStats> SummarizeProjects(
-        this IQueryable<Congregation> oneRow,
-        IQueryable<Project> projects,
-        IQueryable<ProjectContribution> contributions
+        this IQueryable<Project> projects,
+        IQueryable<ProjectContribution> gifts
     ) =>
-        oneRow.Select(_ => new ProjectStats(
-            projects.Count(),
-            projects.SelectMany(p => contributions.Where(c => c.ProjectId == p.Id)).Sum(c => c.Amount),
-            projects.Sum(p => p.TargetAmount),
-            projects.Count(p => p.Status == ProjectStatus.AtRisk)
-        ));
+        projects
+            .GroupBy(p => p.CongregationId)
+            .Select(group => new ProjectStats(
+                group.Count(),
+                gifts.Where(c => projects.Any(p => p.Id == c.ProjectId)).Sum(c => c.Amount),
+                group.Sum(p => p.TargetAmount),
+                group.Count(p => p.Status == ProjectStatus.AtRisk)
+            ));
+
+    internal static IQueryable<ProjectCategoryTotalDto> TotalsByCategory(
+        this IQueryable<Project> projects,
+        IQueryable<ProjectCategory> categories,
+        IQueryable<ProjectContribution> gifts
+    ) =>
+        projects
+            // Each project's raised amount is one index-only sum over its own gifts; the categories
+            // then add up the projects.
+            .Select(p => new
+            {
+                p.CategoryId,
+                p.TargetAmount,
+                Raised = gifts.Where(c => c.ProjectId == p.Id).Sum(c => c.Amount),
+            })
+            .GroupBy(x => x.CategoryId)
+            .Select(group => new
+            {
+                CategoryId = group.Key,
+                Count = group.Count(),
+                Target = group.Sum(x => x.TargetAmount),
+                Raised = group.Sum(x => x.Raised),
+            })
+            .Join(
+                categories,
+                total => total.CategoryId,
+                category => category.Id,
+                (total, category) =>
+                    new ProjectCategoryTotalDto
+                    {
+                        CategoryId = category.Id,
+                        CategoryName = category.Name,
+                        ProjectCount = total.Count,
+                        TotalTarget = total.Target,
+                        TotalRaised = total.Raised,
+                    }
+            )
+            .OrderByDescending(c => c.TotalRaised)
+            .ThenBy(c => c.CategoryName);
 
     internal static IQueryable<Project> Filter(
         this IQueryable<Project> query,
         ProjectFilters filters
     )
     {
-        if (filters.Name is not null)
-            query = query.Where(p => EF.Functions.ILike(p.Name, $"%{filters.Name}%"));
+        if (!string.IsNullOrWhiteSpace(filters.Name))
+        {
+            var pattern = $"%{Echo.Shared.Query.Extensions.EscapeLike(filters.Name.Trim())}%";
+            query = query.Where(p => EF.Functions.ILike(p.Name, pattern));
+        }
 
         if (filters.CategoryId is not null)
             query = query.Where(p => p.CategoryId == filters.CategoryId);
@@ -157,10 +240,12 @@ internal static class ProjectQueryExtensions
         int pageSize
     )
     {
+        // The leading >= is redundant but gives the index a bound to start from; without it
+        // the OR below is only a filter and a deep page walks every earlier project.
         if (cursor is not null)
             query = query.Where(p =>
-                p.StartDate > cursor.StartDate
-                || (p.StartDate == cursor.StartDate && p.Id > cursor.Id)
+                p.StartDate >= cursor.StartDate
+                && (p.StartDate > cursor.StartDate || p.Id > cursor.Id)
             );
 
         return query.Take(pageSize);

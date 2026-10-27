@@ -7,7 +7,7 @@ namespace Echo.Application.Projects;
 public partial class ProjectMapper : IProjectMapper
 {
     public ProjectResponseDto ToDto(Project entity) =>
-        new ProjectResponseDto
+        new()
         {
             Id = entity.Id,
             CategoryId = entity.CategoryId,
@@ -23,7 +23,6 @@ public partial class ProjectMapper : IProjectMapper
             CreatedAt = entity.CreatedAt,
         };
 
-    [MapperIgnoreTarget(nameof(Project.Congregation))]
     [MapperIgnoreTarget(nameof(Project.CongregationId))]
     [MapperIgnoreTarget(nameof(Project.Id))]
     [MapperIgnoreTarget(nameof(Project.Category))]

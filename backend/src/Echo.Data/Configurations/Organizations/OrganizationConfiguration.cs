@@ -1,3 +1,4 @@
+using Echo.Domain.Congregations;
 using Echo.Domain.Organizations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -13,16 +14,18 @@ public class OrganizationConfiguration : IEntityTypeConfiguration<Organization>
         builder.Property(e => e.CreatedAt).HasDefaultValueSql("now()").ValueGeneratedOnAdd();
 
         builder
-            .HasOne(e => e.Congregation)
+            .HasOne<Congregation>()
             .WithMany()
             .HasForeignKey(e => e.CongregationId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Restrict)
+            .IsRequired();
 
-        builder.HasIndex(e => e.CongregationId);
+        // Also serves the list, which pages through a congregation's organizations by name.
         builder.HasIndex(o => new { o.CongregationId, o.Name }).IsUnique();
+
+        builder.Property(o => o.Kind).HasDefaultValue(OrganizationType.Other);
 
         builder.HasIndex(o => o.Name).HasMethod("GIN").HasOperators("gin_trgm_ops");
 
-        builder.HasIndex(p => new { p.Name, p.Id }).HasFilter("deleted_at IS NULL");
     }
 }

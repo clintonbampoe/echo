@@ -110,7 +110,7 @@ public static class PeopleCopy
             """
             COPY visitors (
                 person_id, congregation_id,
-                notes, converted_at,
+                gender, source, notes, converted_at,
                 created_at
             ) FROM STDIN (FORMAT BINARY)
             """,
@@ -122,6 +122,8 @@ public static class PeopleCopy
             await writer.StartRowAsync(ct);
             await writer.WriteAsync(v.PersonId, NpgsqlDbType.Uuid, ct);
             await writer.WriteAsync(v.CongregationId, NpgsqlDbType.Uuid, ct);
+            await WriteNullableText(writer, v.Gender?.ToString(), ct);
+            await WriteNullableText(writer, v.Source?.ToString(), ct);
             await WriteNullableText(writer, v.Notes, ct);
             await WriteNullableTimestamp(writer, v.ConvertedAt, ct);
             await writer.WriteAsync(v.CreatedAt, NpgsqlDbType.TimestampTz, ct);

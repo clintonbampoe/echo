@@ -80,6 +80,9 @@ public static class TransactionCategoryEndpoints
                 """
                 Returns the Transaction Category record for the given ID, scoped to the caller's congregation.
 
+                ### Path parameters
+                - `id` — the transaction category's id (a whole number, not a GUID), as returned by `GET /transaction-categories`.
+
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
                 - `404 NOT_FOUND` — no transaction category exists with the given ID in this congregation, or the record has been soft-deleted.
@@ -174,6 +177,9 @@ public static class TransactionCategoryEndpoints
                 ### Side effects
                 - **Existing Transactions assigned to this category are not affected** and retain their assignment. They will display the updated category name on next fetch.
 
+                ### Path parameters
+                - `id` — the transaction category's id (a whole number, not a GUID), as returned by `GET /transaction-categories`.
+
                 ### Failure modes
                 - `400 BAD_REQUEST` — the request body is malformed.
                 - `400 VALIDATION_ERROR` — one or more fields failed validation.
@@ -218,6 +224,9 @@ public static class TransactionCategoryEndpoints
                 - The category is marked as deleted.
                 - **Existing Transactions assigned to this category are not affected.** They keep their `categoryId` pointing at the deleted category. `categoryName` still returns the deleted category's name.
                 - **New transactions cannot reference a deleted category** — the FK lookup will fail with `404 FOREIGN_KEY_NOT_FOUND`.
+
+                ### Path parameters
+                - `id` — the transaction category's id (a whole number, not a GUID), as returned by `GET /transaction-categories`.
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
@@ -309,6 +318,9 @@ public static class TransactionCategoryEndpoints
 
                 ### On success
                 Returns `200 OK` with `{ "moved": n, "sourceDeleted": bool }`. `moved` is `0` when the category was empty.
+
+                ### Path parameters
+                - `id` — the id of the transaction category being emptied: the one whose records are moved away. The category to move them to goes in the request body.
 
                 ### Failure modes
                 - `400 BAD_REQUEST` — `targetCategoryId` equals the source category.

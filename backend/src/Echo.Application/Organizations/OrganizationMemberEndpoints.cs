@@ -58,8 +58,14 @@ public static class OrganizationMemberEndpoints
                 ### Ordering
                 Records are ordered by creation date, most recent first. Stable across pages.
 
-                ### Pagination
-                Pass the `next` cursor from the previous response as the `cursor` query parameter. When `hasMore` is `false`, `next` is null.
+                ### Paging
+                - `cursor` — leave it out for the first page. For the next page, send the `next` value from the previous response unchanged. It records where the last page stopped, so use it only with the same filters it came from.
+                - `pageSize` — how many rows to return, from 1 to 50. Defaults to 50; a larger number is reduced to 50.
+
+                Keep asking for the next page while `hasMore` is `true`. When it is `false`, `next` is `null` and that was the last page.
+
+                ### Name filter
+                - `name` — partial, case-insensitive match on the member's name. Combine it with `role` to find, for example, every leader called "Ama".
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
@@ -95,6 +101,9 @@ public static class OrganizationMemberEndpoints
 
                 The response includes the resolved `memberName` and `organizationName`, so no follow-up calls are needed.
 
+                ### Path parameters
+                - `id` — the organization membership's id, as returned by the list and create endpoints.
+
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
                 - `404 NOT_FOUND` — no assignment exists with the given ID in this congregation, or the record has been soft-deleted.
@@ -109,7 +118,7 @@ public static class OrganizationMemberEndpoints
                 "/member/{id:guid}",
                 async (
                     [FromRoute] Guid id,
-                    [AsParameters] OrganizationMemberFilters filters,
+                    [AsParameters] MembershipRoleFilters filters,
                     [AsParameters] PaginationRequest pagination,
                     OrganizationMemberService service,
                     HttpContext context,
@@ -142,6 +151,12 @@ public static class OrganizationMemberEndpoints
 
                 ### Filtering
                 - `role` — filter to assignments with a specific role.
+
+                ### Paging
+                - `cursor` — leave it out for the first page. For the next page, send the `next` value from the previous response unchanged. It records where the last page stopped, so use it only with the same filters it came from.
+                - `pageSize` — how many rows to return, from 1 to 50. Defaults to 50; a larger number is reduced to 50.
+
+                Keep asking for the next page while `hasMore` is `true`. When it is `false`, `next` is `null` and that was the last page.
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
@@ -191,6 +206,12 @@ public static class OrganizationMemberEndpoints
                 ### Filtering
                 - `role` — filter to members with a specific role within the organization.
                 - `name` — keep only members whose name contains this text (case-insensitive, matched anywhere in the name). Blank is ignored. Combines with `role`.
+
+                ### Paging
+                - `cursor` — leave it out for the first page. For the next page, send the `next` value from the previous response unchanged. It records where the last page stopped, so use it only with the same filters it came from.
+                - `pageSize` — how many rows to return, from 1 to 50. Defaults to 50; a larger number is reduced to 50.
+
+                Keep asking for the next page while `hasMore` is `true`. When it is `false`, `next` is `null` and that was the last page.
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
@@ -297,6 +318,9 @@ public static class OrganizationMemberEndpoints
                 ### On success
                 Returns `200 OK` with the full updated `OrganizationMemberResponseDto`.
 
+                ### Path parameters
+                - `id` — the organization membership's id, as returned by the list and create endpoints.
+
                 ### Failure modes
                 - `400 BAD_REQUEST` — the request body is malformed.
                 - `400 VALIDATION_ERROR` — one or more fields failed validation.
@@ -342,6 +366,9 @@ public static class OrganizationMemberEndpoints
                 - **The Member record is not affected.** The person remains a Member of the congregation — they are just no longer a member of this organization.
                 - **The Organization record is not affected.** The organization still exists and still has its other members.
                 - If the member belongs to multiple organizations, the other assignments are untouched.
+
+                ### Path parameters
+                - `id` — the organization membership's id, as returned by the list and create endpoints.
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.

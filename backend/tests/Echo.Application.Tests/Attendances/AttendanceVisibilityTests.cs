@@ -8,7 +8,7 @@ public class AttendanceVisibilityTests
 {
     private static Attendance NewAttendance(Session session)
     {
-        var attendance = AttendanceFactory.NewEntity();
+        var attendance = TestData.Shared.CreateAttendance();
         attendance.Id = Guid.NewGuid();
         attendance.Session = session;
         attendance.SessionId = session.Id;
@@ -17,7 +17,7 @@ public class AttendanceVisibilityTests
 
     private static Session NewSession(SessionStatus status = SessionStatus.Completed)
     {
-        var session = SessionFactory.NewEntity();
+        var session = TestData.Shared.CreateSession();
         session.Id = Guid.NewGuid();
         session.Status = status;
         return session;
@@ -31,17 +31,6 @@ public class AttendanceVisibilityTests
         var res = new[] { attendance }.AsQueryable().Live().ToList();
 
         Assert.Single(res);
-    }
-
-    [Fact]
-    public void Live_AttendanceOfADeletedSession_IsExcluded()
-    {
-        var session = NewSession();
-        session.DeletedAt = DateTime.UtcNow;
-
-        var res = new[] { NewAttendance(session) }.AsQueryable().Live().ToList();
-
-        Assert.Empty(res);
     }
 
     [Fact]

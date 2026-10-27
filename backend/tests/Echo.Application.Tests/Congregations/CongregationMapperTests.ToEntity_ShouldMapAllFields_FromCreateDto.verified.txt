@@ -1,0 +1,10 @@
+﻿{
+  Name: Grace Church,
+  PhoneNumber: v1,
+  EmailAddress: v2,
+  PostalAddress: v3,
+  WebsiteUrl: v4,
+  City: v5,
+  Town: v6,
+  GpsAddress: v7
+}

@@ -1,0 +1,10 @@
+﻿{
+  SessionLabelId: 3,
+  Date: Date_1,
+  Name: Main Service,
+  Topic: v1,
+  Notes: v2,
+  Location: v3,
+  StartsAt: Time_1,
+  EndsAt: Time_2
+}

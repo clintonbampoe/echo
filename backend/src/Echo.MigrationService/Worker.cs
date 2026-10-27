@@ -19,9 +19,9 @@ public class Worker(
         try
         {
             using var scope = serviceProvider.CreateScope();
-            var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-            await RunMigrationAsync(dbContext, ct);
+            await RunMigrationAsync(context, ct);
         }
         catch (Exception ex)
         {

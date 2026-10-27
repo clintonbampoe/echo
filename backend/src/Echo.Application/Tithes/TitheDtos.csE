@@ -1,0 +1,166 @@
+using System.ComponentModel.DataAnnotations;
+using Echo.Domain.Tithes;
+using Echo.Domain.Transactions;
+using Echo.Shared.Utilities;
+
+namespace Echo.Application.Tithes;
+
+public record TitheCreateDto
+{
+    public Guid MemberId { get; init; }
+
+    [Range(0.01, 1_000_000)]
+    public decimal Amount { get; init; }
+
+    [Range(1900, 2100)]
+    public int ForYear { get; init; }
+
+    public MonthOfYear ForMonth { get; init; }
+    public PaymentMethod PaymentMethod { get; init; }
+    public DateOnly CollectionDate { get; init; }
+
+    [StringLength(2000)]
+    public string? Description { get; init; }
+}
+
+public record TitheUpdateDto
+{
+    [Range(0.01, 1_000_000)]
+    public decimal? Amount { get; init; }
+
+    [Range(1900, 2100)]
+    public int? ForYear { get; init; }
+
+    public MonthOfYear? ForMonth { get; init; }
+    public PaymentMethod? PaymentMethod { get; init; }
+    public DateOnly? CollectionDate { get; init; }
+
+    [StringLength(2000)]
+    public string? Description { get; init; }
+}
+
+public record TitheResponseDto
+{
+    public Guid Id { get; init; }
+    public Guid MemberId { get; init; }
+    public required string MemberName { get; init; }
+    public decimal Amount { get; init; }
+    public int ForYear { get; init; }
+    public MonthOfYear ForMonth { get; init; }
+    public PaymentMethod PaymentMethod { get; init; }
+    public DateOnly CollectionDate { get; init; }
+    public string? Description { get; init; }
+    public DateTime CreatedAt { get; init; }
+}
+
+public record TitheCursor
+{
+    public DateOnly CollectionDate { get; init; }
+    public Guid Id { get; init; }
+}
+
+/// <summary>
+/// Default window when From/To are omitted: this week to
+/// today (by CollectionDate). No default window when
+/// MemberId, Year or Month is set.
+/// </summary>
+public record TitheFilters
+{
+    public Guid? MemberId { get; init; }
+    public string? MemberName { get; init; }
+    public PaymentMethod? PaymentMethod { get; init; }
+    public int? Year { get; init; }
+    public MonthOfYear? Month { get; init; }
+    public DateOnly? From { get; init; }
+    public DateOnly? To { get; init; }
+}
+
+public record TitheSummaryDto
+{
+    public decimal TotalCollected { get; init; }
+    public int UniqueTithers { get; init; }
+    public string? MostUsedPaymentMethod { get; init; }
+    public decimal AveragePerMember { get; init; }
+    public DateWindow? Window { get; init; }
+}
+
+/// <summary>
+/// Represents one month's tithes data in a dashboard trend
+/// chart.
+/// </summary>
+public record TitheSummaryChartBucket
+{
+    /// <summary>
+    /// The year (e.g., 2026).
+    /// </summary>
+    public int Year { get; init; }
+
+    /// <summary>
+    /// The month as a number 1-12 (1 = January).
+    /// </summary>
+    public int Month { get; init; }
+
+    /// <summary>
+    /// Total amount collected in this month.
+    /// </summary>
+    public decimal TotalCollected { get; init; }
+
+    /// <summary>
+    /// Number of distinct members who gave at least one
+    /// tithe this month.
+    /// </summary>
+    public int UniqueTithers { get; init; }
+
+    /// <summary>
+    /// Average tithe per tither this month
+    /// (TotalCollected / UniqueTithers). Zero if no tithers.
+    /// </summary>
+    public decimal AveragePerMember { get; init; }
+}
+
+/// <summary>
+/// Response for the dashboard tithes trend endpoint.
+/// Contains pre-aggregated monthly buckets and an overall
+/// summary.
+/// </summary>
+public record TitheSummaryChartResponse
+{
+    /// <summary>
+    /// The requested time frame in months (3, 6, or 12).
+    /// </summary>
+    public int Months { get; init; }
+
+    /// <summary>
+    /// Monthly buckets, oldest first. Months with no tithes
+    /// are included with zeros.
+    /// </summary>
+    public List<TitheSummaryChartBucket> Buckets { get; init; } = [];
+
+    /// <summary>
+    /// Aggregated totals across all buckets.
+    /// </summary>
+    public TitheSummaryDto Summary { get; init; } = new();
+}
+
+/// <summary>
+/// Filters for the monthly summary. From and To choose the
+/// months to chart (any day in the first and last month);
+/// tithes are grouped by the month they are for, not by
+/// collection date.
+/// </summary>
+public record TitheMonthlyFilters
+{
+    public Guid? MemberId { get; init; }
+    public string? MemberName { get; init; }
+    public PaymentMethod? PaymentMethod { get; init; }
+    public DateOnly? From { get; init; }
+    public DateOnly? To { get; init; }
+}
+
+public record TitheMonthlyDto
+{
+    public int Year { get; init; }
+    public int Month { get; init; }
+    public decimal TotalCollected { get; init; }
+    public int UniqueTithers { get; init; }
+}

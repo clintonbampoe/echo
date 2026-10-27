@@ -20,7 +20,9 @@ public class EventSummaryEndpointTests
         var summary = ((IEndpointRouteBuilder)app)
             .DataSources.SelectMany(source => source.Endpoints)
             .OfType<RouteEndpoint>()
-            .SingleOrDefault(e => e.Metadata.GetMetadata<IEndpointNameMetadata>()?.EndpointName == "GetEventSummary");
+            .SingleOrDefault(e =>
+                e.Metadata.GetMetadata<IEndpointNameMetadata>()?.EndpointName == "GetEventSummary"
+            );
 
         Assert.NotNull(summary);
         Assert.Equal("/events/summary", summary.RoutePattern.RawText);

@@ -39,9 +39,10 @@ public class MonthRangeTests
     }
 
     [Fact]
-    public void MaxMonths_IsTwoYears()
+    public void MaxMonths_IsOneYear_AndTheDefaultIsTheMax()
     {
-        Assert.Equal(24, MonthRange.MaxMonths);
+        Assert.Equal(12, MonthRange.MaxMonths);
+        Assert.Equal(MonthRange.MaxMonths, MonthRange.DefaultMonths);
     }
 
     [Fact]
@@ -62,27 +63,64 @@ public class MonthRangeTests
         Assert.Equal(new DateOnly(2028, 2, 29), MonthRange.Bounds(months).To);
     }
 
-    [Fact]
-    public void Problem_WhenFromIsAfterTo_SaysSo()
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-3)]
+    [InlineData(13)]
+    public void Problem_WhenMonthsIsOutsideOneToTwelve_NamesTheLimits(int months)
     {
-        var months = MonthRange.Between(new DateOnly(2026, 5, 1), new DateOnly(2026, 1, 1));
-
-        Assert.Contains("must not be after", MonthRange.Problem(months));
+        Assert.Contains("between 1 and 12", MonthRange.Problem(months));
     }
 
-    [Fact]
-    public void Problem_WhenTheRangeIsTooLong_NamesTheLimit()
+    [Theory]
+    [InlineData(1)]
+    [InlineData(6)]
+    [InlineData(12)]
+    public void Problem_WhenMonthsIsInRange_IsNone(int months)
     {
-        var months = MonthRange.Between(new DateOnly(2024, 1, 1), new DateOnly(2026, 1, 1));
-
-        Assert.Contains("maximum is 24", MonthRange.Problem(months));
-    }
-
-    [Fact]
-    public void Problem_WithinTheLimit_IsNull()
-    {
-        var months = MonthRange.Between(new DateOnly(2025, 11, 1), new DateOnly(2026, 10, 31));
-
         Assert.Null(MonthRange.Problem(months));
+    }
+
+    [Fact]
+    public void Ending_ListsTheMonthsOldestFirst_EndingWithTheMonthOfTheDay()
+    {
+        var res = MonthRange.Ending(new DateOnly(2026, 10, 27), 3);
+
+        Assert.Equal([new YearMonth(2026, 8), new YearMonth(2026, 9), new YearMonth(2026, 10)], res);
+    }
+
+    [Fact]
+    public void Ending_ReachesBackAcrossAYearBoundary()
+    {
+        var res = MonthRange.Ending(new DateOnly(2026, 2, 1), 12);
+
+        Assert.Equal(new YearMonth(2025, 3), res[0]);
+        Assert.Equal(new YearMonth(2026, 2), res[^1]);
+        Assert.Equal(12, res.Count);
+    }
+
+    private sealed record Row(int Year, int Month, int Count);
+
+    [Fact]
+    public void Fill_ReturnsEveryMonthInOrder_WithAnEmptyRowWhereThereIsNone()
+    {
+        var months = MonthRange.Between(new DateOnly(2026, 1, 1), new DateOnly(2026, 4, 1));
+        var rows = new[] { new Row(2026, 3, 5), new Row(2026, 1, 2) };
+
+        var res = MonthRange.Fill(months, rows, r => new YearMonth(r.Year, r.Month), m => new Row(m.Year, m.Month, 0));
+
+        Assert.Equal([2, 0, 5, 0], res.Select(r => r.Count));
+        Assert.Equal([1, 2, 3, 4], res.Select(r => r.Month));
+    }
+
+    [Fact]
+    public void Fill_LeavesOutRowsOutsideTheRange()
+    {
+        var months = MonthRange.Between(new DateOnly(2026, 2, 1), new DateOnly(2026, 2, 28));
+        var rows = new[] { new Row(2026, 1, 9), new Row(2026, 2, 4) };
+
+        var res = MonthRange.Fill(months, rows, r => new YearMonth(r.Year, r.Month), m => new Row(m.Year, m.Month, 0));
+
+        Assert.Equal([new Row(2026, 2, 4)], res);
     }
 }

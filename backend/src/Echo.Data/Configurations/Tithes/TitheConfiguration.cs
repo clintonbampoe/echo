@@ -1,3 +1,4 @@
+using Echo.Domain.Congregations;
 using Echo.Domain.Tithes;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -13,12 +14,11 @@ public class TitheConfiguration : IEntityTypeConfiguration<Tithe>
         builder.Property(e => e.CreatedAt).HasDefaultValueSql("now()").ValueGeneratedOnAdd();
 
         builder
-            .HasOne(e => e.Congregation)
+            .HasOne<Congregation>()
             .WithMany()
             .HasForeignKey(e => e.CongregationId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.HasIndex(e => e.CongregationId);
+            .OnDelete(DeleteBehavior.Restrict)
+            .IsRequired();
 
         builder
             .HasOne(t => t.Member)
@@ -28,8 +28,6 @@ public class TitheConfiguration : IEntityTypeConfiguration<Tithe>
 
         builder.HasIndex(t => t.MemberId);
 
-        // A member has one tithe per month. Topping up is an update of that tithe, not a second row. Deleted
-        // tithes do not count, so a mistaken one can be deleted and recorded again.
         builder
             .HasIndex(t => new
             {
@@ -40,6 +38,32 @@ public class TitheConfiguration : IEntityTypeConfiguration<Tithe>
             .IsUnique()
             .HasFilter("deleted_at IS NULL");
 
-        builder.HasIndex(t => new { t.CollectionDate, t.Id }).HasFilter("deleted_at IS NULL");
+        // Serves the list (newest first, cursor on collection_date + id) and the summary as index-only scans.
+        builder
+            .HasIndex(t => new
+            {
+                t.CongregationId,
+                t.CollectionDate,
+                t.Id,
+            })
+            .IsDescending(false, true, false)
+            .IncludeProperties(t => new
+            {
+                t.Amount,
+                t.MemberId,
+                t.PaymentMethod,
+            })
+            .HasFilter("deleted_at IS NULL");
+
+        builder
+            .HasIndex(t => new
+            {
+                t.CongregationId,
+
+                t.ForYear,
+                t.ForMonth,
+            })
+            .HasFilter("deleted_at IS NULL")
+            .IncludeProperties(t => new { t.Amount, t.MemberId });
     }
 }

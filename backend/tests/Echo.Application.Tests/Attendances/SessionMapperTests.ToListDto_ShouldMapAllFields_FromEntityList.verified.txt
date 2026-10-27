@@ -1,0 +1,51 @@
+﻿[
+  {
+    Id: Guid_1,
+    SessionLabelId: 2,
+    SessionLabelName: Sunday Service,
+    Date: Date_1,
+    Name: v6,
+    Topic: v7,
+    Notes: v8,
+    Location: v9,
+    StartsAt: Time_1,
+    EndsAt: Time_2,
+    CreatedBy: Guid_2,
+    CreatedByName: Jane Doe,
+    CreatedAt: DateTime_1
+  },
+  {
+    Id: Guid_3,
+    SessionLabelId: 4,
+    SessionLabelName: Sunday Service,
+    Category: Meeting,
+    Date: Date_2,
+    Name: v15,
+    Topic: v16,
+    Notes: v17,
+    Location: v18,
+    StartsAt: Time_3,
+    EndsAt: Time_4,
+    Status: Completed,
+    CreatedBy: Guid_4,
+    CreatedByName: Jane Doe,
+    CreatedAt: DateTime_2
+  },
+  {
+    Id: Guid_5,
+    SessionLabelId: 6,
+    SessionLabelName: Sunday Service,
+    Category: Study,
+    Date: Date_3,
+    Name: v24,
+    Topic: v25,
+    Notes: v26,
+    Location: v27,
+    StartsAt: Time_5,
+    EndsAt: Time_6,
+    Status: Cancelled,
+    CreatedBy: Guid_6,
+    CreatedByName: Jane Doe,
+    CreatedAt: DateTime_3
+  }
+]

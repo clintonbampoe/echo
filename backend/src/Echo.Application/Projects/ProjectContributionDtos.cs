@@ -63,6 +63,31 @@ public record ProjectContributionFilters
     public DateOnly? To { get; init; }
 }
 
+/// <summary>
+/// Narrows the monthly chart. The dates choose the months; the other filters choose the gifts.
+/// </summary>
+public record ProjectContributionMonthlyFilters
+{
+    public Guid? ProjectId { get; init; }
+    public int? CategoryId { get; init; }
+    public PaymentMethod? PaymentMethod { get; init; }
+
+    /// <summary>How many months to return, ending with the month of <see cref="To"/>.</summary>
+    [Range(1, MonthRange.MaxMonths)]
+    public int Months { get; init; } = MonthRange.DefaultMonths;
+
+    /// <summary>Any day in the last month to return. This month when not given.</summary>
+    public DateOnly? To { get; init; }
+}
+
+public record ProjectContributionMonthlyDto
+{
+    public int Year { get; init; }
+    public int Month { get; init; }
+    public decimal TotalRaised { get; init; }
+    public int ContributionCount { get; init; }
+}
+
 public record ProjectContributionSummaryDto
 {
     public decimal TotalContributed { get; init; }

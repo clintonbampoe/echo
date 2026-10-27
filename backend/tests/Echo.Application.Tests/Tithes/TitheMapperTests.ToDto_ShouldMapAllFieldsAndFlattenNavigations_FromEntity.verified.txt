@@ -1,0 +1,12 @@
+﻿{
+  Id: Guid_1,
+  MemberId: Guid_2,
+  MemberName: Jane Doe,
+  Amount: 250.50,
+  ForYear: 2026,
+  ForMonth: March,
+  PaymentMethod: MobileMoney,
+  CollectionDate: Date_1,
+  Description: Sunday offering,
+  CreatedAt: DateTime_1
+}
