@@ -1,13 +1,14 @@
+using Echo.Application.Caching;
 using Echo.Data;
 using Echo.Domain.Transactions;
 using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
+using Echo.Shared.Utilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
-using Echo.Shared.Utilities;
 
 namespace Echo.Application.Transactions;
 
@@ -21,15 +22,14 @@ public class TransactionService(
     ApplicationInstrumentation instrumentation,
     LinkGenerator linker,
     DateWindows dateWindows,
+    SummaryCache summaries,
     ILogger<TransactionService> logger
 )
 {
-    internal static DateWindow? ResolveWindow(TransactionFilters filters, DateWindows dateWindows) =>
-        dateWindows.ThisWeekToDate(
-            filters.From,
-            filters.To,
-            hasParent: false
-        );
+    internal static DateWindow? ResolveWindow(
+        TransactionFilters filters,
+        DateWindows dateWindows
+    ) => dateWindows.ThisWeekToDate(filters.From, filters.To, hasParent: false);
 
     public async Task<IOperationResult> List(
         Guid congregationId,
@@ -237,7 +237,20 @@ public class TransactionService(
         return new NoContentResult();
     }
 
-    public async Task<IOperationResult> Summary(
+    public Task<IOperationResult> Summary(
+        Guid congregationId,
+        TransactionFilters filters,
+        CancellationToken ct
+    ) =>
+        summaries.Serve(
+            "transactions",
+            congregationId,
+            filters,
+            token => ComputeSummary(congregationId, filters, token),
+            ct
+        );
+
+    private async Task<TransactionSummaryDto> ComputeSummary(
         Guid congregationId,
         TransactionFilters filters,
         CancellationToken ct
@@ -251,12 +264,24 @@ public class TransactionService(
         );
 
         var byCategory = await repository.GetCategoryTotals(congregationId, filters, ct);
-        var res = BuildSummary(byCategory) with { Window = window };
+        var previous = window is { } w
+            ? await repository.GetTypeTotals(
+                congregationId,
+                filters with { From = w.Previous().From, To = w.Previous().To },
+                ct
+            )
+            : [];
+        var res = BuildSummary(byCategory) with
+        {
+            Window = window,
+            PreviousTotalIncome = previous.Where(t => t.Type == TransactionType.Income).Sum(t => t.Total),
+            PreviousTotalExpenses = previous.Where(t => t.Type == TransactionType.Expense).Sum(t => t.Total),
+        };
 
         activity?.SetTag("transaction.summary.income", res.TotalIncome);
         TransactionLog.Summarized(logger, congregationId, res.TotalIncome, res.TotalExpenses);
 
-        return new SuccessResult<TransactionSummaryDto>(res);
+        return res;
     }
 
     private static TransactionCursor BuildCursor(Transaction last)
@@ -266,46 +291,49 @@ public class TransactionService(
 
     public async Task<IOperationResult> MonthlySummary(
         Guid congregationId,
-        TransactionFilters filters,
+        TransactionMonthlyFilters filters,
         CancellationToken ct
     )
     {
-        using var activity = instrumentation.ActivitySource.StartActivity(
-            "svc.transaction.monthly_summary"
-        );
-
-        var window = dateWindows.LastTwelveMonths(filters.From, filters.To, hasParent: false)!.Value;
-        var months = MonthRange.Between(window.From, window.To);
-        if (MonthRange.Problem(months) is { } problem)
+        if (MonthRange.Problem(filters.Months) is { } problem)
             return new BadRequestResult(problem);
 
-        filters = WholeMonths(filters, months);
-        var rows = await repository.GetMonthlyTotals(congregationId, filters, ct);
-
-        return new SuccessResult<List<TransactionMonthlyDto>>(FillMonths(months, rows));
+        return await summaries.Serve(
+            "transactions.monthly",
+            congregationId,
+            filters,
+            token => ComputeMonthly(congregationId, filters, token),
+            ct
+        );
     }
 
-    // From and To may be any day in their month, but the first and last months are charted whole.
-    internal static TransactionFilters WholeMonths(
-        TransactionFilters filters,
-        IReadOnlyList<YearMonth> months
+    private async Task<List<TransactionMonthlyDto>> ComputeMonthly(
+        Guid congregationId,
+        TransactionMonthlyFilters filters,
+        CancellationToken ct
     )
     {
+        var months = dateWindows.ChartMonths(filters.Months, filters.To);
         var (from, to) = MonthRange.Bounds(months);
-        return filters with { From = from, To = to };
-    }
+        var rows = await repository.GetMonthlyTotals(
+            congregationId,
+            new TransactionFilters
+            {
+                CategoryId = filters.CategoryId,
+                TransactionType = filters.TransactionType,
+                From = from,
+                To = to,
+            },
+            ct
+        );
 
-    // Months without transactions are returned as zeros so a chart has no gaps.
-    internal static List<TransactionMonthlyDto> FillMonths(
-        IReadOnlyList<YearMonth> months,
-        IReadOnlyList<TransactionMonthlyDto> rows
-    ) =>
-        months
-            .Select(m =>
-                rows.FirstOrDefault(r => r.Year == m.Year && r.Month == m.Month)
-                ?? new TransactionMonthlyDto { Year = m.Year, Month = m.Month }
-            )
-            .ToList();
+        return MonthRange.Fill(
+            months,
+            rows,
+            r => new YearMonth(r.Year, r.Month),
+            m => new TransactionMonthlyDto { Year = m.Year, Month = m.Month }
+        );
+    }
 
     // Every total in the summary comes from the per-category rows, so one query is enough.
     internal static TransactionSummaryDto BuildSummary(
@@ -327,7 +355,7 @@ public class TransactionService(
             TotalExpenses = expenses,
             Net = income - expenses,
             MostActiveCategory = mostActiveCategory,
-            ByCategory = byCategory.ToList(),
+            ByCategory = [.. byCategory],
         };
     }
 

@@ -21,7 +21,6 @@ public partial class TitheMapper : ITitheMapper
             CreatedAt = entity.CreatedAt,
         };
 
-    [MapperIgnoreTarget(nameof(Tithe.Congregation))]
     [MapperIgnoreTarget(nameof(Tithe.CongregationId))]
     [MapperIgnoreTarget(nameof(Tithe.Id))]
     [MapperIgnoreTarget(nameof(Tithe.Member))]

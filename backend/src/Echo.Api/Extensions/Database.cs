@@ -7,7 +7,8 @@ public static class Database
 {
     public static IServiceCollection ConfigureDbContext(
         this IServiceCollection services,
-        IConfiguration configuration
+        IConfiguration configuration,
+        IHostEnvironment environment
     )
     {
         var connectionString = configuration.GetConnectionString("echodb");
@@ -15,8 +16,12 @@ public static class Database
         services.AddDbContext<AppDbContext>(options =>
         {
             options.UseNpgsql(connectionString).ConfigureEchoDatabase();
-            options.EnableDetailedErrors();
-            options.EnableSensitiveDataLogging();
+
+            if (environment.IsDevelopment())
+            {
+                options.EnableDetailedErrors();
+                options.EnableSensitiveDataLogging();
+            }
         });
 
         return services;

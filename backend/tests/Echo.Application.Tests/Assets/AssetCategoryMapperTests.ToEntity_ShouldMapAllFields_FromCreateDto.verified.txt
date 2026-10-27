@@ -1,0 +1,4 @@
+﻿{
+  Name: Audio Equipment,
+  Icon: v1
+}

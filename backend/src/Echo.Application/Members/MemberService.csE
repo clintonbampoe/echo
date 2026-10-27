@@ -1,0 +1,327 @@
+using Echo.Application.Caching;
+using Echo.Data;
+using Echo.Domain.Members;
+using Echo.Shared.Caching;
+using Echo.Shared.HttpResults;
+using Echo.Shared.Pagination;
+using Echo.Shared.Services.Encoders;
+using Echo.Shared.Services.Generators;
+using Echo.Shared.Utilities;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Logging;
+
+namespace Echo.Application.Members;
+
+public class MemberService(
+    MemberRepository repository,
+    PersonRepository personRepository,
+    IUnitOfWork unitOfWork,
+    IMemberMapper mapper,
+    IEncoder encoder,
+    IIdGenerator idGenerator,
+    ApplicationInstrumentation instrumentation,
+    LinkGenerator linker,
+    DateWindows dateWindows,
+    ICacheService cache,
+    ILogger<MemberService> logger
+)
+{
+    internal static DateWindow? ResolveWindow(MemberFilters filters, DateWindows dateWindows) =>
+        dateWindows.ThisYear(filters.From, filters.To, hasParent: false);
+
+    public async Task<IOperationResult> List(
+        Guid congregationId,
+        MemberFilters filters,
+        PaginationRequest pagination,
+        CancellationToken ct
+    )
+    {
+        var window = ResolveWindow(filters, dateWindows);
+        filters = filters with { From = window?.From, To = window?.To };
+
+        using var activity = instrumentation.ActivitySource.StartActivity("svc.member.list");
+
+        var cursor = encoder.Decode<MemberCursor>(pagination.Cursor);
+
+        List<Member> entities;
+        using (instrumentation.ActivitySource.StartActivity("svc.member.fetch.list"))
+        {
+            entities = await repository.List(
+                congregationId,
+                filters,
+                cursor,
+                pagination.PageSize + 1,
+                ct
+            );
+        }
+
+        var hasMore = entities.Count > pagination.PageSize;
+        if (hasMore)
+            entities.RemoveAt(entities.Count - 1);
+
+        var nextCursor = hasMore ? encoder.Encode(BuildCursor(entities.Last())) : null;
+
+        var data = mapper.ToListDto(entities);
+        activity?.SetTag("member.count", data.Count);
+        MemberLog.Listed(logger, congregationId, data.Count);
+
+        var res = new PagedResponse<MemberResponseDto>(hasMore, nextCursor, data, window);
+        return new SuccessResult<PagedResponse<MemberResponseDto>>(res);
+    }
+
+    public async Task<IOperationResult> GetById(Guid congregationId, Guid id, CancellationToken ct)
+    {
+        using var activity = instrumentation.ActivitySource.StartActivity("svc.member.get_by_id");
+        activity?.SetTag("member.id", id);
+
+        Member? entity;
+        using (instrumentation.ActivitySource.StartActivity("svc.member.fetch.by_id"))
+        {
+            entity = await repository.GetById(congregationId, id, ct);
+        }
+
+        if (entity is null)
+        {
+            activity?.SetTag("member.found", false);
+            MemberLog.NotFound(logger, congregationId, id);
+            return new NotFoundResult(id.ToString());
+        }
+
+        MemberLog.Found(logger, congregationId, id);
+        var res = mapper.ToDto(entity);
+        return new SuccessResult<MemberResponseDto>(res);
+    }
+
+    public async Task<IOperationResult> Create(
+        Guid congregationId,
+        MemberCreateDto dto,
+        HttpContext httpContext,
+        CancellationToken ct
+    )
+    {
+        using var activity = instrumentation.ActivitySource.StartActivity("svc.member.create");
+
+        var (person, member) = mapper.ToEntity(dto);
+
+        person.Id = idGenerator.Generate();
+        person.CongregationId = congregationId;
+
+        member.PersonId = person.Id;
+        member.CongregationId = congregationId;
+        member.Person = person;
+
+        using (instrumentation.ActivitySource.StartActivity("svc.member.persist"))
+        {
+            personRepository.Create(person);
+            repository.Create(member);
+            await unitOfWork.CommitAsync(ct);
+        }
+
+        activity?.SetTag("member.id", member.PersonId);
+        MemberLog.Created(logger, congregationId, member.PersonId);
+
+        var res = mapper.ToDto(member);
+
+        var location =
+            linker.GetPathByName(httpContext, "GetMemberById", new { id = res.Id })
+            ?? throw new InvalidOperationException("Route 'GetMemberById' is not registered.");
+        return new CreatedResult<MemberResponseDto>(location, res);
+    }
+
+    public async Task<IOperationResult> Update(
+        Guid congregationId,
+        Guid id,
+        MemberUpdateDto dto,
+        CancellationToken ct
+    )
+    {
+        using var activity = instrumentation.ActivitySource.StartActivity("svc.member.update");
+        activity?.SetTag("member.id", id);
+
+        Member? entity;
+        using (instrumentation.ActivitySource.StartActivity("svc.member.fetch.by_id"))
+        {
+            entity = await repository.GetById(congregationId, id, ct);
+        }
+
+        if (entity is null)
+        {
+            activity?.SetTag("member.found", false);
+            MemberLog.UpdateNotFound(logger, congregationId, id);
+            return new NotFoundResult(id.ToString());
+        }
+
+        using (instrumentation.ActivitySource.StartActivity("svc.member.persist"))
+        {
+            mapper.Patch(dto, entity.Person, entity);
+            await unitOfWork.CommitAsync(ct);
+        }
+
+        MemberLog.Updated(logger, congregationId, id);
+
+        var res = mapper.ToDto(entity);
+        return new SuccessResult<MemberResponseDto>(res);
+    }
+
+    public async Task<IOperationResult> Delete(Guid congregationId, Guid id, CancellationToken ct)
+    {
+        using var activity = instrumentation.ActivitySource.StartActivity("svc.member.delete");
+        activity?.SetTag("member.id", id);
+
+        Member? entity;
+        using (instrumentation.ActivitySource.StartActivity("svc.member.fetch.by_id"))
+        {
+            entity = await repository.GetById(congregationId, id, ct);
+        }
+
+        if (entity is null)
+        {
+            activity?.SetTag("member.found", false);
+            MemberLog.DeleteNotFound(logger, congregationId, id);
+            return new NotFoundResult(id.ToString());
+        }
+
+        using (instrumentation.ActivitySource.StartActivity("svc.member.persist"))
+        {
+            personRepository.SoftDelete(entity.Person);
+            repository.SoftDelete(entity);
+            await unitOfWork.CommitAsync(ct);
+        }
+
+        MemberLog.Deleted(logger, congregationId, id);
+
+        return new NoContentResult();
+    }
+
+    public async Task<IOperationResult> Search(
+        Guid congregationId,
+        string searchString,
+        CancellationToken ct
+    )
+    {
+        using var activity = instrumentation.ActivitySource.StartActivity("svc.member.search");
+        activity?.SetTag("member.query", searchString);
+
+        List<Member> entities;
+        using (instrumentation.ActivitySource.StartActivity("svc.member.fetch.search"))
+        {
+            entities = await repository.Search(congregationId, searchString, ct);
+        }
+
+        var res = mapper.ToSearchDto(entities);
+        activity?.SetTag("member.count", res.Count);
+        MemberLog.Searched(logger, congregationId, searchString, res.Count);
+        return new SuccessResult<List<MemberSearchResultDto>>(res);
+    }
+
+    public async Task<IOperationResult> Summary(
+        Guid congregationId,
+        MemberFilters filters,
+        CancellationToken ct
+    )
+    {
+        var window = ResolveWindow(filters, dateWindows);
+        filters = filters with { From = window?.From, To = window?.To };
+
+        using var activity = instrumentation.ActivitySource.StartActivity("svc.member.summary");
+
+        var stats = await repository.GetSummaryStats(congregationId, filters, ct);
+
+        var res = new MemberSummaryDto
+        {
+            Window = window,
+            TotalMembers = stats.Total,
+            ActiveMembers = stats.Active,
+            MaleCount = stats.Male,
+            FemaleCount = stats.Female,
+            AverageAge = stats.AverageAge,
+            AgeGroups = AgeGroupsOf(stats),
+        };
+
+        activity?.SetTag("member.summary.total", res.TotalMembers);
+        MemberLog.Summarized(logger, congregationId, res.TotalMembers);
+
+        return new SuccessResult<MemberSummaryDto>(res);
+    }
+
+    /// <summary>
+    /// Gets the monthly member growth trend for the dashboard (3/6/12
+    /// months).
+    /// </summary>
+    /// <param name="congregationId">The congregation to query.</param>
+    /// <param name="months">Number of calendar months to return
+    /// (3, 6, or 12).</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>
+    /// A <see cref="MemberSummaryChartResponse"/> with monthly buckets and
+    /// summary. Cached for 10 minutes per congregation per time frame.
+    /// </returns>
+    /// <exception cref="BadRequestResult">
+    /// Thrown if <paramref name="months"/> is not 3, 6, or 12.
+    /// </exception>
+    public async Task<IOperationResult> GetSummaryChart(
+        Guid congregationId,
+        int months,
+        CancellationToken ct
+    )
+    {
+        using var activity = instrumentation.ActivitySource.StartActivity("svc.member.summary.chart");
+        activity?.SetTag("member.summary.chart.months", months);
+
+        if (months != 3 && months != 6 && months != 12)
+        {
+            return new BadRequestResult("months field must be 3, 6, or 12");
+        }
+
+        var policy = CachePolicies.DashboardMembersSummaryChart;
+        var key = CacheKey.Build(policy.KeyPrefix, congregationId, months);
+
+        var cached = await cache.GetAsync<MemberSummaryChartResponse>(key, ct);
+        if (cached is not null)
+        {
+            MemberLog.SummaryChartServed(logger, congregationId, months, cached.Buckets.Count, true);
+            return new SuccessResult<MemberSummaryChartResponse>(cached);
+        }
+
+        async Task<MemberSummaryChartResponse> buildSummaryChartResponse(CancellationToken ct)
+        {
+            var buckets = await repository.GetSummaryChartAsync(congregationId, months, ct);
+
+            var summary = new MemberChartSummaryDto
+            {
+                TotalNewMembers = buckets.Sum(b => b.NewMembers),
+                AveragePerMonth =
+                    buckets.Count > 0 ? (int)Math.Round(buckets.Average(b => b.NewMembers)) : 0,
+                BestMonth = buckets.Count > 0 ? buckets.Max(b => b.NewMembers) : 0,
+            };
+
+            MemberLog.SummaryChartComputed(logger, congregationId, months, buckets.Count);
+
+            return new MemberSummaryChartResponse
+            {
+                Months = months,
+                Buckets = buckets,
+                Summary = summary,
+            };
+        }
+
+        var result = await cache.GetOrCreateAsync(key, buildSummaryChartResponse, policy.Ttl, ct);
+        MemberLog.SummaryChartServed(logger, congregationId, months, result!.Buckets.Count, false);
+
+        return new SuccessResult<MemberSummaryChartResponse>(result!);
+    }
+
+    private static MemberCursor BuildCursor(Member last) =>
+        new() { Name = last.Person.Name, Id = last.PersonId };
+
+    // Always the same five groups in the same order, so a client can draw them without checking.
+    private static AgeGroupDto[] AgeGroupsOf(MemberStats s) =>
+        [
+            new() { Label = "Under 18", Count = s.Under18 },
+            new() { Label = "18–29", Count = s.Age18To29 },
+            new() { Label = "30–44", Count = s.Age30To44 },
+            new() { Label = "45–59", Count = s.Age45To59 },
+            new() { Label = "60+", Count = s.Age60Plus },
+        ];
+}

@@ -6,7 +6,6 @@ namespace Echo.Application.Assets;
 [Mapper]
 public partial class AssetMapper : IAssetMapper
 {
-    [MapperIgnoreSource(nameof(entity.Congregation))]
     [MapperIgnoreSource(nameof(entity.CongregationId))]
     [MapperIgnoreSource(nameof(entity.DeletedAt))]
     [MapProperty(
@@ -15,12 +14,13 @@ public partial class AssetMapper : IAssetMapper
     )]
     public partial AssetResponseDto ToDto(Asset entity);
 
-    [MapperIgnoreTarget(nameof(Asset.Congregation))]
     [MapperIgnoreTarget(nameof(Asset.CongregationId))]
     [MapperIgnoreTarget(nameof(Asset.Id))]
     [MapperIgnoreTarget(nameof(Asset.Category))]
     [MapperIgnoreTarget(nameof(Asset.CreatedAt))]
     [MapperIgnoreTarget(nameof(Asset.DeletedAt))]
+    // Set by the service from the status.
+    [MapperIgnoreTarget(nameof(Asset.LiquidatedOn))]
     public partial Asset ToEntity(AssetCreateDto dto);
 
     public partial List<AssetResponseDto> ToListDto(List<Asset> entities);

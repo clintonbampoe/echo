@@ -1,0 +1,44 @@
+﻿[
+  {
+    Id: Guid_1,
+    CategoryId: 2,
+    CategoryName: Missions,
+    ManagerId: Guid_2,
+    ManagerName: Jane Doe,
+    Name: Borehole Fund,
+    TargetAmount: 25000.0,
+    Status: OnTrack,
+    StartDate: Date_1,
+    EndDate: Date_2,
+    Description: Clean water for the village,
+    CreatedAt: DateTime_1
+  },
+  {
+    Id: Guid_3,
+    CategoryId: 4,
+    CategoryName: Missions,
+    ManagerId: Guid_4,
+    ManagerName: Jane Doe,
+    Name: Borehole Fund,
+    TargetAmount: 25000.0,
+    Status: OnTrack,
+    StartDate: Date_3,
+    EndDate: Date_4,
+    Description: Clean water for the village,
+    CreatedAt: DateTime_2
+  },
+  {
+    Id: Guid_5,
+    CategoryId: 6,
+    CategoryName: Missions,
+    ManagerId: Guid_6,
+    ManagerName: Jane Doe,
+    Name: Borehole Fund,
+    TargetAmount: 25000.0,
+    Status: OnTrack,
+    StartDate: Date_5,
+    EndDate: Date_6,
+    Description: Clean water for the village,
+    CreatedAt: DateTime_3
+  }
+]

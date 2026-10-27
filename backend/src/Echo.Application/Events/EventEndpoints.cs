@@ -21,7 +21,7 @@ public static class EventEndpoints
             .MapGet(
                 "/",
                 async (
-                    [AsParameters] EventFilters filters,
+                    [AsParameters] EventListFilters filters,
                     [AsParameters] PaginationRequest pagination,
                     EventService service,
                     HttpContext context,
@@ -58,8 +58,11 @@ public static class EventEndpoints
                 ### Ordering
                 Events are ordered by start date. `order=asc` (the default) lists the oldest first; `order=desc` lists the newest first, which suits a "Past" tab. A page's `next` cursor only continues a list in the direction it was fetched; passing it with the other `order` starts the list again from the first page.
 
-                ### Pagination
-                Pass the `next` cursor from the previous response as the `cursor` query parameter. When `hasMore` is `false`, `next` is null.
+                ### Paging
+                - `cursor` — leave it out for the first page. For the next page, send the `next` value from the previous response unchanged. It records where the last page stopped, so use it only with the same filters it came from.
+                - `pageSize` — how many rows to return, from 1 to 50. Defaults to 50; a larger number is reduced to 50.
+
+                Keep asking for the next page while `hasMore` is `true`. When it is `false`, `next` is `null` and that was the last page.
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
@@ -89,6 +92,9 @@ public static class EventEndpoints
                 Returns the full Event record for the given ID, scoped to the caller's congregation.
 
                 The response includes the resolved `organizationName` and `organizerName`, so the client does not need follow-up calls to render the event.
+
+                ### Path parameters
+                - `id` — the event's id, as returned by the list and create endpoints.
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
@@ -206,6 +212,9 @@ public static class EventEndpoints
                 - **Existing registrations and attendance are not affected.** A member who registered for the event under the old organizer remains registered. The organizer field on the event is informational.
                 - Changing the date does not invalidate registrations or attendance — the client is responsible for reconciling any scheduling changes.
 
+                ### Path parameters
+                - `id` — the event's id, as returned by the list and create endpoints.
+
                 ### Failure modes
                 - `400 BAD_REQUEST` — the request body is malformed.
                 - `400 VALIDATION_ERROR` — one or more fields failed validation.
@@ -247,6 +256,9 @@ public static class EventEndpoints
                 - **Existing Event Registrations and Event Attendance for this event are not affected.** They remain in the database and continue to reference the (now deleted) event. When those records are fetched via their own endpoints, `eventName` still returns the deleted event's name.
                 - **New registrations or attendance cannot reference a deleted event** — the FK lookup will fail with `404 FOREIGN_KEY_NOT_FOUND`.
 
+                ### Path parameters
+                - `id` — the event's id, as returned by the list and create endpoints.
+
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
                 - `404 NOT_FOUND` — no event exists with the given ID in this congregation, or the record has already been soft-deleted.
@@ -283,14 +295,23 @@ public static class EventEndpoints
             .WithSummary("Returns aggregate summary metrics for events.")
             .WithDescription(
                 """
-                Returns aggregated metrics for the caller's congregation, scoped by the same filters as the list endpoint.
+                Returns the headline numbers for the Events page, for the events the filters pick.
 
-                ### Response fields
-                - `totalEvents` — events matching the filters.
-                - `upcomingEvents` — events that start today or later, matching the name, organization and organizer filters. It is not limited by `from`/`to`, so it counts events outside the date window too.
+                ### Query parameters
+                - `name` — only events whose name contains this text (case-insensitive; `%` and `_` are matched literally).
+                - `organizationId` — only events organized by this organization.
+                - `organizerId` — only events organized by this member.
+                - `from`, `to` — only events that **start** between these two days, inclusive. Defaults to this year. The response's `window` says which dates were applied.
+
+                ### Response
+                - `totalEvents` — events that start inside the window.
+                - `upcomingEvents` — events that start today or later, matching `name`, `organizationId` and `organizerId`. It is **not** limited by `from`/`to`, so it also counts events outside the window.
                 - `totalRegistered` — registrations for the matching events.
-                - `totalAttended` — check-ins for the matching events.
+                - `totalAttended` — check-ins for the matching events (members only).
                 - `window` — the date range that was applied.
+
+                ### Caching
+                The answer is cached for 2 minutes per congregation and per set of parameters.
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
@@ -339,6 +360,117 @@ public static class EventEndpoints
             )
             .RequireRateLimiting("search")
             .Produces<List<EventSearchResultDto>>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status401Unauthorized);
+
+        group
+            .MapGet(
+                "/summary/by-event",
+                async (
+                    [AsParameters] EventSeriesFilters filters,
+                    EventService service,
+                    HttpContext context,
+                    CancellationToken ct
+                ) =>
+                {
+                    using var span = EndpointInstrumentation.StartSpan(
+                        context,
+                        instrumentation,
+                        "endpoint.event.series_summary"
+                    );
+                    var result = await service.SeriesSummary(
+                        context.User.GetCongregationId(),
+                        filters,
+                        ct
+                    );
+                    return result.ToResult();
+                }
+            )
+            .WithName("GetEventSeriesSummary")
+            .WithSummary("Returns registrations and check-ins for the newest events.")
+            .WithDescription(
+                """
+                Returns the newest events that match the filters, each with how many people registered and how many were checked in, so the Events page can draw "check-ins per event" (bars, a ranking, a fill-rate gauge) from a single request.
+
+                ### Query parameters
+                - `name` — only events whose name contains this text (case-insensitive; `%` and `_` are matched literally).
+                - `organizationId` — only events organized by this organization.
+                - `organizerId` — only events organized by this member.
+                - `from`, `to` — only events that **start** between these two days, inclusive. Defaults to this year, so the usual call, with no dates, is "the latest events of the year".
+                - `limit` — how many events to return, from 1 to 50. Defaults to 12.
+
+                ### Ordering
+                The events are always the **newest first**, by start date. The list endpoint's `order` parameter does not exist here: this endpoint is about recent events, and `limit` keeps the newest ones. To rank them (for example "best attended"), sort the returned rows by `attendanceCount` on the client.
+
+                ### Response
+                A list of `{ eventId, name, startDate, capacity, registrationCount, attendanceCount }`.
+                - `registrationCount` — people registered for the event.
+                - `attendanceCount` — people checked in. Check-ins are for members only, so there is no visitor count.
+                - `capacity` — the seats the event has, or `null` when it has no limit. The share of seats filled is `attendanceCount / capacity` where `capacity` is set.
+
+                ### Caching
+                The answer is cached for 2 minutes per congregation and per set of parameters.
+
+                ### Failure modes
+                - `400 VALIDATION_ERROR` — `limit` is not between 1 and 50.
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                """
+            )
+            .Produces<List<EventSeriesDto>>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status401Unauthorized);
+
+        group
+            .MapGet(
+                "/summary/monthly",
+                async (
+                    [AsParameters] EventMonthlyFilters filters,
+                    EventService service,
+                    HttpContext context,
+                    CancellationToken ct
+                ) =>
+                {
+                    using var span = EndpointInstrumentation.StartSpan(
+                        context,
+                        instrumentation,
+                        "endpoint.event.monthly_summary"
+                    );
+                    var result = await service.MonthlySummary(
+                        context.User.GetCongregationId(),
+                        filters,
+                        ct
+                    );
+                    return result.ToResult();
+                }
+            )
+            .WithName("GetEventMonthlySummary")
+            .WithSummary("Returns events held per month.")
+            .WithDescription(
+                """
+                Returns one row per calendar month, so the Events page can chart how many events were organised, and how well they were attended, from a single request.
+
+                Events are grouped by the month they **start** in, and their registrations and check-ins count toward that month.
+
+                ### Query parameters
+                - `months` — how many months to return, from 1 to 12. Defaults to 12. The rows end with the month of `to`, so `months=6` is the last six months.
+                - `to` — any day in the last month to return. Defaults to today, so the last row is this month so far (a part month). Send an earlier date to look back in time: `months=6&to=2026-03-15` returns October 2025 to March 2026.
+                - `organizationId` — only events organized by this organization.
+                - `organizerId` — only events organized by this member.
+
+                ### Response
+                A list of `{ year, month, eventCount, registrationCount, attendanceCount }`. Check-ins are for members only. Oldest month first. A month with nothing in it is returned with zeros, so there are no gaps and the list always has exactly `months` rows.
+
+                ### Why it is one endpoint
+                This is the only monthly endpoint for events: it serves a dashboard card (`months=6`), a full-year chart, or a donut over the months. The shape is always the same list, so the page decides how to draw it.
+
+                ### Caching
+                The answer is cached for 2 minutes per congregation and per set of parameters, so asking again straight away costs nothing. A change shows up within 2 minutes.
+
+                ### Failure modes
+                - `400 BAD_REQUEST` — `months` is not between 1 and 12.
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                """
+            )
+            .Produces<List<EventMonthlyDto>>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status401Unauthorized);
 
         return app;

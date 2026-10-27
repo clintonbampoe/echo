@@ -1,4 +1,5 @@
 using Echo.Domain.Assets;
+using Echo.Domain.Congregations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -15,14 +16,14 @@ public class AssetCategoryConfiguration : IEntityTypeConfiguration<AssetCategory
         builder.Property(e => e.CreatedAt).HasDefaultValueSql("now()").ValueGeneratedOnAdd();
 
         builder
-            .HasOne(e => e.Congregation)
+            .HasOne<Congregation>()
             .WithMany()
             .HasForeignKey(e => e.CongregationId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Restrict)
+            .IsRequired();
 
-        builder.HasIndex(e => e.CongregationId);
+        builder.Property(c => c.Icon).HasMaxLength(40);
 
-        builder.HasIndex(e => e.CongregationId);
         builder.HasIndex(c => new { c.CongregationId, c.Name }).IsUnique();
         builder.HasIndex(m => m.Name).HasMethod("GIN").HasOperators("gin_trgm_ops");
     }

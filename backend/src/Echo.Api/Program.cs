@@ -20,7 +20,7 @@ builder
     .AddApplicationServices()
     .AddAuthServices(builder.Configuration)
     .AddDataServices()
-    .AddSharedServices();
+    .AddSharedServices(builder.Configuration);
 
 builder
     .Services.ConfigureApiOptions()
@@ -28,7 +28,7 @@ builder
     .ConfigureApiRouting()
     .ConfigureJsonSerializer()
     .ConfigureSwaggerDocs()
-    .ConfigureDbContext(builder.Configuration)
+    .ConfigureDbContext(builder.Configuration, builder.Environment)
     .ConfigureApiVersioning()
     .ConfigureForwardedHeaders(builder.Configuration)
     .ConfigureRateLimits()

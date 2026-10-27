@@ -1,0 +1,17 @@
+﻿{
+  Item1: {
+    Kind: Visitor,
+    Name: ,
+    FirstName: John,
+    LastName: Smith,
+    PhoneNumber: 0244111111,
+    EmailAddress: v1
+  },
+  Item2: {
+    Notes: v3,
+    Gender: Male,
+    Address: v2,
+    Source: WalkIn,
+    InvitedByMemberId: Guid_1
+  }
+}

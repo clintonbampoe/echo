@@ -67,6 +67,7 @@ public record EventResponseDto
     public string? Description { get; init; }
     public DateTime CreatedAt { get; init; }
     public int RegistrationCount { get; init; }
+    public int AttendanceCount { get; init; }
 }
 
 public record EventSearchResultDto
@@ -94,9 +95,59 @@ public record EventFilters
     public Guid? OrganizerId { get; init; }
     public DateOnly? From { get; init; }
     public DateOnly? To { get; init; } // on StartDate
+}
 
-    /// <summary>Asc (default) lists the oldest event first, Desc the newest. Ignored by the summary.</summary>
+/// <summary>The list's filters: the shared ones, and which end of the calendar to start from.</summary>
+public record EventListFilters : EventFilters
+{
+    /// <summary>Asc (default) lists the oldest event first, Desc the newest.</summary>
     public SortDirection Order { get; init; }
+}
+
+/// <summary>One event with how many registered and how many came: a bar in a per-event chart.</summary>
+public record EventSeriesDto
+{
+    public Guid EventId { get; init; }
+    public required string Name { get; init; }
+    public DateOnly StartDate { get; init; }
+    public int? Capacity { get; init; }
+    public int RegistrationCount { get; init; }
+    public int AttendanceCount { get; init; }
+}
+
+/// <summary>
+/// Narrows the monthly chart. The dates choose the months an event starts in; the other filters
+/// choose the events.
+/// </summary>
+public record EventMonthlyFilters
+{
+    public Guid? OrganizationId { get; init; }
+    public Guid? OrganizerId { get; init; }
+
+    /// <summary>How many months to return, ending with the month of <see cref="To"/>.</summary>
+    [Range(1, MonthRange.MaxMonths)]
+    public int Months { get; init; } = MonthRange.DefaultMonths;
+
+    /// <summary>Any day in the last month to return. This month when not given.</summary>
+    public DateOnly? To { get; init; }
+}
+
+/// <summary>Filters for the per-event series: the shared event filters and how many events to return.</summary>
+public record EventSeriesFilters : EventFilters
+{
+    /// <summary>How many events to return, the newest first.</summary>
+    [Range(1, 50)]
+    public int Limit { get; init; } = 12;
+}
+
+/// <summary>The events that started in one month, with their registrations and check-ins.</summary>
+public record EventMonthlyDto
+{
+    public int Year { get; init; }
+    public int Month { get; init; }
+    public int EventCount { get; init; }
+    public int RegistrationCount { get; init; }
+    public int AttendanceCount { get; init; }
 }
 
 public record EventSummaryDto

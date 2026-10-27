@@ -42,7 +42,7 @@ public static class ProfileEndpoints
                 - `404 NOT_FOUND` — the account no longer exists.
                 """
             )
-            .Produces<Echo.Application.Users.UserResponseDto>(StatusCodes.Status200OK)
+            .Produces<Application.Users.UserResponseDto>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound);
 
@@ -88,7 +88,7 @@ public static class ProfileEndpoints
                 - `429` — too many attempts; this route shares the limit of the other password routes.
                 """
             )
-            .Produces<Echo.Application.Users.UserResponseDto>(StatusCodes.Status200OK)
+            .Produces<Application.Users.UserResponseDto>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status404NotFound);

@@ -78,6 +78,9 @@ public static class ProjectCategoryEndpoints
                 ### ID is an integer
                 Project Category IDs are 32-bit integers, not UUIDs.
 
+                ### Path parameters
+                - `id` — the project category's id (a whole number, not a GUID), as returned by `GET /project-categories`.
+
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
                 - `404 NOT_FOUND` — no project category exists with the given ID in this congregation, or the record has been soft-deleted.
@@ -167,6 +170,9 @@ public static class ProjectCategoryEndpoints
                 ### Side effects
                 - **Existing Projects assigned to this category are not affected.** They will display the new name via `categoryName` on next fetch.
 
+                ### Path parameters
+                - `id` — the project category's id (a whole number, not a GUID), as returned by `GET /project-categories`.
+
                 ### Failure modes
                 - `400 BAD_REQUEST` — the request body is malformed.
                 - `400 VALIDATION_ERROR` — `name` failed validation.
@@ -211,6 +217,9 @@ public static class ProjectCategoryEndpoints
                 - The category is marked as deleted.
                 - **Existing Projects assigned to this category are not affected.** They keep their `categoryId` pointing at the deleted category. `categoryName` still returns the deleted category's name.
                 - **New projects cannot reference a deleted category** — the FK lookup will fail with `404 FOREIGN_KEY_NOT_FOUND`.
+
+                ### Path parameters
+                - `id` — the project category's id (a whole number, not a GUID), as returned by `GET /project-categories`.
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
@@ -300,6 +309,9 @@ public static class ProjectCategoryEndpoints
 
                 ### On success
                 Returns `200 OK` with `{ "moved": n, "sourceDeleted": bool }`. `moved` is `0` when the category was empty.
+
+                ### Path parameters
+                - `id` — the id of the project category being emptied: the one whose records are moved away. The category to move them to goes in the request body.
 
                 ### Failure modes
                 - `400 BAD_REQUEST` — `targetCategoryId` equals the source category.

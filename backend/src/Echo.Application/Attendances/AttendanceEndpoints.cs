@@ -50,14 +50,14 @@ public static class AttendanceEndpoints
                 ### What is an attendance record
                 A record linking a person (Member or Visitor) to a specific Session. Every attendance belongs to exactly one session — the Sunday service, the midweek meeting, the Christmas Eve service.
 
-                ### Filtering
-                All filters are optional and combinable:
-                - `personId` — records for one specific Member or Visitor.
-                - `sessionId` — attendance for one specific session. Common for the "who checked in today" admin view.
-                - `sessionLabelId` — attendance across all sessions with a given label.
-                - `kind` — filter by the person's kind **at the time of attendance**, not their current kind.
-                - `name` — case-insensitive match anywhere in the person's name.
-                - `from` / `to` — filter by session date range (inclusive).
+                ### Filters
+                All optional and combinable.
+                - `personId` — only records of this person (a member or a visitor).
+                - `sessionId` — only attendance at this one session, for example the "who checked in today" view.
+                - `sessionLabelId` — only attendance at sessions with this label (for example Sunday service). Ids come from `GET /attendance/labels`.
+                - `kind` — `Member` or `Visitor`: what the person was **when they attended**, not what they are now.
+                - `name` — only people whose name contains this text (case-insensitive; `%` and `_` are matched literally).
+                - `from`, `to` — only attendance at sessions held between these two days, inclusive. **With no dates, the window is this week so far** (Sunday to today).
 
                 ### About `kind`
                 The `kind` filter matches the person's role when the attendance was recorded, not their role now. A visitor who later becomes a member still appears as a Visitor for their pre-conversion attendance. This is deliberate — historical reports should reflect what was true when the record was written.
@@ -65,8 +65,11 @@ public static class AttendanceEndpoints
                 ### Ordering
                 Attendance records are ordered by session date (most recent first), then by ID, newest first. IDs are time-ordered, so within one session the person checked in last comes first. Stable across pages.
 
-                ### Pagination
-                Pass the `next` cursor from the previous response as the `cursor` query parameter. When `hasMore` is `false`, `next` is null.
+                ### Paging
+                - `cursor` — leave it out for the first page. For the next page, send the `next` value from the previous response unchanged. It records where the last page stopped, so use it only with the same filters it came from.
+                - `pageSize` — how many rows to return, from 1 to 50. Defaults to 50; a larger number is reduced to 50.
+
+                Keep asking for the next page while `hasMore` is `true`. When it is `false`, `next` is `null` and that was the last page.
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
@@ -102,6 +105,9 @@ public static class AttendanceEndpoints
 
                 The response includes the resolved session date, session name, session label name, person name, and the person's kind at the time of attendance — the client does not need to follow up with additional calls.
 
+                ### Path parameters
+                - `id` — the attendance record's id, as returned by the list and create endpoints.
+
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
                 - `404 NOT_FOUND` — no attendance record exists with the given ID in this congregation, or the record has been soft-deleted.
@@ -126,7 +132,11 @@ public static class AttendanceEndpoints
                         instrumentation,
                         "endpoint.attendance.create_bulk"
                     );
-                    var result = await service.CreateBulk(context.User.GetCongregationId(), dto, ct);
+                    var result = await service.CreateBulk(
+                        context.User.GetCongregationId(),
+                        dto,
+                        ct
+                    );
                     return result.ToResult();
                 }
             )
@@ -141,7 +151,7 @@ public static class AttendanceEndpoints
                 - `personIds` — **required**, 1 to 500 person ids (members or visitors).
                 - `checkedInAt` — optional. Applied to every record created. Defaults to the current time.
 
-                Each person's kind (member or visitor) is recorded as it is at the time, exactly as for a single entry.
+                Each person's kind (member or visitor) is recorded as it is at the time, exactly as for a single entry. First-time visitors are worked out for every visitor in the request, as for a single entry.
 
                 ### On success
                 `200 OK` with:
@@ -208,6 +218,9 @@ public static class AttendanceEndpoints
                 ### Duplicate attendance
                 A person can only be marked present once per session. If an attendance record already exists for this `(sessionId, personId)` pair, the request returns `409 CONFLICT`. Delete the existing record first if you need to re-record.
 
+                ### First-time visitors
+                For a visitor, the server works out whether this is their first-ever visit as a visitor. Recording a visit dated before their current first one makes the new record the first-time visit.
+
                 ### On success
                 Returns `201 Created` with the full `AttendanceResponseDto` and a `Location` header pointing to `GET /attendance/{id}`.
 
@@ -268,6 +281,9 @@ public static class AttendanceEndpoints
                 ### On success
                 Returns `200 OK` with the full updated `AttendanceResponseDto`.
 
+                ### Path parameters
+                - `id` — the attendance record's id, as returned by the list and create endpoints.
+
                 ### Failure modes
                 - `400 BAD_REQUEST` — the request body is malformed.
                 - `400 VALIDATION_ERROR` — the field failed validation.
@@ -313,6 +329,10 @@ public static class AttendanceEndpoints
                 - **Summary totals reflect the deletion.** `GET /attendance/summary` recalculates from live records only.
                 - **Session attendance counts reflect the deletion.** `attendanceCount` on `GET /sessions/{id}` drops by one.
                 - The person and the session are not affected — only this one record is removed.
+                - **First-time visitor marks move.** If this was a visitor's first visit, their next-earliest visit becomes their first-time visit.
+
+                ### Path parameters
+                - `id` — the attendance record's id, as returned by the list and create endpoints.
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
@@ -352,21 +372,88 @@ public static class AttendanceEndpoints
                 """
                 Returns aggregated attendance counts for the caller's congregation, optionally scoped by the same filters as the list endpoint.
 
+                ### Query parameters
+                Same meaning as on the list, so the numbers describe the list the page is showing.
+                - `personId` — only records of this person (a member or a visitor).
+                - `sessionId` — only attendance at this one session, for example the "who checked in today" view.
+                - `sessionLabelId` — only attendance at sessions with this label (for example Sunday service). Ids come from `GET /attendance/labels`.
+                - `kind` — `Member` or `Visitor`: what the person was **when they attended**, not what they are now.
+                - `name` — only people whose name contains this text (case-insensitive; `%` and `_` are matched literally).
+                - `from`, `to` — only attendance at sessions held between these two days, inclusive. **With no dates, the window is this week so far** (Sunday to today).
+
                 ### Response fields
-                - `totalPresent` — count of all attendance records matching the filter.
-                - `membersPresent` — count where the person was a Member **at the time of attendance**.
-                - `visitorsPresent` — count where the person was a Visitor **at the time of attendance**.
-                - `firstTimeVisitors` — count of visitors whose earliest visitor attendance falls within the filter range.
+                - `totalPresent` — records that match.
+                - `membersPresent` — how many of them were members **when they attended**.
+                - `visitorsPresent` — how many were visitors when they attended.
+                - `firstTimeVisitors` — how many records were a visitor's **first-ever** visit as a visitor. Filtering to a later period does not make a returning visitor first-time.
+                - `sessions` — how many sessions were held (completed) in the window, among those `sessionLabelId` picks.
+                - `averagePerSession` — `totalPresent` over `sessions`: how many people a session draws. `0` when none was held. Send `sessionLabelId` for a Sunday-service average.
+                - `window` — the dates that were applied.
 
-                All counts are based on the person's kind as recorded on the attendance row, not their current kind. A visitor who later became a member is still counted as a visitor for the attendances they made before converting.
+                A person who has since changed from visitor to member is still counted as a visitor for visits made before that.
 
-                Use this endpoint to power reporting dashboards. The filter parameters match the list endpoint exactly, so a summary and its corresponding list are guaranteed to describe the same population.
+                ### Caching
+                The answer is cached for 2 minutes per congregation and per set of parameters.
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
                 """
             )
             .Produces<AttendanceSummaryDto>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status401Unauthorized);
+
+        group
+            .MapGet(
+                "/summary/monthly",
+                async (
+                    [AsParameters] AttendanceMonthlyFilters filters,
+                    AttendanceService service,
+                    HttpContext context,
+                    CancellationToken ct
+                ) =>
+                {
+                    using var span = EndpointInstrumentation.StartSpan(
+                        context,
+                        instrumentation,
+                        "endpoint.attendance.monthly_summary"
+                    );
+                    var result = await service.MonthlySummary(
+                        context.User.GetCongregationId(),
+                        filters,
+                        ct
+                    );
+                    return result.ToResult();
+                }
+            )
+            .WithName("GetAttendanceMonthlySummary")
+            .WithSummary("Returns attendance per month.")
+            .WithDescription(
+                """
+                Returns one row per calendar month, so the Attendance page can chart how many people were present, and how many were members or visitors, from a single request.
+
+                Attendance is grouped by the date of the session. A person who attended several sessions in the month is counted once per session. Members and visitors are counted by what the person was when they attended, not what they are now.
+
+                ### Query parameters
+                - `months` — how many months to return, from 1 to 12. Defaults to 12. The rows end with the month of `to`, so `months=6` is the last six months.
+                - `to` — any day in the last month to return. Defaults to today, so the last row is this month so far (a part month). Send an earlier date to look back in time: `months=6&to=2026-03-15` returns October 2025 to March 2026.
+                - `sessionLabelId` — only attendance at sessions with this label, for example Sunday service. Without it, every session counts.
+
+                ### Response
+                A list of `{ year, month, totalPresent, membersPresent, visitorsPresent, firstTimeVisitors }`. `firstTimeVisitors` counts records that were a visitor's first-ever visit, so it is part of `visitorsPresent`. Oldest month first. A month with nothing in it is returned with zeros, so there are no gaps and the list always has exactly `months` rows.
+
+                ### Why it is one endpoint
+                This is the only monthly endpoint for attendance: it serves a dashboard card (`months=6`), a full-year chart, or a donut over the months. The shape is always the same list, so the page decides how to draw it.
+
+                ### Caching
+                The answer is cached for 2 minutes per congregation and per set of parameters, so asking again straight away costs nothing. A change shows up within 2 minutes.
+
+                ### Failure modes
+                - `400 BAD_REQUEST` — `months` is not between 1 and 12.
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                """
+            )
+            .Produces<List<AttendanceMonthlyDto>>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status401Unauthorized);
 
         return app;

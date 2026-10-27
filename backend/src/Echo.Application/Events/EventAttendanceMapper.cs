@@ -7,7 +7,7 @@ namespace Echo.Application.Events;
 public partial class EventAttendanceMapper : IEventAttendanceMapper
 {
     public EventAttendanceResponseDto ToDto(EventAttendance entity) =>
-        new EventAttendanceResponseDto
+        new()
         {
             Id = entity.Id,
             MemberId = entity.MemberId,
@@ -19,7 +19,6 @@ public partial class EventAttendanceMapper : IEventAttendanceMapper
             CreatedAt = entity.CreatedAt,
         };
 
-    [MapperIgnoreTarget(nameof(EventAttendance.Congregation))]
     [MapperIgnoreTarget(nameof(EventAttendance.CongregationId))]
     [MapperIgnoreTarget(nameof(EventAttendance.Id))]
     [MapperIgnoreTarget(nameof(EventAttendance.Member))]

@@ -76,9 +76,17 @@ public sealed class AssetPlanner(CongregationSeed seed, Rng rng, DateOnly today,
             PurchaseCost = cost,
             CurrentValue = status == AssetStatus.Liquidated ? 0m : ValueNow(kind, cost, age),
             Status = status,
+            LiquidatedOn = status == AssetStatus.Liquidated ? LiquidatedAfter(bought) : null,
             Description = rng.Chance(0.15) ? rng.Pick(_origins) : null,
             CreatedAt = Stamps.On(bought.AddDays(rng.Next(0, 8)), rng, now),
         };
+    }
+
+    // Sold or scrapped some time after it was bought, and no later than today.
+    private DateOnly LiquidatedAfter(DateOnly bought)
+    {
+        var days = today.DayNumber - bought.DayNumber;
+        return bought.AddDays(days <= 30 ? days : rng.Next(30, days + 1));
     }
 
     // Buildings and land were bought early; everything else mostly recently,

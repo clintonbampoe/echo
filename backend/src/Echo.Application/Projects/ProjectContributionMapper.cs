@@ -6,7 +6,6 @@ namespace Echo.Application.Projects;
 [Mapper]
 public partial class ProjectContributionMapper : IProjectContributionMapper
 {
-    [MapperIgnoreSource(nameof(entity.Congregation))]
     [MapperIgnoreSource(nameof(entity.CongregationId))]
     [MapperIgnoreSource(nameof(entity.DeletedAt))]
     [MapProperty(
@@ -15,7 +14,6 @@ public partial class ProjectContributionMapper : IProjectContributionMapper
     )]
     public partial ProjectContributionResponseDto ToDto(ProjectContribution entity);
 
-    [MapperIgnoreTarget(nameof(ProjectContribution.Congregation))]
     [MapperIgnoreTarget(nameof(ProjectContribution.CongregationId))]
     [MapperIgnoreTarget(nameof(ProjectContribution.Id))]
     [MapperIgnoreTarget(nameof(ProjectContribution.Project))]

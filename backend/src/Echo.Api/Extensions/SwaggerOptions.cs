@@ -27,7 +27,7 @@ internal sealed class ConfigureSwaggerOptions(IApiVersionDescriptionProvider pro
                     Every request is automatically scoped to the authenticated user's congregation via claims embedded in the JWT. There is no need to pass a congregation identifier — it is enforced server-side and cannot be overridden.
 
                     ## Pagination
-                    List endpoints use cursor-based pagination. Responses include `hasMore` (boolean) and `next` (opaque cursor string). Pass `next` as the `cursor` query parameter on the subsequent request to fetch the next page. When `hasMore` is false, `next` is null and no further pages exist. Default page size is 24, maximum is 24.
+                    List endpoints use cursor-based pagination. Responses include `hasMore` (boolean) and `next` (opaque cursor string). Pass `next` as the `cursor` query parameter on the subsequent request to fetch the next page. When `hasMore` is false, `next` is null and no further pages exist. Default page size is 50, maximum is 50.
 
                     ## Search
                     Search endpoints use trigram-based similarity matching (`pg_trgm`) and accept a `q` query parameter. Results are ranked by similarity. Search endpoints are rate-limited.
@@ -284,7 +284,7 @@ internal sealed class TagDescriptionDocumentFilter : IDocumentFilter
 
                     ### Key enums
                     - `status` — `Active`, `Inactive`, `Archived`, `Transferred`.
-                    - `gender` — `Male`, `Female`, `Other`.
+                    - `gender` — `Male`, `Female`, `NonBinary`.
                     - `maritalStatus` — `Single`, `Married`, `Widowed`.
                     - `region` — one of the sixteen Ghana regions (Ashanti, GreaterAccra, …).
 
@@ -341,6 +341,9 @@ internal sealed class TagDescriptionDocumentFilter : IDocumentFilter
                     ### Duplicate attendance
                     A person can only be marked present **once per session**. Attempting to create a second attendance for the same `(sessionId, personId)` returns `409 CONFLICT`. Delete the existing record and recreate if you need to correct a mistake.
 
+                    ### First-time visitors
+                    A visitor's first-time visit is their earliest attendance recorded as a Visitor, anywhere in history. The server keeps this up to date when attendance is created, bulk-created or deleted, and when a session is deleted, so a backdated entry or a deleted first visit moves the mark to the right record.
+
                     ### How this differs from Event Attendance
                     This tag tracks **general** attendance — services, midweek meetings, prayer gatherings, Bible studies. It is not tied to a scheduled Event. If you're recording presence at a specific event (conference, outreach), use **Event Attendance** instead. The two resources are separate and neither feeds the other.
 
@@ -348,7 +351,7 @@ internal sealed class TagDescriptionDocumentFilter : IDocumentFilter
                     Any authenticated user in the congregation.
 
                     ### Lifecycle
-                    Create requires a `sessionId` and a `personId`, both of which must exist in the same congregation. The person's kind is snapshotted at creation and never changes. Update is limited — only `checkedInAt` is editable. Delete is a soft delete.
+                    Create requires a `sessionId` and a `personId`, both of which must exist in the same congregation. The person's kind is snapshotted at creation and never changes. Update is limited — only `checkedInAt` is editable. Delete is a soft delete, and deleting a session soft-deletes its attendance.
 
                     ### Dependencies
                     - **Attendance Session** — must exist in the same congregation. A missing or cross-tenant reference returns `404 FOREIGN_KEY_NOT_FOUND`.

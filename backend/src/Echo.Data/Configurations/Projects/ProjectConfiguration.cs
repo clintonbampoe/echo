@@ -1,3 +1,4 @@
+using Echo.Domain.Congregations;
 using Echo.Domain.Projects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -13,12 +14,11 @@ public class ProjectConfiguration : IEntityTypeConfiguration<Project>
         builder.Property(e => e.CreatedAt).HasDefaultValueSql("now()").ValueGeneratedOnAdd();
 
         builder
-            .HasOne(e => e.Congregation)
+            .HasOne<Congregation>()
             .WithMany()
             .HasForeignKey(e => e.CongregationId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.HasIndex(e => e.CongregationId);
+            .OnDelete(DeleteBehavior.Restrict)
+            .IsRequired();
 
         builder
             .HasOne(p => p.Manager)
@@ -34,9 +34,24 @@ public class ProjectConfiguration : IEntityTypeConfiguration<Project>
 
         builder.HasIndex(p => p.CategoryId);
         builder.HasIndex(p => p.ManagerId);
-        builder.HasIndex(p => p.Name);
         builder.HasIndex(p => p.Name).HasMethod("GIN").HasOperators("gin_trgm_ops");
 
-        builder.HasIndex(p => new { p.StartDate, p.Id }).HasFilter("deleted_at IS NULL");
+        // Serves the list (oldest start first, cursor on start_date + id) and the summaries as
+        // index-only scans.
+        builder
+            .HasIndex(p => new
+            {
+                p.CongregationId,
+                p.StartDate,
+                p.Id,
+            })
+            .HasFilter("deleted_at IS NULL")
+            .IncludeProperties(p => new
+            {
+                p.EndDate,
+                p.Status,
+                p.TargetAmount,
+                p.CategoryId,
+            });
     }
 }

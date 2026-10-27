@@ -1,3 +1,4 @@
+using Echo.Application.Caching;
 using Echo.Data;
 using Echo.Domain.Members;
 using Echo.Shared.HttpResults;
@@ -23,9 +24,20 @@ public class VisitorService(
     ApplicationInstrumentation instrumentation,
     LinkGenerator linker,
     DateWindows dateWindows,
+    SummaryCache summaries,
     ILogger<VisitorService> logger
 )
 {
+    // Someone who was invited was, by definition, invited: naming who invited them fills the source
+    // in, and it cannot say they walked in or came online.
+    internal static (VisitorSource? Source, string? Problem) SourceFor(
+        VisitorSource? requested,
+        Guid? invitedBy
+    ) =>
+        invitedBy is null ? (requested, null)
+        : requested is null or VisitorSource.Invited ? (VisitorSource.Invited, null)
+        : (requested, "A visitor who came by themselves or online cannot have someone who invited them.");
+
     internal static DateWindow? ResolveWindow(VisitorFilters filters, DateWindows dateWindows) =>
         dateWindows.ThisYear(
             filters.From,
@@ -110,7 +122,18 @@ public class VisitorService(
     {
         using var activity = instrumentation.ActivitySource.StartActivity("svc.visitor.create");
 
+        var (source, problem) = SourceFor(dto.Source, dto.InvitedByMemberId);
+        if (problem is not null)
+            return new BadRequestResult(problem);
+
+        if (
+            dto.InvitedByMemberId is { } inviter
+            && await memberRepository.GetById(congregationId, inviter, ct) is null
+        )
+            return new ForeignKeyEntityNotFound("invitedBy");
+
         var (person, visitor) = mapper.ToEntity(dto);
+        visitor.Source = source;
 
         person.Id = idGenerator.Generate();
         person.CongregationId = congregationId;
@@ -218,9 +241,23 @@ public class VisitorService(
             return new NotFoundResult(id.ToString());
         }
 
+        var (source, problem) = SourceFor(
+            dto.Source ?? entity.Source,
+            dto.InvitedByMemberId ?? entity.InvitedByMemberId
+        );
+        if (problem is not null)
+            return new BadRequestResult(problem);
+
+        if (
+            dto.InvitedByMemberId is { } inviter
+            && await memberRepository.GetById(congregationId, inviter, ct) is null
+        )
+            return new ForeignKeyEntityNotFound("invitedBy");
+
         using (instrumentation.ActivitySource.StartActivity("svc.visitor.persist"))
         {
             mapper.Patch(dto, entity.Person, entity);
+            entity.Source = source;
             await unitOfWork.CommitAsync(ct);
         }
 
@@ -281,7 +318,20 @@ public class VisitorService(
         return new SuccessResult<List<VisitorSearchResultDto>>(res);
     }
 
-    public async Task<IOperationResult> Summary(
+    public Task<IOperationResult> Summary(
+        Guid congregationId,
+        VisitorFilters filters,
+        CancellationToken ct
+    ) =>
+        summaries.Serve(
+            "visitors",
+            congregationId,
+            filters,
+            token => ComputeSummary(congregationId, filters, token),
+            ct
+        );
+
+    private async Task<VisitorSummaryDto> ComputeSummary(
         Guid congregationId,
         VisitorFilters filters,
         CancellationToken ct
@@ -301,12 +351,15 @@ public class VisitorService(
             NewVisitors = stats.New,
             RecurringVisitors = stats.Recurring,
             ConvertedVisitors = stats.Converted,
+            InvitedVisitors = stats.Invited,
+            MaleVisitors = stats.Male,
+            FemaleVisitors = stats.Female,
         };
 
         activity?.SetTag("visitor.summary.total", res.TotalVisitors);
         VisitorLog.Summarized(logger, congregationId, res.TotalVisitors);
 
-        return new SuccessResult<VisitorSummaryDto>(res);
+        return res;
     }
 
     private static VisitorCursor BuildCursor(Visitor last) =>

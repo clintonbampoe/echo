@@ -46,32 +46,41 @@ public class SessionRepository(AppDbContext context)
     }
 
     /// <summary>
-    /// Returns the attendance count for each of the given sessions in a
-    /// single query. Used by list and detail endpoints to populate
-    /// SessionResponseDto.AttendanceCount without N+1.
+    /// Returns who was present at each of the given sessions, split into members, visitors and
+    /// first-time visitors, in a single query. Used by the list and detail endpoints without N+1.
     /// <br/><br/>
-    /// Sessions with no attendance rows are absent from the dictionary.
-    /// Callers should use GetValueOrDefault(sessionId) — a missing entry
-    /// means zero present.
+    /// Sessions with no attendance rows are absent from the dictionary; a missing entry means zero.
+    /// The session ids come from a query already limited to the congregation, so the attendance is
+    /// not limited again: a congregation filter would send the database to the table for every row
+    /// instead of counting from the (session, person) index.
     /// </summary>
-    public Task<Dictionary<Guid, int>> GetAttendanceCounts(
-        Guid congregationId,
+    public Task<Dictionary<Guid, SessionAttendance>> GetAttendance(
         IReadOnlyList<Guid> sessionIds,
         CancellationToken ct = default
     )
     {
         if (sessionIds.Count == 0)
-            return Task.FromResult(new Dictionary<Guid, int>());
+            return Task.FromResult(new Dictionary<Guid, SessionAttendance>());
 
         return context
             .Set<Attendance>()
             .AsNoTracking()
-            .Live()
-            .Where(a => a.CongregationId == congregationId && sessionIds.Contains(a.SessionId))
-            .GroupBy(a => a.SessionId)
-            .Select(g => new { SessionId = g.Key, Count = g.Count() })
-            .ToDictionaryAsync(x => x.SessionId, x => x.Count, ct);
+            .AttendancePerSession(sessionIds)
+            .ToDictionaryAsync(x => x.Id, ct);
     }
+
+    /// <summary>How many sessions were held (completed) among the ones the filters pick.</summary>
+    public Task<int> CountCompleted(
+        Guid congregationId,
+        SessionFilters filters,
+        CancellationToken ct = default
+    ) =>
+        _dbSet
+            .AsNoTracking()
+            .FilterDeleted()
+            .Where(s => s.CongregationId == congregationId && s.Status == SessionStatus.Completed)
+            .Filter(filters)
+            .CountAsync(ct);
 
     public async Task<SessionStats> GetSummaryStats(
         Guid congregationId,
@@ -101,6 +110,14 @@ public class SessionRepository(AppDbContext context)
 
     public void SoftDelete(Session entity) => entity.DeletedAt = DateTime.UtcNow;
 }
+
+public record SessionAttendance(
+    Guid Id,
+    int Total,
+    int Members,
+    int Visitors,
+    int FirstTime
+);
 
 public record SessionStats(
     int Total,
@@ -144,10 +161,11 @@ internal static class SessionQueryExtensions
         if (filters.Status is not null)
             query = query.Where(s => s.Status == filters.Status);
 
-        if (filters.Name is not null)
-            query = query.Where(s =>
-                s.Name != null && EF.Functions.ILike(s.Name, $"%{filters.Name}%")
-            );
+        if (!string.IsNullOrWhiteSpace(filters.Name))
+        {
+            var pattern = $"%{Echo.Shared.Query.Extensions.EscapeLike(filters.Name.Trim())}%";
+            query = query.Where(s => s.Name != null && EF.Functions.ILike(s.Name, pattern));
+        }
 
         if (filters.From is not null)
             query = query.Where(s => s.Date >= filters.From);

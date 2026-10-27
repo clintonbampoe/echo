@@ -59,7 +59,7 @@ public class OrganizationMemberRepository(AppDbContext context)
     public async Task<List<OrganizationMember>> ListByMemberId(
         Guid congregationId,
         Guid memberId,
-        OrganizationMemberFilters filters,
+        MembershipRoleFilters filters,
         OrganizationMemberCursor? cursor,
         int pageSize,
         CancellationToken ct
@@ -125,19 +125,28 @@ public class OrganizationMemberRepository(AppDbContext context)
 
 internal static class OrganizationMemberQueryExtensions
 {
+    // Which members by name, then everything a single member's memberships can be narrowed by.
     internal static IQueryable<OrganizationMember> Filter(
         this IQueryable<OrganizationMember> query,
         OrganizationMemberFilters filters
     )
     {
-        if (filters.Role is not null)
-            query = query.Where(o => o.Role == filters.Role);
-
         if (!string.IsNullOrWhiteSpace(filters.Name))
         {
             var pattern = $"%{Shared.Query.Extensions.EscapeLike(filters.Name.Trim())}%";
             query = query.Where(o => EF.Functions.ILike(o.Member.Person.Name, pattern));
         }
+
+        return query.Filter((MembershipRoleFilters)filters);
+    }
+
+    internal static IQueryable<OrganizationMember> Filter(
+        this IQueryable<OrganizationMember> query,
+        MembershipRoleFilters filters
+    )
+    {
+        if (filters.Role is not null)
+            query = query.Where(o => o.Role == filters.Role);
 
         return query;
     }

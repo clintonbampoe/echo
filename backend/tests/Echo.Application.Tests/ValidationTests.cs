@@ -1,9 +1,9 @@
 using System.Net;
 using System.Net.Http.Json;
-using System.Text.Json;
 using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Text.Encodings.Web;
+using System.Text.Json;
 using Echo.Application.Members;
 using Echo.Application.Users;
 using Microsoft.AspNetCore.Authentication;

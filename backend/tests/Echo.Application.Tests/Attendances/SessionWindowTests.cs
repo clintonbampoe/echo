@@ -14,7 +14,7 @@ public class SessionWindowTests
 
     private static Session On(DateOnly date)
     {
-        var session = SessionFactory.NewEntity();
+        var session = TestData.Shared.CreateSession();
         session.Date = date;
         return session;
     }

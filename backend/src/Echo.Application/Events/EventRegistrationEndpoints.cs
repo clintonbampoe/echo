@@ -53,8 +53,11 @@ public static class EventRegistrationEndpoints
                 ### Ordering
                 Records are ordered by registration date. The direction depends on the server-side default — current implementation orders most recent first.
 
-                ### Pagination
-                Pass the `next` cursor from the previous response as the `cursor` query parameter. When `hasMore` is `false`, `next` is null.
+                ### Paging
+                - `cursor` — leave it out for the first page. For the next page, send the `next` value from the previous response unchanged. It records where the last page stopped, so use it only with the same filters it came from.
+                - `pageSize` — how many rows to return, from 1 to 50. Defaults to 50; a larger number is reduced to 50.
+
+                Keep asking for the next page while `hasMore` is `true`. When it is `false`, `next` is `null` and that was the last page.
 
                 ### Registration does not imply attendance
                 A record here means the member signed up. It does not mean they showed up. To confirm attendance, check `GET /event-attendance` for the same event/member pair.
@@ -92,6 +95,9 @@ public static class EventRegistrationEndpoints
                 Returns one event registration record, scoped to the caller's congregation.
 
                 The response includes the resolved `eventName` and `memberName`.
+
+                ### Path parameters
+                - `id` — the event registration's id, as returned by the list and create endpoints.
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
@@ -142,6 +148,12 @@ public static class EventRegistrationEndpoints
                 ### Use case
                 Capacity planning, headcount forecasting, pre-event reminder lists. Combine with `GET /event-attendance/event/{id}` to identify members who registered but did not show up.
 
+                ### Paging
+                - `cursor` — leave it out for the first page. For the next page, send the `next` value from the previous response unchanged. It records where the last page stopped, so use it only with the same filters it came from.
+                - `pageSize` — how many rows to return, from 1 to 50. Defaults to 50; a larger number is reduced to 50.
+
+                Keep asking for the next page while `hasMore` is `true`. When it is `false`, `next` is `null` and that was the last page.
+
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
                 - `404 NOT_FOUND` — no event exists with the given ID in this congregation.
@@ -187,6 +199,12 @@ public static class EventRegistrationEndpoints
 
                 ### Ordering
                 Ordered by registration date, most recent first.
+
+                ### Paging
+                - `cursor` — leave it out for the first page. For the next page, send the `next` value from the previous response unchanged. It records where the last page stopped, so use it only with the same filters it came from.
+                - `pageSize` — how many rows to return, from 1 to 50. Defaults to 50; a larger number is reduced to 50.
+
+                Keep asking for the next page while `hasMore` is `true`. When it is `false`, `next` is `null` and that was the last page.
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
@@ -293,6 +311,9 @@ public static class EventRegistrationEndpoints
                 ### On success
                 Returns `200 OK` with the full updated `EventRegistrationResponseDto`.
 
+                ### Path parameters
+                - `id` — the event registration's id, as returned by the list and create endpoints.
+
                 ### Failure modes
                 - `400 BAD_REQUEST` — the request body is malformed.
                 - `400 VALIDATION_ERROR` — `registrationDate` failed validation.
@@ -340,6 +361,9 @@ public static class EventRegistrationEndpoints
                 ### When to use this
                 - The member cancelled their registration.
                 - The registration was entered by mistake.
+
+                ### Path parameters
+                - `id` — the event registration's id, as returned by the list and create endpoints.
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.

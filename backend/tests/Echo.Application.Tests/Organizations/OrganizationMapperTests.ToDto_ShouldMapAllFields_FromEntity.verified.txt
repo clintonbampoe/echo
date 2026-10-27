@@ -1,0 +1,7 @@
+﻿{
+  Id: Guid_1,
+  Name: Choir,
+  Description: v1,
+  MeetingDay: Sunday,
+  CreatedAt: DateTime_1
+}

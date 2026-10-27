@@ -1,0 +1,317 @@
+using Echo.Data;
+using Echo.Domain.Congregations;
+using Echo.Domain.Tithes;
+using Echo.Domain.Transactions;
+using Echo.Shared.Query;
+using Echo.Shared.Utilities;
+using Microsoft.EntityFrameworkCore;
+using Npgsql;
+
+namespace Echo.Application.Tithes;
+
+public class TitheRepository(AppDbContext context)
+{
+    private readonly DbSet<Tithe> _dbSet = context.Set<Tithe>();
+
+    public async Task<List<Tithe>> List(
+        Guid congregationId,
+        TitheFilters filters,
+        TitheCursor? cursor,
+        int pageSize,
+        CancellationToken ct
+    )
+    {
+        return await _dbSet
+            .AsNoTracking()
+            .FilterDeleted()
+            .Where(t => t.CongregationId == congregationId)
+            .Include(t => t.Member)
+                .ThenInclude(m => m.Person)
+            .Filter(filters)
+            .OrderForList()
+            .Paginate(cursor, pageSize)
+            .ToListAsync(ct);
+    }
+
+    public async Task<Tithe?> GetById(Guid congregationId, Guid id, CancellationToken ct)
+    {
+        return await _dbSet
+            .FilterDeleted()
+            .Where(t => t.Id == id && t.CongregationId == congregationId)
+            .Include(t => t.Member)
+                .ThenInclude(m => m.Person)
+            .FirstOrDefaultAsync(ct);
+    }
+
+    public async Task<List<Tithe>> GetByMemberId(
+        Guid congregationId,
+        Guid memberId,
+        TitheFilters filters,
+        TitheCursor? cursor,
+        int pageSize,
+        CancellationToken ct
+    )
+    {
+        return await _dbSet
+            .FilterDeleted()
+            .Where(t => t.MemberId == memberId && t.CongregationId == congregationId)
+            .Include(t => t.Member)
+                .ThenInclude(t => t.Person)
+            .Filter(filters)
+            .OrderForList()
+            .Paginate(cursor, pageSize)
+            .ToListAsync(ct);
+    }
+
+    /// <summary>
+    /// Retrieves pre-aggregated monthly tithes data for a dashboard
+    /// trend chart.
+    /// </summary>
+    /// <param name="congregationId">The congregation to query.</param>
+    /// <param name="months">Number of calendar months to return
+    /// (3, 6, or 12).</param>
+    /// <param name="ct">Cancellation token.</param>
+    /// <returns>
+    /// A list of <see cref="TitheSummaryChartBucket"/> for each month in
+    /// the range, oldest first. Months with no tithes are included
+    /// with zeros. Never returns null.
+    /// </returns>
+    public async Task<List<TitheSummaryChartBucket>> GetSummaryChartAsync(
+        Guid congregationId,
+        int months,
+        CancellationToken ct = default
+    )
+    {
+        const string sql =
+            @"
+            WITH params AS (
+                SELECT 
+                    @congregationId::uuid AS congregation_id,
+                    (date_trunc('month', now() AT TIME ZONE 'UTC') - interval '1 month')::date AS last_month_start,
+                    @months::int AS months
+            ),
+            month_series AS (
+                SELECT 
+                    generate_series(
+                        (SELECT (last_month_start - interval '1 month' * (months - 1)) FROM params),
+                        (SELECT last_month_start FROM params),
+                        interval '1 month'
+                    )::date AS month_start
+            ),
+            month_map AS (
+                SELECT * FROM (VALUES
+                    ('January', 1), ('February', 2), ('March', 3),
+                    ('April', 4), ('May', 5), ('June', 6),
+                    ('July', 7), ('August', 8), ('September', 9),
+                    ('October', 10), ('November', 11), ('December', 12)
+                ) AS m(name, num)
+            ),
+            aggregated AS (
+                SELECT 
+                    make_date(t.for_year, mm.num, 1) AS month_start,
+                    SUM(t.amount) AS total_collected,
+                    COUNT(DISTINCT t.member_id) AS unique_tithers
+                FROM tithes t
+                JOIN month_map mm ON t.for_month = mm.name
+                WHERE t.congregation_id = (SELECT congregation_id FROM params)
+                  AND t.deleted_at IS NULL
+                  AND make_date(t.for_year, mm.num, 1) >= (SELECT last_month_start - interval '1 month' * (months - 1) FROM params)
+                  AND make_date(t.for_year, mm.num, 1) <= (SELECT last_month_start FROM params)
+                GROUP BY t.for_year, mm.num
+            )
+            SELECT 
+                EXTRACT(YEAR FROM ms.month_start)::int AS year,
+                EXTRACT(MONTH FROM ms.month_start)::int AS month,
+                COALESCE(a.total_collected, 0) AS total_collected,
+                COALESCE(a.unique_tithers, 0) AS unique_tithers,
+                CASE WHEN COALESCE(a.unique_tithers, 0) > 0 
+                     THEN COALESCE(a.total_collected, 0) / a.unique_tithers 
+                     ELSE 0 END AS average_per_member
+            FROM month_series ms
+            LEFT JOIN aggregated a ON ms.month_start = a.month_start
+            ORDER BY ms.month_start;";
+
+        var result = await context
+            .Database.SqlQueryRaw<TitheSummaryChartBucket>(
+                sql,
+                new NpgsqlParameter("congregationId", congregationId),
+                new NpgsqlParameter("months", months)
+            )
+            .ToListAsync(ct);
+
+        return result!;
+    }
+
+    // True when the member already has a (not deleted) tithe for that month. `exceptId` leaves out the tithe being
+    // edited, so saving it again without moving it is not a clash with itself.
+    public async Task<bool> ExistsForMonth(
+        Guid congregationId,
+        Guid memberId,
+        int year,
+        MonthOfYear month,
+        Guid? exceptId,
+        CancellationToken ct
+    )
+    {
+        return await _dbSet
+            .FilterDeleted()
+            .AnyAsync(
+                t =>
+                    t.CongregationId == congregationId
+                    && t.MemberId == memberId
+                    && t.ForYear == year
+                    && t.ForMonth == month
+                    && (exceptId == null || t.Id != exceptId),
+                ct
+            );
+    }
+
+    public async Task<List<TitheMonthlyDto>> GetMonthlyTotals(
+        Guid congregationId,
+        TitheMonthlyFilters filters,
+        YearMonth first,
+        YearMonth last,
+        CancellationToken ct = default
+    )
+    {
+        var query = _dbSet
+            .AsNoTracking()
+            .FilterDeleted()
+            .Where(t => t.CongregationId == congregationId);
+
+        if (filters.MemberId is not null)
+            query = query.Where(t => t.MemberId == filters.MemberId);
+
+        if (!string.IsNullOrWhiteSpace(filters.MemberName))
+        {
+            var pattern = $"%{Echo.Shared.Query.Extensions.EscapeLike(filters.MemberName.Trim())}%";
+            query = query.Where(t => EF.Functions.ILike(t.Member.Person.Name, pattern));
+        }
+
+        if (filters.PaymentMethod is not null)
+            query = query.Where(t => t.PaymentMethod == filters.PaymentMethod);
+
+        var rows = await query.InYears(first, last).MonthlyTotals().ToListAsync(ct);
+        return rows.Select(r => r.ToDto()).ToList();
+    }
+
+    public async Task<TitheStats> GetSummaryStats(
+        Guid congregationId,
+        TitheFilters filters,
+        CancellationToken ct = default
+    )
+    {
+        var tithes = _dbSet
+            .AsNoTracking()
+            .FilterDeleted()
+            .Where(t => t.CongregationId == congregationId)
+            .Filter(filters);
+
+        var stats = await context
+            .OneRow(congregationId)
+            .SummarizeTithes(tithes)
+            .FirstOrDefaultAsync(ct);
+        return stats ?? new TitheStats(0m, 0, null);
+    }
+
+    public void Create(Tithe entity) => _dbSet.Add(entity);
+
+    public void SoftDelete(Tithe entity) => entity.DeletedAt = DateTime.UtcNow;
+}
+
+internal record TitheMonthRow(int Year, MonthOfYear Month, decimal Total, int UniqueTithers);
+
+public record TitheStats(decimal Total, int UniqueTithers, PaymentMethod? MostUsedPaymentMethod);
+
+internal static class TitheQueryExtensions
+{
+    internal static IQueryable<TitheStats> SummarizeTithes(
+        this IQueryable<Congregation> oneRow,
+        IQueryable<Tithe> tithes
+    ) =>
+        oneRow.Select(_ => new TitheStats(
+            tithes.Sum(t => t.Amount),
+            tithes.Select(t => t.MemberId).Distinct().Count(),
+            tithes
+                .GroupBy(t => t.PaymentMethod)
+                .OrderByDescending(g => g.Count())
+                .Select(g => (PaymentMethod?)g.Key)
+                .FirstOrDefault()
+        ));
+
+    // Narrows to the years the chart covers. The month is stored as text, so it cannot be compared or added to a
+    // number in SQL; months outside the range come back as extra rows and FillMonths leaves them out.
+    internal static IQueryable<Tithe> InYears(
+        this IQueryable<Tithe> query,
+        YearMonth first,
+        YearMonth last
+    ) => query.Where(t => t.ForYear >= first.Year && t.ForYear <= last.Year);
+
+    // The month stays an enum here: it is stored as text, so turning it into a number happens after the query (ToDto).
+    internal static IQueryable<TitheMonthRow> MonthlyTotals(this IQueryable<Tithe> query) =>
+        query
+            .GroupBy(t => new { t.ForYear, t.ForMonth })
+            .Select(g => new TitheMonthRow(
+                g.Key.ForYear,
+                g.Key.ForMonth,
+                g.Sum(t => t.Amount),
+                g.Select(t => t.MemberId).Distinct().Count()
+            ));
+
+    internal static TitheMonthlyDto ToDto(this TitheMonthRow row) =>
+        new()
+        {
+            Year = row.Year,
+            Month = (int)row.Month,
+            TotalCollected = row.Total,
+            UniqueTithers = row.UniqueTithers,
+        };
+
+    internal static IQueryable<Tithe> Filter(this IQueryable<Tithe> query, TitheFilters filters)
+    {
+        if (filters.MemberId is not null)
+            query = query.Where(t => t.MemberId == filters.MemberId);
+
+        if (!string.IsNullOrWhiteSpace(filters.MemberName))
+        {
+            var pattern = $"%{Echo.Shared.Query.Extensions.EscapeLike(filters.MemberName.Trim())}%";
+            query = query.Where(t => EF.Functions.ILike(t.Member.Person.Name, pattern));
+        }
+
+        if (filters.PaymentMethod is not null)
+            query = query.Where(t => t.PaymentMethod == filters.PaymentMethod);
+
+        if (filters.Year is not null)
+            query = query.Where(t => t.ForYear == filters.Year);
+
+        if (filters.Month is not null)
+            query = query.Where(t => t.ForMonth == filters.Month);
+
+        if (filters.From is not null)
+            query = query.Where(t => t.CollectionDate >= filters.From);
+
+        if (filters.To is not null)
+            query = query.Where(t => t.CollectionDate <= filters.To);
+
+        return query;
+    }
+
+    // Paginate's cursor assumes exactly this order.
+    internal static IOrderedQueryable<Tithe> OrderForList(this IQueryable<Tithe> query) =>
+        query.OrderByDescending(t => t.CollectionDate).ThenBy(t => t.Id);
+
+    internal static IQueryable<Tithe> Paginate(
+        this IQueryable<Tithe> query,
+        TitheCursor? cursor,
+        int pageSize
+    )
+    {
+        if (cursor is not null)
+            query = query.Where(t =>
+                t.CollectionDate < cursor.CollectionDate
+                || (t.CollectionDate == cursor.CollectionDate && t.Id > cursor.Id)
+            );
+
+        return query.Take(pageSize);
+    }
+}

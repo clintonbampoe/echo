@@ -6,15 +6,12 @@ namespace Echo.Application.Transactions;
 [Mapper]
 public partial class TransactionCategoryMapper : ITransactionCategoryMapper
 {
-    [MapperIgnoreSource(nameof(entity.Congregation))]
     [MapperIgnoreSource(nameof(entity.CongregationId))]
     [MapperIgnoreSource(nameof(entity.CreatedAt))]
     [MapperIgnoreSource(nameof(entity.DeletedAt))]
-    // Filled by the service from a batched count query.
     [MapperIgnoreTarget(nameof(TransactionCategoryResponseDto.TransactionCount))]
     public partial TransactionCategoryResponseDto ToDto(TransactionCategory entity);
 
-    [MapperIgnoreTarget(nameof(TransactionCategory.Congregation))]
     [MapperIgnoreTarget(nameof(TransactionCategory.CongregationId))]
     [MapperIgnoreTarget(nameof(TransactionCategory.Id))]
     [MapperIgnoreTarget(nameof(TransactionCategory.CreatedAt))]

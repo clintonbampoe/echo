@@ -1,0 +1,9 @@
+﻿{
+  Id: Guid_1,
+  MemberId: Guid_2,
+  MemberName: Jane Doe,
+  OrganizationId: Guid_3,
+  OrganizationName: Choir,
+  JoinedAt: Date_1,
+  CreatedAt: DateTime_1
+}

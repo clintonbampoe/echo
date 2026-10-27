@@ -1,0 +1,43 @@
+﻿[
+  {
+    Id: Guid_1,
+    CategoryId: 2,
+    CategoryName: Audio Equipment,
+    Name: Yamaha Mixer,
+    SerialNumber: v2,
+    PurchaseDate: Date_1,
+    PurchaseCost: 1.0,
+    CurrentValue: 2.0,
+    LiquidatedOn: Date_2,
+    Description: v3,
+    CreatedAt: DateTime_1
+  },
+  {
+    Id: Guid_2,
+    CategoryId: 4,
+    CategoryName: Audio Equipment,
+    Name: Yamaha Mixer,
+    SerialNumber: v5,
+    PurchaseDate: Date_3,
+    PurchaseCost: 3.0,
+    CurrentValue: 4.0,
+    Status: InUse,
+    LiquidatedOn: Date_4,
+    Description: v6,
+    CreatedAt: DateTime_2
+  },
+  {
+    Id: Guid_3,
+    CategoryId: 6,
+    CategoryName: Audio Equipment,
+    Name: Yamaha Mixer,
+    SerialNumber: v8,
+    PurchaseDate: Date_5,
+    PurchaseCost: 5.0,
+    CurrentValue: 6.0,
+    Status: InStorage,
+    LiquidatedOn: Date_6,
+    Description: v9,
+    CreatedAt: DateTime_3
+  }
+]

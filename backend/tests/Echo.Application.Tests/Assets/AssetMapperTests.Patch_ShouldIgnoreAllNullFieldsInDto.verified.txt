@@ -1,0 +1,22 @@
+﻿{
+  Id: Guid_1,
+  CongregationId: Guid_2,
+  CategoryId: 2,
+  Category: {
+    Id: 1,
+    CongregationId: Guid_3,
+    Name: Audio Equipment,
+    Icon: v1,
+    CreatedAt: DateTime_1,
+    DeletedAt: DateTime_2
+  },
+  Name: Yamaha Mixer,
+  SerialNumber: v2,
+  PurchaseDate: Date_1,
+  PurchaseCost: 1.0,
+  CurrentValue: 2.0,
+  LiquidatedOn: Date_2,
+  Description: v3,
+  CreatedAt: DateTime_3,
+  DeletedAt: DateTime_4
+}

@@ -6,7 +6,6 @@ namespace Echo.Application.Users;
 [Mapper]
 public partial class UserMapper : IUserMapper
 {
-    [MapperIgnoreSource(nameof(entity.Congregation))]
     [MapperIgnoreSource(nameof(entity.CongregationId))]
     [MapperIgnoreSource(nameof(entity.PasswordHash))]
     [MapperIgnoreSource(nameof(entity.LastName))]
@@ -16,16 +15,16 @@ public partial class UserMapper : IUserMapper
     [MapProperty(nameof(entity.EmailVerifiedAt), nameof(UserResponseDto.VerifiedAt))]
     public partial UserResponseDto ToDto(User entity);
 
-    [MapperIgnoreTarget(nameof(User.Congregation))]
     [MapperIgnoreTarget(nameof(User.CongregationId))]
     [MapperIgnoreTarget(nameof(User.Id))]
+    // Computed column; no CreateDto carries it.
+    [MapperIgnoreTarget(nameof(User.Name))]
     [MapperIgnoreTarget(nameof(User.EmailVerifiedAt))]
     [MapperIgnoreTarget(nameof(User.CreatedAt))]
     [MapperIgnoreTarget(nameof(User.DeletedAt))]
     [MapProperty(nameof(dto.Password), nameof(User.PasswordHash))]
     public partial User ToEntity(UserCreateDto dto);
 
-    [MapperIgnoreSource(nameof(entity.Congregation))]
     [MapperIgnoreSource(nameof(entity.FirstName))]
     [MapperIgnoreSource(nameof(entity.LastName))]
     [MapperIgnoreSource(nameof(entity.OtherNames))]

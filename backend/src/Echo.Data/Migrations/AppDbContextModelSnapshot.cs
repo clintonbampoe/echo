@@ -57,6 +57,10 @@ namespace Echo.Data.Migrations
                         .HasColumnType("character varying(255)")
                         .HasColumnName("description");
 
+                    b.Property<DateOnly?>("LiquidatedOn")
+                        .HasColumnType("date")
+                        .HasColumnName("liquidated_on");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -87,22 +91,27 @@ namespace Echo.Data.Migrations
                     b.HasIndex("CategoryId")
                         .HasDatabaseName("ix_assets_category_id");
 
-                    b.HasIndex("CongregationId")
-                        .HasDatabaseName("ix_assets_congregation_id");
-
                     b.HasIndex("Name")
                         .HasDatabaseName("ix_assets_name");
 
                     NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("Name"), "GIN");
                     NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex("Name"), new[] { "gin_trgm_ops" });
 
+                    b.HasIndex("CongregationId", "LiquidatedOn")
+                        .HasDatabaseName("ix_assets_congregation_id_liquidated_on")
+                        .HasFilter("deleted_at IS NULL AND liquidated_on IS NOT NULL");
+
+                    NpgsqlIndexBuilderExtensions.IncludeProperties(b.HasIndex("CongregationId", "LiquidatedOn"), new[] { "PurchaseCost" });
+
                     b.HasIndex("CongregationId", "Name")
                         .IsUnique()
                         .HasDatabaseName("ix_assets_congregation_id_name");
 
-                    b.HasIndex("Name", "Id")
-                        .HasDatabaseName("ix_assets_name_id")
+                    b.HasIndex("CongregationId", "PurchaseDate")
+                        .HasDatabaseName("ix_assets_congregation_id_purchase_date")
                         .HasFilter("deleted_at IS NULL");
+
+                    NpgsqlIndexBuilderExtensions.IncludeProperties(b.HasIndex("CongregationId", "PurchaseDate"), new[] { "CategoryId", "Status", "PurchaseCost", "CurrentValue" });
 
                     b.ToTable("assets", (string)null);
                 });
@@ -130,6 +139,11 @@ namespace Echo.Data.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("deleted_at");
 
+                    b.Property<string>("Icon")
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("icon");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -138,9 +152,6 @@ namespace Echo.Data.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_asset_categories");
-
-                    b.HasIndex("CongregationId")
-                        .HasDatabaseName("ix_asset_categories_congregation_id");
 
                     b.HasIndex("Name")
                         .HasDatabaseName("ix_asset_categories_name");
@@ -180,6 +191,10 @@ namespace Echo.Data.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("deleted_at");
 
+                    b.Property<bool>("IsFirstVisit")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_first_visit");
+
                     b.Property<Guid>("PersonId")
                         .HasColumnType("uuid")
                         .HasColumnName("person_id");
@@ -193,15 +208,16 @@ namespace Echo.Data.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("recorded_by");
 
+                    b.Property<DateOnly>("SessionDate")
+                        .HasColumnType("date")
+                        .HasColumnName("session_date");
+
                     b.Property<Guid>("SessionId")
                         .HasColumnType("uuid")
                         .HasColumnName("session_id");
 
                     b.HasKey("Id")
                         .HasName("pk_attendance");
-
-                    b.HasIndex("CongregationId")
-                        .HasDatabaseName("ix_attendance_congregation_id");
 
                     b.HasIndex("PersonId")
                         .HasDatabaseName("ix_attendance_person_id");
@@ -212,13 +228,22 @@ namespace Echo.Data.Migrations
                     b.HasIndex("SessionId")
                         .HasDatabaseName("ix_attendance_session_id");
 
-                    b.HasIndex("CongregationId", "PersonKindAtTime")
-                        .HasDatabaseName("ix_attendance_congregation_id_person_kind_at_time");
+                    b.HasIndex("CongregationId", "PersonId")
+                        .HasDatabaseName("ix_attendance_congregation_id_person_id")
+                        .HasFilter("deleted_at IS NULL AND person_kind_at_time = 'Visitor' AND NOT is_first_visit");
 
                     b.HasIndex("SessionId", "PersonId")
                         .IsUnique()
                         .HasDatabaseName("ix_attendance_session_id_person_id")
                         .HasFilter("deleted_at IS NULL");
+
+                    NpgsqlIndexBuilderExtensions.IncludeProperties(b.HasIndex("SessionId", "PersonId"), new[] { "PersonKindAtTime", "IsFirstVisit" });
+
+                    b.HasIndex("CongregationId", "SessionDate", "Id")
+                        .HasDatabaseName("ix_attendance_congregation_id_session_date_id")
+                        .HasFilter("deleted_at IS NULL");
+
+                    NpgsqlIndexBuilderExtensions.IncludeProperties(b.HasIndex("CongregationId", "SessionDate", "Id"), new[] { "PersonKindAtTime", "IsFirstVisit" });
 
                     b.ToTable("attendance", (string)null);
                 });
@@ -255,6 +280,11 @@ namespace Echo.Data.Migrations
                     b.Property<TimeOnly?>("EndsAt")
                         .HasColumnType("time without time zone")
                         .HasColumnName("ends_at");
+
+                    b.Property<string>("Location")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("location");
 
                     b.Property<string>("Name")
                         .HasMaxLength(200)
@@ -740,9 +770,6 @@ namespace Echo.Data.Migrations
                     b.HasKey("Id")
                         .HasName("pk_events");
 
-                    b.HasIndex("CongregationId")
-                        .HasDatabaseName("ix_events_congregation_id");
-
                     b.HasIndex("Name")
                         .HasDatabaseName("ix_events_name");
 
@@ -759,9 +786,11 @@ namespace Echo.Data.Migrations
                         .IsUnique()
                         .HasDatabaseName("ix_events_congregation_id_name");
 
-                    b.HasIndex("StartDate", "Id")
-                        .HasDatabaseName("ix_events_start_date_id")
+                    b.HasIndex("CongregationId", "StartDate", "Id")
+                        .HasDatabaseName("ix_events_congregation_id_start_date_id")
                         .HasFilter("deleted_at IS NULL");
+
+                    NpgsqlIndexBuilderExtensions.IncludeProperties(b.HasIndex("CongregationId", "StartDate", "Id"), new[] { "OrganizationId", "OrganizerId" });
 
                     b.ToTable("events", (string)null);
                 });
@@ -802,19 +831,17 @@ namespace Echo.Data.Migrations
                     b.HasKey("Id")
                         .HasName("pk_event_attendances");
 
-                    b.HasIndex("CongregationId")
-                        .HasDatabaseName("ix_event_attendances_congregation_id");
-
                     b.HasIndex("MemberId")
                         .HasDatabaseName("ix_event_attendances_member_id");
-
-                    b.HasIndex("CheckInTime", "Id")
-                        .HasDatabaseName("ix_event_attendances_check_in_time_id")
-                        .HasFilter("deleted_at IS NULL");
 
                     b.HasIndex("EventId", "MemberId")
                         .IsUnique()
                         .HasDatabaseName("ix_event_attendances_event_id_member_id")
+                        .HasFilter("deleted_at IS NULL");
+
+                    b.HasIndex("CongregationId", "CheckInTime", "Id")
+                        .IsDescending(false, true, false)
+                        .HasDatabaseName("ix_event_attendances_congregation_id_check_in_time_id")
                         .HasFilter("deleted_at IS NULL");
 
                     b.ToTable("event_attendances", (string)null);
@@ -856,9 +883,6 @@ namespace Echo.Data.Migrations
                     b.HasKey("Id")
                         .HasName("pk_event_registrations");
 
-                    b.HasIndex("CongregationId")
-                        .HasDatabaseName("ix_event_registrations_congregation_id");
-
                     b.HasIndex("MemberId")
                         .HasDatabaseName("ix_event_registrations_member_id");
 
@@ -867,8 +891,9 @@ namespace Echo.Data.Migrations
                         .HasDatabaseName("ix_event_registrations_event_id_member_id")
                         .HasFilter("deleted_at IS NULL");
 
-                    b.HasIndex("RegistrationDate", "Id")
-                        .HasDatabaseName("ix_event_registrations_registration_date_id")
+                    b.HasIndex("CongregationId", "RegistrationDate", "Id")
+                        .IsDescending(false, true, false)
+                        .HasDatabaseName("ix_event_registrations_congregation_id_registration_date_id")
                         .HasFilter("deleted_at IS NULL");
 
                     b.ToTable("event_registrations", (string)null);
@@ -880,8 +905,11 @@ namespace Echo.Data.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("person_id");
 
+                    b.Property<DateOnly?>("BaptisedDate")
+                        .HasColumnType("date")
+                        .HasColumnName("baptised_date");
+
                     b.Property<string>("City")
-                        .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)")
                         .HasColumnName("city");
@@ -905,13 +933,11 @@ namespace Echo.Data.Migrations
                         .HasColumnName("deleted_at");
 
                     b.Property<string>("EmergencyContactName")
-                        .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)")
                         .HasColumnName("emergency_contact_name");
 
                     b.Property<string>("EmergencyContactPhoneNumber")
-                        .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)")
                         .HasColumnName("emergency_contact_phone_number");
@@ -927,7 +953,6 @@ namespace Echo.Data.Migrations
                         .HasColumnName("gps_address");
 
                     b.Property<string>("Hometown")
-                        .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)")
                         .HasColumnName("hometown");
@@ -937,23 +962,19 @@ namespace Echo.Data.Migrations
                         .HasColumnName("joined_date");
 
                     b.Property<string>("MaritalStatus")
-                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("marital_status");
 
                     b.Property<string>("NextOfKin")
-                        .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)")
                         .HasColumnName("next_of_kin");
 
                     b.Property<string>("Region")
-                        .IsRequired()
                         .HasColumnType("text")
                         .HasColumnName("region");
 
                     b.Property<string>("ResidentialAddress")
-                        .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)")
                         .HasColumnName("residential_address");
@@ -1043,9 +1064,6 @@ namespace Echo.Data.Migrations
                     b.HasKey("Id")
                         .HasName("pk_people");
 
-                    b.HasIndex("CongregationId")
-                        .HasDatabaseName("ix_people_congregation_id");
-
                     b.HasIndex("Name")
                         .HasDatabaseName("ix_people_name");
 
@@ -1055,9 +1073,8 @@ namespace Echo.Data.Migrations
                     b.HasIndex("CongregationId", "Kind")
                         .HasDatabaseName("ix_people_congregation_id_kind");
 
-                    b.HasIndex("Name", "Id")
-                        .HasDatabaseName("ix_people_name_id")
-                        .HasFilter("deleted_at IS NULL");
+                    b.HasIndex("CongregationId", "Name", "Id")
+                        .HasDatabaseName("ix_people_congregation_id_name_id");
 
                     b.ToTable("people", (string)null);
                 });
@@ -1067,6 +1084,11 @@ namespace Echo.Data.Migrations
                     b.Property<Guid>("PersonId")
                         .HasColumnType("uuid")
                         .HasColumnName("person_id");
+
+                    b.Property<string>("Address")
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("address");
 
                     b.Property<Guid>("CongregationId")
                         .HasColumnType("uuid")
@@ -1086,19 +1108,38 @@ namespace Echo.Data.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("deleted_at");
 
+                    b.Property<string>("Gender")
+                        .HasColumnType("text")
+                        .HasColumnName("gender");
+
+                    b.Property<Guid?>("InvitedByMemberId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("invited_by_member_id");
+
                     b.Property<string>("Notes")
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)")
                         .HasColumnName("notes");
 
+                    b.Property<string>("Source")
+                        .HasColumnType("text")
+                        .HasColumnName("source");
+
                     b.HasKey("PersonId")
                         .HasName("pk_visitors");
 
-                    b.HasIndex("CongregationId")
-                        .HasDatabaseName("ix_visitors_congregation_id");
+                    b.HasIndex("InvitedByMemberId")
+                        .HasDatabaseName("ix_visitors_invited_by_member_id");
 
-                    b.HasIndex("ConvertedAt")
-                        .HasDatabaseName("ix_visitors_converted_at");
+                    b.HasIndex("CongregationId", "ConvertedAt")
+                        .HasDatabaseName("ix_visitors_congregation_id_converted_at")
+                        .HasFilter("deleted_at IS NULL AND converted_at IS NOT NULL");
+
+                    b.HasIndex("CongregationId", "CreatedAt")
+                        .HasDatabaseName("ix_visitors_congregation_id_created_at")
+                        .HasFilter("deleted_at IS NULL");
+
+                    NpgsqlIndexBuilderExtensions.IncludeProperties(b.HasIndex("CongregationId", "CreatedAt"), new[] { "ConvertedAt", "Gender" });
 
                     b.ToTable("visitors", (string)null);
                 });
@@ -1129,6 +1170,17 @@ namespace Echo.Data.Migrations
                         .HasColumnType("character varying(255)")
                         .HasColumnName("description");
 
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("Other")
+                        .HasColumnName("kind");
+
+                    b.Property<string>("MeetingDay")
+                        .HasColumnType("text")
+                        .HasColumnName("meeting_day");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(255)
@@ -1137,9 +1189,6 @@ namespace Echo.Data.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_organizations");
-
-                    b.HasIndex("CongregationId")
-                        .HasDatabaseName("ix_organizations_congregation_id");
 
                     b.HasIndex("Name")
                         .HasDatabaseName("ix_organizations_name");
@@ -1150,10 +1199,6 @@ namespace Echo.Data.Migrations
                     b.HasIndex("CongregationId", "Name")
                         .IsUnique()
                         .HasDatabaseName("ix_organizations_congregation_id_name");
-
-                    b.HasIndex("Name", "Id")
-                        .HasDatabaseName("ix_organizations_name_id")
-                        .HasFilter("deleted_at IS NULL");
 
                     b.ToTable("organizations", (string)null);
                 });
@@ -1199,19 +1244,20 @@ namespace Echo.Data.Migrations
                     b.HasKey("Id")
                         .HasName("pk_organization_members");
 
-                    b.HasIndex("CongregationId")
-                        .HasDatabaseName("ix_organization_members_congregation_id");
-
-                    b.HasIndex("OrganizationId")
-                        .HasDatabaseName("ix_organization_members_organization_id");
-
-                    b.HasIndex("CreatedAt", "Id")
-                        .HasDatabaseName("ix_organization_members_created_at_id")
-                        .HasFilter("deleted_at IS NULL");
-
                     b.HasIndex("MemberId", "OrganizationId")
                         .IsUnique()
                         .HasDatabaseName("ix_organization_members_member_id_organization_id")
+                        .HasFilter("deleted_at IS NULL");
+
+                    b.HasIndex("OrganizationId", "Role")
+                        .HasDatabaseName("ix_organization_members_organization_id_role")
+                        .HasFilter("deleted_at IS NULL");
+
+                    NpgsqlIndexBuilderExtensions.IncludeProperties(b.HasIndex("OrganizationId", "Role"), new[] { "MemberId", "JoinedAt" });
+
+                    b.HasIndex("CongregationId", "CreatedAt", "Id")
+                        .IsDescending(false, true, false)
+                        .HasDatabaseName("ix_organization_members_congregation_id_created_at_id")
                         .HasFilter("deleted_at IS NULL");
 
                     b.ToTable("organization_members", (string)null);
@@ -1280,9 +1326,6 @@ namespace Echo.Data.Migrations
                     b.HasIndex("CategoryId")
                         .HasDatabaseName("ix_projects_category_id");
 
-                    b.HasIndex("CongregationId")
-                        .HasDatabaseName("ix_projects_congregation_id");
-
                     b.HasIndex("ManagerId")
                         .HasDatabaseName("ix_projects_manager_id");
 
@@ -1292,9 +1335,11 @@ namespace Echo.Data.Migrations
                     NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("Name"), "GIN");
                     NpgsqlIndexBuilderExtensions.HasOperators(b.HasIndex("Name"), new[] { "gin_trgm_ops" });
 
-                    b.HasIndex("StartDate", "Id")
-                        .HasDatabaseName("ix_projects_start_date_id")
+                    b.HasIndex("CongregationId", "StartDate", "Id")
+                        .HasDatabaseName("ix_projects_congregation_id_start_date_id")
                         .HasFilter("deleted_at IS NULL");
+
+                    NpgsqlIndexBuilderExtensions.IncludeProperties(b.HasIndex("CongregationId", "StartDate", "Id"), new[] { "EndDate", "Status", "TargetAmount", "CategoryId" });
 
                     b.ToTable("projects", (string)null);
                 });
@@ -1393,15 +1438,18 @@ namespace Echo.Data.Migrations
                     b.HasKey("Id")
                         .HasName("pk_project_contributions");
 
-                    b.HasIndex("CongregationId")
-                        .HasDatabaseName("ix_project_contributions_congregation_id");
-
-                    b.HasIndex("ProjectId")
-                        .HasDatabaseName("ix_project_contributions_project_id");
-
-                    b.HasIndex("DateContributed", "Id")
-                        .HasDatabaseName("ix_project_contributions_date_contributed_id")
+                    b.HasIndex("ProjectId", "DateContributed")
+                        .HasDatabaseName("ix_project_contributions_project_id_date_contributed")
                         .HasFilter("deleted_at IS NULL");
+
+                    NpgsqlIndexBuilderExtensions.IncludeProperties(b.HasIndex("ProjectId", "DateContributed"), new[] { "Amount" });
+
+                    b.HasIndex("CongregationId", "DateContributed", "Id")
+                        .IsDescending(false, true, false)
+                        .HasDatabaseName("ix_project_contributions_congregation_id_date_contributed_id")
+                        .HasFilter("deleted_at IS NULL");
+
+                    NpgsqlIndexBuilderExtensions.IncludeProperties(b.HasIndex("CongregationId", "DateContributed", "Id"), new[] { "ProjectId", "Amount", "PaymentMethod" });
 
                     b.ToTable("project_contributions", (string)null);
                 });
@@ -1461,15 +1509,21 @@ namespace Echo.Data.Migrations
                     b.HasKey("Id")
                         .HasName("pk_tithes");
 
-                    b.HasIndex("CongregationId")
-                        .HasDatabaseName("ix_tithes_congregation_id");
-
                     b.HasIndex("MemberId")
                         .HasDatabaseName("ix_tithes_member_id");
 
-                    b.HasIndex("CollectionDate", "Id")
-                        .HasDatabaseName("ix_tithes_collection_date_id")
+                    b.HasIndex("CongregationId", "CollectionDate", "Id")
+                        .IsDescending(false, true, false)
+                        .HasDatabaseName("ix_tithes_congregation_id_collection_date_id")
                         .HasFilter("deleted_at IS NULL");
+
+                    NpgsqlIndexBuilderExtensions.IncludeProperties(b.HasIndex("CongregationId", "CollectionDate", "Id"), new[] { "Amount", "MemberId", "PaymentMethod" });
+
+                    b.HasIndex("CongregationId", "ForYear", "ForMonth")
+                        .HasDatabaseName("ix_tithes_congregation_id_for_year_for_month")
+                        .HasFilter("deleted_at IS NULL");
+
+                    NpgsqlIndexBuilderExtensions.IncludeProperties(b.HasIndex("CongregationId", "ForYear", "ForMonth"), new[] { "Amount", "MemberId" });
 
                     b.HasIndex("MemberId", "ForYear", "ForMonth")
                         .IsUnique()
@@ -1513,6 +1567,10 @@ namespace Echo.Data.Migrations
                         .HasColumnType("character varying(255)")
                         .HasColumnName("description");
 
+                    b.Property<string>("PaymentMethod")
+                        .HasColumnType("text")
+                        .HasColumnName("payment_method");
+
                     b.Property<DateOnly>("TransactionDate")
                         .HasColumnType("date")
                         .HasColumnName("transaction_date");
@@ -1528,12 +1586,12 @@ namespace Echo.Data.Migrations
                     b.HasIndex("CategoryId")
                         .HasDatabaseName("ix_transactions_category_id");
 
-                    b.HasIndex("CongregationId")
-                        .HasDatabaseName("ix_transactions_congregation_id");
-
-                    b.HasIndex("TransactionDate", "Id")
-                        .HasDatabaseName("ix_transactions_transaction_date_id")
+                    b.HasIndex("CongregationId", "TransactionDate", "Id")
+                        .IsDescending(false, true, false)
+                        .HasDatabaseName("ix_transactions_congregation_id_transaction_date_id")
                         .HasFilter("deleted_at IS NULL");
+
+                    NpgsqlIndexBuilderExtensions.IncludeProperties(b.HasIndex("CongregationId", "TransactionDate", "Id"), new[] { "TransactionType", "CategoryId", "Amount", "PaymentMethod" });
 
                     b.ToTable("transactions", (string)null);
                 });
@@ -1659,9 +1717,6 @@ namespace Echo.Data.Migrations
                     b.HasKey("Id")
                         .HasName("pk_users");
 
-                    b.HasIndex("CongregationId")
-                        .HasDatabaseName("ix_users_congregation_id");
-
                     b.HasIndex("EmailAddress")
                         .IsUnique()
                         .HasDatabaseName("ix_users_email_address")
@@ -1677,8 +1732,8 @@ namespace Echo.Data.Migrations
                         .HasDatabaseName("ix_users_email_address_id")
                         .HasFilter("deleted_at IS NULL");
 
-                    b.HasIndex("Name", "Id")
-                        .HasDatabaseName("ix_users_name_id")
+                    b.HasIndex("CongregationId", "Name", "Id")
+                        .HasDatabaseName("ix_users_congregation_id_name_id")
                         .HasFilter("deleted_at IS NULL");
 
                     b.ToTable("users", (string)null);
@@ -1693,7 +1748,7 @@ namespace Echo.Data.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_assets_asset_categories_category_id");
 
-                    b.HasOne("Echo.Domain.Congregations.Congregation", "Congregation")
+                    b.HasOne("Echo.Domain.Congregations.Congregation", null)
                         .WithMany()
                         .HasForeignKey("CongregationId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1701,25 +1756,21 @@ namespace Echo.Data.Migrations
                         .HasConstraintName("fk_assets_congregations_congregation_id");
 
                     b.Navigation("Category");
-
-                    b.Navigation("Congregation");
                 });
 
             modelBuilder.Entity("Echo.Domain.Assets.AssetCategory", b =>
                 {
-                    b.HasOne("Echo.Domain.Congregations.Congregation", "Congregation")
+                    b.HasOne("Echo.Domain.Congregations.Congregation", null)
                         .WithMany()
                         .HasForeignKey("CongregationId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_asset_categories_congregations_congregation_id");
-
-                    b.Navigation("Congregation");
                 });
 
             modelBuilder.Entity("Echo.Domain.Attendances.Attendance", b =>
                 {
-                    b.HasOne("Echo.Domain.Congregations.Congregation", "Congregation")
+                    b.HasOne("Echo.Domain.Congregations.Congregation", null)
                         .WithMany()
                         .HasForeignKey("CongregationId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1746,8 +1797,6 @@ namespace Echo.Data.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_attendance_sessions_session_id");
 
-                    b.Navigation("Congregation");
-
                     b.Navigation("Person");
 
                     b.Navigation("Recorder");
@@ -1757,7 +1806,7 @@ namespace Echo.Data.Migrations
 
             modelBuilder.Entity("Echo.Domain.Attendances.Session", b =>
                 {
-                    b.HasOne("Echo.Domain.Congregations.Congregation", "Congregation")
+                    b.HasOne("Echo.Domain.Congregations.Congregation", null)
                         .WithMany()
                         .HasForeignKey("CongregationId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1777,8 +1826,6 @@ namespace Echo.Data.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_sessions_session_labels_session_label_id");
 
-                    b.Navigation("Congregation");
-
                     b.Navigation("Creator");
 
                     b.Navigation("SessionLabel");
@@ -1786,14 +1833,12 @@ namespace Echo.Data.Migrations
 
             modelBuilder.Entity("Echo.Domain.Attendances.SessionLabel", b =>
                 {
-                    b.HasOne("Echo.Domain.Congregations.Congregation", "Congregation")
+                    b.HasOne("Echo.Domain.Congregations.Congregation", null)
                         .WithMany()
                         .HasForeignKey("CongregationId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_session_labels_congregations_congregation_id");
-
-                    b.Navigation("Congregation");
                 });
 
             modelBuilder.Entity("Echo.Domain.Auth.EmailVerificationToken", b =>
@@ -1855,7 +1900,7 @@ namespace Echo.Data.Migrations
 
             modelBuilder.Entity("Echo.Domain.Events.Event", b =>
                 {
-                    b.HasOne("Echo.Domain.Congregations.Congregation", "Congregation")
+                    b.HasOne("Echo.Domain.Congregations.Congregation", null)
                         .WithMany()
                         .HasForeignKey("CongregationId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1876,8 +1921,6 @@ namespace Echo.Data.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_events_members_organizer_id");
 
-                    b.Navigation("Congregation");
-
                     b.Navigation("Organization");
 
                     b.Navigation("Organizer");
@@ -1885,7 +1928,7 @@ namespace Echo.Data.Migrations
 
             modelBuilder.Entity("Echo.Domain.Events.EventAttendance", b =>
                 {
-                    b.HasOne("Echo.Domain.Congregations.Congregation", "Congregation")
+                    b.HasOne("Echo.Domain.Congregations.Congregation", null)
                         .WithMany()
                         .HasForeignKey("CongregationId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1906,8 +1949,6 @@ namespace Echo.Data.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_event_attendances_members_member_id");
 
-                    b.Navigation("Congregation");
-
                     b.Navigation("Event");
 
                     b.Navigation("Member");
@@ -1915,7 +1956,7 @@ namespace Echo.Data.Migrations
 
             modelBuilder.Entity("Echo.Domain.Events.EventRegistration", b =>
                 {
-                    b.HasOne("Echo.Domain.Congregations.Congregation", "Congregation")
+                    b.HasOne("Echo.Domain.Congregations.Congregation", null)
                         .WithMany()
                         .HasForeignKey("CongregationId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1936,8 +1977,6 @@ namespace Echo.Data.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_event_registrations_members_member_id");
 
-                    b.Navigation("Congregation");
-
                     b.Navigation("Event");
 
                     b.Navigation("Member");
@@ -1945,7 +1984,7 @@ namespace Echo.Data.Migrations
 
             modelBuilder.Entity("Echo.Domain.Members.Member", b =>
                 {
-                    b.HasOne("Echo.Domain.Congregations.Congregation", "Congregation")
+                    b.HasOne("Echo.Domain.Congregations.Congregation", null)
                         .WithMany()
                         .HasForeignKey("CongregationId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -1959,31 +1998,33 @@ namespace Echo.Data.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_members_people_person_id");
 
-                    b.Navigation("Congregation");
-
                     b.Navigation("Person");
                 });
 
             modelBuilder.Entity("Echo.Domain.Members.Person", b =>
                 {
-                    b.HasOne("Echo.Domain.Congregations.Congregation", "Congregation")
+                    b.HasOne("Echo.Domain.Congregations.Congregation", null)
                         .WithMany()
                         .HasForeignKey("CongregationId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_people_congregations_congregation_id");
-
-                    b.Navigation("Congregation");
                 });
 
             modelBuilder.Entity("Echo.Domain.Members.Visitor", b =>
                 {
-                    b.HasOne("Echo.Domain.Congregations.Congregation", "Congregation")
+                    b.HasOne("Echo.Domain.Congregations.Congregation", null)
                         .WithMany()
                         .HasForeignKey("CongregationId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_visitors_congregations_congregation_id");
+
+                    b.HasOne("Echo.Domain.Members.Member", "InvitedBy")
+                        .WithMany()
+                        .HasForeignKey("InvitedByMemberId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_visitors_members_invited_by_member_id");
 
                     b.HasOne("Echo.Domain.Members.Person", "Person")
                         .WithOne()
@@ -1992,26 +2033,24 @@ namespace Echo.Data.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_visitors_people_person_id");
 
-                    b.Navigation("Congregation");
+                    b.Navigation("InvitedBy");
 
                     b.Navigation("Person");
                 });
 
             modelBuilder.Entity("Echo.Domain.Organizations.Organization", b =>
                 {
-                    b.HasOne("Echo.Domain.Congregations.Congregation", "Congregation")
+                    b.HasOne("Echo.Domain.Congregations.Congregation", null)
                         .WithMany()
                         .HasForeignKey("CongregationId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_organizations_congregations_congregation_id");
-
-                    b.Navigation("Congregation");
                 });
 
             modelBuilder.Entity("Echo.Domain.Organizations.OrganizationMember", b =>
                 {
-                    b.HasOne("Echo.Domain.Congregations.Congregation", "Congregation")
+                    b.HasOne("Echo.Domain.Congregations.Congregation", null)
                         .WithMany()
                         .HasForeignKey("CongregationId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -2032,8 +2071,6 @@ namespace Echo.Data.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_organization_members_organizations_organization_id");
 
-                    b.Navigation("Congregation");
-
                     b.Navigation("Member");
 
                     b.Navigation("Organization");
@@ -2048,7 +2085,7 @@ namespace Echo.Data.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_projects_project_categories_category_id");
 
-                    b.HasOne("Echo.Domain.Congregations.Congregation", "Congregation")
+                    b.HasOne("Echo.Domain.Congregations.Congregation", null)
                         .WithMany()
                         .HasForeignKey("CongregationId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -2064,26 +2101,22 @@ namespace Echo.Data.Migrations
 
                     b.Navigation("Category");
 
-                    b.Navigation("Congregation");
-
                     b.Navigation("Manager");
                 });
 
             modelBuilder.Entity("Echo.Domain.Projects.ProjectCategory", b =>
                 {
-                    b.HasOne("Echo.Domain.Congregations.Congregation", "Congregation")
+                    b.HasOne("Echo.Domain.Congregations.Congregation", null)
                         .WithMany()
                         .HasForeignKey("CongregationId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_project_categories_congregations_congregation_id");
-
-                    b.Navigation("Congregation");
                 });
 
             modelBuilder.Entity("Echo.Domain.Projects.ProjectContribution", b =>
                 {
-                    b.HasOne("Echo.Domain.Congregations.Congregation", "Congregation")
+                    b.HasOne("Echo.Domain.Congregations.Congregation", null)
                         .WithMany()
                         .HasForeignKey("CongregationId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -2097,14 +2130,12 @@ namespace Echo.Data.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_project_contributions_projects_project_id");
 
-                    b.Navigation("Congregation");
-
                     b.Navigation("Project");
                 });
 
             modelBuilder.Entity("Echo.Domain.Tithes.Tithe", b =>
                 {
-                    b.HasOne("Echo.Domain.Congregations.Congregation", "Congregation")
+                    b.HasOne("Echo.Domain.Congregations.Congregation", null)
                         .WithMany()
                         .HasForeignKey("CongregationId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -2118,8 +2149,6 @@ namespace Echo.Data.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_tithes_members_member_id");
 
-                    b.Navigation("Congregation");
-
                     b.Navigation("Member");
                 });
 
@@ -2132,7 +2161,7 @@ namespace Echo.Data.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_transactions_transaction_categories_category_id");
 
-                    b.HasOne("Echo.Domain.Congregations.Congregation", "Congregation")
+                    b.HasOne("Echo.Domain.Congregations.Congregation", null)
                         .WithMany()
                         .HasForeignKey("CongregationId")
                         .OnDelete(DeleteBehavior.Restrict)
@@ -2140,32 +2169,26 @@ namespace Echo.Data.Migrations
                         .HasConstraintName("fk_transactions_congregations_congregation_id");
 
                     b.Navigation("Category");
-
-                    b.Navigation("Congregation");
                 });
 
             modelBuilder.Entity("Echo.Domain.Transactions.TransactionCategory", b =>
                 {
-                    b.HasOne("Echo.Domain.Congregations.Congregation", "Congregation")
+                    b.HasOne("Echo.Domain.Congregations.Congregation", null)
                         .WithMany()
                         .HasForeignKey("CongregationId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_transaction_categories_congregations_congregation_id");
-
-                    b.Navigation("Congregation");
                 });
 
             modelBuilder.Entity("Echo.Domain.Users.User", b =>
                 {
-                    b.HasOne("Echo.Domain.Congregations.Congregation", "Congregation")
+                    b.HasOne("Echo.Domain.Congregations.Congregation", null)
                         .WithMany()
                         .HasForeignKey("CongregationId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_users_congregations_congregation_id");
-
-                    b.Navigation("Congregation");
                 });
 #pragma warning restore 612, 618
         }

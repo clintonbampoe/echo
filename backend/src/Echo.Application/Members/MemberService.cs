@@ -1,3 +1,4 @@
+using Echo.Application.Caching;
 using Echo.Data;
 using Echo.Domain.Members;
 using Echo.Shared.HttpResults;
@@ -21,6 +22,7 @@ public class MemberService(
     ApplicationInstrumentation instrumentation,
     LinkGenerator linker,
     DateWindows dateWindows,
+    SummaryCache summaries,
     ILogger<MemberService> logger
 )
 {
@@ -212,7 +214,20 @@ public class MemberService(
         return new SuccessResult<List<MemberSearchResultDto>>(res);
     }
 
-    public async Task<IOperationResult> Summary(
+    public Task<IOperationResult> Summary(
+        Guid congregationId,
+        MemberFilters filters,
+        CancellationToken ct
+    ) =>
+        summaries.Serve(
+            "members",
+            congregationId,
+            filters,
+            token => ComputeSummary(congregationId, filters, token),
+            ct
+        );
+
+    private async Task<MemberSummaryDto> ComputeSummary(
         Guid congregationId,
         MemberFilters filters,
         CancellationToken ct
@@ -224,10 +239,15 @@ public class MemberService(
         using var activity = instrumentation.ActivitySource.StartActivity("svc.member.summary");
 
         var stats = await repository.GetSummaryStats(congregationId, filters, ct);
+        var joined = await repository.GetJoinedCounts(congregationId, filters, window!.Value, ct);
 
         var res = new MemberSummaryDto
         {
             Window = window,
+            BaptisedMembers = stats.Baptised,
+            JoinedInWindow = joined.InWindow,
+            JoinedInPreviousWindow = joined.InPreviousWindow,
+            JoinedThisYear = joined.ThisYear,
             TotalMembers = stats.Total,
             ActiveMembers = stats.Active,
             MaleCount = stats.Male,
@@ -239,7 +259,43 @@ public class MemberService(
         activity?.SetTag("member.summary.total", res.TotalMembers);
         MemberLog.Summarized(logger, congregationId, res.TotalMembers);
 
-        return new SuccessResult<MemberSummaryDto>(res);
+        return res;
+    }
+
+    public async Task<IOperationResult> MonthlySummary(
+        Guid congregationId,
+        MemberMonthlyFilters filters,
+        CancellationToken ct
+    )
+    {
+        if (MonthRange.Problem(filters.Months) is { } problem)
+            return new BadRequestResult(problem);
+
+        return await summaries.Serve(
+            "members.monthly",
+            congregationId,
+            filters,
+            token => ComputeMonthly(congregationId, filters, token),
+            ct
+        );
+    }
+
+    private async Task<List<MemberMonthlyDto>> ComputeMonthly(
+        Guid congregationId,
+        MemberMonthlyFilters filters,
+        CancellationToken ct
+    )
+    {
+        var months = dateWindows.ChartMonths(filters.Months, filters.To);
+        var (from, to) = MonthRange.Bounds(months);
+        var rows = await repository.GetMonthlyTotals(congregationId, filters, from, to, ct);
+
+        return MonthRange.Fill(
+            months,
+            rows.Select(r => new MemberMonthlyDto { Year = r.Year, Month = r.Month, NewMembers = r.Count }),
+            m => new YearMonth(m.Year, m.Month),
+            m => new MemberMonthlyDto { Year = m.Year, Month = m.Month }
+        );
     }
 
     private static MemberCursor BuildCursor(Member last) =>

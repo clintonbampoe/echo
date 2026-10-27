@@ -1,0 +1,35 @@
+﻿[
+  {
+    Id: Guid_1,
+    CategoryId: 1,
+    CategoryName: Tithes,
+    TransactionType: Expense,
+    TransactionDate: Date_1,
+    Amount: 425.75,
+    PaymentMethod: Cash,
+    Description: Sound equipment,
+    CreatedAt: DateTime_1
+  },
+  {
+    Id: Guid_2,
+    CategoryId: 2,
+    CategoryName: Tithes,
+    TransactionType: Expense,
+    TransactionDate: Date_2,
+    Amount: 425.75,
+    PaymentMethod: Cheque,
+    Description: Sound equipment,
+    CreatedAt: DateTime_2
+  },
+  {
+    Id: Guid_3,
+    CategoryId: 3,
+    CategoryName: Tithes,
+    TransactionType: Expense,
+    TransactionDate: Date_3,
+    Amount: 425.75,
+    PaymentMethod: CreditCard,
+    Description: Sound equipment,
+    CreatedAt: DateTime_3
+  }
+]

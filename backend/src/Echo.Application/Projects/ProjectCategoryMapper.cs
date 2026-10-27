@@ -6,7 +6,6 @@ namespace Echo.Application.Projects;
 [Mapper]
 public partial class ProjectCategoryMapper : IProjectCategoryMapper
 {
-    [MapperIgnoreSource(nameof(entity.Congregation))]
     [MapperIgnoreSource(nameof(entity.CongregationId))]
     [MapperIgnoreSource(nameof(entity.CreatedAt))]
     [MapperIgnoreSource(nameof(entity.DeletedAt))]
@@ -14,7 +13,6 @@ public partial class ProjectCategoryMapper : IProjectCategoryMapper
     [MapperIgnoreTarget(nameof(ProjectCategoryResponseDto.ProjectCount))]
     public partial ProjectCategoryResponseDto ToDto(ProjectCategory entity);
 
-    [MapperIgnoreTarget(nameof(ProjectCategory.Congregation))]
     [MapperIgnoreTarget(nameof(ProjectCategory.CongregationId))]
     [MapperIgnoreTarget(nameof(ProjectCategory.Id))]
     [MapperIgnoreTarget(nameof(ProjectCategory.CreatedAt))]

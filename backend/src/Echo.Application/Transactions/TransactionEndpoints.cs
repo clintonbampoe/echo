@@ -55,8 +55,15 @@ public static class TransactionEndpoints
                 ### Ordering
                 Transactions are ordered by transaction date, most recent first. Stable across pages.
 
-                ### Pagination
-                Pass the `next` cursor from the previous response as the `cursor` query parameter. When `hasMore` is `false`, `next` is null.
+                ### Paging
+                - `cursor` — leave it out for the first page. For the next page, send the `next` value from the previous response unchanged. It records where the last page stopped, so use it only with the same filters it came from.
+                - `pageSize` — how many rows to return, from 1 to 50. Defaults to 50; a larger number is reduced to 50.
+
+                Keep asking for the next page while `hasMore` is `true`. When it is `false`, `next` is `null` and that was the last page.
+
+                ### More filters
+                - `paymentMethod` — only transactions paid this way.
+                - `search` — partial, case-insensitive match on the description or the category name, so a user can type part of what they remember.
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
@@ -91,6 +98,9 @@ public static class TransactionEndpoints
                 Returns the full Transaction record for the given ID, scoped to the caller's congregation.
 
                 The response includes the resolved `categoryName` — no follow-up call needed.
+
+                ### Path parameters
+                - `id` — the transaction's id, as returned by the list and create endpoints.
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
@@ -153,6 +163,9 @@ public static class TransactionEndpoints
                 ### Side effects
                 - The transaction is recorded. `GET /transactions/summary` reflects it on next call.
 
+                ### Payment method
+                - `paymentMethod` — how the money moved: `Cash`, `Cheque`, `CreditCard`, `MobileMoney` or `BankTransfer`. Optional; leave it out when unknown.
+
                 ### Failure modes
                 - `400 BAD_REQUEST` — the request body is malformed.
                 - `400 VALIDATION_ERROR` — one or more fields failed validation.
@@ -207,6 +220,12 @@ public static class TransactionEndpoints
                 ### Side effects
                 - `GET /transactions/summary` recalculates on next call, reflecting the updated amount and category.
 
+                ### Path parameters
+                - `id` — the transaction's id, as returned by the list and create endpoints.
+
+                ### Payment method
+                - `paymentMethod` — how the money moved: `Cash`, `Cheque`, `CreditCard`, `MobileMoney` or `BankTransfer`. Optional; leave it out when unknown.
+
                 ### Failure modes
                 - `400 BAD_REQUEST` — the request body is malformed.
                 - `400 VALIDATION_ERROR` — one or more fields failed validation.
@@ -251,6 +270,9 @@ public static class TransactionEndpoints
                 ### Side effects
                 - The transaction is marked as deleted.
                 - **Summary totals reflect the deletion.** `GET /transactions/summary` recalculates `totalIncome`, `totalExpenses`, and `net` from live records only.
+
+                ### Path parameters
+                - `id` — the transaction's id, as returned by the list and create endpoints.
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
@@ -297,6 +319,13 @@ public static class TransactionEndpoints
                 - `mostActiveCategory` — the category name with the largest total transaction volume (count, not amount). Null when no transactions match.
                 - `byCategory` — one row per category and transaction type with `categoryId`, `categoryName`, `type`, `total` and `count`, sorted by `total` (largest first). Use it to see where the money goes.
 
+                ### Filters
+                All optional, and the same as on the list endpoint, so a summary can describe exactly what the list shows.
+                - `transactionType` — `Income` or `Expense`.
+                - `paymentMethod` — only transactions paid this way.
+                - `search` — partial, case-insensitive match on the description or the category name.
+                - `from` / `to` — the window. Also sets the window `previousTotalIncome` and `previousTotalExpenses` are compared against.
+
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
                 """
@@ -308,7 +337,7 @@ public static class TransactionEndpoints
             .MapGet(
                 "/summary/monthly",
                 async (
-                    [AsParameters] TransactionFilters filters,
+                    [AsParameters] TransactionMonthlyFilters filters,
                     TransactionService service,
                     HttpContext context,
                     CancellationToken ct
@@ -328,20 +357,30 @@ public static class TransactionEndpoints
                 }
             )
             .WithName("GetTransactionMonthlySummary")
-            .WithSummary("Returns income and expense totals per month.")
+            .WithSummary("Returns income and expenses per month.")
             .WithDescription(
                 """
-                Returns one row per calendar month in the range, so a chart can be drawn from a single request.
+                Returns one row per calendar month, so the Finance page can draw income against expenses, a net trend or a donut from a single request.
+
+                Transactions are grouped by their `transactionDate`.
 
                 ### Query parameters
-                - `from`, `to` — the range; any day in the first and last month. Defaults to the last 12 months, ending with the current month. The range may cover at most 24 months.
-                - `transactionType`, `categoryId` — same meaning as on the list endpoint.
+                - `months` — how many months to return, from 1 to 12. Defaults to 12. The rows end with the month of `to`, so `months=6` is the last six months.
+                - `to` — any day in the last month to return. Defaults to today, so the last row is this month so far (a part month). Send an earlier date to look back in time: `months=6&to=2026-03-15` returns October 2025 to March 2026.
+                - `categoryId` — only transactions filed under this category.
+                - `transactionType` — only `Income` or only `Expense`.
 
                 ### Response
-                A list of `{ year, month, totalIncome, totalExpenses, net }`, oldest month first. Months with no transactions are returned with zeros, so there are no gaps.
+                A list of `{ year, month, totalIncome, totalExpenses, net }`, where `net` is `totalIncome` minus `totalExpenses` (negative when more went out than came in). Oldest month first. A month with nothing in it is returned with zeros, so there are no gaps and the list always has exactly `months` rows.
+
+                ### Why it is one endpoint
+                This is the only monthly endpoint for transactions: it serves a dashboard card (`months=6`), a full-year chart, or a donut over the months. The shape is always the same list, so the page decides how to draw it.
+
+                ### Caching
+                The answer is cached for 2 minutes per congregation and per set of parameters, so asking again straight away costs nothing. A change shows up within 2 minutes.
 
                 ### Failure modes
-                - `400 BAD_REQUEST` — the range covers more than 24 months, or `from` is after `to`.
+                - `400 BAD_REQUEST` — `months` is not between 1 and 12.
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
                 """
             )

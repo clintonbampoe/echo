@@ -63,4 +63,15 @@ internal static partial class SeederLog
 
     [LoggerMessage(Level = LogLevel.Information, Message = "{Congregation}: {Count} assets.")]
     public static partial void AssetsDone(this ILogger logger, string congregation, int count);
+
+    [LoggerMessage(
+        Level = LogLevel.Information,
+        Message = "Planner statistics updated — {Count} tables, ~{Total:N0} rows. Largest: {Largest}."
+    )]
+    public static partial void AnalyzeCompleted(
+        this ILogger logger,
+        int count,
+        long total,
+        string largest
+    );
 }

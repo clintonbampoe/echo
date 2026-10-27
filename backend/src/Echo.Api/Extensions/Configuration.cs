@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using Asp.Versioning.ApiExplorer;
+using Echo.Shared.Json;
 using Microsoft.Extensions.Options;
 using Scalar.AspNetCore;
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -23,6 +24,10 @@ public static class Configuration
         services.ConfigureHttpJsonOptions(options =>
         {
             options.SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+
+            // Money and averages are shown to two decimal places at most.
+            options.SerializerOptions.Converters.Add(new RoundedDecimalConverter());
+            options.SerializerOptions.Converters.Add(new RoundedDoubleConverter());
         });
 
         return services;

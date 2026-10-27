@@ -1,5 +1,4 @@
-using Echo.Application.Tests.Transactions;
-using Echo.Application.Transactions;
+using AutoFixture;
 using Echo.Domain.Transactions;
 
 namespace Echo.Application.Tests;
@@ -22,19 +21,33 @@ public class ReassignRulesTests
     [Fact]
     public void CheckTypes_SameCategoryType_ReturnsNull()
     {
-        var source = TransactionCategoryFactory.NewEntity();
-        var target = TransactionCategoryFactory.NewEntity();
-
-        Assert.Null(ReassignRules.CheckTypes(source, target));
+        Assert.Null(
+            ReassignRules.CheckTypes(
+                NewCategory(TransactionType.Income),
+                NewCategory(TransactionType.Income)
+            )
+        );
     }
 
     [Fact]
     public void CheckTypes_DifferentCategoryType_ReturnsAnError()
     {
-        var source = TransactionCategoryFactory.NewEntity();
-        var target = TransactionCategoryFactory.NewEntity();
-        target.CategoryType = TransactionType.Expense;
-
-        Assert.NotNull(ReassignRules.CheckTypes(source, target));
+        Assert.NotNull(
+            ReassignRules.CheckTypes(
+                NewCategory(TransactionType.Income),
+                NewCategory(TransactionType.Expense)
+            )
+        );
     }
+
+    private static TransactionCategory NewCategory(TransactionType type) =>
+        TestData.Build(
+            TestData.Shared,
+            () =>
+                TestData
+                    .Shared.Build<TransactionCategory>()
+                    .With(c => c.CategoryType, type)
+                    .Create()
+                    .Live()
+        );
 }

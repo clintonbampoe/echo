@@ -1,0 +1,31 @@
+﻿{
+  PersonId: Guid_1,
+  Person: {
+    Id: Guid_2,
+    CongregationId: Guid_3,
+    Name: Jane Doe,
+    FirstName: Janet,
+    LastName: Doe-Smith,
+    OtherNames: v1,
+    PhoneNumber: 0555000000,
+    EmailAddress: v2,
+    CreatedAt: DateTime_1,
+    DeletedAt: DateTime_2
+  },
+  CongregationId: Guid_4,
+  DateOfBirth: Date_1,
+  JoinedDate: Date_2,
+  BaptisedDate: Date_3,
+  ResidentialAddress: v3,
+  City: v4,
+  Hometown: v5,
+  Region: Volta,
+  GpsAddress: v6,
+  MaritalStatus: Single,
+  NextOfKin: v7,
+  EmergencyContactName: v8,
+  EmergencyContactPhoneNumber: v9,
+  Status: Inactive,
+  CreatedAt: DateTime_3,
+  DeletedAt: DateTime_4
+}
