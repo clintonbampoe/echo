@@ -1,7 +1,7 @@
 import type { RouteObject } from "react-router-dom";
 
 const page = (tab: "upcoming" | "past") => async () => {
-  const { EventsPage } = await import("./components/EventsPage");
+  const { EventsPage } = await import("./pages/EventsPage");
   return { Component: () => <EventsPage tab={tab} /> };
 };
 
@@ -12,7 +12,7 @@ export const eventRoutes: RouteObject[] = [
   {
     path: "events/:id",
     lazy: async () => ({
-      Component: (await import("./components/EventPage")).EventPage,
+      Component: (await import("./pages/EventPage")).EventPage,
     }),
   },
 ];

@@ -1,0 +1,92 @@
+.pager {
+  min-width: 0;
+}
+.track {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--columns, repeat(2, minmax(0, 1fr)));
+  gap: var(--s-16);
+}
+.dots {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .track {
+    display: flex;
+    gap: var(--s-12);
+    align-items: stretch;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-behavior: smooth;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+  .track::-webkit-scrollbar {
+    display: none;
+  }
+  /* One card at a time: the next one never peeks, the dots say there is more. Every page is as tall as the
+     tallest, and its card fills it. */
+  .track > * {
+    display: flex;
+    flex: none;
+    width: 100%;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+  .track > * > * {
+    flex: 1;
+    min-width: 0;
+  }
+  .dots {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    padding-top: var(--s-8);
+  }
+}
+
+/* 32px to tap (and a few more around it), 6px to see. The page you are on is the long one. */
+.dot {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: none;
+  border: 0;
+}
+.dot::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  background: var(--line-2);
+  border-radius: 50%;
+  transition:
+    width var(--t-base) var(--ease-spring),
+    background-color var(--t-fast) var(--ease-soft);
+}
+@media (hover: hover) {
+  .dot:hover::before {
+    background: var(--text-3);
+  }
+}
+.dot[aria-current="true"]::before {
+  width: 18px;
+  background: var(--text);
+  border-radius: var(--radius-pill);
+}
+.dot:focus-visible {
+  outline: var(--focus);
+  outline-offset: -2px;
+  border-radius: var(--radius-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .track {
+    scroll-behavior: auto;
+  }
+  .dot::before {
+    transition: none;
+  }
+}

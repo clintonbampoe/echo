@@ -61,6 +61,13 @@ export const authRoutes: RouteObject[] = [
       {
         path: "join/:code",
         lazy: async () => ({
+          Component: (await import("./pages/ConfirmChurchPage"))
+            .ConfirmChurchPage,
+        }),
+      },
+      {
+        path: "join/:code/account",
+        lazy: async () => ({
           Component: (await import("./pages/JoinPage")).JoinPage,
         }),
       },

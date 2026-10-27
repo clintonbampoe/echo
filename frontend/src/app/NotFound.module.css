@@ -3,7 +3,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 32px;
+  padding: var(--s-32);
   background: var(--bg);
 }
 .card {
@@ -11,18 +11,18 @@
   max-width: 380px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--s-12);
 }
 .title {
   margin-top: 16px;
-  font-size: 30px;
+  font-size: var(--type-large);
   line-height: 1.15;
   font-weight: 600;
   letter-spacing: -0.02em;
 }
 .text {
   margin-bottom: 20px;
-  font-size: 15px;
+  font-size: var(--type-callout);
   line-height: 1.5;
   color: var(--text-3);
 }

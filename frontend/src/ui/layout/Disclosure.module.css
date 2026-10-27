@@ -1,0 +1,72 @@
+.wrap {
+  margin-top: 8px;
+}
+.toggle {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  width: 100%;
+  min-height: 52px;
+  padding: 0 var(--s-16);
+  background: none;
+  border: 1px dashed var(--line-2);
+  border-radius: var(--radius-field);
+  transition: background-color var(--fast) ease;
+  font-size: var(--type-body);
+  text-align: left;
+}
+.toggle:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+}
+@media (hover: hover) {
+  .toggle:hover {
+    background: var(--hover);
+  }
+}
+.title {
+  color: var(--text-2);
+}
+.hint {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  color: var(--text-3);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.hint::before {
+  content: ": ";
+  white-space: pre;
+}
+.chevron {
+  order: 2;
+  margin-left: auto;
+  flex: none;
+  color: var(--text-3);
+  transition: transform var(--t-enter) var(--ease-settle);
+}
+.toggle[aria-expanded="true"] .chevron {
+  transform: rotate(180deg);
+}
+
+/* Grows from zero height, which needs no measuring. */
+.panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition:
+    grid-template-rows 360ms var(--ease),
+    opacity 240ms ease;
+}
+.panel[data-open="true"] {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+.inner {
+  min-height: 0;
+  overflow: hidden;
+  /* Room for focus rings, which overflow: hidden would otherwise cut off. */
+  margin: -4px;
+  padding: var(--s-4);
+}

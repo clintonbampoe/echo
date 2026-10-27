@@ -1,31 +1,37 @@
 .links {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  margin-top: 28px;
-  padding-top: 24px;
-  border-top: 1px solid var(--line);
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  margin-top: 12px;
+  font-size: 13.5px;
+  color: var(--text-3);
 }
-
 .back {
-  margin-top: 24px;
-  text-align: center;
+  margin: 12px 0 0;
+  font-size: 13.5px;
 }
 
 .link {
-  font-size: 14px;
-  color: var(--text-2);
-  text-decoration: none;
-  text-underline-offset: 3px;
-  transition: color var(--fast) ease;
-}
-.link:hover {
+  font-weight: 500;
   color: var(--text);
   text-decoration: underline;
+  text-decoration-color: var(--text-3);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+@media (hover: hover) {
+  .link:hover {
+    text-decoration-color: var(--text);
+  }
 }
 .link:focus-visible {
   outline: var(--focus);
   outline-offset: 3px;
   border-radius: 4px;
+}
+
+@media (max-width: 999px) {
+  .links {
+    justify-content: center;
+  }
 }

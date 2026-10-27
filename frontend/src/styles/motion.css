@@ -1,5 +1,6 @@
 /*
- * Shared animations. Subtle on purpose: things settle into place, nothing bounces.
+ * Shared animations and reactions (claude/feel-and-interaction-spec.md). Springs are allowed, but only on small,
+ * quick things: a press release, a toggle, a tile, a popover. Big surfaces glide with --ease-out.
  * Use the classes; do not copy keyframes into component CSS.
  */
 @keyframes rise {
@@ -36,9 +37,44 @@
   }
 }
 
+/* Things arrive like water, not like a slide: they come from a little below and settle into their shape with a
+   soft overshoot, subtle and round. A page uses the gentle one, a row or a card the livelier one. */
+@keyframes eJellyPage {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0) scale(0.985, 0.965);
+  }
+  55% {
+    opacity: 1;
+    transform: translate3d(0, -1px, 0) scale(1.003, 1.012);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes eJelly {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0) scale(0.955, 0.86);
+  }
+  50% {
+    opacity: 1;
+    transform: translate3d(0, -1px, 0) scale(1.014, 1.05);
+  }
+  78% {
+    transform: scale(0.997, 0.985);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 /* Plays once when the element mounts. Stagger with style={{ '--delay': '120ms' }}. */
 .anim-rise {
-  animation: rise var(--slow) var(--ease) both;
+  transform-origin: 50% 0;
+  animation: eJellyPage 600ms var(--ease) both;
   animation-delay: var(--delay, 0ms);
 }
 .anim-fade {
@@ -64,5 +100,407 @@
 }
 .reveal[data-visible="true"] {
   opacity: 1;
+  transform: none;
+}
+
+/* The website and auth atmosphere (ui/Atmosphere). Global because the orbs name them inline. */
+@keyframes echoEdge {
+  0% {
+    left: -6%;
+    top: 3%;
+  }
+  25% {
+    left: 96%;
+    top: 12%;
+  }
+  50% {
+    left: 99%;
+    top: 55%;
+  }
+  75% {
+    left: -4%;
+    top: 92%;
+  }
+  100% {
+    left: -6%;
+    top: 3%;
+  }
+}
+@keyframes echoDrift {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(var(--dx), var(--dy));
+  }
+}
+@keyframes echoFloat {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(var(--dx), var(--dy));
+  }
+}
+@keyframes echoFade {
+  0%,
+  100% {
+    opacity: 0.05;
+  }
+  35%,
+  65% {
+    opacity: 1;
+  }
+}
+@keyframes echoFade2 {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes echoPing {
+  0% {
+    transform: scale(0.7);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+/*
+ * The interaction layer (design system §7). Everything here is switched off by the reduced-motion rule in
+ * reset.css, so none of it needs its own media query.
+ */
+
+/* A pressed control gives under the finger and springs back. Opt out with data-press="none". */
+button:not([data-press="none"]),
+[role="button"]:not([data-press="none"]),
+a[data-press] {
+  transition:
+    transform var(--t-spring) var(--ease-spring),
+    background-color var(--fast) ease,
+    border-color var(--fast) ease,
+    color var(--fast) ease,
+    box-shadow var(--fast) ease,
+    opacity var(--fast) ease;
+}
+button:not(:disabled):not([data-press="none"]):active,
+[role="button"]:not([aria-disabled="true"]):not([data-press="none"]):active,
+a[data-press]:active {
+  transform: scale(var(--press));
+}
+
+/* Bars rise from the baseline; a skeleton's sheen sweeps across. */
+@keyframes echoGrow {
+  from {
+    transform: scaleY(0);
+  }
+  70% {
+    transform: scaleY(1.05);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+@keyframes echoGrowX {
+  from {
+    transform: scaleX(0);
+  }
+  70% {
+    transform: scaleX(1.035);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+@keyframes echoShimmer {
+  from {
+    background-position: 140% 0;
+  }
+  to {
+    background-position: -40% 0;
+  }
+}
+.skeleton {
+  display: block;
+  border-radius: var(--radius-sm);
+  background:
+    linear-gradient(
+        100deg,
+        transparent 30%,
+        rgb(255 255 255 / 55%) 50%,
+        transparent 70%
+      )
+      140% 0 / 250% 100% no-repeat,
+    var(--sel);
+  animation: echoShimmer 1.4s linear infinite;
+}
+:root[data-theme="dark"] .skeleton {
+  background:
+    linear-gradient(
+        100deg,
+        transparent 30%,
+        rgb(255 255 255 / 8%) 50%,
+        transparent 70%
+      )
+      140% 0 / 250% 100% no-repeat,
+    var(--sel);
+}
+
+/* A popover, menu or dialog arrives from where it was opened. Set --origin on it for a corner. */
+@keyframes echoPop {
+  from {
+    opacity: 0;
+    transform: scale(0.92) translateY(-4px);
+  }
+}
+@keyframes echoPopOut {
+  to {
+    opacity: 0;
+    transform: scale(0.96) translateY(-2px);
+  }
+}
+@keyframes echoLift {
+  from {
+    opacity: 0;
+    transform: translateY(32px);
+  }
+}
+@keyframes echoLiftOut {
+  to {
+    opacity: 0;
+    transform: translateY(32px);
+  }
+}
+@keyframes echoSlideIn {
+  from {
+    transform: translateX(24px);
+    opacity: 0;
+  }
+}
+@keyframes echoSlideOut {
+  to {
+    transform: translateX(24px);
+    opacity: 0;
+  }
+}
+@keyframes echoFadeOut {
+  to {
+    opacity: 0;
+  }
+}
+.pop {
+  transform-origin: var(--origin, top);
+  animation: echoPop var(--t-enter) var(--ease-settle) both;
+}
+.pop[data-closing="true"] {
+  animation: echoPopOut var(--t-exit) ease-in both;
+}
+.sheet-rise {
+  animation: echoLift var(--t-enter) var(--ease-settle) both;
+}
+.sheet-rise[data-closing="true"] {
+  animation: echoLiftOut var(--t-exit) ease-in both;
+}
+.slide-in {
+  animation: echoSlideIn var(--t-enter) var(--ease-settle) both;
+}
+.slide-in[data-closing="true"] {
+  animation: echoSlideOut var(--t-exit) ease-in both;
+}
+.scrim-fade {
+  animation: fade var(--base) ease both;
+}
+.scrim-fade[data-closing="true"] {
+  animation: echoFadeOut var(--t-exit) ease both;
+}
+
+/* A list row or card that arrives with its neighbours, one after the other. */
+.stagger {
+  transform-origin: 50% 100%;
+  animation: eJelly 520ms var(--ease) both;
+  animation-delay: calc(var(--i, 0) * 28ms);
+}
+
+/* The liquid pill's squish. The same animation twice under two names: switching between them restarts it, so a
+   thumb can squish every time its choice changes (see ui/useFlip). It animates `scale`, leaving `translate` free
+   for sliding. */
+@keyframes echoPill {
+  0% {
+    scale: 0.88 1.08;
+  }
+  45% {
+    scale: 1.1 0.92;
+  }
+  100% {
+    scale: 1;
+  }
+}
+@keyframes echoPillB {
+  0% {
+    scale: 0.88 1.08;
+  }
+  45% {
+    scale: 1.1 0.92;
+  }
+  100% {
+    scale: 1;
+  }
+}
+[data-flip="a"]:not([data-squish]) {
+  animation: echoPill var(--t-enter) var(--ease-settle) both;
+}
+[data-flip="b"]:not([data-squish]) {
+  animation: echoPillB var(--t-enter) var(--ease-settle) both;
+}
+/* data-squish="before": the element's ::before is the thumb, so it is the one that squishes. */
+[data-flip="a"][data-squish="before"]::before {
+  animation: echoPill var(--t-enter) var(--ease-settle) both;
+}
+[data-flip="b"][data-squish="before"]::before {
+  animation: echoPillB var(--t-enter) var(--ease-settle) both;
+}
+
+/* Bars rise from their baseline, one after another (set --i). Plays when the chart mounts. */
+.grow-y {
+  transform-origin: bottom;
+  animation: echoGrow var(--t-grow) var(--grow) both;
+  animation-delay: calc(var(--i, 0) * 40ms);
+}
+.grow-x {
+  transform-origin: left;
+  animation: echoGrowX var(--t-grow) var(--grow) both;
+  animation-delay: calc(var(--i, 0) * 40ms);
+}
+
+/*
+ * Reactions (feel spec §1 and §2). Compose them with a second class; do not write hover rules in a component.
+ * Hover applies only where a pointer can hover. Touch gets the press instead.
+ */
+@keyframes echoPopIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.96);
+  }
+}
+@keyframes echoRiseIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+/* A control gives under the finger and springs back. */
+.press {
+  transition: transform var(--t-spring) var(--ease-spring);
+}
+.press:active {
+  transform: scale(var(--press));
+}
+
+/* Springs back from a hover or a press: tiles, toggles, avatars. */
+.spring {
+  transition: transform var(--t-spring) var(--ease-spring);
+}
+
+/* A clickable thing lifts. --lift-y sets how far (default 3px, a card). */
+.lift {
+  transition:
+    transform var(--t-base) var(--ease-out),
+    box-shadow var(--t-base) var(--ease-soft);
+}
+.lift:active {
+  transform: translateY(-1px) scale(var(--press-card));
+}
+
+/* A card: the border and shadow strengthen. */
+.card-hover {
+  transition:
+    border-color var(--t-base) var(--ease-soft),
+    box-shadow var(--t-base) var(--ease-soft),
+    transform var(--t-base) var(--ease-out);
+}
+
+/* A list row: a rounded soft fill. */
+.row-hover {
+  border-radius: var(--radius);
+  transition: background-color var(--t-fast) var(--ease-soft);
+}
+.row-hover:active {
+  background: var(--hover-option);
+}
+
+@media (hover: hover) {
+  .lift:hover {
+    transform: translateY(var(--lift-y, -3px));
+  }
+  .card-hover:hover {
+    border-color: var(--line-hover);
+    box-shadow: var(--shadow-hover);
+  }
+  .row-hover:hover {
+    background: var(--hover-row);
+  }
+}
+
+/* A popover, menu or option list springs in from its trigger; a panel or tab body fades and rises. */
+.pop-in {
+  transform-origin: var(--origin, top);
+  animation: echoPopIn var(--t-enter) var(--ease-spring) both;
+}
+.rise-in {
+  animation: echoRiseIn var(--t-enter) var(--ease-out) both;
+}
+
+/* Reduce motion: no lift, no scale, no spring. Colour changes still happen (reset.css makes them instant). */
+@media (prefers-reduced-motion: reduce) {
+  .lift:hover,
+  .lift:active,
+  .press:active,
+  button:active,
+  [role="button"]:active,
+  a[data-press]:active {
+    transform: none !important;
+  }
+}
+html[data-reduce-motion="true"] .lift:hover,
+html[data-reduce-motion="true"] .lift:active,
+html[data-reduce-motion="true"] .press:active,
+html[data-reduce-motion="true"] button:active,
+html[data-reduce-motion="true"] [role="button"]:active,
+html[data-reduce-motion="true"] a[data-press]:active {
+  transform: none !important;
+}
+
+/* The panel under a tab fades and rises 8px when it is shown. Scroll position is kept by the page, not here. */
+[role="tabpanel"] {
+  animation: echoRiseIn var(--t-enter) var(--ease-out) both;
+}
+
+/* An avatar or icon tile inside a hovered row or card grows a little and gains a soft ring. */
+.av {
+  transition:
+    transform var(--t-spring) var(--ease-spring),
+    box-shadow var(--t-base) var(--ease-soft);
+}
+@media (hover: hover) {
+  .av:hover {
+    transform: scale(1.08);
+    box-shadow: 0 0 0 3px rgb(128 128 140 / 20%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .av:hover {
+    transform: none;
+  }
+}
+html[data-reduce-motion="true"] .av:hover {
   transform: none;
 }

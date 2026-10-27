@@ -1,0 +1,64 @@
+.wrap {
+  position: relative;
+}
+
+.menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  right: 0;
+  z-index: 20;
+  padding: var(--s-8);
+  border-radius: var(--radius-lg);
+  --origin: top center;
+}
+.menu[data-closing="true"] {
+  animation: close var(--t-exit) ease-in both;
+}
+
+.search {
+  margin-bottom: 6px;
+}
+.list {
+  max-height: 276px;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+.none {
+  padding: var(--s-12);
+  font-size: var(--type-body);
+  color: var(--text-2);
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-12);
+  height: 42px;
+  padding: 0 var(--s-16);
+  border-radius: var(--radius-pill);
+  font-size: var(--type-body);
+  cursor: pointer;
+  transition: background-color var(--t-fast) var(--ease-soft);
+}
+/* The option under the pointer or the keyboard fills softly. Nothing moves. */
+.active {
+  background: rgb(128 128 140 / 14%);
+}
+.selected {
+  font-weight: 500;
+}
+.check {
+  flex: none;
+  color: var(--text-2);
+}
+
+@keyframes close {
+  to {
+    opacity: 0;
+    transform: scale(0.96) translateY(-2px);
+  }
+}

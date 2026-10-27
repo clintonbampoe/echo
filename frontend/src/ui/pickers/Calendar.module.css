@@ -1,0 +1,152 @@
+.weekdays,
+.days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+.weekdays span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 30px;
+  font-size: var(--type-caption);
+  font-weight: 500;
+  color: var(--text-3);
+}
+.days {
+  row-gap: var(--s-2);
+}
+
+/* A day is a cell of its column's width and 40px high; the 38px circle that answers the pointer is drawn behind its number. */
+.day {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 38px;
+  margin-block: 1px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-size: var(--type-body);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  transition: color var(--t-fast) var(--ease-soft);
+}
+.day::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  z-index: -1;
+  width: 38px;
+  height: 38px;
+  margin-left: -19px;
+  border-radius: 50%;
+  background: transparent;
+  transform-origin: center center;
+  transition:
+    transform var(--t-spring) var(--spring),
+    background-color var(--t-fast) var(--ease-soft),
+    box-shadow var(--t-base) var(--ease-soft);
+}
+@media (hover: hover) {
+  .day:hover:not(:disabled)::before {
+    background: rgb(10 10 11 / 7%);
+    transform: scale(1.14);
+  }
+  .day:hover:not(:disabled):is(.picked, .first, .last)::before {
+    background: var(--accent);
+    transform: scale(1.1);
+    box-shadow: 0 8px 16px -8px rgb(10 10 11 / 60%);
+  }
+}
+.day:active:not(:disabled)::before {
+  transform: scale(0.9, 0.94);
+}
+.day:focus-visible {
+  outline: none;
+}
+.day:focus-visible::before {
+  box-shadow: 0 0 0 2px var(--text);
+}
+.day:disabled {
+  opacity: 0.3;
+}
+.out {
+  font-weight: 400;
+  color: var(--text-3);
+}
+.today::before {
+  box-shadow: inset 0 0 0 1.5px var(--text-3);
+}
+
+/* A stretch of days is one continuous band behind the numbers; its two ends are solid circles. */
+.band {
+  background: var(--hover);
+}
+.first {
+  background: linear-gradient(90deg, transparent 50%, var(--hover) 50%);
+  color: var(--on-accent);
+}
+.last {
+  background: linear-gradient(90deg, var(--hover) 50%, transparent 50%);
+  color: var(--on-accent);
+}
+.first.last {
+  background: transparent;
+}
+.first::before,
+.last::before,
+.day.picked::before {
+  background: var(--accent);
+}
+.day.picked {
+  color: var(--on-accent);
+}
+.day.picked::before {
+  animation: dayPick var(--t-spring) var(--spring) both;
+  box-shadow: 0 6px 14px rgb(10 10 10 / 22%);
+}
+
+.dot {
+  position: absolute;
+  bottom: 5px;
+  left: 50%;
+  width: 4px;
+  height: 4px;
+  margin-left: -2px;
+  border-radius: 50%;
+  background: currentcolor;
+  opacity: 0.7;
+}
+
+@media (hover: none), (pointer: coarse) {
+  .day {
+    height: 42px;
+    font-size: var(--type-headline);
+  }
+  .day::before {
+    width: 42px;
+    height: 42px;
+    margin-left: -21px;
+  }
+  .weekdays span {
+    height: 32px;
+  }
+}
+@keyframes dayPick {
+  from {
+    transform: scale(0.85);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .day.picked::before {
+    animation: none;
+  }
+  .day:hover:not(:disabled)::before,
+  .day:active:not(:disabled)::before {
+    transform: none;
+  }
+}

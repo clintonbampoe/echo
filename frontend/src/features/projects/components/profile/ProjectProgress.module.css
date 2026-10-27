@@ -1,0 +1,48 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-16);
+  padding: var(--s-24) var(--s-24);
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+.top {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s-12);
+}
+.percent {
+  margin: 0;
+  font-size: var(--type-display-s);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+.funded {
+  font-size: var(--type-body);
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--text-3);
+}
+.ends {
+  margin: 0 0 0 auto;
+  font-size: var(--type-footnote);
+  color: var(--text-3);
+}
+
+@media (max-width: 600px) {
+  .card {
+    padding: var(--s-20) var(--s-20);
+  }
+  .percent {
+    font-size: var(--type-large);
+  }
+}
+.left {
+  margin: 0;
+  font-size: var(--type-footnote);
+  color: var(--text-3);
+}

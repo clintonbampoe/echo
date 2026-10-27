@@ -1,8 +1,8 @@
 import type { UseFormReturn } from "react-hook-form";
-import { congregationTypes } from "@/features/account";
+import { congregationTypes } from "../model/options";
 import { regions } from "@/lib/regions";
 import { ControlledSelect, Field } from "@/ui";
-import type { ChurchValues } from "../schema";
+import type { ChurchValues } from "../forms/schema";
 import styles from "./form.module.css";
 
 // The church form's inputs.

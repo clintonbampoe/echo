@@ -1,0 +1,87 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow: hidden;
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--s-16);
+  min-height: calc(72px * var(--density, 1));
+  padding: 0 var(--s-8) 0 var(--s-16);
+  --tile-l: 4px;
+  --tile-e: 0;
+}
+.row + .row {
+  border-top: 1px solid var(--line);
+}
+@media (hover: hover) {
+  .row:hover,
+  .row:hover + .row {
+    border-top-color: transparent;
+  }
+}
+.tile {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-field);
+  background: var(--fill);
+  color: var(--text-2);
+}
+.muted .tile {
+  color: var(--text-3);
+}
+.muted .title {
+  color: var(--text-2);
+}
+.text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+.title,
+.sub {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.title {
+  font-size: var(--type-callout);
+  font-weight: 500;
+}
+.sub {
+  font-size: var(--type-footnote);
+  color: var(--text-3);
+}
+
+@media (min-width: 901px) {
+  .row {
+    padding: 0 var(--s-16) 0 var(--s-20);
+  }
+}
+
+/* The rows hold a ⋯ menu, so the card answers the pointer with its border and shadow, but it does not lift. */
+.card {
+  transition:
+    border-color var(--t-base) var(--ease-soft),
+    box-shadow var(--t-base) var(--ease-soft);
+}
+@media (hover: hover) {
+  .card:hover {
+    border-color: var(--line-hover);
+    box-shadow: var(--shadow-hover);
+  }
+}

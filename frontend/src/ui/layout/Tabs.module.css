@@ -1,0 +1,100 @@
+/* The scroller lets a long row slide sideways on a phone without the track's rounded ends being cut off. */
+.scroller {
+  overflow-x: auto;
+  scrollbar-width: none;
+  margin-inline: -2px;
+  padding: var(--s-2);
+}
+.scroller::-webkit-scrollbar {
+  display: none;
+}
+
+.list {
+  position: relative;
+  display: inline-flex;
+  gap: var(--s-2);
+  padding: var(--s-4);
+  background: var(--fill);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+}
+
+/* The thumb's slot: it slides along the row (translate) while the thumb inside it squishes (scale). */
+.slot {
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 0;
+  width: var(--w, 0);
+  translate: var(--x, 0) 0;
+  pointer-events: none;
+}
+.list[data-ready="true"] .slot {
+  transition:
+    translate var(--base) var(--ease-out),
+    width var(--base) var(--ease-out);
+}
+.thumb {
+  position: absolute;
+  inset: 0;
+  background: var(--surface);
+  border-radius: var(--radius-pill);
+  box-shadow:
+    0 0 0 1px var(--line-2),
+    0 1px 2px rgb(0 0 0 / 6%);
+}
+
+.tab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-8);
+  flex: none;
+  height: var(--pill-h);
+  padding: 0 var(--s-20);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-pill);
+  font-size: var(--type-body);
+  font-weight: 500;
+  color: var(--text-2);
+  transition:
+    color var(--base) ease,
+    background-color var(--t-fast) var(--ease-soft),
+    transform var(--t-spring) var(--ease-spring);
+}
+/* An idle tab fills softly under the pointer, with no lift. The picked one keeps its raised pill. */
+@media (hover: hover) {
+  .tab:hover:not(.selected) {
+    color: var(--text);
+    background: var(--hover-tab);
+  }
+}
+.tab:active {
+  transform: scale(var(--press));
+}
+.tab:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+}
+.selected,
+.selected:hover {
+  color: var(--text);
+}
+
+.count {
+  min-width: 20px;
+  padding: 1px var(--s-6);
+  border-radius: var(--radius-pill);
+  background: var(--line-2);
+  font-size: var(--type-caption);
+  text-align: center;
+  color: var(--text-2);
+  transition:
+    background-color var(--base) ease,
+    color var(--base) ease;
+}
+.selected .count {
+  background: var(--fill);
+  color: var(--text);
+}

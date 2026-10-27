@@ -1,8 +1,8 @@
-import { LinkButton, Logo, useSurface } from "@/ui";
+import { LinkButton, Logo, usePublicSurface } from "@/ui";
 import styles from "./NotFound.module.css";
 
 export function NotFound() {
-  useSurface("dark");
+  usePublicSurface();
   return (
     <main className={styles.page}>
       <div className={`${styles.card} anim-rise`}>

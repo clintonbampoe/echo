@@ -1,0 +1,16 @@
+.section {
+  margin-top: 24px;
+}
+.section:first-child {
+  margin-top: 20px;
+}
+.title {
+  margin: 0;
+  font-size: var(--type-body);
+  font-weight: 600;
+}
+.hint {
+  margin: 2px 0 0;
+  font-size: var(--type-footnote);
+  color: var(--text-3);
+}

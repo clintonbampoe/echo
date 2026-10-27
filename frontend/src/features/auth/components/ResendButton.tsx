@@ -45,6 +45,7 @@ export function ResendButton({ send }: Props) {
       <Button
         variant="secondary"
         size="lg"
+        pill
         block
         loading={pending}
         disabled={wait > 0}

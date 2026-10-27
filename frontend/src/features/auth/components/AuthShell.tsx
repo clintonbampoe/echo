@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
-import type { SignUpContext } from "../pages/signUpContext";
-import type { AccountValues } from "../schema";
+import type { SignUpContext } from "../hooks/signUp";
+import type { AccountValues } from "../forms/schema";
 import { AuthLayout } from "./AuthLayout";
 
 // The route-level frame for every auth page. It stays mounted while the person moves

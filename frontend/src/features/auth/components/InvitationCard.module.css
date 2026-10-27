@@ -2,11 +2,10 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-top: 20px;
   padding: 14px 16px;
   background: var(--surface-2);
   border: 1px solid var(--line-2);
-  border-radius: var(--radius);
+  border-radius: var(--radius-lg);
 }
 .avatar {
   display: flex;
@@ -15,7 +14,7 @@
   justify-content: center;
   width: 40px;
   height: 40px;
-  border-radius: 10px;
+  border-radius: 50%;
   background: var(--accent);
   color: var(--on-accent);
   font-size: 14px;
@@ -35,13 +34,4 @@
 .place {
   font-size: 13px;
   color: var(--text-3);
-}
-.role {
-  flex: none;
-  padding: 3px 10px;
-  border: 1px solid var(--line-2);
-  border-radius: var(--radius-pill);
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--text-2);
 }

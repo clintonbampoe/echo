@@ -1,0 +1,120 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.row {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-8);
+  width: calc(100% + 20px);
+  padding: var(--s-8) var(--s-12);
+  margin: 0 -10px;
+  background: none;
+  border: 0;
+  border-radius: var(--radius-option);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  text-decoration: none;
+  transition:
+    background-color var(--t-fast) var(--ease-soft),
+    opacity var(--t-base) var(--ease-soft);
+}
+a.row,
+button.row {
+  cursor: pointer;
+}
+a.row:focus-visible,
+button.row:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: -2px;
+}
+@media (hover: hover) {
+  /* The row under the pointer reads first; the rest step back to 55%. */
+  .list:has(a.row:hover, button.row:hover) .row:not(:hover) {
+    opacity: 0.55;
+  }
+}
+a.row:active .track,
+button.row:active .track {
+  transform: scale(1.01, 1.4);
+}
+.line {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--s-12);
+  font-size: var(--type-body);
+}
+.name {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.amount {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.track {
+  display: block;
+  height: 6px;
+  background: var(--fill-2);
+  border-radius: var(--radius-pill);
+  transform-origin: center center;
+  transition: transform var(--t-enter) var(--ease-settle);
+}
+.bar {
+  display: block;
+  height: 100%;
+  background: #7f95ae;
+  border-radius: var(--radius-pill);
+  transition:
+    filter var(--t-fast),
+    box-shadow var(--t-base),
+    background-color var(--t-fast);
+}
+.first {
+  background: var(--text);
+}
+
+/* The rank fill grows from its centre, a little wider and much taller, and the pill gives the share. */
+.tip {
+  position: absolute;
+  top: 0;
+  right: 10px;
+  z-index: 2;
+  opacity: 0;
+  transform: translateY(-100%) scale(0.96);
+  transition:
+    opacity var(--fast) ease,
+    transform var(--t-spring) var(--spring);
+}
+@media (hover: hover) {
+  a.row:hover .track,
+  button.row:hover .track,
+  a.row:focus-visible .track,
+  button.row:focus-visible .track {
+    transform: scale(1.02, 1.75);
+  }
+  a.row:hover .bar,
+  button.row:hover .bar {
+    filter: brightness(0.86);
+    box-shadow: 0 6px 12px -6px rgb(10 10 11 / 50%);
+  }
+  a.row:hover .tip,
+  button.row:hover .tip,
+  a.row:focus-visible .tip,
+  button.row:focus-visible .tip {
+    opacity: 1;
+    transform: translateY(-100%);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  a.row:hover .track,
+  button.row:hover .track {
+    transform: none;
+  }
+}

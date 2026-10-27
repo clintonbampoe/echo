@@ -1,0 +1,242 @@
+.wrap {
+  margin-top: 16px;
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+/* A fixed-height table: about five and a half rows, so the half row hints that there is more to scroll to. */
+.scroll {
+  max-height: 308px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+}
+.scroll:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: -2px;
+}
+
+/* One grid for the heading and every row, so the columns always line up. The first column is the widest. */
+.head,
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) repeat(
+      calc(var(--cols) - 1),
+      minmax(0, 1fr)
+    );
+  align-items: center;
+  gap: var(--s-16);
+  padding-inline: var(--s-16);
+}
+.tail {
+  grid-template-columns:
+    minmax(0, 2fr) repeat(calc(var(--cols) - 1), minmax(0, 1fr))
+    36px;
+}
+.head {
+  padding-block: var(--s-12);
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--line);
+  font-size: var(--type-caption);
+  font-weight: 500;
+  color: var(--text-3);
+}
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.row {
+  min-height: 56px;
+  padding-block: var(--s-12);
+  border-top: 1px solid var(--line);
+}
+.row:first-child {
+  border-top: 0;
+}
+
+/* A row that leads somewhere: the title is a real link, stretched over the whole row so any click lands on it. */
+.clickable {
+  position: relative;
+}
+/* Hovering a row lights a glass tile behind it (.liquid-row), so the hairlines either side of it go. */
+@media (hover: hover) and (min-width: 901px) {
+  .row:hover,
+  .row:hover + .row {
+    border-top-color: transparent;
+  }
+}
+.link {
+  padding: 0;
+  background: none;
+  border: 0;
+  font: inherit;
+  text-align: left;
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+.link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+@media (hover: hover) {
+  .clickable:hover .link {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+}
+.link:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: -2px;
+}
+/* Above the row's link, so the ⋯ button opens its menu instead of the record. */
+.actions {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: flex-end;
+}
+.title {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-weight: 500;
+}
+.cell {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: var(--text);
+}
+.end {
+  text-align: right;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-12);
+  padding: var(--s-16) var(--s-16);
+  background: var(--surface-2);
+  border-top: 1px solid var(--line);
+  font-size: var(--type-footnote);
+  color: var(--text-2);
+}
+.footer strong {
+  color: var(--text);
+}
+.gap {
+  margin-top: 16px;
+}
+
+.bar {
+  display: block;
+  height: 12px;
+  border-radius: var(--radius-xs);
+  background: linear-gradient(
+    90deg,
+    var(--sel) 0%,
+    var(--hover) 50%,
+    var(--sel) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+.barHead {
+  width: 40%;
+  height: 10px;
+}
+@keyframes shimmer {
+  from {
+    background-position: 100% 0;
+  }
+  to {
+    background-position: -100% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bar {
+    animation: none;
+  }
+}
+
+/* Phone and tablet: a small card per record. Title on top, then label and value pairs two across. */
+@media (max-width: 900px) {
+  .wrap {
+    background: none;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    overflow: visible;
+  }
+  .head {
+    display: none;
+  }
+  .scroll {
+    max-height: 360px;
+    padding: var(--s-2);
+  }
+  .list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: var(--s-12);
+  }
+  .row {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--s-8) var(--s-16);
+    padding: var(--s-16) var(--s-16);
+    background: var(--card-bg);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+  }
+  .row:first-child {
+    border-top: 1px solid var(--line);
+  }
+  .row:global(.liquid-row)::before {
+    display: none;
+  }
+  .link:focus-visible {
+    border-radius: var(--radius-lg);
+  }
+  .title {
+    grid-column: 1 / -1;
+  }
+  .tail {
+    position: relative;
+  }
+  .tail .title {
+    padding-right: var(--s-40);
+  }
+  .actions {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+  }
+  .cell::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: 2px;
+    font-size: var(--type-caption);
+    color: var(--text-3);
+  }
+  .end {
+    text-align: left;
+  }
+  .full {
+    grid-column: 1 / -1;
+  }
+  .last {
+    order: 1;
+  }
+  .footer {
+    margin-top: 12px;
+    border: 0;
+    border-radius: var(--radius);
+    flex-wrap: wrap;
+  }
+}

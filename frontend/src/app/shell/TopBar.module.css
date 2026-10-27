@@ -2,41 +2,48 @@
   display: none;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 16px;
-  border-bottom: 1px solid var(--line);
+  height: 56px;
+  padding: 0 var(--s-6) 0 5px;
 }
-
-.brand {
-  display: inline-flex;
-  padding: 2px;
-  border-radius: var(--radius-sm);
-  color: var(--text);
-  text-decoration: none;
-}
-.brand:focus-visible {
-  outline: var(--focus);
-  outline-offset: 2px;
-}
-
 .button {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  border: 1px solid var(--line-2);
-  border-radius: var(--radius-sm);
-  background: var(--surface);
-  transition: background-color var(--fast) ease;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  transition:
+    background-color var(--t-fast) var(--ease-soft),
+    transform var(--t-spring) var(--ease-spring);
 }
-.button:hover {
-  background: var(--hover);
+.button svg {
+  transition: rotate var(--t-base) var(--ease-out);
+}
+@media (hover: hover) {
+  .button:hover {
+    background: var(--hover-dots-strong);
+  }
+}
+/* The icon turns a quarter as it is pressed, and its replacement turns in from the other side. */
+.button:active {
+  transform: scale(var(--press-icon));
+}
+.button:active svg {
+  rotate: 90deg;
+}
+@media (prefers-reduced-motion: reduce) {
+  .button:active,
+  .button:active svg {
+    transform: none;
+    rotate: none;
+  }
 }
 .button:focus-visible {
   outline: var(--focus);
   outline-offset: 2px;
 }
-
 @media (max-width: 900px) {
   .bar {
     display: flex;

@@ -1,0 +1,132 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s-16);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-8);
+  padding: var(--s-24) var(--s-24);
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  transition: background var(--fast) ease;
+}
+@media (hover: hover) {
+  .card:hover {
+    background: var(--surface-2);
+  }
+}
+.card:has(.name:focus-visible) {
+  outline: var(--focus);
+  outline-offset: 2px;
+}
+.top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--s-12);
+}
+.who {
+  min-width: 0;
+}
+.name {
+  font-size: var(--type-callout);
+  font-weight: 600;
+  color: inherit;
+  text-decoration: none;
+}
+.name:focus-visible {
+  outline: none;
+}
+/* The whole card is the click target; the name is the link screen readers and keys find. */
+.name::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+.category {
+  margin: 2px 0 0;
+  font-size: var(--type-footnote);
+  color: var(--text-3);
+}
+.percent {
+  margin: 8px 0 10px;
+  font-size: var(--type-large);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+.funded {
+  font-size: var(--type-body);
+  font-weight: 400;
+  letter-spacing: 0;
+  color: var(--text-3);
+}
+.amounts {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--s-12);
+  margin: 0;
+  font-size: var(--type-footnote);
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 1180px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 700px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--s-12);
+  }
+  .card {
+    padding: var(--s-20) var(--s-20);
+  }
+}
+
+/* Above the card's click layer, so the menu takes its own click. */
+.menu {
+  position: relative;
+  z-index: 1;
+  flex: none;
+  margin: -6px -10px 0 0;
+}
+
+/* Design round 8: a card answers the pointer. */
+.card {
+  transition:
+    border-color var(--fast) ease,
+    box-shadow var(--fast) ease,
+    background var(--fast) ease,
+    transform var(--base) var(--ease);
+}
+
+@media (hover: hover) {
+  .card:hover {
+    border-color: var(--line-hover);
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-3px);
+  }
+}
+
+.card:active {
+  transform: scale(var(--press-card));
+}
+@media (prefers-reduced-motion: reduce) {
+  .card:hover,
+  .card:active {
+    transform: none;
+  }
+}

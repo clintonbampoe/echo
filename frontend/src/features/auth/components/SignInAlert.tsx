@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import type { ApiError } from "@/lib/api";
 import { Alert } from "@/ui";
-import { useSendVerification } from "../hooks";
+import { useSendVerification } from "../hooks/mutations";
 import styles from "./SignInAlert.module.css";
 
 type Props = { problem: ApiError; email: string };

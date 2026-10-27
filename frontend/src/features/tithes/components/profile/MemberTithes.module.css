@@ -1,0 +1,18 @@
+.bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-12) var(--s-16);
+  margin: 20px 0 16px;
+}
+.text {
+  margin: 0;
+  font-size: var(--type-body);
+  color: var(--text-2);
+}
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s-8);
+}

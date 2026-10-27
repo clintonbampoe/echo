@@ -2,8 +2,9 @@ import { useSearchParams } from "react-router-dom";
 import { LinkButton } from "@/ui";
 import { BackLink } from "../components/AuthLinks";
 import { LinkExpired } from "../components/LinkExpired";
-import { StatusScreen } from "../components/StatusScreen";
-import { useVerifyEmailLink } from "../hooks";
+import { AuthScreen } from "../components/AuthScreen";
+import { useVerifyEmailLink } from "../hooks/queries";
+import styles from "./form.module.css";
 
 // Where the link in the verification email lands: /verify-email?token=...
 export function VerifyEmailPage() {
@@ -15,29 +16,25 @@ export function VerifyEmailPage() {
       <LinkExpired
         title="This link has expired"
         text="Verification links expire after 24 hours. We can send you a fresh one."
-      >
-        <BackLink />
-      </LinkExpired>
+        links={<BackLink />}
+      />
     );
   }
   if (check.isSuccess) {
     return (
-      <StatusScreen
-        icon="check"
+      <AuthScreen
         title="Email verified"
         text="Your account is active. Sign in to set up your church."
       >
-        <LinkButton to="/signin" size="lg" block>
+        <LinkButton to="/signin" size="lg" pill block>
           Continue to sign in
         </LinkButton>
-      </StatusScreen>
+      </AuthScreen>
     );
   }
   return (
-    <StatusScreen
-      icon="spinner"
-      title="Verifying your email"
-      text="This only takes a moment."
-    />
+    <AuthScreen title="Verifying your email" text="This only takes a moment.">
+      <p className={styles.note}>Checking your link…</p>
+    </AuthScreen>
   );
 }

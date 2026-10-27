@@ -1,0 +1,5 @@
+/* Money in and money out both read as ordinary text, with the sign saying which: an expense is not a warning. */
+.in,
+.out {
+  color: var(--text);
+}

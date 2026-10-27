@@ -1,0 +1,31 @@
+.root {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+}
+
+.scrim {
+  position: absolute;
+  inset: 0;
+}
+
+.panel {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: min(300px, 86vw);
+  padding: var(--s-12);
+  overflow-y: auto;
+  animation: slide var(--base) var(--ease) both;
+}
+.panel:focus {
+  outline: none;
+}
+
+@keyframes slide {
+  from {
+    transform: translate3d(-24px, 0, 0);
+    opacity: 0;
+  }
+}

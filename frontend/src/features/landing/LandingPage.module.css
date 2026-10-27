@@ -1,8 +1,0 @@
-/* clip, not hidden: it trims whatever spills past the page (the glows, which also grow and
-   shrink as they breathe, would otherwise change how far the page can scroll). Unlike hidden
-   it does not create a scroll container, so the sticky header keeps working. */
-.page {
-  overflow: clip;
-  background: var(--bg);
-  color: var(--text);
-}

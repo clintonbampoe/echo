@@ -1,0 +1,8 @@
+.switch {
+  display: flex;
+}
+.summary {
+  margin: 0;
+  font-size: var(--type-body);
+  color: var(--text-3);
+}

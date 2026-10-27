@@ -1,0 +1,40 @@
+/* The form sits in a sheet, so its fields are a little smaller than the sign-up form's. */
+.fields {
+  --control-height: 48px;
+  --control-gap: var(--s-6);
+  --control-font: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-20);
+}
+
+.label {
+  margin: 0 0 6px;
+  font-size: var(--type-footnote);
+  font-weight: 500;
+  color: var(--text-2);
+}
+/* The type of an existing category: shown, not editable. */
+.fixed {
+  display: flex;
+  align-items: center;
+  height: var(--control-height);
+  padding: 0 var(--s-12);
+  background: var(--surface-2);
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius);
+}
+.hint {
+  margin: 8px 0 0;
+  font-size: var(--type-footnote);
+  color: var(--text-3);
+}
+
+/* Phone and tablet: full-size touch controls. 16px text stops iPhones zooming in on a field. */
+@media (max-width: 900px) {
+  .fields {
+    --control-height: 48px;
+    --control-gap: var(--s-8);
+    --control-font: 16px;
+  }
+}

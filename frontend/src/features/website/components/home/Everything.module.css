@@ -1,0 +1,58 @@
+.eyebrow {
+  margin: 0 0 16px;
+  font-size: 13.5px;
+  color: var(--text-3);
+}
+.title {
+  margin: 0;
+  font-size: 60px;
+  font-weight: 600;
+  line-height: 1.03;
+  letter-spacing: -0.048em;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 36px;
+  margin: 56px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.item {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  height: 100%;
+  padding: 24px 0 0;
+  border-top: 1px solid var(--line);
+}
+.name {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.text {
+  margin: 0;
+  font-size: 15.5px;
+  line-height: 1.6;
+  color: var(--text-2);
+}
+
+@media (max-width: 999px) {
+  .title {
+    font-size: 46px;
+  }
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 599px) {
+  .title {
+    font-size: 34px;
+  }
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+}

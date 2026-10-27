@@ -1,6 +1,0 @@
-.arrow {
-  transition: transform var(--base) var(--ease);
-}
-.cta:hover .arrow {
-  transform: translateX(4px);
-}

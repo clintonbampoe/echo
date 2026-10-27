@@ -1,0 +1,24 @@
+.card {
+  display: flex;
+  align-items: center;
+  gap: var(--s-12);
+  padding: var(--s-12) var(--s-12);
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.name {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  font-size: var(--type-body);
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+@media (max-width: 900px) {
+  .name {
+    font-size: var(--type-headline);
+  }
+}

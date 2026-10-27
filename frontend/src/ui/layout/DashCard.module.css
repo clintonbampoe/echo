@@ -1,0 +1,83 @@
+/* The card measures itself, so what is inside changes layout with the card's width, not the screen's. */
+.card {
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-32);
+  height: 100%;
+  padding: var(--s-24) var(--s-24) var(--s-24);
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-12);
+  min-height: 32px;
+}
+.title {
+  margin: 0;
+  font-size: var(--type-headline);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+.control {
+  flex: none;
+  white-space: nowrap;
+}
+.aside {
+  font-size: var(--type-footnote);
+  color: var(--text-3);
+}
+.see {
+  /* The link is a line of text; the padding is its 44px of press area, taken back with the negative margin. */
+  display: inline-block;
+  padding: var(--s-12) var(--s-8);
+  margin: calc(var(--s-12) * -1) calc(var(--s-8) * -1);
+  font-size: var(--type-footnote);
+  font-weight: 500;
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.see:focus-visible {
+  outline: var(--focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+.body {
+  display: flex;
+  gap: var(--s-32);
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+/* A card that is taller than its content, because the cards beside it on a phone share one height, centres what it
+   holds instead of leaving a blank block under it. */
+@media (max-width: 900px) {
+  .body {
+    justify-content: center;
+  }
+}
+@media (max-width: 700px) {
+  .card {
+    padding: var(--s-20) var(--s-20) var(--s-16);
+  }
+}
+
+/* A card answers the pointer: its border and shadow strengthen (feel spec, Cards). */
+.card {
+  transition:
+    border-color var(--t-base) var(--ease-soft),
+    box-shadow var(--t-base) var(--ease-soft),
+    transform var(--t-base) var(--ease-out);
+}
+@media (hover: hover) {
+  .card:hover {
+    border-color: var(--line-hover);
+    box-shadow: var(--shadow-hover);
+  }
+}

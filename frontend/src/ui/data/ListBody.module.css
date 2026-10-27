@@ -1,0 +1,59 @@
+.note {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-8);
+  padding: var(--s-48) var(--s-16);
+  text-align: center;
+  color: var(--text-3);
+}
+.gap {
+}
+
+.footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-12);
+  padding: var(--s-20) 0 var(--s-4);
+  font-size: var(--type-footnote);
+  color: var(--text-3);
+}
+
+/* Said to screen readers only: sighted people see the grey rows. */
+.loading {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+/* The count and "Load more" as the last row of the list's own card. */
+.inside {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  padding: 0 var(--s-24);
+  border-top: 1px solid var(--line);
+  font-size: var(--type-footnote);
+  color: var(--text-3);
+}
+.more {
+  padding: var(--s-8) 0 var(--s-8) var(--s-12);
+  background: none;
+  border: 0;
+  font-size: var(--type-body);
+  font-weight: 500;
+  color: var(--text);
+}
+.more:disabled {
+  opacity: 0.5;
+}
+.more:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+  border-radius: var(--radius-xs);
+}

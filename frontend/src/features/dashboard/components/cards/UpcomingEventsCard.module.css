@@ -1,0 +1,52 @@
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-6);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--s-16);
+  padding: var(--s-6) var(--s-12);
+  --tile-l: 0;
+  --tile-e: 0;
+  --tile-y: 0;
+  color: inherit;
+  text-decoration: none;
+}
+.row:focus-visible {
+  outline: var(--focus);
+  outline-offset: 2px;
+}
+.text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.name {
+  overflow: hidden;
+  font-size: var(--type-body);
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.when {
+  font-size: var(--type-footnote);
+  color: var(--text-3);
+}
+.empty {
+  margin: 0;
+  font-size: var(--type-body);
+  color: var(--text-3);
+}
+
+/* Less, not smaller: a phone shows the next three, each with its day tile and its name. */
+@media (max-width: 900px) {
+  .list li:nth-child(n + 4),
+  .when {
+    display: none;
+  }
+}

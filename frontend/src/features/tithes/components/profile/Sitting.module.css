@@ -1,0 +1,52 @@
+.box {
+  margin-top: 16px;
+  padding: var(--s-12) var(--s-16);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+}
+.title {
+  margin: 0 0 6px;
+  font-size: var(--type-caption);
+  font-weight: 500;
+  color: var(--text-3);
+}
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--s-12);
+  padding: var(--s-6) 0;
+  font-size: var(--type-body);
+}
+.row + .row {
+  border-top: 1px solid var(--line);
+}
+.name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.amount {
+  flex: none;
+  font-variant-numeric: tabular-nums;
+}
+.total {
+  display: flex;
+  justify-content: space-between;
+  margin: 6px 0 0;
+  padding-top: var(--s-8);
+  border-top: 1px solid var(--line-2);
+  font-size: var(--type-body);
+}
+.total span {
+  color: var(--text-3);
+}
+.total strong {
+  font-variant-numeric: tabular-nums;
+}

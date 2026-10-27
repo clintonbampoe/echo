@@ -1,0 +1,131 @@
+.card {
+  overflow: hidden;
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+.help {
+  margin: 0;
+  padding: 0 var(--s-24) var(--s-12);
+  font-size: var(--type-footnote);
+  color: var(--text-3);
+}
+.list {
+  margin: 0;
+  padding: 0 0 var(--s-8);
+  list-style: none;
+}
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--s-16);
+  min-height: 72px;
+  margin-inline: 8px;
+  padding: var(--s-8) var(--s-16);
+}
+.row + .row {
+  border-top: 1px solid var(--line);
+}
+@media (hover: hover) {
+  .row:hover,
+  .row:hover + .row {
+    border-top-color: transparent;
+  }
+}
+.row:has(.link:focus-visible) {
+  outline: var(--focus);
+  outline-offset: 2px;
+  border-radius: var(--radius);
+}
+
+.tile {
+  flex: none;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  background: var(--fill);
+  color: var(--text);
+}
+.clock {
+  font-size: var(--type-headline);
+  font-weight: 600;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+.period {
+  font-size: var(--type-caption);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+.main {
+  flex: 1;
+  min-width: 0;
+}
+.name {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-8);
+  margin: 0;
+  font-size: var(--type-callout);
+  font-weight: 600;
+}
+.link {
+  color: inherit;
+  text-decoration: none;
+}
+.link:focus-visible {
+  outline: none;
+}
+/* The whole row is the click target; the name is the link screen readers and keys find. */
+.link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+.topic {
+  margin: 2px 0 0;
+  font-size: var(--type-footnote);
+  color: var(--text-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.count {
+  margin: 0;
+  text-align: right;
+}
+.number {
+  display: block;
+  font-size: var(--type-title1);
+  font-weight: 600;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.unit {
+  font-size: var(--type-caption);
+  color: var(--text-3);
+}
+
+/* Less, not smaller: a phone shows the time tile, the name, the time and the number. The explaining line, the topic
+   and a "Scheduled" label go (a cancelled session keeps its label). */
+@media (max-width: 700px) {
+  .row {
+    margin-inline: 4px;
+    padding-inline: var(--s-12);
+  }
+  .help,
+  .extra,
+  .quiet {
+    display: none;
+  }
+}

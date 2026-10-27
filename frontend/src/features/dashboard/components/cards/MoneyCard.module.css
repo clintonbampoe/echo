@@ -1,0 +1,29 @@
+.controls {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-8);
+}
+.kind {
+  align-self: flex-start;
+}
+.body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--s-24);
+}
+.chart {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-24);
+}
+.heading {
+  margin: 0 0 12px;
+  font-size: var(--type-footnote);
+  color: var(--text-3);
+}
+@container (min-width: 720px) {
+  .body {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: var(--s-48);
+  }
+}

@@ -1,0 +1,66 @@
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: var(--s-48) var(--s-24);
+  text-align: center;
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+.tile {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 56px;
+  margin-bottom: 20px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  color: var(--text);
+}
+.title {
+  font-size: var(--type-title3);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.text {
+  max-width: 44ch;
+  margin-top: 8px;
+  font-size: var(--type-body);
+  line-height: 1.55;
+  color: var(--text-2);
+  text-wrap: balance;
+}
+.action {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--s-12);
+  margin-top: 20px;
+}
+@media (max-width: 520px) {
+  .action {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    max-width: 320px;
+  }
+}
+
+.compact {
+  padding: var(--s-32) var(--s-24);
+}
+.compact .tile {
+  width: 40px;
+  height: 40px;
+  margin-bottom: 12px;
+}
+.compact .title {
+  font-size: var(--type-callout);
+}
+.compact .text {
+  margin-top: 4px;
+  font-size: var(--type-footnote);
+}

@@ -1,0 +1,12 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-16);
+}
+.log {
+  margin: 0;
+  padding-top: var(--s-16);
+  border-top: 1px solid var(--line);
+  font-size: var(--type-body);
+  color: var(--text-2);
+}

@@ -1,0 +1,10 @@
+.intro {
+  margin: 0 0 20px;
+  padding: var(--s-12) var(--s-16);
+  font-size: var(--type-body);
+  line-height: 1.5;
+  color: var(--text-2);
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}

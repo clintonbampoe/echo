@@ -1,0 +1,14 @@
+.wrap {
+  position: relative;
+}
+
+/* The glass comes from .glass-pop; this is only where it sits and how it opens. */
+.popover {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 20;
+  min-width: 316px;
+  border-radius: var(--radius-lg);
+  transform-origin: top left;
+}

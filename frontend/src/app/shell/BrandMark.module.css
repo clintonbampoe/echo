@@ -1,0 +1,16 @@
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-12);
+  height: 32px;
+  padding: 0 var(--s-12);
+  color: var(--text);
+  font-size: var(--type-headline);
+  font-weight: 600;
+  text-decoration: none;
+}
+.brand:focus-visible {
+  outline: var(--focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}

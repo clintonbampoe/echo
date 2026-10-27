@@ -1,4 +1,5 @@
 import { ageOn, dayParts, daysBetween, monthNames } from "./dates";
+import { getPreferences } from "./preferences";
 
 const months = monthNames.map((name) => name.slice(0, 3));
 
@@ -15,8 +16,21 @@ export function formatDayMonth(value: string): string {
   return `${Number(day)} ${months[Number(month) - 1] ?? ""}`;
 }
 
-// 1284 -> "1,284"
-export const formatNumber = (n: number): string => n.toLocaleString("en-GB");
+// Whole below a thousand, then k and m with at most two decimals, trimmed: 640 -> "640", 1284 -> "1.28k",
+// 6400 -> "6.4k", 2400000 -> "2.4m". The design (round 8) shows every figure this way.
+export function formatNumber(n: number): string {
+  const sign = n < 0 ? "−" : "";
+  const abs = Math.abs(n);
+  if (Math.round(abs) < 1000) return `${sign}${Math.round(abs)}`;
+  const thousands = scaled(abs / 1000);
+  if (thousands < 1000) return `${sign}${trim(thousands)}k`;
+  return `${sign}${trim(scaled(abs / 1_000_000))}m`;
+}
+
+// Two decimals at most: 1.2549 -> 1.25.
+const scaled = (v: number) => Math.round(v * 100) / 100;
+// ...and no trailing zeros: 6 -> "6", 1.5 -> "1.5".
+const trim = (v: number) => String(v);
 
 // How many of something, with the right word: plural(1, 'asset') -> "1 asset", plural(3, 'asset') -> "3 assets".
 export const plural = (n: number, one: string, many = `${one}s`): string =>
@@ -33,10 +47,10 @@ export function formatTime(value: string): string {
     .replace(/\s?(am|pm)/i, (_, half: string) => ` ${half.toLowerCase()}`);
 }
 
-// 6400 -> "GH₵ 6,400". Whole cedis when there are no pesewas, two places otherwise.
+// 6400 -> "GH₵ 6k" (or "6k" when the person turned the symbol off in Settings). Whole cedis, written like any figure.
 export function formatMoney(amount: number): string {
-  const whole = Number.isInteger(amount);
-  return `GH₵ ${amount.toLocaleString("en-GB", { minimumFractionDigits: whole ? 0 : 2, maximumFractionDigits: 2 })}`;
+  const figure = formatNumber(amount);
+  return getPreferences().currencySymbol ? `GH₵ ${figure}` : figure;
 }
 
 // "08:42:00" -> "8:42 am". For a time of day the API sends on its own, with no date.

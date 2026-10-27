@@ -1,0 +1,156 @@
+.field {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.label {
+  padding: 0;
+  font-size: var(--type-footnote);
+  font-weight: 500;
+  color: var(--text-2);
+}
+.group {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+  gap: var(--s-8);
+  margin-top: var(--control-gap, 8px);
+}
+.option {
+  position: relative;
+  display: block;
+  min-width: 0;
+}
+/* Hidden but still focusable, so keyboards and screen readers get a real radio group. */
+.input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.face {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--control-height, 48px);
+  padding: 0 var(--s-8);
+  background: var(--surface);
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius);
+  font-size: var(--control-font, var(--type-callout));
+  gap: var(--s-8);
+  transition:
+    border-color var(--fast) ease,
+    box-shadow var(--fast) ease;
+}
+@media (hover: hover) {
+  .option:hover .face {
+    border-color: var(--text-3);
+  }
+}
+.input:checked + .face {
+  border-color: var(--text);
+  box-shadow: 0 0 0 1px var(--text);
+  font-weight: 500;
+}
+.input:focus-visible + .face {
+  outline: var(--focus);
+  outline-offset: 2px;
+}
+
+.hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Joined: the choices share one rounded bar. They are all as wide as the widest, so a single thumb can slide
+   between them: it is placed from how many choices there are (--n) and which one is picked (--i). */
+.group.joined {
+  position: relative;
+  display: inline-grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 0;
+  margin-top: 0;
+  padding: var(--s-4);
+  background: var(--fill);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+}
+.joined::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  bottom: 3px;
+  left: 3px;
+  width: calc((100% - 8px) / var(--n));
+  background: var(--surface);
+  border-radius: var(--radius-pill);
+  box-shadow:
+    0 0 0 1px var(--line-2),
+    0 1px 2px rgb(0 0 0 / 6%);
+  opacity: var(--thumb, 1);
+  /* Slides with translate and squishes with scale (motion.css), so the two do not fight. */
+  translate: calc(var(--i) * 100%) 0;
+  transition:
+    translate var(--base) var(--ease-out),
+    opacity var(--fast) ease;
+}
+.joined .face {
+  height: 30px;
+  padding: 0 var(--s-16);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-pill);
+  box-shadow: none;
+  color: var(--text-2);
+  font-size: var(--type-footnote);
+  font-weight: 500;
+  transition:
+    color var(--base) var(--ease),
+    background-color var(--fast) ease,
+    transform var(--t-spring) var(--ease-spring);
+}
+@media (hover: hover) {
+  .joined .option:hover .face {
+    color: var(--text);
+    background: var(--hover-tab);
+  }
+}
+/* Pressing a choice gives a little under the finger; the thumb then slides and squishes. */
+.joined .option:active .face {
+  transform: scale(0.97);
+}
+@media (hover: hover) {
+  .joined .input:checked + .face:hover {
+    background: transparent;
+  }
+}
+.joined.compact .face {
+  font-size: var(--type-caption);
+}
+.joined .input:checked + .face {
+  background: transparent;
+  color: var(--text);
+  box-shadow: none;
+}
+.group.stretch {
+  display: grid;
+  width: 100%;
+}
+.stretch .face {
+  height: var(--control);
+}
+@media (max-width: 900px) {
+  .group.fill {
+    display: grid;
+    width: 100%;
+  }
+}

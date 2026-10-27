@@ -1,0 +1,18 @@
+.link {
+  font-weight: 500;
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-color: var(--text-3);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 4px;
+}
+@media (hover: hover) {
+  .link:hover {
+    text-decoration-color: var(--text);
+  }
+}
+.link:focus-visible {
+  outline: var(--focus);
+  outline-offset: 3px;
+  border-radius: 4px;
+}

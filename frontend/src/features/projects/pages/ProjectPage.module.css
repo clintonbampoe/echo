@@ -1,0 +1,13 @@
+.note {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--s-12);
+  padding: var(--s-24) 0;
+  color: var(--text-3);
+}
+
+/* The tab's panel sits a step under the tabs. */
+.panel {
+  margin-top: 16px;
+}

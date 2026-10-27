@@ -1,0 +1,30 @@
+.failed {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--s-12);
+  color: var(--text-2);
+}
+.failed p {
+  margin: 0;
+}
+.retry {
+  height: 32px;
+  padding: 0 var(--s-16);
+  font-size: var(--type-footnote);
+  font-weight: 500;
+  background: transparent;
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius-pill);
+}
+@media (hover: hover) {
+  .retry:hover {
+    background: var(--hover);
+  }
+}
+.retry:focus-visible {
+  outline: var(--focus);
+  outline-offset: 2px;
+}

@@ -1,31 +1,28 @@
 import { useState } from "react";
 import { Outlet } from "react-router-dom";
-import { Drawer } from "@/ui";
-import { SidebarBody } from "./SidebarBody";
+import { MenuPage } from "./MenuPage";
+import { PullToRefresh } from "./PullToRefresh";
+import { Sidebar } from "./Sidebar";
+import { TopBar } from "./TopBar";
+import { useLongPressMenu } from "./useLongPressMenu";
 import styles from "./AppShell.module.css";
-import { TopBar } from "./Topbar";
 
-// The frame around every signed-in page: a sidebar on wide screens, and on phones a top bar
-// with a slide-in menu that holds the same sidebar. The page itself is drawn where <Outlet /> is.
+// The frame around every signed-in page: a sidebar on wide screens; on tablets and phones a top bar whose
+// menu button opens the menu page. The page itself is drawn where <Outlet /> is.
 export function AppShell() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const close = () => setMenuOpen(false);
+  useLongPressMenu();
   return (
     <div className={styles.app}>
-      <aside className={styles.side} aria-label="Sidebar">
-        <SidebarBody />
-      </aside>
+      <Sidebar />
       <div className={styles.panel}>
         <TopBar onMenu={() => setMenuOpen(true)} />
         <main className={styles.main}>
           <Outlet />
         </main>
       </div>
-      <Drawer open={menuOpen} onClose={close} label="Menu">
-        <div className={styles.drawerBody}>
-          <SidebarBody onNavigate={close} />
-        </div>
-      </Drawer>
+      <PullToRefresh />
+      <MenuPage open={menuOpen} onClose={() => setMenuOpen(false)} />
     </div>
   );
 }

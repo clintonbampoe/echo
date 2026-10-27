@@ -1,0 +1,18 @@
+.banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-12) var(--s-16);
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+  padding: var(--s-12) var(--s-16);
+  background: var(--pos-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+}
+.text {
+  margin: 0;
+  font-size: var(--type-body);
+  color: var(--pos);
+  font-weight: 500;
+}

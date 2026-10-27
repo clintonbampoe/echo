@@ -1,0 +1,151 @@
+/* What every picker panel shares: the head with the month, and the foot with its text buttons. */
+.panel {
+  display: grid;
+  padding: var(--s-16);
+}
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 40px;
+}
+.step,
+.my {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  color: var(--text-2);
+}
+.step {
+  width: 36px;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  transition:
+    transform var(--t-spring) var(--spring),
+    background-color var(--t-fast) var(--ease-soft);
+}
+@media (hover: hover) {
+  .step:hover:not(:disabled),
+  .my:hover {
+    background: rgb(10 10 11 / 7%);
+    color: var(--text);
+  }
+  .step:hover:not(:disabled) {
+    transform: scale(1.1);
+  }
+}
+.step:active:not(:disabled) {
+  transform: scale(0.9);
+}
+.step:disabled {
+  opacity: 0.35;
+}
+.my {
+  gap: var(--s-6);
+  height: var(--control);
+  padding: 0 var(--s-12);
+  border-radius: var(--radius-pill);
+  font-size: var(--type-body);
+  font-weight: 600;
+  color: var(--text);
+}
+.my svg {
+  color: var(--text-3);
+  transition: transform var(--fast) ease;
+}
+.my[aria-expanded="true"] svg {
+  transform: rotate(180deg);
+}
+.step:focus-visible,
+.my:focus-visible,
+.tx:focus-visible {
+  outline: var(--focus);
+  outline-offset: 2px;
+}
+
+.foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-8);
+  margin-top: 8px;
+  padding-top: var(--s-8);
+  border-top: 1px solid var(--line);
+}
+.foot > div {
+  display: flex;
+  gap: var(--s-4);
+}
+/* Clear, Today and Done are pills as wide as their words. Done is the one in ink. */
+.tx {
+  height: 34px;
+  padding: 0 var(--s-16);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  font-size: var(--type-footnote);
+  font-weight: 500;
+  color: var(--text-2);
+  transition:
+    transform var(--t-spring) var(--spring),
+    background-color var(--t-fast) var(--ease-soft),
+    color var(--t-fast) var(--ease-soft);
+}
+@media (hover: hover) {
+  .tx:hover:not(:disabled) {
+    background: rgb(10 10 11 / 7%);
+    color: var(--text);
+    transform: scale(1.05);
+  }
+}
+.tx:active:not(:disabled) {
+  transform: scale(0.94);
+}
+.tx:disabled {
+  opacity: 0.4;
+}
+.done {
+  background: var(--accent);
+  font-weight: 600;
+  color: var(--on-accent);
+}
+@media (hover: hover) {
+  .done:hover:not(:disabled) {
+    background: var(--accent);
+    color: var(--on-accent);
+    box-shadow: 0 8px 16px -8px rgb(10 10 11 / 60%);
+  }
+}
+
+/* On a touch screen the panel is a centred glass panel: bigger targets, the foot's pills still only as wide as their words. */
+@media (hover: none), (pointer: coarse) {
+  .panel {
+    padding: 0;
+  }
+  .step {
+    width: 44px;
+  }
+  .my {
+    height: 44px;
+    font-size: var(--type-headline);
+  }
+  .foot {
+    gap: var(--s-12);
+    margin-top: 16px;
+    padding-top: 0;
+    border-top: 0;
+  }
+  .tx {
+    height: 44px;
+    padding: 0 var(--s-20);
+    font-size: var(--type-callout);
+    background: rgb(10 10 11 / 6%);
+    color: var(--text);
+  }
+  .done {
+    background: var(--accent);
+    color: var(--on-accent);
+  }
+}

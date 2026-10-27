@@ -1,0 +1,155 @@
+.field {
+  min-width: 0;
+}
+
+.labelRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+.label {
+  font-size: var(--type-footnote);
+  font-weight: 500;
+  color: var(--text-2);
+}
+.optional {
+  font-size: var(--type-footnote);
+  color: var(--text-3);
+}
+
+.control {
+  display: block;
+  width: 100%;
+  height: var(--control-height, 48px);
+  margin-top: var(--control-gap, 8px);
+  padding: 0 var(--s-16);
+  background: var(--surface-2);
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius-field);
+  font-size: var(--control-font, var(--type-callout));
+  line-height: 1;
+  transition:
+    border-color var(--t-base) var(--ease-soft),
+    box-shadow var(--t-base) var(--ease-soft);
+}
+.control::placeholder {
+  color: var(--text-4, var(--text-3));
+}
+@media (hover: hover) {
+  .control:hover:not(:disabled) {
+    border-color: var(--line-field-hover);
+  }
+}
+/* Focus: the border turns strong and a soft 4px ring grows around it. The label stays still. */
+.control:focus-visible {
+  outline: none;
+  border-color: var(--text);
+  box-shadow: var(--focus-ring);
+}
+/* An error: the border turns red and the field shakes 4px twice. It plays once, when the error appears. */
+.control[aria-invalid="true"] {
+  border-color: var(--neg);
+  animation: shake 240ms var(--ease-soft) both;
+}
+.control[aria-invalid="true"]:focus-visible {
+  border-color: var(--neg);
+  box-shadow: 0 0 0 4px rgb(196 43 31 / 18%);
+}
+@keyframes shake {
+  20%,
+  60% {
+    translate: -4px 0;
+  }
+  40%,
+  80% {
+    translate: 4px 0;
+  }
+}
+
+.padRight {
+  padding-right: 52px;
+}
+
+.unitWrap {
+  position: relative;
+}
+.unit {
+  position: absolute;
+  top: 0;
+  left: 14px;
+  display: flex;
+  align-items: center;
+  height: var(--control-height, 48px);
+  font-size: var(--control-font, var(--type-callout));
+  color: var(--text-3);
+  pointer-events: none;
+}
+.withUnit {
+  padding-left: 52px;
+}
+
+.trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-12);
+  text-align: left;
+  cursor: pointer;
+}
+.trigger[aria-expanded="true"] {
+  border-color: var(--text-3);
+}
+/* The chevron turns over while the list is open. */
+.chevron {
+  transition: rotate var(--t-base) var(--ease-out);
+}
+.trigger[aria-expanded="true"] .chevron {
+  rotate: 180deg;
+}
+.trigger:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+.chevron {
+  flex: none;
+  color: var(--text-3);
+}
+
+.withButton {
+  position: relative;
+}
+.toggle {
+  position: absolute;
+  top: 12px;
+  right: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-3);
+  transition: color var(--fast) ease;
+}
+.toggle:hover,
+.toggle[aria-pressed="true"] {
+  color: var(--text);
+}
+
+.message {
+  margin-top: 8px;
+  font-size: var(--type-footnote);
+  color: var(--text-3);
+}
+/* An error message fades in under its field. */
+.error {
+  color: var(--neg);
+  animation: errorIn var(--t-base) var(--ease-soft) both;
+}
+@keyframes errorIn {
+  from {
+    opacity: 0;
+  }
+}

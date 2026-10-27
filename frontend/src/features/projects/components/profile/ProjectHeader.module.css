@@ -1,0 +1,58 @@
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--s-16);
+}
+.main {
+  min-width: 0;
+}
+.name {
+  margin: 0;
+  font-size: var(--type-large);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+.line {
+  margin: 6px 0 0;
+  font-size: var(--type-footnote);
+  color: var(--text-3);
+}
+.manager {
+  color: var(--text);
+}
+.actions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: var(--s-12);
+}
+
+/* A phone: the name and the ⋯ share a row, the one main action takes the full width under them. */
+@media (max-width: 900px) {
+  .header {
+    flex-wrap: wrap;
+  }
+  .main {
+    flex: 1;
+  }
+  .actions {
+    display: contents;
+  }
+  .add {
+    order: 3;
+    flex: 1 0 100%;
+  }
+  .name {
+    font-size: var(--type-title1);
+  }
+}
+.text {
+  margin: 8px 0 0;
+  font-size: var(--type-callout);
+  color: var(--text-2);
+  white-space: pre-line;
+  overflow-wrap: anywhere;
+}

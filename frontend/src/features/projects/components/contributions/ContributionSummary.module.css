@@ -1,0 +1,84 @@
+.strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--s-16) 0;
+  padding: var(--s-20) 0;
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+.item {
+  min-width: 0;
+  padding: 0 var(--s-20);
+}
+.item:nth-child(3n + 2),
+.item:nth-child(3n) {
+  border-left: 1px solid var(--line);
+}
+.label {
+  margin: 0;
+  font-size: var(--type-footnote);
+  color: var(--text-2);
+}
+.value {
+  margin: 6px 0 0;
+  font-size: var(--type-title1);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  overflow-wrap: anywhere;
+}
+.note {
+  min-height: 16px;
+  margin: 4px 0 0;
+  font-size: var(--type-caption);
+  color: var(--text-3);
+}
+/* The method is a name, not a figure: it takes a row of its own on a wide screen and wraps rather than being cut. */
+.wide {
+  grid-column: 1 / -1;
+  border-left: 0 !important;
+}
+
+@media (max-width: 1180px) {
+  .strip {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .item:nth-child(3n + 2),
+  .item:nth-child(3n) {
+    border-left: 0;
+  }
+  .item + .item {
+    border-left: 1px solid var(--line);
+  }
+  .wide {
+    grid-column: auto;
+  }
+}
+
+/* Less, not smaller: a tablet keeps the first three figures and a phone the first two. */
+@media (max-width: 900px) {
+  .strip {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .item:nth-child(n + 4) {
+    display: none;
+  }
+  .item:nth-child(n + 2) {
+    border-left: 1px solid var(--line);
+  }
+}
+
+@media (max-width: 600px) {
+  .strip {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: var(--s-16) 0;
+  }
+  .item:nth-child(n + 3) {
+    display: none;
+  }
+  .value {
+    font-size: var(--type-title2);
+  }
+}

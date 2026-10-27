@@ -3,13 +3,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { isApiError } from "@/lib/api";
 import { Button, Field } from "@/ui";
-import { forgotPassword } from "../api";
-import { AuthHeading } from "../components/AuthHeading";
+import { forgotPassword } from "../api/auth";
 import { BackLink } from "../components/AuthLinks";
+import { AuthScreen } from "../components/AuthScreen";
 import { ResendButton } from "../components/ResendButton";
-import { StatusScreen } from "../components/StatusScreen";
-import { useForgotPassword } from "../hooks";
-import { emailOnlySchema, type EmailOnlyValues } from "../schema";
+import { useForgotPassword } from "../hooks/mutations";
+import { emailOnlySchema, type EmailOnlyValues } from "../forms/schema";
 import styles from "./form.module.css";
 
 export function ForgotPage() {
@@ -36,15 +35,15 @@ export function ForgotPage() {
   // The API answers the same whether or not the address has an account, so we do too.
   if (sentTo) {
     return (
-      <StatusScreen
-        icon="mail"
-        title="Check your email"
+      <AuthScreen
+        title="Check your inbox"
         text={
           <>
             If an account exists for <strong>{sentTo}</strong>, a reset link is
             on its way. It expires in 1 hour.
           </>
         }
+        links={<BackLink />}
       >
         <ResendButton send={() => forgotPassword(sentTo)} />
         <p className={styles.note}>
@@ -58,16 +57,16 @@ export function ForgotPage() {
           </button>
           .
         </p>
-        <BackLink />
-      </StatusScreen>
+      </AuthScreen>
     );
   }
 
   return (
-    <>
-      <AuthHeading icon="key" title="Forgot your password?">
-        Enter your email and we will send you a link to choose a new one.
-      </AuthHeading>
+    <AuthScreen
+      title="Forgot your password?"
+      text="Enter your email and we will send a link to reset it."
+      links={<BackLink />}
+    >
       <form
         onSubmit={handleSubmit(onSubmit)}
         noValidate
@@ -81,11 +80,17 @@ export function ForgotPage() {
           error={errors.email?.message}
           {...register("email")}
         />
-        <Button type="submit" size="lg" block loading={forgot.isPending}>
+        <Button
+          type="submit"
+          size="lg"
+          pill
+          block
+          loading={forgot.isPending}
+          className={styles.submit}
+        >
           Send reset link
         </Button>
       </form>
-      <BackLink />
-    </>
+    </AuthScreen>
   );
 }

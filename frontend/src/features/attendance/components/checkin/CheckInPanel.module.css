@@ -1,0 +1,59 @@
+.panel {
+  padding: var(--s-20) var(--s-24);
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-12);
+  margin-bottom: 12px;
+}
+.title {
+  margin: 0;
+  font-size: var(--type-callout);
+  font-weight: 600;
+}
+.hint {
+  margin: 8px 0 0;
+  font-size: var(--type-footnote);
+  color: var(--text-3);
+}
+.tail {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--s-4) var(--s-12);
+  margin: 16px 0 0;
+  padding-top: var(--s-12);
+  border-top: 1px solid var(--line);
+  font-size: var(--type-footnote);
+  color: var(--text-3);
+}
+.undo {
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: var(--type-footnote);
+  font-weight: 500;
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.undo:focus-visible {
+  outline: var(--focus);
+  outline-offset: 2px;
+}
+.problem {
+  margin: 10px 0 0;
+  font-size: var(--type-footnote);
+  color: var(--neg);
+}
+
+/* In a sheet: no card of its own. */
+.flat .head {
+  justify-content: flex-start;
+}

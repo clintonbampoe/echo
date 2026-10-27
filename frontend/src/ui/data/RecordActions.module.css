@@ -1,0 +1,24 @@
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-2);
+}
+.remove {
+  height: 46px;
+  background: none;
+  border: 0;
+  border-radius: var(--radius-pill);
+  font-size: var(--type-callout);
+  font-weight: 500;
+  color: var(--neg);
+  cursor: pointer;
+}
+@media (hover: hover) {
+  .remove:hover {
+    background: var(--hover);
+  }
+}
+.remove:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 2px;
+}

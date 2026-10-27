@@ -1,5 +1,5 @@
 // What other features and the app shell may use from account.
-export type { CongregationType, UserRole } from "./api";
+export type { UserRole } from "./api/account";
 export { useCongregation, useMe } from "./hooks";
-export { roleLabel } from "./labels";
-export { congregationTypes } from "./options";
+export { roleLabel } from "./model/labels";
+export { accountRoutes } from "./routes";

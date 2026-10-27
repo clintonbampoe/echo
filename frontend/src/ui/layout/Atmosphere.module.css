@@ -1,0 +1,111 @@
+.sky {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  --k: 1;
+}
+.wash {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    1400px 800px at 50% -8%,
+    #fff,
+    #f3f3f5 55%,
+    #ececf0
+  );
+}
+.mother {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: calc(1045px * var(--k));
+  height: calc(1045px * var(--k));
+  margin: calc(-522px * var(--k)) 0 0 calc(-522px * var(--k));
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgb(10 10 11 / 8.5%),
+    rgb(10 10 11 / 3.5%) 45%,
+    transparent 70%
+  );
+  filter: blur(34px);
+  animation: echoEdge 420s linear infinite;
+}
+.sphere {
+  position: absolute;
+  width: calc(var(--size) * var(--k));
+  height: calc(var(--size) * var(--k));
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 30% 26%,
+    rgb(255 255 255 / 100%),
+    rgb(255 255 255 / 55%) 40%,
+    rgb(10 10 11 / 5.5%) 100%
+  );
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 90%),
+    inset 0 -20px 50px rgb(10 10 11 / 5%),
+    0 40px 90px -30px rgb(10 10 11 / 22%);
+}
+.mote {
+  position: absolute;
+  width: calc(var(--size) * var(--k));
+  height: calc(var(--size) * var(--k));
+  border-radius: 50%;
+  background: #fff;
+  box-shadow:
+    0 0 36px 12px #fff,
+    0 0 120px 36px rgb(10 10 11 / 13%);
+  filter: blur(0.5px);
+}
+
+:global([data-surface="dark"]) .wash {
+  background: radial-gradient(1400px 800px at 50% -8%, #18181d, #09090a 65%);
+}
+:global([data-surface="dark"]) .mother {
+  background: radial-gradient(
+    circle,
+    rgb(255 255 255 / 13%),
+    rgb(255 255 255 / 5.5%) 45%,
+    transparent 70%
+  );
+}
+:global([data-surface="dark"]) .sphere {
+  background: radial-gradient(
+    circle at 30% 26%,
+    rgb(255 255 255 / 20%),
+    rgb(255 255 255 / 6%) 42%,
+    rgb(255 255 255 / 1.2%) 100%
+  );
+  box-shadow:
+    inset 0 0 0 1px rgb(255 255 255 / 9%),
+    inset 0 12px 40px rgb(255 255 255 / 7%),
+    0 0 90px rgb(190 200 255 / 10%);
+}
+:global([data-surface="dark"]) .mote {
+  background: rgb(255 255 255 / 70%);
+  box-shadow:
+    0 0 36px 12px rgb(255 255 255 / 26%),
+    0 0 120px 36px rgb(200 208 255 / 20%);
+}
+
+@media (max-width: 1023px) {
+  .sky {
+    --k: 0.7;
+  }
+}
+@media (max-width: 599px) {
+  .sky {
+    --k: 0.5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mother,
+  .sphere,
+  .mote {
+    animation: none !important;
+  }
+}
