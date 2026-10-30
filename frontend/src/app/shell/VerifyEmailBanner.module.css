@@ -1,3 +1,6 @@
+.banner {
+  margin-bottom: var(--s-16);
+}
 .link {
   padding: 0;
   border: 0;
@@ -10,5 +13,5 @@
 }
 .link:disabled {
   opacity: 0.6;
-  cursor: wait;
+  text-decoration: none;
 }

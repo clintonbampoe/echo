@@ -281,7 +281,7 @@ public class ProjectContributionService(
         CancellationToken ct
     )
     {
-        if (MonthRange.Problem(filters.Months) is { } problem)
+        if (MonthRange.Problem(MonthRange.Or(filters.Months)) is { } problem)
             return new BadRequestResult(problem);
 
         return await summaries.Serve(
@@ -299,7 +299,7 @@ public class ProjectContributionService(
         CancellationToken ct
     )
     {
-        var months = dateWindows.ChartMonths(filters.Months, filters.To);
+        var months = dateWindows.ChartMonths(MonthRange.Or(filters.Months), filters.To);
         var (from, to) = MonthRange.Bounds(months);
         var rows = await repository.GetMonthlyTotals(congregationId, filters, from, to, ct);
 

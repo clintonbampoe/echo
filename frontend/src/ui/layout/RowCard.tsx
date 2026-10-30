@@ -28,11 +28,21 @@ type RowProps = {
   // A chip, a figure or a button, placed before the menu.
   end?: ReactNode;
   actions?: { label: string; title: string; items: MenuItem[] };
+  // Makes the icon and text one button, for a row that opens something.
+  onOpen?: () => void;
 };
 
-export function Row({ icon, title, sub, muted, end, actions }: RowProps) {
-  return (
-    <li className={`${styles.row} liquid-row ${muted ? styles.muted : ""}`}>
+export function Row({
+  icon,
+  title,
+  sub,
+  muted,
+  end,
+  actions,
+  onOpen,
+}: RowProps) {
+  const body = (
+    <>
       <span className={`av liquid-av ${styles.tile}`}>
         <Icon name={icon} size={20} />
       </span>
@@ -40,6 +50,17 @@ export function Row({ icon, title, sub, muted, end, actions }: RowProps) {
         <p className={styles.title}>{title}</p>
         <p className={styles.sub}>{sub}</p>
       </div>
+    </>
+  );
+  return (
+    <li className={`${styles.row} liquid-row ${muted ? styles.muted : ""}`}>
+      {onOpen ? (
+        <button type="button" className={styles.open} onClick={onOpen}>
+          {body}
+        </button>
+      ) : (
+        body
+      )}
       {end}
       {actions && (
         <ActionMenu

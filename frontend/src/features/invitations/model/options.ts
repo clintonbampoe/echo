@@ -17,4 +17,6 @@ export const expiryOptions = [
   { value: "7", label: "In 7 days" },
   { value: "14", label: "In 14 days" },
   { value: "30", label: "In 30 days" },
+  { value: "90", label: "In 90 days" },
+  { value: "never", label: "Never" },
 ];

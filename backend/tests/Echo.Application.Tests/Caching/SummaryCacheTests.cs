@@ -1,3 +1,4 @@
+using System.Diagnostics.Metrics;
 using Echo.Application;
 using Echo.Application.Caching;
 using Echo.Shared.Caching;
@@ -94,6 +95,40 @@ public class SummaryCacheTests
             [$"Summary things served for congregation {congregation} (cached: True)"],
             _logger.Messages
         );
+    }
+
+    [Fact]
+    public async Task EachRequest_IsCountedAsComputedOrCached_ForTheCacheHitRatio()
+    {
+        var seen = new List<(string Summary, bool Cached)>();
+        using var listener = new MeterListener();
+        listener.InstrumentPublished = (instrument, l) =>
+        {
+            if (instrument.Name == "echo.summary.requests")
+                l.EnableMeasurementEvents(instrument);
+        };
+        listener.SetMeasurementEventCallback<long>(
+            (_, _, tags, _) =>
+            {
+                string? summary = null;
+                var cached = false;
+                foreach (var tag in tags)
+                {
+                    if (tag.Key == "summary")
+                        summary = tag.Value as string;
+                    if (tag.Key == "cached")
+                        cached = tag.Value is true;
+                }
+                seen.Add((summary!, cached));
+            }
+        );
+        listener.Start();
+        var congregation = Guid.NewGuid();
+
+        await Serve(congregation, new Filters(null, 2026));
+        await Serve(congregation, new Filters(null, 2026));
+
+        Assert.Equal([("things", false), ("things", true)], seen);
     }
 
     [Fact]

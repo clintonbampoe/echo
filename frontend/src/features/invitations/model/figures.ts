@@ -1,21 +1,18 @@
 import { formatNumber } from "@/lib/format";
 import type { Stat } from "@/ui";
-import type { Invitation } from "../api/invitations";
+import type { InvitationSummary } from "../api/invitations";
 
-const WEEK = 7 * 86_400_000;
+const count = (value: number | undefined) =>
+  value === undefined ? "–" : formatNumber(value);
 
-// The three numbers above the list, counted from the invitations loaded so far.
-export function invitationStats(rows: Invitation[], now = Date.now()): Stat[] {
-  const active = rows.filter((i) => i.status === "Active");
-  const soon = active.filter((i) => Date.parse(i.expiresAt) - now <= WEEK);
-  const joined = rows.reduce((sum, i) => sum + i.useCount, 0);
-  return [
-    { label: "Active", value: formatNumber(active.length), note: "" },
-    { label: "People joined", value: formatNumber(joined), note: "" },
-    {
-      label: "Expiring soon",
-      value: formatNumber(soon.length),
-      note: "within 7 days",
-    },
-  ];
-}
+// The three numbers above the list. The server counts every invitation, so they stay right past the
+// first page; a dash shows while they load.
+export const invitationStats = (s: InvitationSummary | undefined): Stat[] => [
+  { label: "Active", value: count(s?.active), note: "" },
+  { label: "People joined", value: count(s?.peopleJoined), note: "" },
+  {
+    label: "Expiring soon",
+    value: count(s?.expiringSoon),
+    note: "within 7 days",
+  },
+];

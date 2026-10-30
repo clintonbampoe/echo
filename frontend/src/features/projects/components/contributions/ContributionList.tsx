@@ -4,6 +4,7 @@ import { paymentLabel } from "@/features/transactions";
 import { DateTile, RecordTable } from "@/ui";
 import type { Contribution } from "../../api/contributions";
 import type { ContributionStart } from "./ContributionDialogs";
+import styles from "./ContributionList.module.css";
 
 type Props = {
   list: Paged<Contribution>;
@@ -35,7 +36,7 @@ export function ContributionList({ list, onAction }: Props) {
         lead: <DateTile date={c.dateContributed} />,
         title: paymentLabel[c.paymentMethod],
         sub: c.description,
-        end: <strong>{formatMoney(c.amount)}</strong>,
+        end: <strong className={styles.amount}>{formatMoney(c.amount)}</strong>,
       })}
       noun={["contribution", "contributions"]}
       summary=". Newest first."
@@ -56,7 +57,9 @@ export function ContributionList({ list, onAction }: Props) {
         {
           header: "Amount",
           end: true,
-          cell: (c) => <strong>{formatMoney(c.amount)}</strong>,
+          cell: (c) => (
+            <strong className={styles.amount}>{formatMoney(c.amount)}</strong>
+          ),
         },
       ]}
     />

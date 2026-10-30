@@ -52,6 +52,15 @@ const months: TransactionMonth[] = [
 ];
 
 let list: Transaction[];
+const needsMonths = (u: URL) =>
+  u.searchParams.has("months")
+    ? null
+    : new Response(JSON.stringify({ errorCode: "BAD_REQUEST" }), {
+        status: 400,
+      });
+
+const monthly = (u: URL) => needsMonths(u) ?? json(months);
+
 let fetchMock: ReturnType<typeof vi.fn>;
 beforeEach(() => {
   list = rows;
@@ -68,7 +77,7 @@ beforeEach(() => {
       return json({ ...rows[0], ...JSON.parse(init.body as string) });
     if (init?.method === "DELETE") return new Response(null, { status: 204 });
     if (u.pathname.endsWith("/transaction-categories")) return json(categories);
-    if (u.pathname.endsWith("/summary/monthly")) return json(months);
+    if (u.pathname.endsWith("/summary/monthly")) return monthly(u);
     if (u.pathname.endsWith("/summary")) return json(summary);
     const type = u.searchParams.get("transactionType");
     const category = u.searchParams.get("categoryId");

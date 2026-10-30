@@ -4,10 +4,12 @@ namespace Echo.Auth.Invitations;
 
 internal static class InvitationQueryExtensions
 {
-    // Revoked wins over expired; an invitation expires at the instant its ExpiresAt is reached.
+    // Revoked wins over expired, and expired over used up; an invitation expires at the instant its
+    // ExpiresAt is reached.
     internal static InvitationStatus StatusAt(this InvitationToken token, DateTime now) =>
         token.IsRevoked ? InvitationStatus.Revoked
         : token.ExpiresAt <= now ? InvitationStatus.Expired
+        : token.MaxUses <= token.UseCount ? InvitationStatus.Exhausted
         : InvitationStatus.Active;
 
     internal static IQueryable<InvitationToken> WithStatus(
@@ -19,7 +21,17 @@ internal static class InvitationQueryExtensions
         {
             InvitationStatus.Revoked => query.Where(t => t.IsRevoked),
             InvitationStatus.Expired => query.Where(t => !t.IsRevoked && t.ExpiresAt <= now),
-            InvitationStatus.Active => query.Where(t => !t.IsRevoked && t.ExpiresAt > now),
+            InvitationStatus.Exhausted => query.Where(t =>
+                !t.IsRevoked
+                && (t.ExpiresAt == null || t.ExpiresAt > now)
+                && t.MaxUses != null
+                && t.MaxUses <= t.UseCount
+            ),
+            InvitationStatus.Active => query.Where(t =>
+                !t.IsRevoked
+                && (t.ExpiresAt == null || t.ExpiresAt > now)
+                && (t.MaxUses == null || t.MaxUses > t.UseCount)
+            ),
             _ => query,
         };
 
@@ -32,7 +44,8 @@ internal static class InvitationQueryExtensions
     {
         if (cursor is not null)
             query = query.Where(t =>
-                t.CreatedAt < cursor.CreatedAt || (t.CreatedAt == cursor.CreatedAt && t.Id > cursor.Id)
+                t.CreatedAt <= cursor.CreatedAt
+                && (t.CreatedAt < cursor.CreatedAt || t.Id > cursor.Id)
             );
 
         return query.Take(pageSize);

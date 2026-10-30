@@ -46,7 +46,8 @@ public class EventService(
 
         using var activity = instrumentation.ActivitySource.StartActivity("svc.event.list");
 
-        var cursor = UsableCursor(encoder.Decode<EventCursor>(pagination.Cursor), filters.Order);
+        var order = filters.Order ?? SortDirection.Asc;
+        var cursor = UsableCursor(encoder.Decode<EventCursor>(pagination.Cursor), order);
 
         List<Event> entities;
         using (instrumentation.ActivitySource.StartActivity("svc.event.fetch.list"))
@@ -65,7 +66,7 @@ public class EventService(
             entities.RemoveAt(entities.Count - 1);
 
         var nextCursor = hasMore
-            ? encoder.Encode(BuildCursor(entities.Last(), filters.Order))
+            ? encoder.Encode(BuildCursor(entities.Last(), order))
             : null;
 
         var data = await WithCounts(entities, ct);
@@ -354,7 +355,7 @@ public class EventService(
 
         using var activity = instrumentation.ActivitySource.StartActivity("svc.event.series_summary");
 
-        return await repository.GetSeries(congregationId, scope, filters.Limit, ct);
+        return await repository.GetSeries(congregationId, scope, filters.Limit ?? 12, ct);
     }
 
     public async Task<IOperationResult> MonthlySummary(
@@ -363,7 +364,7 @@ public class EventService(
         CancellationToken ct
     )
     {
-        if (MonthRange.Problem(filters.Months) is { } problem)
+        if (MonthRange.Problem(MonthRange.Or(filters.Months)) is { } problem)
             return new BadRequestResult(problem);
 
         return await summaries.Serve(
@@ -381,7 +382,7 @@ public class EventService(
         CancellationToken ct
     )
     {
-        var months = dateWindows.ChartMonths(filters.Months, filters.To);
+        var months = dateWindows.ChartMonths(MonthRange.Or(filters.Months), filters.To);
         var (from, to) = MonthRange.Bounds(months);
         var rows = await repository.GetMonthlyTotals(congregationId, filters, from, to, ct);
 

@@ -1,0 +1,370 @@
+discovery.docker "containers" {
+  host = "unix:///var/run/docker.sock"
+}
+
+discovery.relabel "containers" {
+  targets = discovery.docker.containers.targets
+
+  rule {
+    source_labels = ["__meta_docker_container_name"]
+    regex         = "/(.*)"
+    target_label  = "container"
+  }
+  rule {
+    target_label = "host"
+    replacement  = constants.hostname
+  }
+  rule {
+    source_labels = ["__meta_docker_container_log_stream"]
+    target_label  = "stream"
+  }
+}
+
+loki.source.docker "docker_logs" {
+  host          = "unix:///var/run/docker.sock"
+  targets       = discovery.relabel.containers.output
+  relabel_rules = discovery.relabel.containers.rules
+  forward_to    = [loki.process.logs.receiver]
+}
+
+loki.process "logs" {
+  stage.docker {}
+
+  // Not worth keeping: the observability stack's own logs, the API's stdout (the API sends the same lines over OTLP,
+  // with trace ids), the Vite dev server and Portainer.
+  stage.drop {
+    source              = "container"
+    expression          = "^(alloy|grafana|loki|prometheus|tempo|api|frontend|portainer)$"
+    drop_counter_reason = "not-kept"
+  }
+
+  // ------------------------------------------------------------------------------------------------------------
+  // nginx access log. nginx writes JSON (easy to parse); Loki stores a readable line instead:
+  //     GET /api/v1/members · 200 · 0.032 s · 172.19.0.1
+  // "status", "method" and a "level" (error for 5xx, warn for 4xx) are labels, so Grafana colours the row and
+  // "every 429 in the last hour" is a cheap query. The rest (path, request time, upstream time, address, browser,
+  // bytes) are fields shown when a line is opened, and usable in queries, but are not part of the line.
+  // ------------------------------------------------------------------------------------------------------------
+  stage.match {
+    selector = "{container=\"nginx\", stream=\"stdout\"}"
+
+    stage.json {
+      expressions = { status = "status", method = "method", path = "path", rt = "rt", urt = "urt", ip = "ip", ua = "ua", bytes = "bytes" }
+    }
+
+    stage.labels {
+      values = { status = "", method = "" }
+    }
+
+    stage.structured_metadata {
+      values = { path = "", rt = "", urt = "", ip = "", ua = "", bytes = "" }
+    }
+
+    stage.template {
+      source   = "line"
+      template = "{{ .method }} {{ .path }} · {{ .status }} · {{ .rt }} s · {{ .ip }}"
+    }
+
+    stage.output {
+      source = "line"
+    }
+  }
+
+  stage.match {
+    selector = "{container=\"nginx\", stream=\"stdout\", status=~\"5..\"}"
+
+    stage.static_labels {
+      values = { level = "error" }
+    }
+  }
+
+  stage.match {
+    selector = "{container=\"nginx\", stream=\"stdout\", status=~\"4..\"}"
+
+    stage.static_labels {
+      values = { level = "warn" }
+    }
+  }
+
+  stage.match {
+    selector = "{container=\"nginx\", stream=\"stdout\", status!~\"[45]..\"}"
+
+    stage.static_labels {
+      values = { level = "info" }
+    }
+  }
+
+  // nginx's own error log is plain text: "2026/10/30 22:00:00 [error] 29#29: ...". Its level becomes the label.
+  stage.match {
+    selector = "{container=\"nginx\", stream=\"stderr\"}"
+
+    stage.regex {
+      expression = "^\\S+ \\S+ \\[(?P<level>[a-z]+)\\] "
+    }
+
+    stage.labels {
+      values = { level = "" }
+    }
+  }
+
+  // ------------------------------------------------------------------------------------------------------------
+  // Postgres. A statement can run over many lines, and Docker records each line as its own entry, so first gather
+  // every line that does not start with a timestamp into the entry before it. Then take the prefix
+  // ("2026-10-30 22:21:05.995 UTC [27568] postgres@echo_db LOG:  ") apart: the message becomes the line, the level
+  // becomes a label (error, warn or info), and the process id, user and database become fields.
+  // ------------------------------------------------------------------------------------------------------------
+  stage.match {
+    selector = "{container=\"database\"}"
+
+    stage.multiline {
+      firstline     = "^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}"
+      max_wait_time = "3s"
+    }
+
+    stage.regex {
+      expression = "(?s)^\\S+ \\S+ \\S+ \\[(?P<pid>\\d+)\\] (?:(?P<user>[^@\\s]*)@(?P<db>\\S+) )?(?P<pglevel>[A-Z]+):\\s+(?P<msg>.*)$"
+    }
+
+    stage.template {
+      source   = "level"
+      template = "{{ if or (eq .pglevel \"ERROR\") (eq .pglevel \"FATAL\") (eq .pglevel \"PANIC\") }}error{{ else if eq .pglevel \"WARNING\" }}warn{{ else }}info{{ end }}"
+    }
+
+    stage.labels {
+      values = { level = "" }
+    }
+
+    stage.structured_metadata {
+      values = { pid = "", user = "", db = "", pglevel = "" }
+    }
+
+    stage.output {
+      source = "msg"
+    }
+  }
+
+  forward_to = [loki.write.obs.receiver]
+}
+
+loki.write "obs" {
+  endpoint {
+    url = coalesce(sys.env("LOKI_URL"), "http://loki:3100") + "/loki/api/v1/push"
+  }
+}
+
+otelcol.receiver.otlp "apps" {
+  grpc {
+    endpoint = "0.0.0.0:4317"
+  }
+  http {
+    endpoint = "0.0.0.0:4318"
+  }
+
+  output {
+    logs    = [otelcol.processor.filter.warnings.input]
+    traces  = [otelcol.processor.batch.traces.input]
+    metrics = [otelcol.exporter.otlphttp.prometheus.input]
+  }
+}
+
+// Only warnings and above from the API reach Loki. Everything below is request chatter that the traces already show.
+otelcol.processor.filter "warnings" {
+  error_mode = "ignore"
+
+  logs {
+    log_record = ["severity_number < SEVERITY_NUMBER_WARN"]
+  }
+
+  output {
+    logs = [otelcol.processor.transform.tidy_logs.input]
+  }
+}
+
+// ASP.NET and EF attach a dozen bookkeeping attributes to every log record (connection id, parent span, SDK
+// version...). They bury the two that matter (trace_id for the trace link, RequestPath), so leave them out.
+otelcol.processor.transform "tidy_logs" {
+  error_mode = "ignore"
+
+  log_statements {
+    context    = "log"
+    statements = [
+      `delete_key(attributes, "ConnectionId")`,
+      `delete_key(attributes, "ParentId")`,
+      `delete_key(attributes, "SpanId")`,
+      `delete_key(attributes, "TraceId")`,
+      `delete_key(attributes, "{OriginalFormat}")`,
+    ]
+  }
+
+  log_statements {
+    context    = "resource"
+    statements = [
+      `delete_key(attributes, "telemetry.sdk.language")`,
+      `delete_key(attributes, "telemetry.sdk.name")`,
+      `delete_key(attributes, "telemetry.sdk.version")`,
+    ]
+  }
+
+  output {
+    logs = [otelcol.exporter.otlphttp.loki.input]
+  }
+}
+
+otelcol.processor.batch "traces" {
+  send_batch_max_size = 2000
+  timeout             = "5s"
+
+  output {
+    traces = [otelcol.exporter.otlp.tempo.input]
+  }
+}
+
+otelcol.exporter.otlp "tempo" {
+  client {
+    endpoint = coalesce(sys.env("TEMPO_OTLP_ENDPOINT"), "tempo:4317")
+    tls {
+      insecure = true
+    }
+  }
+}
+
+// Native OTLP ingestion: Loki 3.5 parses the protobuf itself -> log body becomes
+// the message text, trace_id/span_id/severity become structured metadata.
+// (The old otelcol.exporter.loki flattened every record into raw JSON.)
+otelcol.exporter.otlphttp "loki" {
+  client {
+    endpoint = coalesce(sys.env("LOKI_URL"), "http://loki:3100") + "/otlp"
+  }
+}
+
+// The API's metrics go to Prometheus's own OTLP endpoint (not through remote write), because OTLP carries each counter's
+// start time and Prometheus uses it to count a counter's first event. The machine, container and Postgres metrics
+// below still use remote write: they are gauges and scraped counters that never start mid-flight.
+otelcol.exporter.otlphttp "prometheus" {
+  client {
+    endpoint = coalesce(sys.env("PROMETHEUS_URL"), "http://prometheus:9090") + "/api/v1/otlp"
+  }
+}
+
+prometheus.remote_write "obs" {
+  endpoint {
+    url = coalesce(sys.env("PROMETHEUS_URL"), "http://prometheus:9090") + "/api/v1/write"
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Container and host metrics. Alloy's built-in exporters, so no extra containers.
+// They write straight to Prometheus (not through the app pipeline above, which
+// copies the OTLP "job" into service_name).
+// ---------------------------------------------------------------------------
+
+// One series per Docker container: CPU, memory, network, disk IO, OOM kills.
+prometheus.exporter.cadvisor "containers" {
+  docker_host      = "unix:///var/run/docker.sock"
+  docker_only      = true
+  storage_duration = "5m"
+  // Docker labels (compose dependency lists, paths) would become long metric labels. Not wanted.
+  store_container_labels = false
+  enabled_metrics  = ["cpu", "memory", "network", "diskIO", "oom_event"]
+}
+
+prometheus.scrape "containers" {
+  targets         = prometheus.exporter.cadvisor.containers.targets
+  forward_to      = [prometheus.relabel.containers.receiver]
+  scrape_interval = "15s"
+  job_name        = "containers"
+}
+
+prometheus.relabel "containers" {
+  forward_to = [prometheus.remote_write.obs.receiver]
+
+  // Keep only what the dashboards and alerts use. cAdvisor emits hundreds of series per container.
+  rule {
+    source_labels = ["__name__"]
+    regex         = "container_(cpu_usage_seconds_total|cpu_cfs_throttled_periods_total|cpu_cfs_periods_total|memory_working_set_bytes|memory_usage_bytes|memory_cache|memory_failcnt|spec_memory_limit_bytes|spec_cpu_quota|network_(receive|transmit)_(bytes|errors|packets_dropped)_total|fs_(reads|writes)_bytes_total|oom_events_total|start_time_seconds|last_seen)"
+    action        = "keep"
+  }
+
+  // The name the logs use ("api", "database"), so one dashboard variable drives metrics and logs.
+  rule {
+    source_labels = ["name"]
+    target_label  = "container"
+  }
+  // Only containers with a name (the Docker containers); drops the cgroup roots.
+  rule {
+    source_labels = ["container"]
+    regex         = ""
+    action        = "drop"
+  }
+  rule {
+    target_label = "host"
+    replacement  = constants.hostname
+  }
+  rule {
+    action = "labeldrop"
+    regex  = "id|name|container_label_.*"
+  }
+}
+
+// The machine itself: CPU, load, memory, swap, disk space and IO, network.
+prometheus.exporter.unix "host" {
+  procfs_path = "/host/proc"
+  sysfs_path  = "/host/sys"
+  rootfs_path = "/host/root"
+
+  set_collectors = ["cpu", "loadavg", "meminfo", "vmstat", "diskstats", "filesystem", "netdev", "stat", "time", "uname"]
+}
+
+prometheus.scrape "host" {
+  targets         = prometheus.exporter.unix.host.targets
+  forward_to      = [prometheus.relabel.host.receiver]
+  scrape_interval = "15s"
+  job_name        = "host"
+}
+
+prometheus.relabel "host" {
+  forward_to = [prometheus.remote_write.obs.receiver]
+
+  rule {
+    target_label = "host"
+    replacement  = constants.hostname
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Postgres: connections, cache hit ratio, locks, transactions, size, checkpoints, and per-query statistics
+// (pg_stat_statements, normalised: $1 in place of every value, so it holds no data of the church's).
+// Signs in as the read-only "monitor" role (infra/postgres/create-monitor-role.sh).
+// ---------------------------------------------------------------------------
+prometheus.exporter.postgres "db" {
+  data_source_names  = [sys.env("PG_MONITOR_DSN")]
+  // Named in full: only the collectors listed here run.
+  enabled_collectors = [
+    "database",
+    "locks",
+    "postmaster",
+    "stat_bgwriter",
+    "stat_database",
+    "stat_user_tables",
+    "statio_user_tables",
+    "stat_statements",
+    "long_running_transactions",
+    "wal",
+  ]
+}
+
+prometheus.scrape "postgres" {
+  targets         = prometheus.exporter.postgres.db.targets
+  forward_to      = [prometheus.relabel.postgres.receiver]
+  scrape_interval = "15s"
+  job_name        = "postgres"
+}
+
+prometheus.relabel "postgres" {
+  forward_to = [prometheus.remote_write.obs.receiver]
+
+  rule {
+    target_label = "host"
+    replacement  = constants.hostname
+  }
+}

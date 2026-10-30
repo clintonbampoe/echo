@@ -130,7 +130,7 @@ internal sealed class TagDescriptionDocumentFilter : IDocumentFilter
                     The account's email must be **verified** before login succeeds.
 
                     - Wrong email or password → `401 INVALID_CREDENTIALS`.
-                    - Correct credentials but unverified email → `403 EMAIL_NOT_VERIFIED`. Send the user into the verification flow, not back to the login form.
+                    - An unverified email does not block login. Use `GET /auth/verifications/status` to find out whether to remind the user to verify.
 
                     ### Revocation semantics
                     Access tokens are **not blacklisted** — a deliberate trade-off to avoid the operational cost of a token blocklist. Consequences the client must plan for:
@@ -143,7 +143,7 @@ internal sealed class TagDescriptionDocumentFilter : IDocumentFilter
                     None of these endpoints require a bearer token. They exist to create or tear down a session, so the caller proves possession of the refresh token (or supplies the account email) rather than presenting an access token. See the **Invitations** tag for the only authenticated Auth endpoint.
 
                     ### Errors
-                    `INVALID_CREDENTIALS`, `INVALID_TOKEN`, and `EMAIL_NOT_VERIFIED` are all covered in the error catalog at the top of this document.
+                    `INVALID_CREDENTIALS` and `INVALID_TOKEN` are both covered in the error catalog at the top of this document.
                     """,
             },
             new()
@@ -175,15 +175,16 @@ internal sealed class TagDescriptionDocumentFilter : IDocumentFilter
 
                     - the congregation it belongs to,
                     - the role the invited user will receive on registration (`UserRole` — one of `Admin`, `Accountant`, `Clerk`, `Member`),
-                    - an expiry.
+                    - an expiry (or none),
+                    - optionally, how many people may use it.
 
-                    The caller supplies the role and a requested `expiryDays`. **The server caps the expiry at 30 days** regardless of what's requested — requesting more will not extend it.
+                    The caller supplies the role, `expiryDays` (1–365, default 30) or `neverExpires`, and optionally `maxUses`. The code is kept encrypted so the list can show and copy it again; `POST /auth/invitations/email` creates a single-use invitation and emails it.
 
                     ### Who can call this
                     An authenticated user with the `Admin` role in their congregation. Any other role receives `403`. The invitation is always scoped to the caller's congregation — an admin cannot invite into another tenant.
 
                     ### How the invitation is redeemed
-                    This endpoint only *mints* the token. The invited user redeems it through `POST /auth/registrations/member`, passing the token alongside their new user details. Until redemption, the invitation is inert — no user record exists yet.
+                    Creating an invitation only *mints* the token. The invited user redeems it through `POST /auth/registrations/member`, passing the token alongside their new user details. Until redemption, the invitation is inert — no user record exists yet.
 
                     ### Errors
                     See the error catalog for `VALIDATION_ERROR` (bad role or expiry), `UNAUTHORIZED`, and the 403 response.
@@ -193,7 +194,7 @@ internal sealed class TagDescriptionDocumentFilter : IDocumentFilter
             {
                 Name = "Verifications",
                 Description = """
-                    Email verification. Confirms the user controls the address on their account. **Required before login** — unverified accounts are rejected at `POST /auth/sessions/login` with `403 EMAIL_NOT_VERIFIED`.
+                    Email verification. Confirms the user controls the address on their account. **Not required to log in:** unverified users can use the app, and the client reminds them (via `GET /auth/verifications/status`) until they verify.
 
                     ### Step 1 — `POST /auth/verifications/account`
                     If the email is registered, sends a verification link. **The response is identical whether or not the address exists** — intentional, to prevent account enumeration. Do not branch UI messaging on the response body.

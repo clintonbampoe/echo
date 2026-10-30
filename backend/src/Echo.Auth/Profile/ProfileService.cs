@@ -13,6 +13,7 @@ public class ProfileService(
     IPasswordHasher passwordHasher,
     IUserMapper mapper,
     IUnitOfWork unitOfWork,
+    TimeProvider timeProvider,
     AuthInstrumentation instrumentation
 )
 {
@@ -55,6 +56,7 @@ public class ProfileService(
         if (changingPassword)
         {
             user.PasswordHash = await passwordHasher.HashAsync(dto.NewPassword!);
+            user.PasswordChangedAt = timeProvider.GetUtcNow().UtcDateTime;
             // As with a password reset, changing the password signs the user out everywhere.
             await jwtTokenService.RevokeAllActiveSessionsForUserById(userId, ct);
         }

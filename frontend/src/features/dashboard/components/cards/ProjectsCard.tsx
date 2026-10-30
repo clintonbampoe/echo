@@ -6,10 +6,6 @@ import { CardFailed } from "./CardFailed";
 
 const SHOWN = 4;
 
-// 86400 -> "86.4k". Rows are narrow, so the thousands are shortened.
-const short = (n: number) =>
-  n >= 1000 ? `${(Math.round(n / 100) / 10).toString()}k` : formatNumber(n);
-
 // What every project has raised, all time: the total, a bar cut by project, and the biggest ones with how far
 // each is to its goal. The rest are gathered under one line.
 export function ProjectsCard() {
@@ -39,7 +35,7 @@ export function ProjectsCard() {
                 label: p.name,
                 to: paths.project(p.id),
                 value: p.raised,
-                text: short(p.raised),
+                text: formatNumber(p.raised),
                 share:
                   p.target > 0
                     ? `${Math.round((p.raised / p.target) * 100)}%`
@@ -52,7 +48,7 @@ export function ProjectsCard() {
                       key: "rest",
                       label: `Other, ${rest.length} projects`,
                       value: restRaised,
-                      text: short(restRaised),
+                      text: formatNumber(restRaised),
                       closed: true,
                     },
                   ]

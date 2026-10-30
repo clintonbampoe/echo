@@ -8,7 +8,6 @@ public static class ErrorCatalog
         new("400", "BAD_REQUEST", "Malformed request body"),
         new("401", "INVALID_CREDENTIALS", "Wrong email or password"),
         new("401", "INVALID_TOKEN", "Token invalid or already used"),
-        new("403", "EMAIL_NOT_VERIFIED", "Account exists but email unverified"),
         new("404", "NOT_FOUND", "Entity does not exist or has been soft-deleted"),
         new("404", "FOREIGN_KEY_NOT_FOUND", "Referenced entity does not exist"),
         new("409", "CONFLICT", "Duplicate or state collision"),

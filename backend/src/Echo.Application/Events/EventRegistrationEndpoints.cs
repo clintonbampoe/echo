@@ -113,6 +113,7 @@ public static class EventRegistrationEndpoints
                 "/event/{id:guid}",
                 async (
                     [FromRoute] Guid id,
+                    [AsParameters] EventRegistrationFilters filters,
                     [AsParameters] PaginationRequest pagination,
                     EventRegistrationService service,
                     HttpContext context,
@@ -127,6 +128,7 @@ public static class EventRegistrationEndpoints
                     var result = await service.ListByEventId(
                         context.User.GetCongregationId(),
                         id,
+                        filters,
                         pagination,
                         ct
                     );
@@ -142,11 +144,19 @@ public static class EventRegistrationEndpoints
                 ### Path parameter
                 `id` is the **Event ID**, not the registration ID.
 
+                ### Query parameters
+                - `name` — only members whose name contains this text (case-insensitive; `%` and `_` are matched literally).
+                - `status` — `Came` for those who checked in, `Missing` for those who did not (no-shows once the event is over).
+                - `memberIds` — only these members, repeated for each (`memberIds=…&memberIds=…`, at most 50). Use it to ask which of a few people are already registered.
+
                 ### Ordering
                 Ordered by registration date, earliest first (sign-up order).
 
+                ### Who came
+                Each row carries `checkIn` (`id` and `checkInTime`) when that person checked in, and `null` when they did not, so one list answers "who signed up and who came". Only this route fills `checkIn` in; on every other route `null` means nothing.
+
                 ### Use case
-                Capacity planning, headcount forecasting, pre-event reminder lists. Combine with `GET /event-attendance/event/{id}` to identify members who registered but did not show up.
+                Capacity planning, headcount forecasting, pre-event reminder lists, and no-show lists (`status=Missing`).
 
                 ### Paging
                 - `cursor` — leave it out for the first page. For the next page, send the `next` value from the previous response unchanged. It records where the last page stopped, so use it only with the same filters it came from.

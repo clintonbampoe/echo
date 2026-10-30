@@ -16,7 +16,7 @@ export function useCreateInvitation() {
 export function useUpdateInvitation(id: string) {
   const refresh = useRefresh();
   return useMutation({
-    mutationFn: (input: { label?: string; expiryDays?: number }) =>
+    mutationFn: (input: api.InvitationUpdate) =>
       api.updateInvitation(id, input),
     onSuccess: refresh,
   });

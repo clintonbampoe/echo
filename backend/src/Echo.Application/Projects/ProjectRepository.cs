@@ -79,7 +79,7 @@ public class ProjectRepository(AppDbContext context)
     {
         var stats = await Scope(congregationId, filters)
             .SummarizeProjects(Gifts(congregationId))
-            .FirstOrDefaultAsync(ct);
+            .SingleOrDefaultAsync(ct);
         return stats ?? new ProjectStats(0, 0m, 0m, 0);
     }
 

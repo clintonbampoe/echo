@@ -5,12 +5,23 @@ namespace Echo.Auth.Invitations;
 
 public static partial class InvitationLog
 {
-    // --- Use count ---
+    // --- Email ---
+    [LoggerMessage(
+        Level = LogLevel.Information,
+        Message = "Invitation {InvitationId} emailed in congregation {CongregationId}"
+    )]
+    public static partial void InvitationEmailSent(ILogger logger, Guid congregationId, Guid invitationId);
+
     [LoggerMessage(
         Level = LogLevel.Warning,
-        Message = "Could not count a registration against invitation {InvitationId}; the account was still created"
+        Message = "Invitation {InvitationId} was created in congregation {CongregationId} but the email could not be sent"
     )]
-    public static partial void InvitationUseNotRecorded(ILogger logger, Exception ex, Guid invitationId);
+    public static partial void InvitationEmailFailed(
+        ILogger logger,
+        Exception ex,
+        Guid congregationId,
+        Guid invitationId
+    );
 
     // --- Revoke ---
     [LoggerMessage(
@@ -67,6 +78,15 @@ public static partial class InvitationLog
         Message = "Invitation validation failed: token expired for congregation {CongregationId}"
     )]
     public static partial void InvitationValidationFailedExpired(
+        ILogger logger,
+        Guid congregationId
+    );
+
+    [LoggerMessage(
+        Level = LogLevel.Warning,
+        Message = "Invitation validation failed: every use taken for congregation {CongregationId}"
+    )]
+    public static partial void InvitationValidationFailedExhausted(
         ILogger logger,
         Guid congregationId
     );

@@ -1,3 +1,4 @@
+using Echo.Shared.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -16,6 +17,49 @@ public static class EmailVerificationEndpoints
             .MapGroup("/verifications")
             .WithTags("Verifications")
             .RequireRateLimiting("auth");
+
+        verifications
+            .MapGet(
+                "/status",
+                async (EmailVerificationService svc, HttpContext context, CancellationToken ct) =>
+                {
+                    using var span = instrumentation.ActivitySource.StartActivity(
+                        "endpoint.verification.status"
+                    );
+                    return (
+                        await svc.GetStatus(
+                            context.User.GetCongregationId(),
+                            context.User.GetUserId(),
+                            ct
+                        )
+                    ).ToResult();
+                }
+            )
+            .RequireAuthorization()
+            .WithName("GetVerificationStatus")
+            .WithSummary("Says whether the signed-in user's email address is verified.")
+            .WithDescription(
+                """
+                Tells the client whether to keep reminding the signed-in user to verify their email. Signing in does not need a verified address, so this is how the app finds out.
+
+                ### Response fields
+                - `verified` — `true` once the address has been verified.
+                - `verifiedAt` — when it was verified (UTC); `null` while it is not.
+                - `emailAddress` — the address a verification link goes to. To send one, call `POST /auth/verifications/account` with this address.
+
+                The same `verifiedAt` is also on `GET /users/me`. Use this endpoint to re-check cheaply, for example when the user returns to the app after clicking the link in their email.
+
+                This endpoint takes no parameters. Nothing is restricted for an unverified user.
+
+                ### Failure modes
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                - `404 NOT_FOUND` — the account no longer exists.
+                - `429` — rate limited per the `auth` policy.
+                """
+            )
+            .Produces<VerificationStatusDto>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status404NotFound);
 
         verifications
             .MapPost(
@@ -40,7 +84,7 @@ public static class EmailVerificationEndpoints
 
                 ### When to use this
                 - Immediately after registration, if the registration flow does not auto-send the first link.
-                - From a "resend verification email" button on the login screen, after the user tries to log in and receives `403 EMAIL_NOT_VERIFIED`.
+                - From a reminder inside the app for a signed-in user whose `GET /auth/verifications/status` says `verified: false`. Signing in does not need a verified address.
                 - From an account settings page for a user who never completed verification.
 
                 ### Request body
@@ -93,7 +137,7 @@ public static class EmailVerificationEndpoints
             .WithSummary("Verifies an email address using a token.")
             .WithDescription(
                 """
-                Confirms an email address using the token delivered by the verification email. Marks the account as verified, which unblocks login.
+                Confirms an email address using the token delivered by the verification email. Marks the account as verified.
 
                 ### The token is a query parameter, not a body
                 **This POST endpoint takes `token` as a query string parameter**, not in the request body. Example: `POST /auth/verifications/verify-email?token=<token-from-email>`
@@ -101,12 +145,12 @@ public static class EmailVerificationEndpoints
                 There is no request body. Do not send the token as JSON — it will not be read. This is unusual for a POST, so call it out if you are generating a client from the OpenAPI spec; the token will appear under `parameters`, not `requestBody`.
 
                 ### When to use this
-                The user clicks the link in the verification email, the client extracts the `token` from the URL, and calls this endpoint. On success, the user can now log in.
+                The user clicks the link in the verification email, the client extracts the `token` from the URL, and calls this endpoint. On success, the account is verified.
 
                 ### On success
                 Returns `200 OK` with no body. The account's `verifiedAt` timestamp is populated.
 
-                The user is **not** logged in automatically. After success, route them to the login screen. The verification endpoint is unauthenticated, so it does not issue a session.
+                The verification endpoint is unauthenticated, so it does not issue a session. If the user is signed in, re-check `GET /auth/verifications/status`; if not, route them to the login screen.
 
                 ### Failure modes
                 - `400 BAD_REQUEST` — the `token` query parameter is missing entirely.
@@ -115,7 +159,6 @@ public static class EmailVerificationEndpoints
                 ### Side effects
                 - The verification token is marked as used and cannot be reused.
                 - The account's `verifiedAt` is set.
-                - The user can now log in via `POST /auth/sessions/login`.
 
                 ### Authentication
                 None required. The token is the credential.

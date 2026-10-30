@@ -1,8 +1,9 @@
 // The four numbers on an event's page. Pure, so the tests can check them without a screen.
 import { formatNumber } from "@/lib/format";
 import type { Stat } from "@/ui";
+import type { EventRoster } from "../api/checkIns";
 import type { EventItem } from "../api/events";
-import type { Arrival, Phase } from "./roster";
+import type { Phase } from "./roster";
 
 const n = formatNumber;
 
@@ -38,7 +39,7 @@ function cameNote(
 
 type Rows = {
   event: Pick<EventItem, "registrationCount" | "capacity">;
-  arrivals: Arrival[];
+  roster: EventRoster;
   phase: Phase;
 };
 
@@ -53,22 +54,24 @@ function showRate(signedUp: number, came: number, phase: Phase): Stat {
   };
 }
 
-export function rosterStats({ event, arrivals, phase }: Rows): Stat[] {
-  const walkIns = arrivals.filter((a) => a.walkIn).length;
-  const came = arrivals.length - walkIns;
+export function rosterStats({ event, roster, phase }: Rows): Stat[] {
   return [
     registered(event),
     {
       label: "Checked in",
-      value: n(arrivals.length),
-      note: cameNote(event.registrationCount, came, phase),
+      value: n(roster.checkedIn),
+      note: cameNote(event.registrationCount, roster.cameRegistered, phase),
     },
-    showRate(event.registrationCount, came, phase),
-    { label: "Walk-ins", value: n(walkIns), note: "Came without registering" },
+    showRate(event.registrationCount, roster.cameRegistered, phase),
+    {
+      label: "Walk-ins",
+      value: n(roster.walkIns),
+      note: "Came without registering",
+    },
   ];
 }
 
-// The numbers before the two lists have been read (or when one could not be): the sign-ups come from the event
+// The numbers before the roster has been counted (or when it could not be): the sign-ups come from the event
 // itself, and the rest wait.
 export function waitingStats(
   event: Pick<EventItem, "registrationCount" | "capacity">,

@@ -18,12 +18,21 @@ public sealed class ApplicationInstrumentation : IDisposable
 
     public Counter<long> CongregationRequestVolume { get; }
 
+    /// <summary>Summary requests, by which summary and whether the answer came from the cache.</summary>
+    public Counter<long> SummaryRequests { get; }
+
     public ApplicationInstrumentation()
     {
         CongregationRequestVolume = Meter.CreateCounter<long>(
             "echo.congregation.request_volume",
             unit: "{request}",
             description: "Total requests per congregation"
+        );
+
+        SummaryRequests = Meter.CreateCounter<long>(
+            "echo.summary.requests",
+            unit: "{request}",
+            description: "Summary requests, by summary and whether the answer was cached"
         );
     }
 

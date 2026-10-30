@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { formatMoney, formatNumber } from "@/lib/format";
 import { DashCard, Figure, FilterSelect, FlowBars } from "@/ui";
-import { chartRange } from "../../model/filters";
 import { useTransactionMonths } from "../../hooks/queries";
 import { flowBars } from "../../model/display";
 import styles from "./FinanceChart.module.css";
@@ -22,7 +21,7 @@ type Props = {
 // so it follows neither the period nor the filters. Clicking a month narrows the list to it.
 export function FinanceChart({ today, month, onPick }: Props) {
   const [span, setSpan] = useState("12");
-  const months = useTransactionMonths(chartRange(today, Number(span)));
+  const months = useTransactionMonths(Number(span), today);
   const bars = flowBars(months.data ?? []);
   const chosen = /^\d{4}-\d{2}$/.test(month) ? month : today.slice(0, 7);
   const picked = bars.find((b) => b.key === chosen);

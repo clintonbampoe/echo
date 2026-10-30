@@ -23,7 +23,7 @@
   text-decoration: none;
   transition:
     background-color var(--t-fast) var(--ease-soft),
-    opacity var(--t-base) var(--ease-soft);
+    box-shadow var(--t-base);
 }
 a.row,
 button.row {
@@ -33,16 +33,6 @@ a.row:focus-visible,
 button.row:focus-visible {
   outline: 2px solid var(--text);
   outline-offset: -2px;
-}
-@media (hover: hover) {
-  /* The row under the pointer reads first; the rest step back to 55%. */
-  .list:has(a.row:hover, button.row:hover) .row:not(:hover) {
-    opacity: 0.55;
-  }
-}
-a.row:active .track,
-button.row:active .track {
-  transform: scale(1.01, 1.4);
 }
 .line {
   display: flex;
@@ -58,20 +48,35 @@ button.row:active .track {
   font-weight: 600;
   font-variant-numeric: tabular-nums;
 }
+/* The track is as tall as a swollen bar, so growing never moves the rows. The rail and the fill are centred in it and
+   change height, never scale, so their rounded ends stay round. */
 .track {
+  position: relative;
   display: block;
-  height: 6px;
+  height: 10px;
+}
+.track::before {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  top: 50%;
+  height: var(--rail-h, 6px);
+  translate: 0 -50%;
   background: var(--fill-2);
   border-radius: var(--radius-pill);
-  transform-origin: center center;
-  transition: transform var(--t-enter) var(--ease-settle);
+  transition: height var(--t-enter) var(--ease-settle);
 }
 .bar {
-  display: block;
-  height: 100%;
+  position: absolute;
+  top: 50%;
+  left: 0;
+  height: var(--rail-h, 6px);
+  translate: 0 -50%;
   background: #7f95ae;
   border-radius: var(--radius-pill);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 28%);
   transition:
+    height var(--t-enter) var(--ease-settle),
     filter var(--t-fast),
     box-shadow var(--t-base),
     background-color var(--t-fast);
@@ -93,28 +98,46 @@ button.row:active .track {
     transform var(--t-spring) var(--spring);
 }
 @media (hover: hover) {
-  a.row:hover .track,
-  button.row:hover .track,
-  a.row:focus-visible .track,
-  button.row:focus-visible .track {
-    transform: scale(1.02, 1.75);
+  /* While a row is hot, the rows around it thin by a little (2px a step away, halving each step) and the hot one
+     swells to 10px. The words of the other rows soften, so the one you are on reads first. */
+  .list[data-active="true"] li {
+    --rail-h: calc(6px - 2px / var(--d));
   }
-  a.row:hover .bar,
-  button.row:hover .bar {
-    filter: brightness(0.86);
-    box-shadow: 0 6px 12px -6px rgb(10 10 11 / 50%);
+  .list[data-active="true"] li[data-hot="true"] {
+    --rail-h: 10px;
   }
-  a.row:hover .tip,
-  button.row:hover .tip,
-  a.row:focus-visible .tip,
-  button.row:focus-visible .tip {
+  .list[data-active="true"] li:not([data-hot="true"]) .line {
+    opacity: 0.7;
+  }
+  .line {
+    transition: opacity var(--t-base) var(--ease-soft);
+  }
+  li[data-hot="true"] .bar {
+    filter: brightness(0.9);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 45%),
+      0 6px 12px -6px rgb(10 10 11 / 50%);
+  }
+  /* A row that opens something lights up like a hovered row elsewhere. */
+  li[data-hot="true"] a.row,
+  li[data-hot="true"] button.row {
+    background: var(--glass-tile);
+    box-shadow:
+      var(--glass-edge),
+      inset 0 0 0 1px var(--glass-tile-edge);
+  }
+  li[data-hot="true"] .tip {
     opacity: 1;
     transform: translateY(-100%);
   }
 }
+a.row:active .bar,
+button.row:active .bar {
+  filter: brightness(0.8);
+}
 @media (prefers-reduced-motion: reduce) {
-  a.row:hover .track,
-  button.row:hover .track {
-    transform: none;
+  .list[data-active="true"] li,
+  .list[data-active="true"] li[data-hot="true"] {
+    --rail-h: 6px;
   }
 }

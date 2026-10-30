@@ -30,7 +30,7 @@ public class EventRepository(AppDbContext context, TimeProvider timeProvider)
             .Include(e => e.Organizer)
                 .ThenInclude(o => o.Person)
             .Filter(filters)
-            .OrderForList(filters.Order)
+            .OrderForList(filters.Order ?? SortDirection.Asc)
             .Paginate(cursor, pageSize)
             .ToListAsync(ct);
     }
@@ -152,7 +152,7 @@ public class EventRepository(AppDbContext context, TimeProvider timeProvider)
                 _registrationDbSet.FilterDeleted(),
                 _attendanceDbSet.FilterDeleted()
             )
-            .FirstOrDefaultAsync(ct);
+            .SingleOrDefaultAsync(ct);
         return stats ?? new EventStats(0, 0, 0, 0);
     }
 

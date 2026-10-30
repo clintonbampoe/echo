@@ -4,6 +4,7 @@ import { MenuPage } from "./MenuPage";
 import { PullToRefresh } from "./PullToRefresh";
 import { Sidebar } from "./Sidebar";
 import { TopBar } from "./TopBar";
+import { VerifyEmailBanner } from "./VerifyEmailBanner";
 import { useLongPressMenu } from "./useLongPressMenu";
 import styles from "./AppShell.module.css";
 
@@ -18,6 +19,7 @@ export function AppShell() {
       <div className={styles.panel}>
         <TopBar onMenu={() => setMenuOpen(true)} />
         <main className={styles.main}>
+          <VerifyEmailBanner />
           <Outlet />
         </main>
       </div>

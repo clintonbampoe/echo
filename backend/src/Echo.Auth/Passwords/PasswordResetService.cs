@@ -163,6 +163,7 @@ public class PasswordResetService(
                 tokenEntity.User.PasswordHash = await passwordHashService.HashAsync(newPassword);
             }
 
+            tokenEntity.User.PasswordChangedAt = timeProvider.GetUtcNow().UtcDateTime;
             tokenEntity.UsedAt = timeProvider.GetUtcNow().UtcDateTime;
 
             using (

@@ -1,9 +1,8 @@
-import { getPresence, getPresent } from "../api/attendance";
-import { getMembers } from "../api/members";
-import { getTitheFigures } from "../api/tithes";
+import { getPresenceMonths, type Presence } from "../api/attendance";
+import { getJoinedMonths } from "../api/members";
+import { getTitheMonths, type TitheFigures } from "../api/tithes";
 import type { Bucket } from "../model/trend";
-import { useUndatedMembers } from "./numbers";
-import { useBuckets } from "./internals";
+import { useMonthly } from "./internals";
 
 export type Series = {
   values: number[] | undefined;
@@ -11,32 +10,27 @@ export type Series = {
   retry: () => void;
 };
 
-// People present in each stretch. The keys match the Present card's, so last week is asked for once.
-export const useSeries = (buckets: readonly Bucket[]): Series =>
-  useBuckets("present", buckets, getPresent);
+const noPresence: Presence = { present: 0, members: 0, visitors: 0 };
+const noTithes: TitheFigures = { total: 0, tithers: 0, average: 0 };
 
-// People present in each stretch, split into members and visitors.
+// People present in each month, split into members and visitors. One call, whatever the number of months.
 export const usePresenceSeries = (buckets: readonly Bucket[]) =>
-  useBuckets("presence", buckets, getPresence);
+  useMonthly(
+    "presence-months",
+    buckets,
+    getPresenceMonths,
+    (r) => r ?? noPresence,
+  );
 
-// Tithes, tithers and the average tithe in each stretch.
+// Tithes, tithers and the average tithe in each month.
 export const useTitheSeries = (buckets: readonly Bucket[]) =>
-  useBuckets("tithe-figures", buckets, getTitheFigures);
+  useMonthly("tithe-months", buckets, getTitheMonths, (r) => r ?? noTithes);
 
-// New members in each stretch, without the members who have no joined date.
-export function useGrowth(buckets: readonly Bucket[]): Series {
-  const series = useBuckets("members", buckets, getMembers);
-  const undated = useUndatedMembers();
-  const gone = undated.data;
-  return {
-    values:
-      series.values && gone !== undefined
-        ? series.values.map((v) => Math.max(0, v - gone))
-        : undefined,
-    failed: series.failed || undated.failed,
-    retry: () => {
-      series.retry();
-      undated.retry();
-    },
-  };
-}
+// New members in each month. Members with no joined date are in no month.
+export const useGrowth = (buckets: readonly Bucket[]): Series =>
+  useMonthly(
+    "growth-months",
+    buckets,
+    getJoinedMonths,
+    (r) => r?.newMembers ?? 0,
+  );

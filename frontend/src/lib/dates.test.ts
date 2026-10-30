@@ -27,11 +27,12 @@ describe("monthsBefore", () => {
 });
 
 describe("thisYear", () => {
-  it("runs from 1 January to today", () => {
+  it("runs from 1 January to today, and counts the months it spans", () => {
     expect(thisYear("2026-10-14")).toEqual({
       year: 2026,
       from: "2026-01-01",
       to: "2026-10-14",
+      months: 10,
     });
   });
 });

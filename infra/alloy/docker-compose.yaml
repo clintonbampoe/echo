@@ -1,0 +1,45 @@
+name: alloy
+
+services:
+  alloy:
+    build: .
+    container_name: alloy
+    restart: unless-stopped
+    # Names the machine in every metric and log ("host" label), instead of the container id.
+    hostname: ${ALLOY_HOST:-echo-app}
+    environment:
+      PG_MONITOR_DSN: ${PG_MONITOR_DSN}
+      # Empty means "the observability stack on this machine". See .env.example for a separate server.
+      LOKI_URL: ${LOKI_URL:-}
+      PROMETHEUS_URL: ${PROMETHEUS_URL:-}
+      TEMPO_OTLP_ENDPOINT: ${TEMPO_OTLP_ENDPOINT:-}
+    # cAdvisor reads the cgroup tree to find each container. A private cgroup namespace shows only Alloy's own.
+    cgroup: host
+    # Network use per container is read through each container's own process; needs the host's process list.
+    pid: host
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - alloy-data:/var/lib/alloy
+      # Read-only views of the host, for the container (cAdvisor) and machine (unix) exporters.
+      - /:/host/root:ro,rslave
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+      - /dev/disk:/dev/disk:ro
+      - /run/udev:/run/udev:ro
+      # This host stores images through containerd, and cAdvisor asks it about each container.
+      - /run/containerd/containerd.sock:/run/containerd/containerd.sock:ro
+    ports:
+      - "127.0.0.1:12345:12345"
+      - "127.0.0.1:4317:4317"
+      - "127.0.0.1:4318:4318"
+    networks: [app]
+
+networks:
+  app:
+    external: true
+    name: echo_echo-network
+
+volumes:
+  alloy-data:

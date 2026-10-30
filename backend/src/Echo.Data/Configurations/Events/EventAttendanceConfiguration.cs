@@ -36,6 +36,18 @@ public class EventAttendanceConfiguration : IEntityTypeConfiguration<EventAttend
             .IsDescending(false, true, false)
             .HasFilter("deleted_at IS NULL");
 
+        // One event's check-ins in order, cursor on check_in_time + id: a page of the event's list reads only its own
+        // rows, in order, instead of sorting everyone who came.
+        builder
+            .HasIndex(ea => new
+            {
+                ea.EventId,
+                ea.CheckInTime,
+                ea.Id,
+            })
+            .IsDescending(false, true, false)
+            .HasFilter("deleted_at IS NULL");
+
         builder
             .HasOne(ea => ea.Member)
             .WithMany()

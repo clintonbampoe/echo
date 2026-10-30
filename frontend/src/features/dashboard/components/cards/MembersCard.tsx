@@ -1,11 +1,10 @@
+import { useState } from "react";
 import { formatNumber } from "@/lib/format";
 import { paths } from "@/lib/paths";
-import { Aside, DashCard, DistributionBar, ProgressBar } from "@/ui";
+import { Aside, DashCard, DistributionBar, MonthBars, ProgressBar } from "@/ui";
 import type { AgeBand } from "../../api/members";
 import { useMix } from "../../hooks/people";
-import { useNewMembers } from "../../hooks/numbers";
 import { statusRows } from "../../model/members";
-import { spanOf } from "../../model/periods";
 import { CardFailed } from "./CardFailed";
 import styles from "./MembersCard.module.css";
 
@@ -13,25 +12,29 @@ const PART_TITLE = { gender: "Gender", age: "Age", status: "Status" } as const;
 const percent = (n: number, of: number) =>
   of > 0 ? `${Math.round((n / of) * 100)}%` : "0%";
 
-// Members by age: a column for each group, the biggest one dark.
+// Members by age: a column for each group, the biggest one dark to begin with. A column is a button: pick one to
+// make it the dark one (pick it again to go back), and its number and share show on hover.
 function Ages({ bands }: { bands: readonly AgeBand[] }) {
+  const [picked, setPicked] = useState<string | null>(null);
+  const total = bands.reduce((n, b) => n + b.count, 0);
   const tallest = Math.max(0, ...bands.map((b) => b.count));
   const peak = bands.find((b) => b.count === tallest && tallest > 0);
   return (
     <section aria-label="Age">
       <p className={styles.heading}>Age</p>
-      <ul aria-label="Members by age" className={styles.ages}>
-        {bands.map((b) => (
-          <li key={b.label} className={styles.age}>
-            <span
-              className={`${styles.column} ${b === peak ? styles.peak : ""}`}
-              style={{ height: `${Math.max(6, (b.count / tallest) * 100)}%` }}
-              title={`${b.label}: ${formatNumber(b.count)}`}
-            />
-            <span className={styles.band}>{b.label}</span>
-          </li>
-        ))}
-      </ul>
+      <MonthBars
+        label="Members by age"
+        selected={picked ?? peak?.label}
+        onPick={(key) => setPicked((was) => (was === key ? null : key))}
+        bars={bands.map((b) => ({
+          key: b.label,
+          label: b.label,
+          name: `${b.label} years`,
+          tip: `${b.label} years`,
+          value: b.count,
+          text: `${formatNumber(b.count)} · ${percent(b.count, total)}`,
+        }))}
+      />
     </section>
   );
 }
@@ -120,17 +123,10 @@ function MembersBody({
 
 // Everyone in the church at a glance: women and men, how old they are, and how many are active. Not the period.
 // On a phone the card is three small ones, one for each part (`part`), so each has its own page.
-export function MembersCard({
-  today,
-  part,
-}: {
-  today: string;
-  part?: MembersPart;
-}) {
+export function MembersCard({ part }: { part?: MembersPart }) {
   const { mix, failed, retry } = useMix();
-  const fresh = useNewMembers(spanOf("this-year", today)).value;
   const total = mix?.total ?? 0;
-  const status = statusRows(mix, fresh);
+  const status = statusRows(mix, mix?.joinedThisYear);
 
   return (
     <DashCard

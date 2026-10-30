@@ -11,6 +11,7 @@ public class User : ISearchable, ISoftDeletable
     public string PasswordHash { get; set; } = string.Empty;
     public UserRole Role { get; set; }
     public DateTime? EmailVerifiedAt { get; set; }
+    public DateTime? PasswordChangedAt { get; set; }
 
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;

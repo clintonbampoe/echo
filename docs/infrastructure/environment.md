@@ -27,12 +27,13 @@ Fail-fast: `.ValidateOnStart()` refuses boot on missing/invalid config (e.g., HT
 | `Jwt__Audience` | api | Token audience |
 | `MailClient__Address` | api | From address for emails |
 | `Resend__ApiKey` | api | Resend API key |
+| `Invitations__CodeKey` | api | Encrypts invitation codes so the list can show them again (Base64 of 32 random bytes; generate with `backend/tools/invitation-key-setup/SetupInvitationKey.sh env`). Changing it makes existing codes unreadable (they show as no code); they still work when typed. |
 
 ## Optional Variables
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `OTEL_EXPORTER_OTLP_ENDPOINT` | (empty) | OpenTelemetry collector endpoint for traces/metrics |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | (empty) | Where the API sends traces, metrics and logs (the Alloy agent, e.g. `http://alloy:4317`; see [observability.md](observability.md)) |
 | `OTEL_SERVICE_NAME` | (empty) | Service name for OpenTelemetry |
 | `Jwt__PreviousPublicKey` | (empty) | Previous public key during rotation grace period |
 | `RunMigrationsOnStartup` | `true` | Run EF migrations on API startup |

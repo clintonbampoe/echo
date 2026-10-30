@@ -64,7 +64,7 @@ public class MemberRepository(AppDbContext context, TimeProvider timeProvider)
         // One query, one pass: every count below is a FILTER aggregate over the same scan.
         var stats = await Scope(congregationId, filters)
             .SummarizeMembers(today)
-            .FirstOrDefaultAsync(ct);
+            .SingleOrDefaultAsync(ct);
 
         return stats ?? new MemberStats(0, 0, 0, 0, 0d, 0, 0, 0, 0, 0, 0);
     }
@@ -81,7 +81,7 @@ public class MemberRepository(AppDbContext context, TimeProvider timeProvider)
         var today = DateUtils.GetDateToday(timeProvider);
         var counts = await Scope(congregationId, filters with { From = null, To = null })
             .JoinedCounts(window, window.Previous(), new DateOnly(today.Year, 1, 1), today)
-            .FirstOrDefaultAsync(ct);
+            .SingleOrDefaultAsync(ct);
 
         return counts ?? new JoinedCounts(0, 0, 0);
     }

@@ -21,6 +21,17 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals());
 
 describe("api client", () => {
+  it("sends a list as the same key repeated, and nothing for an empty one", async () => {
+    saveTokens(pair("1"));
+    fetchMock.mockResolvedValueOnce(json(200, []));
+
+    await api.get("/v1/things", { query: { ids: ["a", "b"], none: [] } });
+
+    const [url] = fetchMock.mock.calls[0] as [string];
+    expect(url).toContain("/v1/things?ids=a&ids=b");
+    expect(url).not.toContain("none");
+  });
+
   it("sends the bearer token and builds the query string, skipping empty values", async () => {
     saveTokens(pair("1"));
     fetchMock.mockResolvedValueOnce(json(200, { ok: true }));

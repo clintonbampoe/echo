@@ -5,19 +5,8 @@ import { todayText } from "@/lib/dates";
 import { paths } from "@/lib/paths";
 import { Alert, BackLink, Button, StatStrip, Tabs } from "@/ui";
 import type { EventItem } from "../api/events";
-import {
-  useEvent,
-  useEventCheckIns,
-  useEventRegistrations,
-} from "../hooks/queries";
-import {
-  arrivals as joinArrivals,
-  eventPhase,
-  guests as joinGuests,
-  type Arrival,
-  type Guest,
-  type Phase,
-} from "../model/roster";
+import { useEvent, useEventRoster } from "../hooks/queries";
+import { eventPhase, type Phase } from "../model/roster";
 import { rosterStats, waitingStats } from "../model/rosterFigures";
 import { CheckInsTab } from "../components/event/CheckInsTab";
 import { DeleteEventDialog } from "../components/dialogs/DeleteEventDialog";
@@ -67,34 +56,17 @@ export function EventPage() {
   return <Detail event={event.data} />;
 }
 
-type BodyProps = {
-  tab: string;
-  event: EventItem;
-  guests: Guest[];
-  arrivals: Arrival[];
-  phase: Phase;
-  state: { loading: boolean; failed: boolean; retry: () => void };
-};
+type BodyProps = { tab: string; event: EventItem; phase: Phase };
 
-// The tab that is open: who signed up, who came, or what the event is.
-function TabBody({ tab, event, guests, arrivals, phase, state }: BodyProps) {
+// The tab that is open: who signed up, who came, or what the event is. Only the open tab reads its list.
+function TabBody({ tab, event, phase }: BodyProps) {
   if (tab === "details") return <EventDetails event={event} />;
   if (tab === "check-ins")
     return (
-      <CheckInsTab
-        arrivals={arrivals}
-        eventName={event.name}
-        phase={phase}
-        state={state}
-      />
+      <CheckInsTab eventId={event.id} eventName={event.name} phase={phase} />
     );
   return (
-    <RegistrationsTab
-      guests={guests}
-      eventName={event.name}
-      phase={phase}
-      state={state}
-    />
+    <RegistrationsTab eventId={event.id} eventName={event.name} phase={phase} />
   );
 }
 
@@ -104,20 +76,12 @@ function Detail({ event: e }: { event: EventItem }) {
   const [editing, setEditing] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [recording, setRecording] = useState<Mode | null>(null);
-  const regs = useEventRegistrations(e.id);
-  const checks = useEventCheckIns(e.id);
+  // The page needs two numbers about who came, not the lists: those load when their tab opens.
+  const roster = useEventRoster(e.id);
   const phase = eventPhase(e, todayText());
-  const state = {
-    loading: regs.loading || checks.loading,
-    failed: regs.failed || checks.failed,
-    retry: () => (regs.retry(), checks.retry()),
-  };
-  const guests = joinGuests(regs.rows, checks.rows);
-  const arrivals = joinArrivals(checks.rows, regs.rows);
-  const ready = !state.loading && !state.failed;
-  const stats = ready
-    ? rosterStats({ event: e, arrivals, phase })
-    : waitingStats(e, state.failed);
+  const stats = roster.data
+    ? rosterStats({ event: e, roster: roster.data, phase })
+    : waitingStats(e, roster.isError);
   const tabs = [
     { id: "details", label: "Details" },
     { id: "registrations", label: "Registrations" },
@@ -135,7 +99,11 @@ function Detail({ event: e }: { event: EventItem }) {
         onDelete={() => setDeleting(true)}
       />
       <div>
-        <StatStrip label="Event numbers" stats={stats} busy={state.loading} />
+        <StatStrip
+          label="Event numbers"
+          stats={stats}
+          busy={roster.isPending}
+        />
       </div>
       <div>
         <Tabs
@@ -151,21 +119,12 @@ function Detail({ event: e }: { event: EventItem }) {
         id={`event-panel-${tab}`}
         aria-labelledby={`event-tab-${tab}`}
       >
-        <TabBody
-          tab={tab}
-          event={e}
-          guests={guests}
-          arrivals={arrivals}
-          phase={phase}
-          state={state}
-        />
+        <TabBody tab={tab} event={e} phase={phase} />
       </div>
       {recording && (
         <RecordSheet
           event={e}
           mode={recording}
-          registered={new Set(regs.rows.map((r) => r.memberId))}
-          checkedIn={new Set(checks.rows.map((c) => c.memberId))}
           onClose={() => setRecording(null)}
         />
       )}
@@ -175,7 +134,7 @@ function Detail({ event: e }: { event: EventItem }) {
       {deleting && (
         <DeleteEventDialog
           event={e}
-          checkIns={ready ? arrivals.length : undefined}
+          checkIns={roster.data?.checkedIn}
           onClose={() => setDeleting(false)}
           onDeleted={() => navigate(paths.events, { replace: true })}
         />

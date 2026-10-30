@@ -137,9 +137,9 @@ public record AssetMonthlyFilters
 {
     public int? CategoryId { get; init; }
 
-    /// <summary>How many months to return, ending with the month of <see cref="To"/>.</summary>
+    /// <summary>How many months to return, ending with the month of <see cref="To"/>. 12 when not given.</summary>
     [Range(1, MonthRange.MaxMonths)]
-    public int Months { get; init; } = MonthRange.DefaultMonths;
+    public int? Months { get; init; }
 
     /// <summary>Any day in the last month to return. This month when not given.</summary>
     public DateOnly? To { get; init; }

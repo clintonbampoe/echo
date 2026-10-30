@@ -4,22 +4,25 @@
     Name: Jane Doe,
     EmailAddress: jane@echo.test,
     VerifiedAt: DateTime_1,
-    CreatedAt: DateTime_2
+    CreatedAt: DateTime_2,
+    PasswordChangedAt: DateTime_3
   },
   {
     Id: Guid_2,
     Name: Jane Doe,
     EmailAddress: jane@echo.test,
-    VerifiedAt: DateTime_3,
+    VerifiedAt: DateTime_4,
     Role: Accountant,
-    CreatedAt: DateTime_4
+    CreatedAt: DateTime_5,
+    PasswordChangedAt: DateTime_6
   },
   {
     Id: Guid_3,
     Name: Jane Doe,
     EmailAddress: jane@echo.test,
-    VerifiedAt: DateTime_5,
+    VerifiedAt: DateTime_7,
     Role: Clerk,
-    CreatedAt: DateTime_6
+    CreatedAt: DateTime_8,
+    PasswordChangedAt: DateTime_9
   }
 ]

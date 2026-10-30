@@ -21,7 +21,7 @@ x-logging: &default-logging
 
 ## Important Notes
 
-- **Rotation loses history.** `docker compose logs` only shows current window. For persistent history, ship to Loki/Better Stack (not set up yet).
+- **Rotation loses history.** `docker compose logs` only shows current window. Persistent history is shipped to Loki by Alloy; see [observability.md](observability.md).
 - **Existing containers keep old settings.** Log config fixed at container creation. Recreate to pick up changes:
   ```bash
   docker compose up -d --force-recreate

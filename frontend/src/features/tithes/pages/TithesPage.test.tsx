@@ -38,6 +38,10 @@ const summary = {
   uniqueTithers: 2,
   mostUsedPaymentMethod: "Cash",
   averagePerMember: 325,
+  byMethod: [
+    { method: "Cash", count: 1, total: 500 },
+    { method: "MobileMoney", count: 1, total: 150 },
+  ],
 };
 const months = Array.from({ length: 12 }, (_, i) => ({
   year: 2025 + Math.floor((i + 10) / 12),
@@ -75,6 +79,13 @@ const byId = (u: URL, init?: RequestInit) => {
 
 let rows: Tithe[];
 let refuseRecording: boolean;
+const needsMonths = (u: URL) =>
+  u.searchParams.has("months")
+    ? null
+    : new Response(JSON.stringify({ errorCode: "BAD_REQUEST" }), {
+        status: 400,
+      });
+
 let fetchMock: ReturnType<typeof vi.fn>;
 beforeEach(() => {
   rows = [kofi, ama];
@@ -87,7 +98,8 @@ beforeEach(() => {
   });
   fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
     const u = new URL(url, "http://x");
-    if (u.pathname.endsWith("/tithes/summary/monthly")) return json(months);
+    if (u.pathname.endsWith("/tithes/summary/monthly"))
+      return needsMonths(u) ?? json(months);
     if (u.pathname.endsWith("/tithes/summary")) return json(summary);
     if (u.pathname.endsWith("/members/summary"))
       return json({ activeMembers: 118 });
@@ -143,6 +155,20 @@ describe("tithes page", () => {
           /Highest: GH₵ 900 in/.test(el.textContent ?? ""),
       ),
     ).toBeInTheDocument();
+  });
+
+  it("builds how it was paid from the one summary, not one request for each way of paying", async () => {
+    open();
+    const card = await screen.findByRole("list", {
+      name: "Tithes by way of paying",
+    });
+    expect(within(card).getByText("Cash")).toBeInTheDocument();
+    expect(within(card).getByText("Mobile money")).toBeInTheDocument();
+    const summaries = fetchMock.mock.calls
+      .map(([u]) => new URL(String(u), "http://x"))
+      .filter((u) => u.pathname.endsWith("/tithes/summary"));
+    expect(summaries).toHaveLength(1);
+    expect(summaries[0]?.searchParams.has("paymentMethod")).toBe(false);
   });
 
   it("asks for this week unless told otherwise", async () => {

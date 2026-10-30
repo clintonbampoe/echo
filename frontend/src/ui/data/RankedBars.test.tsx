@@ -66,7 +66,7 @@ describe("ranked bars", () => {
     const { container } = render(
       <RankedBars label="By category" rows={rows} />,
     );
-    const bars = container.querySelectorAll<HTMLElement>("[style]");
+    const bars = container.querySelectorAll<HTMLElement>('[style*="width"]');
     expect(bars[0]?.style.width).toBe("100%");
     expect(bars[1]?.style.width).toBe("25%");
   });

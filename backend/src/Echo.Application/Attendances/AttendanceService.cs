@@ -244,19 +244,21 @@ public class AttendanceService(
     public Task<IOperationResult> Summary(
         Guid congregationId,
         AttendanceFilters filters,
+        bool includePrevious,
         CancellationToken ct
     ) =>
         summaries.Serve(
             "attendance",
             congregationId,
-            filters,
-            token => ComputeSummary(congregationId, filters, token),
+            new { filters, includePrevious },
+            token => ComputeSummary(congregationId, filters, includePrevious, token),
             ct
         );
 
     private async Task<AttendanceSummaryDto> ComputeSummary(
         Guid congregationId,
         AttendanceFilters filters,
+        bool includePrevious,
         CancellationToken ct
     )
     {
@@ -277,8 +279,22 @@ public class AttendanceService(
             ct
         );
 
+        var previousTotal = 0;
+        if (includePrevious && window is { } w)
+        {
+            var before = w.Previous();
+            previousTotal = (
+                await repository.GetSummary(
+                    congregationId,
+                    filters with { From = before.From, To = before.To },
+                    ct
+                )
+            ).Total;
+        }
+
         var res = new AttendanceSummaryDto
         {
+            PreviousTotalPresent = previousTotal,
             TotalPresent = stats.Total,
             MembersPresent = stats.Members,
             VisitorsPresent = stats.Visitors,
@@ -300,7 +316,7 @@ public class AttendanceService(
         CancellationToken ct
     )
     {
-        if (MonthRange.Problem(filters.Months) is { } problem)
+        if (MonthRange.Problem(MonthRange.Or(filters.Months)) is { } problem)
             return new BadRequestResult(problem);
 
         return await summaries.Serve(
@@ -318,7 +334,7 @@ public class AttendanceService(
         CancellationToken ct
     )
     {
-        var months = dateWindows.ChartMonths(filters.Months, filters.To);
+        var months = dateWindows.ChartMonths(MonthRange.Or(filters.Months), filters.To);
         var (from, to) = MonthRange.Bounds(months);
         var rows = await repository.GetMonthlyTotals(congregationId, filters, from, to, ct);
 

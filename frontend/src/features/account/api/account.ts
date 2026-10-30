@@ -9,6 +9,10 @@ export type Me = {
   name: string;
   emailAddress: string;
   role: UserRole;
+  // Null while the email address is not verified. Signing in does not need it.
+  emailVerifiedAt?: string | null;
+  // Null for accounts older than the field.
+  passwordChangedAt?: string | null;
 };
 
 export type Congregation = {

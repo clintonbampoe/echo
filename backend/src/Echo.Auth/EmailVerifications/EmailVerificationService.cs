@@ -25,6 +25,28 @@ public class EmailVerificationService(
     ILogger<EmailVerificationService> logger
 )
 {
+    public async Task<IOperationResult> GetStatus(
+        Guid congregationId,
+        Guid userId,
+        CancellationToken ct
+    )
+    {
+        using var span = instrumentation.ActivitySource.StartActivity("email.verification.status");
+
+        var user = await userRepository.GetById(congregationId, userId, ct);
+        if (user is null)
+            return new NotFoundResult(userId.ToString());
+
+        return new SuccessResult<VerificationStatusDto>(
+            new VerificationStatusDto
+            {
+                Verified = user.EmailVerifiedAt is not null,
+                VerifiedAt = user.EmailVerifiedAt,
+                EmailAddress = user.EmailAddress,
+            }
+        );
+    }
+
     public async Task<IOperationResult> SendVerificationLinkToEmail(
         string emailAddress,
         CancellationToken ct

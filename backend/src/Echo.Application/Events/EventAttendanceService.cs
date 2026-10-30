@@ -14,6 +14,7 @@ namespace Echo.Application.Events;
 
 public class EventAttendanceService(
     EventAttendanceRepository repository,
+    EventRegistrationRepository registrationRepository,
     EventRepository eventRepository,
     MemberRepository memberRepository,
     IEncoder encoder,
@@ -81,9 +82,25 @@ public class EventAttendanceService(
         return new SuccessResult<EventAttendanceResponseDto>(res);
     }
 
+    /// <summary>Who checked in at an event, and how many of them had not registered. Not cached: it must follow the door.</summary>
+    public async Task<IOperationResult> RosterSummary(
+        Guid congregationId,
+        Guid eventId,
+        CancellationToken ct
+    )
+    {
+        using var activity = instrumentation.ActivitySource.StartActivity(
+            "svc.event_attendance.roster_summary"
+        );
+        return new SuccessResult<EventRosterSummaryDto>(
+            await repository.GetRosterSummary(congregationId, eventId, ct)
+        );
+    }
+
     public async Task<IOperationResult> ListByEventId(
         Guid congregationId,
         Guid eventId,
+        EventAttendanceFilters filters,
         PaginationRequest pagination,
         CancellationToken ct
     )
@@ -99,6 +116,7 @@ public class EventAttendanceService(
             entities = await repository.ListByEventId(
                 congregationId,
                 eventId,
+                filters,
                 cursor,
                 pagination.PageSize + 1,
                 ct
@@ -111,7 +129,20 @@ public class EventAttendanceService(
 
         var nextCursor = hasMore ? encoder.Encode(BuildCursor(entities.Last())) : null;
 
-        var data = mapper.ToListDto(entities);
+        // Who on this page had registered: one lookup of the page's people, not every registration of the event.
+        var registrations = await registrationRepository.GetIdsForMembers(
+            eventId,
+            [.. entities.Select(e => e.MemberId)],
+            ct
+        );
+        var data = mapper
+            .ToListDto(entities)
+            .Select(d => d with
+            {
+                WalkIn = !registrations.ContainsKey(d.MemberId),
+                RegistrationId = registrations.TryGetValue(d.MemberId, out var id) ? id : null,
+            })
+            .ToList();
         activity?.SetTag("event_attendance.count", data.Count);
 
         var res = new PagedResponse<EventAttendanceResponseDto>(hasMore, nextCursor, data);

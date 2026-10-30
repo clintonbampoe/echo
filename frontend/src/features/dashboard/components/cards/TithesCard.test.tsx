@@ -1,12 +1,18 @@
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { json, renderCard, signIn, asked } from "../../testing/dashboardPage";
+import {
+  json,
+  renderCard,
+  signIn,
+  asked,
+  monthlyRows,
+} from "../../testing/dashboardPage";
 import { TithesCard } from "./TithesCard";
 
-// Tithes of each month, by the day the month began. Other months answer 4k.
+// Tithes of each month. Other months answer 4k.
 const months: Record<string, number> = {
-  "2026-09-01": 10640,
-  "2026-10-01": 11300,
+  "2026-09": 10640,
+  "2026-10": 11300,
 };
 
 let broken: boolean;
@@ -17,13 +23,15 @@ beforeEach(() => {
     "fetch",
     vi.fn(async (url: string) => {
       const { path, query } = asked(url);
-      if (broken || path !== "/v1/tithes/summary")
+      if (broken || path !== "/v1/tithes/summary/monthly")
         return json({ title: "Server error", status: 500 }, 500);
-      return json({
-        totalCollected: months[query.get("from") ?? ""] ?? 4000,
-        uniqueTithers: 214,
-        averagePerMember: 52.8,
-      });
+      return json(
+        monthlyRows(query, (month) => ({
+          totalCollected: months[month] ?? 4000,
+          uniqueTithers: 214,
+          averagePerMember: 52.8,
+        })),
+      );
     }),
   );
 });

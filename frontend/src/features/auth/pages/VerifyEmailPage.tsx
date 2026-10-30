@@ -24,10 +24,10 @@ export function VerifyEmailPage() {
     return (
       <AuthScreen
         title="Email verified"
-        text="Your account is active. Sign in to set up your church."
+        text="Thank you. Your email address is confirmed."
       >
-        <LinkButton to="/signin" size="lg" pill block>
-          Continue to sign in
+        <LinkButton to="/dashboard" size="lg" pill block>
+          Continue
         </LinkButton>
       </AuthScreen>
     );

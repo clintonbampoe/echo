@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { Stat } from "@/ui";
 import type { Invitation } from "../api/invitations";
-import { subLine, titleOf } from "./display";
+import { joinLink, subLine, titleOf } from "./display";
 import { invitationStats } from "./figures";
 
 const NOW = Date.parse("2026-10-24T12:00:00Z");
@@ -34,6 +33,21 @@ describe("subLine", () => {
       "Clerk · used 1 time · expires in 2 days",
     );
   });
+  it("shows the limit when there is one", () => {
+    expect(subLine(inv({ maxUses: 10, useCount: 3 }), NOW)).toMatch(
+      /^Clerk · 3 of 10 used · /,
+    );
+  });
+  it("says never expires when there is no expiry date", () => {
+    expect(subLine(inv({ expiresAt: null }), NOW)).toBe(
+      "Clerk · not used yet · never expires",
+    );
+  });
+  it("says all places taken once the limit is reached", () => {
+    expect(
+      subLine(inv({ status: "Exhausted", maxUses: 5, useCount: 5 }), NOW),
+    ).toBe("Clerk · 5 of 5 used · all places taken");
+  });
   it("says switched off for revoked", () => {
     expect(subLine(inv({ status: "Revoked", useCount: 6 }), NOW)).toContain(
       "switched off",
@@ -42,19 +56,27 @@ describe("subLine", () => {
 });
 
 describe("invitationStats", () => {
-  it("counts active, joined and expiring within a week", () => {
-    const rows = [
-      inv({ useCount: 9 }),
-      inv({ id: "2", expiresAt: day(3), useCount: 2 }),
-      inv({ id: "3", status: "Revoked", useCount: 4 }),
-    ];
-    const [active, joined, soon] = invitationStats(rows, NOW) as [
-      Stat,
-      Stat,
-      Stat,
-    ];
-    expect(active.value).toBe("2");
-    expect(joined.value).toBe("15");
-    expect(soon.value).toBe("1");
+  it("shows the server's counts", () => {
+    const stats = invitationStats({
+      active: 2,
+      peopleJoined: 15,
+      expiringSoon: 1,
+    });
+    expect(stats.map((s) => s.value)).toEqual(["2", "15", "1"]);
+  });
+  it("shows dashes while they load", () => {
+    expect(invitationStats(undefined).map((s) => s.value)).toEqual([
+      "–",
+      "–",
+      "–",
+    ]);
+  });
+});
+
+describe("joinLink", () => {
+  it("points at the join screen with the code", () => {
+    expect(joinLink("K7QX-92MD-PW4T", "https://echo.example")).toBe(
+      "https://echo.example/join/K7QX-92MD-PW4T",
+    );
   });
 });

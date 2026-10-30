@@ -47,9 +47,9 @@ const groups = (today: string): Group[] => [
     titles: ["Member growth", "Gender", "Age", "Status"],
     cards: [
       <MemberGrowthCard today={today} />,
-      <MembersCard today={today} part="gender" />,
-      <MembersCard today={today} part="age" />,
-      <MembersCard today={today} part="status" />,
+      <MembersCard part="gender" />,
+      <MembersCard part="age" />,
+      <MembersCard part="status" />,
     ],
   },
   {
@@ -84,7 +84,7 @@ const rows = (today: string): Row[] => [
     columns: "3fr 2fr",
     cards: [<TithesCard today={today} />, <MemberGrowthCard today={today} />],
   },
-  { label: "Members", columns: "1fr", cards: [<MembersCard today={today} />] },
+  { label: "Members", columns: "1fr", cards: [<MembersCard />] },
   {
     label: "Projects and events",
     cards: [<ProjectsCard />, <UpcomingEventsCard today={today} />],

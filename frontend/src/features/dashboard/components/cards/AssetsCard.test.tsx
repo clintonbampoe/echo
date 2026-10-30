@@ -2,33 +2,21 @@ import { screen, within } from "@testing-library/react";
 import { json, renderCard, signIn, asked } from "../../testing/dashboardPage";
 import { AssetsCard } from "./AssetsCard";
 
+// Furniture holds nothing, so the server leaves it out.
 const categories = [
-  { id: 1, name: "Vehicles", assetCount: 2 },
-  { id: 2, name: "Sound equipment", assetCount: 3 },
-  { id: 3, name: "Furniture", assetCount: 0 },
+  {
+    categoryId: 1,
+    categoryName: "Vehicles",
+    count: 2,
+    totalCurrentValue: 46000,
+  },
+  {
+    categoryId: 2,
+    categoryName: "Sound equipment",
+    count: 3,
+    totalCurrentValue: 31000,
+  },
 ];
-
-// The totals, and each category's, told apart by the categoryId in the request.
-const figures = (categoryId: string | null) =>
-  ({
-    "1": {
-      totalAssets: 2,
-      totalCurrentValue: 46000,
-      totalPurchaseCost: 60000,
-      totalDepreciation: 14000,
-    },
-    "2": {
-      totalAssets: 3,
-      totalCurrentValue: 31000,
-      totalPurchaseCost: 40000,
-      totalDepreciation: 9000,
-    },
-  })[categoryId ?? ""] ?? {
-    totalAssets: 5,
-    totalCurrentValue: 77000,
-    totalPurchaseCost: 100000,
-    totalDepreciation: 23000,
-  };
 
 let broken: boolean;
 beforeEach(() => {
@@ -37,11 +25,9 @@ beforeEach(() => {
   vi.stubGlobal(
     "fetch",
     vi.fn(async (url: string) => {
-      const { path, query } = asked(url);
+      const { path } = asked(url);
       if (broken) return json({ title: "Server error", status: 500 }, 500);
-      if (path === "/v1/asset-categories") return json(categories);
-      if (path === "/v1/assets/summary")
-        return json(figures(query.get("categoryId")));
+      if (path === "/v1/assets/summary/by-category") return json(categories);
       return json({ title: "Not found", status: 404 }, 404);
     }),
   );
