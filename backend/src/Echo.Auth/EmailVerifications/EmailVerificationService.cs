@@ -7,7 +7,6 @@ using Echo.Shared.HttpResults;
 using Echo.Shared.Services.Email;
 using Echo.Shared.Services.Generators;
 using Echo.Shared.Services.Hashing;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Echo.Auth.EmailVerifications;
@@ -15,7 +14,7 @@ namespace Echo.Auth.EmailVerifications;
 public class EmailVerificationService(
     EmailVerificationRepository emailVerificationTokenRepository,
     UserRepository userRepository,
-    [FromKeyedServices("Resend")] IEmailService emailService,
+    IEmailQueue emailQueue,
     IUnitOfWork unitOfWork,
     ITokenGenerator tokenGenerator,
     ITokenHasher hashService,
@@ -68,6 +67,17 @@ public class EmailVerificationService(
             return new SuccessResult<string>("Email has been sent if user is valid");
         }
 
+        return await SendVerificationLink(user, ct);
+    }
+
+    /// <summary>
+    /// Issues a verification token for a user we already have and queues the email. Does not wait
+    /// for the email to be sent.
+    /// </summary>
+    public async Task<IOperationResult> SendVerificationLink(User user, CancellationToken ct)
+    {
+        using var span = instrumentation.ActivitySource.StartActivity("email.verification.issue");
+
         span?.SetTag("congregation.id", user.CongregationId);
         span?.SetTag("user.id", user.Id);
 
@@ -113,12 +123,15 @@ public class EmailVerificationService(
                 await unitOfWork.CommitAsync(ct);
             }
 
-            using (instrumentation.ActivitySource.StartActivity("email.send"))
-            {
-                Activity.Current?.SetTag("email.provider", "resend");
-                Activity.Current?.SetTag("email.type", "email_verification");
-                await emailService.SendAsync(user.EmailAddress, emailContent);
-            }
+            emailQueue.TryEnqueue(
+                new EmailMessage(
+                    user.EmailAddress,
+                    emailContent,
+                    "email_verification",
+                    user.Id,
+                    user.CongregationId
+                )
+            );
 
             span?.SetTag("auth.result", "success");
             RecordVerificationSent("success", user.CongregationId.ToString());

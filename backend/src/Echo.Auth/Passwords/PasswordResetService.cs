@@ -8,7 +8,6 @@ using Echo.Shared.HttpResults;
 using Echo.Shared.Services.Email;
 using Echo.Shared.Services.Generators;
 using Echo.Shared.Services.Hashing;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Echo.Auth.Passwords;
@@ -17,7 +16,7 @@ public class PasswordResetService(
     PasswordResetRepository passwordVerificationTokenRepository,
     UserRepository userRepository,
     JwtTokenService refreshTokenService,
-    [FromKeyedServices("Resend")] IEmailService emailService,
+    IEmailQueue emailQueue,
     IUnitOfWork unitOfWork,
     ITokenGenerator tokenGenerator,
     ITokenHasher tokenHashService,
@@ -68,14 +67,16 @@ public class PasswordResetService(
                 await unitOfWork.CommitAsync(ct);
             }
 
-            using (instrumentation.ActivitySource.StartActivity("svc.password.persist.email_send"))
-            {
-                Activity.Current?.SetTag("email.provider", "resend");
-                Activity.Current?.SetTag("email.type", "password_reset");
-                var resetLink = linkBuilder.BuildPasswordResetLink(token);
-                var emailContent = new PasswordResetEmailBody(user.Name, resetLink);
-                await emailService.SendAsync(user.EmailAddress, emailContent);
-            }
+            var resetLink = linkBuilder.BuildPasswordResetLink(token);
+            emailQueue.TryEnqueue(
+                new EmailMessage(
+                    user.EmailAddress,
+                    new PasswordResetEmailBody(user.Name, resetLink),
+                    "password_reset",
+                    user.Id,
+                    user.CongregationId
+                )
+            );
 
             span?.SetTag("auth.result", "success");
             RecordPasswordResetRequest("success", user.CongregationId.ToString());

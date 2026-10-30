@@ -10,6 +10,8 @@ using Echo.Shared.Services.Security;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Time.Testing;
 
@@ -91,6 +93,7 @@ public sealed class AuthTestHost : IAsyncDisposable
         var services = new ServiceCollection();
         services.AddLogging(b => b.SetMinimumLevel(LogLevel.Warning));
         services.AddSingleton<IConfiguration>(configuration);
+        services.AddSingleton<IHostEnvironment>(new TestEnvironment());
         services
             .AddApplicationServices()
             .AddAuthServices(configuration)
@@ -122,4 +125,12 @@ public sealed class AuthTestHost : IAsyncDisposable
             Convert.ToBase64String(Encoding.UTF8.GetBytes(rsa.ExportSubjectPublicKeyInfoPem()))
         );
     }
+}
+
+internal sealed class TestEnvironment : IHostEnvironment
+{
+    public string EnvironmentName { get; set; } = Environments.Development;
+    public string ApplicationName { get; set; } = "Echo.IntegrationTests";
+    public string ContentRootPath { get; set; } = AppContext.BaseDirectory;
+    public IFileProvider ContentRootFileProvider { get; set; } = new NullFileProvider();
 }
