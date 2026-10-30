@@ -32,7 +32,10 @@ public static class RegisterServices
         services.AddSingleton<IPasswordHasher, BcryptHashService>();
         services.AddSingleton<ITokenHasher, Sha256HashService>();
         services.AddSingleton<IEncoder, CursorEncoder>();
-        services.AddKeyedScoped<IEmailService, ResendEmailService>("Resend");
+        services.AddScoped<IEmailService, ResendEmailService>();
+        services.AddSingleton<EmailQueue>();
+        services.AddSingleton<IEmailQueue>(sp => sp.GetRequiredService<EmailQueue>());
+        services.AddHostedService<EmailDeliveryWorker>();
 
         services
             .AddOptions<FrontendOptions>()
