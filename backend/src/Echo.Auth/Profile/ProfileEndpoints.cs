@@ -35,7 +35,7 @@ public static class ProfileEndpoints
             .WithSummary("Returns the signed-in user's own profile.")
             .WithDescription(
                 """
-                Returns the profile of the user the bearer token belongs to: id, name, email address, role, when the email was verified and when the account was created.
+                Returns the profile of the user the bearer token belongs to: id, name, email address, role, when the email was verified, when the account was created and `passwordChangedAt` (when the password was last set or changed; `null` for accounts that have not changed it since this field was added).
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
@@ -79,7 +79,7 @@ public static class ProfileEndpoints
                 - `otherNames` — send an empty string to clear it.
                 - `currentPassword` and `newPassword` — to change the password, send **both**. The current password must be correct and the new one must meet the password policy.
 
-                The role and the email address cannot be changed here. Changing the password ends the user's sessions: their refresh tokens stop working, and the access token they hold expires on its own (within about 15 minutes), after which they must log in again.
+                The role and the email address cannot be changed here. Changing the password sets `passwordChangedAt` and ends the user's sessions: their refresh tokens stop working, and the access token they hold expires on its own (within about 15 minutes), after which they must log in again.
 
                 ### Failure modes
                 - `400 BAD_REQUEST` — a blank name, only one of the two password fields, a weak new password, or a wrong current password.

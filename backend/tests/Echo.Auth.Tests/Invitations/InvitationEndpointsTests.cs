@@ -39,6 +39,9 @@ public class InvitationEndpointsTests
             {
                 ("CreateInvitation", "POST", "/api/v1/auth/invitations"),
                 ("ListInvitations", "GET", "/api/v1/auth/invitations"),
+                ("InviteByEmail", "POST", "/api/v1/auth/invitations/email"),
+                ("GetInvitationSummary", "GET", "/api/v1/auth/invitations/summary"),
+                ("GetInvitation", "GET", "/api/v1/auth/invitations/{id:guid}"),
                 ("UpdateInvitation", "PUT", "/api/v1/auth/invitations/{id:guid}"),
                 ("RevokeInvitation", "POST", "/api/v1/auth/invitations/{id:guid}/revoke"),
                 ("DeleteInvitation", "DELETE", "/api/v1/auth/invitations/{id:guid}"),

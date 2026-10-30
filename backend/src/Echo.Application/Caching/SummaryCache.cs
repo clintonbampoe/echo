@@ -51,6 +51,11 @@ public sealed class SummaryCache(
         );
 
         activity?.SetTag("summary.cached", !computed);
+        instrumentation.SummaryRequests.Add(
+            1,
+            new KeyValuePair<string, object?>("summary", name),
+            new KeyValuePair<string, object?>("cached", !computed)
+        );
         SummaryLog.Served(logger, name, congregationId, cached: !computed);
         return new SuccessResult<T>(value!);
     }

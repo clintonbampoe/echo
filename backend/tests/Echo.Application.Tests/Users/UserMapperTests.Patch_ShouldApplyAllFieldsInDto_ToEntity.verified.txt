@@ -2,12 +2,13 @@
   Id: Guid_1,
   CongregationId: Guid_2,
   EmailAddress: new@echo.test,
-  PasswordHash: NewPassword123!,
+  PasswordHash: v1,
   EmailVerifiedAt: DateTime_1,
+  PasswordChangedAt: DateTime_2,
   FirstName: v2,
   LastName: v3,
   OtherNames: v4,
   Name: Jane Doe,
-  CreatedAt: DateTime_2,
-  DeletedAt: DateTime_3
+  CreatedAt: DateTime_3,
+  DeletedAt: DateTime_4
 }

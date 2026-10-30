@@ -17,7 +17,9 @@ const me = {
 const church = { id: "2", name: "Grace Chapel" };
 
 let fetchMock: ReturnType<typeof vi.fn>;
+let profile: Record<string, unknown>;
 beforeEach(() => {
+  profile = me;
   saveTokens({
     accessToken: "a",
     accessTokenExpiresAt: "2099-01-01T00:00:00Z",
@@ -25,7 +27,7 @@ beforeEach(() => {
     refreshTokenExpiresAt: "2099-01-01T00:00:00Z",
   });
   fetchMock = vi.fn(async (url: string) => {
-    if (url.includes("/users/me")) return json(me);
+    if (url.includes("/users/me")) return json(profile);
     if (url.includes("/congregation")) return json(church);
     return new Response(null, { status: 204 });
   });
@@ -172,5 +174,35 @@ describe("app shell", () => {
     expect(await screen.findByText("Sign in page")).toBeInTheDocument();
     await waitFor(() => expect(getTokens()).toBeNull());
     expect(visited.every((path) => path === "/signin")).toBe(true);
+  });
+});
+
+describe("verify email reminder", () => {
+  it("asks an unverified user to verify, and sends the link to their address", async () => {
+    profile = { ...me, emailVerifiedAt: null };
+    renderShell();
+    await userEvent.click(
+      await screen.findByRole("button", {
+        name: "Send me a verification link",
+      }),
+    );
+    expect(
+      await screen.findByText(/We sent a link to ama@example.com/),
+    ).toBeInTheDocument();
+    const call = fetchMock.mock.calls.find(([url]) =>
+      String(url).includes("/auth/verifications/account"),
+    )!;
+    expect(JSON.parse((call[1] as RequestInit).body as string)).toEqual({
+      email: "ama@example.com",
+    });
+  });
+
+  it("says nothing to a verified user", async () => {
+    profile = { ...me, emailVerifiedAt: "2026-10-01T00:00:00Z" };
+    renderShell();
+    await screen.findByText("Ama Mensah");
+    expect(
+      screen.queryByText("Verify your email address"),
+    ).not.toBeInTheDocument();
   });
 });

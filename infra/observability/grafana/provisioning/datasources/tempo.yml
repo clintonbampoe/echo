@@ -1,0 +1,22 @@
+apiVersion: 1
+datasources:
+  - name: Tempo
+    type: tempo
+    uid: tempo
+    access: proxy
+    url: http://tempo:3200
+    isDefault: false
+    editable: false
+    jsonData:
+      # From a trace, jump to logs. Custom query because logs are ingested
+      # via native OTLP: trace_id lives in structured metadata, 'service_name'
+      # is a label. ${__tags} expands via the tag mapping below.
+      tracesToLogsV2:
+        datasourceUid: loki
+        customQuery: true
+        query: '{ $${__tags} } | trace_id= `$$__trace.traceId`'
+        tags:
+          - key: service.name
+            value: service_name
+        spanStartTimeShift: 1h
+        spanEndTimeShift: -1h

@@ -27,15 +27,16 @@
       EmailAddress: v4,
       PasswordHash: v5,
       EmailVerifiedAt: DateTime_3,
+      PasswordChangedAt: DateTime_4,
       FirstName: v6,
       LastName: v7,
       OtherNames: v8,
       Name: v9,
-      CreatedAt: DateTime_4,
-      DeletedAt: DateTime_5
+      CreatedAt: DateTime_5,
+      DeletedAt: DateTime_6
     },
-    CreatedAt: DateTime_6,
-    DeletedAt: DateTime_7
+    CreatedAt: DateTime_7,
+    DeletedAt: DateTime_8
   },
   SessionDate: Date_2,
   PersonId: Guid_10,
@@ -48,11 +49,11 @@
     OtherNames: v12,
     PhoneNumber: v13,
     EmailAddress: v14,
-    CreatedAt: DateTime_8,
-    DeletedAt: DateTime_9
+    CreatedAt: DateTime_9,
+    DeletedAt: DateTime_10
   },
   PersonKindAtTime: Visitor,
-  CheckedInAt: DateTime_10,
+  CheckedInAt: DateTime_11,
   RecordedBy: Guid_13,
   Recorder: {
     Id: Guid_14,
@@ -60,15 +61,16 @@
     EmailAddress: v15,
     PasswordHash: v16,
     Role: Accountant,
-    EmailVerifiedAt: DateTime_11,
+    EmailVerifiedAt: DateTime_12,
+    PasswordChangedAt: DateTime_13,
     FirstName: v17,
     LastName: v18,
     OtherNames: v19,
     Name: v20,
-    CreatedAt: DateTime_12,
-    DeletedAt: DateTime_13
+    CreatedAt: DateTime_14,
+    DeletedAt: DateTime_15
   },
   IsFirstVisit: true,
-  CreatedAt: DateTime_14,
-  DeletedAt: DateTime_15
+  CreatedAt: DateTime_16,
+  DeletedAt: DateTime_17
 }

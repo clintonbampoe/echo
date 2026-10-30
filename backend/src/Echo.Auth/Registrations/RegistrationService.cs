@@ -24,6 +24,7 @@ public class RegistrationService(
     ICongregationMapper congregationMapper,
     IPasswordHasher passwordHashService,
     IIdGenerator idGenerator,
+    TimeProvider timeProvider,
     AuthInstrumentation instrumentation,
     ILogger<RegistrationService> logger
 )
@@ -171,6 +172,16 @@ public class RegistrationService(
                 passwordHash = await passwordHashService.HashAsync(request.UserInfo.Password);
             }
 
+            // Take one of the invitation's uses now, so a limited invitation cannot be over-used by
+            // people registering at the same moment.
+            if (!await invitationService.TryClaimUse(invitation.Id, ct))
+            {
+                span?.SetTag("auth.result", "invalid_invitation");
+                RecordUserRegistration("invalid_invitation", invitation.CongregationId.ToString());
+                RegistrationLog.UserRegistrationFailedInvalidInvitation(logger);
+                return new BadRequestResult("Invitation is invalid, expired, or revoked.");
+            }
+
             var user = new User
             {
                 Id = idGenerator.Generate(),
@@ -181,6 +192,7 @@ public class RegistrationService(
                 Role = invitation.AllowedRole,
                 CongregationId = invitation.CongregationId,
                 PasswordHash = passwordHash,
+                PasswordChangedAt = timeProvider.GetUtcNow().UtcDateTime,
             };
 
             span?.SetTag("user.id", user.Id);
@@ -190,8 +202,6 @@ public class RegistrationService(
                 userRepository.Create(user);
                 await unitOfWork.CommitAsync(ct);
             }
-
-            await invitationService.RecordUse(invitation.Id, ct);
 
             using (
                 instrumentation.ActivitySource.StartActivity(
@@ -209,7 +219,7 @@ public class RegistrationService(
             RegistrationLog.UserRegistrationSucceeded(logger, user.Id, invitation.CongregationId);
 
             return new SuccessResult<string>(
-                "Check your email to verify your account and complete registration."
+                "Your account is ready. We emailed a link to verify your email address."
             );
         }
         catch (Exception ex)

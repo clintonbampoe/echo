@@ -356,19 +356,21 @@ public class TitheService(
     public Task<IOperationResult> Summary(
         Guid congregationId,
         TitheFilters filters,
+        bool includePrevious,
         CancellationToken ct
     ) =>
         summaries.Serve(
             "tithes",
             congregationId,
-            filters,
-            token => ComputeSummary(congregationId, filters, token),
+            new { filters, includePrevious },
+            token => ComputeSummary(congregationId, filters, includePrevious, token),
             ct
         );
 
     private async Task<TitheSummaryDto> ComputeSummary(
         Guid congregationId,
         TitheFilters filters,
+        bool includePrevious,
         CancellationToken ct
     )
     {
@@ -379,9 +381,23 @@ public class TitheService(
 
         var stats = await repository.GetSummaryStats(congregationId, filters, ct);
 
+        var previousTotal = 0m;
+        if (includePrevious && window is { } w)
+        {
+            var before = w.Previous();
+            previousTotal = (
+                await repository.GetSummaryStats(
+                    congregationId,
+                    filters with { From = before.From, To = before.To },
+                    ct
+                )
+            ).Total;
+        }
+
         var res = new TitheSummaryDto
         {
             Window = window,
+            PreviousTotalCollected = previousTotal,
             TotalCollected = stats.Total,
             UniqueTithers = stats.UniqueTithers,
             MostUsedPaymentMethod = TitheStats.MostUsed(stats.ByMethod)?.ToString(),
@@ -418,7 +434,7 @@ public class TitheService(
         CancellationToken ct
     )
     {
-        if (MonthRange.Problem(filters.Months) is { } problem)
+        if (MonthRange.Problem(MonthRange.Or(filters.Months)) is { } problem)
             return new BadRequestResult(problem);
 
         return await summaries.Serve(
@@ -436,7 +452,7 @@ public class TitheService(
         CancellationToken ct
     )
     {
-        var months = dateWindows.ChartMonths(filters.Months, filters.To);
+        var months = dateWindows.ChartMonths(MonthRange.Or(filters.Months), filters.To);
         var rows = await repository.GetMonthlyTotals(
             congregationId,
             filters,

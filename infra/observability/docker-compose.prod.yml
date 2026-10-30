@@ -1,0 +1,54 @@
+# Production, on the observability server. Use together with the base file:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+#
+# The app server runs Alloy and sends everything here over a PRIVATE network. Three ports are published on this
+# server's private address for it (OBS_BIND_IP); the base file's 127.0.0.1 ports stay. Grafana is not published at all:
+# the only way in from the internet is the proxy below, over HTTPS, with a login.
+services:
+  loki:
+    ports:
+      - "${OBS_BIND_IP:?set OBS_BIND_IP}:3100:3100"
+  prometheus:
+    ports:
+      - "${OBS_BIND_IP}:9090:9090"
+  tempo:
+    ports:
+      - "${OBS_BIND_IP}:4317:4317"
+
+  grafana:
+    environment:
+      GF_SERVER_DOMAIN: ${GRAFANA_DOMAIN:?set GRAFANA_DOMAIN}
+      GF_SERVER_ROOT_URL: https://${GRAFANA_DOMAIN}/
+      # People sign in with a username and password an admin created. No sign-up page, no anonymous view.
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      GF_AUTH_DISABLE_LOGIN_FORM: "false"
+      # Cookies only over HTTPS, and a session ends after a week of not being used.
+      GF_SECURITY_COOKIE_SECURE: "true"
+      GF_SECURITY_COOKIE_SAMESITE: lax
+      GF_SECURITY_STRICT_TRANSPORT_SECURITY: "true"
+      GF_AUTH_LOGIN_MAXIMUM_INACTIVE_LIFETIME_DURATION: 7d
+      GF_SECURITY_DISABLE_GRAVATAR: "true"
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
+
+  proxy:
+    image: caddy:2
+    container_name: proxy
+    restart: unless-stopped
+    environment:
+      GRAFANA_DOMAIN: ${GRAFANA_DOMAIN}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./proxy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      grafana:
+        condition: service_healthy
+
+volumes:
+  caddy-data:
+  caddy-config:

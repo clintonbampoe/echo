@@ -15,12 +15,6 @@ public static partial class SessionLog
     public static partial void LoginInvalidCredentials(ILogger logger, Guid userId);
 
     [LoggerMessage(
-        Level = LogLevel.Warning,
-        Message = "Login failed: email not verified for user {UserId}"
-    )]
-    public static partial void LoginEmailNotVerified(ILogger logger, Guid userId);
-
-    [LoggerMessage(
         Level = LogLevel.Information,
         Message = "Login succeeded: user {UserId} in congregation {CongregationId}"
     )]

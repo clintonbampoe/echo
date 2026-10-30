@@ -27,6 +27,7 @@ public class ValidationProblemTests : IAsyncLifetime
     {
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseTestServer();
+        builder.Configuration["Invitations:CodeKey"] = Convert.ToBase64String(new byte[32]);
         builder.Services.AddApplicationServices();
         builder.Services.AddAuthServices(builder.Configuration);
         builder.Services.ConfigureValidationProblemDetails();

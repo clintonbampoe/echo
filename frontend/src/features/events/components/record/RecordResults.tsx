@@ -1,5 +1,6 @@
 import { useDebounced } from "@/lib/useDebounced";
 import { useMemberSearch, type MemberMatch } from "@/features/members";
+import { useAlreadyRecorded } from "../../hooks/queries";
 import { Avatar, Button, Chip } from "@/ui";
 import styles from "./RecordResults.module.css";
 import {
@@ -10,23 +11,36 @@ import {
 } from "../../model/record";
 
 type Props = {
+  eventId: string;
   mode: Mode;
   text: string;
   // Registration is closed: people can be found, but not registered.
   closed: boolean;
-  // Ids recorded before this panel was opened, and the ones recorded from it just now.
-  existing: ReadonlySet<string>;
+  // The ones recorded from this panel just now.
   done: readonly string[];
   busy: string | null;
   onRecord: (member: MemberMatch) => void;
 };
 
+const NONE: ReadonlySet<string> = new Set();
+
+// Which of the people found were recorded before this panel was opened: one small question about them, not the event's
+// whole list.
+function useRecordedBefore(
+  eventId: string,
+  mode: Mode,
+  matches: MemberMatch[] | undefined,
+): ReadonlySet<string> {
+  const ids = matches?.map((m) => m.id) ?? [];
+  return useAlreadyRecorded(eventId, mode, ids).data ?? NONE;
+}
+
 // What sits under the search box: a hint, "Searching…", a problem, nothing found, or the matches with a button each.
 export function RecordResults({
+  eventId,
   mode,
   text,
   closed,
-  existing,
   done,
   busy,
   onRecord,
@@ -34,6 +48,7 @@ export function RecordResults({
   const q = useDebounced(text);
   const search = useMemberSearch(q);
   const matches = search.data && q === text ? search.data : undefined;
+  const existing = useRecordedBefore(eventId, mode, matches);
   const note = footnote(mode, closed, matches?.length);
   return (
     <div aria-live="polite" className={styles.results}>

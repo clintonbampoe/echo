@@ -245,6 +245,12 @@ namespace Echo.Data.Migrations
 
                     NpgsqlIndexBuilderExtensions.IncludeProperties(b.HasIndex("CongregationId", "SessionDate", "Id"), new[] { "PersonKindAtTime", "IsFirstVisit" });
 
+                    b.HasIndex("PersonId")
+                        .HasDatabaseName("ix_attendance_visitor_stats")
+                        .HasFilter("deleted_at IS NULL AND person_kind_at_time = 'Visitor'");
+
+                    NpgsqlIndexBuilderExtensions.IncludeProperties(b.HasIndex("PersonId"), new[] { "CongregationId", "SessionDate" });
+
                     b.ToTable("attendance", (string)null);
                 });
 
@@ -462,7 +468,12 @@ namespace Echo.Data.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("deleted_at");
 
-                    b.Property<DateTime>("ExpiresAt")
+                    b.Property<string>("EncryptedCode")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("encrypted_code");
+
+                    b.Property<DateTime?>("ExpiresAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("expires_at");
 
@@ -474,6 +485,10 @@ namespace Echo.Data.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
                         .HasColumnName("label");
+
+                    b.Property<int?>("MaxUses")
+                        .HasColumnType("integer")
+                        .HasColumnName("max_uses");
 
                     b.Property<string>("TokenHash")
                         .IsRequired()
@@ -500,8 +515,12 @@ namespace Echo.Data.Migrations
                         .IsUnique()
                         .HasDatabaseName("ix_invitation_tokens_token_hash");
 
-                    b.HasIndex("CongregationId", "CreatedAt")
-                        .HasDatabaseName("ix_invitation_tokens_congregation_id_created_at");
+                    b.HasIndex("CongregationId", "CreatedAt", "Id")
+                        .IsDescending(false, true, false)
+                        .HasDatabaseName("ix_invitation_tokens_congregation_id_created_at_id")
+                        .HasFilter("deleted_at IS NULL");
+
+                    NpgsqlIndexBuilderExtensions.IncludeProperties(b.HasIndex("CongregationId", "CreatedAt", "Id"), new[] { "IsRevoked", "ExpiresAt", "MaxUses", "UseCount" });
 
                     b.ToTable("invitation_tokens", (string)null);
                 });
@@ -844,6 +863,11 @@ namespace Echo.Data.Migrations
                         .HasDatabaseName("ix_event_attendances_congregation_id_check_in_time_id")
                         .HasFilter("deleted_at IS NULL");
 
+                    b.HasIndex("EventId", "CheckInTime", "Id")
+                        .IsDescending(false, true, false)
+                        .HasDatabaseName("ix_event_attendances_event_id_check_in_time_id")
+                        .HasFilter("deleted_at IS NULL");
+
                     b.ToTable("event_attendances", (string)null);
                 });
 
@@ -894,6 +918,11 @@ namespace Echo.Data.Migrations
                     b.HasIndex("CongregationId", "RegistrationDate", "Id")
                         .IsDescending(false, true, false)
                         .HasDatabaseName("ix_event_registrations_congregation_id_registration_date_id")
+                        .HasFilter("deleted_at IS NULL");
+
+                    b.HasIndex("EventId", "RegistrationDate", "Id")
+                        .IsDescending(false, true, false)
+                        .HasDatabaseName("ix_event_registrations_event_id_registration_date_id")
                         .HasFilter("deleted_at IS NULL");
 
                     b.ToTable("event_registrations", (string)null);
@@ -1702,6 +1731,10 @@ namespace Echo.Data.Migrations
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)")
                         .HasColumnName("other_names");
+
+                    b.Property<DateTime?>("PasswordChangedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("password_changed_at");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()

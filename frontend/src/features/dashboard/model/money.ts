@@ -72,3 +72,22 @@ export function slicesOf(
       })),
   );
 }
+
+// What the card reads off its months: the one picked (the latest when none is), what came in or went out in it, its
+// net, and the total over every month shown.
+export function readMonths(
+  figures: ReturnType<typeof monthFigures>,
+  kind: MoneyKind,
+  picked: string | null,
+) {
+  type Figure = (typeof figures)[number];
+  const of = (f: Figure) => (kind === "Income" ? f.income : f.expenses) ?? 0;
+  const month = figures.find((f) => f.slot.key === picked) ?? figures.at(-1);
+  return {
+    of,
+    month,
+    value: month ? of(month) : 0,
+    net: month ? (month.income ?? 0) - (month.expenses ?? 0) : 0,
+    total: figures.reduce((n, f) => n + of(f), 0),
+  };
+}

@@ -1,0 +1,6 @@
+/* The amount is the point of a row, so it is in full ink, not the quiet grey of the date and menu beside it. */
+.amount {
+  font-weight: 600;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}

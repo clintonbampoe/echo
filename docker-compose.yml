@@ -13,10 +13,14 @@ services:
       context: .
       dockerfile: backend/src/Echo.Api/Dockerfile
     logging: *default-logging
+    container_name: api
     environment:
       ConnectionStrings__echodb: ${ConnectionStrings__echodb}
       OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT}
       OTEL_SERVICE_NAME: ${OTEL_SERVICE_NAME}
+      # How often the API pushes its metrics. The default is 60 s, which makes a dashboard trail what just happened by a
+      # minute or more. 15 s costs nothing at this size.
+      OTEL_METRIC_EXPORT_INTERVAL: ${OTEL_METRIC_EXPORT_INTERVAL:-15000}
       Jwt__PrivateKey: ${Jwt__PrivateKey}
       Jwt__PublicKey: ${Jwt__PublicKey}
       # Only set during a key rotation grace period; empty the rest of the time.
@@ -28,7 +32,11 @@ services:
       Frontend__BaseUrl: ${Frontend__BaseUrl}
       MailClient__Address: ${MailClient__Address}
       Resend__ApiKey: ${Resend__ApiKey}
+      Invitations__CodeKey: ${Invitations__CodeKey}
       RunMigrationsOnStartup: ${RunMigrationsOnStartup}
+    volumes:
+      # ASP.NET writes its data-protection keys here; without a volume they are lost on every rebuild.
+      - api-keys:/root/.aspnet/DataProtection-Keys
     healthcheck:
       test: [CMD, curl, -f, http://localhost:5025/api/health/live]
       interval: 5s
@@ -41,6 +49,7 @@ services:
   db:
     image: postgres:18
     logging: *default-logging
+    container_name: database
     environment:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USERNAME: ${DB_USERNAME}
@@ -66,6 +75,7 @@ services:
       context: .
       dockerfile: infra/nginx/Dockerfile
     logging: *default-logging
+    container_name: nginx
     depends_on:
       api:
         condition: service_healthy
@@ -75,6 +85,7 @@ services:
       context: .
       dockerfile: infra/postgres/backup/Dockerfile
     logging: *default-logging
+    container_name: backup
     environment:
       DB_NAME: ${DB_NAME}
       DB_USERNAME: ${DB_USERNAME}
@@ -96,6 +107,7 @@ services:
       context: .
       dockerfile: backend/src/Echo.MigrationService/Dockerfile
     logging: *default-logging
+    container_name: migrator
     environment:
       ConnectionStrings__echodb: ${ConnectionStrings__echodb}
     depends_on:
@@ -108,6 +120,7 @@ services:
       context: .
       dockerfile: backend/src/Echo.Seeder/Dockerfile
     logging: *default-logging
+    container_name: seeder
     environment:
       ConnectionStrings__echodb: ${ConnectionStrings__echodb}
     depends_on:
@@ -115,16 +128,8 @@ services:
         condition: service_healthy
     networks: [echo-network]
     profiles: [db-tools]
-  collector:
-    image: grafana/otel-lgtm:0.34.0
-    ports:
-      - 3000:3000  # UI
-      - 4317:4317  # OTLP over gRPC for logs, metrics and traces
-      - 4318:4318  # OTLP over HTTP for logs, metrics and traces
-      - 9090:9090  # Prometheus
-    networks: [echo-network]
-    profiles: [observability]
 networks:
   echo-network:
 volumes:
+  api-keys:
   postgres-data:

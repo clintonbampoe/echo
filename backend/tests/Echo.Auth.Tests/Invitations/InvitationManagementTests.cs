@@ -12,6 +12,9 @@ public class InvitationManagementTests
     private static InvitationToken Token(
         DateTime? expiresAt = null,
         bool revoked = false,
+        bool neverExpires = false,
+        int useCount = 0,
+        int? maxUses = null,
         DateTime? createdAt = null,
         Guid? id = null
     ) =>
@@ -20,8 +23,10 @@ public class InvitationManagementTests
             Id = id ?? Guid.NewGuid(),
             CongregationId = Guid.NewGuid(),
             TokenHash = Guid.NewGuid().ToString(),
-            ExpiresAt = expiresAt ?? Now.AddDays(10),
+            ExpiresAt = neverExpires ? null : expiresAt ?? Now.AddDays(10),
             IsRevoked = revoked,
+            UseCount = useCount,
+            MaxUses = maxUses,
             CreatedAt = createdAt ?? Now.AddDays(-1),
         };
 
@@ -125,5 +130,116 @@ public class InvitationManagementTests
         InvitationService.ApplyRevoke(token);
 
         Assert.True(token.IsRevoked);
+    }
+
+    [Fact]
+    public void StatusAt_NeverExpiring_StaysActive()
+    {
+        Assert.Equal(InvitationStatus.Active, Token(neverExpires: true).StatusAt(Now.AddYears(50)));
+    }
+
+    [Fact]
+    public void StatusAt_UsedUp_IsExhausted_ButExpiredAndRevokedWin()
+    {
+        Assert.Equal(InvitationStatus.Active, Token(useCount: 2, maxUses: 3).StatusAt(Now));
+        Assert.Equal(InvitationStatus.Exhausted, Token(useCount: 3, maxUses: 3).StatusAt(Now));
+        Assert.Equal(InvitationStatus.Expired, Token(Now.AddDays(-1), useCount: 3, maxUses: 3).StatusAt(Now));
+        Assert.Equal(InvitationStatus.Revoked, Token(revoked: true, useCount: 3, maxUses: 3).StatusAt(Now));
+        Assert.Equal(InvitationStatus.Active, Token(useCount: 500).StatusAt(Now));
+    }
+
+    [Fact]
+    public void WithStatus_AgreesWithStatusAt_ForLimitsAndNoExpiry()
+    {
+        var tokens = new[]
+        {
+            Token(),
+            Token(neverExpires: true),
+            Token(useCount: 1, maxUses: 3),
+            Token(useCount: 3, maxUses: 3),
+            Token(neverExpires: true, useCount: 1, maxUses: 1),
+            Token(Now.AddDays(-1)),
+            Token(revoked: true),
+        };
+        var all = tokens.AsQueryable();
+
+        foreach (var status in Enum.GetValues<InvitationStatus>())
+            Assert.Equal(
+                tokens.Where(t => t.StatusAt(Now) == status),
+                all.WithStatus(status, Now)
+            );
+    }
+
+    [Fact]
+    public void ApplyUpdate_NeverExpires_ClearsTheExpiry()
+    {
+        var token = Token();
+
+        Assert.Null(InvitationService.ApplyUpdate(token, new InvitationUpdateDto { NeverExpires = true }, Now));
+
+        Assert.Null(token.ExpiresAt);
+    }
+
+    [Fact]
+    public void ApplyUpdate_ExpiryDaysAndNeverExpires_AreRejected_AndChangeNothing()
+    {
+        var token = Token(neverExpires: true);
+
+        var problem = InvitationService.ApplyUpdate(
+            token,
+            new InvitationUpdateDto { ExpiryDays = 5, NeverExpires = true, Label = "x" },
+            Now
+        );
+
+        Assert.Contains("not both", problem);
+        Assert.Null(token.Label);
+        Assert.Null(token.ExpiresAt);
+    }
+
+    [Fact]
+    public void ApplyUpdate_MaxUses_CannotGoBelowThoseWhoJoined()
+    {
+        var token = Token(useCount: 4, maxUses: 10);
+
+        Assert.Contains("4 people", InvitationService.ApplyUpdate(token, new InvitationUpdateDto { MaxUses = 3 }, Now));
+        Assert.Equal(10, token.MaxUses);
+
+        Assert.Null(InvitationService.ApplyUpdate(token, new InvitationUpdateDto { MaxUses = 4 }, Now));
+        Assert.Equal(4, token.MaxUses);
+        Assert.Equal(InvitationStatus.Exhausted, token.StatusAt(Now));
+    }
+
+    [Fact]
+    public void ApplyUpdate_RaisingMaxUses_ReactivatesAUsedUpInvitation()
+    {
+        var token = Token(useCount: 3, maxUses: 3);
+
+        Assert.Null(InvitationService.ApplyUpdate(token, new InvitationUpdateDto { MaxUses = 5 }, Now));
+
+        Assert.Equal(InvitationStatus.Active, token.StatusAt(Now));
+    }
+
+    [Fact]
+    public void ApplyUpdate_ARevokedInvitation_CannotGetMoreUsesOrNoExpiry()
+    {
+        Assert.NotNull(InvitationService.ApplyUpdate(Token(revoked: true), new InvitationUpdateDto { MaxUses = 9 }, Now));
+        Assert.NotNull(InvitationService.ApplyUpdate(Token(revoked: true), new InvitationUpdateDto { NeverExpires = true }, Now));
+        Assert.Null(InvitationService.ApplyUpdate(Token(revoked: true), new InvitationUpdateDto { Label = "x" }, Now));
+    }
+
+    [Fact]
+    public void ExpiryFor_DefaultsTo30Days_AndNeverMeansNoDate()
+    {
+        Assert.Equal(Now.AddDays(30), InvitationService.ExpiryFor(Now, null, false));
+        Assert.Equal(Now.AddDays(90), InvitationService.ExpiryFor(Now, 90, false));
+        Assert.Null(InvitationService.ExpiryFor(Now, null, true));
+    }
+
+    [Fact]
+    public void ExpiryProblem_OnlyWhenBothAreSent()
+    {
+        Assert.Null(InvitationService.ExpiryProblem(null, true));
+        Assert.Null(InvitationService.ExpiryProblem(7, false));
+        Assert.NotNull(InvitationService.ExpiryProblem(7, true));
     }
 }

@@ -122,15 +122,3 @@ export function chooseType(
   const keep = !type || !picked || picked.categoryType === type;
   return { type, category: keep ? f.category : "" };
 }
-
-// The last twelve (or six) months, whatever days the list is showing: the chart is the long view.
-export const chartRange = (
-  today: string,
-  months = 12,
-): { from: string; to: string } => {
-  const [year, month] = [Number(today.slice(0, 4)), Number(today.slice(5, 7))];
-  const from = new Date(Date.UTC(year, month - months, 1))
-    .toISOString()
-    .slice(0, 10);
-  return { from, to: today };
-};

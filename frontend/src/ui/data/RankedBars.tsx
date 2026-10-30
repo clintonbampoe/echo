@@ -1,3 +1,4 @@
+import { useState, type CSSProperties } from "react";
 import { Link } from "react-router-dom";
 import styles from "./RankedBars.module.css";
 
@@ -23,13 +24,16 @@ type Props = {
 };
 
 // Things ranked from the biggest, each a name, an amount and a bar as long as its share of the biggest. Every row is a
-// data door: on hover the bar grows from its centre, the others step back, and a pill gives the share. The bar only
-// repeats what the words say, so it is hidden from screen readers.
+// data door: on hover the row's bar thickens and the bars of the rows around it thin a little, less with each step away,
+// so the list looks drawn toward the row you are on, and a pill gives the share. The bar only repeats what the words
+// say, so it is hidden from screen readers.
 export function RankedBars({ label, rows, selected, onPick }: Props) {
+  // Which row the pointer (or the keyboard) is on.
+  const [hot, setHot] = useState<number | null>(null);
   const top = Math.max(...rows.map((r) => r.value), 0);
   const total = rows.reduce((sum, r) => sum + r.value, 0);
   return (
-    <ul aria-label={label} className={styles.list}>
+    <ul aria-label={label} className={styles.list} data-active={hot !== null}>
       {rows.map((r, i) => {
         const share = total > 0 ? Math.round((r.value / total) * 100) : 0;
         const picked = selected === r.key;
@@ -54,7 +58,17 @@ export function RankedBars({ label, rows, selected, onPick }: Props) {
           </>
         );
         return (
-          <li key={r.key}>
+          <li
+            key={r.key}
+            data-hot={hot === i}
+            style={
+              { "--d": hot === null ? 0 : Math.abs(i - hot) } as CSSProperties
+            }
+            onPointerEnter={() => setHot(i)}
+            onPointerLeave={() => setHot(null)}
+            onFocus={(e) => e.target.matches(":focus-visible") && setHot(i)}
+            onBlur={() => setHot(null)}
+          >
             {onPick && !r.closed ? (
               <button
                 type="button"

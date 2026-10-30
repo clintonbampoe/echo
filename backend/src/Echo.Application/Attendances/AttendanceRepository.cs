@@ -87,7 +87,7 @@ public class AttendanceRepository(AppDbContext context)
                 g.Count(a => a.PersonKindAtTime == PersonKind.Visitor),
                 g.Count(a => a.IsFirstVisit)
             ))
-            .FirstOrDefaultAsync(ct)
+            .SingleOrDefaultAsync(ct)
             .ContinueWith(t => t.Result ?? new AttendanceStats(0, 0, 0, 0), ct);
 
     public async Task<List<AttendanceMonthlyDto>> GetMonthlyTotals(

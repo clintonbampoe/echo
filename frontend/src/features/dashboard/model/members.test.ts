@@ -8,6 +8,7 @@ const mix: MemberMix = {
   female: 134,
   average: 36,
   bands: [],
+  joinedThisYear: 16,
 };
 
 describe("statusRows", () => {

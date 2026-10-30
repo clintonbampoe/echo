@@ -93,17 +93,35 @@ public class SessionRepository(AppDbContext context)
             .FilterDeleted()
             .Where(s => s.CongregationId == congregationId)
             .Filter(filters);
-        var attendance = context
-            .Set<Attendance>()
-            .AsNoTracking()
-            .Live()
-            .Where(a => a.CongregationId == congregationId);
+        // No congregation filter on attendance: the sessions are already the congregation's, and asking for it here
+        // sends the database through every attendance row of the congregation instead of walking the sessions.
+        var attendance = context.Set<Attendance>().AsNoTracking().Live();
 
         var stats = await context
             .OneRow(congregationId)
-            .SummarizeSessions(sessions, attendance)
+            .SummarizeSessions(sessions)
+            .SingleOrDefaultAsync(ct);
+        if (stats is null)
+            return new SessionStats(0, 0, 0, 0, 0);
+
+        // Attendance is counted by walking the sessions in range and their rows in the (session, person) index,
+        // one pass for both counts. Asking "is this row in one of those sessions?" for every attendance row sends
+        // the database through the whole table, and a year of a big congregation is hundreds of thousands of rows.
+        var records = await sessions
+            .Join(attendance, s => s.Id, a => a.SessionId, (s, _) => s.Status)
+            .GroupBy(_ => 1)
+            .Select(g => new
+            {
+                All = g.Count(),
+                Completed = g.Count(status => status == SessionStatus.Completed),
+            })
             .FirstOrDefaultAsync(ct);
-        return stats ?? new SessionStats(0, 0, 0, 0, 0);
+
+        return stats with
+        {
+            TotalAttendance = records?.All ?? 0,
+            CompletedAttendance = records?.Completed ?? 0,
+        };
     }
 
     public void Create(Session entity) => _dbSet.Add(entity);
@@ -129,26 +147,18 @@ public record SessionStats(
 
 internal static class SessionQueryExtensions
 {
+    // The session counts only; the attendance counts are filled in by the caller (see GetSummaryStats).
     internal static IQueryable<SessionStats> SummarizeSessions(
         this IQueryable<Congregation> oneRow,
-        IQueryable<Session> sessions,
-        IQueryable<Attendance> attendance
-    )
-    {
-        // Built before the projection: EF inlines these queries but cannot translate a custom
-        // method call (InSessions) made inside the lambda.
-        var completed = sessions.Where(s => s.Status == SessionStatus.Completed);
-        var allRecords = attendance.InSessions(sessions);
-        var completedRecords = attendance.InSessions(completed);
-
-        return oneRow.Select(_ => new SessionStats(
+        IQueryable<Session> sessions
+    ) =>
+        oneRow.Select(_ => new SessionStats(
             sessions.Count(),
-            completed.Count(),
+            sessions.Count(s => s.Status == SessionStatus.Completed),
             sessions.Count(s => s.Status == SessionStatus.Cancelled),
-            allRecords.Count(),
-            completedRecords.Count()
+            0,
+            0
         ));
-    }
 
     internal static IQueryable<Session> Filter(
         this IQueryable<Session> query,

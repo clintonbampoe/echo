@@ -7,7 +7,11 @@ import {
 } from "@/lib/tokens";
 import { networkError, parseProblem } from "./errors";
 
-type Query = Record<string, string | number | boolean | undefined | null>;
+// A list value is sent as the same key repeated (`ids=a&ids=b`), which is how the API reads a list.
+type Query = Record<
+  string,
+  string | number | boolean | undefined | null | readonly string[]
+>;
 
 type Options = {
   body?: unknown;
@@ -22,8 +26,11 @@ const REFRESH_PATH = "/v1/auth/sessions/refresh";
 function buildUrl(path: string, query?: Query): string {
   const url = new URL(config.apiUrl + path, window.location.origin);
   for (const [key, value] of Object.entries(query ?? {})) {
-    if (value !== undefined && value !== null && value !== "")
+    if (Array.isArray(value)) {
+      for (const item of value) url.searchParams.append(key, item);
+    } else if (value !== undefined && value !== null && value !== "") {
       url.searchParams.set(key, String(value));
+    }
   }
   return url.toString();
 }

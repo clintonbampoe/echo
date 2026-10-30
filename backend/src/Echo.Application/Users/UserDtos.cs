@@ -42,6 +42,9 @@ public record UserResponseDto
     public DateTime? VerifiedAt { get; init; }
     public UserRole Role { get; init; }
     public DateTime CreatedAt { get; init; }
+
+    /// <summary>When the password was last set or changed; null for accounts older than this field.</summary>
+    public DateTime? PasswordChangedAt { get; init; }
 }
 
 public record UserAuthDto

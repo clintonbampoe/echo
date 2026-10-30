@@ -56,14 +56,6 @@ public class SessionService(
             }
         }
 
-        if (entity.EmailVerifiedAt is null)
-        {
-            span?.SetTag("auth.result", "email_not_verified");
-            RecordLogin("email_not_verified", entity.Id.ToString());
-            SessionLog.LoginEmailNotVerified(logger, entity.Id);
-            return new UserNotVerifiedResult();
-        }
-
         var user = mapper.ToAuthDto(entity);
 
         try

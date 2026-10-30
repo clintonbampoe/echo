@@ -47,5 +47,17 @@ public class EventRegistrationConfiguration : IEntityTypeConfiguration<EventRegi
             })
             .IsDescending(false, true, false)
             .HasFilter("deleted_at IS NULL");
+
+        // One event's sign-ups in order, cursor on registration_date + id: a page of the event's list reads only its own
+        // rows, in order, instead of sorting everyone who signed up.
+        builder
+            .HasIndex(er => new
+            {
+                er.EventId,
+                er.RegistrationDate,
+                er.Id,
+            })
+            .IsDescending(false, true, false)
+            .HasFilter("deleted_at IS NULL");
     }
 }

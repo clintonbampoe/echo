@@ -53,6 +53,12 @@ public static class Extensions
         services.AddScoped<ProfileService>();
         services.AddScoped<JwtTokenService>();
         services.AddScoped<SessionRepository>();
+        services
+            .AddOptions<InvitationOptions>()
+            .BindConfiguration(InvitationOptions.SectionName)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+        services.AddSingleton<InvitationCodeProtector>();
         services.AddScoped<InvitationRepository>();
         services.AddScoped<InvitationService>();
 

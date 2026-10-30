@@ -1,10 +1,10 @@
 using Echo.Application.Attendances;
 using Echo.Data;
 using Echo.Domain.Attendances;
+using Echo.Domain.Congregations;
 using Echo.Domain.Members;
 using Echo.Shared.Query;
 using Microsoft.EntityFrameworkCore;
-using Echo.Domain.Congregations;
 
 namespace Echo.Application.Members;
 
@@ -29,7 +29,7 @@ public class VisitorRepository(AppDbContext context)
             .Where(v => v.Person.CongregationId == congregationId)
             .Include(v => v.Person)
             .Include(v => v.InvitedBy)
-                .ThenInclude(m => m.Person)
+                .ThenInclude(m => m!.Person)
             .Filter(filters)
             .OrderBy(v => v.Person.Name)
             .ThenBy(v => v.PersonId)
@@ -44,7 +44,7 @@ public class VisitorRepository(AppDbContext context)
             .Where(v => v.PersonId == id && v.CongregationId == congregationId)
             .Include(v => v.Person)
             .Include(v => v.InvitedBy)
-                .ThenInclude(m => m.Person)
+                .ThenInclude(m => m!.Person)
             .FirstOrDefaultAsync(ct);
     }
 
@@ -100,7 +100,7 @@ public class VisitorRepository(AppDbContext context)
                 named.ConvertedBetween(filters.From, filters.To),
                 attendance
             )
-            .FirstOrDefaultAsync(ct);
+            .SingleOrDefaultAsync(ct);
         return stats ?? new VisitorStats(0, 0, 0, 0, 0, 0, 0);
     }
 
@@ -123,16 +123,20 @@ internal readonly record struct VisitStats(Guid PersonId, int Count, DateOnly La
 
 internal static class VisitorQueryExtensions
 {
-    /// <summary>Visits are attendance records made while the person was a visitor.</summary>
+    /// <summary>
+    /// Visits are attendance records made while the person was a visitor.
+    /// </summary>
     internal static IQueryable<VisitStats> VisitStatsFor(
         this IQueryable<Attendance> query,
         IReadOnlyList<Guid> personIds
-    ) =>
-        query
+    )
+    {
+        return query
             .Live()
             .Where(a => personIds.Contains(a.PersonId) && a.PersonKindAtTime == PersonKind.Visitor)
             .GroupBy(a => a.PersonId)
             .Select(g => new VisitStats(g.Key, g.Count(), g.Max(a => a.SessionDate)));
+    }
 
     // visitors is the visitor list for the filters; created and converted are everyone created or
     // converted in the window, whatever their current status.
@@ -190,7 +194,7 @@ internal static class VisitorQueryExtensions
             : query.Where(v =>
                 EF.Functions.ILike(
                     v.Person.Name,
-                    $"%{Echo.Shared.Query.Extensions.EscapeLike(name.Trim())}%"
+                    $"%{Shared.Query.Extensions.EscapeLike(name.Trim())}%"
                 )
             );
 
@@ -240,7 +244,8 @@ internal static class VisitorQueryExtensions
 
     // A day as a range of instants, so the database can seek the timestamp index instead of casting
     // every row to a date.
-    private static DateTime StartOf(DateOnly day) => day.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+    private static DateTime StartOf(DateOnly day) =>
+        day.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
 
     private static DateTime EndOf(DateOnly day) =>
         day == DateOnly.MaxValue ? DateTime.MaxValue : StartOf(day.AddDays(1));
@@ -256,10 +261,7 @@ internal static class VisitorQueryExtensions
         if (cursor is not null)
             query = query.Where(v =>
                 string.Compare(v.Person.Name, cursor.Name) >= 0
-                && (
-                    string.Compare(v.Person.Name, cursor.Name) > 0
-                    || v.PersonId > cursor.Id
-                )
+                && (string.Compare(v.Person.Name, cursor.Name) > 0 || v.PersonId > cursor.Id)
             );
 
         return query.Take(pageSize);
@@ -267,7 +269,7 @@ internal static class VisitorQueryExtensions
 
     internal static IQueryable<Visitor> SearchName(this IQueryable<Visitor> query, string name)
     {
-        var pattern = $"%{Echo.Shared.Query.Extensions.EscapeLike(name.Trim())}%";
+        var pattern = $"%{Shared.Query.Extensions.EscapeLike(name.Trim())}%";
         return query
             .Where(v => EF.Functions.ILike(v.Person.Name, pattern))
             .OrderByDescending(v => EF.Functions.TrigramsSimilarity(v.Person.Name, name))

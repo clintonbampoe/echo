@@ -56,7 +56,7 @@ public class AssetRepository(AppDbContext context, TimeProvider timeProvider)
     )
     {
         var today = DateUtils.GetDateToday(timeProvider);
-        var stats = await Scope(congregationId, filters).SummarizeAssets(today).FirstOrDefaultAsync(ct);
+        var stats = await Scope(congregationId, filters).SummarizeAssets(today).SingleOrDefaultAsync(ct);
         return stats ?? new AssetStats(0, 0m, 0m, 0d);
     }
 

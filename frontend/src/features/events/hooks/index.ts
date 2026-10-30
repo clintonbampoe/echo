@@ -1,8 +1,10 @@
 export { eventKeys } from "./keys";
 export {
   useEvent,
+  useAlreadyRecorded,
   useEventCheckIns,
   useEventRegistrations,
+  useEventRoster,
   useEventSummary,
   useEvents,
   useNextEvent,

@@ -6,7 +6,7 @@ export const transactionKeys = {
     ["transactions", "list", filters] as const,
   summary: (filters: TransactionFilters) =>
     ["transactions", "summary", filters] as const,
-  months: (filters: TransactionFilters) =>
-    ["transactions", "months", filters] as const,
+  months: (months: number, to: string) =>
+    ["transactions", "months", months, to] as const,
   categories: ["transactions", "categories"] as const,
 };

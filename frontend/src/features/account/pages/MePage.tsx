@@ -1,7 +1,9 @@
 import { useNavigate } from "react-router-dom";
 import { useSignOut } from "@/features/auth";
+import { formatDate } from "@/lib/format";
 import { Avatar, Icon, PageHeader } from "@/ui";
 import { roleLabel } from "../model/labels";
+import type { Congregation, Me } from "../api/account";
 import { useCongregation, useMe } from "../hooks/queries";
 import styles from "./MePage.module.css";
 
@@ -29,12 +31,7 @@ export function MePage() {
             <p className={styles.sub}>{me?.emailAddress}</p>
           </div>
         </div>
-        <Line
-          title="Role"
-          sub={me ? roleLabel(me.role) : ""}
-          value={me?.role}
-        />
-        <Line title="Congregation" sub={church?.name ?? ""} />
+        <AccountLines me={me} church={church} />
       </section>
       <section className={styles.card}>
         <button
@@ -68,5 +65,38 @@ function Line({
       </div>
       {value && <span className={styles.value}>{value}</span>}
     </div>
+  );
+}
+
+// Role, email, password and church, one line each. Email and password only appear once they can say something.
+function AccountLines({
+  me,
+  church,
+}: {
+  me: Me | undefined;
+  church: Congregation | undefined;
+}) {
+  return (
+    <>
+      <Line title="Role" sub={me ? roleLabel(me.role) : ""} value={me?.role} />
+      <Line
+        title="Email"
+        sub={me?.emailAddress ?? ""}
+        value={me?.emailVerifiedAt ? "Verified" : "Not verified"}
+      />
+      <PasswordLine changedAt={me?.passwordChangedAt} />
+      <Line title="Congregation" sub={church?.name ?? ""} />
+    </>
+  );
+}
+
+// Only shown once the account has a change date to report.
+function PasswordLine({ changedAt }: { changedAt?: string | null }) {
+  if (!changedAt) return null;
+  return (
+    <Line
+      title="Password"
+      sub={`Changed ${formatDate(changedAt.slice(0, 10))}`}
+    />
   );
 }

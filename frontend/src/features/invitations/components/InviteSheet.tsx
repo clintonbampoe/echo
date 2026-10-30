@@ -19,8 +19,8 @@ import styles from "./InviteSheet.module.css";
 
 type Props = { onClose: () => void };
 
-// The "Invite people" sheet. It asks what the invitation lets people be and for how long; once created
-// it shows the code, which is the only time the code can be seen.
+// The "Invite people" sheet. It asks what the invitation lets people be, for how long and for how many;
+// once created it shows the code to copy.
 export function InviteSheet({ onClose }: Props) {
   const create = useCreateInvitation();
   const [created, setCreated] = useState<CreatedInvitation | null>(null);
@@ -90,6 +90,15 @@ export function InviteSheet({ onClose }: Props) {
             Anyone with the code can join until then.
           </p>
         </div>
+        <Field
+          label="Limit"
+          optional
+          inputMode="numeric"
+          placeholder="No limit"
+          hint="How many people can join with this code."
+          error={form.formState.errors.maxUses?.message}
+          {...form.register("maxUses")}
+        />
       </div>
     </FormSheet>
   );

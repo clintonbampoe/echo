@@ -39,6 +39,14 @@ sh SetupJwtKeys.sh env
 
   **NB:** On Windows, unless you've configured a bash interpreter (Git Bash, WSL), the script may not run. In that case, contact the maintainer for a **JWT Key Pair**.
 
+- To set up the **invitation code key** (it encrypts invitation codes so the invitation list can show them again; the API will not start without it), navigate to `/backend/tools/invitation-key-setup` and run:
+
+```bash
+sh SetupInvitationKey.sh env
+```
+
+  It writes `Invitations__CodeKey` to the `.env` file at the repo root and asks before overwriting an existing one. Use `sh SetupInvitationKey.sh` (no argument) to put it in `dotnet user-secrets` for running `Echo.Api` outside Docker. Do not change the key once invitations exist: the codes already stored become unreadable.
+
 ---
 
 ## 3. Building container images

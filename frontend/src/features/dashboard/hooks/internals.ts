@@ -1,50 +1,40 @@
-import { useQueries, useQuery } from "@tanstack/react-query";
-import type { Amount } from "../model/cards";
+import { useQuery } from "@tanstack/react-query";
 import type { Bucket } from "../model/trend";
 
-// One number from a summary call. The key holds the range, so asking for the same one twice shares it.
-export function useAmount(
-  name: string,
-  from: string,
-  to: string,
-  fetchAmount: (
-    from: string,
-    to: string,
-    signal?: AbortSignal,
-  ) => Promise<number>,
-): Amount {
-  const query = useQuery({
-    queryKey: ["dashboard", name, from, to],
-    queryFn: ({ signal }) => fetchAmount(from, to, signal),
-  });
-  return {
-    value: query.data,
-    failed: query.isError,
-    retry: () => void query.refetch(),
-  };
-}
-
-// One answer for each stretch, in order. `values` is there only once every stretch has answered.
-export function useBuckets<T>(
+// One answer for each month a chart draws, from a single `/summary/monthly` call. The server sends a row for every
+// month, so `pick` turns the row of a bar's month (or nothing, were it missing) into what the bar needs.
+export function useMonthly<Row extends { year: number; month: number }, T>(
   name: string,
   buckets: readonly Bucket[],
-  fetchOne: (from: string, to: string, signal?: AbortSignal) => Promise<T>,
+  fetchRows: (
+    months: number,
+    to: string,
+    signal?: AbortSignal,
+  ) => Promise<Row[]>,
+  pick: (row: Row | undefined) => T,
 ) {
-  const results = useQueries({
-    queries: buckets.map((b) => ({
-      queryKey: ["dashboard", name, b.from, b.to],
-      queryFn: ({ signal }: { signal?: AbortSignal }) =>
-        fetchOne(b.from, b.to, signal),
-    })),
+  const months = buckets.length;
+  const to = buckets[months - 1]?.to ?? "";
+  const query = useQuery({
+    queryKey: ["dashboard", name, months, to],
+    queryFn: ({ signal }) => fetchRows(months, to, signal),
+    enabled: months > 0,
   });
-  const values = results.flatMap((r) => (r.data === undefined ? [] : [r.data]));
+  const values = query.data
+    ? buckets.map((b) =>
+        pick(
+          query.data.find(
+            (r) =>
+              `${r.year}-${String(r.month).padStart(2, "0")}` ===
+              b.from.slice(0, 7),
+          ),
+        ),
+      )
+    : undefined;
   return {
-    values: values.length === results.length ? values : undefined,
-    failed: results.some((r) => r.isError),
-    retry: () =>
-      results.forEach((r) => {
-        if (r.isError) void r.refetch();
-      }),
+    values,
+    failed: query.isError,
+    retry: () => void query.refetch(),
   };
 }
 

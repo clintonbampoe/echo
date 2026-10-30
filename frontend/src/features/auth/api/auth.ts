@@ -41,7 +41,8 @@ export type InvitationInfo = {
   city: string;
   region: string;
   allowedRole: string;
-  expiresAt: string;
+  // Null when the invitation never expires.
+  expiresAt: string | null;
   // Who sent the invitation. The API does not return it yet; shown when it does.
   invitedBy?: string;
 };

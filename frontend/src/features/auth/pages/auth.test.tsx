@@ -26,9 +26,9 @@ beforeEach(() => {
 });
 afterEach(() => vi.unstubAllGlobals());
 
-function renderAt(path: string, extra: RouteObject[] = []) {
+function renderAt(path: string, extra: RouteObject[] = [], state?: unknown) {
   const router = createMemoryRouter([...authRoutes, ...extra], {
-    initialEntries: [path],
+    initialEntries: [state ? { pathname: path, state } : path],
   });
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false } },
@@ -131,6 +131,16 @@ describe("sign up", () => {
 });
 
 describe("verify", () => {
+  it("tells a new user the account is ready and points to sign-in", async () => {
+    renderAt("/verify", [], { email: "ama@example.com" });
+    expect(
+      await screen.findByText("Your account is ready"),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "Continue to sign in" }),
+    ).toHaveAttribute("href", "/signin");
+  });
+
   it("sends someone with no email to sign in", async () => {
     const router = renderAt("/verify");
     await waitFor(() => expect(router.state.location.pathname).toBe("/signin"));

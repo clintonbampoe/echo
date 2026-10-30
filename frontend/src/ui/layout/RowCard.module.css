@@ -45,6 +45,21 @@
 .muted .title {
   color: var(--text-2);
 }
+.open {
+  flex: 1;
+  min-width: 0;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  gap: var(--s-16);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
 .text {
   flex: 1;
   min-width: 0;

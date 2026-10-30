@@ -334,7 +334,7 @@ public class AssetService(
         CancellationToken ct
     )
     {
-        if (MonthRange.Problem(filters.Months) is { } problem)
+        if (MonthRange.Problem(MonthRange.Or(filters.Months)) is { } problem)
             return new BadRequestResult(problem);
 
         return await summaries.Serve(
@@ -352,7 +352,7 @@ public class AssetService(
         CancellationToken ct
     )
     {
-        var months = dateWindows.ChartMonths(filters.Months, filters.To);
+        var months = dateWindows.ChartMonths(MonthRange.Or(filters.Months), filters.To);
         var (from, to) = MonthRange.Bounds(months);
         var acquired = await repository.GetAcquiredByMonth(congregationId, filters.CategoryId, from, to, ct);
         var lost = await repository.GetLostByMonth(congregationId, filters.CategoryId, from, to, ct);

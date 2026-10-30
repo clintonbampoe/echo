@@ -10,18 +10,22 @@ import {
   ListCard,
 } from "@/ui";
 import type { EventCheckIn } from "../../api/checkIns";
-import { filterArrivals, type Arrival, type Phase } from "../../model/roster";
+import {
+  checkInFilters,
+  toArrival,
+  type Arrival,
+  type Phase,
+} from "../../model/roster";
 import { EditCheckInTimeSheet } from "../form/EditCheckInTimeSheet";
 import { arrivalPerson } from "../../model/person";
 import { EventPersonPanel } from "./EventPersonPanel";
 import { RemoveCheckInDialog } from "../dialogs/RemoveDialogs";
-import { rosterList, type RosterState } from "../../model/rosterList";
+import { useEventCheckIns } from "../../hooks/queries";
 
 type Props = {
-  arrivals: Arrival[];
+  eventId: string;
   eventName: string;
   phase: Phase;
-  state: RosterState;
 };
 
 const options = [
@@ -48,11 +52,54 @@ const columns: PersonColumn<Arrival>[] = [
   },
 ];
 
-// Who came to the event, in the order they arrived: searched by name and narrowed by type (signed up, or a
-// walk-in). A row opens that person's panel for this event (design rule S6).
-export function CheckInsTab({ arrivals, eventName, phase, state }: Props) {
+type ToolbarProps = {
+  name: string;
+  onName: (name: string) => void;
+  kind: string;
+  onKind: (kind: string) => void;
+  resetKey: number;
+  filtered: boolean;
+  onClear: () => void;
+};
+
+// The search box and the type choice above the list.
+function Toolbar({
+  name,
+  onName,
+  kind,
+  onKind,
+  resetKey,
+  filtered,
+  onClear,
+}: ToolbarProps) {
+  return (
+    <FilterBar
+      searchLabel="Search check-ins"
+      search={name}
+      onSearch={onName}
+      resetKey={resetKey}
+      active={kind ? 1 : 0}
+      filtered={filtered}
+      onClear={onClear}
+    >
+      <FilterSelect
+        label="Type"
+        options={options}
+        value={kind}
+        onChange={onKind}
+      />
+    </FilterBar>
+  );
+}
+
+// Who came to the event, in the order they arrived, a page at a time. The server searches by name and narrows by type
+// (signed up, or a walk-in), and each row says which it is, so the tab reads only what it shows, and only once it is
+// open. A row opens that person's panel for this event (design rule S6).
+export function CheckInsTab({ eventId, eventName, phase }: Props) {
   const [name, setName] = useState("");
   const [kind, setKind] = useState("");
+  const list = useEventCheckIns(eventId, checkInFilters(name, kind));
+  const arrivals = { ...list, rows: list.rows.map(toArrival) };
   const [resetKey, setResetKey] = useState(0);
   const [viewing, setViewing] = useState<Arrival | null>(null);
   const [editing, setEditing] = useState<EventCheckIn | null>(null);
@@ -77,26 +124,19 @@ export function CheckInsTab({ arrivals, eventName, phase, state }: Props) {
       <ListCard
         title="Check-ins"
         toolbar={
-          <FilterBar
-            searchLabel="Search check-ins"
-            search={name}
-            onSearch={setName}
+          <Toolbar
+            name={name}
+            onName={setName}
+            kind={kind}
+            onKind={setKind}
             resetKey={resetKey}
-            active={kind ? 1 : 0}
             filtered={filtered}
             onClear={clear}
-          >
-            <FilterSelect
-              label="Type"
-              options={options}
-              value={kind}
-              onChange={setKind}
-            />
-          </FilterBar>
+          />
         }
       >
         <ListBody
-          list={rosterList(filterArrivals(arrivals, name, kind), state)}
+          list={arrivals}
           icon="calendar-check"
           noun={["check-in", "check-ins"]}
           emptyText="People who come to this event will appear here."

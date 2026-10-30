@@ -1,0 +1,36 @@
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-20);
+  padding: var(--s-24);
+}
+.code {
+  margin: 0;
+  padding: var(--s-32) var(--s-16);
+  border-radius: var(--radius);
+  background: var(--fill);
+  text-align: center;
+  font-size: var(--type-large);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  user-select: all;
+}
+.link {
+  margin: 0;
+  font-size: var(--type-footnote);
+  color: var(--text-3);
+  text-align: center;
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+.note {
+  margin: 0;
+  font-size: var(--type-footnote);
+  color: var(--text-3);
+}
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--s-12);
+  width: 100%;
+}

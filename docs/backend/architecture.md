@@ -78,7 +78,7 @@ Assets/
 - **Service pattern**: Each feature has a service (`*Service.cs`) taking repository, `IUnitOfWork`, mapper, `IIdGenerator`, `ApplicationInstrumentation`, `LinkGenerator`, `DateWindows`, logger. Returns `IOperationResult` / `IOperationResultGeneric<T>`.
 
 - **HTTP results** (`Echo.Shared/HttpResults`): Not raw types. Controllers/endpoints return:
-  - `SuccessResult<T>`, `CreatedResult<T>`, `NotFoundResult`, `ConflictResult`, `BadRequestResult`, `InternalServerError`, `NoContentResult`, `ForeignKeyEntityNotFound`, `InvalidTokenResult`, `UserNotVerifiedResult`.
+  - `SuccessResult<T>`, `CreatedResult<T>`, `NotFoundResult`, `ConflictResult`, `BadRequestResult`, `InternalServerError`, `NoContentResult`, `ForeignKeyEntityNotFound`, `InvalidTokenResult`.
   - `PagedResponse<T>` for cursor-paged lists (hasMore, nextCursor, data, window).
 
 - **Query & pagination** (`Echo.Shared/Pagination`, `Echo.Shared/Query`): `PaginationRequest` (cursor, pageSize), `PaginationParams`, `PagedResponse<T>`. Cursor encoding via `IEncoder` (base64 URL-safe).

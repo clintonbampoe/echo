@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from "react";
+import { useState, type CSSProperties, type ReactNode } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import styles from "./DistributionBar.module.css";
 import type { Ranked } from "./RankedBars";
@@ -21,8 +21,9 @@ type Props = {
 };
 
 // A whole split into parts: one slim bar of segments and a legend under it. They are one door: hover a segment and its
-// legend row lights up; hover a row and its segment lifts and the others step back. The legend is the real content
-// (name, amount and share), so the bar itself is hidden from screen readers.
+// legend row lights up; hover a row and its segment swells. The swell is liquid: the segment under the pointer thickens
+// and the ones beside it thin a little, less with each step away, so the bar looks drawn toward the part you are on.
+// The legend is the real content (name, amount and share), so the bar itself is hidden from screen readers.
 export function DistributionBar({
   label,
   parts,
@@ -31,6 +32,8 @@ export function DistributionBar({
   onPick,
 }: Props) {
   const navigate = useNavigate();
+  // Which part the pointer (or the keyboard) is on, shared by its segment and its legend row.
+  const [hot, setHot] = useState<number | null>(null);
   const shown = parts.filter((p) => p.value > 0);
   const total = shown.reduce((sum, p) => sum + p.value, 0);
   const share = (p: Part) =>
@@ -39,14 +42,22 @@ export function DistributionBar({
     return <p className={styles.empty}>{empty}</p>;
   return (
     <div className={styles.dist}>
-      <div className={styles.bar} aria-hidden="true">
+      <div className={styles.bar} data-active={hot !== null} aria-hidden="true">
         {shown.map((p, i) => (
           <span
             key={p.key}
             className={`${styles.seg} ${styles[`c${i % 5}`]}`}
-            style={{ flex: p.value } as CSSProperties}
+            style={
+              {
+                flex: p.value,
+                "--d": hot === null ? 0 : Math.abs(i - hot),
+              } as CSSProperties
+            }
             data-tip={`${p.label} · ${p.text} · ${share(p)}`}
+            data-hot={hot === i}
             data-picked={p.key === selected}
+            onPointerEnter={() => setHot(i)}
+            onPointerLeave={() => setHot(null)}
             onClick={() => {
               if (p.closed) return;
               if (p.to) void navigate(p.to);
@@ -67,7 +78,15 @@ export function DistributionBar({
             </>
           );
           return (
-            <li key={p.key} className={styles.lrow}>
+            <li
+              key={p.key}
+              className={styles.lrow}
+              data-hot={hot === i}
+              onPointerEnter={() => setHot(i)}
+              onPointerLeave={() => setHot(null)}
+              onFocus={(e) => e.target.matches(":focus-visible") && setHot(i)}
+              onBlur={() => setHot(null)}
+            >
               {p.to && !p.closed ? (
                 <Link to={p.to} className={styles.row}>
                   {row}

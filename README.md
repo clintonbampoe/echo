@@ -69,6 +69,13 @@ sh setup-jwt-keys.sh env
 ```
 
 This checks your `.env` file and generates the keys if missing. On Windows, use Git Bash or WSL.
+
+The API also needs a key that encrypts invitation codes (`Invitations__CodeKey`). Generate it the same way:
+
+```bash
+cd backend/tools/invitation-key-setup
+sh SetupInvitationKey.sh env
+```
 As this script is only guaranteed to run in Linux and Unix environments.
 
 ### 3. Build container images
