@@ -18,7 +18,7 @@ public class InvitationService(
     CongregationRepository congregationRepository,
     InvitationCodeProtector codeProtector,
     SummaryCache summaries,
-    IEmailService emailService,
+    IEmailQueue emailQueue,
     LinkBuilder linkBuilder,
     IEncoder encoder,
     IUnitOfWork unitOfWork,
@@ -57,8 +57,10 @@ public class InvitationService(
     }
 
     /// <summary>
-    /// Creates a single-use invitation and emails it. If the email cannot be sent the invitation
-    /// still exists, and the response has no <c>EmailedTo</c>, so the admin can copy the code instead.
+    /// Creates a single-use invitation and queues the email; it does not wait for it to be sent.
+    /// <c>EmailedTo</c> means "queued for delivery". If the email could not even be queued the
+    /// invitation still exists and <c>EmailedTo</c> is null; the code is always in the response,
+    /// so the admin can copy it instead.
     /// </summary>
     public async Task<IOperationResult> CreateAndEmail(
         Guid congregationId,
@@ -93,15 +95,14 @@ public class InvitationService(
                 linkBuilder.BuildJoinLink(code),
                 entity.ExpiresAt
             );
-            using (instrumentation.ActivitySource.StartActivity("email.send"))
+            var queued = emailQueue.TryEnqueue(
+                new EmailMessage(emailAddress, content, "invitation", createdByUserId, congregationId)
+            );
+            if (queued)
             {
-                Activity.Current?.SetTag("email.provider", "resend");
-                Activity.Current?.SetTag("email.type", "invitation");
-                await emailService.SendAsync(emailAddress, content);
+                emailedTo = emailAddress;
+                InvitationLog.InvitationEmailSent(logger, congregationId, entity.Id);
             }
-
-            emailedTo = emailAddress;
-            InvitationLog.InvitationEmailSent(logger, congregationId, entity.Id);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {

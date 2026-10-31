@@ -49,8 +49,10 @@ public static class TestHostExtensions
             services.AddScoped<IEmailService, HangingEmailService>();
         };
 
-    public static string Message(this IOperationResult result) =>
-        ((Ok<string>)result.ToResult()).Value!;
+    public static string Message(this IOperationResult result) => result.Value<string>();
+
+    /// <summary>The body of a successful result (<c>SuccessResult&lt;T&gt;</c> keeps it private).</summary>
+    public static T Value<T>(this IOperationResult result) => ((Ok<T>)result.ToResult()).Value!;
 
     public static User NewUser(Guid congregationId, string email = "ama@echo.test") =>
         new()

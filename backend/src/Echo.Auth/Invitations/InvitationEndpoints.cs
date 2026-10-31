@@ -130,7 +130,7 @@ public static class InvitationEndpoints
                 ### On success
                 `200 OK` with an `InviteResponseDto`: `id`, `token` (the code), `allowedRole`, `expiresAt`, `maxUses` and `label`, plus `emailedTo`.
 
-                `emailedTo` is the address the email went to. If it is `null` the invitation **was created but the email could not be sent**: copy the `token` and deliver it another way, or revoke the invitation and try again.
+                `emailedTo` is the address the email was **queued** for. The email is sent in the background a moment later (a failed send is retried a few times and then logged; it is not reported here), so the `token` is always returned: copy it if the person says nothing arrived. If `emailedTo` is `null` the invitation **was created but the email could not be queued**: copy the `token` and deliver it another way, or revoke the invitation and try again.
 
                 ### Who can call this
                 `Admin` only; the invitation belongs to the caller's congregation.

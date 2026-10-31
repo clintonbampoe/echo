@@ -65,7 +65,7 @@ public record InviteResponseDto
     public int? MaxUses { get; init; }
     public string? Label { get; init; }
 
-    /// <summary>The address the invitation was emailed to; null when it was only created.</summary>
+    /// <summary>The address the invitation email was queued for; null when it was only created or could not be queued.</summary>
     public string? EmailedTo { get; init; }
 }
 
