@@ -242,6 +242,8 @@ public class SessionService(
             RefreshSessionFailure.Expired => "Your session has expired. Please log in again.",
             RefreshSessionFailure.Reused =>
                 "Your session was invalidated for security reasons. Please log in again.",
+            RefreshSessionFailure.Superseded =>
+                "Your session was just refreshed elsewhere. Please try again.",
             RefreshSessionFailure.UserInactive => "This account is no longer active.",
             _ => "Please log in again.",
         };

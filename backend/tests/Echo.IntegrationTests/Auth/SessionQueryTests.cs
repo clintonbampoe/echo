@@ -83,12 +83,31 @@ public class SessionQueryTests(PostgresFixture db)
         await using var _ = host;
         var sessions = host.Get<SessionService>();
         await sessions.RefreshAccessToken(pair.RefreshToken, Ct); // rotates: pair's token is now revoked
+        host.Time.Advance(TimeSpan.FromSeconds(11)); // well past the grace window for a second tab
 
         var replay = await sessions.RefreshAccessToken(pair.RefreshToken, Ct);
 
         Assert.IsType<BadRequestResult>(replay);
         var tokens = await TokensOf(host, user.Id);
         Assert.All(tokens, t => Assert.NotNull(t.RevokedAt));
+    }
+
+    [Fact]
+    public async Task Refresh_RotatedTokenReplayedWithinTenSeconds_IsRefused_ButKeepsTheSessions()
+    {
+        // A second browser tab shares the stored tokens and may present the one the first tab has
+        // just rotated. That is a race, not theft: refuse it without signing everyone out.
+        var (host, user, pair) = await Arrange();
+        await using var _ = host;
+        var sessions = host.Get<SessionService>();
+        await sessions.RefreshAccessToken(pair.RefreshToken, Ct);
+        host.Time.Advance(TimeSpan.FromSeconds(5));
+
+        var replay = await sessions.RefreshAccessToken(pair.RefreshToken, Ct);
+
+        Assert.IsType<BadRequestResult>(replay);
+        var tokens = await TokensOf(host, user.Id);
+        Assert.Single(tokens, t => t.RevokedAt is null);
     }
 
     [Fact]

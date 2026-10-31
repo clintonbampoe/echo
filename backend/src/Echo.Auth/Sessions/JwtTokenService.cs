@@ -14,6 +14,9 @@ public class JwtTokenService(
     TimeProvider timeProvider
 )
 {
+    // How long after a rotation the old token is only refused, not treated as stolen.
+    private const int SupersededGraceSeconds = 10;
+
     private readonly JwtOptions _jwtOptions = jwtOptions.Value;
 
     public async Task<(RefreshToken TokenEntity, string PlainToken)> IssueToken(
@@ -49,6 +52,16 @@ public class JwtTokenService(
 
         if (existing is null)
             return Failure(RefreshSessionFailure.NotFound);
+        if (
+            existing is { RevokedAt: { } revokedAt, ReplacedByTokenId: not null }
+            && revokedAt > timeProvider.GetUtcNow().UtcDateTime.AddSeconds(-SupersededGraceSeconds)
+        )
+        {
+            // Browser tabs share their stored tokens, so a second tab can present the token the
+            // first one has just rotated. Refuse it, but do not treat it as theft.
+            return Failure(RefreshSessionFailure.Superseded);
+        }
+
         if (existing.RevokedAt is not null)
         {
             // Already-rotated token presented again — treat as a stolen/reused token,
