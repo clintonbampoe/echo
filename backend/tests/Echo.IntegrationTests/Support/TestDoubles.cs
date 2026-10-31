@@ -55,6 +55,26 @@ public sealed class FailingSaveInterceptor : SaveChangesInterceptor
             : base.SavingChangesAsync(eventData, result, ct);
 }
 
+/// <summary>Runs a callback once, just before the next SaveChanges, to stage a race.</summary>
+public sealed class BeforeNextSaveInterceptor : SaveChangesInterceptor
+{
+    private Func<Task>? _action;
+
+    public void Arm(Func<Task> action) => _action = action;
+
+    public override async ValueTask<InterceptionResult<int>> SavingChangesAsync(
+        DbContextEventData eventData,
+        InterceptionResult<int> result,
+        CancellationToken ct = default
+    )
+    {
+        var action = Interlocked.Exchange(ref _action, null);
+        if (action is not null)
+            await action();
+        return await base.SavingChangesAsync(eventData, result, ct);
+    }
+}
+
 public static class TestHostExtensions
 {
     /// <summary>Swaps the real queue and email sender for the recording queue and a hanging sender.</summary>

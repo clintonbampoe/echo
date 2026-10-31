@@ -10,7 +10,9 @@ using Echo.Domain.Users;
 using Echo.Shared.HttpResults;
 using Echo.Shared.Services.Generators;
 using Echo.Shared.Services.Hashing;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Npgsql;
 
 namespace Echo.Auth.Registrations;
 
@@ -184,16 +186,6 @@ public class RegistrationService(
                 passwordHash = await passwordHashService.HashAsync(request.UserInfo.Password);
             }
 
-            // Take one of the invitation's uses now, so a limited invitation cannot be over-used by
-            // people registering at the same moment.
-            if (!await invitationService.TryClaimUse(invitation.Id, ct))
-            {
-                span?.SetTag("auth.result", "invalid_invitation");
-                RecordUserRegistration("invalid_invitation", invitation.CongregationId.ToString());
-                RegistrationLog.UserRegistrationFailedInvalidInvitation(logger);
-                return new BadRequestResult("Invitation is invalid, expired, or revoked.");
-            }
-
             var user = new User
             {
                 Id = idGenerator.Generate(),
@@ -209,12 +201,47 @@ public class RegistrationService(
 
             span?.SetTag("user.id", user.Id);
 
-            TokenPairResponseDtos session;
-            using (instrumentation.ActivitySource.StartActivity("svc.registration.persist.user"))
+            // Take one of the invitation's uses in the same transaction as the user, so a limited
+            // invitation cannot be over-used by people registering at the same moment, and a
+            // signup that fails gives the use back.
+            var claimed = false;
+            TokenPairResponseDtos? session = null;
+            try
             {
-                userRepository.Create(user);
-                session = await sessionService.StartSession(user, ct, prune: false);
-                await unitOfWork.CommitAsync(ct);
+                using (
+                    instrumentation.ActivitySource.StartActivity("svc.registration.persist.user")
+                )
+                {
+                    await unitOfWork.ExecuteInTransactionAsync(
+                        async token =>
+                        {
+                            claimed = await invitationService.TryClaimUse(invitation.Id, token);
+                            if (!claimed)
+                                return;
+
+                            userRepository.Create(user);
+                            session = await sessionService.StartSession(user, token, prune: false);
+                            await unitOfWork.CommitAsync(token);
+                        },
+                        ct
+                    );
+                }
+            }
+            catch (DbUpdateException ex) when (IsDuplicateEmail(ex))
+            {
+                // Someone registered this address between the check above and the insert.
+                span?.SetTag("auth.result", "email_taken");
+                RecordUserRegistration("email_taken", invitation.CongregationId.ToString());
+                RegistrationLog.UserRegistrationFailedEmailTaken(logger, invitation.CongregationId);
+                return new BadRequestResult("Email already in use");
+            }
+
+            if (!claimed)
+            {
+                span?.SetTag("auth.result", "invalid_invitation");
+                RecordUserRegistration("invalid_invitation", invitation.CongregationId.ToString());
+                RegistrationLog.UserRegistrationFailedInvalidInvitation(logger);
+                return new BadRequestResult("Invitation is invalid, expired, or revoked.");
             }
 
             using (
@@ -230,7 +257,7 @@ public class RegistrationService(
             RecordUserRegistration("success", invitation.CongregationId.ToString());
             RegistrationLog.UserRegistrationSucceeded(logger, user.Id, invitation.CongregationId);
 
-            return new SuccessResult<TokenPairResponseDtos>(session);
+            return new SuccessResult<TokenPairResponseDtos>(session!);
         }
         catch (Exception ex)
         {
@@ -239,6 +266,10 @@ public class RegistrationService(
             throw;
         }
     }
+
+    // 23505 is Postgres' unique_violation; users has a unique index on the email address.
+    private static bool IsDuplicateEmail(DbUpdateException exception) =>
+        exception.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation };
 
     private async Task<bool> IsEmailTaken(string emailAddress, CancellationToken ct) =>
         await userRepository.IsEmailAddressTaken(emailAddress, ct);
