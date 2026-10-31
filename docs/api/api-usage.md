@@ -287,7 +287,7 @@ Admins invite people with a code. An invitation is **reusable until it expires, 
 | Endpoint | Who | What it does |
 |---|---|---|
 | `POST /auth/invitations` | Admin | creates an invitation (`allowedRole`, optional `expiryDays` 1–365 or `neverExpires`, optional `maxUses`, `label`); returns the code |
-| `POST /auth/invitations/email` | Admin | creates a single-use invitation and emails it (`emailAddress`, `allowedRole`, optional expiry and `label`); `emailedTo` is `null` if the email failed |
+| `POST /auth/invitations/email` | Admin | creates a single-use invitation and queues the email (`emailAddress`, `allowedRole`, optional expiry and `label`); `emailedTo` is the address it was queued for, `null` if it could not be queued. The email is sent in the background, so the `token` is always returned |
 | `GET /auth/invitations` | Admin | lists them, newest first, each with its `code`; filter by `status` (`Active`, `Expired`, `Revoked`, `Exhausted`) |
 | `GET /auth/invitations/summary` | Admin | `active`, `peopleJoined` and `expiringSoon` (within 7 days) for the whole congregation, cached 2 minutes |
 | `PUT /auth/invitations/{id}` | Admin | changes the `label`, the expiry (`expiryDays` from now, or `neverExpires`) and/or `maxUses` (not for a revoked one) |

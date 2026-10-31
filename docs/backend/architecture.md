@@ -65,7 +65,7 @@ Assets/
 | `AddApplicationServices()` | `Echo.Application` | All feature repositories, services, mappers, `ApplicationInstrumentation`, OpenTelemetry |
 | `AddAuthServices(config)` | `Echo.Auth` | Auth services (Session, Registration, Invitation, Password, Verification, Profile), `JwtTokenGenerator`, `LinkBuilder`, `Resend`, `AuthInstrumentation` |
 | `AddDataServices()` | `Echo.Data` | `DbHealthCheck`, `IUnitOfWork` |
-| `AddSharedServices()` | `Echo.Shared` | `TimeProvider`, `IIdGenerator`, `ITokenGenerator`, `IPasswordHasher` (Bcrypt), `ITokenHasher` (Sha256), `IEncoder` (Cursor), keyed `IEmailService` (Resend), `FrontendOptions` validation |
+| `AddSharedServices()` | `Echo.Shared` | `TimeProvider`, `IIdGenerator`, `ITokenGenerator`, `IPasswordHasher` (Bcrypt), `ITokenHasher` (Sha256), `IEncoder` (Cursor), `IEmailService` (Resend), `IEmailQueue` + `EmailDeliveryWorker` (background email sending), `FrontendOptions` validation |
 
 ---
 
@@ -91,7 +91,7 @@ Assets/
 
 - **JWT auth**: `AddJwtAuthentication` → `JwtTokenGenerator` (singleton), `JwtTokenService` (scoped), `SessionService`, `SessionRepository`. Access tokens 15 min, refresh tokens rotated.
 
-- **Keyed services**: `IEmailService` keyed "Resend" (for `ResendEmailService`). Hashing uses `IPasswordHasher` (Bcrypt) + `ITokenHasher` (Sha256).
+- **Email**: auth code never calls Resend. It publishes an `EmailMessage` (recipient, `IEmailContent`, kind) with `IEmailQueue.TryEnqueue` and returns. `EmailDeliveryWorker` (a `BackgroundService` in `Echo.Shared`) sends them through `IEmailService`, retrying network errors, 429 and 5xx up to 3 times (2 s, 4 s, 8 s back-off) and logging an error if it gives up. The queue is in memory and bounded (1000): a full queue drops the message with a warning, and emails still queued when the API stops are lost. Users can re-request verification or reset links; invitation codes are always returned to the admin. Hashing uses `IPasswordHasher` (Bcrypt) + `ITokenHasher` (Sha256).
 
 - **Soft deletes**: All primary entities implement `ISoftDeletable` (`DeletedAt`). Repositories use `FilterDeleted()` extension. `IUnitOfWork` wraps `SaveChangesAsync`.
 

@@ -75,6 +75,10 @@ public class RegistrationService(
 
         try
         {
+            // The mapper copies the plain password into PasswordHash, so hash it before saving.
+            user.PasswordHash = await passwordHashService.HashAsync(userDto.Password);
+            user.PasswordChangedAt = timeProvider.GetUtcNow().UtcDateTime;
+
             using (
                 var activity = instrumentation.ActivitySource.StartActivity(
                     "svc.registration.persist.setup"
@@ -93,6 +97,8 @@ public class RegistrationService(
                 await unitOfWork.CommitAsync(ct);
                 activity?.AddEvent(new ActivityEvent("db.commit"));
             }
+
+            await emailVerificationService.SendVerificationLink(user, ct);
 
             span?.SetTag("auth.result", "success");
             RecordCongregationRegistration("success");
@@ -205,13 +211,11 @@ public class RegistrationService(
 
             using (
                 instrumentation.ActivitySource.StartActivity(
-                    "svc.registration.persist.email_verification"
+                    "svc.registration.queue.email_verification"
                 )
             )
             {
-                Activity.Current?.SetTag("email.provider", "resend");
-                Activity.Current?.SetTag("email.type", "email_verification");
-                await emailVerificationService.SendVerificationLinkToEmail(user.EmailAddress, ct);
+                await emailVerificationService.SendVerificationLink(user, ct);
             }
 
             span?.SetTag("auth.result", "success");
