@@ -19,6 +19,9 @@ public class SessionService(
     ILogger<SessionService> logger
 )
 {
+    // A valid bcrypt hash (cost 10) of a throwaway string; nobody's password hashes to it.
+    private const string DummyHash = "$2a$10$uAV3pq9RPnRtPbczFax2euG34T7Bf0qq6qO2Gfc9rgww4W7VqVHD6";
+
     public async Task<IOperationResult> Login(
         string email,
         string password,
@@ -35,6 +38,10 @@ public class SessionService(
 
         if (entity is null)
         {
+            // Do the same hashing work as for a real account, so response time does not tell an
+            // attacker which email addresses are registered.
+            await hashService.VerifyAsync(password, DummyHash);
+
             span?.SetTag("auth.result", "user_not_found");
             RecordLogin("user_not_found", "unknown");
             SessionLog.LoginUserNotFound(logger);

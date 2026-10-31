@@ -6,13 +6,11 @@ public class BcryptHashService : IPasswordHasher
 {
     private const int _costFactor = 10;
 
-    public async Task<string> HashAsync(string input)
-    {
-        return await Task.Run(() => BCrypt.HashPassword(input, _costFactor));
-    }
+    // Computed on the calling thread: a request already runs on a threadpool thread, so
+    // Task.Run would only add a hop. The Task return type is the interface's.
+    public Task<string> HashAsync(string input) =>
+        Task.FromResult(BCrypt.HashPassword(input, _costFactor));
 
-    public async Task<bool> VerifyAsync(string input, string hash)
-    {
-        return await Task.Run(() => BCrypt.Verify(input, hash));
-    }
+    public Task<bool> VerifyAsync(string input, string hash) =>
+        Task.FromResult(BCrypt.Verify(input, hash));
 }
