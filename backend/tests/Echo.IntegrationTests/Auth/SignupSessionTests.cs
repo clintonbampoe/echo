@@ -118,8 +118,8 @@ public class SignupSessionTests(PostgresFixture db)
         await host.Get<RegistrationService>()
             .RegisterUser(new RegisterMemberRequest { Token = code, UserInfo = NewMember() }, Ct);
 
-        // Same count as before sessions existed (see RegistrationEmailTests): the refresh token
+        // Same count as before sessions existed (see RegistrationEmailTests, same count): the refresh token
         // rides in the user's insert, and a brand-new user has nothing to prune.
-        Assert.Equal(6, host.Commands.Count);
+        Assert.Equal(7, host.Commands.Count);
     }
 }

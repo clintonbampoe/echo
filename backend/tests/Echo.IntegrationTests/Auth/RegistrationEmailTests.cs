@@ -59,7 +59,7 @@ public class RegistrationEmailTests(PostgresFixture db)
         var message = Assert.Single(queue.Messages);
         Assert.Equal("kofi@echo.test", message.To);
         Assert.Equal("email_verification", message.Kind);
-        Assert.Equal(6, host.Commands.Count); // was 7 before the user was no longer re-fetched by email
+        Assert.Equal(7, host.Commands.Count); // 7 -> 6 when the user stopped being re-fetched, +1 for pruning old verification tokens
     }
 
     [Fact]
