@@ -70,7 +70,7 @@ Include the `accessToken` in the `Authorization` header of subsequent requests a
 Authorization: Bearer <your-jwt-token>
 ```
 
-> Access Tokens are short-lived (about 15 minutes). Use the `refreshToken` endpoint (`POST /api/auth/v1/sessions/refresh`) to acquire a new pair.
+> Access Tokens are short-lived (about 15 minutes). Use the `refreshToken` endpoint (`POST /api/auth/v1/sessions/refresh`) to acquire a new pair. Every refresh rotates the refresh token. Presenting a rotated token again signs the user out of **every** session (assumed theft), except within 10 seconds of the rotation, where the call just fails (`400`, "refreshed elsewhere, try again") so a second browser tab that shares the stored tokens can re-read them and retry.
 
 ### Tenant Isolation & Security
 Echo is a multi-tenant platform. The `CongregationId` is encrypted within the JWT.
