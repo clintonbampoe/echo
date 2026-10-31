@@ -220,7 +220,10 @@ namespace Echo.Data.Migrations
                         .HasName("pk_attendance");
 
                     b.HasIndex("PersonId")
-                        .HasDatabaseName("ix_attendance_person_id");
+                        .HasDatabaseName("ix_attendance_visitor_stats")
+                        .HasFilter("deleted_at IS NULL AND person_kind_at_time = 'Visitor'");
+
+                    NpgsqlIndexBuilderExtensions.IncludeProperties(b.HasIndex("PersonId"), new[] { "CongregationId", "SessionDate" });
 
                     b.HasIndex("RecordedBy")
                         .HasDatabaseName("ix_attendance_recorded_by");
@@ -244,12 +247,6 @@ namespace Echo.Data.Migrations
                         .HasFilter("deleted_at IS NULL");
 
                     NpgsqlIndexBuilderExtensions.IncludeProperties(b.HasIndex("CongregationId", "SessionDate", "Id"), new[] { "PersonKindAtTime", "IsFirstVisit" });
-
-                    b.HasIndex("PersonId")
-                        .HasDatabaseName("ix_attendance_visitor_stats")
-                        .HasFilter("deleted_at IS NULL AND person_kind_at_time = 'Visitor'");
-
-                    NpgsqlIndexBuilderExtensions.IncludeProperties(b.HasIndex("PersonId"), new[] { "CongregationId", "SessionDate" });
 
                     b.ToTable("attendance", (string)null);
                 });
@@ -545,6 +542,10 @@ namespace Echo.Data.Migrations
                     b.Property<DateTime>("ExpiresAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("expires_at");
+
+                    b.Property<DateTime?>("InvalidatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("invalidated_at");
 
                     b.Property<string>("TokenHash")
                         .IsRequired()

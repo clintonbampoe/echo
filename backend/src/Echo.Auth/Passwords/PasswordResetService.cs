@@ -27,6 +27,8 @@ public class PasswordResetService(
     ILogger<PasswordResetService> logger
 )
 {
+    private const int ResendCooldownSeconds = 60;
+
     public async Task<IOperationResult> SendForgotPasswordLinkToEmail(
         string email,
         CancellationToken ct
@@ -53,16 +55,43 @@ public class PasswordResetService(
 
         try
         {
+            var now = timeProvider.GetUtcNow().UtcDateTime;
+
+            List<PasswordResetToken> activeTokens;
+            using (instrumentation.ActivitySource.StartActivity("svc.password.fetch.active_tokens"))
+            {
+                activeTokens = await passwordVerificationTokenRepository.GetActiveTokensForUser(
+                    user.Id,
+                    ct
+                );
+            }
+
+            // One link a minute is enough; answering the same way keeps this from telling anyone
+            // whether the address has an account.
+            if (activeTokens.Any(t => t.CreatedAt > now.AddSeconds(-ResendCooldownSeconds)))
+            {
+                span?.SetTag("auth.result", "rate_limited");
+                RecordPasswordResetRequest("rate_limited", user.CongregationId.ToString());
+                PasswordLog.PasswordResetRequestRateLimited(logger, user.Id, user.CongregationId);
+                return new SuccessResult<string>("Reset link has been sent.");
+            }
+
+            // Only the newest link works.
+            foreach (var old in activeTokens)
+                old.InvalidatedAt = now;
+
             var token = tokenGenerator.GenerateToken(16);
             var tokenEntity = new PasswordResetToken
             {
                 UserId = user.Id,
                 TokenHash = tokenHashService.Hash(token),
-                ExpiresAt = timeProvider.GetUtcNow().UtcDateTime.AddHours(1),
+                ExpiresAt = now.AddHours(1),
+                CreatedAt = now,
             };
 
             using (instrumentation.ActivitySource.StartActivity("svc.password.persist.reset_token"))
             {
+                await passwordVerificationTokenRepository.PruneTokens(user.Id, ct);
                 await passwordVerificationTokenRepository.CreateRecord(tokenEntity, ct);
                 await unitOfWork.CommitAsync(ct);
             }
@@ -136,6 +165,18 @@ public class PasswordResetService(
             span?.SetTag("auth.result", "token_expired");
             RecordPasswordReset("token_expired", tokenEntity.User.CongregationId.ToString());
             PasswordLog.PasswordResetFailedTokenExpired(
+                logger,
+                tokenEntity.UserId,
+                tokenEntity.User.CongregationId
+            );
+            return new InvalidTokenResult();
+        }
+
+        if (tokenEntity.InvalidatedAt is not null)
+        {
+            span?.SetTag("auth.result", "token_invalidated");
+            RecordPasswordReset("token_invalidated", tokenEntity.User.CongregationId.ToString());
+            PasswordLog.PasswordResetFailedTokenInvalidated(
                 logger,
                 tokenEntity.UserId,
                 tokenEntity.User.CongregationId
