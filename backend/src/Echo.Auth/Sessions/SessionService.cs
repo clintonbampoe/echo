@@ -56,33 +56,18 @@ public class SessionService(
             }
         }
 
-        var user = mapper.ToAuthDto(entity);
-
         try
         {
-            var (accessToken, accessExpiresAt) = accessTokenGenerator.Generate(user);
-
             using (instrumentation.ActivitySource.StartActivity("svc.session.persist.tokens"))
             {
-                var (refreshTokenEntity, plainRefreshToken) = await jwtTokenService.IssueToken(
-                    user.Id,
-                    ct
-                );
+                var tokens = await StartSession(entity, ct);
                 await unitOfWork.CommitAsync(ct);
                 span?.SetTag("auth.result", "success");
 
                 RecordLogin("success", entity.CongregationId.ToString());
                 SessionLog.LoginSucceeded(logger, entity.Id, entity.CongregationId);
 
-                return new SuccessResult<TokenPairResponseDtos>(
-                    new TokenPairResponseDtos
-                    {
-                        AccessToken = accessToken,
-                        AccessTokenExpiresAt = accessExpiresAt,
-                        RefreshToken = plainRefreshToken,
-                        RefreshTokenExpiresAt = refreshTokenEntity.ExpiresAt,
-                    }
-                );
+                return new SuccessResult<TokenPairResponseDtos>(tokens);
             }
         }
         catch (Exception ex)
@@ -91,6 +76,34 @@ public class SessionService(
             SessionLog.LoginFailed(logger, ex, entity.Id, entity.CongregationId);
             throw;
         }
+    }
+
+    /// <summary>
+    /// Builds a session for a user: an access token and a new refresh token. The refresh token is
+    /// only added to the context; the caller's own CommitAsync saves it, so a signup stores the
+    /// user and the session together. Pass <paramref name="prune"/> false for a brand-new user,
+    /// who has no old tokens to clear.
+    /// </summary>
+    public async Task<TokenPairResponseDtos> StartSession(
+        User user,
+        CancellationToken ct,
+        bool prune = true
+    )
+    {
+        var (accessToken, accessExpiresAt) = accessTokenGenerator.Generate(mapper.ToAuthDto(user));
+        var (refreshTokenEntity, plainRefreshToken) = await jwtTokenService.IssueToken(
+            user.Id,
+            ct,
+            prune
+        );
+
+        return new TokenPairResponseDtos
+        {
+            AccessToken = accessToken,
+            AccessTokenExpiresAt = accessExpiresAt,
+            RefreshToken = plainRefreshToken,
+            RefreshTokenExpiresAt = refreshTokenEntity.ExpiresAt,
+        };
     }
 
     public async Task<IOperationResult> LogoutOfAllSessions(

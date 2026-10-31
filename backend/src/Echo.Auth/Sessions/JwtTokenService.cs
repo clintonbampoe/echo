@@ -18,7 +18,8 @@ public class JwtTokenService(
 
     public async Task<(RefreshToken TokenEntity, string PlainToken)> IssueToken(
         Guid userId,
-        CancellationToken ct = default
+        CancellationToken ct = default,
+        bool prune = true
     )
     {
         var plainToken = tokenGenerator.GenerateToken(32);
@@ -31,7 +32,8 @@ public class JwtTokenService(
                 .UtcDateTime.AddDays(_jwtOptions.RefreshTokenLifetimeDays),
         };
 
-        await refreshTokenRepository.PruneTokens(userId, ct);
+        if (prune)
+            await refreshTokenRepository.PruneTokens(userId, ct);
         await refreshTokenRepository.CreateNewToken(tokenEntity, ct);
 
         return (tokenEntity, plainToken);

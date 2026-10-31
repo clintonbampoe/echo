@@ -3,6 +3,7 @@ using Echo.Application.Congregations;
 using Echo.Application.Users;
 using Echo.Auth.EmailVerifications;
 using Echo.Auth.Invitations;
+using Echo.Auth.Sessions;
 using Echo.Data;
 using Echo.Domain.Auth;
 using Echo.Domain.Users;
@@ -17,6 +18,7 @@ public class RegistrationService(
     CongregationRepository congregationRepository,
     UserRepository userRepository,
     EmailVerificationService emailVerificationService,
+    SessionService sessionService,
     InvitationService invitationService,
     CongregationProvisioningService provisioningService,
     IUnitOfWork unitOfWork,
@@ -79,6 +81,7 @@ public class RegistrationService(
             user.PasswordHash = await passwordHashService.HashAsync(userDto.Password);
             user.PasswordChangedAt = timeProvider.GetUtcNow().UtcDateTime;
 
+            TokenPairResponseDtos session;
             using (
                 var activity = instrumentation.ActivitySource.StartActivity(
                     "svc.registration.persist.setup"
@@ -94,6 +97,9 @@ public class RegistrationService(
                 provisioningService.ProvisionDefaults(congregation.Id);
                 activity?.AddEvent(new ActivityEvent("congregation.provision_defaults"));
 
+                session = await sessionService.StartSession(user, ct, prune: false);
+                activity?.AddEvent(new ActivityEvent("session.start"));
+
                 await unitOfWork.CommitAsync(ct);
                 activity?.AddEvent(new ActivityEvent("db.commit"));
             }
@@ -104,7 +110,7 @@ public class RegistrationService(
             RecordCongregationRegistration("success");
             RegistrationLog.CongregationRegistrationSucceeded(logger, congregation.Id, user.Id);
 
-            return new SuccessResult<string>("Operation completed successfully.");
+            return new SuccessResult<TokenPairResponseDtos>(session);
         }
         catch (Exception ex)
         {
@@ -203,9 +209,11 @@ public class RegistrationService(
 
             span?.SetTag("user.id", user.Id);
 
+            TokenPairResponseDtos session;
             using (instrumentation.ActivitySource.StartActivity("svc.registration.persist.user"))
             {
                 userRepository.Create(user);
+                session = await sessionService.StartSession(user, ct, prune: false);
                 await unitOfWork.CommitAsync(ct);
             }
 
@@ -222,9 +230,7 @@ public class RegistrationService(
             RecordUserRegistration("success", invitation.CongregationId.ToString());
             RegistrationLog.UserRegistrationSucceeded(logger, user.Id, invitation.CongregationId);
 
-            return new SuccessResult<string>(
-                "Your account is ready. We emailed a link to verify your email address."
-            );
+            return new SuccessResult<TokenPairResponseDtos>(session);
         }
         catch (Exception ex)
         {
