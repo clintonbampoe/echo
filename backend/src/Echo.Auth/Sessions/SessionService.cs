@@ -42,8 +42,7 @@ public class SessionService(
             // attacker which email addresses are registered.
             await hashService.VerifyAsync(password, DummyHash);
 
-            span?.SetTag("auth.result", "user_not_found");
-            RecordLogin("user_not_found", "unknown");
+            RecordLogin(span, "user_not_found", "unknown");
             SessionLog.LoginUserNotFound(logger);
             return new BadRequestResult("Email or password is invalid.");
         }
@@ -56,8 +55,7 @@ public class SessionService(
             var isPasswordValid = await hashService.VerifyAsync(password, entity.PasswordHash);
             if (!isPasswordValid)
             {
-                span?.SetTag("auth.result", "invalid_credentials");
-                RecordLogin("invalid_credentials", entity.Id.ToString());
+                RecordLogin(span, "invalid_credentials", entity.CongregationId.ToString());
                 SessionLog.LoginInvalidCredentials(logger, entity.Id);
                 return new BadRequestResult("Email or password is invalid.");
             }
@@ -69,9 +67,7 @@ public class SessionService(
             {
                 var tokens = await StartSession(entity, ct);
                 await unitOfWork.CommitAsync(ct);
-                span?.SetTag("auth.result", "success");
-
-                RecordLogin("success", entity.CongregationId.ToString());
+                RecordLogin(span, "success", entity.CongregationId.ToString());
                 SessionLog.LoginSucceeded(logger, entity.Id, entity.CongregationId);
 
                 return new SuccessResult<TokenPairResponseDtos>(tokens);
@@ -259,12 +255,6 @@ public class SessionService(
             _ => "Please log in again.",
         };
 
-    private void RecordLogin(string result, string congregationId) =>
-        instrumentation.LoginAttempts.Add(
-            1,
-            new TagList { { "auth.result", result }, { "congregation.id", congregationId } }
-        );
-
     private void RecordTokenRefresh(string result, string congregationId) =>
         instrumentation.TokenRefreshes.Add(
             1,
@@ -279,4 +269,7 @@ public class SessionService(
             1,
             new TagList { { "auth.result", result }, { "congregation.id", congregationId } }
         );
+
+    private void RecordLogin(Activity? span, string result, string congregationId) =>
+        instrumentation.Record(instrumentation.LoginAttempts, span, result, congregationId);
 }

@@ -57,8 +57,7 @@ public class RegistrationService(
         var passwordIsValid = PasswordPolicy.IsValid(userDto.Password, out var policyError);
         if (!passwordIsValid)
         {
-            span?.SetTag("auth.result", "invalid_policy");
-            RecordCongregationRegistration("invalid_policy");
+            RecordCongregationRegistration(span, "invalid_policy");
             RegistrationLog.CongregationRegistrationFailedPolicyViolation(logger);
             return new BadRequestResult(policyError!);
         }
@@ -71,8 +70,7 @@ public class RegistrationService(
 
         if (emailTaken)
         {
-            span?.SetTag("auth.result", "email_taken");
-            RecordCongregationRegistration("email_taken");
+            RecordCongregationRegistration(span, "email_taken");
             RegistrationLog.CongregationRegistrationFailedEmailTaken(logger);
             return new BadRequestResult("Email already in use");
         }
@@ -108,8 +106,7 @@ public class RegistrationService(
 
             await emailVerificationService.SendVerificationLink(user, ct);
 
-            span?.SetTag("auth.result", "success");
-            RecordCongregationRegistration("success");
+            RecordCongregationRegistration(span, "success");
             RegistrationLog.CongregationRegistrationSucceeded(logger, congregation.Id, user.Id);
 
             return new SuccessResult<TokenPairResponseDtos>(session);
@@ -137,8 +134,7 @@ public class RegistrationService(
 
         if (invitation is null)
         {
-            span?.SetTag("auth.result", "invalid_invitation");
-            RecordUserRegistration("invalid_invitation", "unknown");
+            RecordUserRegistration(span, "invalid_invitation", "unknown");
             RegistrationLog.UserRegistrationFailedInvalidInvitation(logger);
             return new BadRequestResult("Invitation is invalid, expired, or revoked.");
         }
@@ -151,8 +147,7 @@ public class RegistrationService(
         );
         if (!passwordIsValid)
         {
-            span?.SetTag("auth.result", "invalid_policy");
-            RecordUserRegistration("invalid_policy", invitation.CongregationId.ToString());
+            RecordUserRegistration(span, "invalid_policy", invitation.CongregationId.ToString());
             RegistrationLog.UserRegistrationFailedPolicyViolation(
                 logger,
                 invitation.CongregationId
@@ -168,8 +163,7 @@ public class RegistrationService(
 
         if (emailTaken)
         {
-            span?.SetTag("auth.result", "email_taken");
-            RecordUserRegistration("email_taken", invitation.CongregationId.ToString());
+            RecordUserRegistration(span, "email_taken", invitation.CongregationId.ToString());
             RegistrationLog.UserRegistrationFailedEmailTaken(logger, invitation.CongregationId);
             return new BadRequestResult("Email already in use");
         }
@@ -230,16 +224,14 @@ public class RegistrationService(
             catch (DbUpdateException ex) when (IsDuplicateEmail(ex))
             {
                 // Someone registered this address between the check above and the insert.
-                span?.SetTag("auth.result", "email_taken");
-                RecordUserRegistration("email_taken", invitation.CongregationId.ToString());
+                RecordUserRegistration(span, "email_taken", invitation.CongregationId.ToString());
                 RegistrationLog.UserRegistrationFailedEmailTaken(logger, invitation.CongregationId);
                 return new BadRequestResult("Email already in use");
             }
 
             if (!claimed)
             {
-                span?.SetTag("auth.result", "invalid_invitation");
-                RecordUserRegistration("invalid_invitation", invitation.CongregationId.ToString());
+                RecordUserRegistration(span, "invalid_invitation", invitation.CongregationId.ToString());
                 RegistrationLog.UserRegistrationFailedInvalidInvitation(logger);
                 return new BadRequestResult("Invitation is invalid, expired, or revoked.");
             }
@@ -253,8 +245,7 @@ public class RegistrationService(
                 await emailVerificationService.SendVerificationLink(user, ct);
             }
 
-            span?.SetTag("auth.result", "success");
-            RecordUserRegistration("success", invitation.CongregationId.ToString());
+            RecordUserRegistration(span, "success", invitation.CongregationId.ToString());
             RegistrationLog.UserRegistrationSucceeded(logger, user.Id, invitation.CongregationId);
 
             return new SuccessResult<TokenPairResponseDtos>(session!);
@@ -274,12 +265,9 @@ public class RegistrationService(
     private async Task<bool> IsEmailTaken(string emailAddress, CancellationToken ct) =>
         await userRepository.IsEmailAddressTaken(emailAddress, ct);
 
-    private void RecordCongregationRegistration(string result) =>
-        instrumentation.CongregationRegistrations.Add(1, new TagList { { "auth.result", result } });
+    private void RecordCongregationRegistration(Activity? span, string result) =>
+        instrumentation.Record(instrumentation.CongregationRegistrations, span, result);
 
-    private void RecordUserRegistration(string result, string congregationId) =>
-        instrumentation.UserRegistrations.Add(
-            1,
-            new TagList { { "auth.result", result }, { "congregation.id", congregationId } }
-        );
+    private void RecordUserRegistration(Activity? span, string result, string congregationId) =>
+        instrumentation.Record(instrumentation.UserRegistrations, span, result, congregationId);
 }

@@ -109,6 +109,25 @@ public sealed class AuthInstrumentation : IDisposable
     public static MeterProviderBuilder ConfigureMetrics(MeterProviderBuilder metrics) =>
         metrics.AddMeter(SourceName);
 
+    /// <summary>
+    /// Records the outcome of an auth operation in one call: <c>auth.result</c> on the span (when
+    /// there is one) and the same tag, plus <c>congregation.id</c> when given, on the counter.
+    /// </summary>
+    public void Record(
+        Counter<long> counter,
+        Activity? span,
+        string result,
+        string? congregationId = null
+    )
+    {
+        span?.SetTag("auth.result", result);
+
+        var tags = new TagList { { "auth.result", result } };
+        if (congregationId is not null)
+            tags.Add("congregation.id", congregationId);
+        counter.Add(1, tags);
+    }
+
     public void Dispose()
     {
         ActivitySource.Dispose();
