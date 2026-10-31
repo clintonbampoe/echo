@@ -65,13 +65,14 @@ public class JwtTokenService(
 
         var (newTokenEntity, newPlainToken) = await IssueToken(existing.UserId, ct);
 
-        await refreshTokenRepository.Revoke(existing.Id, newTokenEntity.Id, ct);
+        refreshTokenRepository.Revoke(existing, newTokenEntity.Id);
 
         return new RefreshTokenValidationResult()
         {
             Success = true,
             FailureReason = null,
             UserId = existing.UserId,
+            User = existing.User,
             NewRefreshToken = newPlainToken,
             NewRefreshTokenExpiresAt = newTokenEntity.ExpiresAt,
         };
@@ -80,10 +81,10 @@ public class JwtTokenService(
     public async Task RevokeToken(string presentedToken, CancellationToken ct = default)
     {
         var hashedInput = tokenHashService.Hash(presentedToken);
-        var existing = await refreshTokenRepository.GetTokenRecordByHashWithUser(hashedInput, ct);
+        var existing = await refreshTokenRepository.GetTokenRecordByHash(hashedInput, ct);
 
         if (existing is not null)
-            await refreshTokenRepository.Revoke(existing.Id, null, ct);
+            refreshTokenRepository.Revoke(existing);
     }
 
     public async Task RevokeAllActiveSessionsForUserById(

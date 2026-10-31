@@ -8,6 +8,7 @@ using Echo.Shared.Extensions;
 using Echo.Shared.Options.Jwt;
 using Echo.Shared.Services.Security;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
@@ -101,11 +102,14 @@ public sealed class AuthTestHost : IAsyncDisposable
             .AddSharedServices(configuration);
         services.AddSingleton(new JwtKeyRing(configuration.GetSection("Jwt").Get<JwtOptions>()!));
         services.AddSingleton<TimeProvider>(time);
-        services.AddDbContext<AppDbContext>(options =>
-        {
-            options.UseNpgsql(db.ConnectionString).AddInterceptors(commands);
-            options.ConfigureEchoDatabase();
-        });
+        services.AddDbContext<AppDbContext>(
+            (provider, options) =>
+            {
+                options.UseNpgsql(db.ConnectionString).AddInterceptors(commands);
+                options.AddInterceptors(provider.GetServices<ISaveChangesInterceptor>());
+                options.ConfigureEchoDatabase();
+            }
+        );
         configure?.Invoke(services);
 
         return new AuthTestHost(services.BuildServiceProvider(), commands, time);

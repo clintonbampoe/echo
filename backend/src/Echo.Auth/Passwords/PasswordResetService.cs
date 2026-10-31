@@ -171,11 +171,19 @@ public class PasswordResetService(
                 instrumentation.ActivitySource.StartActivity("svc.password.persist.revoke_sessions")
             )
             {
-                await refreshTokenService.RevokeAllActiveSessionsForUserById(
-                    tokenEntity.UserId,
+                // The bulk revoke runs at once, so it shares a transaction with the save: the
+                // new password and the sign-out of every session both happen, or neither does.
+                await unitOfWork.ExecuteInTransactionAsync(
+                    async token =>
+                    {
+                        await refreshTokenService.RevokeAllActiveSessionsForUserById(
+                            tokenEntity.UserId,
+                            token
+                        );
+                        await unitOfWork.CommitAsync(token);
+                    },
                     ct
                 );
-                await unitOfWork.CommitAsync(ct);
             }
 
             span?.SetTag("auth.result", "success");

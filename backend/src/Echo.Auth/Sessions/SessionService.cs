@@ -183,19 +183,8 @@ public class SessionService(
             return new BadRequestResult(MapFailureReason(result.FailureReason!.Value));
         }
 
-        User? entity;
-        using (instrumentation.ActivitySource.StartActivity("svc.session.fetch.user_by_id"))
-        {
-            entity = await userRepository.GetByIdAnyCongregation(result.UserId, ct);
-        }
-
-        if (entity is null)
-        {
-            span?.SetTag("auth.result", "user_not_found");
-            RecordTokenRefresh("failure", "unknown");
-            SessionLog.TokenRefreshUserNotFound(logger, result.UserId);
-            return new InternalServerError();
-        }
+        // The token lookup already loaded the user.
+        var entity = result.User!;
 
         span?.SetTag("congregation.id", entity.CongregationId);
         span?.SetTag("user.id", entity.Id);

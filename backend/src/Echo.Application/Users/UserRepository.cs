@@ -31,13 +31,6 @@ public class UserRepository(AppDbContext context)
         return await _dbSet.FilterDeleted().ById(congregationId, id).FirstOrDefaultAsync(ct);
     }
 
-    // Only for flows that start from a token or link and do not know the congregation yet
-    // (for example refreshing a session). Request handlers must use the scoped GetById.
-    public async Task<User?> GetByIdAnyCongregation(Guid id, CancellationToken ct = default)
-    {
-        return await _dbSet.FilterDeleted().Where(u => u.Id == id).FirstOrDefaultAsync(ct);
-    }
-
     public async Task<List<User>> Search(Guid congregationId, string name, CancellationToken ct)
     {
         return await _dbSet

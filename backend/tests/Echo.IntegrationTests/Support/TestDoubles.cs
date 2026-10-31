@@ -3,6 +3,7 @@ using Echo.Shared.HttpResults;
 using Echo.Shared.Models;
 using Echo.Shared.Services.Email;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Echo.IntegrationTests.Support;
@@ -37,6 +38,21 @@ public sealed class RecordingEmailQueue : IEmailQueue
 public sealed class HangingEmailService : IEmailService
 {
     public Task SendAsync(string to, IEmailContent content) => new TaskCompletionSource().Task;
+}
+
+/// <summary>Makes SaveChanges throw while <see cref="Fail"/> is true, to test rollbacks.</summary>
+public sealed class FailingSaveInterceptor : SaveChangesInterceptor
+{
+    public bool Fail { get; set; }
+
+    public override ValueTask<InterceptionResult<int>> SavingChangesAsync(
+        DbContextEventData eventData,
+        InterceptionResult<int> result,
+        CancellationToken ct = default
+    ) =>
+        Fail
+            ? throw new InvalidOperationException("save failed on purpose")
+            : base.SavingChangesAsync(eventData, result, ct);
 }
 
 public static class TestHostExtensions
