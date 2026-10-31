@@ -157,36 +157,40 @@ public class EmailVerificationService(
         span?.SetTag("congregation.id", tokenRecord.User.CongregationId);
         span?.SetTag("user.id", tokenRecord.UserId);
 
-        if (tokenRecord.ExpiresAt <= timeProvider.GetUtcNow().UtcDateTime)
+        var problem = TokenValidity.Problem(
+            tokenRecord.ExpiresAt,
+            tokenRecord.UsedAt,
+            tokenRecord.InvalidatedAt,
+            timeProvider.GetUtcNow().UtcDateTime
+        );
+        if (problem is not null)
         {
-            RecordVerificationCompleted(span, "token_expired", tokenRecord.User.CongregationId.ToString());
-            EmailVerificationLog.VerifyEmailFailedTokenExpired(
-                logger,
-                tokenRecord.UserId,
-                tokenRecord.User.CongregationId
-            );
-            return new InvalidTokenResult();
-        }
-
-        if (tokenRecord.UsedAt is not null)
-        {
-            RecordVerificationCompleted(span, "token_used", tokenRecord.User.CongregationId.ToString());
-            EmailVerificationLog.VerifyEmailFailedTokenUsed(
-                logger,
-                tokenRecord.UserId,
-                tokenRecord.User.CongregationId
-            );
-            return new InvalidTokenResult();
-        }
-
-        if (tokenRecord.InvalidatedAt is not null)
-        {
-            RecordVerificationCompleted(span, "token_invalidated", tokenRecord.User.CongregationId.ToString());
-            EmailVerificationLog.VerifyEmailFailedTokenInvalidated(
-                logger,
-                tokenRecord.UserId,
-                tokenRecord.User.CongregationId
-            );
+            var congregationId = tokenRecord.User.CongregationId;
+            RecordVerificationCompleted(span, problem, congregationId.ToString());
+            switch (problem)
+            {
+                case "token_expired":
+                    EmailVerificationLog.VerifyEmailFailedTokenExpired(
+                        logger,
+                        tokenRecord.UserId,
+                        congregationId
+                    );
+                    break;
+                case "token_used":
+                    EmailVerificationLog.VerifyEmailFailedTokenUsed(
+                        logger,
+                        tokenRecord.UserId,
+                        congregationId
+                    );
+                    break;
+                default:
+                    EmailVerificationLog.VerifyEmailFailedTokenInvalidated(
+                        logger,
+                        tokenRecord.UserId,
+                        congregationId
+                    );
+                    break;
+            }
             return new InvalidTokenResult();
         }
 
@@ -200,7 +204,11 @@ public class EmailVerificationService(
                 tokenRecord.UsedAt = timeProvider.GetUtcNow().UtcDateTime;
                 await unitOfWork.CommitAsync(ct);
 
-                RecordVerificationCompleted(span, "success", tokenRecord.User.CongregationId.ToString());
+                RecordVerificationCompleted(
+                    span,
+                    "success",
+                    tokenRecord.User.CongregationId.ToString()
+                );
                 EmailVerificationLog.VerifyEmailSucceeded(
                     logger,
                     tokenRecord.UserId,
@@ -223,18 +231,15 @@ public class EmailVerificationService(
         }
     }
 
-    private bool IsTokenValid(EmailVerificationToken? token)
-    {
-        if (token is null)
-            return false;
-        if (token.ExpiresAt <= timeProvider.GetUtcNow().UtcDateTime)
-            return false;
-        if (token.UsedAt is not null)
-            return false;
-        if (token.InvalidatedAt is not null)
-            return false;
-        return true;
-    }
+    private bool IsTokenValid(EmailVerificationToken? token) =>
+        token is not null
+        && TokenValidity.Problem(
+            token.ExpiresAt,
+            token.UsedAt,
+            token.InvalidatedAt,
+            timeProvider.GetUtcNow().UtcDateTime
+        )
+            is null;
 
     private bool RateLimitActive(EmailVerificationToken? token)
     {
@@ -249,8 +254,22 @@ public class EmailVerificationService(
     ) => await emailVerificationTokenRepository.GetTokenByUserId(userId, ct);
 
     private void RecordVerificationSent(Activity? span, string result, string congregationId) =>
-        instrumentation.Record(instrumentation.EmailVerificationsSent, span, result, congregationId);
+        instrumentation.Record(
+            instrumentation.EmailVerificationsSent,
+            span,
+            result,
+            congregationId
+        );
 
-    private void RecordVerificationCompleted(Activity? span, string result, string congregationId) =>
-        instrumentation.Record(instrumentation.EmailVerificationsCompleted, span, result, congregationId);
+    private void RecordVerificationCompleted(
+        Activity? span,
+        string result,
+        string congregationId
+    ) =>
+        instrumentation.Record(
+            instrumentation.EmailVerificationsCompleted,
+            span,
+            result,
+            congregationId
+        );
 }

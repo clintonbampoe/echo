@@ -152,36 +152,40 @@ public class PasswordResetService(
         span?.SetTag("congregation.id", tokenEntity.User.CongregationId);
         span?.SetTag("user.id", tokenEntity.UserId);
 
-        if (tokenEntity.ExpiresAt <= timeProvider.GetUtcNow().UtcDateTime)
+        var problem = TokenValidity.Problem(
+            tokenEntity.ExpiresAt,
+            tokenEntity.UsedAt,
+            tokenEntity.InvalidatedAt,
+            timeProvider.GetUtcNow().UtcDateTime
+        );
+        if (problem is not null)
         {
-            RecordPasswordReset(span, "token_expired", tokenEntity.User.CongregationId.ToString());
-            PasswordLog.PasswordResetFailedTokenExpired(
-                logger,
-                tokenEntity.UserId,
-                tokenEntity.User.CongregationId
-            );
-            return new InvalidTokenResult();
-        }
-
-        if (tokenEntity.InvalidatedAt is not null)
-        {
-            RecordPasswordReset(span, "token_invalidated", tokenEntity.User.CongregationId.ToString());
-            PasswordLog.PasswordResetFailedTokenInvalidated(
-                logger,
-                tokenEntity.UserId,
-                tokenEntity.User.CongregationId
-            );
-            return new InvalidTokenResult();
-        }
-
-        if (tokenEntity.UsedAt is not null)
-        {
-            RecordPasswordReset(span, "token_used", tokenEntity.User.CongregationId.ToString());
-            PasswordLog.PasswordResetFailedTokenUsed(
-                logger,
-                tokenEntity.UserId,
-                tokenEntity.User.CongregationId
-            );
+            var congregationId = tokenEntity.User.CongregationId;
+            RecordPasswordReset(span, problem, congregationId.ToString());
+            switch (problem)
+            {
+                case "token_expired":
+                    PasswordLog.PasswordResetFailedTokenExpired(
+                        logger,
+                        tokenEntity.UserId,
+                        congregationId
+                    );
+                    break;
+                case "token_used":
+                    PasswordLog.PasswordResetFailedTokenUsed(
+                        logger,
+                        tokenEntity.UserId,
+                        congregationId
+                    );
+                    break;
+                default:
+                    PasswordLog.PasswordResetFailedTokenInvalidated(
+                        logger,
+                        tokenEntity.UserId,
+                        congregationId
+                    );
+                    break;
+            }
             return new InvalidTokenResult();
         }
 
