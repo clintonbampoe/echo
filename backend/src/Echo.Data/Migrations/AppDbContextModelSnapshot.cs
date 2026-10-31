@@ -426,6 +426,7 @@ namespace Echo.Data.Migrations
                         .HasDatabaseName("ix_email_verification_tokens_created_at");
 
                     b.HasIndex("TokenHash")
+                        .IsUnique()
                         .HasDatabaseName("ix_email_verification_tokens_token_hash");
 
                     b.HasIndex("UserId", "CreatedAt")
@@ -568,6 +569,7 @@ namespace Echo.Data.Migrations
                         .HasDatabaseName("ix_password_verification_tokens_created_at");
 
                     b.HasIndex("TokenHash")
+                        .IsUnique()
                         .HasDatabaseName("ix_password_verification_tokens_token_hash");
 
                     b.HasIndex("UserId")

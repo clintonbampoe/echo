@@ -112,6 +112,7 @@ public class EmailVerificationService(
             {
                 UserId = user.Id,
                 TokenHash = hashService.Hash(token),
+                CreatedAt = timeProvider.GetUtcNow().UtcDateTime,
             };
 
             var verificationLink = linkBuilder.BuildEmailVerificationLink(token);
@@ -119,6 +120,7 @@ public class EmailVerificationService(
 
             using (instrumentation.ActivitySource.StartActivity("email_verification_token.create"))
             {
+                await emailVerificationTokenRepository.PruneTokens(user.Id, ct);
                 emailVerificationTokenRepository.Create(tokenObject);
                 await unitOfWork.CommitAsync(ct);
             }
