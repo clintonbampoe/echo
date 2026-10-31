@@ -37,15 +37,11 @@ public class PasswordResetService(
         using var span = instrumentation.ActivitySource.StartActivity("svc.password.forgot");
 
         User? user;
-        using (instrumentation.ActivitySource.StartActivity("svc.password.fetch.user_by_email"))
-        {
-            user = await userRepository.GetByEmail(email, ct);
-        }
+        user = await userRepository.GetByEmail(email, ct);
 
         if (user is null)
         {
-            span?.SetTag("auth.result", "user_not_found");
-            RecordPasswordResetRequest("user_not_found", "unknown");
+            RecordPasswordResetRequest(span, "user_not_found", "unknown");
             PasswordLog.PasswordResetRequestUserNotFound(logger);
             return new SuccessResult<string>("Reset link has been sent.");
         }
@@ -70,8 +66,7 @@ public class PasswordResetService(
             // whether the address has an account.
             if (activeTokens.Any(t => t.CreatedAt > now.AddSeconds(-ResendCooldownSeconds)))
             {
-                span?.SetTag("auth.result", "rate_limited");
-                RecordPasswordResetRequest("rate_limited", user.CongregationId.ToString());
+                RecordPasswordResetRequest(span, "rate_limited", user.CongregationId.ToString());
                 PasswordLog.PasswordResetRequestRateLimited(logger, user.Id, user.CongregationId);
                 return new SuccessResult<string>("Reset link has been sent.");
             }
@@ -107,8 +102,7 @@ public class PasswordResetService(
                 )
             );
 
-            span?.SetTag("auth.result", "success");
-            RecordPasswordResetRequest("success", user.CongregationId.ToString());
+            RecordPasswordResetRequest(span, "success", user.CongregationId.ToString());
             PasswordLog.PasswordResetRequestSucceeded(logger, user.Id, user.CongregationId);
 
             return new SuccessResult<string>("Reset link has been sent.");
@@ -132,8 +126,7 @@ public class PasswordResetService(
         var passwordIsValid = PasswordPolicy.IsValid(newPassword, out var policyError);
         if (!passwordIsValid)
         {
-            span?.SetTag("auth.result", "invalid_policy");
-            RecordPasswordReset("invalid_policy", "unknown");
+            RecordPasswordReset(span, "invalid_policy", "unknown");
             PasswordLog.PasswordResetFailedPolicyViolation(logger);
             return new BadRequestResult(policyError!);
         }
@@ -151,8 +144,7 @@ public class PasswordResetService(
 
         if (tokenEntity is null)
         {
-            span?.SetTag("auth.result", "token_not_found");
-            RecordPasswordReset("token_not_found", "unknown");
+            RecordPasswordReset(span, "token_not_found", "unknown");
             PasswordLog.PasswordResetFailedTokenNotFound(logger);
             return new InvalidTokenResult();
         }
@@ -162,8 +154,7 @@ public class PasswordResetService(
 
         if (tokenEntity.ExpiresAt <= timeProvider.GetUtcNow().UtcDateTime)
         {
-            span?.SetTag("auth.result", "token_expired");
-            RecordPasswordReset("token_expired", tokenEntity.User.CongregationId.ToString());
+            RecordPasswordReset(span, "token_expired", tokenEntity.User.CongregationId.ToString());
             PasswordLog.PasswordResetFailedTokenExpired(
                 logger,
                 tokenEntity.UserId,
@@ -174,8 +165,7 @@ public class PasswordResetService(
 
         if (tokenEntity.InvalidatedAt is not null)
         {
-            span?.SetTag("auth.result", "token_invalidated");
-            RecordPasswordReset("token_invalidated", tokenEntity.User.CongregationId.ToString());
+            RecordPasswordReset(span, "token_invalidated", tokenEntity.User.CongregationId.ToString());
             PasswordLog.PasswordResetFailedTokenInvalidated(
                 logger,
                 tokenEntity.UserId,
@@ -186,8 +176,7 @@ public class PasswordResetService(
 
         if (tokenEntity.UsedAt is not null)
         {
-            span?.SetTag("auth.result", "token_used");
-            RecordPasswordReset("token_used", tokenEntity.User.CongregationId.ToString());
+            RecordPasswordReset(span, "token_used", tokenEntity.User.CongregationId.ToString());
             PasswordLog.PasswordResetFailedTokenUsed(
                 logger,
                 tokenEntity.UserId,
@@ -227,8 +216,7 @@ public class PasswordResetService(
                 );
             }
 
-            span?.SetTag("auth.result", "success");
-            RecordPasswordReset("success", tokenEntity.User.CongregationId.ToString());
+            RecordPasswordReset(span, "success", tokenEntity.User.CongregationId.ToString());
             PasswordLog.PasswordResetSucceeded(
                 logger,
                 tokenEntity.UserId,
@@ -250,15 +238,9 @@ public class PasswordResetService(
         }
     }
 
-    private void RecordPasswordResetRequest(string result, string congregationId) =>
-        instrumentation.PasswordResetRequests.Add(
-            1,
-            new TagList { { "auth.result", result }, { "congregation.id", congregationId } }
-        );
+    private void RecordPasswordResetRequest(Activity? span, string result, string congregationId) =>
+        instrumentation.Record(instrumentation.PasswordResetRequests, span, result, congregationId);
 
-    private void RecordPasswordReset(string result, string congregationId) =>
-        instrumentation.PasswordResets.Add(
-            1,
-            new TagList { { "auth.result", result }, { "congregation.id", congregationId } }
-        );
+    private void RecordPasswordReset(Activity? span, string result, string congregationId) =>
+        instrumentation.Record(instrumentation.PasswordResets, span, result, congregationId);
 }

@@ -54,15 +54,11 @@ public class EmailVerificationService(
         using var span = instrumentation.ActivitySource.StartActivity("email.verification.send");
 
         User? user;
-        using (instrumentation.ActivitySource.StartActivity("user.lookup.by_email"))
-        {
-            user = await userRepository.GetByEmail(emailAddress, ct);
-        }
+        user = await userRepository.GetByEmail(emailAddress, ct);
 
         if (user is null)
         {
-            span?.SetTag("auth.result", "user_not_found");
-            RecordVerificationSent("user_not_found", "unknown");
+            RecordVerificationSent(span, "user_not_found", "unknown");
             EmailVerificationLog.SendVerificationFailedUserNotFound(logger);
             return new SuccessResult<string>("Email has been sent if user is valid");
         }
@@ -82,17 +78,11 @@ public class EmailVerificationService(
         span?.SetTag("user.id", user.Id);
 
         EmailVerificationToken? existingToken;
-        using (
-            instrumentation.ActivitySource.StartActivity("email_verification_token.lookup.by_user")
-        )
-        {
-            existingToken = await GetActiveTokenForUser(user.Id, ct);
-        }
+        existingToken = await GetActiveTokenForUser(user.Id, ct);
 
         if (RateLimitActive(existingToken))
         {
-            span?.SetTag("auth.result", "rate_limited");
-            RecordVerificationSent("rate_limited", user.CongregationId.ToString());
+            RecordVerificationSent(span, "rate_limited", user.CongregationId.ToString());
             EmailVerificationLog.SendVerificationFailedRateLimited(
                 logger,
                 user.Id,
@@ -135,8 +125,7 @@ public class EmailVerificationService(
                 )
             );
 
-            span?.SetTag("auth.result", "success");
-            RecordVerificationSent("success", user.CongregationId.ToString());
+            RecordVerificationSent(span, "success", user.CongregationId.ToString());
             EmailVerificationLog.SendVerificationSucceeded(logger, user.Id, user.CongregationId);
 
             return new SuccessResult<string>($"Operation Completed Successfully. Token: {token}");
@@ -156,17 +145,11 @@ public class EmailVerificationService(
         var hashedInput = hashService.Hash(token);
 
         EmailVerificationToken? tokenRecord;
-        using (
-            instrumentation.ActivitySource.StartActivity("email_verification_token.lookup.by_hash")
-        )
-        {
-            tokenRecord = await emailVerificationTokenRepository.GetTokenByHash(hashedInput, ct);
-        }
+        tokenRecord = await emailVerificationTokenRepository.GetTokenByHash(hashedInput, ct);
 
         if (tokenRecord is null)
         {
-            span?.SetTag("auth.result", "token_not_found");
-            RecordVerificationCompleted("token_not_found", "unknown");
+            RecordVerificationCompleted(span, "token_not_found", "unknown");
             EmailVerificationLog.VerifyEmailFailedTokenNotFound(logger);
             return new InvalidTokenResult();
         }
@@ -176,11 +159,7 @@ public class EmailVerificationService(
 
         if (tokenRecord.ExpiresAt <= timeProvider.GetUtcNow().UtcDateTime)
         {
-            span?.SetTag("auth.result", "token_expired");
-            RecordVerificationCompleted(
-                "token_expired",
-                tokenRecord.User.CongregationId.ToString()
-            );
+            RecordVerificationCompleted(span, "token_expired", tokenRecord.User.CongregationId.ToString());
             EmailVerificationLog.VerifyEmailFailedTokenExpired(
                 logger,
                 tokenRecord.UserId,
@@ -191,8 +170,7 @@ public class EmailVerificationService(
 
         if (tokenRecord.UsedAt is not null)
         {
-            span?.SetTag("auth.result", "token_used");
-            RecordVerificationCompleted("token_used", tokenRecord.User.CongregationId.ToString());
+            RecordVerificationCompleted(span, "token_used", tokenRecord.User.CongregationId.ToString());
             EmailVerificationLog.VerifyEmailFailedTokenUsed(
                 logger,
                 tokenRecord.UserId,
@@ -203,11 +181,7 @@ public class EmailVerificationService(
 
         if (tokenRecord.InvalidatedAt is not null)
         {
-            span?.SetTag("auth.result", "token_invalidated");
-            RecordVerificationCompleted(
-                "token_invalidated",
-                tokenRecord.User.CongregationId.ToString()
-            );
+            RecordVerificationCompleted(span, "token_invalidated", tokenRecord.User.CongregationId.ToString());
             EmailVerificationLog.VerifyEmailFailedTokenInvalidated(
                 logger,
                 tokenRecord.UserId,
@@ -226,8 +200,7 @@ public class EmailVerificationService(
                 tokenRecord.UsedAt = timeProvider.GetUtcNow().UtcDateTime;
                 await unitOfWork.CommitAsync(ct);
 
-                span?.SetTag("auth.result", "success");
-                RecordVerificationCompleted("success", tokenRecord.User.CongregationId.ToString());
+                RecordVerificationCompleted(span, "success", tokenRecord.User.CongregationId.ToString());
                 EmailVerificationLog.VerifyEmailSucceeded(
                     logger,
                     tokenRecord.UserId,
@@ -275,15 +248,9 @@ public class EmailVerificationService(
         CancellationToken ct
     ) => await emailVerificationTokenRepository.GetTokenByUserId(userId, ct);
 
-    private void RecordVerificationSent(string result, string congregationId) =>
-        instrumentation.EmailVerificationsSent.Add(
-            1,
-            new TagList { { "auth.result", result }, { "congregation.id", congregationId } }
-        );
+    private void RecordVerificationSent(Activity? span, string result, string congregationId) =>
+        instrumentation.Record(instrumentation.EmailVerificationsSent, span, result, congregationId);
 
-    private void RecordVerificationCompleted(string result, string congregationId) =>
-        instrumentation.EmailVerificationsCompleted.Add(
-            1,
-            new TagList { { "auth.result", result }, { "congregation.id", congregationId } }
-        );
+    private void RecordVerificationCompleted(Activity? span, string result, string congregationId) =>
+        instrumentation.Record(instrumentation.EmailVerificationsCompleted, span, result, congregationId);
 }

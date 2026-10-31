@@ -31,10 +31,7 @@ public class SessionService(
         using var span = instrumentation.ActivitySource.StartActivity("svc.session.login");
 
         User? entity;
-        using (instrumentation.ActivitySource.StartActivity("svc.session.fetch.user_by_email"))
-        {
-            entity = await userRepository.GetByEmail(email, ct);
-        }
+        entity = await userRepository.GetByEmail(email, ct);
 
         if (entity is null)
         {
@@ -117,10 +114,7 @@ public class SessionService(
         using var span = instrumentation.ActivitySource.StartActivity("svc.session.logout_all");
 
         User? entity;
-        using (instrumentation.ActivitySource.StartActivity("svc.session.fetch.user_by_email"))
-        {
-            entity = await userRepository.GetByEmail(email, ct);
-        }
+        entity = await userRepository.GetByEmail(email, ct);
 
         if (entity is null)
         {
@@ -140,8 +134,7 @@ public class SessionService(
             {
                 await jwtTokenService.RevokeAllActiveSessionsForUserById(entity.Id, ct);
                 await unitOfWork.CommitAsync(ct);
-                span?.SetTag("auth.result", "success");
-                RecordLogoutAll("success", entity.CongregationId.ToString());
+                RecordLogoutAll(span, "success", entity.CongregationId.ToString());
                 SessionLog.LogoutOfAllSessionsSucceeded(logger, entity.Id, entity.CongregationId);
 
                 return new SuccessResult<string>(
@@ -174,7 +167,7 @@ public class SessionService(
         {
             var reason = result.FailureReason!.Value.ToString().ToLowerInvariant();
             span?.SetTag("auth.result", reason);
-            RecordTokenRefresh("failure", "unknown");
+            RecordTokenRefresh(null, "failure", "unknown");
             SessionLog.TokenRefreshFailed(logger, reason);
             return new BadRequestResult(MapFailureReason(result.FailureReason!.Value));
         }
@@ -192,8 +185,7 @@ public class SessionService(
                 var userDto = mapper.ToAuthDto(entity);
                 var (accessToken, accessExpiresAt) = accessTokenGenerator.Generate(userDto);
                 await unitOfWork.CommitAsync(ct);
-                span?.SetTag("auth.result", "success");
-                RecordTokenRefresh("success", entity.CongregationId.ToString());
+                RecordTokenRefresh(span, "success", entity.CongregationId.ToString());
                 SessionLog.TokenRefreshSucceeded(logger, entity.Id, entity.CongregationId);
 
                 return new SuccessResult<TokenPairResponseDtos>(
@@ -230,8 +222,7 @@ public class SessionService(
                 await unitOfWork.CommitAsync(ct);
             }
 
-            span?.SetTag("auth.result", "success");
-            RecordTokenRevocation("success");
+            RecordTokenRevocation(span, "success");
             SessionLog.TokenRevoked(logger);
 
             return new SuccessResult<string>("Token revoked successfully.");
@@ -255,20 +246,14 @@ public class SessionService(
             _ => "Please log in again.",
         };
 
-    private void RecordTokenRefresh(string result, string congregationId) =>
-        instrumentation.TokenRefreshes.Add(
-            1,
-            new TagList { { "auth.result", result }, { "congregation.id", congregationId } }
-        );
+    private void RecordTokenRefresh(Activity? span, string result, string congregationId) =>
+        instrumentation.Record(instrumentation.TokenRefreshes, span, result, congregationId);
 
-    private void RecordTokenRevocation(string result) =>
-        instrumentation.TokenRevocations.Add(1, new TagList { { "auth.result", result } });
+    private void RecordTokenRevocation(Activity? span, string result) =>
+        instrumentation.Record(instrumentation.TokenRevocations, span, result);
 
-    private void RecordLogoutAll(string result, string congregationId) =>
-        instrumentation.SessionLogouts.Add(
-            1,
-            new TagList { { "auth.result", result }, { "congregation.id", congregationId } }
-        );
+    private void RecordLogoutAll(Activity? span, string result, string congregationId) =>
+        instrumentation.Record(instrumentation.SessionLogouts, span, result, congregationId);
 
     private void RecordLogin(Activity? span, string result, string congregationId) =>
         instrumentation.Record(instrumentation.LoginAttempts, span, result, congregationId);
