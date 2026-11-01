@@ -29,7 +29,7 @@ export type ReminderView = {
   icon: IconName;
   on?: boolean;
   tone?: "neg";
-  title: string;
+  title: Text;
   text: Text;
   // No action once the address is confirmed.
   action?: Text & { disabled?: boolean };
@@ -47,7 +47,10 @@ export function reminderView(
     case "idle":
       return {
         icon: "mail",
-        title: "Confirm your email address",
+        title: {
+          long: "Confirm your email address",
+          short: "Confirm your email",
+        },
         text: {
           long: `We have not confirmed ${email} yet.`,
           short: "Send a link to your inbox",
@@ -58,7 +61,7 @@ export function reminderView(
       return {
         icon: "check",
         on: true,
-        title: "Link on its way",
+        title: { long: "Link on its way", short: "Check your email" },
         // The same sentence whatever the server knows: it never says whether the address exists.
         text: {
           long: "If that email is registered and unverified, a verification link is on its way.",
@@ -74,7 +77,7 @@ export function reminderView(
       return {
         icon: "alert",
         tone: "neg",
-        title: "We could not send the link",
+        title: { long: "We could not send the link", short: "Could not send" },
         text: {
           long: "Check your connection and try again.",
           short: "Check your connection",
@@ -85,7 +88,7 @@ export function reminderView(
       return {
         icon: "check",
         on: true,
-        title: "Email confirmed",
+        title: { long: "Email confirmed", short: "Email confirmed" },
         text: { long: "Thank you. This reminder is gone.", short: "Thank you" },
       };
   }

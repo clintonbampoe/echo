@@ -5,7 +5,9 @@ import { Pager, SeeLink, useMedia } from "@/ui";
 import { usePeriod } from "../hooks/period";
 import { AssetsCard } from "../components/cards/AssetsCard";
 import { AttendanceCard } from "../components/cards/AttendanceCard";
+import { ChartsPlaceholder } from "../components/setup/ChartsPlaceholder";
 import { GettingStarted } from "../components/setup/GettingStarted";
+import { useSetup } from "../hooks/useSetup";
 import { DashboardHeader } from "../components/header/DashboardHeader";
 import { MemberGrowthCard } from "../components/cards/MemberGrowthCard";
 import { MembersCard } from "../components/cards/MembersCard";
@@ -99,40 +101,50 @@ export function DashboardPage() {
   // One tree or the other: on a phone the cards are re-dealt into themed groups. The queries are keyed the
   // same, so nothing is asked for twice.
   const narrow = useMedia("(max-width: 900px)");
+  const setup = useSetup();
+  // A church that has recorded nothing is welcomed, and its charts wait for the first records.
+  const first = setup.empty;
 
   return (
     <div className="anim-rise">
-      <DashboardHeader period={period} today={today} onPeriod={setPeriod} />
+      <DashboardHeader
+        period={period}
+        today={today}
+        onPeriod={setPeriod}
+        welcome={first ? { left: setup.steps.length - setup.done } : undefined}
+      />
+      <GettingStarted setup={setup} />
       <NumberCards period={period} today={today} />
-      <QuickActions />
+      {first ? <ChartsPlaceholder /> : <QuickActions />}
       <div className={styles.charts}>
-        <GettingStarted />
-        {narrow
-          ? groups(today).map((g) => (
-              <section key={g.label} className={styles.group}>
-                <div className={styles.groupHead}>
-                  <h2 className={styles.groupTitle}>{g.label}</h2>
-                  <SeeLink to={g.to}>See all</SeeLink>
-                </div>
-                <Pager label={g.label} titles={g.titles}>
-                  {g.cards.map((c, i) => (
-                    <div key={g.titles[i]}>{c}</div>
+        {first
+          ? null
+          : narrow
+            ? groups(today).map((g) => (
+                <section key={g.label} className={styles.group}>
+                  <div className={styles.groupHead}>
+                    <h2 className={styles.groupTitle}>{g.label}</h2>
+                    <SeeLink to={g.to}>See all</SeeLink>
+                  </div>
+                  <Pager label={g.label} titles={g.titles}>
+                    {g.cards.map((c, i) => (
+                      <div key={g.titles[i]}>{c}</div>
+                    ))}
+                  </Pager>
+                </section>
+              ))
+            : rows(today).map((r) => (
+                <Pager
+                  key={r.label}
+                  label={r.label}
+                  titles={r.cards.map((_, i) => `${r.label} ${i + 1}`)}
+                  columns={r.columns}
+                >
+                  {r.cards.map((c, i) => (
+                    <div key={i}>{c}</div>
                   ))}
                 </Pager>
-              </section>
-            ))
-          : rows(today).map((r) => (
-              <Pager
-                key={r.label}
-                label={r.label}
-                titles={r.cards.map((_, i) => `${r.label} ${i + 1}`)}
-                columns={r.columns}
-              >
-                {r.cards.map((c, i) => (
-                  <div key={i}>{c}</div>
-                ))}
-              </Pager>
-            ))}
+              ))}
       </div>
     </div>
   );

@@ -7,17 +7,13 @@ import { useData, useOnce } from "./internals";
 import { useMix } from "./people";
 
 // What the church has done so far, from the figures the cards already ask for (members is the Members card's
-// own answer) plus the invitations count. Only the Getting started card uses it, and only an admin sees that.
-export function useSetupFacts(): SetupFacts {
+// own answer) plus the invitations count. Asks nothing unless `enabled`, so only an admin ever pays for it.
+export function useSetupFacts(enabled: boolean): SetupFacts {
   const mix = useMix();
-  const present = useData(
-    "setup-present",
-    ALL_TIME.from,
-    ALL_TIME.to,
-    getPresent,
-  );
-  const tithes = useData("setup-tithes", ALL_TIME.from, ALL_TIME.to, getTithes);
-  const invited = useOnce("setup-invitations", hasInvitations);
+  const { from, to } = ALL_TIME;
+  const present = useData("setup-present", from, to, getPresent, enabled);
+  const tithes = useData("setup-tithes", from, to, getTithes, enabled);
+  const invited = useOnce("setup-invitations", hasInvitations, enabled);
   return {
     members: mix.mix ? mix.mix.total > 0 : undefined,
     attendance: present.data ? present.data.present > 0 : undefined,

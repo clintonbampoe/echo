@@ -19,12 +19,15 @@ export type SetupStep = {
   done: boolean;
 };
 
-// Registration creates the congregation, so the first step is always done.
-export const setupSteps = (facts: SetupFacts): SetupStep[] => [
+// Registration creates the church, so the first step is always done.
+export const setupSteps = (
+  facts: SetupFacts,
+  churchName: string,
+): SetupStep[] => [
   {
     key: "church",
     title: "Set up your church",
-    text: "Your church and its settings are ready.",
+    text: `${churchName} has its default categories and session types.`,
     icon: "settings",
     action: "Review settings",
     to: "/settings",
@@ -33,16 +36,16 @@ export const setupSteps = (facts: SetupFacts): SetupStep[] => [
   {
     key: "member",
     title: "Add your first member",
-    text: "Start your register with one person. You can import the rest later.",
+    text: "Start with yourself, or someone from last Sunday.",
     icon: "user-plus",
-    action: "Add a member",
+    action: "Add member",
     to: "/members?new=1",
     done: facts.members === true,
   },
   {
     key: "attendance",
-    title: "Take attendance",
-    text: "Record who came to your last gathering.",
+    title: "Take your first attendance",
+    text: "Open a Sunday session and mark who came.",
     icon: "clipboard-check",
     action: "Take attendance",
     to: "/attendance",
@@ -51,18 +54,18 @@ export const setupSteps = (facts: SetupFacts): SetupStep[] => [
   {
     key: "tithe",
     title: "Record a tithe",
-    text: "Log a first tithe so the money pages come alive.",
+    text: "Log what a member gave this month.",
     icon: "coin",
-    action: "Record a tithe",
+    action: "Record tithe",
     to: "/tithes?new=1",
     done: facts.tithes === true,
   },
   {
     key: "team",
     title: "Invite your team",
-    text: "Give a clerk or an accountant their own sign-in.",
+    text: "Share a code so others can help run things.",
     icon: "inbox",
-    action: "Invite someone",
+    action: "Invite team",
     to: "/invitations",
     done: facts.invitations === true,
   },
@@ -75,6 +78,45 @@ export const nextStep = (steps: readonly SetupStep[]) =>
 export const stepsDone = (steps: readonly SetupStep[]) =>
   steps.filter((s) => s.done).length;
 
-// A new church has nothing yet. Until every answer is in we cannot say, so the card waits rather than flash.
+// Until every answer is in we cannot say, so the card waits rather than flash.
 export const factsKnown = (facts: SetupFacts) =>
   Object.values(facts).every((v) => v !== undefined);
+
+// A church with no member, no attendance and no tithe has nothing to chart yet.
+export const nothingYet = (facts: SetupFacts) =>
+  facts.members === false &&
+  facts.attendance === false &&
+  facts.tithes === false;
+
+const WORDS = ["No", "One", "Two", "Three", "Four", "Five"];
+
+// "Four more steps", for the welcome line.
+export const stepsLeft = (n: number) =>
+  `${WORDS[n] ?? n} more ${n === 1 ? "step" : "steps"}`;
+
+export type SetupState = "off" | "loading" | "on";
+
+// Off for anyone but an admin, and once hidden; loading until every answer is in.
+export const setupState = (
+  admin: boolean,
+  dismissed: boolean,
+  ready: boolean,
+): SetupState => {
+  if (!admin || dismissed) return "off";
+  return ready ? "on" : "loading";
+};
+
+// The line under a step's title. The slim rows of the phone's panel say where each stands; the full rows say
+// what the step is for, except a done one, which only keeps its line while it is the one thing done.
+export function stepLine(
+  state: "done" | "next" | "todo",
+  text: string,
+  dense: boolean,
+  note: boolean,
+): string | undefined {
+  if (dense) {
+    if (state === "next") return "Next step";
+    return state === "done" ? "Done" : undefined;
+  }
+  return state !== "done" || note ? text : undefined;
+}

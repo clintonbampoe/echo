@@ -1,8 +1,7 @@
+/* The card measures itself, so its bar narrows with the card and not the screen. */
 .card {
-  display: flex;
-  flex-direction: column;
-  gap: var(--s-16);
-  padding: var(--s-24);
+  container-type: inline-size;
+  padding: 28px 28px 20px;
   background: var(--card-bg);
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
@@ -11,30 +10,175 @@
 .head {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--s-12);
+  gap: var(--s-20);
+  --bar: 160px;
+}
+@container (max-width: 720px) {
+  .head {
+    --bar: 120px;
+  }
+}
+.titles {
+  flex: 1;
+  min-width: 0;
 }
 .title {
   margin: 0;
-  font-size: var(--type-headline);
+  font-size: var(--type-title3);
   font-weight: 600;
   letter-spacing: -0.015em;
 }
 .sub {
-  margin: var(--s-2) 0 0;
+  margin: 4px 0 0;
+  font-size: 13.5px;
+  color: var(--text-3);
+}
+.count {
+  flex: none;
   font-size: var(--type-footnote);
   color: var(--text-3);
+  font-variant-numeric: tabular-nums;
 }
 .list {
   display: flex;
   flex-direction: column;
-  gap: var(--s-2);
-  margin: 0;
+  gap: 2px;
+  margin: var(--s-16) 0 0;
   padding: 0;
   list-style: none;
 }
+.foot {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--s-12);
+  padding-top: var(--s-16);
+  border-top: 1px solid var(--line);
+}
+
+/* A phone: one step, a full-width button and a plain link to the rest. */
+.narrow {
+  padding: 22px 20px 20px;
+}
+.narrowHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.narrow .title {
+  font-size: var(--type-headline);
+  font-size: 17px;
+}
+.narrow > [role="progressbar"] {
+  margin-top: 14px;
+}
+.one {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  margin-top: 20px;
+}
+.ring {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 2px solid var(--accent);
+  border-radius: 50%;
+}
+.ringDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.oneTitle {
+  margin: 0;
+  font-size: var(--type-headline);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.oneText {
+  margin: 4px 0 0;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--text-3);
+}
+.big {
+  margin-top: 18px;
+  font-size: var(--type-callout);
+  font-weight: 600;
+}
+.seeAll {
+  display: block;
+  height: 44px;
+  margin: 6px auto 0;
+  padding: 0 var(--s-16);
+  background: none;
+  border: 0;
+  border-radius: var(--radius-pill);
+  font: inherit;
+  font-size: 14.5px;
+  font-weight: 500;
+  color: var(--text-2);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  transition:
+    color var(--t-fast) var(--ease-soft),
+    transform var(--t-spring) var(--ease-spring);
+}
+.seeAll:active {
+  transform: scale(var(--press));
+}
+.seeAll:focus-visible {
+  outline: var(--focus);
+  outline-offset: 2px;
+}
+@media (hover: hover) {
+  .seeAll:hover {
+    color: var(--text);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .seeAll:active {
+    transform: none;
+  }
+}
+
+/* The panel of every step. */
+.panelCount {
+  margin: 0 0 var(--s-12);
+  font-size: var(--type-footnote);
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+.panelFoot {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+  padding-top: 6px;
+  border-top: 1px solid var(--line);
+}
+
+/* Holds the card's place while its answers come, and only shows if they are slow. */
+.skeleton {
+  height: 392px;
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+  opacity: 0;
+  animation: skelShow var(--t-enter) var(--ease-out) 300ms forwards;
+}
+@keyframes skelShow {
+  to {
+    opacity: 1;
+  }
+}
 @media (max-width: 700px) {
-  .card {
-    padding: var(--s-16);
+  .skeleton {
+    height: 260px;
   }
 }

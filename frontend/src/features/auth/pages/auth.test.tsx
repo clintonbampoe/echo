@@ -6,7 +6,7 @@ import {
   RouterProvider,
   type RouteObject,
 } from "react-router-dom";
-import { getTokens } from "@/lib/tokens";
+import { getTokens, saveTokens } from "@/lib/tokens";
 import { authRoutes } from "../routes";
 
 const json = (status: number, body?: unknown) =>
@@ -168,9 +168,70 @@ describe("verify", () => {
     expect(screen.getByRole("button", { name: /Resend in/ })).toBeDisabled();
   });
 
+  it("lets someone who is signed in skip into the app", async () => {
+    saveTokens(tokens);
+    renderAt("/verify", [{ path: "dashboard", element: <p>Dashboard</p> }], {
+      email: "ama@example.com",
+    });
+    expect(
+      await screen.findByRole("link", { name: /Skip for now/ }),
+    ).toHaveAttribute("href", "/dashboard");
+  });
+
   it("sends someone with no email to sign in", async () => {
     const router = renderAt("/verify");
     await waitFor(() => expect(router.state.location.pathname).toBe("/signin"));
+  });
+});
+
+describe("joining signs the new person in", () => {
+  const answer = (login: Response) =>
+    fetchMock.mockImplementation(async (url: string) => {
+      if (String(url).includes("/sessions/login")) return login;
+      if (String(url).includes("/registrations/member")) return json(200);
+      return json(200, {
+        congregationName: "Grace Chapel",
+        city: "Osu",
+        region: "GreaterAccra",
+        allowedRole: "Member",
+      });
+    });
+
+  async function fillAndSubmit() {
+    await userEvent.type(await screen.findByLabelText("First name"), "Ama");
+    await userEvent.type(screen.getByLabelText("Last name"), "Mensah");
+    await userEvent.type(
+      screen.getByLabelText("Email address"),
+      "ama@example.com",
+    );
+    await userEvent.type(screen.getByLabelText("Password"), "secret-pass");
+    await userEvent.click(
+      screen.getByRole("button", { name: /Create account|Join/ }),
+    );
+  }
+
+  it("keeps the session it was given and offers to skip into the app", async () => {
+    answer(json(200, tokens));
+    renderAt("/join/abc/account");
+    await fillAndSubmit();
+    expect(await screen.findByText("Check your email")).toBeInTheDocument();
+    expect(getTokens()?.refreshToken).toBe("r");
+    expect(screen.getByRole("link", { name: /Skip for now/ })).toHaveAttribute(
+      "href",
+      "/dashboard",
+    );
+  });
+
+  it("still gets there when the automatic sign-in fails, and skips to sign-in", async () => {
+    answer(json(500, { title: "Server error", status: 500 }));
+    renderAt("/join/abc/account");
+    await fillAndSubmit();
+    expect(await screen.findByText("Check your email")).toBeInTheDocument();
+    expect(getTokens()).toBeNull();
+    expect(screen.getByRole("link", { name: /Skip for now/ })).toHaveAttribute(
+      "href",
+      "/signin",
+    );
   });
 });
 

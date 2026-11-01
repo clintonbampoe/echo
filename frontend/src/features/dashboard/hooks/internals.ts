@@ -44,10 +44,12 @@ export function useData<T>(
   from: string,
   to: string,
   fetchData: (from: string, to: string, signal?: AbortSignal) => Promise<T>,
+  enabled = true,
 ) {
   const query = useQuery({
     queryKey: ["dashboard", name, from, to],
     queryFn: ({ signal }) => fetchData(from, to, signal),
+    enabled,
   });
   return {
     data: query.data,
@@ -60,10 +62,12 @@ export function useData<T>(
 export function useOnce<T>(
   name: string,
   fetchData: (signal?: AbortSignal) => Promise<T>,
+  enabled = true,
 ) {
   const query = useQuery({
     queryKey: ["dashboard", name],
     queryFn: ({ signal }) => fetchData(signal),
+    enabled,
   });
   return {
     data: query.data,

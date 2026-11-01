@@ -20,10 +20,21 @@ export function VerifyEmailBanner() {
   if (!mounted) return null;
   const view = reminderView(last, reminder.email, reminder.wait);
   return (
-    <div className={`${styles.banner} pop`} data-closing={closing}>
-      <StatusTile icon={view.icon} on={view.on} tone={view.tone} size={44} />
+    <section
+      aria-label="Email confirmation"
+      className={`${styles.banner} pop`}
+      data-closing={closing}
+    >
+      <StatusTile
+        icon={view.icon}
+        on={view.on}
+        tone={view.tone}
+        size={phone ? 40 : 44}
+      />
       <div className={styles.words} aria-live="polite">
-        <p className={styles.title}>{view.title}</p>
+        <p className={styles.title}>
+          {phone ? view.title.short : view.title.long}
+        </p>
         <p className={styles.text}>
           {phone ? view.text.short : view.text.long}
         </p>
@@ -40,6 +51,6 @@ export function VerifyEmailBanner() {
           {phone ? view.action.short : view.action.long}
         </Button>
       )}
-    </div>
+    </section>
   );
 }

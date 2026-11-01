@@ -1,18 +1,20 @@
-.item {
-  display: block;
-}
 .row {
   display: flex;
   align-items: center;
-  gap: var(--s-12);
-  min-height: 56px;
-  padding: var(--s-8) var(--s-12);
-  border-radius: var(--radius-field);
+  gap: var(--s-16);
+  min-height: 68px;
+  padding: 10px var(--s-12) 10px 14px;
+  border-radius: 18px;
   color: inherit;
   text-decoration: none;
   transition:
     background-color var(--t-fast) var(--ease-soft),
     transform var(--t-spring) var(--ease-spring);
+}
+.dense {
+  gap: 14px;
+  min-height: 60px;
+  padding: 8px 10px;
 }
 .row[data-next] {
   background: var(--hover-option);
@@ -24,22 +26,28 @@
   flex-direction: column;
 }
 .title {
-  font-size: var(--type-body);
-  font-weight: 500;
+  font-size: var(--type-callout);
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
-.row[data-done] .title {
+.title[data-state="done"] {
   color: var(--text-3);
-  font-weight: 400;
 }
 .sub {
+  margin-top: 3px;
   font-size: var(--type-footnote);
   color: var(--text-3);
 }
+.dense .sub {
+  margin-top: 2px;
+}
 .action {
   flex: none;
+  padding: 0 18px;
+  font-weight: 600;
 }
 
-/* The mark: an empty ring, then a dark disc whose tick springs in when the step is done. */
+/* The mark. Done: a dark disc whose tick springs in. Next: a dark ring round a dot. Waiting: a light ring. */
 .node {
   flex: none;
   display: flex;
@@ -48,17 +56,28 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  border: 1.5px solid var(--line);
   color: var(--on-accent);
   transition:
     background-color var(--t-base) var(--ease-soft),
     border-color var(--t-base) var(--ease-soft);
 }
-.node[data-done] {
+.node[data-state="done"] {
   background: var(--accent);
-  border-color: var(--accent);
+}
+.node[data-state="next"] {
+  border: 2px solid var(--accent);
+}
+.node[data-state="todo"] {
+  border: 1.5px solid var(--line-2);
+}
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
 }
 .node svg {
+  stroke-width: 3;
   animation: tickIn var(--t-spring) var(--ease-spring) both;
 }
 @keyframes tickIn {
@@ -71,9 +90,13 @@
 .go {
   flex: none;
   color: var(--text-3);
+  stroke-width: 2;
   transition:
     translate var(--t-base) var(--ease-out),
     color var(--t-fast) var(--ease-soft);
+}
+.go[data-state="next"] {
+  color: var(--text);
 }
 @media (hover: hover) {
   .link:hover {

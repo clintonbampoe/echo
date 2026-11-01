@@ -1,7 +1,12 @@
 import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { asked, json, renderCard, signIn } from "../../testing/dashboardPage";
+import { useSetup } from "../../hooks/useSetup";
 import { GettingStarted } from "./GettingStarted";
+
+function Card() {
+  return <GettingStarted setup={useSetup()} />;
+}
 
 type Done = {
   members?: number;
@@ -53,10 +58,10 @@ afterEach(() => vi.unstubAllGlobals());
 
 describe("getting started card", () => {
   it("lists the five steps, with the church done and the first member next", async () => {
-    renderCard(<GettingStarted />);
-    expect(await screen.findByText("1 of 5 done")).toBeInTheDocument();
+    renderCard(<Card />);
+    expect(await screen.findByText("1 of 5")).toBeInTheDocument();
     expect(screen.getAllByRole("listitem")).toHaveLength(5);
-    expect(screen.getByRole("link", { name: "Add a member" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Add member" })).toHaveAttribute(
       "href",
       "/members?new=1",
     );
@@ -68,31 +73,31 @@ describe("getting started card", () => {
 
   it("moves the filled button to the next step as things get done", async () => {
     done = { members: 12, present: 30 };
-    renderCard(<GettingStarted />);
-    expect(await screen.findByText("3 of 5 done")).toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: "Add a member" })).toBeNull();
+    renderCard(<Card />);
+    expect(await screen.findByText("3 of 5")).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Add member" })).toBeNull();
     expect(
-      screen.getByRole("link", { name: "Record a tithe" }),
+      screen.getByRole("link", { name: "Record tithe" }),
     ).toBeInTheDocument();
   });
 
   it("says the church is set up when all is done, and hides for good on this device", async () => {
     done = { members: 1, present: 1, tithes: 1, invites: 1 };
-    const { unmount } = renderCard(<GettingStarted />);
+    const { unmount } = renderCard(<Card />);
     expect(await screen.findByText("You are set up")).toBeInTheDocument();
     await userEvent.click(
       screen.getByRole("button", { name: "Hide this card" }),
     );
     expect(screen.queryByText("You are set up")).toBeNull();
     unmount();
-    renderCard(<GettingStarted />);
+    renderCard(<Card />);
     await new Promise((r) => setTimeout(r, 50));
     expect(screen.queryByText("You are set up")).toBeNull();
   });
 
   it("is not shown to anyone but an admin", async () => {
     role = "Clerk";
-    renderCard(<GettingStarted />);
+    renderCard(<Card />);
     await new Promise((r) => setTimeout(r, 50));
     expect(screen.queryByText("Get your church set up")).toBeNull();
     expect(

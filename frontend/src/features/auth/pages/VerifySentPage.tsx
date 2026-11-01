@@ -4,20 +4,26 @@ import { buttonClass, Icon, LinkButton, StatusTile } from "@/ui";
 import { ResendButton } from "../components/ResendButton";
 import { AuthScreen } from "../components/AuthScreen";
 import { sendVerificationLink } from "../api/auth";
+import { useIsSignedIn } from "../hooks";
 import { mailProviderFor } from "../model/mailProvider";
 import form from "./form.module.css";
 import styles from "./VerifySentPage.module.css";
 
-// "Check your email." Registering makes a working account, so this is a pause rather than a gate: open
-// the mail, ask for another link, or skip to sign-in. The address arrives from the page that registered,
-// passed along in the navigation state. Opened directly there is nothing to say, so go to sign-in.
+type Arrival = { email?: string; signedIn?: boolean } | null;
+
+// "Check your email." Registering makes a working account and signs the person in, so this is a pause rather
+// than a gate: open the mail, ask for another link, or skip into the app. The address (and whether sign-in
+// worked) arrives from the page that registered, in the navigation state. Opened directly there is nothing to
+// say, so go on to the app, or to sign-in.
 export function VerifySentPage() {
-  const email = (useLocation().state as { email?: string } | null)?.email;
-  if (!email) return <Navigate to="/signin" replace />;
-  return <CheckEmail email={email} />;
+  const arrival = useLocation().state as Arrival;
+  const signedIn = useIsSignedIn();
+  const leave = signedIn ? "/dashboard" : "/signin";
+  if (!arrival?.email) return <Navigate to={leave} replace />;
+  return <CheckEmail email={arrival.email} leave={leave} />;
 }
 
-function CheckEmail({ email }: { email: string }) {
+function CheckEmail({ email, leave }: { email: string; leave: string }) {
   const [sent, setSent] = useState(false);
   const provider = mailProviderFor(email);
 
@@ -44,14 +50,16 @@ function CheckEmail({ email }: { email: string }) {
         variant={provider ? "secondary" : "primary"}
         onSent={() => setSent(true)}
       />
-      <LinkButton to="/signin" variant="ghost" size="lg" pill block>
+      <LinkButton to={leave} variant="ghost" size="lg" pill block>
         Skip for now
         <Icon name="arrow-right" size={16} />
       </LinkButton>
       <p role="status" className={form.note}>
         {sent
           ? "If that email is registered and unverified, a verification link is on its way."
-          : "You can sign in now. We keep a reminder at the top of the app until you confirm."}
+          : leave === "/dashboard"
+            ? "You are signed in. We keep a reminder at the top of the app until you confirm."
+            : "You can sign in now. We keep a reminder at the top of the app until you confirm."}
       </p>
     </AuthScreen>
   );

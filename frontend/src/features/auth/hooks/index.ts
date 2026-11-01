@@ -8,6 +8,7 @@ export {
   useResetPassword,
   useSendVerification,
   useSignIn,
+  useSignInAfterRegister,
   useSignOut,
 } from "./mutations";
 export { useIsSignedIn } from "./session";

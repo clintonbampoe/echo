@@ -15,6 +15,8 @@ import { transactionRoutes } from "@/features/transactions";
 import { visitorRoutes } from "@/features/visitors";
 import { websiteRoutes } from "@/features/website";
 import { pageRoutes } from "@/pages";
+import { LoadingScreen } from "@/ui";
+import { PageRouteError, ShellRouteError } from "./errors";
 import { NotFound } from "./NotFound";
 import { RequireAuth } from "./RequireAuth";
 import { AppShell } from "./shell";
@@ -23,9 +25,11 @@ import { AppShell } from "./shell";
 // hands them over here; this file only decides where they sit. Pages load on demand.
 const routes: RouteObject[] = [
   {
-    // Shown for the instant it takes to load the first page's code. Nothing: the page
-    // background is already painted, so it just looks like the page arriving.
-    HydrateFallback: () => null,
+    // Shown while the first page's code loads. It only appears after a short wait, so a quick
+    // load never flashes it.
+    HydrateFallback: () => <LoadingScreen />,
+    // A page that fails outside the app (the website, sign in) is a page of its own.
+    ErrorBoundary: PageRouteError,
     children: [
       ...websiteRoutes,
       ...authRoutes,
@@ -35,20 +39,26 @@ const routes: RouteObject[] = [
           {
             Component: AppShell,
             children: [
-              ...dashboardRoutes,
-              ...memberRoutes,
-              ...visitorRoutes,
-              ...organizationRoutes,
-              ...titheRoutes,
-              ...attendanceRoutes,
-              ...eventRoutes,
-              ...transactionRoutes,
-              ...projectRoutes,
-              ...assetRoutes,
-              ...invitationRoutes,
-              ...settingsRoutes,
-              ...accountRoutes,
-              ...pageRoutes,
+              {
+                // A page that fails inside the app keeps the sidebar, so there is a way out.
+                ErrorBoundary: ShellRouteError,
+                children: [
+                  ...dashboardRoutes,
+                  ...memberRoutes,
+                  ...visitorRoutes,
+                  ...organizationRoutes,
+                  ...titheRoutes,
+                  ...attendanceRoutes,
+                  ...eventRoutes,
+                  ...transactionRoutes,
+                  ...projectRoutes,
+                  ...assetRoutes,
+                  ...invitationRoutes,
+                  ...settingsRoutes,
+                  ...accountRoutes,
+                  ...pageRoutes,
+                ],
+              },
             ],
           },
         ],
