@@ -5,6 +5,7 @@ import { Pager, SeeLink, useMedia } from "@/ui";
 import { usePeriod } from "../hooks/period";
 import { AssetsCard } from "../components/cards/AssetsCard";
 import { AttendanceCard } from "../components/cards/AttendanceCard";
+import { GettingStarted } from "../components/setup/GettingStarted";
 import { DashboardHeader } from "../components/header/DashboardHeader";
 import { MemberGrowthCard } from "../components/cards/MemberGrowthCard";
 import { MembersCard } from "../components/cards/MembersCard";
@@ -105,6 +106,7 @@ export function DashboardPage() {
       <NumberCards period={period} today={today} />
       <QuickActions />
       <div className={styles.charts}>
+        <GettingStarted />
         {narrow
           ? groups(today).map((g) => (
               <section key={g.label} className={styles.group}>

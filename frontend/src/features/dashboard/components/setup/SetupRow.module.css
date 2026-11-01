@@ -1,0 +1,107 @@
+.item {
+  display: block;
+}
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--s-12);
+  min-height: 56px;
+  padding: var(--s-8) var(--s-12);
+  border-radius: var(--radius-field);
+  color: inherit;
+  text-decoration: none;
+  transition:
+    background-color var(--t-fast) var(--ease-soft),
+    transform var(--t-spring) var(--ease-spring);
+}
+.row[data-next] {
+  background: var(--hover-option);
+}
+.text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.title {
+  font-size: var(--type-body);
+  font-weight: 500;
+}
+.row[data-done] .title {
+  color: var(--text-3);
+  font-weight: 400;
+}
+.sub {
+  font-size: var(--type-footnote);
+  color: var(--text-3);
+}
+.action {
+  flex: none;
+}
+
+/* The mark: an empty ring, then a dark disc whose tick springs in when the step is done. */
+.node {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1.5px solid var(--line);
+  color: var(--on-accent);
+  transition:
+    background-color var(--t-base) var(--ease-soft),
+    border-color var(--t-base) var(--ease-soft);
+}
+.node[data-done] {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.node svg {
+  animation: tickIn var(--t-spring) var(--ease-spring) both;
+}
+@keyframes tickIn {
+  from {
+    opacity: 0;
+    scale: 0.4;
+  }
+}
+
+.go {
+  flex: none;
+  color: var(--text-3);
+  transition:
+    translate var(--t-base) var(--ease-out),
+    color var(--t-fast) var(--ease-soft);
+}
+@media (hover: hover) {
+  .link:hover {
+    background: var(--hover-option);
+  }
+  .link:hover .go {
+    translate: 3px 0;
+    color: var(--text);
+  }
+}
+.link:active {
+  transform: scale(var(--press-nav));
+}
+.link:focus-visible {
+  outline: var(--focus);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .link:active {
+    transform: none;
+  }
+  .link:hover .go {
+    translate: none;
+  }
+}
+html[data-reduce-motion="true"] .link:active {
+  transform: none;
+}
+html[data-reduce-motion="true"] .link:hover .go {
+  translate: none;
+}
