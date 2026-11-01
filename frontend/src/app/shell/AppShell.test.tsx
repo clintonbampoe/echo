@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
+import { roleLabel } from "@/features/account";
 import { getTokens, saveTokens } from "@/lib/tokens";
 import { AppShell } from "./AppShell";
 
@@ -65,9 +66,9 @@ describe("app shell", () => {
     const sidebar = screen.getByRole("complementary", { name: "Sidebar" });
     expect(await within(sidebar).findByText("Ama Mensah")).toBeInTheDocument();
     expect(within(sidebar).getByText("Grace Chapel")).toBeInTheDocument();
-    expect(
-      within(sidebar).getByRole("link", { name: /Ama Mensah/ }),
-    ).toHaveAttribute("href", "/me");
+    const account = within(sidebar).getByRole("link", { name: /Ama Mensah/ });
+    expect(account).toHaveAttribute("href", "/me");
+    expect(account).toHaveTextContent(roleLabel("Admin"));
     expect(
       within(sidebar).getByRole("link", { name: "Settings" }),
     ).toHaveAttribute("href", "/settings");
@@ -83,13 +84,13 @@ describe("app shell", () => {
       "Dashboard",
       "Members",
       "Visitors",
+      "Organizations",
       "Attendance",
       "Events",
-      "Finance",
       "Tithes",
+      "Finance",
       "Projects",
       "Assets",
-      "Organizations",
     ]);
     expect(main.getByRole("link", { name: "Dashboard" })).toHaveAttribute(
       "aria-current",
@@ -107,7 +108,9 @@ describe("app shell", () => {
     expect(
       await within(sidebar).findByRole("link", { name: "Invitations" }),
     ).toHaveAttribute("href", "/invitations");
-    expect(within(sidebar).getByText("Admin")).toBeInTheDocument();
+    expect(
+      within(sidebar).getByRole("navigation", { name: "Admin" }),
+    ).toBeInTheDocument();
   });
 
   it("hides the Admin group from anyone else", async () => {
