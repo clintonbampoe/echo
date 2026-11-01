@@ -1,8 +1,8 @@
 using Echo.Data;
 using Echo.Domain.Attendances;
+using Echo.Domain.Congregations;
 using Echo.Shared.Query;
 using Microsoft.EntityFrameworkCore;
-using Echo.Domain.Congregations;
 
 namespace Echo.Application.Attendances;
 
@@ -93,9 +93,9 @@ public class SessionRepository(AppDbContext context)
             .FilterDeleted()
             .Where(s => s.CongregationId == congregationId)
             .Filter(filters);
-        // No congregation filter on attendance: the sessions are already the congregation's, and asking for it here
-        // sends the database through every attendance row of the congregation instead of walking the sessions.
-        var attendance = context.Set<Attendance>().AsNoTracking().Live();
+        // The per-session totals hold one row per session, so a year is a few dozen rows to add up
+        // instead of hundreds of thousands of check-ins. They are refreshed every few minutes.
+        var totals = context.Set<SessionAttendanceTotals>().AsNoTracking();
 
         var stats = await context
             .OneRow(congregationId)
@@ -104,16 +104,13 @@ public class SessionRepository(AppDbContext context)
         if (stats is null)
             return new SessionStats(0, 0, 0, 0, 0);
 
-        // Attendance is counted by walking the sessions in range and their rows in the (session, person) index,
-        // one pass for both counts. Asking "is this row in one of those sessions?" for every attendance row sends
-        // the database through the whole table, and a year of a big congregation is hundreds of thousands of rows.
         var records = await sessions
-            .Join(attendance, s => s.Id, a => a.SessionId, (s, _) => s.Status)
+            .Join(totals, s => s.Id, t => t.SessionId, (s, t) => new { s.Status, t.Total })
             .GroupBy(_ => 1)
             .Select(g => new
             {
-                All = g.Count(),
-                Completed = g.Count(status => status == SessionStatus.Completed),
+                All = g.Sum(x => x.Total),
+                Completed = g.Where(x => x.Status == SessionStatus.Completed).Sum(x => x.Total),
             })
             .FirstOrDefaultAsync(ct);
 
@@ -129,13 +126,7 @@ public class SessionRepository(AppDbContext context)
     public void SoftDelete(Session entity) => entity.DeletedAt = DateTime.UtcNow;
 }
 
-public record SessionAttendance(
-    Guid Id,
-    int Total,
-    int Members,
-    int Visitors,
-    int FirstTime
-);
+public record SessionAttendance(Guid Id, int Total, int Members, int Visitors, int FirstTime);
 
 public record SessionStats(
     int Total,

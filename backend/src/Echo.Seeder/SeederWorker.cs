@@ -65,6 +65,7 @@ public sealed class SeederWorker(
             [
                 new SetupPhase(fakers),
                 new PeoplePhase(),
+                new UsersPhase(fakers),
                 new OrganizationsPhase(),
                 new SessionsPhase(),
                 new EventsPhase(),

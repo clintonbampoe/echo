@@ -439,7 +439,7 @@ public static class TitheEndpoints
                 This is the only monthly endpoint for tithes: it serves a dashboard card (`months=6`), a full-year chart, or a donut over the months. The shape is always the same list, so the page decides how to draw it.
 
                 ### Caching
-                The answer is cached for 2 minutes per congregation and per set of parameters, so asking again straight away costs nothing. A change shows up within 2 minutes.
+                The answer is cached for 5 minutes per congregation and per set of parameters, so asking again straight away costs nothing. A change shows up within 5 minutes.
 
                 ### Failure modes
                 - `400 BAD_REQUEST` — `months` is not between 1 and 12.

@@ -65,9 +65,7 @@ public class EventService(
         if (hasMore)
             entities.RemoveAt(entities.Count - 1);
 
-        var nextCursor = hasMore
-            ? encoder.Encode(BuildCursor(entities.Last(), order))
-            : null;
+        var nextCursor = hasMore ? encoder.Encode(BuildCursor(entities.Last(), order)) : null;
 
         var data = await WithCounts(entities, ct);
         activity?.SetTag("event.count", data.Count);
@@ -296,10 +294,11 @@ public class EventService(
         CancellationToken ct
     ) =>
         summaries.Serve(
+            this,
             "events",
             congregationId,
             filters,
-            token => ComputeSummary(congregationId, filters, token),
+            (self, token) => self.ComputeSummary(congregationId, filters, token),
             ct
         );
 
@@ -337,10 +336,11 @@ public class EventService(
         CancellationToken ct
     ) =>
         summaries.Serve(
+            this,
             "events.by-event",
             congregationId,
             filters,
-            token => ComputeSeries(congregationId, filters, token),
+            (self, token) => self.ComputeSeries(congregationId, filters, token),
             ct
         );
 
@@ -353,7 +353,9 @@ public class EventService(
         var window = ResolveWindow(filters, dateWindows);
         var scope = (EventFilters)filters with { From = window?.From, To = window?.To };
 
-        using var activity = instrumentation.ActivitySource.StartActivity("svc.event.series_summary");
+        using var activity = instrumentation.ActivitySource.StartActivity(
+            "svc.event.series_summary"
+        );
 
         return await repository.GetSeries(congregationId, scope, filters.Limit ?? 12, ct);
     }
@@ -368,10 +370,11 @@ public class EventService(
             return new BadRequestResult(problem);
 
         return await summaries.Serve(
+            this,
             "events.monthly",
             congregationId,
             filters,
-            token => ComputeMonthly(congregationId, filters, token),
+            (self, token) => self.ComputeMonthly(congregationId, filters, token),
             ct
         );
     }

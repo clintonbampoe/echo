@@ -23,7 +23,9 @@ services:
       # a zero at that moment, so a counter's FIRST event counts: otherwise increase() and rate() ignore the first sample
       # of a new series, and the first failed login, the first 500, the first hit of a summary never show on a dashboard.
       - --web.enable-otlp-receiver
-      - --enable-feature=created-timestamp-zero-ingestion
+      # native-histograms: k6 sends each request's duration as a histogram, so a quantile over any stretch of time and
+      # any route is exact. Without it only a p95 per five seconds arrives, and averaging those misleads.
+      - --enable-feature=created-timestamp-zero-ingestion,native-histograms
     ports:
       - "127.0.0.1:9090:9090"
     volumes:

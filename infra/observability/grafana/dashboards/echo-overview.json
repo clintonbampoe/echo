@@ -743,7 +743,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "sum(count_over_time({container=\"nginx\", stream=\"stdout\"}[$__range]))",
+          "expr": "sum(count_over_time({container=\"nginx\", stream=\"stdout\"} | sampled=\"1\" [$__range])) * 100",
           "legendFormat": ""
         }
       ],

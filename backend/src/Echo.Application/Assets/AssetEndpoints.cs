@@ -352,7 +352,7 @@ public static class AssetEndpoints
                 - `window` — the dates that were applied.
 
                 ### Caching
-                The answer is cached for 2 minutes per congregation and per set of parameters.
+                The answer is cached for 5 minutes per congregation and per set of parameters.
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
@@ -402,7 +402,7 @@ public static class AssetEndpoints
                 A list of `{ categoryId, categoryName, count, totalPurchaseCost, totalCurrentValue, totalDepreciation }`, the category worth the most first. A category with no matching assets is left out.
 
                 ### Caching
-                The answer is cached for 2 minutes per congregation and per set of parameters.
+                The answer is cached for 5 minutes per congregation and per set of parameters.
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
@@ -454,7 +454,7 @@ public static class AssetEndpoints
                 This is the only monthly endpoint for assets: it serves a dashboard card (`months=6`), a full-year chart, or a donut over the months. The shape is always the same list, so the page decides how to draw it.
 
                 ### Caching
-                The answer is cached for 2 minutes per congregation and per set of parameters, so asking again straight away costs nothing. A change shows up within 2 minutes.
+                The answer is cached for 5 minutes per congregation and per set of parameters, so asking again straight away costs nothing. A change shows up within 5 minutes.
 
                 ### Failure modes
                 - `400 BAD_REQUEST` — `months` is not between 1 and 12.

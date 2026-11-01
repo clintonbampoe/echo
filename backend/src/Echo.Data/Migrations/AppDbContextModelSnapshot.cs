@@ -332,6 +332,45 @@ namespace Echo.Data.Migrations
                     b.ToTable("sessions", (string)null);
                 });
 
+            modelBuilder.Entity("Echo.Domain.Attendances.SessionAttendanceTotals", b =>
+                {
+                    b.Property<Guid>("CongregationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("congregation_id");
+
+                    b.Property<int>("FirstTime")
+                        .HasColumnType("integer")
+                        .HasColumnName("first_time");
+
+                    b.Property<int>("Members")
+                        .HasColumnType("integer")
+                        .HasColumnName("members");
+
+                    b.Property<DateOnly>("SessionDate")
+                        .HasColumnType("date")
+                        .HasColumnName("session_date");
+
+                    b.Property<Guid>("SessionId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("session_id");
+
+                    b.Property<int>("SessionLabelId")
+                        .HasColumnType("integer")
+                        .HasColumnName("session_label_id");
+
+                    b.Property<int>("Total")
+                        .HasColumnType("integer")
+                        .HasColumnName("total");
+
+                    b.Property<int>("Visitors")
+                        .HasColumnType("integer")
+                        .HasColumnName("visitors");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("attendance_per_session", (string)null);
+                });
+
             modelBuilder.Entity("Echo.Domain.Attendances.SessionLabel", b =>
                 {
                     b.Property<int>("Id")

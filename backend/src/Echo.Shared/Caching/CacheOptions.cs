@@ -12,9 +12,9 @@ public sealed class CacheOptions
 
     /// <summary>
     /// Default time-to-live for cache entries when no explicit TTL is provided.
-    /// Default: 2 minutes.
+    /// Default: 5 minutes.
     /// </summary>
-    public TimeSpan DefaultTtl { get; init; } = TimeSpan.FromMinutes(2);
+    public TimeSpan DefaultTtl { get; init; } = TimeSpan.FromMinutes(5);
 
     /// <summary>
     /// Whether to cache null values to prevent cache stampede on missing data.
