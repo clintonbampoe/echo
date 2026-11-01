@@ -31,6 +31,17 @@ public class BcryptHashServiceTests
         Assert.False(await _hasher.VerifyAsync("wrong horse battery", hash));
     }
 
+    [Theory]
+    [InlineData("Spin")]
+    [InlineData("")]
+    [InlineData("plaintext-password")]
+    public async Task Verify_AHashThatIsNotBcrypt_IsFalse_NotAnException(string hash)
+    {
+        // A row written before passwords were hashed holds the plain password. Signing in to it
+        // must be refused like any wrong password, not crash the request.
+        Assert.False(await _hasher.VerifyAsync("Spin", hash));
+    }
+
     [Fact]
     public void HashAsync_RunsOnTheCallingThread()
     {

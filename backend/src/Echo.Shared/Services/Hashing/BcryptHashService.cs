@@ -11,6 +11,16 @@ public class BcryptHashService : IPasswordHasher
     public Task<string> HashAsync(string input) =>
         Task.FromResult(BCrypt.HashPassword(input, _costFactor));
 
-    public Task<bool> VerifyAsync(string input, string hash) =>
-        Task.FromResult(BCrypt.Verify(input, hash));
+    // A stored value that is not a bcrypt hash (a row from before passwords were hashed) matches nothing.
+    public Task<bool> VerifyAsync(string input, string hash)
+    {
+        try
+        {
+            return Task.FromResult(BCrypt.Verify(input, hash));
+        }
+        catch (Exception ex) when (ex is SaltParseException or ArgumentException)
+        {
+            return Task.FromResult(false);
+        }
+    }
 }
