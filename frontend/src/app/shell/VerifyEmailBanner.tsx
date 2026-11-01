@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation } from "react-router-dom";
 import { LinkButton, StatusTile, useMedia, usePresence } from "@/ui";
 import { reminderView, type ReminderPhase } from "./reminderView";
 import { useVerifyReminder } from "./useVerifyReminder";
@@ -8,6 +9,7 @@ import styles from "./VerifyEmailBanner.module.css";
 // of every page until the account is verified. Its button opens the verify page, which sends the link.
 export function VerifyEmailBanner() {
   const reminder = useVerifyReminder();
+  const here = useLocation();
   const phone = useMedia("(max-width: 600px)");
   const { mounted, closing } = usePresence(reminder.phase !== "hidden", 200);
 
@@ -36,7 +38,11 @@ export function VerifyEmailBanner() {
       {view.action && (
         <LinkButton
           to="/verify"
-          state={{ email: reminder.email, send: true }}
+          state={{
+            email: reminder.email,
+            send: true,
+            from: here.pathname + here.search,
+          }}
           variant="secondary"
           pill
           className={styles.action}

@@ -8,12 +8,34 @@ const CHANNEL = "echo-account";
 
 const hasChannels = () => typeof BroadcastChannel !== "undefined";
 
-// Called by the page the email link opens, so a verify page waiting in another tab knows at once.
-export function announceVerified() {
-  if (!hasChannels()) return;
-  const channel = new BroadcastChannel(CHANNEL);
-  channel.postMessage("verified");
-  channel.close();
+const ACK_MS = 500;
+
+// Called by the page the email link opens. A verify page waiting in another tab hears it at once, answers,
+// and takes the person on from there. Resolves true if one answered, false if this is the only tab.
+export function announceVerified(): Promise<boolean> {
+  if (!hasChannels()) return Promise.resolve(false);
+  return new Promise((resolve) => {
+    const channel = new BroadcastChannel(CHANNEL);
+    const finish = (answered: boolean) => {
+      channel.close();
+      resolve(answered);
+    };
+    channel.onmessage = (e: MessageEvent) => {
+      if (e.data === "ack") finish(true);
+    };
+    channel.postMessage("verified");
+    setTimeout(() => finish(false), ACK_MS);
+  });
+}
+
+// For the page the email link opens: undefined while it asks, then whether another tab took over.
+export function useOtherTab(enabled: boolean): boolean | undefined {
+  const [other, setOther] = useState<boolean>();
+  useEffect(() => {
+    if (!enabled) return;
+    void announceVerified().then(setOther);
+  }, [enabled]);
+  return other;
 }
 
 // True once the account is verified. It asks every few seconds while the tab is visible and again whenever
@@ -33,7 +55,11 @@ export function useWatchVerified(signedIn: boolean): boolean {
   useEffect(() => {
     if (!hasChannels()) return;
     const channel = new BroadcastChannel(CHANNEL);
-    channel.onmessage = () => setHeard(true);
+    channel.onmessage = (e: MessageEvent) => {
+      if (e.data !== "verified") return;
+      setHeard(true);
+      channel.postMessage("ack");
+    };
     return () => channel.close();
   }, []);
 

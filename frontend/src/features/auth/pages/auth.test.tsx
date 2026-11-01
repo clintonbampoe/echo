@@ -290,25 +290,27 @@ describe("verify", () => {
     ).toBeInTheDocument();
   });
 
-  it("hears from another tab that opened the link, even without a session", async () => {
-    class Channel {
-      static all: Channel[] = [];
-      onmessage: (() => void) | null = null;
-      constructor() {
-        Channel.all.push(this);
-      }
-      postMessage() {
-        Channel.all.forEach((c) => c.onmessage?.());
-      }
-      close() {
-        Channel.all = Channel.all.filter((c) => c !== this);
-      }
+  // A stand-in for tabs of one browser: a message reaches every open channel.
+  class Channel {
+    static all: Channel[] = [];
+    onmessage: ((e: { data: unknown }) => void) | null = null;
+    constructor() {
+      Channel.all.push(this);
     }
+    postMessage(data: unknown) {
+      Channel.all.forEach((c) => c.onmessage?.({ data }));
+    }
+    close() {
+      Channel.all = Channel.all.filter((c) => c !== this);
+    }
+  }
+
+  it("hears from another tab that opened the link, even without a session", async () => {
     vi.stubGlobal("BroadcastChannel", Channel);
     sent();
     renderAt("/verify", [], { email: "ama@example.com" });
     await screen.findByText("Check your email");
-    act(() => new Channel().postMessage());
+    act(() => new Channel().postMessage("verified"));
     expect(
       await screen.findByRole("heading", { name: "Account verified" }),
     ).toBeInTheDocument();
@@ -316,6 +318,66 @@ describe("verify", () => {
       "href",
       "/signin",
     );
+  });
+
+  it("takes someone back to the page they asked from", async () => {
+    saveTokens(tokens);
+    sent({ verified: true });
+    renderAt("/verify", [], { email: "ama@example.com", from: "/members" });
+    expect(
+      await screen.findByRole("link", { name: /Back to where you were/ }),
+    ).toHaveAttribute("href", "/members");
+  });
+
+  it("ignores a page that points off-site", async () => {
+    saveTokens(tokens);
+    sent({ verified: true });
+    renderAt("/verify", [], {
+      email: "ama@example.com",
+      from: "//evil.example",
+    });
+    expect(
+      await screen.findByRole("link", { name: /Go to the dashboard/ }),
+    ).toHaveAttribute("href", "/dashboard");
+  });
+
+  describe("the page the email link opens", () => {
+    let close: ReturnType<typeof vi.fn>;
+    beforeEach(() => {
+      localStorage.setItem("echo.verify.from", "/members");
+      // jsdom really closes its window, which ends the test run.
+      close = vi.fn();
+      vi.stubGlobal("close", close);
+    });
+    afterEach(() => localStorage.clear());
+
+    it("says so and hands over when the waiting tab is still open", async () => {
+      vi.stubGlobal("BroadcastChannel", Channel);
+      const waiting = new Channel();
+      waiting.onmessage = (e) => {
+        if (e.data === "verified") waiting.postMessage("ack");
+      };
+      fetchMock.mockResolvedValue(json(200));
+      renderAt("/verify-email?token=t");
+      expect(
+        await screen.findByText(
+          "Your other tab already knows. You can close this one.",
+        ),
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole("link", { name: "Continue here instead" }),
+      ).toHaveAttribute("href", "/members");
+      expect(close).toHaveBeenCalled();
+    });
+
+    it("takes the person back to where they started when it is the only tab", async () => {
+      vi.stubGlobal("BroadcastChannel", undefined);
+      fetchMock.mockResolvedValue(json(200));
+      renderAt("/verify-email?token=t");
+      expect(
+        await screen.findByRole("link", { name: /Sign in|Back to where/ }),
+      ).toHaveAttribute("href", "/members");
+    });
   });
 
   it("sends someone with no email to sign in", async () => {

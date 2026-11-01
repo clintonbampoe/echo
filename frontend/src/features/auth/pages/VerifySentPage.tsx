@@ -1,14 +1,16 @@
+import { useEffect } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { Icon } from "@/ui";
 import { AuthScreen } from "../components/AuthScreen";
 import { useIsSignedIn, useVerifyFlow } from "../hooks";
 import { mailProviderFor } from "../model/mailProvider";
+import { rememberOrigin, safePath } from "../model/origin";
 import { VerifyDone } from "./VerifyDone";
 import { VerifyMark } from "./VerifyMark";
 import { VerifyWaiting } from "./VerifyWaiting";
 import styles from "./VerifySentPage.module.css";
 
-type Arrival = { email?: string; send?: boolean } | null;
+type Arrival = { email?: string; send?: boolean; from?: string } | null;
 
 // "Check your email", then "Account verified". Two things bring people here: signing up (the link already
 // went out) and the reminder in the app (this page sends it). Either way the page waits, notices by itself
@@ -17,7 +19,9 @@ type Arrival = { email?: string; send?: boolean } | null;
 export function VerifySentPage() {
   const arrival = useLocation().state as Arrival;
   const signedIn = useIsSignedIn();
-  const leave = signedIn ? "/dashboard" : "/signin";
+  const from = safePath(arrival?.from);
+  // Back to the page they asked from, so verifying never loses their place.
+  const leave = signedIn ? (from ?? "/dashboard") : "/signin";
   if (!arrival?.email) return <Navigate to={leave} replace />;
   return (
     <CheckEmail
@@ -25,18 +29,22 @@ export function VerifySentPage() {
       autoSend={arrival.send === true}
       signedIn={signedIn}
       leave={leave}
+      from={from}
     />
   );
 }
 
 type Props = {
+  from: string | undefined;
   email: string;
   autoSend: boolean;
   signedIn: boolean;
   leave: string;
 };
 
-function CheckEmail({ email, autoSend, signedIn, leave }: Props) {
+function CheckEmail({ email, autoSend, signedIn, leave, from }: Props) {
+  // The email link opens its own tab, which needs to know where to take them.
+  useEffect(() => rememberOrigin(from), [from]);
   const { phase, wait, send } = useVerifyFlow(email, autoSend, signedIn);
   const verified = phase === "verified";
   return (
