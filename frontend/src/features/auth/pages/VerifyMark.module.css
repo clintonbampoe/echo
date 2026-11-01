@@ -1,0 +1,64 @@
+.mark {
+  position: relative;
+  width: 52px;
+  height: 52px;
+}
+
+/* Waiting: a ring that grows and fades, twice per cycle. */
+.pulse {
+  position: absolute;
+  inset: 0;
+  border: 1.5px solid var(--text);
+  border-radius: 16px;
+  opacity: 0;
+  animation: pulse 2.4s var(--ease-out, ease-out) infinite;
+  pointer-events: none;
+}
+.late {
+  animation-delay: 1.2s;
+}
+@keyframes pulse {
+  from {
+    opacity: 0.45;
+    scale: 0.92;
+  }
+  to {
+    opacity: 0;
+    scale: 1.9;
+  }
+}
+
+/* Verified: rings leave the tile once. */
+.ripple {
+  position: absolute;
+  inset: 0;
+  border: 1px solid var(--line-2);
+  border-radius: 50%;
+  opacity: 0;
+  animation: ripple 900ms var(--ease-out, ease-out) 220ms both;
+  pointer-events: none;
+}
+.later {
+  animation-delay: 380ms;
+}
+@keyframes ripple {
+  from {
+    opacity: 0.9;
+    scale: 0.9;
+  }
+  to {
+    opacity: 0;
+    scale: 2.6;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pulse,
+  .ripple {
+    display: none;
+  }
+}
+html[data-reduce-motion="true"] .pulse,
+html[data-reduce-motion="true"] .ripple {
+  display: none;
+}

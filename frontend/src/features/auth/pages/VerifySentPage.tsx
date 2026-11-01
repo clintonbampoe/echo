@@ -1,68 +1,83 @@
-import { useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
-import { buttonClass, Icon, LinkButton, StatusTile } from "@/ui";
-import { ResendButton } from "../components/ResendButton";
+import { Icon } from "@/ui";
 import { AuthScreen } from "../components/AuthScreen";
-import { sendVerificationLink } from "../api/auth";
-import { useIsSignedIn } from "../hooks";
+import { useIsSignedIn, useVerifyFlow } from "../hooks";
 import { mailProviderFor } from "../model/mailProvider";
-import form from "./form.module.css";
+import { VerifyDone } from "./VerifyDone";
+import { VerifyMark } from "./VerifyMark";
+import { VerifyWaiting } from "./VerifyWaiting";
 import styles from "./VerifySentPage.module.css";
 
-type Arrival = { email?: string; signedIn?: boolean } | null;
+type Arrival = { email?: string; send?: boolean } | null;
 
-// "Check your email." Registering makes a working account and signs the person in, so this is a pause rather
-// than a gate: open the mail, ask for another link, or skip into the app. The address (and whether sign-in
-// worked) arrives from the page that registered, in the navigation state. Opened directly there is nothing to
-// say, so go on to the app, or to sign-in.
+// "Check your email", then "Account verified". Two things bring people here: signing up (the link already
+// went out) and the reminder in the app (this page sends it). Either way the page waits, notices by itself
+// when the link has been opened (here, in another tab or on another device) and says so. The address is
+// the account's own, shown but never editable. Opened directly there is nothing to say, so go on.
 export function VerifySentPage() {
   const arrival = useLocation().state as Arrival;
   const signedIn = useIsSignedIn();
   const leave = signedIn ? "/dashboard" : "/signin";
   if (!arrival?.email) return <Navigate to={leave} replace />;
-  return <CheckEmail email={arrival.email} leave={leave} />;
+  return (
+    <CheckEmail
+      email={arrival.email}
+      autoSend={arrival.send === true}
+      signedIn={signedIn}
+      leave={leave}
+    />
+  );
 }
 
-function CheckEmail({ email, leave }: { email: string; leave: string }) {
-  const [sent, setSent] = useState(false);
-  const provider = mailProviderFor(email);
+type Props = {
+  email: string;
+  autoSend: boolean;
+  signedIn: boolean;
+  leave: string;
+};
 
+function CheckEmail({ email, autoSend, signedIn, leave }: Props) {
+  const { phase, wait, send } = useVerifyFlow(email, autoSend, signedIn);
+  const verified = phase === "verified";
   return (
     <AuthScreen
-      title="Check your email"
-      text="We sent a verification link to this address. Open it to verify your account."
+      title={verified ? "Account verified" : "Check your email"}
+      text={
+        verified
+          ? "Thank you. Your account is verified and the reminder is gone."
+          : phase === "sending"
+            ? "We are sending a link to verify your account."
+            : "We sent a link to verify your account. Open it on any device and this page updates by itself."
+      }
     >
-      <StatusTile icon={sent ? "check" : "mail"} on={sent} />
-      <p className={styles.address}>{email}</p>
-      {provider && (
-        <a
-          href={provider.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={buttonClass({ size: "lg", block: true })}
-        >
-          Open {provider.name}
-          <Icon name="arrow-up" size={16} className={styles.out} />
-        </a>
-      )}
-      <ResendButton
-        send={() => sendVerificationLink(email)}
-        variant={provider ? "link" : "primary"}
-        onSent={() => setSent(true)}
-      />
-      <div className={styles.skip}>
-        <LinkButton to={leave} variant="ghost" size="lg" pill>
-          Skip for now
-          <Icon name="arrow-right" size={16} />
-        </LinkButton>
-        <p role="status" className={form.note}>
-          {sent
-            ? "If that email is registered and unverified, a verification link is on its way."
-            : leave === "/dashboard"
-              ? "You are signed in. We keep a reminder at the top of the app until you verify your account."
-              : "You can sign in now. We keep a reminder at the top of the app until you verify your account."}
+      <VerifyMark phase={phase} />
+      <div className={styles.field}>
+        <p className={styles.caption}>Sent to the email you signed up with</p>
+        <p className={styles.address}>
+          <Icon name="lock" size={14} className={styles.lock} />
+          <span>{email}</span>
+          {verified && (
+            <span className={styles.badge}>
+              <Icon name="check" size={13} /> Verified
+            </span>
+          )}
         </p>
       </div>
+      <p className={styles.sr} role="status">
+        {verified ? "Account verified" : ""}
+      </p>
+      {verified ? (
+        <VerifyDone signedIn={signedIn} leave={leave} />
+      ) : (
+        <VerifyWaiting
+          phase={phase}
+          provider={mailProviderFor(email) ?? undefined}
+          wait={wait}
+          signedIn={signedIn}
+          leave={leave}
+          onSend={() => void send()}
+        />
+      )}
     </AuthScreen>
   );
 }

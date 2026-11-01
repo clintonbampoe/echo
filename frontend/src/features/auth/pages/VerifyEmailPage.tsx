@@ -1,8 +1,10 @@
+import { useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { LinkButton } from "@/ui";
 import { BackLink } from "../components/AuthLinks";
 import { LinkExpired } from "../components/LinkExpired";
 import { AuthScreen } from "../components/AuthScreen";
+import { announceVerified } from "../hooks/verified";
 import { useVerifyEmailLink } from "../hooks/queries";
 import styles from "./form.module.css";
 
@@ -10,6 +12,10 @@ import styles from "./form.module.css";
 export function VerifyEmailPage() {
   const token = useSearchParams()[0].get("token") ?? "";
   const check = useVerifyEmailLink(token);
+  // Tell a verify page waiting in another tab, so it can celebrate straight away.
+  useEffect(() => {
+    if (check.isSuccess) announceVerified();
+  }, [check.isSuccess]);
 
   if (token === "" || check.isError) {
     return (
@@ -24,7 +30,7 @@ export function VerifyEmailPage() {
     return (
       <AuthScreen
         title="Account verified"
-        text="Thank you. Your account is verified."
+        text="Thank you. Your account is verified. You can close this tab if you have another one open."
       >
         <LinkButton to="/dashboard" size="lg" pill block>
           Continue

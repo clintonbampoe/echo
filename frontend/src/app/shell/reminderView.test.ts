@@ -5,8 +5,6 @@ const base = {
   unverified: true,
   sawUnverified: true,
   gone: false,
-  sent: false,
-  failed: false,
 };
 
 describe("reminderPhase", () => {
@@ -14,10 +12,8 @@ describe("reminderPhase", () => {
     expect(reminderPhase({ ...base, loaded: false })).toBe("hidden");
   });
 
-  it("follows an unverified address from idle to sent, and to failed on an error", () => {
+  it("reminds while the account is unverified", () => {
     expect(reminderPhase(base)).toBe("idle");
-    expect(reminderPhase({ ...base, sent: true })).toBe("sent");
-    expect(reminderPhase({ ...base, sent: true, failed: true })).toBe("failed");
   });
 
   it("thanks the person once, but says nothing to someone who was never unverified", () => {
@@ -29,10 +25,14 @@ describe("reminderPhase", () => {
 });
 
 describe("reminderView", () => {
-  it("counts the wait down as minutes and seconds", () => {
-    expect(reminderView("sent", "a@b.c", 42).action?.long).toBe(
-      "Resend in 0:42",
-    );
-    expect(reminderView("sent", "a@b.c", 0).action?.disabled).toBeFalsy();
+  it("asks to verify the account, with the address it will write to", () => {
+    const view = reminderView("idle", "a@b.c");
+    expect(view.title.long).toBe("Verify your account");
+    expect(view.text.long).toBe("We will send a link to a@b.c.");
+    expect(view.action?.long).toBe("Verify account");
+  });
+
+  it("has no action once verified", () => {
+    expect(reminderView("confirmed", "a@b.c").action).toBeUndefined();
   });
 });

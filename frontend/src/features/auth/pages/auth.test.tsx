@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import {
   createMemoryRouter,
@@ -131,7 +131,20 @@ describe("sign up", () => {
 });
 
 describe("verify", () => {
+  const sent = (status: unknown = { verified: false }) =>
+    fetchMock.mockImplementation(async (url: string) =>
+      String(url).includes("/verifications/status")
+        ? json(200, status)
+        : json(200),
+    );
+  const linkRequests = () =>
+    fetchMock.mock.calls.filter(([url]) =>
+      String(url).includes("/verifications/account"),
+    );
+  beforeEach(() => sessionStorage.clear());
+
   it("asks a new user to check their email, and lets them skip to sign-in", async () => {
+    sent();
     renderAt("/verify", [], { email: "ama@example.com" });
     expect(await screen.findByText("Check your email")).toBeInTheDocument();
     expect(screen.getByText("ama@example.com")).toBeInTheDocument();
@@ -141,7 +154,27 @@ describe("verify", () => {
     );
   });
 
+  it("shows the address as the one they signed up with, and never as a field", async () => {
+    sent();
+    renderAt("/verify", [], { email: "ama@example.com" });
+    await screen.findByText("Check your email");
+    expect(
+      screen.getByText("Sent to the email you signed up with"),
+    ).toBeInTheDocument();
+    expect(screen.queryByRole("textbox")).toBeNull();
+  });
+
+  it("does not send again when the link went out at sign-up", async () => {
+    sent();
+    renderAt("/verify", [], { email: "ama@example.com" });
+    expect(
+      await screen.findByText("Send another link in 0:30"),
+    ).toBeInTheDocument();
+    expect(linkRequests()).toHaveLength(0);
+  });
+
   it("offers a shortcut to the mail of a known provider, in a new tab", async () => {
+    sent();
     renderAt("/verify", [], { email: "ama@gmail.com" });
     const open = await screen.findByRole("link", { name: /Open Gmail/ });
     expect(open).toHaveAttribute("href", "https://mail.google.com");
@@ -149,47 +182,140 @@ describe("verify", () => {
   });
 
   it("offers no shortcut for an address on a domain of its own", async () => {
+    sent();
     renderAt("/verify", [], { email: "kwame@gracechapel.org" });
     await screen.findByText("Check your email");
     expect(screen.queryByRole("link", { name: /Open / })).toBeNull();
   });
 
-  it("sends another link and says the same thing whatever the server knows", async () => {
-    fetchMock.mockResolvedValueOnce(json(200));
-    renderAt("/verify", [], { email: "ama@example.com" });
-    await userEvent.click(
-      await screen.findByRole("button", { name: "Resend email" }),
-    );
+  it("sends the link by itself when the reminder sends them here, then waits", async () => {
+    sent();
+    renderAt("/verify", [], { email: "ama@example.com", send: true });
     expect(
-      await screen.findByText(
-        "If that email is registered and unverified, a verification link is on its way.",
-      ),
+      await screen.findByText("Waiting for you to open the link"),
     ).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Resend in/ })).toBeDisabled();
+    expect(linkRequests()).toHaveLength(1);
+    expect(
+      JSON.parse((linkRequests()[0]![1] as RequestInit).body as string),
+    ).toEqual({ email: "ama@example.com" });
+    expect(screen.getByText("Send another link in 0:30")).toBeInTheDocument();
   });
 
-  it("lets someone who is signed in skip into the app", async () => {
+  it("does not send a second time when the page is reloaded straight away", async () => {
+    sent();
+    renderAt("/verify", [], { email: "ama@example.com", send: true });
+    await screen.findByText("Waiting for you to open the link");
+    cleanup();
+    renderAt("/verify", [], { email: "ama@example.com", send: true });
+    await screen.findByText("Waiting for you to open the link");
+    expect(linkRequests()).toHaveLength(1);
+  });
+
+  it("says when the link could not be sent, and sends it on a second try", async () => {
+    fetchMock.mockResolvedValueOnce(json(500));
+    renderAt("/verify", [], { email: "ama@example.com", send: true });
+    expect(
+      await screen.findByText("We could not send the link"),
+    ).toBeInTheDocument();
+    sent();
+    await userEvent.click(screen.getByRole("button", { name: "Try again" }));
+    expect(
+      await screen.findByText("Waiting for you to open the link"),
+    ).toBeInTheDocument();
+  });
+
+  it("waits out a rate limit as if the link had been sent", async () => {
+    fetchMock.mockResolvedValueOnce(json(429));
+    renderAt("/verify", [], { email: "ama@example.com", send: true });
+    expect(
+      await screen.findByText("Waiting for you to open the link"),
+    ).toBeInTheDocument();
+  });
+
+  it("sends another link on request and shows the wait again", async () => {
+    sent();
+    renderAt("/verify", [], { email: "ama@gmail.com", send: true });
+    await screen.findByText("Send another link in 0:30");
+    expect(linkRequests()).toHaveLength(1);
+  });
+
+  it("lets someone who is signed in go back to the app", async () => {
     saveTokens(tokens);
+    sent();
     renderAt("/verify", [{ path: "dashboard", element: <p>Dashboard</p> }], {
       email: "ama@example.com",
     });
     expect(
-      await screen.findByRole("link", { name: /Skip for now/ }),
+      await screen.findByRole("link", { name: /Back to the app/ }),
     ).toHaveAttribute("href", "/dashboard");
   });
 
-  it("asks for another link as a line of words beside Open Gmail, and then shows the wait", async () => {
-    fetchMock.mockResolvedValueOnce(json(200));
-    renderAt("/verify", [], { email: "ama@gmail.com" });
-    await userEvent.click(
-      await screen.findByRole("button", { name: "Send another link" }),
-    );
+  it("notices by itself that the account was verified, and offers the way on", async () => {
+    saveTokens(tokens);
+    sent({ verified: true, verifiedAt: "2026-11-01T09:00:00Z" });
+    renderAt("/verify", [{ path: "dashboard", element: <p>Dashboard</p> }], {
+      email: "ama@example.com",
+    });
     expect(
-      await screen.findByText("Send another link in 0:30"),
+      await screen.findByRole("heading", { name: "Account verified" }),
     ).toBeInTheDocument();
     expect(
-      screen.queryByRole("button", { name: "Send another link" }),
-    ).toBeNull();
+      screen.getByRole("link", { name: /Go to the dashboard/ }),
+    ).toHaveAttribute("href", "/dashboard");
+    expect(screen.getByText("Verified")).toBeInTheDocument();
+  });
+
+  it("goes on to the app by itself after a moment", async () => {
+    saveTokens(tokens);
+    sent({ verified: true });
+    renderAt("/verify", [{ path: "dashboard", element: <p>Dashboard</p> }], {
+      email: "ama@example.com",
+    });
+    expect(await screen.findByText("Continuing in 3")).toBeInTheDocument();
+    expect(
+      await screen.findByText("Dashboard", {}, { timeout: 5000 }),
+    ).toBeInTheDocument();
+  }, 8000);
+
+  it("stays on the page when the person says so", async () => {
+    saveTokens(tokens);
+    sent({ verified: true });
+    renderAt("/verify", [], { email: "ama@example.com" });
+    await userEvent.click(
+      await screen.findByRole("button", { name: "Stay here" }),
+    );
+    expect(screen.queryByText(/Continuing in/)).toBeNull();
+    expect(
+      screen.getByRole("heading", { name: "Account verified" }),
+    ).toBeInTheDocument();
+  });
+
+  it("hears from another tab that opened the link, even without a session", async () => {
+    class Channel {
+      static all: Channel[] = [];
+      onmessage: (() => void) | null = null;
+      constructor() {
+        Channel.all.push(this);
+      }
+      postMessage() {
+        Channel.all.forEach((c) => c.onmessage?.());
+      }
+      close() {
+        Channel.all = Channel.all.filter((c) => c !== this);
+      }
+    }
+    vi.stubGlobal("BroadcastChannel", Channel);
+    sent();
+    renderAt("/verify", [], { email: "ama@example.com" });
+    await screen.findByText("Check your email");
+    act(() => new Channel().postMessage());
+    expect(
+      await screen.findByRole("heading", { name: "Account verified" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Sign in/ })).toHaveAttribute(
+      "href",
+      "/signin",
+    );
   });
 
   it("sends someone with no email to sign in", async () => {
@@ -224,16 +350,15 @@ describe("joining signs the new person in", () => {
     );
   }
 
-  it("keeps the session it was given and offers to skip into the app", async () => {
+  it("keeps the session it was given and offers to go back to the app", async () => {
     answer(json(200, tokens));
     renderAt("/join/abc/account");
     await fillAndSubmit();
     expect(await screen.findByText("Check your email")).toBeInTheDocument();
     expect(getTokens()?.refreshToken).toBe("r");
-    expect(screen.getByRole("link", { name: /Skip for now/ })).toHaveAttribute(
-      "href",
-      "/dashboard",
-    );
+    expect(
+      screen.getByRole("link", { name: /Back to the app/ }),
+    ).toHaveAttribute("href", "/dashboard");
   });
 
   it("still gets there when the automatic sign-in fails, and skips to sign-in", async () => {

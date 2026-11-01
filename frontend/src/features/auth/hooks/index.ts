@@ -12,3 +12,5 @@ export {
   useSignOut,
 } from "./mutations";
 export { useIsSignedIn } from "./session";
+export { announceVerified } from "./verified";
+export { useVerifyFlow } from "./verifyFlow";

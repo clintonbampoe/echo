@@ -5,14 +5,11 @@ import styles from "./ResendButton.module.css";
 
 const COOLDOWN_SECONDS = 30;
 
-const clock = (seconds: number) =>
-  `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
-
 type Props = {
   // Does the sending. It is a prop so the same button serves "verify email" and "reset password".
   send: () => Promise<unknown>;
   // The one filled button on a screen is the most likely next step. Usually that is elsewhere.
-  variant?: "primary" | "secondary" | "link";
+  variant?: "primary" | "secondary";
   // Called after an email went out, so the screen around the button can acknowledge it.
   onSent?: () => void;
 };
@@ -41,34 +38,6 @@ export function ResendButton({ send, variant = "secondary", onSent }: Props) {
       setPending(false);
     }
   }
-
-  if (variant === "link")
-    return (
-      <div>
-        <p className={styles.line} aria-live="polite">
-          {wait > 0 ? (
-            `Send another link in ${clock(wait)}`
-          ) : (
-            <>
-              Did not get it?{" "}
-              <button
-                type="button"
-                className={styles.link}
-                disabled={pending}
-                onClick={onClick}
-              >
-                Send another link
-              </button>
-            </>
-          )}
-        </p>
-        {problem && (
-          <p role="alert" className={styles.problem}>
-            {problem}
-          </p>
-        )}
-      </div>
-    );
 
   return (
     <div>

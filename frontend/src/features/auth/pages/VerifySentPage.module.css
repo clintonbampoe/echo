@@ -1,7 +1,20 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.caption {
+  margin: 0 0 0 2px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-3);
+}
+
 /* The address sits in a field-shaped box, but it is only shown, never edited. */
 .address {
   display: flex;
   align-items: center;
+  gap: var(--s-8);
   box-sizing: border-box;
   min-height: 48px;
   margin: 0;
@@ -12,13 +25,73 @@
   font-weight: 500;
   overflow-wrap: anywhere;
 }
+.lock {
+  flex: none;
+  color: var(--text-3);
+}
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  font-size: 13px;
+  animation: badgeIn var(--t-base) var(--ease-spring) 400ms both;
+}
+@keyframes badgeIn {
+  from {
+    opacity: 0;
+    translate: 0 4px;
+  }
+}
+
+/* "Waiting for you": one calm line with three dots that breathe. */
+.status {
+  display: flex;
+  align-items: center;
+  gap: var(--s-12);
+  margin: 0;
+  padding: 12px var(--s-16);
+  border-radius: 16px;
+  background: var(--hover-option);
+  font-size: 14.5px;
+  color: var(--text-2);
+}
+.dots {
+  display: inline-flex;
+  gap: 4px;
+  margin-left: auto;
+}
+.dots i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text);
+  opacity: 0.25;
+  animation: dot 1.4s ease-in-out infinite;
+}
+.dots i:nth-child(2) {
+  animation-delay: 0.18s;
+}
+.dots i:nth-child(3) {
+  animation-delay: 0.36s;
+}
+@keyframes dot {
+  0%,
+  80%,
+  100% {
+    opacity: 0.25;
+  }
+  40% {
+    opacity: 1;
+  }
+}
 
 /* The arrow that says "this opens another tab". */
 .out {
   rotate: 45deg;
 }
 
-/* Skip sits under a rule, apart from the ways to get the email, as on the board. */
+/* Leaving sits under a rule, apart from the ways to get the email. */
 .skip {
   display: flex;
   flex-direction: column;
@@ -26,4 +99,92 @@
   gap: var(--s-8);
   padding-top: var(--s-16);
   border-top: 1px solid var(--line);
+}
+.note {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--text-3);
+  text-align: center;
+}
+
+/* Verified: the way on, then a hairline that fills while it counts down. */
+.done {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-16);
+  animation: doneIn var(--t-enter) var(--ease-spring) 700ms both;
+}
+@keyframes doneIn {
+  from {
+    opacity: 0;
+    translate: 0 8px;
+  }
+}
+.countdown {
+  display: flex;
+  align-items: center;
+  gap: var(--s-12);
+  font-size: 13.5px;
+  color: var(--text-3);
+  white-space: nowrap;
+}
+.track {
+  flex: 1;
+  height: 3px;
+  border-radius: 3px;
+  background: var(--line);
+  overflow: hidden;
+}
+.fill {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--accent);
+  transform-origin: left;
+  transition: transform 100ms linear;
+}
+.stay {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-weight: 500;
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dots i,
+  .done,
+  .badge {
+    animation: none;
+  }
+  .dots i {
+    opacity: 0.6;
+  }
+  .fill {
+    transition: none;
+  }
+}
+html[data-reduce-motion="true"] .dots i,
+html[data-reduce-motion="true"] .done,
+html[data-reduce-motion="true"] .badge {
+  animation: none;
+}
+html[data-reduce-motion="true"] .fill {
+  transition: none;
+}
+
+/* Said aloud, not drawn. */
+.sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
