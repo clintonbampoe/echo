@@ -131,14 +131,41 @@ describe("sign up", () => {
 });
 
 describe("verify", () => {
-  it("tells a new user the account is ready and points to sign-in", async () => {
+  it("asks a new user to check their email, and lets them skip to sign-in", async () => {
     renderAt("/verify", [], { email: "ama@example.com" });
+    expect(await screen.findByText("Check your email")).toBeInTheDocument();
+    expect(screen.getByText("ama@example.com")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Skip for now/ })).toHaveAttribute(
+      "href",
+      "/signin",
+    );
+  });
+
+  it("offers a shortcut to the mail of a known provider, in a new tab", async () => {
+    renderAt("/verify", [], { email: "ama@gmail.com" });
+    const open = await screen.findByRole("link", { name: /Open Gmail/ });
+    expect(open).toHaveAttribute("href", "https://mail.google.com");
+    expect(open).toHaveAttribute("target", "_blank");
+  });
+
+  it("offers no shortcut for an address on a domain of its own", async () => {
+    renderAt("/verify", [], { email: "kwame@gracechapel.org" });
+    await screen.findByText("Check your email");
+    expect(screen.queryByRole("link", { name: /Open / })).toBeNull();
+  });
+
+  it("sends another link and says the same thing whatever the server knows", async () => {
+    fetchMock.mockResolvedValueOnce(json(200));
+    renderAt("/verify", [], { email: "ama@example.com" });
+    await userEvent.click(
+      await screen.findByRole("button", { name: "Resend email" }),
+    );
     expect(
-      await screen.findByText("Your account is ready"),
+      await screen.findByText(
+        "If that email is registered and unverified, a verification link is on its way.",
+      ),
     ).toBeInTheDocument();
-    expect(
-      screen.getByRole("link", { name: "Continue to sign in" }),
-    ).toHaveAttribute("href", "/signin");
+    expect(screen.getByRole("button", { name: /Resend in/ })).toBeDisabled();
   });
 
   it("sends someone with no email to sign in", async () => {

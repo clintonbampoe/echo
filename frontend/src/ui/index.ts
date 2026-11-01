@@ -4,6 +4,7 @@ export { Alert } from "./feedback/Alert";
 export { Avatar } from "./layout/Avatar";
 export { CenterPanel } from "./overlays/CenterPanel";
 export { Button, LinkButton } from "./layout/Button";
+export { buttonClass } from "./layout/buttonClass";
 export { HistoryTrack } from "./data/HistoryTrack";
 export type { TrackNode } from "./data/track";
 export { Chip, type ChipTone } from "./layout/Chip";
