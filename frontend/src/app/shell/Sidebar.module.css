@@ -11,6 +11,24 @@
   overflow-y: auto;
   background: var(--side);
   border-right: 1px solid var(--line-2);
+  /* The size of a link and the air above a group's heading (NavList reads them). */
+  --nav-item: 44px;
+  --nav-head: var(--s-16);
+}
+/* A short screen (most laptops) gets the same proportions a notch smaller, so the whole menu fits without scrolling. */
+@media (max-height: 820px) {
+  .side {
+    --nav-item: 40px;
+    --nav-head: var(--s-12);
+    gap: var(--s-16);
+    padding-top: var(--s-16);
+  }
+}
+@media (max-height: 740px) {
+  .side {
+    --nav-item: 36px;
+    --nav-head: var(--s-8);
+  }
 }
 
 .foot {
