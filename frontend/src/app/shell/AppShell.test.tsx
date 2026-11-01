@@ -202,6 +202,7 @@ describe("verify account reminder", () => {
     expect(router.state.location.state).toEqual({
       email: "ama@example.com",
       send: true,
+      from: "/dashboard",
     });
   });
 

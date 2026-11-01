@@ -22,7 +22,11 @@ export function VerifyDone({ signedIn, leave }: Props) {
       onBlur={() => next.pause(false)}
     >
       <LinkButton to={leave} replace size="lg" pill block>
-        {signedIn ? "Go to the dashboard" : "Sign in"}
+        {signedIn
+          ? leave === "/dashboard"
+            ? "Go to the dashboard"
+            : "Back to where you were"
+          : "Sign in"}
         <Icon name="arrow-right" size={16} />
       </LinkButton>
       {!next.stopped && (
