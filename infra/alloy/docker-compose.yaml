@@ -5,14 +5,22 @@ services:
     build: .
     container_name: alloy
     restart: unless-stopped
+    # Alloy runs on the app box, so it shares its 4 GB. It used 170 to 200 MB at the peak of a 420-user test.
+    # GOMEMLIMIT makes its garbage collector work harder as it nears the limit, instead of being killed at it.
+    mem_limit: 256m
+    memswap_limit: 256m
+    cpu_shares: 256
     # Names the machine in every metric and log ("host" label), instead of the container id.
     hostname: ${ALLOY_HOST:-echo-app}
     environment:
+      GOMEMLIMIT: 200MiB
       PG_MONITOR_DSN: ${PG_MONITOR_DSN}
       # Empty means "the observability stack on this machine". See .env.example for a separate server.
       LOKI_URL: ${LOKI_URL:-}
       PROMETHEUS_URL: ${PROMETHEUS_URL:-}
       TEMPO_OTLP_ENDPOINT: ${TEMPO_OTLP_ENDPOINT:-}
+      # The lowest level of API log kept. 13 is warnings and above; 9 adds information.
+      API_LOG_MIN_SEVERITY: ${API_LOG_MIN_SEVERITY:-13}
     # cAdvisor reads the cgroup tree to find each container. A private cgroup namespace shows only Alloy's own.
     cgroup: host
     # Network use per container is read through each container's own process; needs the host's process list.
