@@ -1,10 +1,13 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { LinkButton } from "@/ui";
 import { BackLink } from "../components/AuthLinks";
 import { LinkExpired } from "../components/LinkExpired";
 import { AuthScreen } from "../components/AuthScreen";
-import { announceVerified } from "../hooks/verified";
+import { useIsSignedIn } from "../hooks/session";
+import { useOtherTab } from "../hooks/verified";
+import { recallOrigin } from "../model/origin";
+import { VerifyDone } from "./VerifyDone";
 import { useVerifyEmailLink } from "../hooks/queries";
 import styles from "./form.module.css";
 
@@ -12,10 +15,14 @@ import styles from "./form.module.css";
 export function VerifyEmailPage() {
   const token = useSearchParams()[0].get("token") ?? "";
   const check = useVerifyEmailLink(token);
-  // Tell a verify page waiting in another tab, so it can celebrate straight away.
+  const signedIn = useIsSignedIn();
+  // Tell a verify page waiting in another tab, so it can celebrate and carry on. If one answers, this tab
+  // has nothing left to do; if not, this tab takes the person back to where they started.
+  const other = useOtherTab(check.isSuccess);
+  const [origin] = useState(recallOrigin);
   useEffect(() => {
-    if (check.isSuccess) announceVerified();
-  }, [check.isSuccess]);
+    if (other) window.close();
+  }, [other]);
 
   if (token === "" || check.isError) {
     return (
@@ -30,11 +37,26 @@ export function VerifyEmailPage() {
     return (
       <AuthScreen
         title="Account verified"
-        text="Thank you. Your account is verified. You can close this tab if you have another one open."
+        text={
+          other
+            ? "Your other tab already knows. You can close this one."
+            : "Thank you. Your account is verified."
+        }
       >
-        <LinkButton to="/dashboard" size="lg" pill block>
-          Continue
-        </LinkButton>
+        {other === false && (
+          <VerifyDone signedIn={signedIn} leave={origin ?? "/dashboard"} />
+        )}
+        {other && (
+          <LinkButton
+            to={origin ?? "/dashboard"}
+            variant="ghost"
+            size="lg"
+            pill
+            block
+          >
+            Continue here instead
+          </LinkButton>
+        )}
       </AuthScreen>
     );
   }

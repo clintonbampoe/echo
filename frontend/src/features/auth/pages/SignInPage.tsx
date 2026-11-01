@@ -9,18 +9,14 @@ import { AuthScreen } from "../components/AuthScreen";
 import { AuthLinks } from "../components/AuthLinks";
 import { SignInAlert } from "../components/SignInAlert";
 import { useSignIn } from "../hooks/mutations";
+import { safePath } from "../model/origin";
 import { signInSchema, type SignInValues } from "../forms/schema";
 import styles from "./form.module.css";
 
 // Where to go after signing in: back to the page that asked for it, otherwise the dashboard.
 // Only same-site paths are accepted, so a crafted link cannot send someone elsewhere.
 function destination(state: unknown): string {
-  const from = (state as { from?: unknown } | null)?.from;
-  return typeof from === "string" &&
-    from.startsWith("/") &&
-    !from.startsWith("//")
-    ? from
-    : "/dashboard";
+  return safePath((state as { from?: unknown } | null)?.from) ?? "/dashboard";
 }
 
 export function SignInPage() {
