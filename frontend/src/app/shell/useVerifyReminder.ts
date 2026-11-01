@@ -6,7 +6,7 @@ import { useCooldown } from "@/ui";
 import { reminderPhase } from "./reminderView";
 
 const COOLDOWN_SECONDS = 30;
-// How long "Email confirmed" stays before the reminder leaves.
+// How long "Account verified" stays before the reminder leaves.
 const CONFIRMED_MS = 4000;
 
 // What the verify-email reminder should be doing right now, and how to send the link. It is shown while the

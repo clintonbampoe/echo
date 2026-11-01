@@ -8,7 +8,7 @@ type Facts = {
   unverified: boolean;
   // It was unverified at some point while this page was open.
   sawUnverified: boolean;
-  // "Email confirmed" has been shown for long enough.
+  // "Account verified" has been shown for long enough.
   gone: boolean;
   sent: boolean;
   failed: boolean;
@@ -48,11 +48,11 @@ export function reminderView(
       return {
         icon: "mail",
         title: {
-          long: "Confirm your email address",
-          short: "Confirm your email",
+          long: "Verify your account",
+          short: "Verify your account",
         },
         text: {
-          long: `We have not confirmed ${email} yet.`,
+          long: `We will send a link to ${email}.`,
           short: "Send a link to your inbox",
         },
         action: { long: "Send link", short: "Send link" },
@@ -88,7 +88,7 @@ export function reminderView(
       return {
         icon: "check",
         on: true,
-        title: { long: "Email confirmed", short: "Email confirmed" },
+        title: { long: "Account verified", short: "Account verified" },
         text: { long: "Thank you. This reminder is gone.", short: "Thank you" },
       };
   }

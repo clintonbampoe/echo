@@ -21,7 +21,7 @@ export function VerifyEmailBanner() {
   const view = reminderView(last, reminder.email, reminder.wait);
   return (
     <section
-      aria-label="Email confirmation"
+      aria-label="Account verification"
       className={`${styles.banner} pop`}
       data-closing={closing}
     >

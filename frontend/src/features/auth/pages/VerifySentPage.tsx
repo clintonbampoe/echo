@@ -30,7 +30,7 @@ function CheckEmail({ email, leave }: { email: string; leave: string }) {
   return (
     <AuthScreen
       title="Check your email"
-      text="We sent a verification link to this address. Open it to confirm it is yours."
+      text="We sent a verification link to this address. Open it to verify your account."
     >
       <StatusTile icon={sent ? "check" : "mail"} on={sent} />
       <p className={styles.address}>{email}</p>
@@ -59,8 +59,8 @@ function CheckEmail({ email, leave }: { email: string; leave: string }) {
           {sent
             ? "If that email is registered and unverified, a verification link is on its way."
             : leave === "/dashboard"
-              ? "You are signed in. We keep a reminder at the top of the app until you confirm."
-              : "You can sign in now. We keep a reminder at the top of the app until you confirm."}
+              ? "You are signed in. We keep a reminder at the top of the app until you verify your account."
+              : "You can sign in now. We keep a reminder at the top of the app until you verify your account."}
         </p>
       </div>
     </AuthScreen>

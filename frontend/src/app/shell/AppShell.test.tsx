@@ -206,11 +206,11 @@ describe("verify email reminder", () => {
     });
   };
 
-  it("asks an unverified user to confirm, and sends the link to their address", async () => {
+  it("asks an unverified user to verify their account, and sends the link to their address", async () => {
     unverified();
     renderShell();
     expect(
-      await screen.findByText("We have not confirmed ama@example.com yet."),
+      await screen.findByText("We will send a link to ama@example.com."),
     ).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "Send link" }));
 
@@ -227,15 +227,13 @@ describe("verify email reminder", () => {
     profile = { ...me, verifiedAt: "2026-10-01T00:00:00Z" };
     renderShell();
     await screen.findByText("Ama Mensah");
-    expect(
-      screen.queryByText("Confirm your email address"),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText("Verify your account")).not.toBeInTheDocument();
   });
 
   it("says when the link could not be sent, and offers to try again", async () => {
     unverified();
     renderShell();
-    await screen.findByText("Confirm your email address");
+    await screen.findByText("Verify your account");
     answer({
       "/verifications/account": () => new Response(null, { status: 500 }),
     });
@@ -250,7 +248,7 @@ describe("verify email reminder", () => {
   it("waits out a rate limit the way the resend button does", async () => {
     unverified();
     renderShell();
-    await screen.findByText("Confirm your email address");
+    await screen.findByText("Verify your account");
     answer({
       "/verifications/account": () => new Response(null, { status: 429 }),
     });
@@ -259,10 +257,10 @@ describe("verify email reminder", () => {
     expect(await screen.findByText("Link on its way")).toBeInTheDocument();
   });
 
-  it("thanks the person once the address has been confirmed", async () => {
+  it("thanks the person once the account has been verified", async () => {
     unverified();
     renderShell();
-    await screen.findByText("Confirm your email address");
+    await screen.findByText("Verify your account");
     answer({
       "/verifications/status": () =>
         json({
@@ -273,7 +271,7 @@ describe("verify email reminder", () => {
     });
     await userEvent.click(screen.getByRole("button", { name: "Send link" }));
 
-    expect(await screen.findByText("Email confirmed")).toBeInTheDocument();
+    expect(await screen.findByText("Account verified")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /Resend/ })).toBeNull();
   });
 });

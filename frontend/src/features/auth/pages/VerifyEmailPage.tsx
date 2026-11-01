@@ -23,8 +23,8 @@ export function VerifyEmailPage() {
   if (check.isSuccess) {
     return (
       <AuthScreen
-        title="Email verified"
-        text="Thank you. Your email address is confirmed."
+        title="Account verified"
+        text="Thank you. Your account is verified."
       >
         <LinkButton to="/dashboard" size="lg" pill block>
           Continue
@@ -33,7 +33,7 @@ export function VerifyEmailPage() {
     );
   }
   return (
-    <AuthScreen title="Verifying your email" text="This only takes a moment.">
+    <AuthScreen title="Verifying your account" text="This only takes a moment.">
       <p className={styles.note}>Checking your link…</p>
     </AuthScreen>
   );
