@@ -19,6 +19,22 @@ x-logging: &default-logging
 
 **Cap:** 100 MiB per container (10 × 10 MiB), rotates oldest out. Applies dev + prod.
 
+## What is logged
+
+Only a small share of normal traffic is recorded; everything that went wrong always is.
+
+| Source | Normal requests | Warnings and errors |
+|---|---|---|
+| API logs | off (`Logging__LogLevel__Default` is `Warning`; set `API_LOG_LEVEL=Information` to see them) | all |
+| API traces | 1% (`OTEL_TRACES_SAMPLER_ARG=0.01`; a caller's own sampling flag wins) | the same 1%, so most failed requests have no trace; their log line has the exception |
+| nginx access log | a random 1%, each line marked `"sampled":1` | all 4xx and 5xx |
+
+The nginx sample is uniform, so it can be scaled back up: a request count is the lines with `sampled="1"` times 100,
+and a request-time percentile is taken over those lines only (the Edge and Overview dashboards do both). Slow requests
+are not kept on purpose; that would make the sample look slower than the traffic is. Exact request counts and times
+come from the API's metrics in Prometheus. Retention in Loki is by level: warnings and errors 28 days, the sampled nginx lines 7 days, traces 7 days, metrics 30 days. Lines written before this change have no `sampled` field, so those panels
+read zero for older time ranges.
+
 ## Important Notes
 
 - **Rotation loses history.** `docker compose logs` only shows current window. Persistent history is shipped to Loki by Alloy; see [observability.md](observability.md).
