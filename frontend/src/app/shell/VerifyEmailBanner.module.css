@@ -1,17 +1,49 @@
 .banner {
-  margin-bottom: var(--s-16);
+  display: flex;
+  align-items: center;
+  gap: var(--s-16);
+  /* A section, not a div: the shell lays its page divs out as columns and this is not one. */
+  margin-bottom: var(--s-24);
+  padding: var(--s-12) var(--s-12) var(--s-12) 14px;
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pop);
+  box-shadow: var(--shadow);
 }
-.link {
-  padding: 0;
-  border: 0;
-  background: none;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text);
-  text-decoration: underline;
-  text-underline-offset: 3px;
+.words {
+  flex: 1;
+  min-width: 0;
 }
-.link:disabled {
-  opacity: 0.6;
-  text-decoration: none;
+.title,
+.text {
+  margin: 0;
+}
+.title {
+  font-size: 14.5px;
+  font-weight: 600;
+}
+.text {
+  margin-top: var(--s-2);
+  font-size: var(--type-footnote);
+  line-height: 1.4;
+  color: var(--text-3);
+}
+.action {
+  flex: none;
+}
+
+/* On phones the gaps tighten, and the button is big enough to press. */
+@media (max-width: 600px) {
+  .banner {
+    gap: var(--s-12);
+    margin-bottom: var(--s-20);
+    padding: 10px 10px 10px var(--s-12);
+    border-radius: 20px;
+  }
+  .text {
+    font-size: 12.5px;
+  }
+  .action {
+    min-height: 44px;
+  }
 }

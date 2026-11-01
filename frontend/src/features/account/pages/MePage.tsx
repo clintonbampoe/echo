@@ -82,7 +82,7 @@ function AccountLines({
       <Line
         title="Email"
         sub={me?.emailAddress ?? ""}
-        value={me?.emailVerifiedAt ? "Verified" : "Not verified"}
+        value={me?.verifiedAt ? "Verified" : "Not verified"}
       />
       <PasswordLine changedAt={me?.passwordChangedAt} />
       <Line title="Congregation" sub={church?.name ?? ""} />

@@ -12,7 +12,7 @@ import {
   InvitationGate,
 } from "../components/InvitationGate";
 import type { InvitationInfo } from "../api/auth";
-import { useRegisterMember } from "../hooks/mutations";
+import { useRegisterMember, useSignInAfterRegister } from "../hooks/mutations";
 import { joinSchema, type JoinValues } from "../forms/schema";
 import styles from "./form.module.css";
 
@@ -43,6 +43,7 @@ function JoinForm({
 }) {
   const navigate = useNavigate();
   const register = useRegisterMember();
+  const signInAfterRegister = useSignInAfterRegister();
   const [problem, setProblem] = useState<ApiError | null>(null);
   const form = useForm<JoinValues>({ resolver: zodResolver(joinSchema) });
   const { errors } = form.formState;
@@ -60,7 +61,8 @@ function JoinForm({
           password: v.password,
         },
       });
-      navigate("/verify", { state: { email: v.email } });
+      const signedIn = await signInAfterRegister(v.email, v.password);
+      navigate("/verify", { state: { email: v.email, signedIn } });
     } catch (e) {
       handleSubmitError(e, form.setError, FIELD_MAP, setProblem);
     }

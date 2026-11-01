@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
+import { roleLabel } from "@/features/account";
 import { getTokens, saveTokens } from "@/lib/tokens";
 import { AppShell } from "./AppShell";
 
@@ -43,6 +44,7 @@ function renderShell() {
         children: [{ path: "dashboard", element: <p>Dashboard page</p> }],
       },
       { path: "signin", element: <p>Sign in page</p> },
+      { path: "verify", element: <p>Verify page</p> },
       { path: "/", element: <p>Home page</p> },
     ],
     { initialEntries: ["/dashboard"] },
@@ -64,10 +66,10 @@ describe("app shell", () => {
     expect(screen.getByText("Dashboard page")).toBeInTheDocument();
     const sidebar = screen.getByRole("complementary", { name: "Sidebar" });
     expect(await within(sidebar).findByText("Ama Mensah")).toBeInTheDocument();
-    expect(within(sidebar).getByText("Grace Chapel")).toBeInTheDocument();
-    expect(
-      within(sidebar).getByRole("link", { name: /Ama Mensah/ }),
-    ).toHaveAttribute("href", "/me");
+    expect(within(sidebar).queryByText("Grace Chapel")).toBeNull();
+    const account = within(sidebar).getByRole("link", { name: /Ama Mensah/ });
+    expect(account).toHaveAttribute("href", "/me");
+    expect(account).toHaveTextContent(roleLabel("Admin"));
     expect(
       within(sidebar).getByRole("link", { name: "Settings" }),
     ).toHaveAttribute("href", "/settings");
@@ -83,13 +85,13 @@ describe("app shell", () => {
       "Dashboard",
       "Members",
       "Visitors",
+      "Organizations",
       "Attendance",
       "Events",
-      "Finance",
       "Tithes",
+      "Finance",
       "Projects",
       "Assets",
-      "Organizations",
     ]);
     expect(main.getByRole("link", { name: "Dashboard" })).toHaveAttribute(
       "aria-current",
@@ -101,16 +103,22 @@ describe("app shell", () => {
     );
   });
 
-  it("shows Invitations under Admin to an administrator only", async () => {
+  it("shows Invitations at the end of the list to an administrator only", async () => {
     renderShell();
     const sidebar = screen.getByRole("complementary", { name: "Sidebar" });
     expect(
       await within(sidebar).findByRole("link", { name: "Invitations" }),
     ).toHaveAttribute("href", "/invitations");
-    expect(within(sidebar).getByText("Admin")).toBeInTheDocument();
+    // One list, with no section headings.
+    expect(within(sidebar).queryByText("People")).toBeNull();
+    expect(
+      within(sidebar)
+        .getByRole("navigation", { name: "Main" })
+        .querySelectorAll("a"),
+    ).toHaveLength(11);
   });
 
-  it("hides the Admin group from anyone else", async () => {
+  it("hides Invitations from anyone else", async () => {
     me.role = "Clerk";
     renderShell();
     const sidebar = screen.getByRole("complementary", { name: "Sidebar" });
@@ -177,32 +185,61 @@ describe("app shell", () => {
   });
 });
 
-describe("verify email reminder", () => {
-  it("asks an unverified user to verify, and sends the link to their address", async () => {
-    profile = { ...me, emailVerifiedAt: null };
-    renderShell();
-    await userEvent.click(
-      await screen.findByRole("button", {
-        name: "Send me a verification link",
-      }),
-    );
+describe("verify account reminder", () => {
+  const unverified = () => {
+    profile = { ...me, verifiedAt: null };
+  };
+
+  it("asks an unverified user to verify, and the button opens the verify page with their address", async () => {
+    unverified();
+    const router = renderShell();
     expect(
-      await screen.findByText(/We sent a link to ama@example.com/),
+      await screen.findByText("We will send a link to ama@example.com."),
     ).toBeInTheDocument();
-    const call = fetchMock.mock.calls.find(([url]) =>
-      String(url).includes("/auth/verifications/account"),
-    )!;
-    expect(JSON.parse((call[1] as RequestInit).body as string)).toEqual({
+    await userEvent.click(screen.getByRole("link", { name: "Verify account" }));
+
+    expect(router.state.location.pathname).toBe("/verify");
+    expect(router.state.location.state).toEqual({
       email: "ama@example.com",
+      send: true,
     });
   });
 
+  it("does not send the link itself", async () => {
+    unverified();
+    renderShell();
+    await screen.findByText("Verify your account");
+    expect(
+      fetchMock.mock.calls.some(([url]) =>
+        String(url).includes("/auth/verifications/account"),
+      ),
+    ).toBe(false);
+  });
+
   it("says nothing to a verified user", async () => {
-    profile = { ...me, emailVerifiedAt: "2026-10-01T00:00:00Z" };
+    profile = { ...me, verifiedAt: "2026-10-01T00:00:00Z" };
     renderShell();
     await screen.findByText("Ama Mensah");
-    expect(
-      screen.queryByText("Verify your email address"),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText("Verify your account")).not.toBeInTheDocument();
+  });
+
+  it("thanks the person when they come back and the account has been verified", async () => {
+    unverified();
+    renderShell();
+    await screen.findByText("Verify your account");
+    const normal = fetchMock.getMockImplementation() as (
+      url: string,
+    ) => Promise<Response>;
+    fetchMock.mockImplementation(async (url: string) => {
+      if (url.includes("/verifications/status"))
+        return json({ verified: true, verifiedAt: "2026-11-01T09:00:00Z" });
+      if (url.includes("/users/me"))
+        return json({ ...me, verifiedAt: "2026-11-01T09:00:00Z" });
+      return normal(url);
+    });
+    window.dispatchEvent(new Event("visibilitychange"));
+
+    expect(await screen.findByText("Account verified")).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Verify account" })).toBeNull();
   });
 });
