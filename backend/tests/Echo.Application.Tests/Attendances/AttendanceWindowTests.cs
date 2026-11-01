@@ -98,25 +98,24 @@ public class AttendanceWindowTests
     }
 
     [Fact]
-    public void MonthlyTotals_SplitsEachMonthIntoMembersVisitorsAndFirstTimeVisitors()
+    public void MonthlyTotals_AddsUpTheSessionsOfEachMonth()
     {
-        Attendance Row(DateOnly date, Echo.Domain.Members.PersonKind kind, bool first = false)
-        {
-            var attendance = OnDate(date);
-            attendance.PersonKindAtTime = kind;
-            attendance.IsFirstVisit = first;
-            return attendance;
-        }
+        SessionAttendanceTotals Session(DateOnly date, int members, int visitors, int firstTime) =>
+            new()
+            {
+                SessionDate = date,
+                Total = members + visitors,
+                Members = members,
+                Visitors = visitors,
+                FirstTime = firstTime,
+            };
 
-        var member = Echo.Domain.Members.PersonKind.Member;
-        var visitor = Echo.Domain.Members.PersonKind.Visitor;
         var rows = new[]
         {
-            Row(new DateOnly(2026, 3, 1), member),
-            Row(new DateOnly(2026, 3, 8), member),
-            Row(new DateOnly(2026, 3, 8), visitor, first: true),
-            Row(new DateOnly(2026, 3, 15), visitor),
-            Row(new DateOnly(2026, 5, 3), member),
+            Session(new DateOnly(2026, 3, 1), members: 1, visitors: 0, firstTime: 0),
+            Session(new DateOnly(2026, 3, 8), members: 1, visitors: 1, firstTime: 1),
+            Session(new DateOnly(2026, 3, 15), members: 0, visitors: 1, firstTime: 0),
+            Session(new DateOnly(2026, 5, 3), members: 1, visitors: 0, firstTime: 0),
         };
 
         var res = rows.AsQueryable().MonthlyTotals().OrderBy(r => r.Month).ToList();

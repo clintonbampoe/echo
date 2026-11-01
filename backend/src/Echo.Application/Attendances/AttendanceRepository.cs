@@ -79,16 +79,36 @@ public class AttendanceRepository(AppDbContext context)
         AttendanceFilters f,
         CancellationToken ct
     ) =>
-        Scope(congregationId, f)
-            .GroupBy(_ => 1)
-            .Select(g => new AttendanceStats(
-                g.Count(),
-                g.Count(a => a.PersonKindAtTime == PersonKind.Member),
-                g.Count(a => a.PersonKindAtTime == PersonKind.Visitor),
-                g.Count(a => a.IsFirstVisit)
-            ))
+        SummaryQuery(congregationId, f)
             .SingleOrDefaultAsync(ct)
             .ContinueWith(t => t.Result ?? new AttendanceStats(0, 0, 0, 0), ct);
+
+    /// <summary>
+    /// Filters on a person, a session, a kind or a name need the individual check-ins. Everything
+    /// else is answered from the per-session totals, which the database refreshes every few
+    /// minutes, so a new check-in can take that long to show.
+    /// </summary>
+    internal IQueryable<AttendanceStats> SummaryQuery(Guid congregationId, AttendanceFilters f)
+    {
+        if (!f.CanUseSessionTotals())
+            return Scope(congregationId, f)
+                .GroupBy(_ => 1)
+                .Select(g => new AttendanceStats(
+                    g.Count(),
+                    g.Count(a => a.PersonKindAtTime == PersonKind.Member),
+                    g.Count(a => a.PersonKindAtTime == PersonKind.Visitor),
+                    g.Count(a => a.IsFirstVisit)
+                ));
+
+        return Totals(congregationId, f.SessionLabelId, f.From, f.To)
+            .GroupBy(_ => 1)
+            .Select(g => new AttendanceStats(
+                g.Sum(t => t.Total),
+                g.Sum(t => t.Members),
+                g.Sum(t => t.Visitors),
+                g.Sum(t => t.FirstTime)
+            ));
+    }
 
     public async Task<List<AttendanceMonthlyDto>> GetMonthlyTotals(
         Guid congregationId,
@@ -96,18 +116,36 @@ public class AttendanceRepository(AppDbContext context)
         DateOnly from,
         DateOnly to,
         CancellationToken ct = default
-    ) =>
-        await Scope(
-                congregationId,
-                new AttendanceFilters
-                {
-                    SessionLabelId = filters.SessionLabelId,
-                    From = from,
-                    To = to,
-                }
-            )
-            .MonthlyTotals()
-            .ToListAsync(ct);
+    ) => await MonthlyQuery(congregationId, filters.SessionLabelId, from, to).ToListAsync(ct);
+
+    internal IQueryable<AttendanceMonthlyDto> MonthlyQuery(
+        Guid congregationId,
+        int? sessionLabelId,
+        DateOnly from,
+        DateOnly to
+    ) => Totals(congregationId, sessionLabelId, from, to).MonthlyTotals();
+
+    private IQueryable<SessionAttendanceTotals> Totals(
+        Guid congregationId,
+        int? sessionLabelId,
+        DateOnly? from,
+        DateOnly? to
+    )
+    {
+        var totals = context
+            .Set<SessionAttendanceTotals>()
+            .AsNoTracking()
+            .Where(t => t.CongregationId == congregationId);
+
+        if (sessionLabelId is not null)
+            totals = totals.Where(t => t.SessionLabelId == sessionLabelId);
+        if (from is not null)
+            totals = totals.Where(t => t.SessionDate >= from);
+        if (to is not null)
+            totals = totals.Where(t => t.SessionDate <= to);
+
+        return totals;
+    }
 
     public async Task<HashSet<Guid>> PersonIdsPresent(
         Guid congregationId,
@@ -153,7 +191,7 @@ public class AttendanceRepository(AppDbContext context)
             .Select(a => a.PersonId)
             .Distinct()
             .ToArray();
-            
+
         if (visitorIds.Length == 0)
             return;
 
@@ -209,20 +247,28 @@ internal static class AttendanceQueryExtensions
                 g.Count(a => a.IsFirstVisit)
             ));
 
+    // Each month's sessions added up, split into members, visitors and first-time visitors.
     internal static IQueryable<AttendanceMonthlyDto> MonthlyTotals(
-        this IQueryable<Attendance> query
+        this IQueryable<SessionAttendanceTotals> query
     ) =>
         query
-            .GroupBy(a => new { a.SessionDate.Year, a.SessionDate.Month })
+            .GroupBy(t => new { t.SessionDate.Year, t.SessionDate.Month })
             .Select(g => new AttendanceMonthlyDto
             {
                 Year = g.Key.Year,
                 Month = g.Key.Month,
-                TotalPresent = g.Count(),
-                MembersPresent = g.Count(a => a.PersonKindAtTime == PersonKind.Member),
-                VisitorsPresent = g.Count(a => a.PersonKindAtTime == PersonKind.Visitor),
-                FirstTimeVisitors = g.Count(a => a.IsFirstVisit),
+                TotalPresent = g.Sum(t => t.Total),
+                MembersPresent = g.Sum(t => t.Members),
+                VisitorsPresent = g.Sum(t => t.Visitors),
+                FirstTimeVisitors = g.Sum(t => t.FirstTime),
             });
+
+    // The per-session totals can answer a summary only when it does not ask about individuals.
+    internal static bool CanUseSessionTotals(this AttendanceFilters f) =>
+        f.PersonId is null
+        && f.SessionId is null
+        && f.Kind is null
+        && string.IsNullOrWhiteSpace(f.Name);
 
     // Deleting a session soft-deletes its attendance, so a record's own DeletedAt decides visibility.
     internal static IQueryable<Attendance> Live(this IQueryable<Attendance> query) =>
