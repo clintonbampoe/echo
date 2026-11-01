@@ -65,7 +65,7 @@ describe("app shell", () => {
     expect(screen.getByText("Dashboard page")).toBeInTheDocument();
     const sidebar = screen.getByRole("complementary", { name: "Sidebar" });
     expect(await within(sidebar).findByText("Ama Mensah")).toBeInTheDocument();
-    expect(within(sidebar).getByText("Grace Chapel")).toBeInTheDocument();
+    expect(within(sidebar).queryByText("Grace Chapel")).toBeNull();
     const account = within(sidebar).getByRole("link", { name: /Ama Mensah/ });
     expect(account).toHaveAttribute("href", "/me");
     expect(account).toHaveTextContent(roleLabel("Admin"));
@@ -102,18 +102,22 @@ describe("app shell", () => {
     );
   });
 
-  it("shows Invitations under Admin to an administrator only", async () => {
+  it("shows Invitations at the end of the list to an administrator only", async () => {
     renderShell();
     const sidebar = screen.getByRole("complementary", { name: "Sidebar" });
     expect(
       await within(sidebar).findByRole("link", { name: "Invitations" }),
     ).toHaveAttribute("href", "/invitations");
+    // One list, with no section headings.
+    expect(within(sidebar).queryByText("People")).toBeNull();
     expect(
-      within(sidebar).getByRole("navigation", { name: "Admin" }),
-    ).toBeInTheDocument();
+      within(sidebar)
+        .getByRole("navigation", { name: "Main" })
+        .querySelectorAll("a"),
+    ).toHaveLength(11);
   });
 
-  it("hides the Admin group from anyone else", async () => {
+  it("hides Invitations from anyone else", async () => {
     me.role = "Clerk";
     renderShell();
     const sidebar = screen.getByRole("complementary", { name: "Sidebar" });

@@ -4,7 +4,7 @@ import { createMemoryRouter, RouterProvider } from "react-router-dom";
 import { ApiError } from "@/lib/api";
 import { saveTokens } from "@/lib/tokens";
 import { NotFound } from "../NotFound";
-import { PageRouteError, ShellRouteError } from "./RouteError";
+import { RouteError } from "./RouteError";
 
 const json = (body: unknown) =>
   new Response(JSON.stringify(body), { status: 200 });
@@ -56,7 +56,7 @@ describe("error screens", () => {
     expect(screen.getByRole("button", { name: "Go back" })).toBeInTheDocument();
   });
 
-  it("keeps the sidebar around a missing page for someone signed in", async () => {
+  it("is a page of the website, without the app shell, even for someone signed in", async () => {
     saveTokens({
       accessToken: "a",
       accessTokenExpiresAt: "2099-01-01T00:00:00Z",
@@ -67,9 +67,7 @@ describe("error screens", () => {
     expect(
       await screen.findByText("We could not find that page"),
     ).toBeInTheDocument();
-    expect(
-      screen.getByRole("complementary", { name: "Sidebar" }),
-    ).toBeInTheDocument();
+    expect(screen.queryByRole("complementary", { name: "Sidebar" })).toBeNull();
     expect(
       screen.getByRole("link", { name: "Go to the dashboard" }),
     ).toHaveAttribute("href", "/dashboard");
@@ -80,7 +78,7 @@ describe("error screens", () => {
       {
         path: "/",
         Component: Boom(new Error("boom")),
-        ErrorBoundary: PageRouteError,
+        ErrorBoundary: RouteError,
       },
     ]);
     expect(
@@ -96,7 +94,7 @@ describe("error screens", () => {
       {
         path: "/",
         Component: Boom(new ApiError(403, "FORBIDDEN", "no")),
-        ErrorBoundary: ShellRouteError,
+        ErrorBoundary: RouteError,
       },
     ]);
     expect(
@@ -109,7 +107,7 @@ describe("error screens", () => {
       {
         path: "/",
         Component: Boom(new ApiError(0, "NETWORK", "x")),
-        ErrorBoundary: PageRouteError,
+        ErrorBoundary: RouteError,
       },
     ]);
     expect(
@@ -124,7 +122,7 @@ describe("error screens", () => {
         Component: Boom(
           new TypeError("Failed to fetch dynamically imported module: /a.js"),
         ),
-        ErrorBoundary: PageRouteError,
+        ErrorBoundary: RouteError,
       },
     ]);
     expect(

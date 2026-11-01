@@ -17,3 +17,13 @@
 .out {
   rotate: 45deg;
 }
+
+/* Skip sits under a rule, apart from the ways to get the email, as on the board. */
+.skip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-8);
+  padding-top: var(--s-16);
+  border-top: 1px solid var(--line);
+}

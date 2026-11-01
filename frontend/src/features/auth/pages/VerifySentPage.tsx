@@ -47,20 +47,22 @@ function CheckEmail({ email, leave }: { email: string; leave: string }) {
       )}
       <ResendButton
         send={() => sendVerificationLink(email)}
-        variant={provider ? "secondary" : "primary"}
+        variant={provider ? "link" : "primary"}
         onSent={() => setSent(true)}
       />
-      <LinkButton to={leave} variant="ghost" size="lg" pill block>
-        Skip for now
-        <Icon name="arrow-right" size={16} />
-      </LinkButton>
-      <p role="status" className={form.note}>
-        {sent
-          ? "If that email is registered and unverified, a verification link is on its way."
-          : leave === "/dashboard"
-            ? "You are signed in. We keep a reminder at the top of the app until you confirm."
-            : "You can sign in now. We keep a reminder at the top of the app until you confirm."}
-      </p>
+      <div className={styles.skip}>
+        <LinkButton to={leave} variant="ghost" size="lg" pill>
+          Skip for now
+          <Icon name="arrow-right" size={16} />
+        </LinkButton>
+        <p role="status" className={form.note}>
+          {sent
+            ? "If that email is registered and unverified, a verification link is on its way."
+            : leave === "/dashboard"
+              ? "You are signed in. We keep a reminder at the top of the app until you confirm."
+              : "You can sign in now. We keep a reminder at the top of the app until you confirm."}
+        </p>
+      </div>
     </AuthScreen>
   );
 }

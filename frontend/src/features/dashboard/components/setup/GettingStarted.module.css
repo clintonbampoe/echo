@@ -161,24 +161,3 @@
   padding-top: 6px;
   border-top: 1px solid var(--line);
 }
-
-/* Holds the card's place while its answers come, and only shows if they are slow. */
-.skeleton {
-  height: 392px;
-  background: var(--card-bg);
-  border: 1px solid var(--line);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow);
-  opacity: 0;
-  animation: skelShow var(--t-enter) var(--ease-out) 300ms forwards;
-}
-@keyframes skelShow {
-  to {
-    opacity: 1;
-  }
-}
-@media (max-width: 700px) {
-  .skeleton {
-    height: 260px;
-  }
-}

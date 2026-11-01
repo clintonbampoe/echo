@@ -1,2 +1,2 @@
 export { ErrorScreen } from "./ErrorScreen";
-export { PageRouteError, ShellRouteError } from "./RouteError";
+export { RouteError } from "./RouteError";

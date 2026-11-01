@@ -16,9 +16,10 @@ import { visitorRoutes } from "@/features/visitors";
 import { websiteRoutes } from "@/features/website";
 import { pageRoutes } from "@/pages";
 import { LoadingScreen } from "@/ui";
-import { PageRouteError, ShellRouteError } from "./errors";
+import { RouteError } from "./errors";
 import { NotFound } from "./NotFound";
 import { RequireAuth } from "./RequireAuth";
+import { RootLayout } from "./RootLayout";
 import { AppShell } from "./shell";
 
 // One list, top to bottom, of every URL in the app. Each feature owns its own routes and
@@ -28,8 +29,9 @@ const routes: RouteObject[] = [
     // Shown while the first page's code loads. It only appears after a short wait, so a quick
     // load never flashes it.
     HydrateFallback: () => <LoadingScreen />,
-    // A page that fails outside the app (the website, sign in) is a page of its own.
-    ErrorBoundary: PageRouteError,
+    // Whatever fails, anywhere, is shown as a page of the website, never inside the app shell.
+    ErrorBoundary: RouteError,
+    Component: RootLayout,
     children: [
       ...websiteRoutes,
       ...authRoutes,
@@ -39,26 +41,20 @@ const routes: RouteObject[] = [
           {
             Component: AppShell,
             children: [
-              {
-                // A page that fails inside the app keeps the sidebar, so there is a way out.
-                ErrorBoundary: ShellRouteError,
-                children: [
-                  ...dashboardRoutes,
-                  ...memberRoutes,
-                  ...visitorRoutes,
-                  ...organizationRoutes,
-                  ...titheRoutes,
-                  ...attendanceRoutes,
-                  ...eventRoutes,
-                  ...transactionRoutes,
-                  ...projectRoutes,
-                  ...assetRoutes,
-                  ...invitationRoutes,
-                  ...settingsRoutes,
-                  ...accountRoutes,
-                  ...pageRoutes,
-                ],
-              },
+              ...dashboardRoutes,
+              ...memberRoutes,
+              ...visitorRoutes,
+              ...organizationRoutes,
+              ...titheRoutes,
+              ...attendanceRoutes,
+              ...eventRoutes,
+              ...transactionRoutes,
+              ...projectRoutes,
+              ...assetRoutes,
+              ...invitationRoutes,
+              ...settingsRoutes,
+              ...accountRoutes,
+              ...pageRoutes,
             ],
           },
         ],

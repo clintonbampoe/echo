@@ -178,6 +178,20 @@ describe("verify", () => {
     ).toHaveAttribute("href", "/dashboard");
   });
 
+  it("asks for another link as a line of words beside Open Gmail, and then shows the wait", async () => {
+    fetchMock.mockResolvedValueOnce(json(200));
+    renderAt("/verify", [], { email: "ama@gmail.com" });
+    await userEvent.click(
+      await screen.findByRole("button", { name: "Send another link" }),
+    );
+    expect(
+      await screen.findByText("Send another link in 0:30"),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "Send another link" }),
+    ).toBeNull();
+  });
+
   it("sends someone with no email to sign in", async () => {
     const router = renderAt("/verify");
     await waitFor(() => expect(router.state.location.pathname).toBe("/signin"));

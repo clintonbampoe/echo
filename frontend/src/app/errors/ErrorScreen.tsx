@@ -10,13 +10,7 @@ import {
 import { errorViews, type ErrorKind } from "./errorView";
 import styles from "./ErrorScreen.module.css";
 
-type Props = {
-  kind: ErrorKind;
-  // Drawn inside the app (the sidebar stays), not as a page of its own.
-  inShell?: boolean;
-};
-
-function Message({ kind, inShell }: Props) {
+function Message({ kind }: { kind: ErrorKind }) {
   const view = errorViews[kind];
   const navigate = useNavigate();
   const signedIn = useIsSignedIn();
@@ -48,18 +42,18 @@ function Message({ kind, inShell }: Props) {
       tone={view.broken ? "neg" : undefined}
       title={view.title}
       actions={actions}
-      top={inShell ? undefined : <Logo />}
+      top={<Logo />}
     >
       {view.text}
     </ScreenMessage>
   );
 }
 
-// The screen for something that went wrong or is not there. Inside the app it sits where the page would have
-// been, so the sidebar is still there to leave by. Outside, it is a page of its own.
-export function ErrorScreen({ kind, inShell }: Props) {
+// The screen for something that went wrong or is not there. It is a page of the website, on the public
+// surface, never drawn inside the app shell: the app around it may be the very thing that failed, and the
+// person may not even be signed in.
+export function ErrorScreen({ kind }: { kind: ErrorKind }) {
   usePublicSurface();
-  if (inShell) return <Message kind={kind} inShell />;
   return (
     <main className={styles.page}>
       <Message kind={kind} />

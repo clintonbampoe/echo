@@ -5,39 +5,25 @@
   display: flex;
   flex-direction: column;
   gap: var(--s-24);
-  width: 244px;
+  width: 264px;
   height: 100vh;
   padding: var(--s-20) var(--s-12) var(--s-16);
   overflow-y: auto;
   background: var(--side);
   border-right: 1px solid var(--line-2);
-  /* The size of a link and the air above a group's heading (NavList reads them). */
-  --nav-item: 44px;
-  --nav-head: var(--s-16);
-}
-/* A short screen (most laptops) gets the same proportions a notch smaller, so the whole menu fits without scrolling. */
-@media (max-height: 820px) {
-  .side {
-    --nav-item: 40px;
-    --nav-head: var(--s-12);
-    gap: var(--s-16);
-    padding-top: var(--s-16);
-  }
-}
-@media (max-height: 740px) {
-  .side {
-    --nav-item: 36px;
-    --nav-head: var(--s-8);
-  }
 }
 
+/* Who is signed in, in one raised pill: the person on the left, Settings on the right. */
 .foot {
   display: flex;
   align-items: center;
   gap: var(--s-4);
   margin-top: auto;
-  padding-top: var(--s-12);
-  border-top: 1px solid var(--line-2);
+  padding: var(--s-4);
+  background: var(--surface);
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius-pill);
+  box-shadow: 0 1px 2px rgb(10 10 11 / 6%);
 }
 .me {
   flex: 1;
@@ -45,7 +31,7 @@
   display: flex;
   align-items: center;
   gap: var(--s-12);
-  padding: var(--s-6) var(--s-12) var(--s-6) var(--s-8);
+  padding: var(--s-4) var(--s-12) var(--s-4) var(--s-4);
   border-radius: var(--radius-pill);
   color: inherit;
   text-decoration: none;
@@ -129,10 +115,8 @@
   }
 }
 
+/* The open page is marked inside the pill by a soft fill. */
 .me[aria-current="page"],
 .gear[aria-current="page"] {
-  background: var(--surface);
-  box-shadow:
-    0 1px 2px rgb(10 10 11 / 8%),
-    0 0 0 1px var(--line-2);
+  background: var(--hover-tab);
 }
