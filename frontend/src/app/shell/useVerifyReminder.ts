@@ -23,8 +23,7 @@ export function useVerifyReminder() {
   const status = useVerificationStatus(sent);
 
   // Null means "not verified". Anything else (including an account older than the field) is quiet.
-  const unverified =
-    me?.emailVerifiedAt === null && status.data?.verified !== true;
+  const unverified = me?.verifiedAt === null && status.data?.verified !== true;
   if (unverified && !sawUnverified) setSawUnverified(true);
 
   const phase = reminderPhase({

@@ -186,7 +186,7 @@ describe("app shell", () => {
 
 describe("verify email reminder", () => {
   const unverified = () => {
-    profile = { ...me, emailVerifiedAt: null };
+    profile = { ...me, verifiedAt: null };
   };
   const linkRequest = () =>
     fetchMock.mock.calls.find(([url]) =>
@@ -224,7 +224,7 @@ describe("verify email reminder", () => {
   });
 
   it("says nothing to a verified user", async () => {
-    profile = { ...me, emailVerifiedAt: "2026-10-01T00:00:00Z" };
+    profile = { ...me, verifiedAt: "2026-10-01T00:00:00Z" };
     renderShell();
     await screen.findByText("Ama Mensah");
     expect(
