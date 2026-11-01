@@ -2,6 +2,11 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS restore
 WORKDIR /build
 
+# ReadyToRun compiles the app to native code ahead of time, so a fresh container does not spend its first minute
+# compiling the code that serves requests. The image is built for the machine it is built on.
+ARG TARGETARCH
+RUN if [ "$TARGETARCH" = "arm64" ]; then echo linux-arm64; else echo linux-x64; fi > /rid
+
 COPY ["backend/Echo.slnx", "."]
 COPY ["backend/Directory.Packages.props", "."]
 COPY ["backend/src/Echo.Api/Echo.Api.csproj", "./src/Echo.Api/"]
@@ -13,17 +18,16 @@ COPY ["backend/src/Echo.Data/Echo.Data.csproj", "./src/Echo.Data/"]
 COPY ["backend/src/Echo.ServiceDefaults/Echo.ServiceDefaults.csproj", "./src/Echo.ServiceDefaults/"]
 COPY "backend/.config/dotnet-tools.json" "/backend/.config/"
 
-RUN dotnet restore src/Echo.Api/Echo.Api.csproj
+RUN dotnet restore src/Echo.Api/Echo.Api.csproj -r "$(cat /rid)" -p:PublishReadyToRun=true
 
-FROM restore AS build
+FROM restore AS publish
 COPY backend/ /build
-
-RUN dotnet build src/Echo.Api/Echo.Api.csproj -c Release --no-restore
-
-FROM build AS publish
 RUN dotnet publish src/Echo.Api/Echo.Api.csproj \
   -c Release \
-  --no-build \
+  -r "$(cat /rid)" \
+  --self-contained false \
+  -p:PublishReadyToRun=true \
+  --no-restore \
   -o /app/publish
 
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime

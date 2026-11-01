@@ -9,6 +9,17 @@ public class UnitOfWork(AppDbContext appDbContext) : IUnitOfWork
         return await appDbContext.SaveChangesAsync(ct);
     }
 
+    public async Task ExecuteInTransactionAsync(
+        Func<CancellationToken, Task> work,
+        CancellationToken ct = default
+    )
+    {
+        // Disposing the transaction without committing rolls it back.
+        await using var transaction = await appDbContext.Database.BeginTransactionAsync(ct);
+        await work(ct);
+        await transaction.CommitAsync(ct);
+    }
+
     public void Dispose()
     {
         if (!_disposed)

@@ -248,10 +248,11 @@ public class AttendanceService(
         CancellationToken ct
     ) =>
         summaries.Serve(
+            this,
             "attendance",
             congregationId,
             new { filters, includePrevious },
-            token => ComputeSummary(congregationId, filters, includePrevious, token),
+            (self, token) => self.ComputeSummary(congregationId, filters, includePrevious, token),
             ct
         );
 
@@ -286,7 +287,11 @@ public class AttendanceService(
             previousTotal = (
                 await repository.GetSummary(
                     congregationId,
-                    filters with { From = before.From, To = before.To },
+                    filters with
+                    {
+                        From = before.From,
+                        To = before.To,
+                    },
                     ct
                 )
             ).Total;
@@ -320,10 +325,11 @@ public class AttendanceService(
             return new BadRequestResult(problem);
 
         return await summaries.Serve(
+            this,
             "attendance.monthly",
             congregationId,
             filters,
-            token => ComputeMonthly(congregationId, filters, token),
+            (self, token) => self.ComputeMonthly(congregationId, filters, token),
             ct
         );
     }

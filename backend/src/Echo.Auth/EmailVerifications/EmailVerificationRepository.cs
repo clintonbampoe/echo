@@ -42,6 +42,27 @@ public class EmailVerificationRepository(AppDbContext context, TimeProvider time
         return existing;
     }
 
+    /// <summary>
+    /// Deletes the user's tokens that can never be used again: expired, used, or invalidated more
+    /// than a week ago. Called whenever a new token is issued, so the table cannot grow without
+    /// bound and no scheduled job is needed.
+    /// </summary>
+    public async Task PruneTokens(Guid userId, CancellationToken ct = default)
+    {
+        var now = timeProvider.GetUtcNow().UtcDateTime;
+        var invalidatedBefore = now.AddDays(-7);
+        await _tokens
+            .Where(t =>
+                t.UserId == userId
+                && (
+                    t.ExpiresAt < now
+                    || t.UsedAt != null
+                    || (t.InvalidatedAt != null && t.InvalidatedAt < invalidatedBefore)
+                )
+            )
+            .ExecuteDeleteAsync(ct);
+    }
+
     public void Create(EmailVerificationToken emailVerificationToken)
     {
         _tokens.Add(emailVerificationToken);

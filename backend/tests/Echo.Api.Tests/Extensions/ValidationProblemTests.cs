@@ -28,6 +28,8 @@ public class ValidationProblemTests : IAsyncLifetime
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseTestServer();
         builder.Configuration["Invitations:CodeKey"] = Convert.ToBase64String(new byte[32]);
+        // AddApplicationServices starts a background worker that reads the clock.
+        builder.Services.AddSingleton(TimeProvider.System);
         builder.Services.AddApplicationServices();
         builder.Services.AddAuthServices(builder.Configuration);
         builder.Services.ConfigureValidationProblemDetails();

@@ -36,12 +36,6 @@ public static partial class SessionLog
     public static partial void TokenRefreshFailed(ILogger logger, string reason);
 
     [LoggerMessage(
-        Level = LogLevel.Warning,
-        Message = "Token refresh failed: user not found for {UserId}"
-    )]
-    public static partial void TokenRefreshUserNotFound(ILogger logger, Guid userId);
-
-    [LoggerMessage(
         Level = LogLevel.Information,
         Message = "Token refresh succeeded: user {UserId} in congregation {CongregationId}"
     )]

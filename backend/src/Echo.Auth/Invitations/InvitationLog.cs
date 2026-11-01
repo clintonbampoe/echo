@@ -8,7 +8,7 @@ public static partial class InvitationLog
     // --- Email ---
     [LoggerMessage(
         Level = LogLevel.Information,
-        Message = "Invitation {InvitationId} emailed in congregation {CongregationId}"
+        Message = "Invitation {InvitationId} email queued in congregation {CongregationId}"
     )]
     public static partial void InvitationEmailSent(ILogger logger, Guid congregationId, Guid invitationId);
 

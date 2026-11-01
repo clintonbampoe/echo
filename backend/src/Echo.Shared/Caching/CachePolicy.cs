@@ -21,7 +21,7 @@ public readonly record struct CachePolicy
     public static CachePolicy Default =>
         new()
         {
-            Ttl = TimeSpan.FromMinutes(2),
+            Ttl = TimeSpan.FromMinutes(5),
             KeyPrefix = "default",
             Tags = [],
             CacheNulls = false,

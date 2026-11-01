@@ -63,7 +63,7 @@ images, so after editing one run `docker compose up -d --build <service>` in its
 | Container metrics | Alloy's cAdvisor exporter | `container_*`, labelled `container` (the name used by the logs), `host`, `image`. Allow-listed in `config.alloy` |
 | Host metrics | Alloy's unix exporter | `node_*`: CPU, load, memory, disk, network |
 | Postgres metrics | Alloy's Postgres exporter, as the read-only `monitor` role | `pg_*`: connections, transactions, cache blocks, locks, size, tables, WAL, and `pg_stat_statements` per query id |
-| nginx logs | Docker socket | One JSON line per request; `status` and `method` are labels. Kept 14 days |
+| nginx logs | Docker socket | Every error and a random 1% of other requests, one JSON line each; `status` and `method` are labels. Errors kept 28 days, the sample 7 days |
 | Postgres logs | Docker socket | Slow statements (> 200 ms), plans (> 500 ms), lock waits, checkpoints |
 
 **Deliberately not collected:** the API's stdout (it sends the same lines over OTLP), the Vite dev server, Portainer,

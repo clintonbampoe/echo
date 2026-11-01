@@ -64,6 +64,8 @@ extra `congregation_id` condition sent the planner through the whole table inste
 
 - Counting 560,000 attendance rows (a year of one very large congregation) is inherent to a count, and the plan is
   already an index-only scan. Pre-aggregation would add counters that can drift; not worth it at real sizes.
+  (Revisited under load: see the `attendance_per_session` materialized view, which cannot drift because it is rebuilt
+  from the check-ins every 5 minutes.)
 - The events, tithes and attendance monthly summaries are index-only scans of 100,000+ rows each, cached for 2 minutes.
 - The two shell requests (`/users/me`, `/congregation`) could be one, saving about 5 ms on a full reload.
 

@@ -21,6 +21,14 @@ services:
       # How often the API pushes its metrics. The default is 60 s, which makes a dashboard trail what just happened by a
       # minute or more. 15 s costs nothing at this size.
       OTEL_METRIC_EXPORT_INTERVAL: ${OTEL_METRIC_EXPORT_INTERVAL:-15000}
+      # 1% of requests are traced (a caller that sends its own sampling flag decides for its request). Tracing every
+      # request costs CPU on the server and storage on the monitoring box, and a 1% sample is plenty to see what a
+      # request does. Set the ratio to 1 to trace everything while debugging.
+      OTEL_TRACES_SAMPLER: parentbased_traceidratio
+      OTEL_TRACES_SAMPLER_ARG: ${OTEL_TRACES_SAMPLER_ARG:-0.01}
+      # Warnings and errors are always logged; the Information lines (one or more per request) are off. Set
+      # API_LOG_LEVEL=Information to see them while debugging.
+      Logging__LogLevel__Default: ${API_LOG_LEVEL:-Warning}
       Jwt__PrivateKey: ${Jwt__PrivateKey}
       Jwt__PublicKey: ${Jwt__PublicKey}
       # Only set during a key rotation grace period; empty the rest of the time.

@@ -243,10 +243,11 @@ public class TransactionService(
         CancellationToken ct
     ) =>
         summaries.Serve(
+            this,
             "transactions",
             congregationId,
             filters,
-            token => ComputeSummary(congregationId, filters, token),
+            (self, token) => self.ComputeSummary(congregationId, filters, token),
             ct
         );
 
@@ -267,15 +268,23 @@ public class TransactionService(
         var previous = window is { } w
             ? await repository.GetTypeTotals(
                 congregationId,
-                filters with { From = w.Previous().From, To = w.Previous().To },
+                filters with
+                {
+                    From = w.Previous().From,
+                    To = w.Previous().To,
+                },
                 ct
             )
             : [];
         var res = BuildSummary(byCategory) with
         {
             Window = window,
-            PreviousTotalIncome = previous.Where(t => t.Type == TransactionType.Income).Sum(t => t.Total),
-            PreviousTotalExpenses = previous.Where(t => t.Type == TransactionType.Expense).Sum(t => t.Total),
+            PreviousTotalIncome = previous
+                .Where(t => t.Type == TransactionType.Income)
+                .Sum(t => t.Total),
+            PreviousTotalExpenses = previous
+                .Where(t => t.Type == TransactionType.Expense)
+                .Sum(t => t.Total),
         };
 
         activity?.SetTag("transaction.summary.income", res.TotalIncome);
@@ -299,10 +308,11 @@ public class TransactionService(
             return new BadRequestResult(problem);
 
         return await summaries.Serve(
+            this,
             "transactions.monthly",
             congregationId,
             filters,
-            token => ComputeMonthly(congregationId, filters, token),
+            (self, token) => self.ComputeMonthly(congregationId, filters, token),
             ct
         );
     }

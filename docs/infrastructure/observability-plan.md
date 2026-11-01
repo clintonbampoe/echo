@@ -110,7 +110,7 @@ prometheus.scrape "host"       { targets = prometheus.exporter.unix.host.targets
 - **Npgsql pool and command metrics:** one line in `ServiceDefaults` (`metrics.AddNpgsqlInstrumentation()`;
   the `Npgsql.OpenTelemetry` package is already referenced). Gives open/idle connections, pool waits,
   command duration.
-- **Summary cache:** a counter `echo.summary.requests{name, cached}` in `SummaryCache`, so the 2-minute cache's
+- **Summary cache:** a counter `echo.summary.requests{name, cached}` in `SummaryCache`, so the 5-minute cache's
   hit ratio is visible.
 - **Top queries:** do *not* export `pg_stat_statements` as metrics. Add a read-only **Postgres datasource** in
   Grafana and show it as a table. This is exactly the view the last performance round was done by hand with.
