@@ -96,7 +96,13 @@ public class InvitationService(
                 entity.ExpiresAt
             );
             var queued = emailQueue.TryEnqueue(
-                new EmailMessage(emailAddress, content, "invitation", createdByUserId, congregationId)
+                new EmailMessage(
+                    emailAddress,
+                    content,
+                    "invitation",
+                    createdByUserId,
+                    congregationId
+                )
             );
             if (queued)
             {
@@ -141,7 +147,11 @@ public class InvitationService(
                 TokenHash = hashService.Hash(InvitationCode.Normalize(token)!),
                 EncryptedCode = codeProtector.Protect(InvitationCode.Normalize(token)!),
                 Label = string.IsNullOrWhiteSpace(label) ? null : label.Trim(),
-                ExpiresAt = ExpiryFor(timeProvider.GetUtcNow().UtcDateTime, expiryDays, neverExpires),
+                ExpiresAt = ExpiryFor(
+                    timeProvider.GetUtcNow().UtcDateTime,
+                    expiryDays,
+                    neverExpires
+                ),
                 MaxUses = maxUses,
             };
 
@@ -240,7 +250,9 @@ public class InvitationService(
             entities.RemoveAt(entities.Count - 1);
 
         var next = hasMore
-            ? encoder.Encode(new InvitationCursor { CreatedAt = entities[^1].CreatedAt, Id = entities[^1].Id })
+            ? encoder.Encode(
+                new InvitationCursor { CreatedAt = entities[^1].CreatedAt, Id = entities[^1].Id }
+            )
             : null;
 
         var data = entities.Select(e => ToDto(e, now)).ToList();
@@ -249,11 +261,7 @@ public class InvitationService(
         );
     }
 
-    public async Task<IOperationResult> GetById(
-        Guid congregationId,
-        Guid id,
-        CancellationToken ct
-    )
+    public async Task<IOperationResult> GetById(Guid congregationId, Guid id, CancellationToken ct)
     {
         using var span = instrumentation.ActivitySource.StartActivity("svc.invitation.get_by_id");
 
@@ -361,30 +369,43 @@ public class InvitationService(
     /// the account.
     /// </summary>
     public Task<bool> TryClaimUse(Guid invitationId, CancellationToken ct) =>
-        invitationTokenRepository.TryClaimUse(invitationId, timeProvider.GetUtcNow().UtcDateTime, ct);
+        invitationTokenRepository.TryClaimUse(
+            invitationId,
+            timeProvider.GetUtcNow().UtcDateTime,
+            ct
+        );
 
-    public async Task<IOperationResult> GetSummary(Guid congregationId, CancellationToken ct)
-    {
-        var now = timeProvider.GetUtcNow().UtcDateTime;
-        return await summaries.Serve(
+    public Task<IOperationResult> GetSummary(Guid congregationId, CancellationToken ct) =>
+        summaries.Serve(
+            this,
             "invitations",
             congregationId,
             new { },
-            token =>
-                invitationTokenRepository.GetSummary(
-                    congregationId,
-                    now,
-                    now.AddDays(ExpiringSoonDays),
-                    token
-                ),
+            (self, token) => self.ComputeSummary(congregationId, token),
+            ct
+        );
+
+    // Counts what is expiring soon from the moment it runs, which for a refresh is not the moment of the request.
+    private Task<InvitationSummaryDto> ComputeSummary(Guid congregationId, CancellationToken ct)
+    {
+        var now = timeProvider.GetUtcNow().UtcDateTime;
+        return invitationTokenRepository.GetSummary(
+            congregationId,
+            now,
+            now.AddDays(ExpiringSoonDays),
             ct
         );
     }
 
     // Returns what is wrong with the request, or null when it was applied. Nothing changes on an error.
-    internal static string? ApplyUpdate(InvitationToken token, InvitationUpdateDto dto, DateTime now)
+    internal static string? ApplyUpdate(
+        InvitationToken token,
+        InvitationUpdateDto dto,
+        DateTime now
+    )
     {
-        var extending = dto.ExpiryDays is not null || dto.NeverExpires == true || dto.MaxUses is not null;
+        var extending =
+            dto.ExpiryDays is not null || dto.NeverExpires == true || dto.MaxUses is not null;
         if (extending && token.IsRevoked)
             return "A revoked invitation cannot be extended. Create a new one.";
 

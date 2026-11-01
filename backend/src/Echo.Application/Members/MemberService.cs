@@ -220,10 +220,11 @@ public class MemberService(
         CancellationToken ct
     ) =>
         summaries.Serve(
+            this,
             "members",
             congregationId,
             filters,
-            token => ComputeSummary(congregationId, filters, token),
+            (self, token) => self.ComputeSummary(congregationId, filters, token),
             ct
         );
 
@@ -272,10 +273,11 @@ public class MemberService(
             return new BadRequestResult(problem);
 
         return await summaries.Serve(
+            this,
             "members.monthly",
             congregationId,
             filters,
-            token => ComputeMonthly(congregationId, filters, token),
+            (self, token) => self.ComputeMonthly(congregationId, filters, token),
             ct
         );
     }
@@ -292,7 +294,12 @@ public class MemberService(
 
         return MonthRange.Fill(
             months,
-            rows.Select(r => new MemberMonthlyDto { Year = r.Year, Month = r.Month, NewMembers = r.Count }),
+            rows.Select(r => new MemberMonthlyDto
+            {
+                Year = r.Year,
+                Month = r.Month,
+                NewMembers = r.Count,
+            }),
             m => new YearMonth(m.Year, m.Month),
             m => new MemberMonthlyDto { Year = m.Year, Month = m.Month }
         );

@@ -5,10 +5,10 @@ using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
+using Echo.Shared.Utilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
-using Echo.Shared.Utilities;
 
 namespace Echo.Application.Organizations;
 
@@ -25,12 +25,10 @@ public class OrganizationService(
     ILogger<OrganizationService> logger
 )
 {
-    internal static DateWindow? ResolveWindow(OrganizationFilters filters, DateWindows dateWindows) =>
-        dateWindows.ThisYear(
-            filters.From,
-            filters.To,
-            hasParent: false
-        );
+    internal static DateWindow? ResolveWindow(
+        OrganizationFilters filters,
+        DateWindows dateWindows
+    ) => dateWindows.ThisYear(filters.From, filters.To, hasParent: false);
 
     public async Task<IOperationResult> List(
         Guid congregationId,
@@ -240,10 +238,11 @@ public class OrganizationService(
         CancellationToken ct
     ) =>
         summaries.Serve(
+            this,
             "organizations",
             congregationId,
             filters,
-            token => ComputeSummary(congregationId, filters, token),
+            (self, token) => self.ComputeSummary(congregationId, filters, token),
             ct
         );
 
@@ -284,7 +283,10 @@ public class OrganizationService(
     }
 
     // One organization with everything the list also has, and the members' average age.
-    private async Task<OrganizationResponseDto> WithDetails(Organization entity, CancellationToken ct)
+    private async Task<OrganizationResponseDto> WithDetails(
+        Organization entity,
+        CancellationToken ct
+    )
     {
         List<Guid> ids = [entity.Id];
         var counts = await repository.GetMemberCounts(ids, ct);

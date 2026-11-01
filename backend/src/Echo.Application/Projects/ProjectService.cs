@@ -285,10 +285,11 @@ public class ProjectService(
         CancellationToken ct
     ) =>
         summaries.Serve(
+            this,
             "projects",
             congregationId,
             filters,
-            token => ComputeSummary(congregationId, filters, token),
+            (self, token) => self.ComputeSummary(congregationId, filters, token),
             ct
         );
 
@@ -332,10 +333,11 @@ public class ProjectService(
         CancellationToken ct
     ) =>
         summaries.Serve(
+            this,
             "projects.by-category",
             congregationId,
             filters,
-            token => ComputeCategorySummary(congregationId, filters, token),
+            (self, token) => self.ComputeCategorySummary(congregationId, filters, token),
             ct
         );
 
@@ -360,7 +362,9 @@ public class ProjectService(
     // one "Other" row adding up all the rest. The rows come in biggest first.
     internal const int MaxCategoryRows = 5;
 
-    internal static List<ProjectCategoryTotalDto> WithOther(IReadOnlyList<ProjectCategoryTotalDto> rows)
+    internal static List<ProjectCategoryTotalDto> WithOther(
+        IReadOnlyList<ProjectCategoryTotalDto> rows
+    )
     {
         if (rows.Count <= MaxCategoryRows)
             return [.. rows];
@@ -399,6 +403,10 @@ public class ProjectService(
         Dictionary<Guid, ProjectContributionTotal> totals
     ) =>
         totals.TryGetValue(dto.Id, out var total)
-            ? dto with { RaisedAmount = total.Amount, TotalContributions = total.Count }
+            ? dto with
+            {
+                RaisedAmount = total.Amount,
+                TotalContributions = total.Count,
+            }
             : dto;
 }

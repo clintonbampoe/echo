@@ -440,7 +440,7 @@ public static class VisitorEndpoints
                 The figures overlap on purpose (a visitor can be new and recurring), so they do not add up to `totalVisitors`.
 
                 ### Caching
-                The answer is cached for 2 minutes per congregation and per set of parameters.
+                The answer is cached for 5 minutes per congregation and per set of parameters.
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
