@@ -1,0 +1,7 @@
+---
+# Adds the one thing the load test needs from nginx. Use it on top of the usual files:
+#   docker compose -f docker-compose.yml -f docker-compose.override.yml -f infra/loadtest/docker-compose.loadtest.yml up -d nginx
+services:
+  nginx:
+    volumes:
+      - ./infra/loadtest/nginx-realip.conf:/etc/nginx/extra/realip.conf:ro
