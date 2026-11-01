@@ -1,6 +1,6 @@
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 
 namespace Echo.Auth.Sessions;
@@ -31,6 +31,7 @@ public static class SessionEndpoints
                 }
             )
             .WithName("LoginSession")
+            .RequireRateLimiting("login")
             .WithSummary("Authenticates a user and issues a token pair.")
             .WithDescription(
                 """
@@ -139,6 +140,7 @@ public static class SessionEndpoints
                 }
             )
             .WithName("RefreshSession")
+            .RequireRateLimiting("session")
             .WithSummary("Rotates a refresh token and issues a new token pair.")
             .WithDescription(
                 """
@@ -190,6 +192,7 @@ public static class SessionEndpoints
                 }
             )
             .WithName("RevokeSession")
+            .RequireRateLimiting("session")
             .WithSummary("Revokes a single refresh token.")
             .WithDescription(
                 """

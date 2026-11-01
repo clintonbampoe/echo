@@ -10,6 +10,7 @@ public class PasswordResetToken : ISoftDeletable
     public string TokenHash { get; set; } = string.Empty;
     public DateTime ExpiresAt { get; set; }
     public DateTime? UsedAt { get; set; }
+    public DateTime? InvalidatedAt { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? DeletedAt { get; set; }
 }

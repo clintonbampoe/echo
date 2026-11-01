@@ -5,10 +5,10 @@ using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
+using Echo.Shared.Utilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
-using Echo.Shared.Utilities;
 
 namespace Echo.Application.Attendances;
 
@@ -47,11 +47,7 @@ public class SessionService(
             : dto;
 
     internal static DateWindow? ResolveWindow(SessionFilters filters, DateWindows dateWindows) =>
-        dateWindows.ThisWeek(
-            filters.From,
-            filters.To,
-            hasParent: false
-        );
+        dateWindows.ThisWeek(filters.From, filters.To, hasParent: false);
 
     public async Task<IOperationResult> List(
         Guid congregationId,
@@ -243,10 +239,11 @@ public class SessionService(
         CancellationToken ct
     ) =>
         summaries.Serve(
+            this,
             "sessions",
             congregationId,
             filters,
-            token => ComputeSummary(congregationId, filters, token),
+            (self, token) => self.ComputeSummary(congregationId, filters, token),
             ct
         );
 

@@ -130,7 +130,7 @@ public static class InvitationEndpoints
                 ### On success
                 `200 OK` with an `InviteResponseDto`: `id`, `token` (the code), `allowedRole`, `expiresAt`, `maxUses` and `label`, plus `emailedTo`.
 
-                `emailedTo` is the address the email went to. If it is `null` the invitation **was created but the email could not be sent**: copy the `token` and deliver it another way, or revoke the invitation and try again.
+                `emailedTo` is the address the email was **queued** for. The email is sent in the background a moment later (a failed send is retried a few times and then logged; it is not reported here), so the `token` is always returned: copy it if the person says nothing arrived. If `emailedTo` is `null` the invitation **was created but the email could not be queued**: copy the `token` and deliver it another way, or revoke the invitation and try again.
 
                 ### Who can call this
                 `Admin` only; the invitation belongs to the caller's congregation.
@@ -163,7 +163,7 @@ public static class InvitationEndpoints
             .WithSummary("Returns the counts shown above the invitation list.")
             .WithDescription(
                 """
-                Returns counts for the whole congregation, not just the page of invitations on screen, so they stay right past the first page. The answer is cached for 2 minutes, so a new invitation can take up to that long to show in the counts.
+                Returns counts for the whole congregation, not just the page of invitations on screen, so they stay right past the first page. The answer is cached for 5 minutes, so a new invitation can take up to that long to show in the counts.
 
                 ### Response fields
                 - `active` — invitations that can be used right now: not revoked, not expired, and with uses left.

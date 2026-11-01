@@ -5,10 +5,10 @@ using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
+using Echo.Shared.Utilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
-using Echo.Shared.Utilities;
 
 namespace Echo.Application.Assets;
 
@@ -34,14 +34,13 @@ public class AssetService(
     // The summary describes what the church owns now, so liquidated assets are left out unless
     // the caller asks for them.
     internal static AssetFilters SummaryFilters(AssetFilters filters) =>
-        filters with { IncludeLiquidated = filters.IncludeLiquidated ?? false };
+        filters with
+        {
+            IncludeLiquidated = filters.IncludeLiquidated ?? false,
+        };
 
     internal static DateWindow? ResolveWindow(AssetFilters filters, DateWindows dateWindows) =>
-        dateWindows.ThisYear(
-            filters.From,
-            filters.To,
-            hasParent: false
-        );
+        dateWindows.ThisYear(filters.From, filters.To, hasParent: false);
 
     public async Task<IOperationResult> List(
         Guid congregationId,
@@ -130,7 +129,11 @@ public class AssetService(
         entity.CongregationId = congregationId;
         entity.Id = idGenerator.Generate();
         entity.Category = category;
-        entity.LiquidatedOn = LiquidatedOn(entity.Status, null, DateUtils.GetDateToday(timeProvider));
+        entity.LiquidatedOn = LiquidatedOn(
+            entity.Status,
+            null,
+            DateUtils.GetDateToday(timeProvider)
+        );
         AssetLog.CreateCategoryFound(logger, congregationId, entity.CategoryId);
 
         using (instrumentation.ActivitySource.StartActivity("svc.asset.persist"))
@@ -266,10 +269,11 @@ public class AssetService(
         CancellationToken ct
     ) =>
         summaries.Serve(
+            this,
             "assets",
             congregationId,
             filters,
-            token => ComputeSummary(congregationId, filters, token),
+            (self, token) => self.ComputeSummary(congregationId, filters, token),
             ct
         );
 
@@ -309,10 +313,11 @@ public class AssetService(
         CancellationToken ct
     ) =>
         summaries.Serve(
+            this,
             "assets.by-category",
             congregationId,
             filters,
-            token => ComputeCategorySummary(congregationId, filters, token),
+            (self, token) => self.ComputeCategorySummary(congregationId, filters, token),
             ct
         );
 
@@ -338,10 +343,11 @@ public class AssetService(
             return new BadRequestResult(problem);
 
         return await summaries.Serve(
+            this,
             "assets.monthly",
             congregationId,
             filters,
-            token => ComputeMonthly(congregationId, filters, token),
+            (self, token) => self.ComputeMonthly(congregationId, filters, token),
             ct
         );
     }
@@ -354,8 +360,20 @@ public class AssetService(
     {
         var months = dateWindows.ChartMonths(MonthRange.Or(filters.Months), filters.To);
         var (from, to) = MonthRange.Bounds(months);
-        var acquired = await repository.GetAcquiredByMonth(congregationId, filters.CategoryId, from, to, ct);
-        var lost = await repository.GetLostByMonth(congregationId, filters.CategoryId, from, to, ct);
+        var acquired = await repository.GetAcquiredByMonth(
+            congregationId,
+            filters.CategoryId,
+            from,
+            to,
+            ct
+        );
+        var lost = await repository.GetLostByMonth(
+            congregationId,
+            filters.CategoryId,
+            from,
+            to,
+            ct
+        );
 
         return Monthly(months, acquired, lost);
     }
@@ -364,7 +382,8 @@ public class AssetService(
     internal static List<AssetMonthlyDto> Monthly(
         IReadOnlyList<YearMonth> months,
         IEnumerable<AssetMonthRow> acquired,
-        IEnumerable<AssetMonthRow> lost)
+        IEnumerable<AssetMonthRow> lost
+    )
     {
         var acquiredIn = acquired.ToDictionary(r => new YearMonth(r.Year, r.Month));
         var lostIn = lost.ToDictionary(r => new YearMonth(r.Year, r.Month));

@@ -12,7 +12,7 @@ public class PasswordVerificationTokenConfiguration : IEntityTypeConfiguration<P
         builder.HasIndex(e => e.CreatedAt);
         builder.Property(e => e.CreatedAt).HasDefaultValueSql("now()").ValueGeneratedOnAdd();
 
-        builder.HasIndex(e => e.TokenHash);
+        builder.HasIndex(e => e.TokenHash).IsUnique();
 
         builder
             .HasOne(e => e.User)

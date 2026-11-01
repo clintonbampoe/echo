@@ -331,10 +331,11 @@ public class VisitorService(
     )
     {
         return summaries.Serve(
+            this,
             "visitors",
             congregationId,
             filters,
-            token => ComputeSummary(congregationId, filters, token),
+            (self, token) => self.ComputeSummary(congregationId, filters, token),
             ct
         );
     }

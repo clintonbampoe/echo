@@ -4,6 +4,10 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UserSecretsId>45f91a9c-0278-4f5e-87f4-955f1c57966d</UserSecretsId>
+    <!-- Workstation GC with background collections: the smallest memory use and short pauses. DOTNET_gcServer=1 turns
+         Server GC on for a test without a rebuild. -->
+    <ServerGarbageCollection>false</ServerGarbageCollection>
+    <ConcurrentGarbageCollection>true</ConcurrentGarbageCollection>
   </PropertyGroup>
 
   <ItemGroup>

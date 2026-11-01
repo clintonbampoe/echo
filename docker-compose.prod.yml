@@ -1,11 +1,41 @@
 ---
+# The production box has 2 vCPU and 4 GB of RAM (about 3.8 GB usable), and the monitoring stack runs on another
+# machine. The limits below split that RAM so that no single container can push the host into swapping or the
+# kernel's out-of-memory killer:
+#   api       800 MB  the .NET heap may use 75% of this (600 MB)
+#   db          2 GB  768 MB of shared buffers, about 600 MB for its connections and maintenance, the rest page cache
+#   alloy     256 MB  ships logs and metrics to the monitoring box (infra/alloy/docker-compose.yaml)
+#   nginx     128 MB
+#   (backup   256 MB, only while a dump runs)
+# That is about 3.5 GB at most, which leaves the operating system and Docker the last 300 MB: not generous, so check
+# results/<run>-memory.txt after every load test and add a swap file as a safety net. A limit with memswap_limit
+# equal to it means "no swap": a container that goes over is restarted, instead of making the box crawl.
 services:
   api:
     environment:
       ASPNETCORE_ENVIRONMENT: Production
+    mem_limit: 800m
+    memswap_limit: 800m
+    # Kestrel waits up to 30 s for requests in flight when it is told to stop; Docker must wait longer than that.
+    stop_grace_period: 35s
     restart: unless-stopped
   db:
+    mem_limit: 2g
+    memswap_limit: 2g
+    # Parallel queries and hash joins share memory through /dev/shm, which Docker sizes at 64 MB by default.
+    shm_size: 256m
+    # If the host does run out of memory, the kernel should stop something else before the database.
+    oom_score_adj: -500
+    stop_grace_period: 60s
     restart: unless-stopped
   nginx:
+    mem_limit: 128m
+    memswap_limit: 128m
     restart: unless-stopped
     ports: [80:80]
+  backup:
+    mem_limit: 256m
+    memswap_limit: 256m
+    # A dump compresses with a core of its own. With these shares it gets about a ninth of the CPU while the API
+    # and the database are busy, and everything it can use when they are not.
+    cpu_shares: 128

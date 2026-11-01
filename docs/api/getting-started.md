@@ -47,15 +47,16 @@ _This is a public endpoint. No authentication required_
 }
 ```
 
-**Response (200 OK)**
+**Response (200 OK)** — you are signed in straight away, same shape as login:
 ```json
 {
-  "data": {
-    "userId": "3fa85f64-5717-4562-b3fc-2c963f66face"
-  }
+  "accessToken": "eyJ...",
+  "accessTokenExpiresAt": "2026-10-31T12:15:00Z",
+  "refreshToken": "...",
+  "refreshTokenExpiresAt": "2026-11-30T12:00:00Z"
 }
 ```
-> **Note:** The `CongregationId` is created but not returned in the response for security reasons.
+> **Note:** The account is not verified yet; a verification email is queued and arrives shortly. Verification is not needed to use the session.
 
 ### Signing up with an invitation token
 
@@ -71,14 +72,8 @@ _This is a public endpoint. No authentication required_
 }
 ```
 
-**Response (200 OK)**
-```json
-{
-  "data": {
-    "userId": "3fa85f64-5717-4562-b3fc-2c963f66face"
-  }
-}
-```
+**Response (200 OK)** — you are signed in straight away, same token pair as above (`accessToken`, `accessTokenExpiresAt`, `refreshToken`, `refreshTokenExpiresAt`).
+
 > **Note:** The `Role` of the account created is determined by the type of **Invitation Token** provided.
 
 ---

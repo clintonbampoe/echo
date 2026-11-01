@@ -14,11 +14,15 @@ public class JwtTokenService(
     TimeProvider timeProvider
 )
 {
+    // How long after a rotation the old token is only refused, not treated as stolen.
+    private const int SupersededGraceSeconds = 10;
+
     private readonly JwtOptions _jwtOptions = jwtOptions.Value;
 
     public async Task<(RefreshToken TokenEntity, string PlainToken)> IssueToken(
         Guid userId,
-        CancellationToken ct = default
+        CancellationToken ct = default,
+        bool prune = true
     )
     {
         var plainToken = tokenGenerator.GenerateToken(32);
@@ -31,7 +35,8 @@ public class JwtTokenService(
                 .UtcDateTime.AddDays(_jwtOptions.RefreshTokenLifetimeDays),
         };
 
-        await refreshTokenRepository.PruneTokens(userId, ct);
+        if (prune)
+            await refreshTokenRepository.PruneTokens(userId, ct);
         await refreshTokenRepository.CreateNewToken(tokenEntity, ct);
 
         return (tokenEntity, plainToken);
@@ -47,6 +52,16 @@ public class JwtTokenService(
 
         if (existing is null)
             return Failure(RefreshSessionFailure.NotFound);
+        if (
+            existing is { RevokedAt: { } revokedAt, ReplacedByTokenId: not null }
+            && revokedAt > timeProvider.GetUtcNow().UtcDateTime.AddSeconds(-SupersededGraceSeconds)
+        )
+        {
+            // Browser tabs share their stored tokens, so a second tab can present the token the
+            // first one has just rotated. Refuse it, but do not treat it as theft.
+            return Failure(RefreshSessionFailure.Superseded);
+        }
+
         if (existing.RevokedAt is not null)
         {
             // Already-rotated token presented again — treat as a stolen/reused token,
@@ -63,13 +78,14 @@ public class JwtTokenService(
 
         var (newTokenEntity, newPlainToken) = await IssueToken(existing.UserId, ct);
 
-        await refreshTokenRepository.Revoke(existing.Id, newTokenEntity.Id, ct);
+        refreshTokenRepository.Revoke(existing, newTokenEntity.Id);
 
         return new RefreshTokenValidationResult()
         {
             Success = true,
             FailureReason = null,
             UserId = existing.UserId,
+            User = existing.User,
             NewRefreshToken = newPlainToken,
             NewRefreshTokenExpiresAt = newTokenEntity.ExpiresAt,
         };
@@ -78,10 +94,10 @@ public class JwtTokenService(
     public async Task RevokeToken(string presentedToken, CancellationToken ct = default)
     {
         var hashedInput = tokenHashService.Hash(presentedToken);
-        var existing = await refreshTokenRepository.GetTokenRecordByHashWithUser(hashedInput, ct);
+        var existing = await refreshTokenRepository.GetTokenRecordByHash(hashedInput, ct);
 
         if (existing is not null)
-            await refreshTokenRepository.Revoke(existing.Id, null, ct);
+            refreshTokenRepository.Revoke(existing);
     }
 
     public async Task RevokeAllActiveSessionsForUserById(

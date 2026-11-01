@@ -45,6 +45,7 @@ Program.cs
     └── Phases, in order
         ├── SetupPhase          congregations, admins, lookups   [EF]
         ├── PeoplePhase         people, members, visitors        [COPY]
+        ├── UsersPhase          staff users and their roles      [EF]
         ├── OrganizationsPhase  organizations, memberships       [COPY]
         ├── SessionsPhase       sessions                         [COPY]
         ├── EventsPhase         events, registrations            [COPY]

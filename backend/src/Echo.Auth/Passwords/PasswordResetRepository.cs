@@ -20,13 +20,43 @@ public class PasswordResetRepository(AppDbContext dbContext, TimeProvider timePr
             .FirstOrDefaultAsync(t => t.TokenHash == hashedInput, ct);
     }
 
-    public async Task<PasswordResetToken?> GetTokenByUserId(Guid userId, CancellationToken ct)
+    /// <summary>The user's reset links that can still be used.</summary>
+    public async Task<List<PasswordResetToken>> GetActiveTokensForUser(
+        Guid userId,
+        CancellationToken ct
+    )
     {
         var now = timeProvider.GetUtcNow().UtcDateTime;
         return await _tokens
             .FilterDeleted()
-            .Where(t => t.UserId == userId && t.ExpiresAt > now && t.UsedAt == null)
-            .FirstOrDefaultAsync(ct);
+            .Where(t =>
+                t.UserId == userId
+                && t.ExpiresAt > now
+                && t.UsedAt == null
+                && t.InvalidatedAt == null
+            )
+            .ToListAsync(ct);
+    }
+
+    /// <summary>
+    /// Deletes the user's tokens that can never be used again: expired, used, or invalidated more
+    /// than a week ago. Called whenever a new token is issued, so the table cannot grow without
+    /// bound and no scheduled job is needed.
+    /// </summary>
+    public async Task PruneTokens(Guid userId, CancellationToken ct)
+    {
+        var now = timeProvider.GetUtcNow().UtcDateTime;
+        var invalidatedBefore = now.AddDays(-7);
+        await _tokens
+            .Where(t =>
+                t.UserId == userId
+                && (
+                    t.ExpiresAt < now
+                    || t.UsedAt != null
+                    || (t.InvalidatedAt != null && t.InvalidatedAt < invalidatedBefore)
+                )
+            )
+            .ExecuteDeleteAsync(ct);
     }
 
     public async Task<bool> CreateRecord(PasswordResetToken token, CancellationToken ct = default)

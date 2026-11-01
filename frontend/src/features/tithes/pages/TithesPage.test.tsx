@@ -88,6 +88,9 @@ const needsMonths = (u: URL) =>
 
 let fetchMock: ReturnType<typeof vi.fn>;
 beforeEach(() => {
+  // The page asks for "this month" by the clock, and the fixtures are October 2026. Without this the test passes
+  // until the month ends and then fails (the chart has no bar for the new month, so it shows no "Highest" line).
+  vi.useFakeTimers({ toFake: ["Date"], now: new Date("2026-10-20T10:00:00") });
   rows = [kofi, ama];
   refuseRecording = false;
   saveTokens({
@@ -115,7 +118,10 @@ beforeEach(() => {
   });
   vi.stubGlobal("fetch", fetchMock);
 });
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+  vi.useRealTimers();
+  vi.unstubAllGlobals();
+});
 
 const open = (address = "/tithes") =>
   render(

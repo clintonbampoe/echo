@@ -63,13 +63,9 @@ public static class RegistrationEndpoints
                 Optional: `otherNames`, `role`. The `role` here is normally `Admin` for the initial user, but the server may force that regardless of what is supplied.
 
                 ### On success
-                Returns `200 OK` with no body.
+                Returns `200 OK` with a token pair, exactly like `POST /auth/sessions/login`: `accessToken`, `accessTokenExpiresAt`, `refreshToken`, `refreshTokenExpiresAt`.
 
-                **The admin is not logged in.** Registration does not issue a session. The newly created admin must:
-                1. Receive and complete email verification via the link sent to the supplied admin email.
-                2. Sign in via `POST /auth/sessions/login` once verification is complete.
-
-                Do not assume the response carries tokens — it does not. Send the user to a "check your email" screen.
+                **The admin is logged in.** Use the tokens straight away; there is no need to sign in again. The account is **not yet verified**: a verification link is queued for the admin's email address and arrives a moment later. Verification is not required to use the session, so show a "verify your email" reminder instead of blocking.
 
                 ### Failure modes
                 - `400 BAD_REQUEST` — the request body is malformed (missing required fields, wrong types).
@@ -79,8 +75,8 @@ public static class RegistrationEndpoints
                 ### Side effects
                 - A new congregation is created.
                 - A new user account is created with the `Admin` role and scoped to the new congregation.
-                - A verification email is sent to the admin's email address.
-                - No session is created.
+                - A verification email is queued for the admin's email address.
+                - A session (refresh token) is created for the admin.
 
                 ### Authentication
                 None required. This is a public onboarding endpoint.
@@ -126,13 +122,9 @@ public static class RegistrationEndpoints
                   - `role` — present on the DTO for symmetry, but **the role is taken from the invitation, not from this field.** Whatever the admin set as `allowedRole` on the invitation is what the account receives. Supplying a different `role` here has no effect. Do not build UI that lets the invited user pick their own role.
 
                 ### On success
-                Returns `200 OK` with no body.
+                Returns `200 OK` with a token pair, exactly like `POST /auth/sessions/login`: `accessToken`, `accessTokenExpiresAt`, `refreshToken`, `refreshTokenExpiresAt`.
 
-                **The user is not logged in.** Registration does not issue a session. The new account must:
-                1. Receive and complete email verification via the link sent to `emailAddress`.
-                2. Sign in via `POST /auth/sessions/login` once verification is complete.
-
-                Send the user to a "check your email" screen.
+                **The user is logged in.** Use the tokens straight away; there is no need to sign in again. The account is **not yet verified**: a verification link is queued for `emailAddress` and arrives a moment later. Verification is not required to use the session, so show a "verify your email" reminder instead of blocking.
 
                 ### Failure modes
                 - `400 BAD_REQUEST` — the request body is malformed (missing fields, wrong types).
@@ -145,7 +137,7 @@ public static class RegistrationEndpoints
                 - The role assigned is the invitation's `allowedRole`, not whatever `userInfo.role` says.
                 - The invitation token is marked as used and cannot be reused.
                 - A verification email is sent to the supplied email address.
-                - No session is created.
+                - A session (refresh token) is created for the new user.
 
                 ### Authentication
                 None required. The invitation token is the credential.

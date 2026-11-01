@@ -30,6 +30,9 @@ public static class Extensions
         // Every summary is cached and logged through this
         services.AddScoped<SummaryCache>();
 
+        // Keeps the per-session attendance totals the summaries read up to date
+        services.AddHostedService<AttendanceTotalsRefresher>();
+
         // Person
         services.AddScoped<PersonRepository>();
 

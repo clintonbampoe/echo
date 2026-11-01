@@ -59,7 +59,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "sum(count_over_time({container=\"nginx\", stream=\"stdout\"}[$__range]))",
+          "expr": "sum(count_over_time({container=\"nginx\", stream=\"stdout\"} | sampled=\"1\" [$__range])) * 100",
           "legendFormat": ""
         }
       ],
@@ -373,7 +373,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "quantile_over_time(0.99, {container=\"nginx\", stream=\"stdout\"} | rt != \"\" | unwrap rt [$__range]) by ()",
+          "expr": "quantile_over_time(0.99, {container=\"nginx\", stream=\"stdout\"} | sampled=\"1\" | rt != \"\" | unwrap rt [$__range]) by ()",
           "legendFormat": ""
         }
       ],
@@ -452,7 +452,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "sum by (status) (count_over_time({container=\"nginx\", stream=\"stdout\", status=~\".+\"}[$__interval]))",
+          "expr": "sum by (status) (count_over_time({container=\"nginx\", stream=\"stdout\", status=~\".+\"} | sampled=\"1\" [$__interval])) * 100",
           "legendFormat": "{{status}}"
         }
       ],
@@ -507,7 +507,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "quantile_over_time(0.5, {container=\"nginx\", stream=\"stdout\"} | rt != \"\" | unwrap rt [$__interval]) by ()",
+          "expr": "quantile_over_time(0.5, {container=\"nginx\", stream=\"stdout\"} | sampled=\"1\" | rt != \"\" | unwrap rt [$__interval]) by ()",
           "legendFormat": "p50"
         },
         {
@@ -516,7 +516,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "quantile_over_time(0.95, {container=\"nginx\", stream=\"stdout\"} | rt != \"\" | unwrap rt [$__interval]) by ()",
+          "expr": "quantile_over_time(0.95, {container=\"nginx\", stream=\"stdout\"} | sampled=\"1\" | rt != \"\" | unwrap rt [$__interval]) by ()",
           "legendFormat": "p95"
         },
         {
@@ -525,7 +525,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "quantile_over_time(0.99, {container=\"nginx\", stream=\"stdout\"} | rt != \"\" | unwrap rt [$__interval]) by ()",
+          "expr": "quantile_over_time(0.99, {container=\"nginx\", stream=\"stdout\"} | sampled=\"1\" | rt != \"\" | unwrap rt [$__interval]) by ()",
           "legendFormat": "p99"
         }
       ],
@@ -593,7 +593,7 @@
             "type": "loki",
             "uid": "loki"
           },
-          "expr": "topk(10, quantile_over_time(0.95, {container=\"nginx\", stream=\"stdout\"} | rt != \"\" | path != \"\" | unwrap rt [$__range]) by (path))",
+          "expr": "topk(10, quantile_over_time(0.95, {container=\"nginx\", stream=\"stdout\"} | sampled=\"1\" | rt != \"\" | path != \"\" | unwrap rt [$__range]) by (path))",
           "legendFormat": "",
           "instant": true,
           "range": false,

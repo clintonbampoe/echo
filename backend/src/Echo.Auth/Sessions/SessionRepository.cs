@@ -9,6 +9,11 @@ public class SessionRepository(AppDbContext context, TimeProvider timeProvider)
 {
     private readonly DbSet<RefreshToken> _tokens = context.Set<RefreshToken>();
 
+    public async Task<RefreshToken?> GetTokenRecordByHash(
+        string hashedInput,
+        CancellationToken ct = default
+    ) => await _tokens.FilterDeleted().FirstOrDefaultAsync(x => x.TokenHash == hashedInput, ct);
+
     public async Task<RefreshToken?> GetTokenRecordByHashWithUser(
         string hashedInput,
         CancellationToken ct = default
@@ -39,37 +44,25 @@ public class SessionRepository(AppDbContext context, TimeProvider timeProvider)
         return true;
     }
 
-    public async Task<bool> Revoke(
-        Guid tokenId,
-        Guid? replacedByTokenId = null,
-        CancellationToken ct = default
-    )
+    /// <summary>Marks an already loaded token revoked; saved by the caller's CommitAsync.</summary>
+    public void Revoke(RefreshToken token, Guid? replacedByTokenId = null)
     {
-        var existing = await _tokens.FilterDeleted().FirstOrDefaultAsync(x => x.Id == tokenId, ct);
-
-        if (existing is null)
-            return false;
-
-        existing.RevokedAt = timeProvider.GetUtcNow().UtcDateTime;
-        existing.ReplacedByTokenId = replacedByTokenId;
-
-        return true;
+        token.RevokedAt = timeProvider.GetUtcNow().UtcDateTime;
+        token.ReplacedByTokenId = replacedByTokenId;
     }
 
-    public async Task<bool> RevokeAllActiveSessionsForUser(
-        Guid userId,
-        CancellationToken ct = default
-    )
+    /// <summary>
+    /// Revokes all of the user's active tokens in one statement. It runs immediately, not on
+    /// CommitAsync: when it belongs with other changes (a password change), call it inside
+    /// <see cref="IUnitOfWork.ExecuteInTransactionAsync"/>.
+    /// </summary>
+    public async Task RevokeAllActiveSessionsForUser(Guid userId, CancellationToken ct = default)
     {
-        var activeTokens = await _tokens
+        var now = timeProvider.GetUtcNow().UtcDateTime;
+        await _tokens
             .FilterDeleted()
-            .Where(u => u.UserId == userId && u.RevokedAt == null)
-            .ToListAsync(ct);
-
-        foreach (var token in activeTokens)
-            token.RevokedAt = timeProvider.GetUtcNow().UtcDateTime;
-
-        return true;
+            .Where(t => t.UserId == userId && t.RevokedAt == null)
+            .ExecuteUpdateAsync(s => s.SetProperty(t => t.RevokedAt, now), ct);
     }
 }
 

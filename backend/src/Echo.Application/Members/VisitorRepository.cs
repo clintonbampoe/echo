@@ -269,9 +269,16 @@ internal static class VisitorQueryExtensions
 
     internal static IQueryable<Visitor> SearchName(this IQueryable<Visitor> query, string name)
     {
-        var pattern = $"%{Shared.Query.Extensions.EscapeLike(name.Trim())}%";
-        return query
-            .Where(v => EF.Functions.ILike(v.Person.Name, pattern))
+        var term = Shared.Query.Extensions.EscapeLike(name.Trim());
+        var matched =
+            term.Length >= Shared.Query.Extensions.MinContainsLength
+                ? query.Where(v => EF.Functions.ILike(v.Person.Name, $"%{term}%"))
+                : query.Where(v =>
+                    EF.Functions.ILike(v.Person.Name, $"{term}%")
+                    || EF.Functions.ILike(v.Person.Name, $"% {term}%")
+                );
+
+        return matched
             .OrderByDescending(v => EF.Functions.TrigramsSimilarity(v.Person.Name, name))
             .Take(5);
     }

@@ -32,7 +32,6 @@ public static class Extensions
         {
             options.ApiToken = configuration["Resend:ApiKey"]!;
         });
-        services.AddScoped<IEmailService, ResendEmailService>();
 
         services.AddScoped<CongregationProvisioningService>();
         services.AddScoped<RegistrationService>();

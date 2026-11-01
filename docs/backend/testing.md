@@ -108,6 +108,20 @@ Rules:
 
 ---
 
+## Database-backed tests (`Echo.IntegrationTests`)
+
+Flows that depend on real SQL behaviour (transactions, `ExecuteUpdate`, unique indexes, query counts) are tested against a real Postgres started by Testcontainers. **Docker must be running.** The project is not part of `Echo.slnx`, so `dotnet test backend/Echo.slnx` stays Docker-free and CI (which runs `Category=Unit` only) does not run them. Run them with:
+
+```bash
+dotnet test --project backend/tests/Echo.IntegrationTests
+```
+
+- `PostgresFixture` starts one `postgres:18` container for the whole assembly and applies the migrations. Tests join it with `[Collection(PostgresCollection.Name)]` and tag themselves `[Trait("Category", "Integration")]`.
+- `AuthTestHost.CreateAsync(db, configure)` empties every table, then wires the auth services the way the API does, in one long-lived scope. `configure` swaps services (for example `TestHostExtensions.WithRecordedEmail(queue)` replaces email sending with a recording queue).
+- `host.Commands` counts the SQL commands EF executes (`Count`, `Statements`) so a test can pin how many queries a flow costs. `host.Time` is a `FakeTimeProvider`.
+- `FailingSaveInterceptor` and `BeforeNextSaveInterceptor` (registered through `configure`) make a save fail, or stage a race just before it, to test rollbacks and concurrent writes.
+- Hand-written fakes only; there is no mocking library.
+
 ## Performance
 
 Test collections run in parallel (`parallelizeTestCollections` is **enabled** in

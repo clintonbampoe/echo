@@ -5,8 +5,10 @@ using Echo.Shared.Caching;
 using Echo.Shared.HttpResults;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Time.Testing;
 
 namespace Echo.Application.Tests.Caching;
 
@@ -35,32 +37,81 @@ public class SummaryCacheTests
         ) => Messages.Add(formatter(state, exception));
     }
 
+    // How many times the summary was worked out, shared by every Owner the container hands out.
+    private sealed class Calls
+    {
+        public int Computed;
+        public bool Fail;
+    }
+
+    // Stands for a service such as TitheService: new for every request, so a refresh that runs after the
+    // request has ended must ask the container for its own.
+    private sealed class Owner(Calls calls)
+    {
+        public Task<Payload> Compute(CancellationToken _)
+        {
+            var n = Interlocked.Increment(ref calls.Computed);
+            return calls.Fail && n > 1
+                ? Task.FromException<Payload>(new InvalidOperationException("db is down"))
+                : Task.FromResult(new Payload(n));
+        }
+    }
+
     private readonly CapturingLogger _logger = new();
+    private readonly Calls _calls = new();
+    private readonly FakeTimeProvider _time = new();
+    private readonly ServiceProvider _services;
     private readonly SummaryCache _summaries;
-    private int _computed;
+
+    private int _computed => _calls.Computed;
 
     public SummaryCacheTests()
     {
+        _services = new ServiceCollection()
+            .AddSingleton(_calls)
+            .AddScoped<Owner>()
+            .BuildServiceProvider();
         var cache = new InMemoryCacheService(
             new MemoryCache(new MemoryCacheOptions()),
             Microsoft.Extensions.Logging.Abstractions.NullLogger<InMemoryCacheService>.Instance,
             Options.Create(new CacheOptions())
         );
-        _summaries = new SummaryCache(cache, new ApplicationInstrumentation(), _logger);
+        _summaries = new SummaryCache(
+            cache,
+            new ApplicationInstrumentation(),
+            _services.GetRequiredService<IServiceScopeFactory>(),
+            Options.Create(new CacheOptions()),
+            _time,
+            _logger
+        );
     }
 
-    private Task<IOperationResult> Serve(Guid congregationId, Filters filters) =>
-        _summaries.Serve(
+    private async Task<IOperationResult> Serve(Guid congregationId, Filters filters)
+    {
+        // A request of its own: its own scope, ended when the request is.
+        using var scope = _services.CreateScope();
+        return await _summaries.Serve(
+            scope.ServiceProvider.GetRequiredService<Owner>(),
             "things",
             congregationId,
             filters,
-            _ =>
-            {
-                _computed++;
-                return Task.FromResult(new Payload(42));
-            },
+            (owner, token) => owner.Compute(token),
             CancellationToken.None
         );
+    }
+
+    private static async Task Until(Func<bool> condition)
+    {
+        var deadline = DateTime.UtcNow.AddSeconds(5);
+        while (!condition())
+        {
+            Assert.True(
+                DateTime.UtcNow < deadline,
+                "Timed out waiting for the background refresh."
+            );
+            await Task.Delay(10);
+        }
+    }
 
     [Fact]
     public async Task FirstRequest_ComputesTheSummary_AndSaysItWasNotCached()
@@ -69,7 +120,7 @@ public class SummaryCacheTests
 
         var result = await Serve(congregation, new Filters(null, 2026));
 
-        Assert.Equal(new Payload(42), Assert.IsType<Ok<Payload>>(result.ToResult()).Value);
+        Assert.Equal(new Payload(1), Assert.IsType<Ok<Payload>>(result.ToResult()).Value);
         Assert.Equal(1, _computed);
         Assert.Equal(
             [
@@ -89,7 +140,7 @@ public class SummaryCacheTests
 
         var result = await Serve(congregation, new Filters(null, 2026));
 
-        Assert.Equal(new Payload(42), Assert.IsType<Ok<Payload>>(result.ToResult()).Value);
+        Assert.Equal(new Payload(1), Assert.IsType<Ok<Payload>>(result.ToResult()).Value);
         Assert.Equal(1, _computed);
         Assert.Equal(
             [$"Summary things served for congregation {congregation} (cached: True)"],
@@ -151,5 +202,68 @@ public class SummaryCacheTests
         await Serve(Guid.NewGuid(), filters);
 
         Assert.Equal(2, _computed);
+    }
+
+    [Fact]
+    public async Task LateInTheLifeOfAnEntry_TheRequestIsStillServedFromTheCache_WhileItIsRefreshedInTheBackground()
+    {
+        var congregation = Guid.NewGuid();
+        await Serve(congregation, new Filters(null, 2026));
+        _time.Advance(TimeSpan.FromSeconds(240)); // past three quarters of the five minutes
+
+        var served = await Serve(congregation, new Filters(null, 2026));
+
+        // The person who asked did not wait: they got the old answer...
+        Assert.Equal(new Payload(1), Assert.IsType<Ok<Payload>>(served.ToResult()).Value);
+        // ...and the next one gets the new one, without anyone having waited for it.
+        await Until(() => _computed == 2);
+        var next = await Serve(congregation, new Filters(null, 2026));
+        Assert.Equal(new Payload(2), Assert.IsType<Ok<Payload>>(next.ToResult()).Value);
+    }
+
+    [Fact]
+    public async Task EarlyInTheLifeOfAnEntry_NothingIsRefreshed()
+    {
+        var congregation = Guid.NewGuid();
+        await Serve(congregation, new Filters(null, 2026));
+        _time.Advance(TimeSpan.FromSeconds(120));
+
+        await Serve(congregation, new Filters(null, 2026));
+        await Task.Delay(100);
+
+        Assert.Equal(1, _computed);
+    }
+
+    [Fact]
+    public async Task ManyRequestsInTheRefreshWindow_StartOneRefresh()
+    {
+        var congregation = Guid.NewGuid();
+        await Serve(congregation, new Filters(null, 2026));
+        _time.Advance(TimeSpan.FromSeconds(240));
+
+        await Task.WhenAll(
+            Enumerable.Range(0, 20).Select(_ => Serve(congregation, new Filters(null, 2026)))
+        );
+        await Until(() => _computed >= 2);
+        await Task.Delay(100);
+
+        Assert.Equal(2, _computed);
+    }
+
+    [Fact]
+    public async Task ARefreshThatFails_LeavesTheOldAnswerInPlace_AndIsTriedAgainByTheNextRequest()
+    {
+        var congregation = Guid.NewGuid();
+        await Serve(congregation, new Filters(null, 2026));
+        _calls.Fail = true;
+        _time.Advance(TimeSpan.FromSeconds(240));
+
+        await Serve(congregation, new Filters(null, 2026));
+        await Until(() => _computed == 2);
+        await Task.Delay(100);
+        var again = await Serve(congregation, new Filters(null, 2026));
+
+        Assert.Equal(new Payload(1), Assert.IsType<Ok<Payload>>(again.ToResult()).Value);
+        await Until(() => _computed == 3);
     }
 }

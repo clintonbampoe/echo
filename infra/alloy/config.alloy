@@ -44,12 +44,14 @@ loki.process "logs" {
   // "status", "method" and a "level" (error for 5xx, warn for 4xx) are labels, so Grafana colours the row and
   // "every 429 in the last hour" is a cheap query. The rest (path, request time, upstream time, address, browser,
   // bytes) are fields shown when a line is opened, and usable in queries, but are not part of the line.
+  // nginx logs every error and a random 1% of the rest. "sampled" is 1 for that 1%: a request count is the lines
+  // with sampled="1" times 100, and a request-time percentile is taken over those lines only.
   // ------------------------------------------------------------------------------------------------------------
   stage.match {
     selector = "{container=\"nginx\", stream=\"stdout\"}"
 
     stage.json {
-      expressions = { status = "status", method = "method", path = "path", rt = "rt", urt = "urt", ip = "ip", ua = "ua", bytes = "bytes" }
+      expressions = { status = "status", method = "method", path = "path", rt = "rt", urt = "urt", ip = "ip", ua = "ua", bytes = "bytes", sampled = "sampled" }
     }
 
     stage.labels {
@@ -57,7 +59,7 @@ loki.process "logs" {
     }
 
     stage.structured_metadata {
-      values = { path = "", rt = "", urt = "", ip = "", ua = "", bytes = "" }
+      values = { path = "", rt = "", urt = "", ip = "", ua = "", bytes = "", sampled = "" }
     }
 
     stage.template {
@@ -167,12 +169,14 @@ otelcol.receiver.otlp "apps" {
   }
 }
 
-// Only warnings and above from the API reach Loki. Everything below is request chatter that the traces already show.
+// Only warnings and above from the API reach Loki by default. Everything below is request chatter that the traces
+// already show, and a load test turns it into thousands of lines a second. To see more, set API_LOG_MIN_SEVERITY in
+// .env (OpenTelemetry numbers: 5 debug, 9 information, 13 warning, 17 error) and recreate Alloy.
 otelcol.processor.filter "warnings" {
   error_mode = "ignore"
 
   logs {
-    log_record = ["severity_number < SEVERITY_NUMBER_WARN"]
+    log_record = [string.format("severity_number < %s", sys.env("API_LOG_MIN_SEVERITY"))]
   }
 
   output {
