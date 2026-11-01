@@ -1,8 +1,11 @@
-// Who signed up for an event and who came, matched up. The server lists the two separately, so this joins them by
-// member. Pure, so the tests can check it without a screen.
-import type { EventCheckIn } from "../api/checkIns";
+// Who signed up for an event and who came. The server lists each with the other's answer in it (a registration says
+// whether the person came, a check-in whether they were a walk-in), so there is nothing to match up here.
+import type { CheckInFilters, EventCheckIn } from "../api/checkIns";
 import type { EventItem } from "../api/events";
-import type { EventRegistration } from "../api/registrations";
+import type {
+  EventRegistration,
+  RegistrationFilters,
+} from "../api/registrations";
 
 // Where an event is: still to come, on now (its first day has begun and its last has not ended), or over.
 export type Phase = "upcoming" | "happening" | "over";
@@ -21,27 +24,25 @@ export type Guest = { registration: EventRegistration; checkIn?: EventCheckIn };
 // Someone who came, and whether they had signed up. A walk-in came without registering.
 export type Arrival = { checkIn: EventCheckIn; walkIn: boolean };
 
-export function guests(
-  registrations: EventRegistration[],
-  checkIns: EventCheckIn[],
-): Guest[] {
-  const came = new Map(checkIns.map((c) => [c.memberId, c]));
-  return registrations.map((registration) => ({
-    registration,
-    checkIn: came.get(registration.memberId),
-  }));
-}
+// A registration as the server lists it for one event, which already says whether the person came.
+export const toGuest = (registration: EventRegistration): Guest => ({
+  registration,
+  checkIn: registration.checkIn
+    ? {
+        id: registration.checkIn.id,
+        memberId: registration.memberId,
+        memberName: registration.memberName,
+        eventId: registration.eventId,
+        checkInTime: registration.checkIn.checkInTime,
+      }
+    : undefined,
+});
 
-export function arrivals(
-  checkIns: EventCheckIn[],
-  registrations: EventRegistration[],
-): Arrival[] {
-  const signedUp = new Set(registrations.map((r) => r.memberId));
-  return checkIns.map((checkIn) => ({
-    checkIn,
-    walkIn: !signedUp.has(checkIn.memberId),
-  }));
-}
+// A check-in as the server lists it for one event, which already says whether the person was a walk-in.
+export const toArrival = (checkIn: EventCheckIn): Arrival => ({
+  checkIn,
+  walkIn: checkIn.walkIn === true,
+});
 
 // How a guest stands, as the words on their row: checked in, still to come, or gone without coming.
 export type GuestStatus = "came" | "missing";
@@ -49,29 +50,23 @@ export type GuestStatus = "came" | "missing";
 export const guestStatus = (g: Guest): GuestStatus =>
   g.checkIn ? "came" : "missing";
 
-const has = (name: string, text: string) =>
-  name.toLowerCase().includes(text.trim().toLowerCase());
-
-// The guests whose name has what was typed in it and who are in the chosen state ('' is any).
-export const filterGuests = (
-  list: Guest[],
+// What the Registrations tab's search box and status choice ask the server for ('' is any).
+export const registrationFilters = (
   name: string,
   status: string,
-): Guest[] =>
-  list.filter(
-    (g) =>
-      has(g.registration.memberName, name) &&
-      (status === "" || guestStatus(g) === status),
-  );
+): RegistrationFilters => ({
+  name: name.trim() || undefined,
+  status:
+    status === "came" ? "Came" : status === "missing" ? "Missing" : undefined,
+});
 
-// The arrivals whose name has what was typed in it and who are the chosen kind: 'registered', 'walk-in' or '' for any.
-export const filterArrivals = (
-  list: Arrival[],
-  name: string,
-  kind: string,
-): Arrival[] =>
-  list.filter(
-    (a) =>
-      has(a.checkIn.memberName, name) &&
-      (kind === "" || (kind === "walk-in") === a.walkIn),
-  );
+// What the Check-ins tab's search box and type choice ask the server for ('' is any).
+export const checkInFilters = (name: string, kind: string): CheckInFilters => ({
+  name: name.trim() || undefined,
+  kind:
+    kind === "registered"
+      ? "Registered"
+      : kind === "walk-in"
+        ? "WalkIn"
+        : undefined,
+});

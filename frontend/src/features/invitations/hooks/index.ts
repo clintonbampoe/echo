@@ -5,4 +5,4 @@ export {
   useRevokeInvitation,
   useUpdateInvitation,
 } from "./mutations";
-export { useInvitations } from "./queries";
+export { useInvitation, useInvitations, useInvitationSummary } from "./queries";

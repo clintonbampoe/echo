@@ -1,8 +1,8 @@
 using Echo.Data;
 using Echo.Domain.Attendances;
+using Echo.Domain.Congregations;
 using Echo.Shared.Query;
 using Microsoft.EntityFrameworkCore;
-using Echo.Domain.Congregations;
 
 namespace Echo.Application.Attendances;
 
@@ -93,17 +93,32 @@ public class SessionRepository(AppDbContext context)
             .FilterDeleted()
             .Where(s => s.CongregationId == congregationId)
             .Filter(filters);
-        var attendance = context
-            .Set<Attendance>()
-            .AsNoTracking()
-            .Live()
-            .Where(a => a.CongregationId == congregationId);
+        // The per-session totals hold one row per session, so a year is a few dozen rows to add up
+        // instead of hundreds of thousands of check-ins. They are refreshed every few minutes.
+        var totals = context.Set<SessionAttendanceTotals>().AsNoTracking();
 
         var stats = await context
             .OneRow(congregationId)
-            .SummarizeSessions(sessions, attendance)
+            .SummarizeSessions(sessions)
+            .SingleOrDefaultAsync(ct);
+        if (stats is null)
+            return new SessionStats(0, 0, 0, 0, 0);
+
+        var records = await sessions
+            .Join(totals, s => s.Id, t => t.SessionId, (s, t) => new { s.Status, t.Total })
+            .GroupBy(_ => 1)
+            .Select(g => new
+            {
+                All = g.Sum(x => x.Total),
+                Completed = g.Where(x => x.Status == SessionStatus.Completed).Sum(x => x.Total),
+            })
             .FirstOrDefaultAsync(ct);
-        return stats ?? new SessionStats(0, 0, 0, 0, 0);
+
+        return stats with
+        {
+            TotalAttendance = records?.All ?? 0,
+            CompletedAttendance = records?.Completed ?? 0,
+        };
     }
 
     public void Create(Session entity) => _dbSet.Add(entity);
@@ -111,13 +126,7 @@ public class SessionRepository(AppDbContext context)
     public void SoftDelete(Session entity) => entity.DeletedAt = DateTime.UtcNow;
 }
 
-public record SessionAttendance(
-    Guid Id,
-    int Total,
-    int Members,
-    int Visitors,
-    int FirstTime
-);
+public record SessionAttendance(Guid Id, int Total, int Members, int Visitors, int FirstTime);
 
 public record SessionStats(
     int Total,
@@ -129,26 +138,18 @@ public record SessionStats(
 
 internal static class SessionQueryExtensions
 {
+    // The session counts only; the attendance counts are filled in by the caller (see GetSummaryStats).
     internal static IQueryable<SessionStats> SummarizeSessions(
         this IQueryable<Congregation> oneRow,
-        IQueryable<Session> sessions,
-        IQueryable<Attendance> attendance
-    )
-    {
-        // Built before the projection: EF inlines these queries but cannot translate a custom
-        // method call (InSessions) made inside the lambda.
-        var completed = sessions.Where(s => s.Status == SessionStatus.Completed);
-        var allRecords = attendance.InSessions(sessions);
-        var completedRecords = attendance.InSessions(completed);
-
-        return oneRow.Select(_ => new SessionStats(
+        IQueryable<Session> sessions
+    ) =>
+        oneRow.Select(_ => new SessionStats(
             sessions.Count(),
-            completed.Count(),
+            sessions.Count(s => s.Status == SessionStatus.Completed),
             sessions.Count(s => s.Status == SessionStatus.Cancelled),
-            allRecords.Count(),
-            completedRecords.Count()
+            0,
+            0
         ));
-    }
 
     internal static IQueryable<Session> Filter(
         this IQueryable<Session> query,

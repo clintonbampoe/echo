@@ -41,7 +41,8 @@ export type InvitationInfo = {
   city: string;
   region: string;
   allowedRole: string;
-  expiresAt: string;
+  // Null when the invitation never expires.
+  expiresAt: string | null;
   // Who sent the invitation. The API does not return it yet; shown when it does.
   invitedBy?: string;
 };
@@ -60,6 +61,10 @@ export const registerMember = (input: RegisterMemberInput) =>
 
 export const sendVerificationLink = (email: string) =>
   api.post("/v1/auth/verifications/account", { email }, anon);
+
+// Whether the signed-in person's account is verified yet. Cheap to ask again and again.
+export const getVerified = (signal?: AbortSignal) =>
+  api.get<{ verified: boolean }>("/v1/auth/verifications/status", { signal });
 
 // The token travels in the query string, not the body.
 export const verifyEmail = (token: string) =>

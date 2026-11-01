@@ -1,38 +1,33 @@
 import { api } from "@/lib/api";
 import { ALL_TIME } from "@/lib/dates";
 
-// What assets are grouped under, with how many each holds.
-export type AssetCategory = { id: number; name: string; assetCount: number };
-
-export const getAssetCategories = (signal?: AbortSignal) =>
-  api.get<AssetCategory[]>("/v1/asset-categories", { signal });
-
-// The assets' numbers, for all of them or one category. Liquidated assets are not counted. `lost` is cost
-// minus value, below zero when they are worth more than they cost.
-export type AssetFigures = {
+// What one category holds. Liquidated assets are not counted.
+export type AssetCategoryRow = {
+  id: number;
+  name: string;
   count: number;
   value: number;
-  cost: number;
-  lost: number;
 };
 
-export const getAssetFigures = (
-  categoryId: number | undefined,
-  signal?: AbortSignal,
-) =>
+// Every category that holds assets, with how many and what they are worth now: one call for the whole card.
+export const getAssetCategoryRows = (signal?: AbortSignal) =>
   api
-    .get<{
-      totalAssets: number;
-      totalCurrentValue: number;
-      totalPurchaseCost: number;
-      totalDepreciation: number;
-    }>("/v1/assets/summary", {
-      query: { from: ALL_TIME.from, to: ALL_TIME.to, categoryId },
+    .get<
+      {
+        categoryId: number;
+        categoryName: string;
+        count: number;
+        totalCurrentValue: number;
+      }[]
+    >("/v1/assets/summary/by-category", {
+      query: { from: ALL_TIME.from, to: ALL_TIME.to },
       signal,
     })
-    .then((r): AssetFigures => ({
-      count: r.totalAssets,
-      value: r.totalCurrentValue,
-      cost: r.totalPurchaseCost,
-      lost: r.totalDepreciation,
-    }));
+    .then((rows) =>
+      rows.map((r): AssetCategoryRow => ({
+        id: r.categoryId,
+        name: r.categoryName,
+        count: r.count,
+        value: r.totalCurrentValue,
+      })),
+    );

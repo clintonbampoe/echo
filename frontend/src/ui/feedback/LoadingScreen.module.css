@@ -1,0 +1,38 @@
+.wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  /* Nothing for the first moments: most pages are there before this would matter. */
+  opacity: 0;
+  animation: loadingShow var(--t-enter) var(--ease-out) 250ms forwards;
+}
+.wrap[data-fill="window"] {
+  min-height: 100vh;
+}
+.wrap[data-fill="area"] {
+  min-height: 50vh;
+}
+.mark {
+  display: flex;
+  animation: loadingBreathe 1.6s var(--ease-soft) infinite;
+}
+@keyframes loadingShow {
+  to {
+    opacity: 1;
+  }
+}
+@keyframes loadingBreathe {
+  50% {
+    scale: 0.88;
+    opacity: 0.55;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mark {
+    animation: none;
+  }
+}
+html[data-reduce-motion="true"] .mark {
+  animation: none;
+}

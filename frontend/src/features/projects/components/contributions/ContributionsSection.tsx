@@ -53,7 +53,6 @@ export function ContributionsSection({
   }
   return (
     <section aria-label="Contributions">
-      <h2 className={styles.title}>Contributions</h2>
       <div className={styles.bar}>
         <FilterSelect
           label="Method"

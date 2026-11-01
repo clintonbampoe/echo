@@ -3,3 +3,31 @@
   font-size: 13px;
   color: var(--neg);
 }
+
+/* The quiet form: a line of words with the action as an underlined link, as on the board. */
+.line {
+  margin: 0;
+  text-align: center;
+  font-size: 14.5px;
+  color: var(--text-2);
+}
+.link {
+  padding: 0;
+  background: none;
+  border: 0;
+  font: inherit;
+  font-weight: 600;
+  color: var(--text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.link:focus-visible {
+  outline: var(--focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-xs);
+}
+.link:disabled {
+  opacity: 0.6;
+  cursor: default;
+}

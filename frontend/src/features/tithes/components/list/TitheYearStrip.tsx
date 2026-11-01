@@ -22,8 +22,8 @@ export function TitheYearStrip({
   memberId: string;
   today: string;
 }) {
-  const { year, from, to } = thisYear(today);
-  const months = useTitheMonths({ memberId }, from, to);
+  const { year, months: sofar, to } = thisYear(today);
+  const months = useTitheMonths({ memberId }, sofar, to);
   const yearTithes = useMemberTithes(memberId, { year });
   const idOf = (month: string) =>
     yearTithes.rows.find((t) => t.forMonth === month && t.forYear === year)?.id;

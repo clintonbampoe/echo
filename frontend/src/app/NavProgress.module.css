@@ -1,0 +1,43 @@
+.bar {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 100;
+  height: 3px;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
+  animation: barShow var(--t-fast) linear 200ms forwards;
+}
+.run {
+  display: block;
+  width: 40%;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--accent);
+  animation: barRun 1.1s var(--ease-soft) infinite;
+}
+@keyframes barShow {
+  to {
+    opacity: 1;
+  }
+}
+@keyframes barRun {
+  from {
+    translate: -100% 0;
+  }
+  to {
+    translate: 250% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .run {
+    width: 100%;
+    animation: none;
+    opacity: 0.6;
+  }
+}
+html[data-reduce-motion="true"] .run {
+  width: 100%;
+  animation: none;
+  opacity: 0.6;
+}

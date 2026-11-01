@@ -75,12 +75,14 @@ export type TransactionMonth = {
   net: number;
 };
 
+// `months` (1 to 12) ending with the month of `to`; the server requires both.
 export const getTransactionMonths = (
-  filters: TransactionFilters,
+  months: number,
+  to: string,
   signal?: AbortSignal,
 ) =>
   api.get<TransactionMonth[]>("/v1/transactions/summary/monthly", {
-    query: { ...filters },
+    query: { months, to },
     signal,
   });
 

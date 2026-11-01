@@ -78,11 +78,18 @@ public record TitheFilters : MemberTitheFilters
 {
     public Guid? MemberId { get; init; }
     public string? MemberName { get; init; }
+
 }
 
 public record TitheSummaryDto
 {
     public decimal TotalCollected { get; init; }
+
+    /// <summary>
+    /// <see cref="TotalCollected"/> for the stretch before the window (as many days, ending the day before `from`).
+    /// Zero unless `includePrevious` is true.
+    /// </summary>
+    public decimal PreviousTotalCollected { get; init; }
     public int UniqueTithers { get; init; }
     public string? MostUsedPaymentMethod { get; init; }
     public decimal AveragePerMember { get; init; }
@@ -105,9 +112,9 @@ public record TitheMonthlyFilters
     public string? MemberName { get; init; }
     public PaymentMethod? PaymentMethod { get; init; }
 
-    /// <summary>How many months to return, ending with the month of <see cref="To"/>.</summary>
+    /// <summary>How many months to return, ending with the month of <see cref="To"/>. 12 when not given.</summary>
     [Range(1, MonthRange.MaxMonths)]
-    public int Months { get; init; } = MonthRange.DefaultMonths;
+    public int? Months { get; init; }
 
     /// <summary>Any day in the last month to return. This month when not given.</summary>
     public DateOnly? To { get; init; }

@@ -46,7 +46,8 @@ public class EventService(
 
         using var activity = instrumentation.ActivitySource.StartActivity("svc.event.list");
 
-        var cursor = UsableCursor(encoder.Decode<EventCursor>(pagination.Cursor), filters.Order);
+        var order = filters.Order ?? SortDirection.Asc;
+        var cursor = UsableCursor(encoder.Decode<EventCursor>(pagination.Cursor), order);
 
         List<Event> entities;
         using (instrumentation.ActivitySource.StartActivity("svc.event.fetch.list"))
@@ -64,9 +65,7 @@ public class EventService(
         if (hasMore)
             entities.RemoveAt(entities.Count - 1);
 
-        var nextCursor = hasMore
-            ? encoder.Encode(BuildCursor(entities.Last(), filters.Order))
-            : null;
+        var nextCursor = hasMore ? encoder.Encode(BuildCursor(entities.Last(), order)) : null;
 
         var data = await WithCounts(entities, ct);
         activity?.SetTag("event.count", data.Count);
@@ -295,10 +294,11 @@ public class EventService(
         CancellationToken ct
     ) =>
         summaries.Serve(
+            this,
             "events",
             congregationId,
             filters,
-            token => ComputeSummary(congregationId, filters, token),
+            (self, token) => self.ComputeSummary(congregationId, filters, token),
             ct
         );
 
@@ -336,10 +336,11 @@ public class EventService(
         CancellationToken ct
     ) =>
         summaries.Serve(
+            this,
             "events.by-event",
             congregationId,
             filters,
-            token => ComputeSeries(congregationId, filters, token),
+            (self, token) => self.ComputeSeries(congregationId, filters, token),
             ct
         );
 
@@ -352,9 +353,11 @@ public class EventService(
         var window = ResolveWindow(filters, dateWindows);
         var scope = (EventFilters)filters with { From = window?.From, To = window?.To };
 
-        using var activity = instrumentation.ActivitySource.StartActivity("svc.event.series_summary");
+        using var activity = instrumentation.ActivitySource.StartActivity(
+            "svc.event.series_summary"
+        );
 
-        return await repository.GetSeries(congregationId, scope, filters.Limit, ct);
+        return await repository.GetSeries(congregationId, scope, filters.Limit ?? 12, ct);
     }
 
     public async Task<IOperationResult> MonthlySummary(
@@ -363,14 +366,15 @@ public class EventService(
         CancellationToken ct
     )
     {
-        if (MonthRange.Problem(filters.Months) is { } problem)
+        if (MonthRange.Problem(MonthRange.Or(filters.Months)) is { } problem)
             return new BadRequestResult(problem);
 
         return await summaries.Serve(
+            this,
             "events.monthly",
             congregationId,
             filters,
-            token => ComputeMonthly(congregationId, filters, token),
+            (self, token) => self.ComputeMonthly(congregationId, filters, token),
             ct
         );
     }
@@ -381,7 +385,7 @@ public class EventService(
         CancellationToken ct
     )
     {
-        var months = dateWindows.ChartMonths(filters.Months, filters.To);
+        var months = dateWindows.ChartMonths(MonthRange.Or(filters.Months), filters.To);
         var (from, to) = MonthRange.Bounds(months);
         var rows = await repository.GetMonthlyTotals(congregationId, filters, from, to, ct);
 

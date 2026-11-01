@@ -13,6 +13,9 @@ public class LinkBuilder(IOptions<FrontendOptions> options)
         return link;
     }
 
+    // The frontend's join screen reads the code from the path.
+    public string BuildJoinLink(string code) => $"{_baseUrl}/join/{Uri.EscapeDataString(code)}";
+
     public string BuildPasswordResetLink(string token)
     {
         var link = $"{_baseUrl}/reset-password?token={Uri.EscapeDataString(token)}";

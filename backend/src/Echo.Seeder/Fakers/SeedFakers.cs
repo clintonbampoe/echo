@@ -32,8 +32,8 @@ public sealed class SeedFakers
             .RuleFor(u => u.FirstName, f => f.Name.FirstName())
             .RuleFor(u => u.LastName, f => f.Name.LastName())
             .RuleFor(u => u.OtherNames, _ => null)
-            // A real bcrypt hash of the literal string "Password1!".
-            // All dev admin accounts use this password.
+            // A real bcrypt hash (cost 10) of the literal string "admin@123".
+            // Every seeded user signs in with this password.
             .RuleFor(
                 u => u.PasswordHash,
                 _ => "$2a$10$7L3PEPyl.S5oMOGZI8sJge9reZ4VB1Y8.KuAyGLF3spikGluNEXo6"

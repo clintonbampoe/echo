@@ -1,36 +1,30 @@
 import type { EventCheckIn } from "../api/checkIns";
 import type { EventRegistration } from "../api/registrations";
 import {
-  arrivals,
+  checkInFilters,
   eventPhase,
-  filterArrivals,
-  filterGuests,
-  guests,
   guestStatus,
+  registrationFilters,
+  toArrival,
+  toGuest,
 } from "./roster";
 
-const reg = (
-  id: string,
-  memberId: string,
-  memberName: string,
-): EventRegistration => ({
-  id,
-  memberId,
-  memberName,
+const reg = (over: Partial<EventRegistration> = {}): EventRegistration => ({
+  id: "r1",
+  memberId: "m1",
+  memberName: "Ama Boateng",
   eventId: "e1",
   registrationDate: "2026-09-12",
+  ...over,
 });
-const came = (
-  id: string,
-  memberId: string,
-  memberName: string,
-  checkInTime = "06:00:00",
-): EventCheckIn => ({ id, memberId, memberName, eventId: "e1", checkInTime });
-
-const ama = reg("r1", "m1", "Ama Boateng");
-const comfort = reg("r2", "m2", "Comfort Addo");
-const amaIn = came("c1", "m1", "Ama Boateng");
-const grace = came("c2", "m9", "Grace Appiah", "06:55:00");
+const came = (over: Partial<EventCheckIn> = {}): EventCheckIn => ({
+  id: "c1",
+  memberId: "m1",
+  memberName: "Ama Boateng",
+  eventId: "e1",
+  checkInTime: "06:00:00",
+  ...over,
+});
 
 describe("event phase", () => {
   it("is upcoming before the first day, happening on the days, and over after the last", () => {
@@ -42,41 +36,57 @@ describe("event phase", () => {
   });
 });
 
-describe("matching sign-ups to check-ins", () => {
-  it("gives each guest their check-in, or none", () => {
-    const list = guests([ama, comfort], [amaIn, grace]);
-    expect(list.map((g) => guestStatus(g))).toEqual(["came", "missing"]);
-    expect(list[0]?.checkIn?.id).toBe("c1");
+describe("a registration, as the server lists it for one event", () => {
+  it("carries the check-in of someone who came", () => {
+    const guest = toGuest(
+      reg({ checkIn: { id: "c1", checkInTime: "06:05:00" } }),
+    );
+    expect(guestStatus(guest)).toBe("came");
+    expect(guest.checkIn).toMatchObject({
+      id: "c1",
+      memberId: "m1",
+      memberName: "Ama Boateng",
+      checkInTime: "06:05:00",
+    });
   });
 
-  it("calls someone who came without signing up a walk-in", () => {
-    expect(
-      arrivals([amaIn, grace], [ama, comfort]).map((a) => a.walkIn),
-    ).toEqual([false, true]);
+  it("has no check-in for someone who did not come", () => {
+    const guest = toGuest(reg({ checkIn: null }));
+    expect(guestStatus(guest)).toBe("missing");
+    expect(guest.checkIn).toBeUndefined();
   });
 });
 
-describe("filtering", () => {
-  const list = guests([ama, comfort], [amaIn]);
-  it("finds guests by name, ignoring case, and by status", () => {
-    expect(filterGuests(list, "ama", "").map((g) => g.registration.id)).toEqual(
-      ["r1"],
-    );
-    expect(
-      filterGuests(list, "", "missing").map((g) => g.registration.id),
-    ).toEqual(["r2"]);
-    expect(filterGuests(list, "ama", "missing")).toEqual([]);
-    expect(filterGuests(list, "", "")).toHaveLength(2);
+describe("a check-in, as the server lists it for one event", () => {
+  it("is a walk-in only when the server says so", () => {
+    expect(toArrival(came({ walkIn: true })).walkIn).toBe(true);
+    expect(toArrival(came({ walkIn: false })).walkIn).toBe(false);
+    expect(toArrival(came()).walkIn).toBe(false);
+  });
+});
+
+describe("what the tabs ask the server for", () => {
+  it("sends a trimmed name and the status, and leaves out what is empty", () => {
+    expect(registrationFilters("  ama ", "missing")).toEqual({
+      name: "ama",
+      status: "Missing",
+    });
+    expect(registrationFilters("", "came")).toEqual({
+      name: undefined,
+      status: "Came",
+    });
+    expect(registrationFilters("", "")).toEqual({
+      name: undefined,
+      status: undefined,
+    });
   });
 
-  it("finds arrivals by name and by kind", () => {
-    const rows = arrivals([amaIn, grace], [ama]);
-    expect(
-      filterArrivals(rows, "", "walk-in").map((a) => a.checkIn.id),
-    ).toEqual(["c2"]);
-    expect(
-      filterArrivals(rows, "", "registered").map((a) => a.checkIn.id),
-    ).toEqual(["c1"]);
-    expect(filterArrivals(rows, "grace", "")).toHaveLength(1);
+  it("sends the check-in type the way the API names it", () => {
+    expect(checkInFilters("grace", "walk-in")).toEqual({
+      name: "grace",
+      kind: "WalkIn",
+    });
+    expect(checkInFilters("", "registered").kind).toBe("Registered");
+    expect(checkInFilters("", "").kind).toBeUndefined();
   });
 });

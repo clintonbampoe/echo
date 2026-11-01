@@ -24,13 +24,14 @@
     EmailAddress: v1,
     PasswordHash: v2,
     EmailVerifiedAt: DateTime_3,
+    PasswordChangedAt: DateTime_4,
     FirstName: v3,
     LastName: v4,
     OtherNames: v5,
     Name: Jane Doe,
-    CreatedAt: DateTime_4,
-    DeletedAt: DateTime_5
+    CreatedAt: DateTime_5,
+    DeletedAt: DateTime_6
   },
-  CreatedAt: DateTime_6,
-  DeletedAt: DateTime_7
+  CreatedAt: DateTime_7,
+  DeletedAt: DateTime_8
 }

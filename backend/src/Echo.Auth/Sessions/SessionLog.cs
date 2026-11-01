@@ -15,12 +15,6 @@ public static partial class SessionLog
     public static partial void LoginInvalidCredentials(ILogger logger, Guid userId);
 
     [LoggerMessage(
-        Level = LogLevel.Warning,
-        Message = "Login failed: email not verified for user {UserId}"
-    )]
-    public static partial void LoginEmailNotVerified(ILogger logger, Guid userId);
-
-    [LoggerMessage(
         Level = LogLevel.Information,
         Message = "Login succeeded: user {UserId} in congregation {CongregationId}"
     )]
@@ -40,12 +34,6 @@ public static partial class SessionLog
     // --- Refresh ---
     [LoggerMessage(Level = LogLevel.Warning, Message = "Token refresh failed: {Reason}")]
     public static partial void TokenRefreshFailed(ILogger logger, string reason);
-
-    [LoggerMessage(
-        Level = LogLevel.Warning,
-        Message = "Token refresh failed: user not found for {UserId}"
-    )]
-    public static partial void TokenRefreshUserNotFound(ILogger logger, Guid userId);
 
     [LoggerMessage(
         Level = LogLevel.Information,

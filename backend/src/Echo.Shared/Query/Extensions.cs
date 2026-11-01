@@ -24,6 +24,12 @@ public static class Extensions
     /// Escapes the characters that LIKE treats as wildcards (and the escape character itself),
     /// so a search term is matched literally. PostgreSQL's default escape character is a backslash.
     /// </summary>
+    /// <summary>
+    /// A trigram index needs three characters to look anything up. A shorter term has to match the
+    /// start of a word instead (see the member and visitor searches), or it reads every row.
+    /// </summary>
+    public const int MinContainsLength = 3;
+
     public static string EscapeLike(string value) =>
         value.Replace("\\", "\\\\").Replace("%", "\\%").Replace("_", "\\_");
 }

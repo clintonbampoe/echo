@@ -3,5 +3,6 @@
   Name: Jane Doe,
   EmailAddress: jane@echo.test,
   VerifiedAt: DateTime_1,
-  CreatedAt: DateTime_2
+  CreatedAt: DateTime_2,
+  PasswordChangedAt: DateTime_3
 }

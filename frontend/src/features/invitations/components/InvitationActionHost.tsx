@@ -3,9 +3,10 @@ import type { Invitation } from "../api/invitations";
 import { useDeleteInvitation, useRevokeInvitation } from "../hooks";
 import { titleOf } from "../model/display";
 import { EditInvitationSheet } from "./EditInvitationSheet";
+import { InvitationDetailSheet } from "./InvitationDetailSheet";
 
 export type InvitationAction = {
-  kind: "edit" | "revoke" | "delete";
+  kind: "view" | "edit" | "revoke" | "delete";
   invitation: Invitation;
 };
 
@@ -16,6 +17,11 @@ export function InvitationActionHost({ action, onClose }: Props) {
   const held = useHeld(action);
   return (
     <>
+      <Presence open={action?.kind === "view"}>
+        {held && (
+          <InvitationDetailSheet id={held.invitation.id} onClose={onClose} />
+        )}
+      </Presence>
       <Presence open={action?.kind === "edit"}>
         {held && (
           <EditInvitationSheet invitation={held.invitation} onClose={onClose} />

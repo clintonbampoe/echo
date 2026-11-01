@@ -130,7 +130,7 @@ public class TitheRepository(AppDbContext context)
         var totals = await context
             .OneRow(congregationId)
             .SummarizeTithes(tithes)
-            .FirstOrDefaultAsync(ct);
+            .SingleOrDefaultAsync(ct);
         var byMethod = await tithes.ByMethod().ToListAsync(ct);
 
         return new TitheStats(totals?.Total ?? 0m, totals?.UniqueTithers ?? 0, totals?.Largest ?? 0m, byMethod);

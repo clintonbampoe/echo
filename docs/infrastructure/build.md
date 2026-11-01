@@ -25,3 +25,11 @@ Dev pipeline stops at **Compile**. Prod continues through **Runtime** — only t
 - `backend/src/Echo.MigrationService/Dockerfile` — migrator
 - `backend/src/Echo.Seeder/Dockerfile` — seeder
 - `infra/postgres/backup/Dockerfile` — backup
+
+## ReadyToRun
+
+The API image is published ReadyToRun: the app's assemblies are compiled to native code at build time, so a fresh
+container does not spend its first minute compiling the code that serves requests. The image is built for the
+machine that builds it (`linux-x64` or `linux-arm64`, from `TARGETARCH`), so build it where it will run. The
+assemblies double in size (Echo.Application.dll 2.0 → 4.4 MB) and the build takes about a minute longer. The runtime
+still recompiles hot methods with full optimisation as the app runs (tiered compilation stays on).

@@ -10,6 +10,12 @@ public static class MonthRange
     /// <summary>How many months a monthly summary returns when not asked.</summary>
     public const int DefaultMonths = 12;
 
+    /// <summary>
+    /// The months a caller asked for, or <see cref="DefaultMonths"/> when it did not say. A filter holds it as
+    /// nullable: a non-nullable number in a query record is a required parameter, so the default could never apply.
+    /// </summary>
+    public static int Or(int? months) => months ?? DefaultMonths;
+
     /// <summary>Every calendar month the range touches, oldest first. Empty when from is after to.</summary>
     public static List<YearMonth> Between(DateOnly from, DateOnly to)
     {
