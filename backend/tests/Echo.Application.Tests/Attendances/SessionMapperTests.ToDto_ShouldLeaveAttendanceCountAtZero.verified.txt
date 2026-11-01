@@ -1,0 +1,15 @@
+﻿{
+  Id: Guid_1,
+  SessionLabelId: 2,
+  SessionLabelName: Sunday Service,
+  Date: Date_1,
+  Name: v6,
+  Topic: v7,
+  Notes: v8,
+  Location: v9,
+  StartsAt: Time_1,
+  EndsAt: Time_2,
+  CreatedBy: Guid_2,
+  CreatedByName: Jane Doe,
+  CreatedAt: DateTime_1
+}

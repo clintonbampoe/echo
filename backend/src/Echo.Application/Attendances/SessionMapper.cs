@@ -15,15 +15,15 @@ public class SessionMapper : ISessionMapper
             Name = entity.Name,
             Topic = entity.Topic,
             Notes = entity.Notes,
+            Location = entity.Location,
             StartsAt = entity.StartsAt,
             EndsAt = entity.EndsAt,
             Status = entity.Status,
             CreatedBy = entity.CreatedBy,
             CreatedByName = entity.Creator?.Name,
             CreatedAt = entity.CreatedAt,
-            // AttendanceCount is populated by the service after a batched
-            // GetAttendanceCounts call. Leave at 0 here.
-            AttendanceCount = 0,
+            // The attendance counts are populated by the service after a batched
+            // GetAttendance call. Left at 0 here.
         };
 
     public Session ToEntity(SessionCreateDto dto) =>
@@ -34,6 +34,7 @@ public class SessionMapper : ISessionMapper
             Name = dto.Name,
             Topic = dto.Topic,
             Notes = dto.Notes,
+            Location = dto.Location,
             StartsAt = dto.StartsAt,
             EndsAt = dto.EndsAt,
         };
@@ -49,6 +50,8 @@ public class SessionMapper : ISessionMapper
             entity.Topic = dto.Topic;
         if (dto.Notes != null)
             entity.Notes = dto.Notes;
+        if (dto.Location != null)
+            entity.Location = dto.Location;
         if (dto.StartsAt.HasValue)
             entity.StartsAt = dto.StartsAt.Value;
         if (dto.EndsAt.HasValue)

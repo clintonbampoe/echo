@@ -1,0 +1,16 @@
+﻿{
+  Id: Guid_1,
+  Name: John Smith,
+  FirstName: John,
+  LastName: Smith,
+  PhoneNumber: v2,
+  EmailAddress: v3,
+  Gender: Male,
+  Address: v4,
+  Source: WalkIn,
+  InvitedByMemberId: Guid_2,
+  InvitedByName: v5,
+  Notes: Came for the healing service,
+  ConvertedAt: DateTime_1,
+  CreatedAt: DateTime_2
+}

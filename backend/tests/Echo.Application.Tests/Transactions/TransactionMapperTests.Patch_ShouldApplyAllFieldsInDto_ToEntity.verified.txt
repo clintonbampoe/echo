@@ -1,0 +1,18 @@
+﻿{
+  Id: Guid_1,
+  CongregationId: Guid_2,
+  CategoryId: 9,
+  Category: {
+    Id: 1,
+    CongregationId: Guid_3,
+    Name: Tithes,
+    CreatedAt: DateTime_1,
+    DeletedAt: DateTime_2
+  },
+  TransactionDate: Date_1,
+  Amount: 99.99,
+  PaymentMethod: Cash,
+  Description: Reclassified,
+  CreatedAt: DateTime_3,
+  DeletedAt: DateTime_4
+}

@@ -13,7 +13,7 @@ public class EventListOrderingTests
 
     private static Event On(DateOnly start, Guid id)
     {
-        var e = EventFactory.NewEntity();
+        var e = TestData.Shared.CreateEvent();
         e.Id = id;
         e.StartDate = start;
         return e;
@@ -44,7 +44,12 @@ public class EventListOrderingTests
     public void Paginate_Ascending_ContinuesAfterTheCursor()
     {
         var ordered = new[] { A, B, C }.AsQueryable().OrderForList(SortDirection.Asc);
-        var cursor = new EventCursor { StartDate = C.StartDate, Id = C.Id, Order = SortDirection.Asc };
+        var cursor = new EventCursor
+        {
+            StartDate = C.StartDate,
+            Id = C.Id,
+            Order = SortDirection.Asc,
+        };
 
         Assert.Equal([A, B], ordered.Paginate(cursor, 10).ToList());
     }
@@ -56,7 +61,12 @@ public class EventListOrderingTests
 
         var firstPage = ordered.Paginate(null, 2).ToList();
         var last = firstPage[^1];
-        var cursor = new EventCursor { StartDate = last.StartDate, Id = last.Id, Order = SortDirection.Desc };
+        var cursor = new EventCursor
+        {
+            StartDate = last.StartDate,
+            Id = last.Id,
+            Order = SortDirection.Desc,
+        };
         var secondPage = ordered.Paginate(cursor, 2).ToList();
 
         Assert.Equal([B, A], firstPage);
@@ -66,7 +76,12 @@ public class EventListOrderingTests
     [Fact]
     public void UsableCursor_IsKept_WhenItMatchesTheRequestedDirection()
     {
-        var cursor = new EventCursor { StartDate = C.StartDate, Id = C.Id, Order = SortDirection.Desc };
+        var cursor = new EventCursor
+        {
+            StartDate = C.StartDate,
+            Id = C.Id,
+            Order = SortDirection.Desc,
+        };
 
         Assert.Same(cursor, EventService.UsableCursor(cursor, SortDirection.Desc));
     }
@@ -74,7 +89,12 @@ public class EventListOrderingTests
     [Fact]
     public void UsableCursor_IsDropped_WhenTheDirectionChanged_SoThePageStartsAgain()
     {
-        var cursor = new EventCursor { StartDate = C.StartDate, Id = C.Id, Order = SortDirection.Asc };
+        var cursor = new EventCursor
+        {
+            StartDate = C.StartDate,
+            Id = C.Id,
+            Order = SortDirection.Asc,
+        };
 
         Assert.Null(EventService.UsableCursor(cursor, SortDirection.Desc));
         Assert.Null(EventService.UsableCursor(null, SortDirection.Desc));

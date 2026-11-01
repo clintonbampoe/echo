@@ -14,7 +14,7 @@ public class TitheWindowTests
 
     private static Tithe On(DateOnly collectionDate)
     {
-        var tithe = TitheFactory.NewEntity();
+        var tithe = TestData.Shared.CreateTithe();
         tithe.CollectionDate = collectionDate;
         return tithe;
     }
@@ -64,7 +64,7 @@ public class TitheWindowTests
     [Fact]
     public void ResolveWindow_MemberIdSet_ReturnsNull()
     {
-        var filters = new TitheFilters { MemberId = Constants.DefaultGuid };
+        var filters = new TitheFilters { MemberId = TestData.DefaultId };
 
         Assert.Null(TitheService.ResolveWindow(filters, _windows));
     }

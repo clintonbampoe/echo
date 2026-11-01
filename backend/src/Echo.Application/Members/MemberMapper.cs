@@ -8,7 +8,7 @@ public partial class MemberMapper : IMemberMapper
 {
     public MemberResponseDto ToDto(Member entity)
     {
-        return new MemberResponseDto
+        return new()
         {
             Id = entity.PersonId,
             Name = entity.Person.Name,
@@ -19,6 +19,7 @@ public partial class MemberMapper : IMemberMapper
             PhoneNumber = entity.Person.PhoneNumber,
             DateOfBirth = entity.DateOfBirth,
             JoinedDate = entity.JoinedDate,
+            BaptisedDate = entity.BaptisedDate,
             Gender = entity.Gender,
             ResidentialAddress = entity.ResidentialAddress,
             City = entity.City,
@@ -50,6 +51,7 @@ public partial class MemberMapper : IMemberMapper
         {
             DateOfBirth = dto.DateOfBirth,
             JoinedDate = dto.JoinedDate,
+            BaptisedDate = dto.BaptisedDate,
             Gender = dto.Gender,
             ResidentialAddress = dto.ResidentialAddress,
             City = dto.City,
@@ -66,18 +68,17 @@ public partial class MemberMapper : IMemberMapper
         return (person, member);
     }
 
-    public List<MemberResponseDto> ToListDto(List<Member> entities) =>
-        entities.Select(ToDto).ToList();
+    public List<MemberResponseDto> ToListDto(List<Member> entities) => [.. entities.Select(ToDto)];
 
     public List<MemberSearchResultDto> ToSearchDto(List<Member> entities) =>
-        entities
-            .Select(m => new MemberSearchResultDto
+        [
+            .. entities.Select(m => new MemberSearchResultDto
             {
                 Id = m.PersonId,
                 Name = m.Person.Name,
                 PhoneNumber = m.Person.PhoneNumber,
-            })
-            .ToList();
+            }),
+        ];
 
     public void Patch(MemberUpdateDto dto, Person person, Member member)
     {
@@ -98,6 +99,8 @@ public partial class MemberMapper : IMemberMapper
             member.DateOfBirth = dto.DateOfBirth.Value;
         if (dto.JoinedDate.HasValue)
             member.JoinedDate = dto.JoinedDate.Value;
+        if (dto.BaptisedDate.HasValue)
+            member.BaptisedDate = dto.BaptisedDate.Value;
         if (dto.Gender.HasValue)
             member.Gender = dto.Gender.Value;
         if (dto.ResidentialAddress != null)

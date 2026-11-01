@@ -14,6 +14,11 @@ public class VisitorMapper : IVisitorMapper
             LastName = entity.Person.LastName,
             PhoneNumber = entity.Person.PhoneNumber,
             EmailAddress = entity.Person.EmailAddress,
+            Gender = entity.Gender,
+            Address = entity.Address,
+            Source = entity.Source,
+            InvitedByMemberId = entity.InvitedByMemberId,
+            InvitedByName = entity.InvitedBy?.Person.Name,
             Notes = entity.Notes,
             ConvertedAt = entity.ConvertedAt,
             CreatedAt = entity.CreatedAt,
@@ -31,7 +36,14 @@ public class VisitorMapper : IVisitorMapper
             EmailAddress = dto.EmailAddress,
         };
 
-        var visitor = new Visitor { Notes = dto.Notes };
+        var visitor = new Visitor
+        {
+            Notes = dto.Notes,
+            Gender = dto.Gender,
+            Address = dto.Address,
+            Source = dto.Source,
+            InvitedByMemberId = dto.InvitedByMemberId,
+        };
 
         return (person, visitor);
     }
@@ -59,6 +71,14 @@ public class VisitorMapper : IVisitorMapper
             person.PhoneNumber = dto.PhoneNumber;
         if (dto.EmailAddress != null)
             person.EmailAddress = dto.EmailAddress;
+        if (dto.Gender.HasValue)
+            visitor.Gender = dto.Gender.Value;
+        if (dto.Address != null)
+            visitor.Address = dto.Address;
+        if (dto.Source.HasValue)
+            visitor.Source = dto.Source.Value;
+        if (dto.InvitedByMemberId.HasValue)
+            visitor.InvitedByMemberId = dto.InvitedByMemberId.Value;
         if (dto.Notes != null)
             visitor.Notes = dto.Notes;
     }
@@ -68,6 +88,7 @@ public class VisitorMapper : IVisitorMapper
         return new Member
         {
             JoinedDate = dto.JoinedDate,
+            BaptisedDate = dto.BaptisedDate,
             Gender = dto.Gender,
             ResidentialAddress = dto.ResidentialAddress,
             City = dto.City,

@@ -1,3 +1,4 @@
+using Echo.Domain.Congregations;
 using Echo.Domain.Projects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -15,10 +16,11 @@ public class ProjectCategoryConfiguration : IEntityTypeConfiguration<ProjectCate
         builder.Property(e => e.CreatedAt).HasDefaultValueSql("now()").ValueGeneratedOnAdd();
 
         builder
-            .HasOne(e => e.Congregation)
+            .HasOne<Congregation>()
             .WithMany()
             .HasForeignKey(e => e.CongregationId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Restrict)
+            .IsRequired();
 
         builder.HasIndex(e => e.CongregationId);
         builder.HasIndex(c => new { c.CongregationId, c.Name }).IsUnique();

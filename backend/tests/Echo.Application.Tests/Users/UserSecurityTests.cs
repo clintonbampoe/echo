@@ -15,7 +15,7 @@ public class UserSecurityTests
 
     private static User NewUser(Guid congregationId, Guid id)
     {
-        var user = UserFactory.NewEntity();
+        var user = TestData.Shared.CreateUser();
         user.CongregationId = congregationId;
         user.Id = id;
         return user;
@@ -24,11 +24,11 @@ public class UserSecurityTests
     [Fact]
     public void ById_UserOfAnotherCongregation_IsNotReturned()
     {
-        var userInB = NewUser(CongregationB, Constants.DefaultGuid);
+        var userInB = NewUser(CongregationB, TestData.DefaultId);
 
         var res = new[] { userInB }
             .AsQueryable()
-            .ById(CongregationA, Constants.DefaultGuid)
+            .ById(CongregationA, TestData.DefaultId)
             .SingleOrDefault();
 
         Assert.Null(res);
@@ -37,12 +37,15 @@ public class UserSecurityTests
     [Fact]
     public void ById_UserOfTheSameCongregation_IsReturned()
     {
-        var userInA = NewUser(CongregationA, Constants.DefaultGuid);
-        var otherUserInA = NewUser(CongregationA, Guid.Parse("00000000-0000-0000-0000-000000000002"));
+        var userInA = NewUser(CongregationA, TestData.DefaultId);
+        var otherUserInA = NewUser(
+            CongregationA,
+            Guid.Parse("00000000-0000-0000-0000-000000000002")
+        );
 
         var res = new[] { userInA, otherUserInA }
             .AsQueryable()
-            .ById(CongregationA, Constants.DefaultGuid)
+            .ById(CongregationA, TestData.DefaultId)
             .SingleOrDefault();
 
         Assert.Same(userInA, res);

@@ -1,4 +1,5 @@
 using Echo.Domain.Members;
+using Echo.Domain.Organizations;
 
 namespace Echo.Seeder.Simulation;
 
@@ -44,6 +45,59 @@ public sealed record OrganizationKind(
 
 public static class OrganizationCatalog
 {
+    /// <summary>What a ministry is for, so the organizations can be filtered by kind.</summary>
+    public static OrganizationType TypeOf(string name) =>
+        name switch
+        {
+            "Choir" or "Praise and Worship Team" or "Instrumentalists" or "Dance Ministry" =>
+                OrganizationType.Music,
+            "Ushering Team"
+            or "Protocol Team"
+            or "Hospitality Team"
+            or "Security Team"
+            or "Transport Team"
+            or "Media Team"
+            or "Technical Team"
+            or "Beautification Team"
+            or "Library and Bookstall" => OrganizationType.Service,
+            "Women's Fellowship"
+            or "Men's Fellowship"
+            or "Singles Fellowship"
+            or "Young Adults Fellowship"
+            or "Seniors' Fellowship"
+            or "Youth Ministry"
+            or "Teens Ministry"
+            or "Marriage Ministry" => OrganizationType.Fellowship,
+            "Children's Ministry"
+            or "Sunday School Teachers"
+            or "Bible Study Group"
+            or "Disciples Class" => OrganizationType.Teaching,
+            "Evangelism Team"
+            or "Visitation Team"
+            or "Charity Outreach"
+            or "Missions Committee"
+            or "Welfare Committee"
+            or "Health Ministry"
+            or "Counseling Team" => OrganizationType.Outreach,
+            "Prayer Team" or "Intercessors" => OrganizationType.Prayer,
+            "Finance Committee" or "Elders' Council" => OrganizationType.Leadership,
+            _ => OrganizationType.Other,
+        };
+
+    /// <summary>The day each kind of group usually meets.</summary>
+    public static DayOfWeek? MeetingDayOf(OrganizationType type) =>
+        type switch
+        {
+            OrganizationType.Music => DayOfWeek.Thursday,
+            OrganizationType.Service => DayOfWeek.Sunday,
+            OrganizationType.Fellowship => DayOfWeek.Saturday,
+            OrganizationType.Teaching => DayOfWeek.Wednesday,
+            OrganizationType.Outreach => DayOfWeek.Saturday,
+            OrganizationType.Prayer => DayOfWeek.Friday,
+            OrganizationType.Leadership => DayOfWeek.Tuesday,
+            _ => null,
+        };
+
     /// <summary>True when a person of this age and gender fits the audience.</summary>
     public static bool Fits(Audience audience, int age, Gender gender) =>
         audience switch

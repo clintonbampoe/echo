@@ -7,7 +7,6 @@ public class SessionLabel : ISoftDeletable
     public int Id { get; set; }
 
     public Guid CongregationId { get; set; }
-    public Congregation Congregation { get; set; } = null!;
 
     /// <summary>User-facing name. Congregations can rename freely.</summary>
     public string Name { get; set; } = string.Empty;

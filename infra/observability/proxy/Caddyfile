@@ -1,0 +1,14 @@
+# Grafana on its own address, over HTTPS. Caddy gets and renews the certificate by itself (it needs ports 80 and 443
+# open, and GRAFANA_DOMAIN pointing at this server).
+{$GRAFANA_DOMAIN} {
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		-Server
+	}
+
+	reverse_proxy grafana:3000
+}

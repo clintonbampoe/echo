@@ -1,3 +1,4 @@
+using Echo.Domain.Congregations;
 using Echo.Domain.Members;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -13,12 +14,11 @@ public class PersonConfiguration : IEntityTypeConfiguration<Person>
         builder.Property(p => p.CreatedAt).HasDefaultValueSql("now()").ValueGeneratedOnAdd();
 
         builder
-            .HasOne(p => p.Congregation)
+            .HasOne<Congregation>()
             .WithMany()
             .HasForeignKey(p => p.CongregationId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.HasIndex(p => p.CongregationId);
+            .OnDelete(DeleteBehavior.Restrict)
+            .IsRequired();
 
         builder.Property(p => p.FirstName).IsRequired();
         builder.Property(p => p.LastName).IsRequired();
@@ -34,8 +34,13 @@ public class PersonConfiguration : IEntityTypeConfiguration<Person>
 
         builder.HasIndex(p => p.Name).HasMethod("GIN").HasOperators("gin_trgm_ops");
 
-        // Partial filter updated to drop manual double quotes
-        builder.HasIndex(p => new { p.Name, p.Id }).HasFilter("deleted_at IS NULL");
+        // The member and visitor lists page through a congregation's people in name order.
+        builder.HasIndex(p => new
+        {
+            p.CongregationId,
+            p.Name,
+            p.Id,
+        });
 
         builder.HasIndex(p => new { p.CongregationId, p.Kind });
     }

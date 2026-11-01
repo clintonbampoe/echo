@@ -120,4 +120,16 @@ public static partial class AttendanceLog
         Message = "Attendance error: unexpected failure for congregation {CongregationId}"
     )]
     public static partial void Error(ILogger logger, Exception ex, Guid congregationId);
+
+    [LoggerMessage(
+        Level = LogLevel.Information,
+        Message = "Attendance totals refreshed in {ElapsedMs} ms"
+    )]
+    public static partial void TotalsRefreshed(ILogger logger, long elapsedMs);
+
+    [LoggerMessage(
+        Level = LogLevel.Error,
+        Message = "Attendance totals refresh failed; summaries keep the last totals"
+    )]
+    public static partial void TotalsRefreshFailed(ILogger logger, Exception ex);
 }

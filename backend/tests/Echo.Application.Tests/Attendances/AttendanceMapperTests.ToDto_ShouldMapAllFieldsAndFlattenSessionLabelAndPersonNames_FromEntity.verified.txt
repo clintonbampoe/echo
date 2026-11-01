@@ -1,0 +1,14 @@
+﻿{
+  Id: Guid_1,
+  SessionId: Guid_2,
+  SessionDate: Date_1,
+  SessionName: Main Service,
+  SessionLabelId: 2,
+  SessionLabelName: Sunday Service,
+  PersonId: Guid_3,
+  PersonName: Jane Doe,
+  PersonKind: Visitor,
+  CheckedInAt: DateTime_1,
+  RecordedBy: Guid_4,
+  CreatedAt: DateTime_2
+}

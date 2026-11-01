@@ -1,0 +1,4 @@
+services:
+  alloy:
+    volumes:
+      - ./config.alloy:/etc/alloy/config.alloy:ro

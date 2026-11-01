@@ -34,8 +34,13 @@ public record OrganizationMemberCursor
     public Guid Id { get; init; }
 }
 
-public record OrganizationMemberFilters
+public record MembershipRoleFilters
 {
     public MemberRole? Role { get; init; }
+}
+
+/// <summary>Filters for the rosters: a role, and which members by name.</summary>
+public record OrganizationMemberFilters : MembershipRoleFilters
+{
     public string? Name { get; init; }
 }

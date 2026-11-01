@@ -7,7 +7,6 @@ public class Project : ISearchable, ISoftDeletable
 {
     public Guid Id { get; set; }
     public Guid CongregationId { get; set; }
-    public Congregation Congregation { get; set; } = null!;
 
     public int CategoryId { get; set; }
     public ProjectCategory Category { get; set; } = null!;

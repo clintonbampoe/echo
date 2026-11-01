@@ -1,0 +1,17 @@
+﻿[
+  {
+    Id: Guid_1,
+    Name: John Smith,
+    PhoneNumber: v2
+  },
+  {
+    Id: Guid_2,
+    Name: John Smith,
+    PhoneNumber: v19
+  },
+  {
+    Id: Guid_3,
+    Name: John Smith,
+    PhoneNumber: v36
+  }
+]

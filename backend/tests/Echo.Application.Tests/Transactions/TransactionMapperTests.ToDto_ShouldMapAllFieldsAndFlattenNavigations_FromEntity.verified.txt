@@ -1,0 +1,11 @@
+﻿{
+  Id: Guid_1,
+  CategoryId: 1,
+  CategoryName: Tithes,
+  TransactionType: Expense,
+  TransactionDate: Date_1,
+  Amount: 425.75,
+  PaymentMethod: Cash,
+  Description: Sound equipment,
+  CreatedAt: DateTime_1
+}

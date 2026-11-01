@@ -1,0 +1,29 @@
+.card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 240px;
+  padding: var(--s-24);
+  text-align: center;
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+.title {
+  margin: 0;
+  font-size: var(--type-headline);
+  font-weight: 600;
+}
+.text {
+  margin: 6px 0 0;
+  font-size: var(--type-body);
+  color: var(--text-3);
+}
+.line {
+  margin: 4px 0 0;
+  text-align: center;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--text-3);
+}

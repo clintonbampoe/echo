@@ -1,99 +1,105 @@
+using AutoFixture;
 using Echo.Application.Attendances;
+using Echo.Domain.Attendances;
+using Echo.Domain.Members;
 
 namespace Echo.Application.Tests.Attendances;
 
 [Trait("Category", "Unit")]
 public class AttendanceMapperTests
 {
-    private readonly AttendanceMapper _mapper = new();
+    private readonly IAttendanceMapper _mapper = new AttendanceMapper();
+
+    private Attendance CreateAttendance(Fixture fixture)
+    {
+        var sessionLabel = fixture
+            .Build<SessionLabel>()
+            .With(l => l.Name, "Sunday Service")
+            .Create();
+        var session = fixture
+            .Build<Session>()
+            .With(s => s.Name, "Main Service")
+            .With(s => s.SessionLabel, sessionLabel)
+            .Create();
+        var person = fixture.Build<Person>().With(p => p.Name, "Jane Doe").Create();
+
+        return fixture
+            .Build<Attendance>()
+            .With(a => a.Session, session)
+            .With(a => a.Person, person)
+            .Create();
+    }
 
     [Fact]
-    public void ToEntity_ShouldMapAllFields_FromCreateDto()
+    public Task ToDto_ShouldMapAllFieldsAndFlattenSessionLabelAndPersonNames_FromEntity()
     {
-        var dto = AttendanceFactory.NewCreateDto();
+        var entity = CreateAttendance(TestData.NewFixture());
+
+        return Verify(_mapper.ToDto(entity));
+    }
+
+    [Fact]
+    public Task ToEntity_ShouldMapAllFields_FromCreateDto()
+    {
+        var dto = TestData
+            .NewFixture()
+            .Build<AttendanceCreateDto>()
+            .With(d => d.CheckedInAt, new DateTime(2026, 3, 1, 9, 0, 0, DateTimeKind.Utc))
+            .Create();
+
+        return Verify(_mapper.ToEntity(dto));
+    }
+
+    [Fact]
+    public Task ToEntity_ShouldDefaultCheckedInAt_WhenDtoOmitsIt()
+    {
+        // The service supplies the current time when the request has none.
+        var dto = TestData
+            .NewFixture()
+            .Build<AttendanceCreateDto>()
+            .With(d => d.CheckedInAt, (DateTime?)null)
+            .Create();
 
         var entity = _mapper.ToEntity(dto);
 
-        Assert.Equal(dto.SessionId, entity.SessionId);
-        Assert.Equal(dto.PersonId, entity.PersonId);
-        Assert.Equal(dto.CheckedInAt, entity.CheckedInAt);
+        Assert.Equal(default, entity.CheckedInAt);
+
+        return Verify(entity);
     }
 
     [Fact]
-    public void ToEntity_ShouldNotMap_Id_CongregationId_Congregation_Session_Person_PersonKindAtTime_RecordedBy_CreatedAt_DeletedAt_FromCreateDto()
+    public Task ToListDto_ShouldMapAllFields_FromEntityList()
     {
-        var dto = AttendanceFactory.NewCreateDto();
+        var fixture = TestData.NewFixture();
+        var entities = TestData.Many(3, () => CreateAttendance(fixture));
 
-        var entity = _mapper.ToEntity(dto);
-
-        Assert.Equal(Guid.Empty, entity.Id);
-        Assert.Equal(Guid.Empty, entity.CongregationId);
-        Assert.Null(entity.Congregation);
-        Assert.Null(entity.Session);
-        Assert.Null(entity.Person);
-        Assert.Equal(default, entity.PersonKindAtTime);
-        Assert.Null(entity.RecordedBy);
-        Assert.Null(entity.Recorder);
-        Assert.Equal(default, entity.CreatedAt);
-        Assert.Null(entity.DeletedAt);
+        return Verify(_mapper.ToListDto(entities));
     }
 
     [Fact]
-    public void ToDto_ShouldMapAllFields_FromEntity()
+    public Task Patch_ShouldApplyAllFieldsInDto_ToEntity()
     {
-        var entity = AttendanceFactory.NewEntity();
-
-        var dto = _mapper.ToDto(entity);
-
-        Assert.Equal(entity.Id, dto.Id);
-        Assert.Equal(entity.SessionId, dto.SessionId);
-        Assert.Equal(entity.Session.Date, dto.SessionDate);
-        Assert.Equal(entity.Session.Name, dto.SessionName);
-        Assert.Equal(entity.Session.SessionLabelId, dto.SessionLabelId);
-        Assert.Equal(entity.Session.SessionLabel.Name, dto.SessionLabelName);
-        Assert.Equal(entity.PersonId, dto.PersonId);
-        Assert.Equal(entity.Person.Name, dto.PersonName);
-        Assert.Equal(entity.PersonKindAtTime, dto.PersonKind);
-        Assert.Equal(entity.CheckedInAt, dto.CheckedInAt);
-        Assert.Equal(entity.RecordedBy, dto.RecordedBy);
-        Assert.Equal(entity.CreatedAt, dto.CreatedAt);
-    }
-
-    [Fact]
-    public void ToDto_ShouldUsePersonKindAtTime_NotCurrentPersonKind()
-    {
-        // The snapshot must win over the person's current role. A visitor who
-        // later became a member still reports as a Visitor for pre-conversion
-        // attendance.
-        var entity = AttendanceFactory.NewEntity();
-        entity.PersonKindAtTime = Echo.Domain.Members.PersonKind.Visitor;
-        entity.Person.Kind = Echo.Domain.Members.PersonKind.Member;
-
-        var dto = _mapper.ToDto(entity);
-
-        Assert.Equal(Echo.Domain.Members.PersonKind.Visitor, dto.PersonKind);
-    }
-
-    [Fact]
-    public void Patch_ShouldUpdateCheckedInAt_WhenDtoHasValue()
-    {
-        var dto = AttendanceFactory.NewUpdateDto();
-        var entity = AttendanceFactory.NewEntity();
+        var dto = TestData
+            .NewFixture()
+            .Build<AttendanceUpdateDto>()
+            .With(d => d.CheckedInAt, new DateTime(2026, 4, 2, 10, 30, 0, DateTimeKind.Utc))
+            .Create();
+        var entity = CreateAttendance(TestData.NewFixture());
 
         _mapper.Patch(dto, entity);
 
-        Assert.Equal(dto.CheckedInAt, entity.CheckedInAt);
+        return Verify(entity);
     }
 
     [Fact]
-    public void Patch_ShouldPreserveAllEntityFields_WhenDtoFieldsAreNull()
+    public Task Patch_ShouldIgnoreAllNullFieldsInDto()
     {
-        var nullDto = AttendanceFactory.NewUpdateDtoWithNullFields();
-        var entity = AttendanceFactory.NewEntity();
-        var original = AttendanceFactory.NewEntity();
+        // Every member of AttendanceUpdateDto is nullable, so the default instance is all-null.
+        var nullDto = new AttendanceUpdateDto();
+        var entity = CreateAttendance(TestData.NewFixture());
 
         _mapper.Patch(nullDto, entity);
 
-        Assert.Equal(original.CheckedInAt, entity.CheckedInAt);
+        return Verify(entity);
     }
 }

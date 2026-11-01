@@ -1,3 +1,4 @@
+using Echo.Domain.Congregations;
 using Echo.Domain.Events;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -13,12 +14,11 @@ public class EventConfiguration : IEntityTypeConfiguration<Event>
         builder.Property(e => e.CreatedAt).HasDefaultValueSql("now()").ValueGeneratedOnAdd();
 
         builder
-            .HasOne(e => e.Congregation)
+            .HasOne<Congregation>()
             .WithMany()
             .HasForeignKey(e => e.CongregationId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.HasIndex(e => e.CongregationId);
+            .OnDelete(DeleteBehavior.Restrict)
+            .IsRequired();
 
         builder.HasIndex(e => new { e.CongregationId, e.Name }).IsUnique();
 
@@ -36,6 +36,15 @@ public class EventConfiguration : IEntityTypeConfiguration<Event>
 
         builder.HasIndex(e => e.Name).HasMethod("GIN").HasOperators("gin_trgm_ops");
 
-        builder.HasIndex(e => new { e.StartDate, e.Id }).HasFilter("deleted_at IS NULL");
+        // Serves the list in either direction (cursor on start_date + id) and the summaries.
+        builder
+            .HasIndex(e => new
+            {
+                e.CongregationId,
+                e.StartDate,
+                e.Id,
+            })
+            .HasFilter("deleted_at IS NULL")
+            .IncludeProperties(e => new { e.OrganizationId, e.OrganizerId });
     }
 }

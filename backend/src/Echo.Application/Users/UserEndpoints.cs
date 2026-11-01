@@ -55,8 +55,11 @@ public static class UserEndpoints
                 ### Ordering
                 Users are ordered by name, then by ID as a tiebreaker. The order is stable across pages.
 
-                ### Pagination
-                Pass the `next` cursor from the previous response as the `cursor` query parameter on the next request. When `hasMore` is `false`, `next` is null and no further pages exist.
+                ### Paging
+                - `cursor` — leave it out for the first page. For the next page, send the `next` value from the previous response unchanged. It records where the last page stopped, so use it only with the same filters it came from.
+                - `pageSize` — how many rows to return, from 1 to 50. Defaults to 50; a larger number is reduced to 50.
+
+                Keep asking for the next page while `hasMore` is `true`. When it is `false`, `next` is `null` and that was the last page.
 
                 ### Authentication
                 Bearer token required. The list is automatically scoped to the caller's congregation — there is no parameter to override this.
@@ -94,6 +97,9 @@ public static class UserEndpoints
 
                 ### On success
                 Returns `200 OK` with a `UserResponseDto`. Includes `verifiedAt` — null means the account exists but has not completed email verification and cannot sign in.
+
+                ### Path parameters
+                - `id` — the user's id, as returned by the list and create endpoints.
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
@@ -209,6 +215,9 @@ public static class UserEndpoints
                 - If the password changed, existing sessions are **not** revoked by this endpoint. The user remains signed in on other devices until their access tokens expire and their refresh tokens are next used. If you need to force a sign-out, call `POST /auth/sessions/logout` with the user's email afterward.
                 - If the email changed, the account's verified state is **preserved as-is** — this endpoint does not reset verification. If your policy requires re-verification on email change, that must be handled separately.
 
+                ### Path parameters
+                - `id` — the user's id, as returned by the list and create endpoints.
+
                 ### Failure modes
                 - `400 BAD_REQUEST` — the request body is malformed.
                 - `400 VALIDATION_ERROR` — one or more fields failed validation.
@@ -252,6 +261,9 @@ public static class UserEndpoints
 
                 ### Reversibility
                 Soft delete is not exposed as reversible through the API. Restoring a deleted user requires database access.
+
+                ### Path parameters
+                - `id` — the user's id, as returned by the list and create endpoints.
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.

@@ -13,6 +13,7 @@ public class ProfileService(
     IPasswordHasher passwordHasher,
     IUserMapper mapper,
     IUnitOfWork unitOfWork,
+    TimeProvider timeProvider,
     AuthInstrumentation instrumentation
 )
 {
@@ -55,11 +56,22 @@ public class ProfileService(
         if (changingPassword)
         {
             user.PasswordHash = await passwordHasher.HashAsync(dto.NewPassword!);
-            // As with a password reset, changing the password signs the user out everywhere.
-            await jwtTokenService.RevokeAllActiveSessionsForUserById(userId, ct);
+            user.PasswordChangedAt = timeProvider.GetUtcNow().UtcDateTime;
+            // As with a password reset, changing the password signs the user out everywhere. The
+            // bulk revoke runs at once, so it shares a transaction with the save.
+            await unitOfWork.ExecuteInTransactionAsync(
+                async token =>
+                {
+                    await jwtTokenService.RevokeAllActiveSessionsForUserById(userId, token);
+                    await unitOfWork.CommitAsync(token);
+                },
+                ct
+            );
         }
-
-        await unitOfWork.CommitAsync(ct);
+        else
+        {
+            await unitOfWork.CommitAsync(ct);
+        }
 
         return new SuccessResult<UserResponseDto>(mapper.ToDto(user));
     }

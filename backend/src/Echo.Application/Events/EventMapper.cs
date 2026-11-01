@@ -7,7 +7,7 @@ namespace Echo.Application.Events;
 public partial class EventMapper : IEventMapper
 {
     public EventResponseDto ToDto(Event entity) =>
-        new EventResponseDto
+        new()
         {
             Id = entity.Id,
             OrganizationId = entity.OrganizationId,
@@ -25,7 +25,6 @@ public partial class EventMapper : IEventMapper
             CreatedAt = entity.CreatedAt,
         };
 
-    [MapperIgnoreTarget(nameof(Event.Congregation))]
     [MapperIgnoreTarget(nameof(Event.CongregationId))]
     [MapperIgnoreTarget(nameof(Event.Id))]
     [MapperIgnoreTarget(nameof(Event.Organization))]

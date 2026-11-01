@@ -1,0 +1,12 @@
+﻿{
+  OrganizationId: Guid_1,
+  OrganizerId: Guid_2,
+  Name: Christmas Service,
+  StartDate: Date_1,
+  EndDate: Date_2,
+  StartTime: Time_1,
+  EndTime: Time_2,
+  Location: v1,
+  Capacity: 100,
+  Description: v2
+}

@@ -1,0 +1,10 @@
+﻿{
+  CategoryId: 7,
+  ManagerId: Guid_1,
+  Name: Borehole Fund,
+  TargetAmount: 25000.0,
+  Status: OnTrack,
+  StartDate: Date_1,
+  EndDate: Date_2,
+  Description: v1
+}

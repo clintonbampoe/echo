@@ -1,0 +1,44 @@
+﻿[
+  {
+    Id: Guid_1,
+    SessionId: Guid_2,
+    SessionDate: Date_1,
+    SessionName: Main Service,
+    SessionLabelId: 2,
+    SessionLabelName: Sunday Service,
+    PersonId: Guid_3,
+    PersonName: Jane Doe,
+    PersonKind: Visitor,
+    CheckedInAt: DateTime_1,
+    RecordedBy: Guid_4,
+    CreatedAt: DateTime_2
+  },
+  {
+    Id: Guid_5,
+    SessionId: Guid_6,
+    SessionDate: Date_2,
+    SessionName: Main Service,
+    SessionLabelId: 4,
+    SessionLabelName: Sunday Service,
+    PersonId: Guid_7,
+    PersonName: Jane Doe,
+    PersonKind: Visitor,
+    CheckedInAt: DateTime_3,
+    RecordedBy: Guid_8,
+    CreatedAt: DateTime_4
+  },
+  {
+    Id: Guid_9,
+    SessionId: Guid_10,
+    SessionDate: Date_3,
+    SessionName: Main Service,
+    SessionLabelId: 6,
+    SessionLabelName: Sunday Service,
+    PersonId: Guid_11,
+    PersonName: Jane Doe,
+    PersonKind: Visitor,
+    CheckedInAt: DateTime_5,
+    RecordedBy: Guid_12,
+    CreatedAt: DateTime_6
+  }
+]

@@ -1,0 +1,14 @@
+apiVersion: 1
+datasources:
+  - name: Prometheus
+    type: prometheus
+    uid: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: false
+    editable: false
+    jsonData:
+      # The API pushes its metrics every 15 s (OTEL_METRIC_EXPORT_INTERVAL) and Alloy scrapes every 15 s. Grafana sizes
+      # $__rate_interval from this (four times it, so 1 minute), which keeps a rate() over at least two samples and
+      # still shows a burst of activity within a minute. A shorter value than the real interval shows "No data".
+      timeInterval: 15s

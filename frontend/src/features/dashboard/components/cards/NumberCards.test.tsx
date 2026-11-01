@@ -4,26 +4,36 @@ import { NumberCards } from "./NumberCards";
 type Answers = Record<string, Record<string, unknown>>;
 
 // What the server says, by path and by the days asked for ("from&to"). "Last week" is 11 to 17 October
-// and the stretch before it starts on 4 October; the church total runs from 2000 to today, while the
-// members-with-no-joined-date ask for 2000 to 2000, so the two are told apart.
+// and the stretch before it starts on 4 October; the church total runs from 2000 to 2100, so it is told apart.
 const key = (from: string, to: string) => `${from}&${to}`;
 const fresh = (): Answers => ({
   "/v1/members/summary": {
-    [key("2000-01-01", "2000-01-01")]: { totalMembers: 2 },
-    [key("2000-01-01", "2026-10-19")]: { totalMembers: 1284 },
-    [key("2026-10-11", "2026-10-17")]: { totalMembers: 11 },
+    [key("2000-01-01", "2100-12-31")]: { totalMembers: 1284, ageGroups: [] },
+    [key("2026-10-11", "2026-10-17")]: {
+      joinedInWindow: 9,
+      joinedInPreviousWindow: 7,
+    },
   },
+  // The stretch before comes in the same answer, so the strip asks once for each.
   "/v1/attendance/summary": {
-    [key("2026-10-11", "2026-10-17")]: { totalPresent: 912 },
-    [key("2026-10-04", "2026-10-10")]: { totalPresent: 828 },
+    [key("2026-10-11", "2026-10-17")]: {
+      totalPresent: 912,
+      previousTotalPresent: 828,
+    },
   },
   "/v1/tithes/summary": {
-    [key("2026-10-11", "2026-10-17")]: { totalCollected: 11300 },
-    [key("2026-10-04", "2026-10-10")]: { totalCollected: 10640 },
+    [key("2026-10-11", "2026-10-17")]: {
+      totalCollected: 11300,
+      previousTotalCollected: 10640,
+    },
   },
+  // The stretch before comes in the same answer.
   "/v1/transactions/summary": {
-    [key("2026-10-11", "2026-10-17")]: { net: 5120 },
-    [key("2026-10-04", "2026-10-10")]: { net: 5300 },
+    [key("2026-10-11", "2026-10-17")]: {
+      net: 5120,
+      previousTotalIncome: 9000,
+      previousTotalExpenses: 3700,
+    },
   },
 });
 

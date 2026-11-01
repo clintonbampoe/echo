@@ -14,6 +14,7 @@ namespace Echo.Application.Events;
 
 public class EventRegistrationService(
     EventRegistrationRepository repository,
+    EventAttendanceRepository attendanceRepository,
     EventRepository eventRepository,
     MemberRepository memberRepository,
     IUnitOfWork unitOfWork,
@@ -82,6 +83,7 @@ public class EventRegistrationService(
     public async Task<IOperationResult> ListByEventId(
         Guid congregationId,
         Guid eventId,
+        EventRegistrationFilters filters,
         PaginationRequest pagination,
         CancellationToken ct
     )
@@ -99,6 +101,7 @@ public class EventRegistrationService(
             entities = await repository.ListByEventId(
                 congregationId,
                 eventId,
+                filters,
                 cursor,
                 pagination.PageSize + 1,
                 ct
@@ -111,7 +114,16 @@ public class EventRegistrationService(
 
         var nextCursor = hasMore ? encoder.Encode(BuildCursor(entities.Last())) : null;
 
-        var data = mapper.ToListDto(entities);
+        // Who on this page came: one lookup of the page's people, not every check-in of the event.
+        var checkIns = await attendanceRepository.GetForMembers(
+            eventId,
+            [.. entities.Select(e => e.MemberId)],
+            ct
+        );
+        var data = mapper
+            .ToListDto(entities)
+            .Select(d => d with { CheckIn = checkIns.GetValueOrDefault(d.MemberId) })
+            .ToList();
         activity?.SetTag("event_registration.count", data.Count);
 
         var res = new PagedResponse<EventRegistrationResponseDto>(hasMore, nextCursor, data);

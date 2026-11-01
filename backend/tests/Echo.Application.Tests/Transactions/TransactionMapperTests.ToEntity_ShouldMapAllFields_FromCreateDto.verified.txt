@@ -1,0 +1,8 @@
+﻿{
+  CategoryId: 7,
+  TransactionType: Expense,
+  TransactionDate: Date_1,
+  Amount: 150.00,
+  PaymentMethod: Cash,
+  Description: Piano lesson
+}

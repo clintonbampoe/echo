@@ -1,0 +1,9 @@
+﻿{
+  CategoryId: 7,
+  Name: Yamaha Mixer,
+  SerialNumber: v1,
+  PurchaseDate: Date_1,
+  PurchaseCost: 1200.0,
+  CurrentValue: 900.0,
+  Description: v2
+}

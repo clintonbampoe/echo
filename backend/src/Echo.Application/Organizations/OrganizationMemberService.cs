@@ -89,7 +89,7 @@ public class OrganizationMemberService(
     public async Task<IOperationResult> ListByMemberId(
         Guid congregationId,
         Guid memberId,
-        OrganizationMemberFilters filters,
+        MembershipRoleFilters filters,
         PaginationRequest pagination,
         CancellationToken ct
     )

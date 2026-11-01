@@ -61,6 +61,9 @@ public record ProjectResponseDto
     public string? Description { get; init; }
     public DateTime CreatedAt { get; init; }
     public decimal RaisedAmount { get; init; }
+
+    /// <summary>How many contributions the project has had in all, whatever the list is filtered by.</summary>
+    public int TotalContributions { get; init; }
 }
 
 public record ProjectSearchResultDto
@@ -95,5 +98,27 @@ public record ProjectSummaryDto
     public decimal TotalRaised { get; init; }
     public decimal TotalTarget { get; init; }
     public int AtRiskCount { get; init; }
+
+    /// <summary>
+    /// Money given inside the window, to projects matching the filters whatever their dates.
+    /// </summary>
+    public decimal RaisedInWindow { get; init; }
+
+    /// <summary>
+    /// The same for the window before: as many days, ending the day before `from`. Compare the two
+    /// to show how giving has changed.
+    /// </summary>
+    public decimal PreviousRaised { get; init; }
     public DateWindow? Window { get; init; }
+}
+
+/// <summary>How the projects of one category are doing.</summary>
+public record ProjectCategoryTotalDto
+{
+    /// <summary>The category's id; none for the "Other" row, which stands for several categories.</summary>
+    public int? CategoryId { get; init; }
+    public required string CategoryName { get; init; }
+    public int ProjectCount { get; init; }
+    public decimal TotalTarget { get; init; }
+    public decimal TotalRaised { get; init; }
 }

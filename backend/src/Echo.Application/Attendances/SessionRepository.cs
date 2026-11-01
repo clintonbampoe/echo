@@ -1,8 +1,8 @@
 using Echo.Data;
 using Echo.Domain.Attendances;
+using Echo.Domain.Congregations;
 using Echo.Shared.Query;
 using Microsoft.EntityFrameworkCore;
-using Echo.Domain.Congregations;
 
 namespace Echo.Application.Attendances;
 
@@ -46,32 +46,41 @@ public class SessionRepository(AppDbContext context)
     }
 
     /// <summary>
-    /// Returns the attendance count for each of the given sessions in a
-    /// single query. Used by list and detail endpoints to populate
-    /// SessionResponseDto.AttendanceCount without N+1.
+    /// Returns who was present at each of the given sessions, split into members, visitors and
+    /// first-time visitors, in a single query. Used by the list and detail endpoints without N+1.
     /// <br/><br/>
-    /// Sessions with no attendance rows are absent from the dictionary.
-    /// Callers should use GetValueOrDefault(sessionId) — a missing entry
-    /// means zero present.
+    /// Sessions with no attendance rows are absent from the dictionary; a missing entry means zero.
+    /// The session ids come from a query already limited to the congregation, so the attendance is
+    /// not limited again: a congregation filter would send the database to the table for every row
+    /// instead of counting from the (session, person) index.
     /// </summary>
-    public Task<Dictionary<Guid, int>> GetAttendanceCounts(
-        Guid congregationId,
+    public Task<Dictionary<Guid, SessionAttendance>> GetAttendance(
         IReadOnlyList<Guid> sessionIds,
         CancellationToken ct = default
     )
     {
         if (sessionIds.Count == 0)
-            return Task.FromResult(new Dictionary<Guid, int>());
+            return Task.FromResult(new Dictionary<Guid, SessionAttendance>());
 
         return context
             .Set<Attendance>()
             .AsNoTracking()
-            .Live()
-            .Where(a => a.CongregationId == congregationId && sessionIds.Contains(a.SessionId))
-            .GroupBy(a => a.SessionId)
-            .Select(g => new { SessionId = g.Key, Count = g.Count() })
-            .ToDictionaryAsync(x => x.SessionId, x => x.Count, ct);
+            .AttendancePerSession(sessionIds)
+            .ToDictionaryAsync(x => x.Id, ct);
     }
+
+    /// <summary>How many sessions were held (completed) among the ones the filters pick.</summary>
+    public Task<int> CountCompleted(
+        Guid congregationId,
+        SessionFilters filters,
+        CancellationToken ct = default
+    ) =>
+        _dbSet
+            .AsNoTracking()
+            .FilterDeleted()
+            .Where(s => s.CongregationId == congregationId && s.Status == SessionStatus.Completed)
+            .Filter(filters)
+            .CountAsync(ct);
 
     public async Task<SessionStats> GetSummaryStats(
         Guid congregationId,
@@ -84,23 +93,40 @@ public class SessionRepository(AppDbContext context)
             .FilterDeleted()
             .Where(s => s.CongregationId == congregationId)
             .Filter(filters);
-        var attendance = context
-            .Set<Attendance>()
-            .AsNoTracking()
-            .Live()
-            .Where(a => a.CongregationId == congregationId);
+        // The per-session totals hold one row per session, so a year is a few dozen rows to add up
+        // instead of hundreds of thousands of check-ins. They are refreshed every few minutes.
+        var totals = context.Set<SessionAttendanceTotals>().AsNoTracking();
 
         var stats = await context
             .OneRow(congregationId)
-            .SummarizeSessions(sessions, attendance)
+            .SummarizeSessions(sessions)
+            .SingleOrDefaultAsync(ct);
+        if (stats is null)
+            return new SessionStats(0, 0, 0, 0, 0);
+
+        var records = await sessions
+            .Join(totals, s => s.Id, t => t.SessionId, (s, t) => new { s.Status, t.Total })
+            .GroupBy(_ => 1)
+            .Select(g => new
+            {
+                All = g.Sum(x => x.Total),
+                Completed = g.Where(x => x.Status == SessionStatus.Completed).Sum(x => x.Total),
+            })
             .FirstOrDefaultAsync(ct);
-        return stats ?? new SessionStats(0, 0, 0, 0, 0);
+
+        return stats with
+        {
+            TotalAttendance = records?.All ?? 0,
+            CompletedAttendance = records?.Completed ?? 0,
+        };
     }
 
     public void Create(Session entity) => _dbSet.Add(entity);
 
     public void SoftDelete(Session entity) => entity.DeletedAt = DateTime.UtcNow;
 }
+
+public record SessionAttendance(Guid Id, int Total, int Members, int Visitors, int FirstTime);
 
 public record SessionStats(
     int Total,
@@ -112,26 +138,18 @@ public record SessionStats(
 
 internal static class SessionQueryExtensions
 {
+    // The session counts only; the attendance counts are filled in by the caller (see GetSummaryStats).
     internal static IQueryable<SessionStats> SummarizeSessions(
         this IQueryable<Congregation> oneRow,
-        IQueryable<Session> sessions,
-        IQueryable<Attendance> attendance
-    )
-    {
-        // Built before the projection: EF inlines these queries but cannot translate a custom
-        // method call (InSessions) made inside the lambda.
-        var completed = sessions.Where(s => s.Status == SessionStatus.Completed);
-        var allRecords = attendance.InSessions(sessions);
-        var completedRecords = attendance.InSessions(completed);
-
-        return oneRow.Select(_ => new SessionStats(
+        IQueryable<Session> sessions
+    ) =>
+        oneRow.Select(_ => new SessionStats(
             sessions.Count(),
-            completed.Count(),
+            sessions.Count(s => s.Status == SessionStatus.Completed),
             sessions.Count(s => s.Status == SessionStatus.Cancelled),
-            allRecords.Count(),
-            completedRecords.Count()
+            0,
+            0
         ));
-    }
 
     internal static IQueryable<Session> Filter(
         this IQueryable<Session> query,
@@ -144,10 +162,11 @@ internal static class SessionQueryExtensions
         if (filters.Status is not null)
             query = query.Where(s => s.Status == filters.Status);
 
-        if (filters.Name is not null)
-            query = query.Where(s =>
-                s.Name != null && EF.Functions.ILike(s.Name, $"%{filters.Name}%")
-            );
+        if (!string.IsNullOrWhiteSpace(filters.Name))
+        {
+            var pattern = $"%{Echo.Shared.Query.Extensions.EscapeLike(filters.Name.Trim())}%";
+            query = query.Where(s => s.Name != null && EF.Functions.ILike(s.Name, pattern));
+        }
 
         if (filters.From is not null)
             query = query.Where(s => s.Date >= filters.From);

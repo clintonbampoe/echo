@@ -1,0 +1,13 @@
+﻿{
+  Id: Guid_1,
+  Name: Grace Chapel,
+  PhoneNumber: v1,
+  EmailAddress: v2,
+  PostalAddress: v3,
+  WebsiteUrl: v4,
+  City: Kumasi,
+  Town: v5,
+  GpsAddress: v6,
+  CreatedAt: DateTime_1,
+  DeletedAt: DateTime_2
+}

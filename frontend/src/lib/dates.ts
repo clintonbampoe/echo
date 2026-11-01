@@ -40,11 +40,13 @@ export function nowTime(): string {
   );
 }
 
-// Jan 1 to today, as the plain days the API expects.
+// Jan 1 to today, as the plain days the API expects. `months` is how many calendar months that spans, which is
+// what a `/summary/monthly` endpoint asks for (it counts back from the month of `to`).
 export const thisYear = (today: string) => ({
   year: Number(today.slice(0, 4)),
   from: `${today.slice(0, 4)}-01-01`,
   to: today,
+  months: Number(today.slice(5, 7)),
 });
 
 // The first day of the week (Sunday, as on the server) that a plain day falls in, and of its month.

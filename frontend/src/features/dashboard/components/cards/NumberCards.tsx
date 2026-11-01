@@ -13,7 +13,7 @@ const money = new Set(["tithes", "net"]);
 
 // Members, Present, Tithes and Net income for the period picked, in one strip.
 export function NumberCards({ period, today }: Props) {
-  const numbers = useNumbers(spanOf(period, today), today);
+  const numbers = useNumbers(spanOf(period, today));
   const cards = buildCards(numbers, periodOf(period));
   const stats: Stat[] = cards.map((c) => ({
     label: c.label,

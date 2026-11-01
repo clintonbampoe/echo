@@ -70,7 +70,7 @@ Include the `accessToken` in the `Authorization` header of subsequent requests a
 Authorization: Bearer <your-jwt-token>
 ```
 
-> Access Tokens are short-lived (about 15 minutes). Use the `refreshToken` endpoint (`POST /api/auth/v1/sessions/refresh`) to acquire a new pair.
+> Access Tokens are short-lived (about 15 minutes). Use the `refreshToken` endpoint (`POST /api/auth/v1/sessions/refresh`) to acquire a new pair. Every refresh rotates the refresh token. Presenting a rotated token again signs the user out of **every** session (assumed theft), except within 10 seconds of the rotation, where the call just fails (`400`, "refreshed elsewhere, try again") so a second browser tab that shares the stored tokens can re-read them and retry.
 
 ### Tenant Isolation & Security
 Echo is a multi-tenant platform. The `CongregationId` is encrypted within the JWT.
@@ -84,7 +84,7 @@ The token carries the user's `UserRole` (`Admin`, `Accountant`, `Clerk`, `Member
 | Users: every endpoint (list, get, create, update, delete, search) | yes | no | no | no |
 | Invitations | yes | no | no | no |
 
-`GET /users/me` and `PUT /users/me` let any signed-in user read and edit their own profile (names and password; never the role or email). Changing the password requires the current one and ends all the user's sessions: refresh tokens stop working, and the access token in use expires on its own within about 15 minutes.
+`GET /users/me` and `PUT /users/me` let any signed-in user read and edit their own profile (names and password; never the role or email). `GET /users/me` also returns `passwordChangedAt`. Changing the password (`PUT /users/me` with `currentPassword` and `newPassword`) requires the current one, sets `passwordChangedAt` and ends all the user's sessions: refresh tokens stop working, and the access token in use expires on its own within about 15 minutes.
 
 All other endpoints currently only require a signed-in user. Finer role-based access (for example for tithes and other finance data) is planned after the first deployment.
 
@@ -204,7 +204,7 @@ Take the `next` value from the previous response and pass it as the `cursor` par
 
 
 **Constraints & Behavior**
-- **Page Size**: The `pageSize` is hard-clamped to a maximum of **24**. Requests for higher values will be automatically reduced to 24.
+- **Page Size**: The `pageSize` is hard-clamped to a maximum of **50** (also the default). Requests for higher values will be automatically reduced to 50.
 - **Malformed Cursors**: If a tampered or invalid cursor is provided, the system treats it as `null` and returns the first page of results.
 
 **Filtering**
@@ -266,30 +266,43 @@ Most modules have a `GET .../summary` that accepts the same filters as the list.
 
 - `GET /events/summary` returns `totalEvents`, `upcomingEvents`, `totalRegistered` and `totalAttended`. `upcomingEvents` counts events that start today or later (matching the name, organization and organizer filters) and is not limited by `from`/`to`.
 - `GET /visitors/summary`: `totalVisitors` and `recurringVisitors` describe the visitor list (people who have not converted). `newVisitors` is everyone created in the window and `convertedVisitors` is everyone converted in the window, whatever their current status.
-- `GET /tithes/summary`: `averagePerMember` is `totalCollected` divided by `uniqueTithers` (0 when nobody gave).
+- `GET /tithes/summary`: `averagePerMember` is `totalCollected` divided by `uniqueTithers` (0 when nobody gave). `byMethod` is how the tithes were paid (`method`, `count`, `total`, the method with the most tithes first), so a split by payment method needs no request for each method.
 - `GET /members/summary`: `averageAge` is computed from the full date of birth, so someone whose birthday has not come yet this year is a year younger.
 - `GET /transactions/summary` also returns `byCategory`: one row per category and type with `categoryId`, `categoryName`, `type`, `total` and `count`, largest total first. `mostActiveCategory` (by number of transactions) is unchanged.
 - `GET /assets/summary` leaves out liquidated assets by default, because its totals describe what the church owns now. Pass `includeLiquidated=true` to include them. The asset list still shows liquidated assets; `includeLiquidated=false` hides them, and `status=Liquidated` always shows them.
-- `GET /transactions/summary/monthly` and `GET /tithes/summary/monthly` return one row per calendar month so a chart needs a single request. Transactions return `{ year, month, totalIncome, totalExpenses, net }`; tithes return `{ year, month, totalCollected, uniqueTithers }`. Months with nothing in them are returned with zeros. `from` and `to` choose the months (any day in the first and last month); the default is the last 12 months, and the range may cover at most 24 months and `from` must not be after `to`, otherwise the API returns `400`. The first and last months are always counted whole, whichever day you pass. Tithes are grouped by the month they are **for**, not by the day they were collected.
+- `GET /attendance/summary` and `GET /tithes/summary` take `includePrevious=true` to also return the stretch of the same length before the window (`previousTotalPresent`, `previousTotalCollected`). It is off by default and costs one more query.
+- `GET /attendance/summary`: `firstTimeVisitors` counts records that are a visitor's first-ever visit as a visitor; filtering to a later period does not make a returning visitor first-time. The server keeps the mark up to date when attendance is added or deleted, including backdated entries and deleted sessions.
+- `GET /assets/summary` also returns `averageAgeYears`, the average age of the assets that have a purchase date. `GET /assets/summary/by-category` returns one row per category with `count`, `totalPurchaseCost`, `totalCurrentValue` and `totalDepreciation`. `GET /assets/summary/monthly` returns assets acquired (by `purchaseDate`) and lost (by `liquidatedOn`) per month; assets liquidated before `liquidatedOn` was recorded have no date and are not in the lost figures.
+- `GET /projects/summary` also returns `raisedInWindow` and `previousRaised`: money given inside the window and inside the window of the same length before it, to the projects the filters pick. Both are zero when there is no window. Each project carries `totalContributions`, all-time. `GET /projects/summary/by-category` returns `projectCount`, `totalTarget` and `totalRaised` per category, and `GET /project-contributions/summary/monthly` returns money given per month (`projectId`, `categoryId` and `paymentMethod` narrow it).
+- `GET /events` rows and `GET /events/{id}` carry `attendanceCount` next to `registrationCount`. `GET /events/summary/by-event` returns the newest events (default 12, at most 50) with their registrations and check-ins, for a per-event chart; `GET /events/summary/monthly` returns events held, registrations and check-ins per month, grouped by the month an event starts in. Check-ins are for members only.
+- `GET /organizations` rows carry `kind` (filterable), `meetingDay`, `memberCount` and `leaderName`; `GET /organizations/{id}` adds `averageAge`; the summary adds `largestOrganizationMemberCount`.
+- Every `.../summary/monthly` endpoint (assets, attendance, contributions, events, members, tithes, transactions) returns one row per calendar month so a chart needs a single request; there are no `/summary/chart` endpoints any more. `months` (1–12, default 12) says how many months back, `to` (any day in the last month, default today) says where they end; anything outside 1–12 returns `400`. Months with nothing in them come back with zeros, and the last month is the part month so far. Transactions return `{ year, month, totalIncome, totalExpenses, net }`; tithes `{ year, month, totalCollected, uniqueTithers, averagePerMember }`; attendance `{ year, month, totalPresent, membersPresent, visitorsPresent, firstTimeVisitors }`; members `{ year, month, newMembers }`. Tithes are grouped by the month they are **for**, not by the day they were collected.
+- All `/summary/*` responses are cached for 5 minutes per congregation and filter set, and logged (`computed` on a miss, `served … (cached: True/False)` on every request). Decimals are rounded to 2 places in every response.
+- `GET /projects/summary/by-category` returns at most 5 rows: the top four categories and a final `Other` row (`categoryId: null`) that merges the rest.
+- Members need only name, phone number, gender and date of birth; everything else is optional. Visitors have `gender` (`Male`/`Female`) instead of a date of birth, and may record `source`, `address` and `invitedByMemberId`.
 
 **Invitations**
-Admins invite people with a code. An invitation is **reusable until it expires or is revoked**, and each registration adds one to its `useCount`.
+Admins invite people with a code. An invitation is **reusable until it expires, is revoked or all its uses are taken** (`maxUses`, when set), and each registration adds one to its `useCount`.
 
 | Endpoint | Who | What it does |
 |---|---|---|
-| `POST /auth/invitations` | Admin | creates an invitation (`allowedRole`, optional `expiryDays` 1–30 and `label`); returns the code **once** |
-| `GET /auth/invitations` | Admin | lists them, newest first; filter by `status` (`Active`, `Expired`, `Revoked`) |
-| `PUT /auth/invitations/{id}` | Admin | changes the `label` and/or makes it expire `expiryDays` from now (not for a revoked one) |
+| `POST /auth/invitations` | Admin | creates an invitation (`allowedRole`, optional `expiryDays` 1–365 or `neverExpires`, optional `maxUses`, `label`); returns the code |
+| `POST /auth/invitations/email` | Admin | creates a single-use invitation and queues the email (`emailAddress`, `allowedRole`, optional expiry and `label`); `emailedTo` is the address it was queued for, `null` if it could not be queued. The email is sent in the background, so the `token` is always returned |
+| `GET /auth/invitations` | Admin | lists them, newest first, each with its `code`; filter by `status` (`Active`, `Expired`, `Revoked`, `Exhausted`) |
+| `GET /auth/invitations/summary` | Admin | `active`, `peopleJoined` and `expiringSoon` (within 7 days) for the whole congregation, cached 5 minutes |
+| `PUT /auth/invitations/{id}` | Admin | changes the `label`, the expiry (`expiryDays` from now, or `neverExpires`) and/or `maxUses` (not for a revoked one) |
 | `POST /auth/invitations/{id}/revoke` | Admin | stops it working; it stays in the list as `Revoked` |
 | `DELETE /auth/invitations/{id}` | Admin | removes it from the list and stops it working |
 | `GET /auth/invitations/{code}` | anyone | shows the congregation (name, city, region), role and expiry, so the join screen can confirm before sign-up |
 
-The code looks like `K7QX-92MD-PW4T`: 12 characters from an alphabet without I, L, O or U, so it is easy to read out and type. It can be entered in any case, with or without dashes or spaces, and `o` is read as `0` and `i`/`l` as `1`. The server stores only a hash, so a code cannot be shown again. The lookup is rate limited and answers `404` for a wrong, expired, revoked or deleted code alike.
+The code looks like `K7QX-92MD-PW4T`: 12 characters from an alphabet without I, L, O or U, so it is easy to read out and type. It can be entered in any case, with or without dashes or spaces, and `o` is read as `0` and `i`/`l` as `1`. The server stores a hash to look codes up and an encrypted copy (key `Invitations__CodeKey`) so the list can show the code again; invitations made before this have `code: null`. The lookup is rate limited and answers `404` for a wrong, expired, revoked, used-up or deleted code alike.
 
 `GET /congregation` returns the signed-in user's own congregation (name, type, contact details, location) for any role.
 
 **Events and attendance**
 - `GET /events` lists the oldest event first. Pass `order=desc` for the newest first (for a "Past" tab). A `next` cursor only continues a list in the direction it came from; with the other `order` the list starts again from the first page.
+- An event's page reads as little as it can. `GET /events/{id}` carries `registrationCount` and `attendanceCount`; `GET /event-attendance/event/{id}/summary` adds `checkedIn`, `walkIns` and `cameRegistered` (not cached, so it follows the door). The two lists are read a page at a time, only when their tab is open: `GET /event-registrations/event/{id}` takes `name`, `status` (`Came` or `Missing`) and `memberIds`, and each row carries its `checkIn` (null when they did not come); `GET /event-attendance/event/{id}` takes `name`, `kind` (`Registered` or `WalkIn`) and `memberIds`, and each row carries `walkIn` and `registrationId`. These extra fields are filled in only on those two routes; on any other route a `null` means nothing.
+- Optional query parameters must be optional for real: `months` (12), `order` (`Asc`) and `limit` (12) can be left out, as documented. A test fails the build if a filter record gains a required property.
 - `POST /event-registrations` returns `409` with `errorCode: "EVENT_FULL"` once an event has as many live registrations as its `capacity`. Events without a capacity are unlimited, lowering a capacity below the current count just keeps the event full, and check-ins are never limited. Two requests for the last seat are handled one after the other, so the event cannot be overbooked.
 - `POST /attendance/bulk` marks up to 500 people present for a session in one request: `{ "sessionId": ..., "personIds": [...], "checkedInAt": ... }`. It returns `created` (the new records) and `skipped` (each with a `reason`: `AlreadyPresent` or `PersonNotFound`). Already-present people are skipped, not errors, an id sent twice counts once, and all the new records are saved together. If someone marks one of those people at the very same moment, the request returns `409` with `errorCode: "ATTENDANCE_CONFLICT"` and saves nothing; send it again and they come back as `AlreadyPresent`.
 

@@ -1,3 +1,4 @@
+using Echo.Domain.Congregations;
 using Echo.Domain.Users;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -19,16 +20,23 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .ValueGeneratedOnAddOrUpdate();
 
         builder
-            .HasOne(u => u.Congregation)
+            .HasOne<Congregation>()
             .WithMany()
-            .HasForeignKey(u => u.CongregationId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.HasIndex(u => u.CongregationId);
+            .HasForeignKey(e => e.CongregationId)
+            .OnDelete(DeleteBehavior.Restrict)
+            .IsRequired();
 
         builder.HasIndex(u => u.Name).HasMethod("GIN").HasOperators("gin_trgm_ops");
 
-        builder.HasIndex(u => new { u.Name, u.Id }).HasFilter("deleted_at IS NULL");
+        // The user list pages through a congregation's users by name.
+        builder
+            .HasIndex(u => new
+            {
+                u.CongregationId,
+                u.Name,
+                u.Id,
+            })
+            .HasFilter("deleted_at IS NULL");
 
         builder.HasIndex(u => new { u.EmailAddress, u.Id }).HasFilter("deleted_at IS NULL");
     }

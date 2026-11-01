@@ -1,3 +1,4 @@
+using Echo.Domain.Congregations;
 using Echo.Domain.Transactions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -13,12 +14,11 @@ public class TransactionConfiguration : IEntityTypeConfiguration<Transaction>
         builder.Property(e => e.CreatedAt).HasDefaultValueSql("now()").ValueGeneratedOnAdd();
 
         builder
-            .HasOne(e => e.Congregation)
+            .HasOne<Congregation>()
             .WithMany()
             .HasForeignKey(e => e.CongregationId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.HasIndex(e => e.CongregationId);
+            .OnDelete(DeleteBehavior.Restrict)
+            .IsRequired();
 
         builder
             .HasOne(t => t.Category)
@@ -28,6 +28,23 @@ public class TransactionConfiguration : IEntityTypeConfiguration<Transaction>
 
         builder.HasIndex(t => t.CategoryId);
 
-        builder.HasIndex(t => new { t.TransactionDate, t.Id }).HasFilter("deleted_at IS NULL");
+        // Serves the list (newest first, cursor on transaction_date + id) and the summaries as
+        // index-only scans.
+        builder
+            .HasIndex(t => new
+            {
+                t.CongregationId,
+                t.TransactionDate,
+                t.Id,
+            })
+            .IsDescending(false, true, false)
+            .IncludeProperties(t => new
+            {
+                t.TransactionType,
+                t.CategoryId,
+                t.Amount,
+                t.PaymentMethod,
+            })
+            .HasFilter("deleted_at IS NULL");
     }
 }

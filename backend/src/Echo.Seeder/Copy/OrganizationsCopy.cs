@@ -16,7 +16,7 @@ public static class OrganizationsCopy
         await using var writer = await conn.BeginBinaryImportAsync(
             """
             COPY organizations (
-                id, congregation_id, name, description, created_at
+                id, congregation_id, name, description, kind, meeting_day, created_at
             ) FROM STDIN (FORMAT BINARY)
             """,
             ct
@@ -29,6 +29,8 @@ public static class OrganizationsCopy
             await writer.WriteAsync(o.CongregationId, NpgsqlDbType.Uuid, ct);
             await writer.WriteAsync(o.Name, NpgsqlDbType.Text, ct);
             await WriteNullableText(writer, o.Description, ct);
+            await writer.WriteAsync(o.Kind.ToString(), NpgsqlDbType.Text, ct);
+            await WriteNullableText(writer, o.MeetingDay?.ToString(), ct);
             await writer.WriteAsync(o.CreatedAt, NpgsqlDbType.TimestampTz, ct);
         }
 

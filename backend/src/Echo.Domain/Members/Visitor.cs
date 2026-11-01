@@ -8,9 +8,20 @@ public class Visitor : ISoftDeletable
     public Person Person { get; set; } = null!;
 
     public Guid CongregationId { get; set; }
-    public Congregation Congregation { get; set; } = null!;
 
     public string? Notes { get; set; }
+
+    /// <summary>Visitors give their gender, not their age. Empty for visitors recorded before it was asked.</summary>
+    public Gender? Gender { get; set; }
+
+    public string? Address { get; set; }
+
+    /// <summary>How they came. Empty for visitors recorded before it was asked.</summary>
+    public VisitorSource? Source { get; set; }
+
+    /// <summary>The member who invited them, when they came by invitation and it is known.</summary>
+    public Guid? InvitedByMemberId { get; set; }
+    public Member? InvitedBy { get; set; }
 
     public DateTime? ConvertedAt { get; set; }
 

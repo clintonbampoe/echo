@@ -1,3 +1,4 @@
+using AutoFixture;
 using Echo.Application.Attendances;
 using Echo.Domain.Attendances;
 
@@ -6,99 +7,78 @@ namespace Echo.Application.Tests.Attendances;
 [Trait("Category", "Unit")]
 public class SessionLabelMapperTests
 {
-    private readonly SessionLabelMapper _mapper = new();
+    private readonly ISessionLabelMapper _mapper = new SessionLabelMapper();
+
+    private static SessionLabel CreateSessionLabel(Fixture fixture) =>
+        fixture
+            .Build<SessionLabel>()
+            .With(l => l.Name, "Sunday Service")
+            .With(l => l.Category, SessionCategory.Service)
+            .Create();
 
     [Fact]
-    public void ToEntity_ShouldMapAllFields_FromCreateDto()
+    public Task ToDto_ShouldMapAllFields_FromEntity()
     {
-        var dto = SessionLabelFactory.NewCreateDto();
+        var entity = CreateSessionLabel(TestData.NewFixture());
 
-        var entity = _mapper.ToEntity(dto);
-
-        Assert.Equal(dto.Name, entity.Name);
-        Assert.Equal(dto.Category, entity.Category);
+        return Verify(_mapper.ToDto(entity));
     }
 
     [Fact]
-    public void ToEntity_ShouldNotMap_Id_CongregationId_Congregation_CreatedAt_DeletedAt_FromCreateDto()
+    public Task ToEntity_ShouldMapAllFields_FromCreateDto()
     {
-        var dto = SessionLabelFactory.NewCreateDto();
+        var dto = TestData
+            .NewFixture()
+            .Build<SessionLabelCreateDto>()
+            .With(d => d.Name, "Sunday Service")
+            .With(d => d.Category, SessionCategory.Service)
+            .Create();
 
-        var entity = _mapper.ToEntity(dto);
-
-        Assert.Equal(0, entity.Id);
-        Assert.Equal(Guid.Empty, entity.CongregationId);
-        Assert.Null(entity.Congregation);
-        Assert.Equal(default, entity.CreatedAt);
-        Assert.Null(entity.DeletedAt);
+        return Verify(_mapper.ToEntity(dto));
     }
 
     [Fact]
-    public void ToDto_ShouldMapAllFields_FromEntity()
+    public Task ToListDto_ShouldMapAllFields_FromEntityList()
     {
-        var entity = SessionLabelFactory.NewEntity();
+        var fixture = TestData.NewFixture();
+        var entities = TestData.Many(3, () => CreateSessionLabel(fixture));
 
-        var dto = _mapper.ToDto(entity);
-
-        Assert.Equal(entity.Id, dto.Id);
-        Assert.Equal(entity.Name, dto.Name);
-        Assert.Equal(entity.Category, dto.Category);
+        return Verify(_mapper.ToListDto(entities));
     }
 
     [Fact]
-    public void Patch_ShouldUpdateName_WhenDtoHasValue()
+    public Task ToSearchDto_ShouldMapIdNameAndCategory_FromEntityList()
     {
-        var dto = SessionLabelFactory.NewUpdateDto();
-        var entity = SessionLabelFactory.NewEntity();
+        var fixture = TestData.NewFixture();
+        var entities = TestData.Many(3, () => CreateSessionLabel(fixture));
+
+        return Verify(_mapper.ToSearchDto(entities));
+    }
+
+    [Fact]
+    public Task Patch_ShouldApplyAllFieldsInDto_ToEntity()
+    {
+        var dto = TestData
+            .NewFixture()
+            .Build<SessionLabelUpdateDto>()
+            .With(d => d.Name, "Midweek Service")
+            .Create();
+        var entity = CreateSessionLabel(TestData.NewFixture());
 
         _mapper.Patch(dto, entity);
 
-        Assert.Equal(dto.Name, entity.Name);
+        return Verify(entity);
     }
 
     [Fact]
-    public void Patch_ShouldPreserveEntityName_WhenDtoNameIsNull()
+    public Task Patch_ShouldIgnoreAllNullFieldsInDto()
     {
-        var nullDto = SessionLabelFactory.NewUpdateDtoWithNullFields();
-        var entity = SessionLabelFactory.NewEntity();
-        var original = SessionLabelFactory.NewEntity();
+        // Every member of SessionLabelUpdateDto is nullable, so the default instance is all-null.
+        var nullDto = new SessionLabelUpdateDto();
+        var entity = CreateSessionLabel(TestData.NewFixture());
 
         _mapper.Patch(nullDto, entity);
 
-        Assert.Equal(original.Name, entity.Name);
-    }
-
-    [Fact]
-    public void Patch_ShouldNotChangeCategory_EvenWhenEntityHasDifferentCategory()
-    {
-        // Category is set at creation and immutable thereafter. Patch must
-        // not touch it — the update DTO does not even carry the field.
-        var entity = SessionLabelFactory.NewEntity();
-        entity.Category = SessionCategory.Service;
-
-        _mapper.Patch(SessionLabelFactory.NewUpdateDto(), entity);
-
-        Assert.Equal(SessionCategory.Service, entity.Category);
-    }
-
-    [Fact]
-    public void ToSearchDto_ShouldMapFields_FromEntityList()
-    {
-        var entityList = SessionLabelFactory.NewEntityList();
-        var dtoList = _mapper.ToSearchDto(entityList);
-
-        var firstEntity = entityList.First();
-        var firstDto = dtoList.First();
-
-        var lastEntity = entityList.Last();
-        var lastDto = dtoList.Last();
-
-        Assert.Equal(firstEntity.Id, firstDto.Id);
-        Assert.Equal(firstEntity.Name, firstDto.Name);
-        Assert.Equal(firstEntity.Category, firstDto.Category);
-
-        Assert.Equal(lastEntity.Id, lastDto.Id);
-        Assert.Equal(lastEntity.Name, lastDto.Name);
-        Assert.Equal(lastEntity.Category, lastDto.Category);
+        return Verify(entity);
     }
 }

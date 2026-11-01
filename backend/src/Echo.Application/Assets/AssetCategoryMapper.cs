@@ -6,7 +6,6 @@ namespace Echo.Application.Assets;
 [Mapper]
 public partial class AssetCategoryMapper : IAssetCategoryMapper
 {
-    [MapperIgnoreSource(nameof(entity.Congregation))]
     [MapperIgnoreSource(nameof(entity.CongregationId))]
     [MapperIgnoreSource(nameof(entity.CreatedAt))]
     [MapperIgnoreSource(nameof(entity.DeletedAt))]
@@ -16,7 +15,6 @@ public partial class AssetCategoryMapper : IAssetCategoryMapper
 
     [MapperIgnoreTarget(nameof(AssetCategory.CreatedAt))]
     [MapperIgnoreTarget(nameof(AssetCategory.DeletedAt))]
-    [MapperIgnoreTarget(nameof(AssetCategory.Congregation))]
     [MapperIgnoreTarget(nameof(AssetCategory.CongregationId))]
     [MapperIgnoreTarget(nameof(AssetCategory.Id))]
     public partial AssetCategory ToEntity(AssetCategoryCreateDto dto);
@@ -35,5 +33,7 @@ public partial class AssetCategoryMapper : IAssetCategoryMapper
     {
         if (dto.Name != null)
             entity.Name = dto.Name;
+        if (dto.Icon != null)
+            entity.Icon = dto.Icon;
     }
 }

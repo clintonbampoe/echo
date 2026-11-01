@@ -65,12 +65,14 @@ public sealed class SeederWorker(
             [
                 new SetupPhase(fakers),
                 new PeoplePhase(),
+                new UsersPhase(fakers),
                 new OrganizationsPhase(),
                 new SessionsPhase(),
                 new EventsPhase(),
                 new AttendancePhase(),
                 new FinancesPhase(),
                 new AssetsPhase(),
+                new AnalyzePhase(),
             ];
 
             foreach (var phase in phases)

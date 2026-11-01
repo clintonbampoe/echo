@@ -7,7 +7,6 @@ public class EventRegistration : ISoftDeletable
 {
     public Guid Id { get; set; }
     public Guid CongregationId { get; set; }
-    public Congregation Congregation { get; set; } = null!;
 
     public Guid MemberId { get; set; }
     public Member Member { get; set; } = null!;

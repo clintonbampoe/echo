@@ -53,8 +53,11 @@ public static class EventAttendanceEndpoints
                 ### Ordering
                 Records are ordered by check-in time, most recent first. Stable across pages.
 
-                ### Pagination
-                Pass the `next` cursor from the previous response as the `cursor` query parameter. When `hasMore` is `false`, `next` is null.
+                ### Paging
+                - `cursor` — leave it out for the first page. For the next page, send the `next` value from the previous response unchanged. It records where the last page stopped, so use it only with the same filters it came from.
+                - `pageSize` — how many rows to return, from 1 to 50. Defaults to 50; a larger number is reduced to 50.
+
+                Keep asking for the next page while `hasMore` is `true`. When it is `false`, `next` is `null` and that was the last page.
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
@@ -90,6 +93,9 @@ public static class EventAttendanceEndpoints
 
                 The response includes the resolved `eventName` and `memberName`, so no follow-up calls are needed to render the record.
 
+                ### Path parameters
+                - `id` — the event check-in's id, as returned by the list and create endpoints.
+
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
                 - `404 NOT_FOUND` — no event attendance record exists with the given ID in this congregation, or the record has been soft-deleted.
@@ -101,9 +107,59 @@ public static class EventAttendanceEndpoints
 
         group
             .MapGet(
+                "/event/{id:guid}/summary",
+                async (
+                    [FromRoute] Guid id,
+                    EventAttendanceService service,
+                    HttpContext context,
+                    CancellationToken ct
+                ) =>
+                {
+                    using var span = EndpointInstrumentation.StartSpan(
+                        context,
+                        instrumentation,
+                        "endpoint.event_attendance.roster_summary"
+                    );
+                    var result = await service.RosterSummary(
+                        context.User.GetCongregationId(),
+                        id,
+                        ct
+                    );
+                    return result.ToResult();
+                }
+            )
+            .WithName("GetEventRosterSummary")
+            .WithSummary("Returns how many checked in at an event, and how many were walk-ins.")
+            .WithDescription(
+                """
+                Returns the numbers an event's page shows about who came, so the page does not have to read every check-in and registration to count them.
+
+                ### Path parameter
+                `id` is the **Event ID**.
+
+                ### Response fields
+                - `checkedIn` — everyone who checked in.
+                - `walkIns` — of those, who came without registering.
+                - `cameRegistered` — of those, who had registered (`checkedIn` minus `walkIns`).
+
+                The number who **signed up** is `registrationCount` on the event itself (`GET /events/{id}`).
+
+                ### Freshness
+                Not cached: the counts follow every check-in as it happens.
+
+                ### Failure modes
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                """
+            )
+            .Produces<EventRosterSummaryDto>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status401Unauthorized);
+
+        group
+            .MapGet(
                 "/event/{id:guid}",
                 async (
                     [FromRoute] Guid id,
+                    [AsParameters] EventAttendanceFilters filters,
                     [AsParameters] PaginationRequest pagination,
                     EventAttendanceService service,
                     HttpContext context,
@@ -118,6 +174,7 @@ public static class EventAttendanceEndpoints
                     var result = await service.ListByEventId(
                         context.User.GetCongregationId(),
                         id,
+                        filters,
                         pagination,
                         ct
                     );
@@ -133,11 +190,25 @@ public static class EventAttendanceEndpoints
                 ### Path parameter
                 `id` is the **Event ID**, not the attendance record ID.
 
+                ### Query parameters
+                - `name` — only members whose name contains this text (case-insensitive; `%` and `_` are matched literally).
+                - `kind` — `Registered` for those who signed up first, `WalkIn` for those who came without signing up.
+                - `memberIds` — only these members, repeated for each (`memberIds=…&memberIds=…`, at most 50). Use it to ask which of a few people have already checked in.
+
                 ### Ordering
                 Ordered by check-in time, earliest first (chronological arrival order).
 
+                ### Who had registered
+                Each row carries `walkIn` and, when they had registered, `registrationId`. Only this route fills them in; on every other route they are `null`.
+
                 ### What this does not include
-                This returns only members who **attended**. Members who registered but did not show up do **not** appear here — query `GET /event-registrations/event/{id}` and cross-reference to find the "registered but not attended" gap.
+                This returns only members who **attended**. For the people who registered but did not show up, use `GET /event-registrations/event/{id}?status=Missing`.
+
+                ### Paging
+                - `cursor` — leave it out for the first page. For the next page, send the `next` value from the previous response unchanged. It records where the last page stopped, so use it only with the same filters it came from.
+                - `pageSize` — how many rows to return, from 1 to 50. Defaults to 50; a larger number is reduced to 50.
+
+                Keep asking for the next page while `hasMore` is `true`. When it is `false`, `next` is `null` and that was the last page.
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
@@ -187,6 +258,12 @@ public static class EventAttendanceEndpoints
 
                 ### Use case
                 Show a member's engagement over time — how many events they've attended, most recently, etc. Combine with `GET /event-registrations/member/{id}` to see registrations versus actual attendance.
+
+                ### Paging
+                - `cursor` — leave it out for the first page. For the next page, send the `next` value from the previous response unchanged. It records where the last page stopped, so use it only with the same filters it came from.
+                - `pageSize` — how many rows to return, from 1 to 50. Defaults to 50; a larger number is reduced to 50.
+
+                Keep asking for the next page while `hasMore` is `true`. When it is `false`, `next` is `null` and that was the last page.
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
@@ -292,6 +369,9 @@ public static class EventAttendanceEndpoints
                 ### On success
                 Returns `200 OK` with the full updated `EventAttendanceResponseDto`.
 
+                ### Path parameters
+                - `id` — the event check-in's id, as returned by the list and create endpoints.
+
                 ### Failure modes
                 - `400 BAD_REQUEST` — the request body is malformed.
                 - `400 VALIDATION_ERROR` — `checkInTime` failed validation.
@@ -335,6 +415,9 @@ public static class EventAttendanceEndpoints
                 ### Side effects
                 - The record is marked as deleted.
                 - Any event summary derived from attendance is recalculated on next query — the deletion is reflected in `GET /events/summary` counts.
+
+                ### Path parameters
+                - `id` — the event check-in's id, as returned by the list and create endpoints.
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.

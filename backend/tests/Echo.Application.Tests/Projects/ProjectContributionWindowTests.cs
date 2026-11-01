@@ -14,7 +14,7 @@ public class ProjectContributionWindowTests
 
     private static ProjectContribution On(DateOnly dateContributed)
     {
-        var contribution = ProjectContributionFactory.NewEntity();
+        var contribution = TestData.Shared.CreateProjectContribution();
         contribution.DateContributed = dateContributed;
         return contribution;
     }
@@ -67,7 +67,7 @@ public class ProjectContributionWindowTests
     [Fact]
     public void ResolveWindow_ProjectIdSet_ReturnsNull()
     {
-        var filters = new ProjectContributionFilters { ProjectId = Constants.DefaultGuid };
+        var filters = new ProjectContributionFilters { ProjectId = TestData.DefaultId };
 
         Assert.Null(ProjectContributionService.ResolveWindow(filters, _windows));
     }

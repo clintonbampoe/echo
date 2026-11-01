@@ -1,0 +1,10 @@
+﻿{
+  Id: Guid_1,
+  ProjectId: Guid_2,
+  ProjectName: Borehole Fund,
+  Amount: 250.0,
+  DateContributed: Date_1,
+  PaymentMethod: BankTransfer,
+  Description: Monthly standing order,
+  CreatedAt: DateTime_1
+}

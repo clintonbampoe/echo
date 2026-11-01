@@ -25,12 +25,17 @@ public class CongregationEndpointTests
             .ToList();
         var endpoint = Assert.Single(endpoints);
 
-        Assert.Equal("GetCurrentCongregation", endpoint.Metadata.GetMetadata<IEndpointNameMetadata>()?.EndpointName);
+        Assert.Equal(
+            "GetCurrentCongregation",
+            endpoint.Metadata.GetMetadata<IEndpointNameMetadata>()?.EndpointName
+        );
         Assert.Equal("/congregation", endpoint.RoutePattern.RawText!.TrimEnd('/'));
         Assert.Contains("GET", endpoint.Metadata.GetMetadata<IHttpMethodMetadata>()!.HttpMethods);
         Assert.NotEmpty(endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>());
         Assert.DoesNotContain(
-            endpoint.Metadata.GetOrderedMetadata<AuthorizationPolicy>().SelectMany(p => p.Requirements),
+            endpoint
+                .Metadata.GetOrderedMetadata<AuthorizationPolicy>()
+                .SelectMany(p => p.Requirements),
             r => r is RolesAuthorizationRequirement
         );
     }

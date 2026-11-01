@@ -1,34 +1,12 @@
-import type { EventCheckIn } from "../api/checkIns";
-import type { EventRegistration } from "../api/registrations";
-import { arrivals } from "./roster";
+import type { EventRoster } from "../api/checkIns";
 import { rosterStats, waitingStats } from "./rosterFigures";
 
-const reg = (id: string, memberId: string): EventRegistration => ({
-  id,
-  memberId,
-  memberName: id,
-  eventId: "e1",
-  registrationDate: "2026-09-12",
-});
-const came = (id: string, memberId: string): EventCheckIn => ({
-  id,
-  memberId,
-  memberName: id,
-  eventId: "e1",
-  checkInTime: "06:00:00",
-});
-
-const regs = [reg("a", "m1"), reg("b", "m2"), reg("c", "m3"), reg("d", "m4")];
-const checks = [came("x", "m1"), came("y", "m2"), came("z", "m9")];
+// Three came: two of the four who signed up, and one walk-in.
+const roster: EventRoster = { checkedIn: 3, walkIns: 1, cameRegistered: 2 };
 const rows = (
   event: { registrationCount: number; capacity?: number | null },
   phase: "upcoming" | "happening" | "over",
-) =>
-  rosterStats({
-    event,
-    arrivals: arrivals(checks, regs),
-    phase,
-  });
+) => rosterStats({ event, roster, phase });
 
 describe("event numbers", () => {
   it("counts who signed up, who came, the show rate and the walk-ins", () => {
@@ -68,7 +46,7 @@ describe("event numbers", () => {
     ).toBe("Event has not started");
   });
 
-  it("shows waiting numbers while the lists load, or when they could not", () => {
+  it("shows waiting numbers while the roster is counted, or when it could not be", () => {
     expect(
       waitingStats({ registrationCount: 4, capacity: 60 }, false).map(
         (s) => s.value,

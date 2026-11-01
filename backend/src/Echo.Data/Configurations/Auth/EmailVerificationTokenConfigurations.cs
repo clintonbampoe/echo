@@ -12,7 +12,7 @@ public class EmailVerificationTokenConfigurations : IEntityTypeConfiguration<Ema
         builder.HasIndex(e => e.CreatedAt);
         builder.Property(e => e.CreatedAt).HasDefaultValueSql("now()").ValueGeneratedOnAdd();
 
-        builder.HasIndex(e => e.TokenHash);
+        builder.HasIndex(e => e.TokenHash).IsUnique();
 
         // this index is to filter the token objects down to only the few ones that match these conditions
         // 1. Is not used

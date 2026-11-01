@@ -1,0 +1,42 @@
+﻿[
+  {
+    Id: Guid_1,
+    Name: v1,
+    PhoneNumber: v2,
+    EmailAddress: v3,
+    PostalAddress: v4,
+    WebsiteUrl: v5,
+    City: v6,
+    Town: v7,
+    GpsAddress: v8,
+    CreatedAt: DateTime_1
+  },
+  {
+    Id: Guid_2,
+    Name: v9,
+    OrgType: Mosque,
+    PhoneNumber: v10,
+    EmailAddress: v11,
+    PostalAddress: v12,
+    WebsiteUrl: v13,
+    Region: Ashanti,
+    City: v14,
+    Town: v15,
+    GpsAddress: v16,
+    CreatedAt: DateTime_2
+  },
+  {
+    Id: Guid_3,
+    Name: v17,
+    OrgType: NonProfit,
+    PhoneNumber: v18,
+    EmailAddress: v19,
+    PostalAddress: v20,
+    WebsiteUrl: v21,
+    Region: Bono,
+    City: v22,
+    Town: v23,
+    GpsAddress: v24,
+    CreatedAt: DateTime_3
+  }
+]

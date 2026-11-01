@@ -3,21 +3,24 @@
   flex-direction: column;
   gap: var(--s-20);
 }
-/* The bar is slim; a hovered segment grows to nearly twice its height from its centre. */
+/* The bar is slim, but its box is as tall as a swollen segment, so growing never moves what is around it. */
 .bar {
   display: flex;
+  align-items: center;
   gap: var(--s-4);
-  height: 8px;
+  height: 16px;
+  margin-block: -4px;
 }
 .seg {
   position: relative;
   min-width: 8px;
+  height: var(--seg-h, 8px);
   border-radius: var(--radius-pill);
   cursor: pointer;
-  transform-origin: center center;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 28%);
   transition:
-    transform var(--t-enter) var(--ease-settle),
-    opacity var(--t-base),
+    height var(--t-enter) var(--ease-settle),
+    opacity var(--t-base) var(--ease-soft),
     filter var(--t-fast),
     box-shadow var(--t-base);
 }
@@ -102,144 +105,65 @@ a.row:focus-visible {
 }
 
 @media (hover: hover) {
-  .seg:hover {
-    transform: scaleY(1.9) scaleX(1.02);
-    filter: brightness(0.88);
-    box-shadow: 0 8px 14px -8px rgb(10 10 11 / 50%);
+  /* While a part is hot, the segments beside it thin by a little (3px a step away, halving each step): 5px, 6.5px,
+     7px... The hot one swells to twice its height. Height changes, never scale, so the rounded ends stay round. */
+  .bar[data-active="true"] .seg {
+    --seg-h: calc(8px - 3px / var(--d));
+    opacity: 0.85;
   }
-  .bar:has(.seg:hover) .seg:not(:hover) {
-    opacity: 0.5;
+  .bar[data-active="true"] .seg[data-hot="true"] {
+    --seg-h: 16px;
+    opacity: 1;
+    filter: brightness(0.9);
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 45%),
+      0 8px 14px -8px rgb(10 10 11 / 50%);
   }
-  button.row:hover,
-  a.row:hover {
+  /* The legend row of the hot part lights up like a hovered row elsewhere. */
+  .lrow[data-hot="true"] .row {
     background: var(--glass-tile);
     box-shadow:
       var(--glass-edge),
       inset 0 0 0 1px var(--glass-tile-edge);
   }
-  /* The pill is drawn in the segment, so it is counter-scaled to keep its own shape while the segment grows. */
-  .seg:hover::after {
+  /* The pill sits above the swollen segment. The segment is not scaled, so the pill needs no counter-scaling. */
+  .seg[data-hot="true"]::after {
     content: attr(data-tip);
     position: absolute;
-    bottom: calc(100% + 9px);
+    bottom: calc(100% + 10px);
     left: 50%;
     z-index: 5;
     padding: var(--s-6) var(--s-12);
     background: rgb(10 10 11 / 86%);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
     border-radius: var(--radius-pill);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 18%);
     color: #fff;
     font-size: var(--type-caption);
     font-weight: 500;
     pointer-events: none;
-    transform: translateX(-50%) scaleY(0.53);
+    transform: translateX(-50%);
     white-space: nowrap;
+    animation: tipIn var(--t-spring) var(--spring) both;
   }
-  /* Segments and legend rows light each other up, for as many parts as a distribution shows (seven at most). */
-  .dist:has(.lrow:nth-child(1):hover) .seg:nth-child(1),
-  .dist:has(.lrow:nth-child(1) :focus-visible) .seg:nth-child(1) {
-    transform: scaleY(1.9);
-    filter: brightness(0.88);
-  }
-  .dist:has(.lrow:nth-child(1):hover) .seg:not(:nth-child(1)) {
-    opacity: 0.5;
-  }
-  .dist:has(.seg:nth-child(1):hover) .lrow:nth-child(1) .row {
-    background: var(--glass-tile);
-    box-shadow:
-      var(--glass-edge),
-      inset 0 0 0 1px var(--glass-tile-edge);
-  }
-  .dist:has(.lrow:nth-child(2):hover) .seg:nth-child(2),
-  .dist:has(.lrow:nth-child(2) :focus-visible) .seg:nth-child(2) {
-    transform: scaleY(1.9);
-    filter: brightness(0.88);
-  }
-  .dist:has(.lrow:nth-child(2):hover) .seg:not(:nth-child(2)) {
-    opacity: 0.5;
-  }
-  .dist:has(.seg:nth-child(2):hover) .lrow:nth-child(2) .row {
-    background: var(--glass-tile);
-    box-shadow:
-      var(--glass-edge),
-      inset 0 0 0 1px var(--glass-tile-edge);
-  }
-  .dist:has(.lrow:nth-child(3):hover) .seg:nth-child(3),
-  .dist:has(.lrow:nth-child(3) :focus-visible) .seg:nth-child(3) {
-    transform: scaleY(1.9);
-    filter: brightness(0.88);
-  }
-  .dist:has(.lrow:nth-child(3):hover) .seg:not(:nth-child(3)) {
-    opacity: 0.5;
-  }
-  .dist:has(.seg:nth-child(3):hover) .lrow:nth-child(3) .row {
-    background: var(--glass-tile);
-    box-shadow:
-      var(--glass-edge),
-      inset 0 0 0 1px var(--glass-tile-edge);
-  }
-  .dist:has(.lrow:nth-child(4):hover) .seg:nth-child(4),
-  .dist:has(.lrow:nth-child(4) :focus-visible) .seg:nth-child(4) {
-    transform: scaleY(1.9);
-    filter: brightness(0.88);
-  }
-  .dist:has(.lrow:nth-child(4):hover) .seg:not(:nth-child(4)) {
-    opacity: 0.5;
-  }
-  .dist:has(.seg:nth-child(4):hover) .lrow:nth-child(4) .row {
-    background: var(--glass-tile);
-    box-shadow:
-      var(--glass-edge),
-      inset 0 0 0 1px var(--glass-tile-edge);
-  }
-  .dist:has(.lrow:nth-child(5):hover) .seg:nth-child(5),
-  .dist:has(.lrow:nth-child(5) :focus-visible) .seg:nth-child(5) {
-    transform: scaleY(1.9);
-    filter: brightness(0.88);
-  }
-  .dist:has(.lrow:nth-child(5):hover) .seg:not(:nth-child(5)) {
-    opacity: 0.5;
-  }
-  .dist:has(.seg:nth-child(5):hover) .lrow:nth-child(5) .row {
-    background: var(--glass-tile);
-    box-shadow:
-      var(--glass-edge),
-      inset 0 0 0 1px var(--glass-tile-edge);
-  }
-  .dist:has(.lrow:nth-child(6):hover) .seg:nth-child(6),
-  .dist:has(.lrow:nth-child(6) :focus-visible) .seg:nth-child(6) {
-    transform: scaleY(1.9);
-    filter: brightness(0.88);
-  }
-  .dist:has(.lrow:nth-child(6):hover) .seg:not(:nth-child(6)) {
-    opacity: 0.5;
-  }
-  .dist:has(.seg:nth-child(6):hover) .lrow:nth-child(6) .row {
-    background: var(--glass-tile);
-    box-shadow:
-      var(--glass-edge),
-      inset 0 0 0 1px var(--glass-tile-edge);
-  }
-  .dist:has(.lrow:nth-child(7):hover) .seg:nth-child(7),
-  .dist:has(.lrow:nth-child(7) :focus-visible) .seg:nth-child(7) {
-    transform: scaleY(1.9);
-    filter: brightness(0.88);
-  }
-  .dist:has(.lrow:nth-child(7):hover) .seg:not(:nth-child(7)) {
-    opacity: 0.5;
-  }
-  .dist:has(.seg:nth-child(7):hover) .lrow:nth-child(7) .row {
-    background: var(--glass-tile);
-    box-shadow:
-      var(--glass-edge),
-      inset 0 0 0 1px var(--glass-tile-edge);
+}
+@keyframes tipIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(4px) scale(0.96);
   }
 }
 .row:active {
   transform: scale(0.99);
 }
 @media (prefers-reduced-motion: reduce) {
-  .seg:hover {
-    transform: none;
+  .seg {
+    transition: none;
+  }
+  .bar[data-active="true"] .seg,
+  .bar[data-active="true"] .seg[data-hot="true"] {
+    --seg-h: 8px;
   }
 }
 

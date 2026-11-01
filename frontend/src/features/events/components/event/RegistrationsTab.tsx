@@ -12,25 +12,25 @@ import {
 import type { EventCheckIn } from "../../api/checkIns";
 import type { EventRegistration } from "../../api/registrations";
 import {
-  filterGuests,
   guestStatus,
+  registrationFilters,
+  toGuest,
   type Guest,
   type Phase,
 } from "../../model/roster";
 import { EditCheckInTimeSheet } from "../form/EditCheckInTimeSheet";
 import { guestPerson } from "../../model/person";
 import { EventPersonPanel } from "./EventPersonPanel";
-import { rosterList, type RosterState } from "../../model/rosterList";
+import { useEventRegistrations } from "../../hooks/queries";
 import {
   RemoveCheckInDialog,
   RemoveRegistrationDialog,
 } from "../dialogs/RemoveDialogs";
 
 type Props = {
-  guests: Guest[];
+  eventId: string;
   eventName: string;
   phase: Phase;
-  state: RosterState;
 };
 
 // Gone without coming is a "no-show" only once the event is over; before that they have just not arrived yet.
@@ -66,12 +66,17 @@ const columns = (phase: Phase): PersonColumn<Guest>[] => [
   },
 ];
 
-// Who signed up for the event, and whether they came. Searched by name and narrowed by status here in the
-// browser: the server has no search for them, and the page already holds every sign-up.
+// Who signed up for the event, and whether they came, a page at a time. The server searches by name and narrows by
+// status, and each row says whether the person came, so the tab reads only what it shows, and only once it is open.
 // A row opens that person's panel for this event (design rule S6); every action lives in there.
-export function RegistrationsTab({ guests, eventName, phase, state }: Props) {
+export function RegistrationsTab({ eventId, eventName, phase }: Props) {
   const [name, setName] = useState("");
   const [status, setStatus] = useState("");
+  const list = useEventRegistrations(
+    eventId,
+    registrationFilters(name, status),
+  );
+  const guests = { ...list, rows: list.rows.map(toGuest) };
   const [resetKey, setResetKey] = useState(0);
   const [viewing, setViewing] = useState<Guest | null>(null);
   const [editing, setEditing] = useState<EventCheckIn | null>(null);
@@ -98,26 +103,20 @@ export function RegistrationsTab({ guests, eventName, phase, state }: Props) {
       <ListCard
         title="Registrations"
         toolbar={
-          <FilterBar
-            searchLabel="Search registrations"
-            search={name}
-            onSearch={setName}
+          <Toolbar
+            name={name}
+            onName={setName}
+            status={status}
+            onStatus={setStatus}
+            phase={phase}
             resetKey={resetKey}
-            active={status ? 1 : 0}
             filtered={filtered}
             onClear={clear}
-          >
-            <FilterSelect
-              label="Status"
-              options={statusOptions(phase)}
-              value={status}
-              onChange={setStatus}
-            />
-          </FilterBar>
+          />
         }
       >
         <ListBody
-          list={rosterList(filterGuests(guests, name, status), state)}
+          list={guests}
           icon="user"
           noun={["registration", "registrations"]}
           emptyText="People who register for this event will appear here."
@@ -169,6 +168,48 @@ export function RegistrationsTab({ guests, eventName, phase, state }: Props) {
         }}
       />
     </>
+  );
+}
+
+type ToolbarProps = {
+  name: string;
+  onName: (name: string) => void;
+  status: string;
+  onStatus: (status: string) => void;
+  phase: Phase;
+  resetKey: number;
+  filtered: boolean;
+  onClear: () => void;
+};
+
+// The search box and the status choice above the list.
+function Toolbar({
+  name,
+  onName,
+  status,
+  onStatus,
+  phase,
+  resetKey,
+  filtered,
+  onClear,
+}: ToolbarProps) {
+  return (
+    <FilterBar
+      searchLabel="Search registrations"
+      search={name}
+      onSearch={onName}
+      resetKey={resetKey}
+      active={status ? 1 : 0}
+      filtered={filtered}
+      onClear={onClear}
+    >
+      <FilterSelect
+        label="Status"
+        options={statusOptions(phase)}
+        value={status}
+        onChange={onStatus}
+      />
+    </FilterBar>
   );
 }
 

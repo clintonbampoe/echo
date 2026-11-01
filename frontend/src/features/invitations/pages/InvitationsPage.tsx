@@ -7,7 +7,7 @@ import {
 } from "../components/InvitationActionHost";
 import { InvitationList } from "../components/InvitationList";
 import { InviteSheet } from "../components/InviteSheet";
-import { useInvitations } from "../hooks";
+import { useInvitations, useInvitationSummary } from "../hooks";
 import { invitationStats } from "../model/figures";
 import styles from "./InvitationsPage.module.css";
 
@@ -15,6 +15,7 @@ import styles from "./InvitationsPage.module.css";
 // address sees the same "could not load" card as for any failed list.
 export function InvitationsPage() {
   const list = useInvitations();
+  const summary = useInvitationSummary();
   const [inviting, setInviting] = useUrlFlag("new");
   const [action, setAction] = useState<InvitationAction | null>(null);
 
@@ -23,13 +24,13 @@ export function InvitationsPage() {
       <PageHeader
         title="Invitations"
         badge="Admin only"
-        text="Each code can be used again and again until it expires or you switch it off."
+        text="Each code works until it expires, reaches its limit or you switch it off."
         add={{ label: "Invite people", onClick: () => setInviting(true) }}
       />
       <StatStrip
         label="Invitation summary"
-        stats={invitationStats(list.rows)}
-        busy={list.loading}
+        stats={invitationStats(summary.data)}
+        busy={summary.isPending}
       />
       <ListBody
         list={list}
@@ -43,6 +44,7 @@ export function InvitationsPage() {
         {(rows) => (
           <InvitationList
             invitations={rows}
+            onView={(invitation) => setAction({ kind: "view", invitation })}
             onEdit={(invitation) => setAction({ kind: "edit", invitation })}
             onRevoke={(invitation) => setAction({ kind: "revoke", invitation })}
             onDelete={(invitation) => setAction({ kind: "delete", invitation })}

@@ -1,0 +1,8 @@
+﻿{
+  MemberId: Guid_1,
+  Amount: 120.25,
+  ForYear: 2025,
+  ForMonth: November,
+  CollectionDate: Date_1,
+  Description: Monthly tithe
+}

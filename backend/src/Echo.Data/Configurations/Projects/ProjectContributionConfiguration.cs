@@ -1,3 +1,4 @@
+using Echo.Domain.Congregations;
 using Echo.Domain.Projects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -13,12 +14,11 @@ public class ProjectContributionConfiguration : IEntityTypeConfiguration<Project
         builder.Property(e => e.CreatedAt).HasDefaultValueSql("now()").ValueGeneratedOnAdd();
 
         builder
-            .HasOne(e => e.Congregation)
+            .HasOne<Congregation>()
             .WithMany()
             .HasForeignKey(e => e.CongregationId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.HasIndex(e => e.CongregationId);
+            .OnDelete(DeleteBehavior.Restrict)
+            .IsRequired();
 
         builder
             .HasOne(pc => pc.Project)
@@ -26,8 +26,28 @@ public class ProjectContributionConfiguration : IEntityTypeConfiguration<Project
             .HasForeignKey(pc => pc.ProjectId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasIndex(pc => pc.ProjectId);
+        // What a project has raised, and when: the totals per project and the monthly series read
+        // only this index.
+        builder
+            .HasIndex(pc => new { pc.ProjectId, pc.DateContributed })
+            .HasFilter("deleted_at IS NULL")
+            .IncludeProperties(pc => pc.Amount);
 
-        builder.HasIndex(pc => new { pc.DateContributed, pc.Id }).HasFilter("deleted_at IS NULL");
+        // Serves the list (newest first, cursor on date + id) and the congregation-wide summaries.
+        builder
+            .HasIndex(pc => new
+            {
+                pc.CongregationId,
+                pc.DateContributed,
+                pc.Id,
+            })
+            .IsDescending(false, true, false)
+            .HasFilter("deleted_at IS NULL")
+            .IncludeProperties(pc => new
+            {
+                pc.ProjectId,
+                pc.Amount,
+                pc.PaymentMethod,
+            });
     }
 }

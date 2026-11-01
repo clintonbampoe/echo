@@ -84,6 +84,9 @@ public static class SessionLabelEndpoints
                 ### ID is an integer
                 Session label IDs are 32-bit integers, not UUIDs. Lookup entities in Echo use integer keys for compactness.
 
+                ### Path parameters
+                - `id` — the session label's id (a whole number, not a GUID), as returned by `GET /attendance/labels`.
+
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
                 - `404 NOT_FOUND` — no session label exists with the given ID in this congregation, or the record has been soft-deleted.
@@ -178,6 +181,9 @@ public static class SessionLabelEndpoints
                 - **Existing sessions that reference this label are not affected** and continue to work. They will now display the updated name in their `sessionLabelName` field.
                 - Historical records are indistinguishable from records created after the rename — there is no versioning of the label name on sessions.
 
+                ### Path parameters
+                - `id` — the session label's id (a whole number, not a GUID), as returned by `GET /attendance/labels`.
+
                 ### Failure modes
                 - `400 BAD_REQUEST` — the request body is malformed.
                 - `400 VALIDATION_ERROR` — `name` failed validation.
@@ -225,6 +231,9 @@ public static class SessionLabelEndpoints
 
                 ### When to use this
                 Only when a label is genuinely obsolete. If you just want to stop using a label, consider leaving it in place — the reference integrity cost of deletion is higher than the readability cost of a stale label in a dropdown.
+
+                ### Path parameters
+                - `id` — the session label's id (a whole number, not a GUID), as returned by `GET /attendance/labels`.
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.

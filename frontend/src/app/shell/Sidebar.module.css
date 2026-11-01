@@ -5,7 +5,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--s-24);
-  width: 244px;
+  width: 264px;
   height: 100vh;
   padding: var(--s-20) var(--s-12) var(--s-16);
   overflow-y: auto;
@@ -13,13 +13,17 @@
   border-right: 1px solid var(--line-2);
 }
 
+/* Who is signed in, in one raised pill: the person on the left, Settings on the right. */
 .foot {
   display: flex;
   align-items: center;
   gap: var(--s-4);
   margin-top: auto;
-  padding-top: var(--s-12);
-  border-top: 1px solid var(--line-2);
+  padding: var(--s-4);
+  background: var(--surface);
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius-pill);
+  box-shadow: 0 1px 2px rgb(10 10 11 / 6%);
 }
 .me {
   flex: 1;
@@ -27,8 +31,8 @@
   display: flex;
   align-items: center;
   gap: var(--s-12);
-  padding: var(--s-6) var(--s-8);
-  border-radius: var(--radius);
+  padding: var(--s-4) var(--s-12) var(--s-4) var(--s-4);
+  border-radius: var(--radius-pill);
   color: inherit;
   text-decoration: none;
   transition:
@@ -56,7 +60,7 @@
   font-size: var(--type-footnote);
   font-weight: 500;
 }
-.church {
+.sub {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -68,9 +72,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
   background: transparent;
   color: var(--text-2);
   transition:
@@ -111,10 +115,8 @@
   }
 }
 
+/* The open page is marked inside the pill by a soft fill. */
 .me[aria-current="page"],
 .gear[aria-current="page"] {
-  background: var(--surface);
-  box-shadow:
-    0 1px 2px rgb(10 10 11 / 8%),
-    0 0 0 1px var(--line-2);
+  background: var(--hover-tab);
 }

@@ -20,6 +20,21 @@ export function useSignIn() {
   });
 }
 
+// Registering makes the account but not a session, so the new person is signed in with what they just typed.
+// Returns whether it worked; if it did not (a busy server, say) they land on the sign-in page after the verify
+// step as before, and lose nothing.
+export function useSignInAfterRegister() {
+  const signIn = useSignIn();
+  return async (email: string, password: string) => {
+    try {
+      await signIn.mutateAsync({ email, password });
+      return true;
+    } catch {
+      return false;
+    }
+  };
+}
+
 // Ends this device's session. Local sign-out always happens, even if the server call fails.
 export function useSignOut() {
   return useMutation({

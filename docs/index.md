@@ -16,6 +16,7 @@
    - [JWT Key Rotation](./infrastructure/jwt-rotation.md)
    - [Troubleshooting](./infrastructure/troubleshooting.md)
 4. [Backend Architecture](./backend/architecture.md)
+   - [Backend Testing](./backend/testing.md)
 5. [Front-end Web Client](./frontend/README.md)
    - [Frontend Architecture](./frontend/architecture.md)
    - [Component Inventory](./frontend/components.md)

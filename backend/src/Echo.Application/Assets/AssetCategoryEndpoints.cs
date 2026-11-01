@@ -36,12 +36,13 @@ public static class AssetCategoryEndpoints
             .WithSummary("Returns all asset categories for the congregation.")
             .WithDescription(
                 """
-                Returns the complete list of Asset Categories for the caller's congregation.
+                Returns every asset category, each with how many assets it holds and its icon. For the category pick-list and the Categories page.
 
-                ### No pagination
-                The response is a plain array, not a paged envelope. Asset Categories are lightweight lookup entities bounded in number, so the full list is always returned.
+                ### Parameters
+                None. The list is not paged: categories are a short lookup list, so all of them are always returned.
 
-                Call this to populate the category selector when creating or updating Assets.
+                ### Response
+                A list of `{ id, name, icon, assetCount }`. `icon` is the key the page shows the category with, or `null` when none was set. `assetCount` counts live assets only.
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
@@ -73,14 +74,14 @@ public static class AssetCategoryEndpoints
             .WithSummary("Returns a single asset category by ID.")
             .WithDescription(
                 """
-                Returns the Asset Category record for the given ID, scoped to the caller's congregation.
+                Returns one asset category with its icon and asset count.
 
-                ### ID is an integer
-                Asset Category IDs are 32-bit integers, not UUIDs. Lookup entities in Echo use integer keys.
+                ### Path parameters
+                - `id` — the category's id, a whole number (categories use integer ids, not GUIDs), as returned by `GET /asset-categories`.
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
-                - `404 NOT_FOUND` — no asset category exists with the given ID in this congregation, or the record has been soft-deleted.
+                - `404 NOT_FOUND` — no category has this id in the congregation, or it has been deleted.
                 """
             )
             .Produces<AssetCategoryResponseDto>(StatusCodes.Status200OK)
@@ -115,21 +116,19 @@ public static class AssetCategoryEndpoints
             .WithSummary("Creates a new asset category.")
             .WithDescription(
                 """
-                Creates a new Asset Category — for example Equipment, Furniture, or Vehicles. Scoped to the caller's congregation.
+                Adds a category assets can be filed under, for example Equipment, Furniture or Vehicles.
 
                 ### Request body
-                - `name` — required. 1 to 100 characters.
+                - `name` — required, 1 to 100 characters. Must be unique in the congregation.
+                - `icon` — optional, up to 40 characters. A key the page uses to pick the category's icon; the API stores it as given and does not check it.
 
-                ### On success
-                Returns `201 Created` with the full `AssetCategoryResponseDto` and a `Location` header pointing to `GET /asset-categories/{id}`.
-
-                ### Side effects
-                - The category becomes immediately available for assignment to Assets.
+                ### Response
+                `201 Created` with the category and a `Location` header pointing to `GET /asset-categories/{id}`. It can be used for assets straight away.
 
                 ### Failure modes
-                - `400 BAD_REQUEST` — the request body is malformed.
-                - `400 VALIDATION_ERROR` — `name` failed validation.
+                - `400 VALIDATION_ERROR` — `name` or `icon` is missing or too long.
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                - `409 CONFLICT` — a category with this name already exists.
                 """
             )
             .Produces<AssetCategoryResponseDto>(StatusCodes.Status201Created)
@@ -165,16 +164,22 @@ public static class AssetCategoryEndpoints
             .WithSummary("Updates an existing asset category.")
             .WithDescription(
                 """
-                Updates the name of an Asset Category. Partial update.
+                Renames a category or changes its icon. Send only what changed.
 
-                ### Side effects
-                - **Existing Assets assigned to this category are not affected.** They retain their assignment and will display the new name in their `categoryName` field on next fetch.
+                ### Path parameters
+                - `id` — the category's id, a whole number, as returned by `GET /asset-categories`.
+
+                ### Request body
+                - `name` — the new name, 1 to 100 characters. Must stay unique in the congregation.
+                - `icon` — the new icon key, up to 40 characters.
+
+                Assets in the category keep their link to it and show the new name the next time they are fetched.
 
                 ### Failure modes
-                - `400 BAD_REQUEST` — the request body is malformed.
-                - `400 VALIDATION_ERROR` — `name` failed validation.
+                - `400 VALIDATION_ERROR` — `name` or `icon` is too long or empty.
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
-                - `404 NOT_FOUND` — no asset category exists with the given ID in this congregation, or the record has been soft-deleted.
+                - `404 NOT_FOUND` — no category has this id in the congregation, or it has been deleted.
+                - `409 CONFLICT` — another category already has this name.
                 """
             )
             .Produces<AssetCategoryResponseDto>(StatusCodes.Status200OK)
@@ -205,20 +210,20 @@ public static class AssetCategoryEndpoints
             .WithSummary("Soft deletes an asset category.")
             .WithDescription(
                 """
-                Soft-deletes the Asset Category. The row is retained in the database but excluded from list, search, and lookup responses.
+                Removes an empty category.
 
-                ### On success
-                Returns `204 No Content` with no body.
+                ### Path parameters
+                - `id` — the category's id, a whole number, as returned by `GET /asset-categories`.
 
-                ### Side effects
-                - The category is marked as deleted.
-                - **Existing Assets assigned to this category are not affected.** They keep their `categoryId` pointing at the (now deleted) category. On fetch, `categoryName` still returns the deleted category's name.
-                - **New assets cannot reference a deleted category** — the FK lookup will fail with `404 FOREIGN_KEY_NOT_FOUND`.
+                ### Response
+                `204 No Content`. The category disappears from lists and can no longer be chosen for assets.
+
+                A category that still has assets cannot be deleted: move the assets first with `POST /asset-categories/{id}/reassign`, which can also delete the category in the same step.
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
-                - `404 NOT_FOUND` — no asset category exists with the given ID in this congregation, or the record has already been soft-deleted.
-                - `409 CONFLICT` — the category is still used by existing assets. Move them to another category first.
+                - `404 NOT_FOUND` — no category has this id in the congregation, or it was already deleted.
+                - `409 CONFLICT` — assets still use the category.
                 """
             )
             .Produces(StatusCodes.Status204NoContent)
@@ -249,19 +254,19 @@ public static class AssetCategoryEndpoints
             .WithSummary("Searches asset categories by name.")
             .WithDescription(
                 """
-                Trigram-based similarity search over asset category names using `pg_trgm`.
+                Finds categories by name as you type, ranked by how closely the name matches.
 
-                ### Query parameter
-                - `q` — required. Case-insensitive. Partial matches supported.
+                ### Query parameters
+                - `q` — the text to look for, 1 to 100 characters. Case-insensitive; partial words and small typos still match.
 
-                ### On success
-                Returns `200 OK` with a flat array of `AssetCategorySearchResultDto`, ranked by similarity. **No pagination.**
+                ### Response
+                A flat list of `{ id, name }`, best match first. It is not paged.
+
+                ### Rate limiting
+                Limited by the `search` policy; slow down if you receive `429`.
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
-
-                ### Rate limiting
-                Rate-limited per the `search` policy.
                 """
             )
             .RequireRateLimiting("search")
@@ -294,21 +299,26 @@ public static class AssetCategoryEndpoints
                 }
             )
             .WithName("ReassignAssetCategory")
-            .WithSummary("Moves all assets of a asset category to another asset category.")
+            .WithSummary("Moves all assets of an asset category to another category.")
             .WithDescription(
                 """
-                Moves every non-deleted asset in this asset category to `targetCategoryId`, in a single database transaction. Soft-deleted records are left where they are.
+                Moves every live asset from this category to another one in a single step, so a category can be merged away without ever leaving assets uncategorised. Deleted assets stay where they are.
 
-                Set `deleteSource` to `true` to also soft-delete this category in the same transaction, so a category can be merged away without a window where it is empty but still present.
+                ### Path parameters
+                - `id` — the category to move assets **out of**, a whole number, as returned by `GET /asset-categories`.
 
-                ### On success
-                Returns `200 OK` with `{ "moved": n, "sourceDeleted": bool }`. `moved` is `0` when the category was empty.
+                ### Request body
+                - `targetCategoryId` — the category to move the assets **into**. Must be a different, live category of the congregation.
+                - `deleteSource` — `true` to also delete the source category in the same step (a merge); `false` (the default) to keep it, now empty.
+
+                ### Response
+                `200 OK` with `{ "moved": n, "sourceDeleted": true|false }`. `moved` is `0` when the category was empty.
 
                 ### Failure modes
-                - `400 BAD_REQUEST` — `targetCategoryId` equals the source category.
+                - `400 BAD_REQUEST` — `targetCategoryId` is the same as `id`.
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
-                - `404 NOT_FOUND` — the source category does not exist in this congregation or is deleted.
-                - `404 FOREIGN_KEY_NOT_FOUND` — the target category does not exist in this congregation or is deleted.
+                - `404 NOT_FOUND` — the source category does not exist or is deleted.
+                - `404 FOREIGN_KEY_NOT_FOUND` — the target category does not exist or is deleted.
                 """
             )
             .Produces<ReassignCategoryResponseDto>(StatusCodes.Status200OK)

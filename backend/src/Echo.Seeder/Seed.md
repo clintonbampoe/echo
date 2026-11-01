@@ -2,7 +2,7 @@
 
 What you need to sign in, tune the volume and check the seeded database.
 
-**Password for every seeded admin:** `admin@123`
+**Password for every seeded user:** `admin@123`
 
 **Big congregation:** Grace Chapel International, about 50,000 members and
 5,000 visitors, 15 years old. Use it for anything about performance. The small
@@ -10,10 +10,17 @@ congregations are 3 to 12 years old and several hundred people each.
 
 ---
 
-## Admin accounts
+## Users
 
-Every congregation has one admin. The email is `admin@` plus the congregation
+Every congregation has an admin. The email is `admin@` plus the congregation
 name in lower case without spaces, then `.org`.
+
+The five biggest congregations (by members) have a team of 10 to 20 users, admin
+included. All the others have 1 to 15. The rest of the team signs in as
+`{role}{n}@{congregation}.org`: `accountant1@`, `clerk1@`, `clerk2@`, `member1@`.
+A second admin is `admin2@`. The first few extra users take accountant, clerk,
+member, admin in that order, so a congregation with a handful of users has every
+role. About 85% have verified their email.
 
 | Congregation | Email |
 |---|---|

@@ -1,0 +1,8 @@
+﻿{
+  Id: Guid_1,
+  EmailAddress: jane@echo.test,
+  Name: Jane Doe,
+  PasswordHash: v1,
+  EmailVerifiedAt: DateTime_1,
+  CongregationId: Guid_2
+}

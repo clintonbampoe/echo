@@ -9,10 +9,15 @@ public class Attendance : ISoftDeletable
     public Guid Id { get; set; }
 
     public Guid CongregationId { get; set; }
-    public Congregation Congregation { get; set; } = null!;
 
     public Guid SessionId { get; set; }
     public Session Session { get; set; } = null!;
+
+    /// <summary>
+    /// Denormalized session date for query performance.
+    /// Mirrors Session.Date at time of attendance creation.
+    /// </summary>
+    public DateOnly SessionDate { get; set; }
 
     public Guid PersonId { get; set; }
     public Person Person { get; set; } = null!;
@@ -40,6 +45,8 @@ public class Attendance : ISoftDeletable
     /// </summary>
     public Guid? RecordedBy { get; set; }
     public User? Recorder { get; set; }
+
+    public bool IsFirstVisit { get; set; }
 
     public DateTime CreatedAt { get; set; }
     public DateTime? DeletedAt { get; set; }

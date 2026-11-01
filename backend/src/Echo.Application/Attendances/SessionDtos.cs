@@ -20,6 +20,9 @@ public record SessionCreateDto
     [StringLength(2000)]
     public string? Notes { get; init; }
 
+    [StringLength(200)]
+    public string? Location { get; init; }
+
     public TimeOnly? StartsAt { get; init; }
     public TimeOnly? EndsAt { get; init; }
 }
@@ -34,6 +37,9 @@ public record SessionUpdateDto
 
     [StringLength(2000)]
     public string? Notes { get; init; }
+
+    [StringLength(200)]
+    public string? Location { get; init; }
 
     public TimeOnly? StartsAt { get; init; }
     public TimeOnly? EndsAt { get; init; }
@@ -54,6 +60,7 @@ public record SessionResponseDto
     public string? Name { get; init; }
     public string? Topic { get; init; }
     public string? Notes { get; init; }
+    public string? Location { get; init; }
     public TimeOnly? StartsAt { get; init; }
     public TimeOnly? EndsAt { get; init; }
     public SessionStatus Status { get; init; }
@@ -62,7 +69,13 @@ public record SessionResponseDto
     public string? CreatedByName { get; init; }
     public DateTime CreatedAt { get; init; }
 
+    /// <summary>Everyone marked present: <see cref="MembersPresent"/> plus <see cref="VisitorsPresent"/>.</summary>
     public int AttendanceCount { get; init; }
+    public int MembersPresent { get; init; }
+    public int VisitorsPresent { get; init; }
+
+    /// <summary>Visitors for whom this session was their first-ever visit. Part of <see cref="VisitorsPresent"/>.</summary>
+    public int FirstTimeVisitors { get; init; }
 }
 
 public record SessionCursor

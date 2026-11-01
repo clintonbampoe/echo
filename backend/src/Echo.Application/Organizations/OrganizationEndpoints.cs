@@ -49,16 +49,23 @@ public static class OrganizationEndpoints
                 Returns a cursor-paginated list of Organizations scoped to the caller's congregation.
 
                 ### Filtering
-                - `name` — partial, case-insensitive match against the organization name.
+                - `name` — partial, case-insensitive match against the organization name. `%` and `_` are matched literally.
+                - `kind` — only organizations of this kind: `Music`, `Service`, `Fellowship`, `Teaching`, `Outreach`, `Prayer`, `Leadership` or `Other`.
                 - `from` / `to` — filter by creation-date range.
 
                 Omitting all filters returns every active organization.
 
+                ### What each row carries
+                `kind`, `meetingDay` (the day of the week it usually meets, if it has one), `memberCount`, and `leaderName` — the longest-serving member with the `Leader` role, null while it has none. The share of the church an organization makes up is `memberCount` over the summary's `largestOrganizationMemberCount`, or over the church's member count.
+
                 ### Ordering
                 Organizations are ordered by name, then by ID as a tiebreaker. Stable across pages.
 
-                ### Pagination
-                Pass the `next` cursor from the previous response as the `cursor` query parameter. When `hasMore` is `false`, `next` is null.
+                ### Paging
+                - `cursor` — leave it out for the first page. For the next page, send the `next` value from the previous response unchanged. It records where the last page stopped, so use it only with the same filters it came from.
+                - `pageSize` — how many rows to return, from 1 to 50. Defaults to 50; a larger number is reduced to 50.
+
+                Keep asking for the next page while `hasMore` is `true`. When it is `false`, `next` is `null` and that was the last page.
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
@@ -91,6 +98,11 @@ public static class OrganizationEndpoints
             .WithDescription(
                 """
                 Returns the full Organization record for the given ID, scoped to the caller's congregation.
+
+                Besides what the list returns, the record carries `averageAge`: the members' average age in whole years, null while the organization has no members.
+
+                ### Path parameters
+                - `id` — the organization's id, as returned by the list and create endpoints.
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
@@ -134,6 +146,8 @@ public static class OrganizationEndpoints
                 ### Request body
                 - `name` — required. 1 to 100 characters.
                 - `description` — optional, up to 2000 characters.
+                - `kind` — optional. What the organization is for; defaults to `Other`.
+                - `meetingDay` — optional. The day of the week it usually meets.
 
                 ### On success
                 Returns `201 Created` with the full `OrganizationResponseDto` and a `Location` header pointing to `GET /organizations/{id}`.
@@ -184,7 +198,7 @@ public static class OrganizationEndpoints
                 Updates the supplied fields on an existing Organization. Partial update — omitted fields retain their current values.
 
                 ### Request body
-                All fields optional: `name`, `description`.
+                All fields optional: `name`, `description`, `kind`, `meetingDay`.
 
                 ### On success
                 Returns `200 OK` with the full updated `OrganizationResponseDto`.
@@ -192,6 +206,9 @@ public static class OrganizationEndpoints
                 ### Side effects
                 - **Existing member assignments for this organization are not affected.** The members remain in the organization under the updated name.
                 - **Events that reference this organization are not affected.** They continue to link to the same Organization ID.
+
+                ### Path parameters
+                - `id` — the organization's id, as returned by the list and create endpoints.
 
                 ### Failure modes
                 - `400 BAD_REQUEST` — the request body is malformed.
@@ -238,6 +255,9 @@ public static class OrganizationEndpoints
                 - **Existing member assignments are not affected.** Organization Member records that reference this organization remain in the database. When those assignments are fetched via their own endpoints, `organizationName` still returns the deleted organization's name.
                 - **Events that reference this organization are not affected.** They continue to link to the (now deleted) organization.
                 - **New member assignments cannot reference a deleted organization** — the FK lookup will fail with `404 FOREIGN_KEY_NOT_FOUND`.
+
+                ### Path parameters
+                - `id` — the organization's id, as returned by the list and create endpoints.
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
@@ -323,9 +343,16 @@ public static class OrganizationEndpoints
                 - `totalOrganizations` — count of organizations matching the filter.
                 - `totalMembers` — total member assignments across matching organizations.
                 - `averageMembersPerOrganization` — mean of the member counts.
-                - `largestOrganization` — name of the organization with the most members. Null if no organizations match.
+                - `largestOrganization` — name of the organization with the most members. Null if no organizations match. When two are the same size, the name that sorts first.
+                - `largestOrganizationMemberCount` — how many members that organization has; zero when none match.
 
                 `totalMembers` counts **assignments**, not distinct members. A member who belongs to three organizations contributes three to this number.
+
+                ### Filters
+                All optional; they narrow which organizations are counted, exactly as on the list endpoint.
+                - `name` — partial, case-insensitive match on the organization name.
+                - `kind` — only organizations of this kind.
+                - `from` / `to` — only organizations created inside this date range, so a dashboard can ask "how many groups started this year".
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.

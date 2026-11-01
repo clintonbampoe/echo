@@ -1,3 +1,4 @@
+using Echo.Domain.Congregations;
 using Echo.Domain.Members;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -19,12 +20,14 @@ public class MemberConfiguration : IEntityTypeConfiguration<Member>
             .OnDelete(DeleteBehavior.Cascade);
 
         builder
-            .HasOne(m => m.Congregation)
+            .HasOne<Congregation>()
             .WithMany()
             .HasForeignKey(m => m.CongregationId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.Restrict)
+            .IsRequired();
 
-        // Composite covering index optimizing dashboard analytics
+        // Serves the summary, the join-date window and the new-members chart as index-only scans.
+        // Not partial on joined_date: members without one are part of every window.
         builder
             .HasIndex(m => new { m.CongregationId, m.JoinedDate })
             .HasFilter("deleted_at IS NULL")

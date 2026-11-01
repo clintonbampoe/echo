@@ -1,13 +1,14 @@
+using Echo.Application.Caching;
 using Echo.Data;
 using Echo.Domain.Projects;
 using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
+using Echo.Shared.Utilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
-using Echo.Shared.Utilities;
 
 namespace Echo.Application.Projects;
 
@@ -21,10 +22,14 @@ public class ProjectContributionService(
     ApplicationInstrumentation instrumentation,
     LinkGenerator linker,
     DateWindows dateWindows,
+    SummaryCache summaries,
     ILogger<ProjectContributionService> logger
 )
 {
-    internal static DateWindow? ResolveWindow(ProjectContributionFilters filters, DateWindows dateWindows) =>
+    internal static DateWindow? ResolveWindow(
+        ProjectContributionFilters filters,
+        DateWindows dateWindows
+    ) =>
         dateWindows.ThisMonthToDate(
             filters.From,
             filters.To,
@@ -69,7 +74,12 @@ public class ProjectContributionService(
         activity?.SetTag("project_contribution.count", data.Count);
         ProjectContributionLog.Listed(logger, congregationId, data.Count);
 
-        var res = new PagedResponse<ProjectContributionResponseDto>(hasMore, nextCursor, data, window);
+        var res = new PagedResponse<ProjectContributionResponseDto>(
+            hasMore,
+            nextCursor,
+            data,
+            window
+        );
         return new SuccessResult<PagedResponse<ProjectContributionResponseDto>>(res);
     }
 
@@ -230,7 +240,21 @@ public class ProjectContributionService(
         };
     }
 
-    public async Task<IOperationResult> Summary(
+    public Task<IOperationResult> Summary(
+        Guid congregationId,
+        ProjectContributionFilters filters,
+        CancellationToken ct
+    ) =>
+        summaries.Serve(
+            this,
+            "project-contributions",
+            congregationId,
+            filters,
+            (self, token) => self.ComputeSummary(congregationId, filters, token),
+            ct
+        );
+
+    private async Task<ProjectContributionSummaryDto> ComputeSummary(
         Guid congregationId,
         ProjectContributionFilters filters,
         CancellationToken ct
@@ -257,6 +281,52 @@ public class ProjectContributionService(
         activity?.SetTag("project_contribution.summary.total", res.TotalContributed);
         ProjectContributionLog.Summarized(logger, congregationId, res.TotalContributed);
 
-        return new SuccessResult<ProjectContributionSummaryDto>(res);
+        return res;
     }
+
+    public async Task<IOperationResult> MonthlySummary(
+        Guid congregationId,
+        ProjectContributionMonthlyFilters filters,
+        CancellationToken ct
+    )
+    {
+        if (MonthRange.Problem(MonthRange.Or(filters.Months)) is { } problem)
+            return new BadRequestResult(problem);
+
+        return await summaries.Serve(
+            this,
+            "project-contributions.monthly",
+            congregationId,
+            filters,
+            (self, token) => self.ComputeMonthly(congregationId, filters, token),
+            ct
+        );
+    }
+
+    private async Task<List<ProjectContributionMonthlyDto>> ComputeMonthly(
+        Guid congregationId,
+        ProjectContributionMonthlyFilters filters,
+        CancellationToken ct
+    )
+    {
+        var months = dateWindows.ChartMonths(MonthRange.Or(filters.Months), filters.To);
+        var (from, to) = MonthRange.Bounds(months);
+        var rows = await repository.GetMonthlyTotals(congregationId, filters, from, to, ct);
+
+        return MonthRange.Fill(
+            months,
+            rows.Select(ToMonthlyDto),
+            m => new YearMonth(m.Year, m.Month),
+            m => new ProjectContributionMonthlyDto { Year = m.Year, Month = m.Month }
+        );
+    }
+
+    private static ProjectContributionMonthlyDto ToMonthlyDto(ContributionMonthRow row) =>
+        new()
+        {
+            Year = row.Year,
+            Month = row.Month,
+            TotalRaised = row.Total,
+            ContributionCount = row.Count,
+        };
 }

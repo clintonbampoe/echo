@@ -32,7 +32,6 @@ export function SignInPage() {
     register,
     handleSubmit,
     setError,
-    getValues,
     formState: { errors },
   } = useForm<SignInValues>({
     resolver: zodResolver(signInSchema),
@@ -66,7 +65,7 @@ export function SignInPage() {
         />
       }
     >
-      {problem && <SignInAlert problem={problem} email={getValues("email")} />}
+      {problem && <SignInAlert problem={problem} />}
       <form
         onSubmit={handleSubmit(onSubmit)}
         noValidate

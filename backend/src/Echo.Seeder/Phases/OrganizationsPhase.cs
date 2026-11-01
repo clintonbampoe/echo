@@ -54,12 +54,15 @@ public sealed class OrganizationsPhase : ISeedPhase
                 if (roster.Count == 0)
                     continue;
 
+                var type = OrganizationCatalog.TypeOf(kind.Name);
                 var organization = new Organization
                 {
                     Id = rng.NewGuid(),
                     CongregationId = seed.Id,
                     Name = kind.Name,
                     Description = kind.Description,
+                    Kind = type,
+                    MeetingDay = OrganizationCatalog.MeetingDayOf(type),
                     CreatedAt = Stamps.On(founded, rng, ctx.Now),
                 };
                 organizations.Add(organization);

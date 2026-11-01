@@ -33,9 +33,18 @@ const matches = [
 ];
 
 let post: (body: Record<string, unknown>) => Response;
+// Who the event already has, by what the server is asked about: sign-ups, or check-ins.
+let already = { registered: [] as string[], checkedIn: [] as string[] };
 let fetchMock: ReturnType<typeof vi.fn>;
+const people = (ids: string[]) =>
+  json({
+    data: ids.map((memberId) => ({ id: `row-${memberId}`, memberId })),
+    hasMore: false,
+    next: null,
+  });
 beforeEach(() => {
   post = () => json({}, 201);
+  already = { registered: [], checkedIn: [] };
   saveTokens({
     accessToken: "a",
     accessTokenExpiresAt: "2099-01-01T00:00:00Z",
@@ -45,8 +54,12 @@ beforeEach(() => {
   fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
     if (init?.method === "POST")
       return post(JSON.parse(init.body as string) as Record<string, unknown>);
-    if (new URL(url, "http://x").pathname.endsWith("/members/search"))
-      return json(matches);
+    const path = new URL(url, "http://x").pathname;
+    if (path.endsWith("/members/search")) return json(matches);
+    if (path.includes("/event-registrations/event/"))
+      return people(already.registered);
+    if (path.includes("/event-attendance/event/"))
+      return people(already.checkedIn);
     return json({});
   });
   vi.stubGlobal("fetch", fetchMock);
@@ -57,23 +70,20 @@ const open = (
   event: EventItem = retreat,
   registered: string[] = [],
   checkedIn: string[] = [],
-) =>
-  render(
+) => {
+  already = { registered, checkedIn };
+  return render(
     <QueryClientProvider
       client={
         new QueryClient({ defaultOptions: { queries: { retry: false } } })
       }
     >
       <MemoryRouter>
-        <RecordPanel
-          event={event}
-          initial="register"
-          registered={new Set(registered)}
-          checkedIn={new Set(checkedIn)}
-        />
+        <RecordPanel event={event} initial="register" />
       </MemoryRouter>
     </QueryClientProvider>,
   );
+};
 
 const search = async (user: ReturnType<typeof userEvent.setup>, text = "ko") =>
   user.type(screen.getByRole("searchbox", { name: "Search members" }), text);

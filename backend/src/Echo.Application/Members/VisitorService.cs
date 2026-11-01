@@ -1,13 +1,14 @@
+using Echo.Application.Caching;
 using Echo.Data;
 using Echo.Domain.Members;
 using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
+using Echo.Shared.Utilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
-using Echo.Shared.Utilities;
 
 namespace Echo.Application.Members;
 
@@ -23,15 +24,29 @@ public class VisitorService(
     ApplicationInstrumentation instrumentation,
     LinkGenerator linker,
     DateWindows dateWindows,
+    SummaryCache summaries,
     ILogger<VisitorService> logger
 )
 {
-    internal static DateWindow? ResolveWindow(VisitorFilters filters, DateWindows dateWindows) =>
-        dateWindows.ThisYear(
-            filters.From,
-            filters.To,
-            hasParent: false
-        );
+    // Someone who was invited was, by definition, invited: naming who invited them fills the source
+    // in, and it cannot say they walked in or came online.
+    internal static (VisitorSource? Source, string? Problem) SourceFor(
+        VisitorSource? requested,
+        Guid? invitedBy
+    )
+    {
+        return invitedBy is null ? (requested, null)
+            : requested is null or VisitorSource.Invited ? (VisitorSource.Invited, null)
+            : (
+                requested,
+                "A visitor who came by themselves or online cannot have someone who invited them."
+            );
+    }
+
+    internal static DateWindow? ResolveWindow(VisitorFilters filters, DateWindows dateWindows)
+    {
+        return dateWindows.ThisYear(filters.From, filters.To, hasParent: false);
+    }
 
     public async Task<IOperationResult> List(
         Guid congregationId,
@@ -67,10 +82,13 @@ public class VisitorService(
 
         var stats = await repository.GetVisitStats(
             congregationId,
-            entities.Select(x => x.PersonId).ToList(),
+            [.. entities.Select(x => x.PersonId)],
             ct
         );
-        var data = entities.Select(x => WithVisitStats(mapper.ToDto(x), x.PersonId, stats)).ToList();
+
+        var data = entities
+            .Select(x => WithVisitStats(mapper.ToDto(x), x.PersonId, stats))
+            .ToList();
         activity?.SetTag("visitor.count", data.Count);
         VisitorLog.Listed(logger, congregationId, data.Count);
 
@@ -110,7 +128,18 @@ public class VisitorService(
     {
         using var activity = instrumentation.ActivitySource.StartActivity("svc.visitor.create");
 
+        var (source, problem) = SourceFor(dto.Source, dto.InvitedByMemberId);
+        if (problem is not null)
+            return new BadRequestResult(problem);
+
+        if (
+            dto.InvitedByMemberId is { } inviter
+            && await memberRepository.GetById(congregationId, inviter, ct) is null
+        )
+            return new ForeignKeyEntityNotFound("invitedBy");
+
         var (person, visitor) = mapper.ToEntity(dto);
+        visitor.Source = source;
 
         person.Id = idGenerator.Generate();
         person.CongregationId = congregationId;
@@ -218,9 +247,23 @@ public class VisitorService(
             return new NotFoundResult(id.ToString());
         }
 
+        var (source, problem) = SourceFor(
+            dto.Source ?? entity.Source,
+            dto.InvitedByMemberId ?? entity.InvitedByMemberId
+        );
+        if (problem is not null)
+            return new BadRequestResult(problem);
+
+        if (
+            dto.InvitedByMemberId is { } inviter
+            && await memberRepository.GetById(congregationId, inviter, ct) is null
+        )
+            return new ForeignKeyEntityNotFound("invitedBy");
+
         using (instrumentation.ActivitySource.StartActivity("svc.visitor.persist"))
         {
             mapper.Patch(dto, entity.Person, entity);
+            entity.Source = source;
             await unitOfWork.CommitAsync(ct);
         }
 
@@ -281,7 +324,23 @@ public class VisitorService(
         return new SuccessResult<List<VisitorSearchResultDto>>(res);
     }
 
-    public async Task<IOperationResult> Summary(
+    public Task<IOperationResult> Summary(
+        Guid congregationId,
+        VisitorFilters filters,
+        CancellationToken ct
+    )
+    {
+        return summaries.Serve(
+            this,
+            "visitors",
+            congregationId,
+            filters,
+            (self, token) => self.ComputeSummary(congregationId, filters, token),
+            ct
+        );
+    }
+
+    private async Task<VisitorSummaryDto> ComputeSummary(
         Guid congregationId,
         VisitorFilters filters,
         CancellationToken ct
@@ -301,25 +360,36 @@ public class VisitorService(
             NewVisitors = stats.New,
             RecurringVisitors = stats.Recurring,
             ConvertedVisitors = stats.Converted,
+            InvitedVisitors = stats.Invited,
+            MaleVisitors = stats.Male,
+            FemaleVisitors = stats.Female,
         };
 
         activity?.SetTag("visitor.summary.total", res.TotalVisitors);
         VisitorLog.Summarized(logger, congregationId, res.TotalVisitors);
 
-        return new SuccessResult<VisitorSummaryDto>(res);
+        return res;
     }
 
-    private static VisitorCursor BuildCursor(Visitor last) =>
-        new() { Name = last.Person.Name, Id = last.PersonId };
+    private static VisitorCursor BuildCursor(Visitor last)
+    {
+        return new() { Name = last.Person.Name, Id = last.PersonId };
+    }
 
     private static VisitorResponseDto WithVisitStats(
         VisitorResponseDto dto,
         Guid personId,
         Dictionary<Guid, (int Count, DateOnly LastVisited)> stats
-    ) =>
-        stats.TryGetValue(personId, out var visit)
-            ? dto with { VisitCount = visit.Count, LastVisitedAt = visit.LastVisited }
+    )
+    {
+        return stats.TryGetValue(personId, out var visit)
+            ? dto with
+            {
+                VisitCount = visit.Count,
+                LastVisitedAt = visit.LastVisited,
+            }
             : dto;
+    }
 
     private async Task<VisitorResponseDto> WithVisitStats(
         Visitor entity,

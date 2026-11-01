@@ -1,0 +1,32 @@
+﻿[
+  {
+    Id: Guid_1,
+    MemberId: Guid_2,
+    MemberName: Jane Doe,
+    EventId: Guid_3,
+    EventName: Christmas Service,
+    EventStartDate: Date_1,
+    RegistrationDate: Date_2,
+    CreatedAt: DateTime_1
+  },
+  {
+    Id: Guid_4,
+    MemberId: Guid_5,
+    MemberName: Jane Doe,
+    EventId: Guid_6,
+    EventName: Christmas Service,
+    EventStartDate: Date_3,
+    RegistrationDate: Date_2,
+    CreatedAt: DateTime_2
+  },
+  {
+    Id: Guid_7,
+    MemberId: Guid_8,
+    MemberName: Jane Doe,
+    EventId: Guid_9,
+    EventName: Christmas Service,
+    EventStartDate: Date_4,
+    RegistrationDate: Date_2,
+    CreatedAt: DateTime_3
+  }
+]

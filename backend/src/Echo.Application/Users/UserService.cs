@@ -4,6 +4,7 @@ using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
+using Echo.Shared.Services.Hashing;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
@@ -16,6 +17,8 @@ public class UserService(
     IUserMapper mapper,
     IEncoder encoder,
     IIdGenerator idGenerator,
+    IPasswordHasher passwordHasher,
+    TimeProvider timeProvider,
     ApplicationInstrumentation instrumentation,
     LinkGenerator linker,
     ILogger<UserService> logger
@@ -98,6 +101,8 @@ public class UserService(
         var entity = mapper.ToEntity(dto);
         entity.CongregationId = congregationId;
         entity.Id = idGenerator.Generate();
+        entity.PasswordHash = await passwordHasher.HashAsync(dto.Password);
+        entity.PasswordChangedAt = timeProvider.GetUtcNow().UtcDateTime;
 
         using (instrumentation.ActivitySource.StartActivity("svc.user.persist"))
         {
@@ -140,6 +145,12 @@ public class UserService(
         }
 
         mapper.Patch(dto, entity);
+        if (dto.Password is not null)
+        {
+            entity.PasswordHash = await passwordHasher.HashAsync(dto.Password);
+            entity.PasswordChangedAt = timeProvider.GetUtcNow().UtcDateTime;
+        }
+
         using (instrumentation.ActivitySource.StartActivity("svc.user.persist"))
         {
             await unitOfWork.CommitAsync(ct);

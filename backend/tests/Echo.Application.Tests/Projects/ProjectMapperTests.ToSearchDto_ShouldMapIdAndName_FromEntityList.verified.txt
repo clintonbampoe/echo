@@ -1,0 +1,14 @@
+﻿[
+  {
+    Id: Guid_1,
+    Name: Borehole Fund
+  },
+  {
+    Id: Guid_2,
+    Name: Borehole Fund
+  },
+  {
+    Id: Guid_3,
+    Name: Borehole Fund
+  }
+]

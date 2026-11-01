@@ -15,17 +15,23 @@ import { transactionRoutes } from "@/features/transactions";
 import { visitorRoutes } from "@/features/visitors";
 import { websiteRoutes } from "@/features/website";
 import { pageRoutes } from "@/pages";
+import { LoadingScreen } from "@/ui";
+import { RouteError } from "./errors";
 import { NotFound } from "./NotFound";
 import { RequireAuth } from "./RequireAuth";
+import { RootLayout } from "./RootLayout";
 import { AppShell } from "./shell";
 
 // One list, top to bottom, of every URL in the app. Each feature owns its own routes and
 // hands them over here; this file only decides where they sit. Pages load on demand.
 const routes: RouteObject[] = [
   {
-    // Shown for the instant it takes to load the first page's code. Nothing: the page
-    // background is already painted, so it just looks like the page arriving.
-    HydrateFallback: () => null,
+    // Shown while the first page's code loads. It only appears after a short wait, so a quick
+    // load never flashes it.
+    HydrateFallback: () => <LoadingScreen />,
+    // Whatever fails, anywhere, is shown as a page of the website, never inside the app shell.
+    ErrorBoundary: RouteError,
+    Component: RootLayout,
     children: [
       ...websiteRoutes,
       ...authRoutes,

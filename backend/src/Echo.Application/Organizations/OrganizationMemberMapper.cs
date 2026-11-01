@@ -7,7 +7,7 @@ namespace Echo.Application.Organizations;
 public partial class OrganizationMemberMapper : IOrganizationMemberMapper
 {
     public OrganizationMemberResponseDto ToDto(OrganizationMember entity) =>
-        new OrganizationMemberResponseDto
+        new()
         {
             Id = entity.Id,
             MemberId = entity.MemberId,
@@ -19,7 +19,6 @@ public partial class OrganizationMemberMapper : IOrganizationMemberMapper
             CreatedAt = entity.CreatedAt,
         };
 
-    [MapperIgnoreTarget(nameof(OrganizationMember.Congregation))]
     [MapperIgnoreTarget(nameof(OrganizationMember.CongregationId))]
     [MapperIgnoreTarget(nameof(OrganizationMember.Id))]
     [MapperIgnoreTarget(nameof(OrganizationMember.Member))]

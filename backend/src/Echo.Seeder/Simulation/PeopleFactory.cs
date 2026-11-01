@@ -369,6 +369,12 @@ public sealed class PeopleFactory(
         {
             PersonId = person.Id,
             CongregationId = congregation.Id,
+            Gender = gender,
+            Source = rng.Weighted<VisitorSource>([
+                (VisitorSource.WalkIn, 50.0),
+                (VisitorSource.Invited, 35.0),
+                (VisitorSource.Online, 15.0),
+            ]),
             Notes = rng.Chance(0.4) ? rng.Pick(_visitorNotes) : null,
             ConvertedAt = convertedOn is null ? null : Stamp(convertedOn.Value),
             CreatedAt = person.CreatedAt,

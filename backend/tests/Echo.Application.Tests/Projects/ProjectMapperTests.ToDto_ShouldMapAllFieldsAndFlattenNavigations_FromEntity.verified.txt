@@ -1,0 +1,14 @@
+﻿{
+  Id: Guid_1,
+  CategoryId: 2,
+  CategoryName: Missions,
+  ManagerId: Guid_2,
+  ManagerName: Jane Doe,
+  Name: Borehole Fund,
+  TargetAmount: 25000.0,
+  Status: OnTrack,
+  StartDate: Date_1,
+  EndDate: Date_2,
+  Description: Clean water for the village,
+  CreatedAt: DateTime_1
+}

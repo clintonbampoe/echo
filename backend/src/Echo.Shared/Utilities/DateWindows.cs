@@ -43,6 +43,13 @@ public sealed class DateWindows(TimeProvider timeProvider)
             DateUtils.GetLastDayOfYear(timeProvider)
         );
 
+    /// <summary>
+    /// The months a monthly summary covers: this many months, oldest first, ending with the month of
+    /// <paramref name="to"/> (or this month when none is given).
+    /// </summary>
+    public List<YearMonth> ChartMonths(int months, DateOnly? to) =>
+        MonthRange.Ending(to ?? DateUtils.GetDateToday(timeProvider), months);
+
     public DateWindow? LastTwelveMonths(DateOnly? from, DateOnly? to, bool hasParent) =>
         Resolve(
             from,

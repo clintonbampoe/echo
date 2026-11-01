@@ -1,0 +1,10 @@
+﻿{
+  Id: Guid_1,
+  MemberId: Guid_2,
+  MemberName: Jane Doe,
+  EventId: Guid_3,
+  EventName: Christmas Service,
+  EventStartDate: Date_1,
+  CheckInTime: Time_1,
+  CreatedAt: DateTime_1
+}

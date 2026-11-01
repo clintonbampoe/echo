@@ -1,4 +1,5 @@
 using Echo.Domain.Assets;
+using Echo.Domain.Congregations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
@@ -13,12 +14,11 @@ public class AssetConfiguration : IEntityTypeConfiguration<Asset>
         builder.Property(e => e.CreatedAt).HasDefaultValueSql("now()").ValueGeneratedOnAdd();
 
         builder
-            .HasOne(e => e.Congregation)
+            .HasOne<Congregation>()
             .WithMany()
             .HasForeignKey(e => e.CongregationId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        builder.HasIndex(e => e.CongregationId);
+            .OnDelete(DeleteBehavior.Restrict)
+            .IsRequired();
 
         builder
             .HasOne(a => a.Category)
@@ -30,6 +30,23 @@ public class AssetConfiguration : IEntityTypeConfiguration<Asset>
         builder.HasIndex(a => new { a.CongregationId, a.Name }).IsUnique();
         builder.HasIndex(a => a.Name).HasMethod("GIN").HasOperators("gin_trgm_ops");
 
-        builder.HasIndex(a => new { a.Name, a.Id }).HasFilter("deleted_at IS NULL");
+        // The summaries read a congregation's assets by purchase date, so everything they sum or group
+        // by is in the index and they never touch the table.
+        builder
+            .HasIndex(a => new { a.CongregationId, a.PurchaseDate })
+            .HasFilter("deleted_at IS NULL")
+            .IncludeProperties(a => new
+            {
+                a.CategoryId,
+                a.Status,
+                a.PurchaseCost,
+                a.CurrentValue,
+            });
+
+        // The lost-per-month chart: only liquidated assets have a date.
+        builder
+            .HasIndex(a => new { a.CongregationId, a.LiquidatedOn })
+            .HasFilter("deleted_at IS NULL AND liquidated_on IS NOT NULL")
+            .IncludeProperties(a => a.PurchaseCost);
     }
 }

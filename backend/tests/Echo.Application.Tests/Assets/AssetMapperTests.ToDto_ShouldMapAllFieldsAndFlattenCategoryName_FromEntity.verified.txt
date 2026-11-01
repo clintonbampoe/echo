@@ -1,0 +1,13 @@
+﻿{
+  Id: Guid_1,
+  CategoryId: 2,
+  CategoryName: Audio Equipment,
+  Name: Yamaha Mixer,
+  SerialNumber: v2,
+  PurchaseDate: Date_1,
+  PurchaseCost: 1.0,
+  CurrentValue: 2.0,
+  LiquidatedOn: Date_2,
+  Description: v3,
+  CreatedAt: DateTime_1
+}

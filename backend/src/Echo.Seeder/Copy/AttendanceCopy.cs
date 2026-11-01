@@ -19,6 +19,7 @@ public static class AttendanceCopy
                 id, congregation_id,
                 session_id, person_id,
                 person_kind_at_time,
+                session_date, is_first_visit,
                 checked_in_at, recorded_by,
                 created_at
             ) FROM STDIN (FORMAT BINARY)
@@ -34,6 +35,8 @@ public static class AttendanceCopy
             await writer.WriteAsync(a.SessionId, NpgsqlDbType.Uuid, ct);
             await writer.WriteAsync(a.PersonId, NpgsqlDbType.Uuid, ct);
             await writer.WriteAsync(a.PersonKindAtTime.ToString(), NpgsqlDbType.Text, ct);
+            await writer.WriteAsync(a.SessionDate, NpgsqlDbType.Date, ct);
+            await writer.WriteAsync(a.IsFirstVisit, NpgsqlDbType.Boolean, ct);
             await writer.WriteAsync(a.CheckedInAt, NpgsqlDbType.TimestampTz, ct);
             await WriteNullableUuid(writer, a.RecordedBy, ct);
             await writer.WriteAsync(a.CreatedAt, NpgsqlDbType.TimestampTz, ct);

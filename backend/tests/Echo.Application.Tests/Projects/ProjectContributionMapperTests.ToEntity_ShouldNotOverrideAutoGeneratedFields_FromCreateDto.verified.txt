@@ -1,0 +1,7 @@
+﻿{
+  ProjectId: Guid_1,
+  Amount: 250.0,
+  DateContributed: Date_1,
+  PaymentMethod: BankTransfer,
+  Description: Monthly standing order
+}

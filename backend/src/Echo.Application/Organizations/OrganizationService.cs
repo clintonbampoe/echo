@@ -1,13 +1,14 @@
+using Echo.Application.Caching;
 using Echo.Data;
 using Echo.Domain.Organizations;
 using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
+using Echo.Shared.Utilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
-using Echo.Shared.Utilities;
 
 namespace Echo.Application.Organizations;
 
@@ -20,15 +21,14 @@ public class OrganizationService(
     ApplicationInstrumentation instrumentation,
     LinkGenerator linker,
     DateWindows dateWindows,
+    SummaryCache summaries,
     ILogger<OrganizationService> logger
 )
 {
-    internal static DateWindow? ResolveWindow(OrganizationFilters filters, DateWindows dateWindows) =>
-        dateWindows.ThisYear(
-            filters.From,
-            filters.To,
-            hasParent: false
-        );
+    internal static DateWindow? ResolveWindow(
+        OrganizationFilters filters,
+        DateWindows dateWindows
+    ) => dateWindows.ThisYear(filters.From, filters.To, hasParent: false);
 
     public async Task<IOperationResult> List(
         Guid congregationId,
@@ -62,13 +62,17 @@ public class OrganizationService(
 
         var nextCursor = hasMore ? encoder.Encode(BuildCursor(entities.Last())) : null;
 
-        var counts = await repository.GetMemberCounts(
-            congregationId,
-            entities.Select(x => x.Id).ToList(),
-            ct
-        );
+        var ids = entities.Select(x => x.Id).ToList();
+        var counts = await repository.GetMemberCounts(ids, ct);
+        var leaders = await repository.GetLeaders(ids, ct);
         var data = entities
-            .Select(x => mapper.ToDto(x) with { MemberCount = counts.GetValueOrDefault(x.Id) })
+            .Select(x =>
+                mapper.ToDto(x) with
+                {
+                    MemberCount = counts.GetValueOrDefault(x.Id),
+                    LeaderName = leaders.GetValueOrDefault(x.Id),
+                }
+            )
             .ToList();
         activity?.SetTag("organization.count", data.Count);
         OrganizationLog.Listed(logger, congregationId, data.Count);
@@ -98,7 +102,7 @@ public class OrganizationService(
         }
 
         OrganizationLog.Found(logger, congregationId, id);
-        var res = await WithCount(entity, congregationId, ct);
+        var res = await WithDetails(entity, ct);
         return new SuccessResult<OrganizationResponseDto>(res);
     }
 
@@ -170,7 +174,7 @@ public class OrganizationService(
 
         OrganizationLog.Updated(logger, congregationId, id);
 
-        var res = await WithCount(entity, congregationId, ct);
+        var res = await WithDetails(entity, ct);
         return new SuccessResult<OrganizationResponseDto>(res);
     }
 
@@ -228,7 +232,21 @@ public class OrganizationService(
         return new SuccessResult<List<OrganizationSearchResultDto>>(res);
     }
 
-    public async Task<IOperationResult> Summary(
+    public Task<IOperationResult> Summary(
+        Guid congregationId,
+        OrganizationFilters filters,
+        CancellationToken ct
+    ) =>
+        summaries.Serve(
+            this,
+            "organizations",
+            congregationId,
+            filters,
+            (self, token) => self.ComputeSummary(congregationId, filters, token),
+            ct
+        );
+
+    private async Task<OrganizationSummaryDto> ComputeSummary(
         Guid congregationId,
         OrganizationFilters filters,
         CancellationToken ct
@@ -250,12 +268,13 @@ public class OrganizationService(
             TotalMembers = stats.TotalMembers,
             AverageMembersPerOrganization = stats.AverageMembers,
             LargestOrganization = stats.Largest,
+            LargestOrganizationMemberCount = stats.LargestMembers,
         };
 
         activity?.SetTag("organization.summary.total", res.TotalOrganizations);
         OrganizationLog.Summarized(logger, congregationId, res.TotalOrganizations);
 
-        return new SuccessResult<OrganizationSummaryDto>(res);
+        return res;
     }
 
     private static OrganizationCursor BuildCursor(Organization last)
@@ -263,9 +282,32 @@ public class OrganizationService(
         return new OrganizationCursor { Name = last.Name, Id = last.Id };
     }
 
-    private async Task<OrganizationResponseDto> WithCount(Organization entity, Guid congregationId, CancellationToken ct)
+    // One organization with everything the list also has, and the members' average age.
+    private async Task<OrganizationResponseDto> WithDetails(
+        Organization entity,
+        CancellationToken ct
+    )
     {
-        var counts = await repository.GetMemberCounts(congregationId, [entity.Id], ct);
-        return mapper.ToDto(entity) with { MemberCount = counts.GetValueOrDefault(entity.Id) };
+        List<Guid> ids = [entity.Id];
+        var counts = await repository.GetMemberCounts(ids, ct);
+        var leaders = await repository.GetLeaders(ids, ct);
+        var ages = await repository.GetAverageAges(ids, ct);
+
+        return mapper.ToDto(entity) with
+        {
+            MemberCount = counts.GetValueOrDefault(entity.Id),
+            LeaderName = leaders.GetValueOrDefault(entity.Id),
+            AverageAge = ages.TryGetValue(entity.Id, out var age) ? age : null,
+        };
     }
+
+    // The longest-serving leader of each organization; the name decides between leaders who joined
+    // the same day, so the answer is stable.
+    internal static Dictionary<Guid, string> FirstLeaders(IEnumerable<LeaderRow> leaders) =>
+        leaders
+            .GroupBy(l => l.OrganizationId)
+            .ToDictionary(
+                g => g.Key,
+                g => g.OrderBy(l => l.JoinedAt).ThenBy(l => l.Name).First().Name
+            );
 }

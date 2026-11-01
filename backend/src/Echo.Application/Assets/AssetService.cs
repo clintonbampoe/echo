@@ -1,13 +1,14 @@
+using Echo.Application.Caching;
 using Echo.Data;
 using Echo.Domain.Assets;
 using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
+using Echo.Shared.Utilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
-using Echo.Shared.Utilities;
 
 namespace Echo.Application.Assets;
 
@@ -21,20 +22,25 @@ public class AssetService(
     ApplicationInstrumentation instrumentation,
     LinkGenerator linker,
     DateWindows dateWindows,
+    TimeProvider timeProvider,
+    SummaryCache summaries,
     ILogger<AssetService> logger
 )
 {
+    // Liquidating an asset dates it; moving it back to any other status takes the date away again.
+    internal static DateOnly? LiquidatedOn(AssetStatus status, DateOnly? current, DateOnly today) =>
+        status == AssetStatus.Liquidated ? current ?? today : null;
+
     // The summary describes what the church owns now, so liquidated assets are left out unless
     // the caller asks for them.
     internal static AssetFilters SummaryFilters(AssetFilters filters) =>
-        filters with { IncludeLiquidated = filters.IncludeLiquidated ?? false };
+        filters with
+        {
+            IncludeLiquidated = filters.IncludeLiquidated ?? false,
+        };
 
     internal static DateWindow? ResolveWindow(AssetFilters filters, DateWindows dateWindows) =>
-        dateWindows.ThisYear(
-            filters.From,
-            filters.To,
-            hasParent: false
-        );
+        dateWindows.ThisYear(filters.From, filters.To, hasParent: false);
 
     public async Task<IOperationResult> List(
         Guid congregationId,
@@ -123,6 +129,11 @@ public class AssetService(
         entity.CongregationId = congregationId;
         entity.Id = idGenerator.Generate();
         entity.Category = category;
+        entity.LiquidatedOn = LiquidatedOn(
+            entity.Status,
+            null,
+            DateUtils.GetDateToday(timeProvider)
+        );
         AssetLog.CreateCategoryFound(logger, congregationId, entity.CategoryId);
 
         using (instrumentation.ActivitySource.StartActivity("svc.asset.persist"))
@@ -189,6 +200,11 @@ public class AssetService(
         using (instrumentation.ActivitySource.StartActivity("svc.asset.persist"))
         {
             mapper.Patch(dto, entity);
+            entity.LiquidatedOn = LiquidatedOn(
+                entity.Status,
+                entity.LiquidatedOn,
+                DateUtils.GetDateToday(timeProvider)
+            );
             await unitOfWork.CommitAsync(ct);
         }
 
@@ -247,7 +263,21 @@ public class AssetService(
         return new SuccessResult<List<AssetSearchResultDto>>(res);
     }
 
-    public async Task<IOperationResult> Summary(
+    public Task<IOperationResult> Summary(
+        Guid congregationId,
+        AssetFilters filters,
+        CancellationToken ct
+    ) =>
+        summaries.Serve(
+            this,
+            "assets",
+            congregationId,
+            filters,
+            (self, token) => self.ComputeSummary(congregationId, filters, token),
+            ct
+        );
+
+    private async Task<AssetSummaryDto> ComputeSummary(
         Guid congregationId,
         AssetFilters filters,
         CancellationToken ct
@@ -268,12 +298,113 @@ public class AssetService(
             TotalCurrentValue = stats.CurrentValue,
             TotalPurchaseCost = stats.PurchaseCost,
             TotalDepreciation = stats.PurchaseCost - stats.CurrentValue,
+            AverageAgeYears = stats.AverageAgeYears,
         };
 
         activity?.SetTag("asset.summary.total", res.TotalAssets);
         AssetLog.Summarized(logger, congregationId, res.TotalAssets);
 
-        return new SuccessResult<AssetSummaryDto>(res);
+        return res;
+    }
+
+    public Task<IOperationResult> CategorySummary(
+        Guid congregationId,
+        AssetFilters filters,
+        CancellationToken ct
+    ) =>
+        summaries.Serve(
+            this,
+            "assets.by-category",
+            congregationId,
+            filters,
+            (self, token) => self.ComputeCategorySummary(congregationId, filters, token),
+            ct
+        );
+
+    private async Task<List<AssetCategoryTotalDto>> ComputeCategorySummary(
+        Guid congregationId,
+        AssetFilters filters,
+        CancellationToken ct
+    )
+    {
+        var window = ResolveWindow(filters, dateWindows);
+        filters = SummaryFilters(filters with { From = window?.From, To = window?.To });
+
+        return await repository.GetCategoryTotals(congregationId, filters, ct);
+    }
+
+    public async Task<IOperationResult> MonthlySummary(
+        Guid congregationId,
+        AssetMonthlyFilters filters,
+        CancellationToken ct
+    )
+    {
+        if (MonthRange.Problem(MonthRange.Or(filters.Months)) is { } problem)
+            return new BadRequestResult(problem);
+
+        return await summaries.Serve(
+            this,
+            "assets.monthly",
+            congregationId,
+            filters,
+            (self, token) => self.ComputeMonthly(congregationId, filters, token),
+            ct
+        );
+    }
+
+    private async Task<List<AssetMonthlyDto>> ComputeMonthly(
+        Guid congregationId,
+        AssetMonthlyFilters filters,
+        CancellationToken ct
+    )
+    {
+        var months = dateWindows.ChartMonths(MonthRange.Or(filters.Months), filters.To);
+        var (from, to) = MonthRange.Bounds(months);
+        var acquired = await repository.GetAcquiredByMonth(
+            congregationId,
+            filters.CategoryId,
+            from,
+            to,
+            ct
+        );
+        var lost = await repository.GetLostByMonth(
+            congregationId,
+            filters.CategoryId,
+            from,
+            to,
+            ct
+        );
+
+        return Monthly(months, acquired, lost);
+    }
+
+    // Every month in the range, with what was bought and what was lost in it. A month with neither is zeros.
+    internal static List<AssetMonthlyDto> Monthly(
+        IReadOnlyList<YearMonth> months,
+        IEnumerable<AssetMonthRow> acquired,
+        IEnumerable<AssetMonthRow> lost
+    )
+    {
+        var acquiredIn = acquired.ToDictionary(r => new YearMonth(r.Year, r.Month));
+        var lostIn = lost.ToDictionary(r => new YearMonth(r.Year, r.Month));
+
+        return
+        [
+            .. months.Select(m =>
+            {
+                acquiredIn.TryGetValue(m, out var bought);
+                lostIn.TryGetValue(m, out var gone);
+                return new AssetMonthlyDto
+                {
+                    Year = m.Year,
+                    Month = m.Month,
+                    AcquiredCount = bought?.Count ?? 0,
+                    AcquiredCost = bought?.Cost ?? 0m,
+                    LostCount = gone?.Count ?? 0,
+                    LostCost = gone?.Cost ?? 0m,
+                };
+            }),
+        ];
     }
 
     private static AssetCursor BuildCursor(Asset last)

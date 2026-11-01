@@ -161,7 +161,7 @@ public static class FinancesCopy
                 id, congregation_id, category_id,
                 name, serial_number,
                 purchase_date, purchase_cost, current_value,
-                status, description, created_at
+                status, liquidated_on, description, created_at
             ) FROM STDIN (FORMAT BINARY)
             """,
             ct
@@ -179,6 +179,7 @@ public static class FinancesCopy
             await writer.WriteAsync(a.PurchaseCost, NpgsqlDbType.Numeric, ct);
             await writer.WriteAsync(a.CurrentValue, NpgsqlDbType.Numeric, ct);
             await writer.WriteAsync(a.Status.ToString(), NpgsqlDbType.Text, ct);
+            await WriteNullableDate(writer, a.LiquidatedOn, ct);
             await WriteNullableText(writer, a.Description, ct);
             await writer.WriteAsync(a.CreatedAt, NpgsqlDbType.TimestampTz, ct);
         }

@@ -4,13 +4,13 @@ using Echo.Application.Events;
 using Echo.Application.Members;
 using Echo.Application.Organizations;
 using Echo.Application.Projects;
-using Echo.Application.Transactions;
 using Echo.Application.Tests.Assets;
 using Echo.Application.Tests.Attendances;
 using Echo.Application.Tests.Events;
 using Echo.Application.Tests.Organizations;
 using Echo.Application.Tests.Projects;
 using Echo.Application.Tests.Transactions;
+using Echo.Application.Transactions;
 using Echo.Domain.Assets;
 using Echo.Domain.Attendances;
 using Echo.Domain.Events;
@@ -33,7 +33,7 @@ public class CountQueryTests
     {
         EventRegistration Reg(Guid eventId, bool deleted = false)
         {
-            var r = EventRegistrationFactory.NewEntity();
+            var r = TestData.Shared.CreateEventRegistration();
             r.Id = Guid.NewGuid();
             r.EventId = eventId;
             r.DeletedAt = deleted ? DateTime.UtcNow : null;
@@ -52,7 +52,7 @@ public class CountQueryTests
     {
         OrganizationMember Row(Guid organizationId, bool deleted = false)
         {
-            var m = OrganizationMemberFactory.NewEntity();
+            var m = TestData.Shared.CreateOrganizationMember();
             m.Id = Guid.NewGuid();
             m.OrganizationId = organizationId;
             m.DeletedAt = deleted ? DateTime.UtcNow : null;
@@ -61,17 +61,19 @@ public class CountQueryTests
 
         var rows = new[] { Row(A), Row(A, deleted: true), Row(B), Row(B), Row(C) };
 
-        var res = rows.AsQueryable().CountPerOrganization([A, B]).ToDictionary(x => x.Id, x => x.Count);
+        var res = rows.AsQueryable()
+            .CountPerOrganization([A, B])
+            .ToDictionary(x => x.Id, x => x.Count);
 
         Assert.Equal(new Dictionary<Guid, int> { [A] = 1, [B] = 2 }, res);
     }
 
     [Fact]
-    public void RaisedPerProject_SumsLiveContributionsOfTheRequestedProjectsOnly()
+    public void ContributionTotalsPerProject_SumsAndCountsLiveContributionsOfTheRequestedProjectsOnly()
     {
         ProjectContribution Row(Guid projectId, decimal amount, bool deleted = false)
         {
-            var c = ProjectContributionFactory.NewEntity();
+            var c = TestData.Shared.CreateProjectContribution();
             c.Id = Guid.NewGuid();
             c.ProjectId = projectId;
             c.Amount = amount;
@@ -88,9 +90,14 @@ public class CountQueryTests
             Row(C, 999m),
         };
 
-        var res = rows.AsQueryable().RaisedPerProject([A, B]).ToDictionary(x => x.Id, x => x.Amount);
+        var res = rows.AsQueryable()
+            .ContributionTotalsPerProject([A, B])
+            .ToDictionary(x => x.Id, x => (x.Amount, x.Count));
 
-        Assert.Equal(new Dictionary<Guid, decimal> { [A] = 150.5m, [B] = 20m }, res);
+        Assert.Equal(
+            new Dictionary<Guid, (decimal, int)> { [A] = (150.5m, 2), [B] = (20m, 1) },
+            res
+        );
     }
 
     [Fact]
@@ -98,7 +105,7 @@ public class CountQueryTests
     {
         Project Row(int categoryId, bool deleted = false)
         {
-            var p = ProjectFactory.NewEntity();
+            var p = TestData.Shared.CreateProject();
             p.Id = Guid.NewGuid();
             p.CategoryId = categoryId;
             p.DeletedAt = deleted ? DateTime.UtcNow : null;
@@ -107,7 +114,9 @@ public class CountQueryTests
 
         var rows = new[] { Row(1), Row(1), Row(1, deleted: true), Row(2), Row(3) };
 
-        var res = rows.AsQueryable().CountPerProjectCategory([1, 2]).ToDictionary(x => x.Id, x => x.Count);
+        var res = rows.AsQueryable()
+            .CountPerProjectCategory([1, 2])
+            .ToDictionary(x => x.Id, x => x.Count);
 
         Assert.Equal(new Dictionary<int, int> { [1] = 2, [2] = 1 }, res);
     }
@@ -117,7 +126,7 @@ public class CountQueryTests
     {
         Asset Row(int categoryId, bool deleted = false)
         {
-            var a = AssetFactory.NewEntity();
+            var a = TestData.Shared.CreateAsset();
             a.Id = Guid.NewGuid();
             a.CategoryId = categoryId;
             a.DeletedAt = deleted ? DateTime.UtcNow : null;
@@ -126,7 +135,9 @@ public class CountQueryTests
 
         var rows = new[] { Row(1), Row(1, deleted: true), Row(2), Row(2), Row(3) };
 
-        var res = rows.AsQueryable().CountPerAssetCategory([1, 2]).ToDictionary(x => x.Id, x => x.Count);
+        var res = rows.AsQueryable()
+            .CountPerAssetCategory([1, 2])
+            .ToDictionary(x => x.Id, x => x.Count);
 
         Assert.Equal(new Dictionary<int, int> { [1] = 1, [2] = 2 }, res);
     }
@@ -136,7 +147,7 @@ public class CountQueryTests
     {
         Transaction Row(int categoryId, bool deleted = false)
         {
-            var t = TransactionFactory.NewEntity();
+            var t = TestData.Shared.CreateTransaction();
             t.Id = Guid.NewGuid();
             t.CategoryId = categoryId;
             t.DeletedAt = deleted ? DateTime.UtcNow : null;
@@ -145,7 +156,9 @@ public class CountQueryTests
 
         var rows = new[] { Row(1), Row(1), Row(2, deleted: true), Row(2), Row(3) };
 
-        var res = rows.AsQueryable().CountPerTransactionCategory([1, 2]).ToDictionary(x => x.Id, x => x.Count);
+        var res = rows.AsQueryable()
+            .CountPerTransactionCategory([1, 2])
+            .ToDictionary(x => x.Id, x => x.Count);
 
         Assert.Equal(new Dictionary<int, int> { [1] = 2, [2] = 1 }, res);
     }
@@ -153,19 +166,25 @@ public class CountQueryTests
     [Fact]
     public void VisitStatsFor_CountsLiveVisitorAttendanceAndFindsTheLatestSessionDate()
     {
-        Attendance Row(Guid personId, DateOnly date, PersonKind kind = PersonKind.Visitor, bool sessionDeleted = false)
+        Attendance Row(
+            Guid personId,
+            DateOnly date,
+            PersonKind kind = PersonKind.Visitor,
+            bool deleted = false
+        )
         {
-            var session = SessionFactory.NewEntity();
+            var session = TestData.Shared.CreateSession();
             session.Id = Guid.NewGuid();
             session.Date = date;
-            session.DeletedAt = sessionDeleted ? DateTime.UtcNow : null;
 
-            var a = AttendanceFactory.NewEntity();
+            var a = TestData.Shared.CreateAttendance();
             a.Id = Guid.NewGuid();
             a.PersonId = personId;
             a.PersonKindAtTime = kind;
             a.Session = session;
             a.SessionId = session.Id;
+            a.SessionDate = date;
+            a.DeletedAt = deleted ? DateTime.UtcNow : null;
             return a;
         }
 
@@ -173,7 +192,7 @@ public class CountQueryTests
         {
             Row(A, new DateOnly(2026, 9, 6)),
             Row(A, new DateOnly(2026, 10, 11)),
-            Row(A, new DateOnly(2026, 9, 20), sessionDeleted: true),
+            Row(A, new DateOnly(2026, 9, 20), deleted: true),
             Row(A, new DateOnly(2026, 10, 18), PersonKind.Member),
             Row(B, new DateOnly(2026, 8, 2)),
             Row(C, new DateOnly(2026, 10, 4)),

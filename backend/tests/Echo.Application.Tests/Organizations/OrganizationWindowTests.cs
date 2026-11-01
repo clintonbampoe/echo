@@ -14,7 +14,7 @@ public class OrganizationWindowTests
 
     private static Organization CreatedOn(DateTime createdAt)
     {
-        var organization = OrganizationFactory.NewEntity();
+        var organization = TestData.Shared.CreateOrganization();
         organization.CreatedAt = createdAt;
         return organization;
     }
@@ -24,10 +24,7 @@ public class OrganizationWindowTests
     {
         var w = OrganizationService.ResolveWindow(new OrganizationFilters(), _windows);
 
-        Assert.Equal(
-            new DateWindow(new DateOnly(2026, 1, 1), new DateOnly(2026, 12, 31), true),
-            w
-        );
+        Assert.Equal(new DateWindow(new DateOnly(2026, 1, 1), new DateOnly(2026, 12, 31), true), w);
     }
 
     [Fact]

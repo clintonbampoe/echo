@@ -17,7 +17,7 @@ public class TransactionRulesTests
         bool expected
     )
     {
-        var category = TransactionCategoryFactory.NewEntity();
+        var category = TestData.Shared.CreateTransactionCategory();
         category.CategoryType = categoryType;
 
         Assert.Equal(expected, TransactionRules.TypeMatches(transactionType, category));

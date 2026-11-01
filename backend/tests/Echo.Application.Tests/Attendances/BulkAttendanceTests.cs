@@ -13,7 +13,7 @@ public class BulkAttendanceTests
 {
     private static Person NewPerson(PersonKind kind = PersonKind.Member)
     {
-        var p = PersonFactory.NewMemberPerson();
+        var p = TestData.Shared.CreatePerson();
         p.Id = Guid.NewGuid();
         p.Kind = kind;
         return p;
@@ -28,7 +28,11 @@ public class BulkAttendanceTests
         var ama = NewPerson();
         var kofi = NewPerson(PersonKind.Visitor);
 
-        var plan = AttendanceService.PlanBulk([kofi.Id, ama.Id], Directory(ama, kofi), new HashSet<Guid>());
+        var plan = AttendanceService.PlanBulk(
+            [kofi.Id, ama.Id],
+            Directory(ama, kofi),
+            new HashSet<Guid>()
+        );
 
         Assert.Equal([kofi, ama], plan.ToCreate);
         Assert.Empty(plan.Skipped);
@@ -40,7 +44,11 @@ public class BulkAttendanceTests
         var ama = NewPerson();
         var kofi = NewPerson();
 
-        var plan = AttendanceService.PlanBulk([ama.Id, kofi.Id], Directory(ama, kofi), new HashSet<Guid> { ama.Id });
+        var plan = AttendanceService.PlanBulk(
+            [ama.Id, kofi.Id],
+            Directory(ama, kofi),
+            new HashSet<Guid> { ama.Id }
+        );
 
         Assert.Equal([kofi], plan.ToCreate);
         var skipped = Assert.Single(plan.Skipped);
@@ -53,7 +61,11 @@ public class BulkAttendanceTests
         var ama = NewPerson();
         var stranger = Guid.NewGuid();
 
-        var plan = AttendanceService.PlanBulk([stranger, ama.Id], Directory(ama), new HashSet<Guid>());
+        var plan = AttendanceService.PlanBulk(
+            [stranger, ama.Id],
+            Directory(ama),
+            new HashSet<Guid>()
+        );
 
         Assert.Equal([ama], plan.ToCreate);
         var skipped = Assert.Single(plan.Skipped);
@@ -65,14 +77,23 @@ public class BulkAttendanceTests
     {
         var ama = NewPerson();
 
-        var plan = AttendanceService.PlanBulk([ama.Id, ama.Id, ama.Id], Directory(ama), new HashSet<Guid>());
+        var plan = AttendanceService.PlanBulk(
+            [ama.Id, ama.Id, ama.Id],
+            Directory(ama),
+            new HashSet<Guid>()
+        );
 
         Assert.Equal([ama], plan.ToCreate);
         Assert.Empty(plan.Skipped);
     }
 
     private static bool IsValid(BulkAttendanceCreateDto dto) =>
-        Validator.TryValidateObject(dto, new ValidationContext(dto), [], validateAllProperties: true);
+        Validator.TryValidateObject(
+            dto,
+            new ValidationContext(dto),
+            [],
+            validateAllProperties: true
+        );
 
     [Theory]
     [InlineData(0, false)]
@@ -102,7 +123,10 @@ public class BulkAttendanceTests
         var bulk = ((IEndpointRouteBuilder)app)
             .DataSources.SelectMany(source => source.Endpoints)
             .OfType<RouteEndpoint>()
-            .SingleOrDefault(e => e.Metadata.GetMetadata<IEndpointNameMetadata>()?.EndpointName == "BulkCreateAttendance");
+            .SingleOrDefault(e =>
+                e.Metadata.GetMetadata<IEndpointNameMetadata>()?.EndpointName
+                == "BulkCreateAttendance"
+            );
 
         Assert.NotNull(bulk);
         Assert.Equal("/attendance/bulk", bulk.RoutePattern.RawText);

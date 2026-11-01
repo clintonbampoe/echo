@@ -1,0 +1,38 @@
+﻿[
+  {
+    Id: Guid_1,
+    MemberId: Guid_2,
+    MemberName: Jane Doe,
+    Amount: 250.50,
+    ForYear: 2026,
+    ForMonth: March,
+    PaymentMethod: MobileMoney,
+    CollectionDate: Date_1,
+    Description: Sunday offering,
+    CreatedAt: DateTime_1
+  },
+  {
+    Id: Guid_3,
+    MemberId: Guid_4,
+    MemberName: Jane Doe,
+    Amount: 250.50,
+    ForYear: 2026,
+    ForMonth: March,
+    PaymentMethod: MobileMoney,
+    CollectionDate: Date_2,
+    Description: Sunday offering,
+    CreatedAt: DateTime_2
+  },
+  {
+    Id: Guid_5,
+    MemberId: Guid_6,
+    MemberName: Jane Doe,
+    Amount: 250.50,
+    ForYear: 2026,
+    ForMonth: March,
+    PaymentMethod: MobileMoney,
+    CollectionDate: Date_3,
+    Description: Sunday offering,
+    CreatedAt: DateTime_3
+  }
+]

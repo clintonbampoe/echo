@@ -20,23 +20,35 @@ export const listPersonRegistrations = (
     signal,
   });
 
-// A member's sign-up for this event. registrationDate is the day they signed up.
+// A member's sign-up for this event. registrationDate is the day they signed up. In this event's list, `checkIn` is
+// when they came (null when they did not); on any other route it is not filled in.
 export type EventRegistration = {
   id: string;
   memberId: string;
   memberName: string;
   eventId: string;
   registrationDate: string;
+  checkIn?: { id: string; checkInTime: string } | null;
 };
 
-// Who signed up, in the order they did. The server has no search or filter here, so a page that needs them reads every page.
+// What narrows an event's sign-ups: part of a name, whether they came, or only these members (to ask which of a few
+// people are already registered).
+export type RegistrationFilters = {
+  name?: string;
+  status?: "Came" | "Missing";
+  memberIds?: readonly string[];
+};
+
+// Who signed up, in the order they did, a page at a time. The server searches by name and narrows by whether they
+// came, so a page reads only the rows it shows.
 export const listEventRegistrations = (
   eventId: string,
+  filters: RegistrationFilters,
   cursor?: string,
   signal?: AbortSignal,
 ) =>
   api.get<Page<EventRegistration>>(`/v1/event-registrations/event/${eventId}`, {
-    query: { cursor, pageSize: pageSize() },
+    query: { ...filters, cursor, pageSize: pageSize() },
     signal,
   });
 

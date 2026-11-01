@@ -6,13 +6,11 @@ namespace Echo.Application.Transactions;
 [Mapper]
 public partial class TransactionMapper : ITransactionMapper
 {
-    [MapperIgnoreSource(nameof(entity.Congregation))]
     [MapperIgnoreSource(nameof(entity.CongregationId))]
     [MapperIgnoreSource(nameof(entity.DeletedAt))]
     [MapProperty(nameof(Transaction.Category.Name), nameof(TransactionResponseDto.CategoryName))]
     public partial TransactionResponseDto ToDto(Transaction entity);
 
-    [MapperIgnoreTarget(nameof(Transaction.Congregation))]
     [MapperIgnoreTarget(nameof(Transaction.CongregationId))]
     [MapperIgnoreTarget(nameof(Transaction.Id))]
     [MapperIgnoreTarget(nameof(Transaction.Category))]
@@ -32,6 +30,8 @@ public partial class TransactionMapper : ITransactionMapper
             entity.TransactionDate = dto.TransactionDate.Value;
         if (dto.Amount.HasValue)
             entity.Amount = dto.Amount.Value;
+        if (dto.PaymentMethod.HasValue)
+            entity.PaymentMethod = dto.PaymentMethod.Value;
         if (dto.Description != null)
             entity.Description = dto.Description;
     }

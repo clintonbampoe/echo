@@ -6,15 +6,12 @@ import { RecordPanel } from "./RecordPanel";
 type Props = {
   event: EventItem;
   mode: Mode;
-  // Who has signed up and who has come already, to mark them in the search.
-  registered: ReadonlySet<string>;
-  checkedIn: ReadonlySet<string>;
   onClose: () => void;
 };
 
 // Registering and checking in, in a panel that slides over the event: search for a member, then tap. Each tap is
 // saved at once, so there is nothing to confirm; Done just closes it.
-export function RecordSheet({ event, mode, onClose, ...who }: Props) {
+export function RecordSheet({ event, mode, onClose }: Props) {
   return (
     <Sheet
       open
@@ -23,7 +20,7 @@ export function RecordSheet({ event, mode, onClose, ...who }: Props) {
       subtitle={event.name}
       footer={<Button onClick={onClose}>Done</Button>}
     >
-      <RecordPanel event={event} initial={mode} {...who} />
+      <RecordPanel event={event} initial={mode} />
     </Sheet>
   );
 }

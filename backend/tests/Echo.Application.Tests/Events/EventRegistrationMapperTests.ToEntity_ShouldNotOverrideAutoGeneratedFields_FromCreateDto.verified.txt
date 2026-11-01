@@ -1,0 +1,5 @@
+﻿{
+  MemberId: Guid_1,
+  EventId: Guid_2,
+  RegistrationDate: Date_1
+}

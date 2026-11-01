@@ -1,0 +1,14 @@
+﻿{
+  DateOfBirth: Date_1,
+  JoinedDate: Date_2,
+  BaptisedDate: Date_3,
+  ResidentialAddress: v3,
+  City: v4,
+  Hometown: v5,
+  Region: GreaterAccra,
+  GpsAddress: v6,
+  MaritalStatus: Single,
+  NextOfKin: v7,
+  EmergencyContactName: v8,
+  EmergencyContactPhoneNumber: v9
+}

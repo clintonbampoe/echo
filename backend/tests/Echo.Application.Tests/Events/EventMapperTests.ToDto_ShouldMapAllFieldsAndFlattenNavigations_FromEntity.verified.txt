@@ -1,0 +1,16 @@
+﻿{
+  Id: Guid_1,
+  OrganizationId: Guid_2,
+  OrganizationName: Grace Church,
+  OrganizerId: Guid_3,
+  OrganizerName: Jane Doe,
+  Name: Christmas Service,
+  StartDate: Date_1,
+  EndDate: Date_2,
+  StartTime: Time_1,
+  EndTime: Time_2,
+  Location: Main Hall,
+  Capacity: 500,
+  Description: v14,
+  CreatedAt: DateTime_1
+}

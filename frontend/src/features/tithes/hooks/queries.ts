@@ -1,4 +1,4 @@
-import { useQueries, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import type { PaymentMethod } from "@/features/transactions";
 import { usePagedList } from "@/lib/paged";
 import type { TitheFilters, TitheMonthsFor } from "../api/tithes";
@@ -28,26 +28,21 @@ export const useTitheSummary = (filters: TitheFilters) =>
     queryFn: ({ signal }) => getTitheSummary(filters, signal),
   });
 
-// What each way of paying brought in under the same filters, for the "How it was paid" card. It asks the summary once
-// per method, so the split follows the filters exactly without the API needing a new endpoint.
-export const useTitheByMethod = (
-  filters: TitheFilters,
-  methods: readonly PaymentMethod[],
-) =>
-  useQueries({
-    queries: methods.map((paymentMethod) => {
-      const f = { ...filters, paymentMethod };
-      return {
-        queryKey: titheKeys.summary(f),
-        queryFn: ({ signal }: { signal: AbortSignal }) =>
-          getTitheSummary(f, signal),
-        select: (s: { totalCollected: number }) => ({
-          method: paymentMethod,
-          total: s.totalCollected,
-        }),
-      };
-    }),
+// What each way of paying brought in, for the "How it was paid" card. The summary already carries the split, so
+// with no method chosen this shares the page's own summary request. A chosen method narrows the summary to itself,
+// so the split asks without it (one more request) and every way of paying stays in view.
+export const useTitheMethods = (filters: TitheFilters) => {
+  const { paymentMethod: _chosen, ...wider } = filters;
+  return useQuery({
+    queryKey: titheKeys.summary(wider),
+    queryFn: ({ signal }) => getTitheSummary(wider, signal),
+    select: (s) =>
+      (s.byMethod ?? []).map((m) => ({
+        method: m.method as PaymentMethod,
+        total: m.total,
+      })),
   });
+};
 
 // The tithes one member gave that match the filters (all of them with none), newest first.
 export const useMemberTithes = (memberId: string, filters: TitheFilters = {}) =>
@@ -68,13 +63,13 @@ export const useSameMonthTithes = (
     enabled: Boolean(memberId),
   });
 
-// Month by month totals for one member or for the church (with no range: the last twelve months).
+// Month by month totals for one member or for the church: `months` months ending with the month of `to`.
 export const useTitheMonths = (
   who: TitheMonthsFor,
-  from?: string,
-  to?: string,
+  months: number,
+  to: string,
 ) =>
   useQuery({
-    queryKey: titheKeys.months(who, from, to),
-    queryFn: ({ signal }) => getTitheMonths(who, { from, to }, signal),
+    queryKey: titheKeys.months(who, months, to),
+    queryFn: ({ signal }) => getTitheMonths(who, months, to, signal),
   });

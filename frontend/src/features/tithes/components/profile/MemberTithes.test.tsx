@@ -24,6 +24,13 @@ const row = (
   createdAt: "",
 });
 
+const needsMonths = (u: URL) =>
+  u.searchParams.has("months")
+    ? null
+    : new Response(JSON.stringify({ errorCode: "BAD_REQUEST" }), {
+        status: 400,
+      });
+
 let fetchMock: ReturnType<typeof vi.fn>;
 beforeEach(() => {
   saveTokens({
@@ -35,9 +42,10 @@ beforeEach(() => {
   fetchMock = vi.fn(async (url: string) => {
     const u = new URL(url, "http://x");
     if (u.pathname.endsWith("/tithes/summary/monthly"))
-      return json([
-        { year: 2026, month: 10, totalCollected: 800, uniqueTithers: 1 },
-      ]);
+      return (
+        needsMonths(u) ??
+        json([{ year: 2026, month: 10, totalCollected: 800, uniqueTithers: 1 }])
+      );
     if (u.pathname.endsWith("/tithes/summary"))
       return json({
         totalCollected: u.searchParams.get("paymentMethod") ? 800 : 1600,

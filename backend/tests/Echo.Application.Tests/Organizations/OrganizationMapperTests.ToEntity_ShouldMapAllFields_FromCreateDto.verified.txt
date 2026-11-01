@@ -1,0 +1,5 @@
+﻿{
+  Name: Choir,
+  Description: v1,
+  MeetingDay: Sunday
+}

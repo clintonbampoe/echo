@@ -8,7 +8,7 @@ public class AssetLiquidatedTests
 {
     private static Asset WithStatus(AssetStatus status)
     {
-        var asset = AssetFactory.NewEntity();
+        var asset = TestData.Shared.CreateAsset();
         asset.Id = Guid.NewGuid();
         asset.Status = status;
         return asset;
@@ -32,7 +32,9 @@ public class AssetLiquidatedTests
     [Fact]
     public void Filter_ExcludesLiquidatedAssets_WhenIncludeLiquidatedIsFalse()
     {
-        var res = Rows.AsQueryable().Filter(new AssetFilters { IncludeLiquidated = false }).ToList();
+        var res = Rows.AsQueryable()
+            .Filter(new AssetFilters { IncludeLiquidated = false })
+            .ToList();
 
         Assert.DoesNotContain(res, a => a.Status == AssetStatus.Liquidated);
         Assert.Equal(2, res.Count);
@@ -41,7 +43,11 @@ public class AssetLiquidatedTests
     [Fact]
     public void Filter_ShowsLiquidatedAssets_WhenStatusIsLiquidatedEvenIfIncludeLiquidatedIsFalse()
     {
-        var filters = new AssetFilters { Status = AssetStatus.Liquidated, IncludeLiquidated = false };
+        var filters = new AssetFilters
+        {
+            Status = AssetStatus.Liquidated,
+            IncludeLiquidated = false,
+        };
 
         var res = Rows.AsQueryable().Filter(filters).ToList();
 

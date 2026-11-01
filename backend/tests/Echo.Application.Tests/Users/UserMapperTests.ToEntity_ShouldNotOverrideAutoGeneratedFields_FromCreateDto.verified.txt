@@ -1,0 +1,8 @@
+﻿{
+  EmailAddress: jane@echo.test,
+  PasswordHash: Password123!,
+  FirstName: Jane,
+  LastName: Doe,
+  OtherNames: v1,
+  Name: 
+}

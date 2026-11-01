@@ -1,8 +1,10 @@
+import { useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { LinkButton } from "@/ui";
 import { BackLink } from "../components/AuthLinks";
 import { LinkExpired } from "../components/LinkExpired";
 import { AuthScreen } from "../components/AuthScreen";
+import { announceVerified } from "../hooks/verified";
 import { useVerifyEmailLink } from "../hooks/queries";
 import styles from "./form.module.css";
 
@@ -10,6 +12,10 @@ import styles from "./form.module.css";
 export function VerifyEmailPage() {
   const token = useSearchParams()[0].get("token") ?? "";
   const check = useVerifyEmailLink(token);
+  // Tell a verify page waiting in another tab, so it can celebrate straight away.
+  useEffect(() => {
+    if (check.isSuccess) announceVerified();
+  }, [check.isSuccess]);
 
   if (token === "" || check.isError) {
     return (
@@ -23,17 +29,17 @@ export function VerifyEmailPage() {
   if (check.isSuccess) {
     return (
       <AuthScreen
-        title="Email verified"
-        text="Your account is active. Sign in to set up your church."
+        title="Account verified"
+        text="Thank you. Your account is verified. You can close this tab if you have another one open."
       >
-        <LinkButton to="/signin" size="lg" pill block>
-          Continue to sign in
+        <LinkButton to="/dashboard" size="lg" pill block>
+          Continue
         </LinkButton>
       </AuthScreen>
     );
   }
   return (
-    <AuthScreen title="Verifying your email" text="This only takes a moment.">
+    <AuthScreen title="Verifying your account" text="This only takes a moment.">
       <p className={styles.note}>Checking your link…</p>
     </AuthScreen>
   );
