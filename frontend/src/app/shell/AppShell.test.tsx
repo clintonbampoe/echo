@@ -181,23 +181,42 @@ describe("app shell", () => {
 });
 
 describe("verify email reminder", () => {
-  it("asks an unverified user to verify, and sends the link to their address", async () => {
+  const unverified = () => {
     profile = { ...me, emailVerifiedAt: null };
-    renderShell();
-    await userEvent.click(
-      await screen.findByRole("button", {
-        name: "Send me a verification link",
-      }),
-    );
-    expect(
-      await screen.findByText(/We sent a link to ama@example.com/),
-    ).toBeInTheDocument();
-    const call = fetchMock.mock.calls.find(([url]) =>
+  };
+  const linkRequest = () =>
+    fetchMock.mock.calls.find(([url]) =>
       String(url).includes("/auth/verifications/account"),
-    )!;
-    expect(JSON.parse((call[1] as RequestInit).body as string)).toEqual({
-      email: "ama@example.com",
+    );
+  // Same answers as the default, except for the paths the test names.
+  const answer = (overrides: Record<string, () => Response>) => {
+    const normal = fetchMock.getMockImplementation() as (
+      url: string,
+      init?: RequestInit,
+    ) => Promise<Response>;
+    fetchMock.mockImplementation(async (url: string, init?: RequestInit) => {
+      const hit = Object.entries(overrides).find(([path]) =>
+        url.includes(path),
+      );
+      return hit ? hit[1]() : normal(url, init);
     });
+  };
+
+  it("asks an unverified user to confirm, and sends the link to their address", async () => {
+    unverified();
+    renderShell();
+    expect(
+      await screen.findByText("We have not confirmed ama@example.com yet."),
+    ).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Send link" }));
+
+    expect(await screen.findByText("Link on its way")).toBeInTheDocument();
+    expect(
+      JSON.parse((linkRequest()![1] as RequestInit).body as string),
+    ).toEqual({ email: "ama@example.com" });
+    expect(
+      screen.getByRole("button", { name: "Resend in 0:30" }),
+    ).toBeDisabled();
   });
 
   it("says nothing to a verified user", async () => {
@@ -205,7 +224,52 @@ describe("verify email reminder", () => {
     renderShell();
     await screen.findByText("Ama Mensah");
     expect(
-      screen.queryByText("Verify your email address"),
+      screen.queryByText("Confirm your email address"),
     ).not.toBeInTheDocument();
+  });
+
+  it("says when the link could not be sent, and offers to try again", async () => {
+    unverified();
+    renderShell();
+    await screen.findByText("Confirm your email address");
+    answer({
+      "/verifications/account": () => new Response(null, { status: 500 }),
+    });
+    await userEvent.click(screen.getByRole("button", { name: "Send link" }));
+
+    expect(
+      await screen.findByText("We could not send the link"),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Try again" })).toBeEnabled();
+  });
+
+  it("waits out a rate limit the way the resend button does", async () => {
+    unverified();
+    renderShell();
+    await screen.findByText("Confirm your email address");
+    answer({
+      "/verifications/account": () => new Response(null, { status: 429 }),
+    });
+    await userEvent.click(screen.getByRole("button", { name: "Send link" }));
+
+    expect(await screen.findByText("Link on its way")).toBeInTheDocument();
+  });
+
+  it("thanks the person once the address has been confirmed", async () => {
+    unverified();
+    renderShell();
+    await screen.findByText("Confirm your email address");
+    answer({
+      "/verifications/status": () =>
+        json({
+          verified: true,
+          verifiedAt: "2026-11-01T09:00:00Z",
+          emailAddress: "ama@example.com",
+        }),
+    });
+    await userEvent.click(screen.getByRole("button", { name: "Send link" }));
+
+    expect(await screen.findByText("Email confirmed")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Resend/ })).toBeNull();
   });
 });

@@ -1,43 +1,45 @@
 import { useState } from "react";
-import { useMe } from "@/features/account";
-import { useSendVerification } from "@/features/auth";
-import { Alert } from "@/ui";
+import { Button, StatusTile, useMedia, usePresence } from "@/ui";
+import { reminderView, type ReminderPhase } from "./reminderView";
+import { useVerifyReminder } from "./useVerifyReminder";
 import styles from "./VerifyEmailBanner.module.css";
 
-// Signing in does not need a verified email, so this is where the reminder lives. It reads the
-// profile the shell already loads, so it costs no request of its own.
+// Signing in does not need a verified email, so this is where the reminder lives: one quiet card at the top
+// of every page until the address is confirmed. It reads the profile the shell already loads, so it costs no
+// request of its own until a link has been sent.
 export function VerifyEmailBanner() {
-  const me = useMe().data;
-  const send = useSendVerification();
-  const [sent, setSent] = useState(false);
-  if (!me || me.emailVerifiedAt !== null) return null;
+  const reminder = useVerifyReminder();
+  const phone = useMedia("(max-width: 600px)");
+  const { mounted, closing } = usePresence(reminder.phase !== "hidden", 200);
 
-  async function onSend() {
-    await send.mutateAsync(me!.emailAddress);
-    setSent(true);
-  }
+  // Keep the last thing it said, so it can finish saying it while it leaves.
+  const [last, setLast] = useState<ReminderPhase>("idle");
+  if (reminder.phase !== "hidden" && reminder.phase !== last)
+    setLast(reminder.phase);
 
+  if (!mounted) return null;
+  const view = reminderView(last, reminder.email, reminder.wait);
   return (
-    <div className={styles.banner}>
-      <Alert
-        title="Verify your email address"
-        action={
-          sent ? undefined : (
-            <button
-              type="button"
-              className={styles.link}
-              onClick={() => void onSend().catch(() => undefined)}
-              disabled={send.isPending}
-            >
-              Send me a verification link
-            </button>
-          )
-        }
-      >
-        {sent
-          ? `We sent a link to ${me.emailAddress}. Open it to finish.`
-          : `We have not confirmed ${me.emailAddress} yet.`}
-      </Alert>
+    <div className={`${styles.banner} pop`} data-closing={closing}>
+      <StatusTile icon={view.icon} on={view.on} tone={view.tone} size={44} />
+      <div className={styles.words} aria-live="polite">
+        <p className={styles.title}>{view.title}</p>
+        <p className={styles.text}>
+          {phone ? view.text.short : view.text.long}
+        </p>
+      </div>
+      {view.action && (
+        <Button
+          variant="secondary"
+          pill
+          className={styles.action}
+          loading={reminder.sending}
+          disabled={view.action.disabled}
+          onClick={() => void reminder.onSend()}
+        >
+          {phone ? view.action.short : view.action.long}
+        </Button>
+      )}
     </div>
   );
 }

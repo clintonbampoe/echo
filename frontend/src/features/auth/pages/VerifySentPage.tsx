@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
-import { buttonClass, Icon, LinkButton } from "@/ui";
+import { buttonClass, Icon, LinkButton, StatusTile } from "@/ui";
 import { ResendButton } from "../components/ResendButton";
 import { AuthScreen } from "../components/AuthScreen";
 import { sendVerificationLink } from "../api/auth";
@@ -26,14 +26,7 @@ function CheckEmail({ email }: { email: string }) {
       title="Check your email"
       text="We sent a verification link to this address. Open it to confirm it is yours."
     >
-      <div className={styles.tile} data-sent={sent} aria-hidden="true">
-        {/* Keyed, so the icon springs in again when the mail becomes a tick. */}
-        <Icon
-          key={sent ? "sent" : "mail"}
-          name={sent ? "check" : "mail"}
-          size={24}
-        />
-      </div>
+      <StatusTile icon={sent ? "check" : "mail"} on={sent} />
       <p className={styles.address}>{email}</p>
       {provider && (
         <a

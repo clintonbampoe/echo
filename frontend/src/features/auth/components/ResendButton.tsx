@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { isApiError } from "@/lib/api";
-import { Button } from "@/ui";
+import { Button, useCooldown } from "@/ui";
 import styles from "./ResendButton.module.css";
 
 const COOLDOWN_SECONDS = 30;
@@ -18,24 +18,18 @@ type Props = {
 // nervous double-click should not use up the allowance.
 export function ResendButton({ send, variant = "secondary", onSent }: Props) {
   const [pending, setPending] = useState(false);
-  const [wait, setWait] = useState(0);
+  const [wait, startWait] = useCooldown(COOLDOWN_SECONDS);
   const [problem, setProblem] = useState("");
-
-  useEffect(() => {
-    if (wait <= 0) return;
-    const timer = setTimeout(() => setWait(wait - 1), 1000);
-    return () => clearTimeout(timer);
-  }, [wait]);
 
   async function onClick() {
     setPending(true);
     setProblem("");
     try {
       await send();
-      setWait(COOLDOWN_SECONDS);
+      startWait();
       onSent?.();
     } catch (e) {
-      if (isApiError(e) && e.status === 429) setWait(COOLDOWN_SECONDS);
+      if (isApiError(e) && e.status === 429) startWait();
       else
         setProblem(
           isApiError(e) ? e.message : "Could not send the email. Try again.",

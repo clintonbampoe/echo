@@ -78,6 +78,8 @@ export { useToast } from "./feedback/toastContext";
 export { TimeField } from "./pickers/TimeField";
 export { TextAreaField } from "./inputs/TextAreaField";
 export type { Option } from "./inputs/selectTypes";
+export { useCooldown } from "./hooks/useCooldown";
+export { StatusTile } from "./layout/StatusTile";
 export { useHeld } from "./hooks/useHeld";
 export { useMedia } from "./hooks/useMedia";
 export { usePresence } from "./overlays/usePresence";

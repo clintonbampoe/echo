@@ -1,32 +1,3 @@
-/* The tile that says what happened: a mail, then a tick once another link has gone out. */
-.tile {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 52px;
-  height: 52px;
-  border-radius: 16px;
-  background: var(--hover-option);
-  color: var(--text);
-  transition:
-    background-color var(--t-base) var(--ease-soft),
-    color var(--t-base) var(--ease-soft);
-}
-.tile[data-sent="true"] {
-  background: var(--accent);
-  color: var(--on-accent);
-}
-/* Each new icon springs in from small. Motion is switched off by the global reduced-motion rule. */
-.tile svg {
-  animation: tileIn var(--t-spring) var(--ease-spring) both;
-}
-@keyframes tileIn {
-  from {
-    opacity: 0;
-    scale: 0.5;
-  }
-}
-
 /* The address sits in a field-shaped box, but it is only shown, never edited. */
 .address {
   display: flex;
