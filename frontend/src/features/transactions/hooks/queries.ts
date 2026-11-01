@@ -23,10 +23,10 @@ export const useTransactionSummary = (filters: TransactionFilters) =>
     queryFn: ({ signal }) => getTransactionSummary(filters, signal),
   });
 
-export const useTransactionMonths = (filters: TransactionFilters) =>
+export const useTransactionMonths = (months: number, to: string) =>
   useQuery({
-    queryKey: transactionKeys.months(filters),
-    queryFn: ({ signal }) => getTransactionMonths(filters, signal),
+    queryKey: transactionKeys.months(months, to),
+    queryFn: ({ signal }) => getTransactionMonths(months, to, signal),
   });
 
 // Every category, for the filter and the form. They change rarely, so they are kept for a few minutes.

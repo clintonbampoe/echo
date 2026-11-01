@@ -220,10 +220,11 @@ public class MemberService(
         CancellationToken ct
     ) =>
         summaries.Serve(
+            this,
             "members",
             congregationId,
             filters,
-            token => ComputeSummary(congregationId, filters, token),
+            (self, token) => self.ComputeSummary(congregationId, filters, token),
             ct
         );
 
@@ -268,14 +269,15 @@ public class MemberService(
         CancellationToken ct
     )
     {
-        if (MonthRange.Problem(filters.Months) is { } problem)
+        if (MonthRange.Problem(MonthRange.Or(filters.Months)) is { } problem)
             return new BadRequestResult(problem);
 
         return await summaries.Serve(
+            this,
             "members.monthly",
             congregationId,
             filters,
-            token => ComputeMonthly(congregationId, filters, token),
+            (self, token) => self.ComputeMonthly(congregationId, filters, token),
             ct
         );
     }
@@ -286,13 +288,18 @@ public class MemberService(
         CancellationToken ct
     )
     {
-        var months = dateWindows.ChartMonths(filters.Months, filters.To);
+        var months = dateWindows.ChartMonths(MonthRange.Or(filters.Months), filters.To);
         var (from, to) = MonthRange.Bounds(months);
         var rows = await repository.GetMonthlyTotals(congregationId, filters, from, to, ct);
 
         return MonthRange.Fill(
             months,
-            rows.Select(r => new MemberMonthlyDto { Year = r.Year, Month = r.Month, NewMembers = r.Count }),
+            rows.Select(r => new MemberMonthlyDto
+            {
+                Year = r.Year,
+                Month = r.Month,
+                NewMembers = r.Count,
+            }),
             m => new YearMonth(m.Year, m.Month),
             m => new MemberMonthlyDto { Year = m.Year, Month = m.Month }
         );

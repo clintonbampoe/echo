@@ -1,12 +1,18 @@
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { renderCard, signIn, json, asked } from "../../testing/dashboardPage";
+import {
+  renderCard,
+  signIn,
+  json,
+  asked,
+  monthlyRows,
+} from "../../testing/dashboardPage";
 import { AttendanceCard } from "./AttendanceCard";
 
-// Who was present in each month, by the day the month began. Any other month answers with 100.
+// Who was present in each month. Any other month answers with 100.
 const months: Record<string, [number, number, number]> = {
-  "2026-09-01": [880, 700, 180],
-  "2026-10-01": [912, 764, 148],
+  "2026-09": [880, 700, 180],
+  "2026-10": [912, 764, 148],
 };
 
 let broken: boolean;
@@ -17,16 +23,18 @@ beforeEach(() => {
     "fetch",
     vi.fn(async (url: string) => {
       const { path, query } = asked(url);
-      if (broken || path !== "/v1/attendance/summary")
+      if (broken || path !== "/v1/attendance/summary/monthly")
         return json({ title: "Server error", status: 500 }, 500);
-      const [total, members, visitors] = months[query.get("from") ?? ""] ?? [
-        100, 80, 20,
-      ];
-      return json({
-        totalPresent: total,
-        membersPresent: members,
-        visitorsPresent: visitors,
-      });
+      return json(
+        monthlyRows(query, (month) => {
+          const [total, members, visitors] = months[month] ?? [100, 80, 20];
+          return {
+            totalPresent: total,
+            membersPresent: members,
+            visitorsPresent: visitors,
+          };
+        }),
+      );
     }),
   );
 });

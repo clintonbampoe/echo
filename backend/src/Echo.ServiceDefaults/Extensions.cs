@@ -64,7 +64,9 @@ public static class Extensions
                 metrics
                     .AddAspNetCoreInstrumentation()
                     .AddHttpClientInstrumentation()
-                    .AddRuntimeInstrumentation();
+                    .AddRuntimeInstrumentation()
+                    // The connection pool (open, idle, waiting for a connection) and command timings.
+                    .AddNpgsqlInstrumentation();
             })
             .WithTracing(tracing =>
             {

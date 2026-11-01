@@ -14,10 +14,14 @@ type Props = {
 // "Collected per month": the last twelve months, by the month each tithe is for. It follows the search and the
 // method, but not the dates (it is the long view). Clicking a bar picks that month for the list below.
 export function TitheChart({ filters, today, onPick }: Props) {
-  const months = useTitheMonths({
-    memberName: filters.name.trim() || undefined,
-    paymentMethod: methodOf(filters.method),
-  });
+  const months = useTitheMonths(
+    {
+      memberName: filters.name.trim() || undefined,
+      paymentMethod: methodOf(filters.method),
+    },
+    12,
+    today,
+  );
   const bars = chartBars(months.data ?? []);
   const summary = chartSummary(bars);
   const chosen = /^\d{4}-\d{2}$/.test(filters.forMonth)

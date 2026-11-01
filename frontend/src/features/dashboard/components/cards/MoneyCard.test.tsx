@@ -60,6 +60,30 @@ describe("money card", () => {
     expect(rows.queryByText("Rent")).not.toBeInTheDocument();
   });
 
+  it("speaks about the month picked, and goes back to the latest on a second click", async () => {
+    show();
+    expect(
+      await screen.findByText(/Income · October 2026/),
+    ).toBeInTheDocument();
+    const september = screen.getByRole("button", { name: /^September 2026/ });
+    await userEvent.click(september);
+    expect(september).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByText(/Income · September 2026/)).toBeInTheDocument();
+    await userEvent.click(september);
+    expect(screen.getByText(/Income · October 2026/)).toBeInTheDocument();
+  });
+
+  it("opens the finance list for a category, but not for Other", async () => {
+    show();
+    const rows = within(
+      await screen.findByRole("list", { name: "Income by category" }),
+    );
+    expect(rows.getByRole("link", { name: /Tithes/ })).toHaveAttribute(
+      "href",
+      "/finance?type=Income&category=1&window=all",
+    );
+  });
+
   it("switches to expenses", async () => {
     show();
     await screen.findByText("50k");

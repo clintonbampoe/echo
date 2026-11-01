@@ -101,7 +101,7 @@ public record EventFilters
 public record EventListFilters : EventFilters
 {
     /// <summary>Asc (default) lists the oldest event first, Desc the newest.</summary>
-    public SortDirection Order { get; init; }
+    public SortDirection? Order { get; init; }
 }
 
 /// <summary>One event with how many registered and how many came: a bar in a per-event chart.</summary>
@@ -124,9 +124,9 @@ public record EventMonthlyFilters
     public Guid? OrganizationId { get; init; }
     public Guid? OrganizerId { get; init; }
 
-    /// <summary>How many months to return, ending with the month of <see cref="To"/>.</summary>
+    /// <summary>How many months to return, ending with the month of <see cref="To"/>. 12 when not given.</summary>
     [Range(1, MonthRange.MaxMonths)]
-    public int Months { get; init; } = MonthRange.DefaultMonths;
+    public int? Months { get; init; }
 
     /// <summary>Any day in the last month to return. This month when not given.</summary>
     public DateOnly? To { get; init; }
@@ -135,9 +135,9 @@ public record EventMonthlyFilters
 /// <summary>Filters for the per-event series: the shared event filters and how many events to return.</summary>
 public record EventSeriesFilters : EventFilters
 {
-    /// <summary>How many events to return, the newest first.</summary>
+    /// <summary>How many events to return, the newest first. 12 when not given.</summary>
     [Range(1, 50)]
-    public int Limit { get; init; } = 12;
+    public int? Limit { get; init; }
 }
 
 /// <summary>The events that started in one month, with their registrations and check-ins.</summary>

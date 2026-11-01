@@ -27,12 +27,13 @@ Fail-fast: `.ValidateOnStart()` refuses boot on missing/invalid config (e.g., HT
 | `Jwt__Audience` | api | Token audience |
 | `MailClient__Address` | api | From address for emails |
 | `Resend__ApiKey` | api | Resend API key |
+| `Invitations__CodeKey` | api | Encrypts invitation codes so the list can show them again (Base64 of 32 random bytes; generate with `backend/tools/invitation-key-setup/SetupInvitationKey.sh env`). Changing it makes existing codes unreadable (they show as no code); they still work when typed. |
 
 ## Optional Variables
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `OTEL_EXPORTER_OTLP_ENDPOINT` | (empty) | OpenTelemetry collector endpoint for traces/metrics |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | (empty) | Where the API sends traces, metrics and logs (the Alloy agent, e.g. `http://alloy:4317`; see [observability.md](observability.md)) |
 | `OTEL_SERVICE_NAME` | (empty) | Service name for OpenTelemetry |
 | `Jwt__PreviousPublicKey` | (empty) | Previous public key during rotation grace period |
 | `RunMigrationsOnStartup` | `true` | Run EF migrations on API startup |
@@ -50,7 +51,11 @@ Fail-fast: `.ValidateOnStart()` refuses boot on missing/invalid config (e.g., HT
 
 ## Client IP & Rate Limiting
 
-Behind nginx, API reads real client IP from `X-Forwarded-For`. Rate limiter partitions by that IP.
+Behind nginx, API reads real client IP from `X-Forwarded-For`. The rate limiter counts a signed-in person on their own
+(600 requests a minute, search included) and anyone else by IP (100 a minute). The
+endpoints a caller reaches without a token are counted by IP, with an allowance sized for a whole church sharing one
+address: sign-in 30 a minute, renewing or revoking a session 120 a minute (the refresh token cannot be guessed), and
+5 a minute for sign-up, password mail, verification, invitation codes and signing out everywhere.
 `ForwardedHeaders__TrustedNetworks` controls which proxies are trusted (defaults: loopback + Docker private ranges).
 
 ## Security Headers (API)

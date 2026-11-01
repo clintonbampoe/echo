@@ -1,18 +1,8 @@
-/* Space between links, so a hovered link never touches the open page's pill above or below it. */
-.nav,
-.admin {
+/* A short gap between links, so a hovered link never touches the open page's pill above or below it. */
+.nav {
   display: flex;
   flex-direction: column;
-  gap: var(--s-4);
-}
-.admin {
-  gap: var(--s-6);
-}
-.heading {
-  padding: 0 var(--s-12);
-  font-size: var(--type-caption);
-  font-weight: 500;
-  color: var(--text-3);
+  gap: var(--s-2);
 }
 
 /* The raised pill behind the open page. It glides up or down the column; the links sit above it. */
@@ -20,7 +10,6 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: var(--s-24);
 }
 .slot {
   position: absolute;
@@ -45,7 +34,7 @@
   position: absolute;
   inset: 0;
   background: var(--surface);
-  border-radius: var(--radius);
+  border-radius: var(--radius-pill);
   box-shadow:
     0 1px 2px rgb(10 10 11 / 8%),
     0 0 0 1px var(--line-2);
@@ -58,7 +47,7 @@
   gap: var(--s-12);
   height: 36px;
   padding: 0 var(--s-12);
-  border-radius: var(--radius);
+  border-radius: var(--radius-pill);
   color: var(--text-2);
   font-size: var(--type-body);
   text-decoration: none;

@@ -50,6 +50,26 @@ public static partial class PasswordLog
     );
 
     [LoggerMessage(
+        Level = LogLevel.Information,
+        Message = "Password reset request skipped: a link was sent in the last minute for user {UserId} in congregation {CongregationId}"
+    )]
+    public static partial void PasswordResetRequestRateLimited(
+        ILogger logger,
+        Guid userId,
+        Guid congregationId
+    );
+
+    [LoggerMessage(
+        Level = LogLevel.Warning,
+        Message = "Password reset failed: token was replaced by a newer link for user {UserId} in congregation {CongregationId}"
+    )]
+    public static partial void PasswordResetFailedTokenInvalidated(
+        ILogger logger,
+        Guid userId,
+        Guid congregationId
+    );
+
+    [LoggerMessage(
         Level = LogLevel.Warning,
         Message = "Password reset failed: token already used for user {UserId} in congregation {CongregationId}"
     )]

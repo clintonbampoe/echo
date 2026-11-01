@@ -21,3 +21,22 @@
     flex-wrap: wrap;
   }
 }
+/* The welcome of a church with nothing recorded yet: a size larger, as on the board. */
+.title[data-welcome] {
+  font-size: 34px;
+  letter-spacing: -0.035em;
+  line-height: 1.1;
+}
+.text[data-welcome] {
+  margin-top: var(--s-8);
+  font-size: var(--type-headline);
+}
+@media (max-width: 700px) {
+  .title[data-welcome] {
+    font-size: var(--type-large);
+  }
+  .text[data-welcome] {
+    font-size: var(--type-callout);
+    line-height: 1.45;
+  }
+}

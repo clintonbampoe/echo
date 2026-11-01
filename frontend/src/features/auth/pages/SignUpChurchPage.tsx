@@ -7,7 +7,10 @@ import { handleSubmitError } from "@/lib/forms";
 import { Alert, Button } from "@/ui";
 import { BackLink } from "../components/AuthLinks";
 import { AuthScreen } from "../components/AuthScreen";
-import { useRegisterCongregation } from "../hooks/mutations";
+import {
+  useRegisterCongregation,
+  useSignInAfterRegister,
+} from "../hooks/mutations";
 import {
   churchSchema,
   type AccountValues,
@@ -39,6 +42,7 @@ export function SignUpChurchPage() {
 function ChurchForm({ account }: { account: AccountValues }) {
   const navigate = useNavigate();
   const register = useRegisterCongregation();
+  const signInAfterRegister = useSignInAfterRegister();
   const [problem, setProblem] = useState<ApiError | null>(null);
   const form = useForm<ChurchValues>({
     resolver: zodResolver(churchSchema),
@@ -66,7 +70,11 @@ function ChurchForm({ account }: { account: AccountValues }) {
           password: account.password,
         },
       });
-      navigate("/verify", { state: { email: account.email } });
+      const signedIn = await signInAfterRegister(
+        account.email,
+        account.password,
+      );
+      navigate("/verify", { state: { email: account.email, signedIn } });
     } catch (e) {
       handleSubmitError(e, form.setError, FIELD_MAP, setProblem);
     }

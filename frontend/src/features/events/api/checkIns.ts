@@ -20,23 +20,49 @@ export const listPersonCheckIns = (
     signal,
   });
 
-// A member's check-in at this event. checkInTime is a time of day ("08:42:00"); the day is the event's.
+// A member's check-in at this event. checkInTime is a time of day ("08:42:00"); the day is the event's. In this event's
+// list, `walkIn` says they came without signing up and `registrationId` is their sign-up when they had one; on any
+// other route neither is filled in.
 export type EventCheckIn = {
   id: string;
   memberId: string;
   memberName: string;
   eventId: string;
   checkInTime: string;
+  walkIn?: boolean | null;
+  registrationId?: string | null;
 };
 
-// Who came, in the order they arrived.
+// What narrows an event's check-ins: part of a name, whether they had signed up, or only these members (to ask which
+// of a few people have already come).
+export type CheckInFilters = {
+  name?: string;
+  kind?: "Registered" | "WalkIn";
+  memberIds?: readonly string[];
+};
+
+// Who came, in the order they arrived, a page at a time. The server searches by name and narrows by whether they had
+// signed up, so a page reads only the rows it shows.
 export const listEventCheckIns = (
   eventId: string,
+  filters: CheckInFilters,
   cursor?: string,
   signal?: AbortSignal,
 ) =>
   api.get<Page<EventCheckIn>>(`/v1/event-attendance/event/${eventId}`, {
-    query: { cursor, pageSize: pageSize() },
+    query: { ...filters, cursor, pageSize: pageSize() },
+    signal,
+  });
+
+// How many came, and how many of them had not signed up. The sign-ups are `registrationCount` on the event.
+export type EventRoster = {
+  checkedIn: number;
+  walkIns: number;
+  cameRegistered: number;
+};
+
+export const getEventRoster = (eventId: string, signal?: AbortSignal) =>
+  api.get<EventRoster>(`/v1/event-attendance/event/${eventId}/summary`, {
     signal,
   });
 

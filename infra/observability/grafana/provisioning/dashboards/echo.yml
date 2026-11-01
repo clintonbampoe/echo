@@ -1,0 +1,14 @@
+apiVersion: 1
+
+# Dashboards live in git (../../dashboards) and are the source of truth. Build or change one in the UI, use
+# Export -> "Export as JSON", and commit the file. Edits made only in the UI are lost on the next restart.
+providers:
+  - name: echo
+    orgId: 1
+    type: file
+    disableDeletion: true
+    allowUiUpdates: false
+    updateIntervalSeconds: 30
+    options:
+      path: /etc/grafana/dashboards
+      foldersFromFilesStructure: true

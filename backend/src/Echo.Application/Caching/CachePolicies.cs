@@ -32,7 +32,7 @@ public static class CachePolicies
 /// Defines caching behavior for a specific data type.
 /// </summary>
 /// <param name="Ttl">Time-to-live for cached entries.</param>
-/// <param name="KeyPrefix">Logical key prefix (e.g., "dashboard:attendance:summary:chart"). 
+/// <param name="KeyPrefix">Logical key prefix (e.g., "dashboard:attendance:summary:chart").
 /// Combined with congregation ID and qualifiers.</param>
 /// <param name="CacheNulls">Whether to cache null results to prevent stampede on missing data.</param>
 public readonly record struct CachePolicy

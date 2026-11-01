@@ -9,6 +9,6 @@ export const titheKeys = {
   one: (id: string) => ["tithes", "one", id] as const,
   sameMonth: (memberId: string, year: number, month: string) =>
     ["tithes", "same-month", memberId, year, month] as const,
-  months: (who: TitheMonthsFor, from?: string, to?: string) =>
-    ["tithes", "months", who, from, to] as const,
+  months: (who: TitheMonthsFor, months: number, to: string) =>
+    ["tithes", "months", who, months, to] as const,
 };

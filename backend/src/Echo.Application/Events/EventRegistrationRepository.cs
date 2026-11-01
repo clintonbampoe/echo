@@ -111,6 +111,7 @@ public class EventRegistrationRepository(AppDbContext context)
     public async Task<List<EventRegistration>> ListByEventId(
         Guid congregationId,
         Guid eventId,
+        EventRegistrationFilters filters,
         EventRegistrationCursor? cursor,
         int pageSize,
         CancellationToken ct
@@ -121,6 +122,7 @@ public class EventRegistrationRepository(AppDbContext context)
             .FilterDeleted()
             .Where(e => e.CongregationId == congregationId)
             .Where(e => e.EventId == eventId)
+            .Filter(filters, context.Set<EventAttendance>().FilterDeleted())
             .Include(e => e.Member)
                 .ThenInclude(m => m.Person)
             .Include(e => e.Event)
@@ -129,6 +131,21 @@ public class EventRegistrationRepository(AppDbContext context)
             .Paginate(cursor, pageSize)
             .ToListAsync(ct);
     }
+
+    /// <summary>
+    /// The registration ids of these members for one event, by member. The page of check-ins asks for the people on
+    /// it, so a check-in can say whether the person had registered, without the page reading every registration.
+    /// </summary>
+    public Task<Dictionary<Guid, Guid>> GetIdsForMembers(
+        Guid eventId,
+        IReadOnlyList<Guid> memberIds,
+        CancellationToken ct
+    ) =>
+        _dbSet
+            .AsNoTracking()
+            .FilterDeleted()
+            .Where(r => r.EventId == eventId && memberIds.Contains(r.MemberId))
+            .ToDictionaryAsync(r => r.MemberId, r => r.Id, ct);
 
     public async Task<bool> ExistsForEventAndMember(
         Guid congregationId,
@@ -151,6 +168,34 @@ public class EventRegistrationRepository(AppDbContext context)
 
 internal static class EventRegistrationQueryExtensions
 {
+    internal static IQueryable<EventRegistration> Filter(
+        this IQueryable<EventRegistration> query,
+        EventRegistrationFilters filters,
+        IQueryable<EventAttendance> attendance
+    )
+    {
+        if (!string.IsNullOrWhiteSpace(filters.Name))
+        {
+            var pattern = $"%{Echo.Shared.Query.Extensions.EscapeLike(filters.Name.Trim())}%";
+            query = query.Where(r => EF.Functions.ILike(r.Member.Person.Name, pattern));
+        }
+
+        if (filters.MemberIds is { Length: > 0 } ids)
+            query = query.Where(r => ids.Contains(r.MemberId));
+
+        // Came or not is "has a check-in for the same event and member". The (event, member) index answers it.
+        return filters.Status switch
+        {
+            RosterStatus.Came => query.Where(r =>
+                attendance.Any(a => a.EventId == r.EventId && a.MemberId == r.MemberId)
+            ),
+            RosterStatus.Missing => query.Where(r =>
+                !attendance.Any(a => a.EventId == r.EventId && a.MemberId == r.MemberId)
+            ),
+            _ => query,
+        };
+    }
+
     internal static IQueryable<EventRegistration> Paginate(
         this IQueryable<EventRegistration> query,
         EventRegistrationCursor? cursor,

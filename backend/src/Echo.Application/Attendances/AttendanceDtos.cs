@@ -71,6 +71,7 @@ public record AttendanceFilters
     public string? Name { get; init; }
     public DateOnly? From { get; init; }
     public DateOnly? To { get; init; }
+
 }
 
 /// <summary>
@@ -82,9 +83,9 @@ public record AttendanceMonthlyFilters
     /// <summary>Only attendance at sessions with this label (for example "Sunday Service").</summary>
     public int? SessionLabelId { get; init; }
 
-    /// <summary>How many months to return, ending with the month of <see cref="To"/>.</summary>
+    /// <summary>How many months to return, ending with the month of <see cref="To"/>. 12 when not given.</summary>
     [Range(1, MonthRange.MaxMonths)]
-    public int Months { get; init; } = MonthRange.DefaultMonths;
+    public int? Months { get; init; }
 
     /// <summary>Any day in the last month to return. This month when not given.</summary>
     public DateOnly? To { get; init; }
@@ -113,6 +114,12 @@ public record AttendanceSummaryDto
 
     /// <summary><see cref="TotalPresent"/> over <see cref="Sessions"/>: how many people a session draws. Zero when none was held.</summary>
     public double AveragePerSession { get; init; }
+
+    /// <summary>
+    /// <see cref="TotalPresent"/> for the stretch before the window (as many days, ending the day before `from`).
+    /// Zero unless `includePrevious` is true.
+    /// </summary>
+    public int PreviousTotalPresent { get; init; }
     public DateWindow? Window { get; init; }
 }
 

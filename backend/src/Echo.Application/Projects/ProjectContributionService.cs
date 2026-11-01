@@ -5,10 +5,10 @@ using Echo.Shared.HttpResults;
 using Echo.Shared.Pagination;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
+using Echo.Shared.Utilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
-using Echo.Shared.Utilities;
 
 namespace Echo.Application.Projects;
 
@@ -26,7 +26,10 @@ public class ProjectContributionService(
     ILogger<ProjectContributionService> logger
 )
 {
-    internal static DateWindow? ResolveWindow(ProjectContributionFilters filters, DateWindows dateWindows) =>
+    internal static DateWindow? ResolveWindow(
+        ProjectContributionFilters filters,
+        DateWindows dateWindows
+    ) =>
         dateWindows.ThisMonthToDate(
             filters.From,
             filters.To,
@@ -71,7 +74,12 @@ public class ProjectContributionService(
         activity?.SetTag("project_contribution.count", data.Count);
         ProjectContributionLog.Listed(logger, congregationId, data.Count);
 
-        var res = new PagedResponse<ProjectContributionResponseDto>(hasMore, nextCursor, data, window);
+        var res = new PagedResponse<ProjectContributionResponseDto>(
+            hasMore,
+            nextCursor,
+            data,
+            window
+        );
         return new SuccessResult<PagedResponse<ProjectContributionResponseDto>>(res);
     }
 
@@ -238,10 +246,11 @@ public class ProjectContributionService(
         CancellationToken ct
     ) =>
         summaries.Serve(
+            this,
             "project-contributions",
             congregationId,
             filters,
-            token => ComputeSummary(congregationId, filters, token),
+            (self, token) => self.ComputeSummary(congregationId, filters, token),
             ct
         );
 
@@ -281,14 +290,15 @@ public class ProjectContributionService(
         CancellationToken ct
     )
     {
-        if (MonthRange.Problem(filters.Months) is { } problem)
+        if (MonthRange.Problem(MonthRange.Or(filters.Months)) is { } problem)
             return new BadRequestResult(problem);
 
         return await summaries.Serve(
+            this,
             "project-contributions.monthly",
             congregationId,
             filters,
-            token => ComputeMonthly(congregationId, filters, token),
+            (self, token) => self.ComputeMonthly(congregationId, filters, token),
             ct
         );
     }
@@ -299,7 +309,7 @@ public class ProjectContributionService(
         CancellationToken ct
     )
     {
-        var months = dateWindows.ChartMonths(filters.Months, filters.To);
+        var months = dateWindows.ChartMonths(MonthRange.Or(filters.Months), filters.To);
         var (from, to) = MonthRange.Bounds(months);
         var rows = await repository.GetMonthlyTotals(congregationId, filters, from, to, ct);
 

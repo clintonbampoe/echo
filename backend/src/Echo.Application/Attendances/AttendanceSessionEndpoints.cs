@@ -330,7 +330,7 @@ public static class AttendanceSessionEndpoints
                     - `window` — the dates that were applied.
 
                     ### Caching
-                    The answer is cached for 2 minutes per congregation and per set of parameters.
+                    The answer is cached for 5 minutes per congregation and per set of parameters.
 
                     ### Failure modes
                     - `401 UNAUTHORIZED` — missing or invalid bearer token.

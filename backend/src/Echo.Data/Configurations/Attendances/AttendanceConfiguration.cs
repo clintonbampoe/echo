@@ -71,6 +71,14 @@ public class AttendanceConfiguration : IEntityTypeConfiguration<Attendance>
                 "deleted_at IS NULL AND person_kind_at_time = 'Visitor' AND NOT is_first_visit"
             );
 
+        // Visit count and last visit for a page of visitors, as an index-only scan. A visitor who
+        // converted has many member rows under the same person_id; this index leaves them out.
+        builder
+            .HasIndex(a => a.PersonId)
+            .HasDatabaseName("ix_attendance_visitor_stats")
+            .IncludeProperties(a => new { a.CongregationId, a.SessionDate })
+            .HasFilter("deleted_at IS NULL AND person_kind_at_time = 'Visitor'");
+
         builder.HasIndex(a => a.PersonId);
         builder.HasIndex(a => a.SessionId);
     }

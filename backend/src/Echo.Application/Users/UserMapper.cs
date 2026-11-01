@@ -20,6 +20,7 @@ public partial class UserMapper : IUserMapper
     // Computed column; no CreateDto carries it.
     [MapperIgnoreTarget(nameof(User.Name))]
     [MapperIgnoreTarget(nameof(User.EmailVerifiedAt))]
+    [MapperIgnoreTarget(nameof(User.PasswordChangedAt))]
     [MapperIgnoreTarget(nameof(User.CreatedAt))]
     [MapperIgnoreTarget(nameof(User.DeletedAt))]
     [MapProperty(nameof(dto.Password), nameof(User.PasswordHash))]
@@ -51,8 +52,6 @@ public partial class UserMapper : IUserMapper
     {
         if (dto.EmailAddress != null)
             entity.EmailAddress = dto.EmailAddress;
-        if (dto.Password != null)
-            entity.PasswordHash = dto.Password; // Note: In real app, this would be hashed
         if (dto.Role.HasValue)
             entity.Role = dto.Role.Value;
     }

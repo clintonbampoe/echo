@@ -1,0 +1,14 @@
+.track {
+  flex: none;
+  width: var(--bar, 100%);
+  height: 6px;
+  background: var(--line);
+  border-radius: var(--radius-pill);
+}
+.fill {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  border-radius: var(--radius-pill);
+  transition: width var(--t-enter) var(--ease-out);
+}

@@ -48,6 +48,60 @@ const came = (
   checkInTime: string,
 ): EventCheckIn => ({ id, memberId, memberName, eventId: "e1", checkInTime });
 
+const page = (data: unknown[]) => ({ data, hasMore: false, next: null });
+const has = (name: string, text: string | null) =>
+  !text || name.toLowerCase().includes(text.toLowerCase());
+
+// What the server answers: who came, counted, without either list.
+const rosterOf = (regs: EventRegistration[], checks: EventCheckIn[]) => {
+  const signedUp = new Set(regs.map((r) => r.memberId));
+  const walkIns = checks.filter((c) => !signedUp.has(c.memberId)).length;
+  return {
+    checkedIn: checks.length,
+    walkIns,
+    cameRegistered: checks.length - walkIns,
+  };
+};
+
+// The registrations of the event, searched and narrowed by the server, each saying whether the person came.
+const registrationRows = (
+  regs: EventRegistration[],
+  checks: EventCheckIn[],
+  query: URLSearchParams,
+) =>
+  regs
+    .map((r) => {
+      const c = checks.find((x) => x.memberId === r.memberId);
+      return {
+        ...r,
+        checkIn: c ? { id: c.id, checkInTime: c.checkInTime } : null,
+      };
+    })
+    .filter(
+      (r) =>
+        has(r.memberName, query.get("name")) &&
+        (query.get("status") === null ||
+          (query.get("status") === "Came") === (r.checkIn !== null)),
+    );
+
+// The check-ins of the event, searched and narrowed by the server, each saying whether the person was a walk-in.
+const checkInRows = (
+  regs: EventRegistration[],
+  checks: EventCheckIn[],
+  query: URLSearchParams,
+) =>
+  checks
+    .map((c) => {
+      const r = regs.find((x) => x.memberId === c.memberId);
+      return { ...c, walkIn: !r, registrationId: r?.id ?? null };
+    })
+    .filter(
+      (c) =>
+        has(c.memberName, query.get("name")) &&
+        (query.get("kind") === null ||
+          (query.get("kind") === "WalkIn") === c.walkIn),
+    );
+
 let event: EventItem;
 let regs: EventRegistration[];
 let checks: EventCheckIn[];
@@ -71,13 +125,15 @@ beforeEach(() => {
     refreshTokenExpiresAt: "2099-01-01T00:00:00Z",
   });
   fetchMock = vi.fn(async (url: string, init?: RequestInit) => {
-    const path = new URL(url, "http://x").pathname;
+    const u = new URL(url, "http://x");
     if (init?.method === "DELETE") return new Response(null, { status: 204 });
     if (init?.method === "PUT") return json(checks[0]);
-    if (path.includes("/event-registrations/event/"))
-      return json({ data: regs, hasMore: false, next: null });
-    if (path.includes("/event-attendance/event/"))
-      return json({ data: checks, hasMore: false, next: null });
+    if (u.pathname.endsWith("/event-attendance/event/e1/summary"))
+      return json(rosterOf(regs, checks));
+    if (u.pathname.includes("/event-registrations/event/"))
+      return json(page(registrationRows(regs, checks, u.searchParams)));
+    if (u.pathname.includes("/event-attendance/event/"))
+      return json(page(checkInRows(regs, checks, u.searchParams)));
     return json(event);
   });
   vi.stubGlobal("fetch", fetchMock);
@@ -154,6 +210,55 @@ describe("event page", () => {
     expect(rows[2]).toHaveTextContent("Grace Appiah");
     expect(rows[2]).toHaveTextContent("Walk-in");
     expect(rows[0]).toHaveTextContent("Registered");
+  });
+
+  it("reads no list until its tab is opened, and then only that one", async () => {
+    const user = userEvent.setup();
+    open();
+    expect(
+      await screen.findByText("67% of those registered"),
+    ).toBeInTheDocument();
+    const asked = () =>
+      fetchMock.mock.calls.map(
+        ([url]) => new URL(url as string, "http://x").pathname,
+      );
+    // The numbers come from one count, not from reading who signed up and who came.
+    expect(
+      asked().some((p) => p.endsWith("/event-attendance/event/e1/summary")),
+    ).toBe(true);
+    expect(asked().some((p) => p.includes("/event-registrations/event/"))).toBe(
+      false,
+    );
+    expect(
+      asked().filter((p) => p.endsWith("/event-attendance/event/e1")),
+    ).toHaveLength(0);
+
+    await user.click(screen.getByRole("tab", { name: "Registrations" }));
+    await screen.findByRole("list", { name: "Registrations" });
+    expect(asked().some((p) => p.includes("/event-registrations/event/"))).toBe(
+      true,
+    );
+    expect(
+      asked().filter((p) => p.endsWith("/event-attendance/event/e1")),
+    ).toHaveLength(0);
+  });
+
+  it("asks the server to narrow by status, instead of reading everyone", async () => {
+    const user = userEvent.setup();
+    await openRegistrations();
+    await screen.findByRole("list", { name: "Registrations" });
+    await user.click(screen.getByRole("button", { name: /Status/ }));
+    await user.click(await screen.findByRole("option", { name: "No-show" }));
+    await waitFor(() =>
+      expect(
+        within(
+          screen.getByRole("list", { name: "Registrations" }),
+        ).getAllByRole("listitem"),
+      ).toHaveLength(1),
+    );
+    expect(screen.getByText("Comfort Addo")).toBeInTheDocument();
+    const urls = fetchMock.mock.calls.map(([u]) => String(u));
+    expect(urls.some((u) => u.includes("status=Missing"))).toBe(true);
   });
 
   it("narrows the registrations by name and by status", async () => {

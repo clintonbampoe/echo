@@ -1,0 +1,29 @@
+server:
+  http_listen_port: 3200
+
+distributor:
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+          endpoint: "0.0.0.0:4317"
+        http:
+          endpoint: "0.0.0.0:4318"
+
+storage:
+  trace:
+    backend: local
+    local:
+      path: /var/tempo/blocks
+    wal:
+      path: /var/tempo/wal
+
+# Tempo 3.x replaced the legacy `compactor` module with a backend scheduler + worker.
+# The scheduler starts with defaults in the single binary and the worker connects to
+# it automatically (127.0.0.1:9095). Retention lives on the worker's compactor config.
+backend_worker:
+  compaction:
+    block_retention: 168h
+
+usage_report:
+  reporting_enabled: false

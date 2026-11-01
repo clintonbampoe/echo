@@ -348,6 +348,7 @@ public static class AttendanceEndpoints
                 "/summary",
                 async (
                     [AsParameters] AttendanceFilters filters,
+                    [FromQuery] bool? includePrevious,
                     AttendanceService service,
                     HttpContext context,
                     CancellationToken ct
@@ -361,6 +362,7 @@ public static class AttendanceEndpoints
                     var result = await service.Summary(
                         context.User.GetCongregationId(),
                         filters,
+                        includePrevious == true,
                         ct
                     );
                     return result.ToResult();
@@ -380,9 +382,11 @@ public static class AttendanceEndpoints
                 - `kind` — `Member` or `Visitor`: what the person was **when they attended**, not what they are now.
                 - `name` — only people whose name contains this text (case-insensitive; `%` and `_` are matched literally).
                 - `from`, `to` — only attendance at sessions held between these two days, inclusive. **With no dates, the window is this week so far** (Sunday to today).
+                - `includePrevious` — `true` to also count the stretch of the same length before the window, into `previousTotalPresent`. Off by default: it costs one more query, so leave it out when you do not compare.
 
                 ### Response fields
                 - `totalPresent` — records that match.
+                - `previousTotalPresent` — `totalPresent` for the stretch of the same length before the window (ending the day before `from`). **Zero unless you send `includePrevious=true`**, which costs one more query, so leave it out when you do not compare.
                 - `membersPresent` — how many of them were members **when they attended**.
                 - `visitorsPresent` — how many were visitors when they attended.
                 - `firstTimeVisitors` — how many records were a visitor's **first-ever** visit as a visitor. Filtering to a later period does not make a returning visitor first-time.
@@ -393,7 +397,7 @@ public static class AttendanceEndpoints
                 A person who has since changed from visitor to member is still counted as a visitor for visits made before that.
 
                 ### Caching
-                The answer is cached for 2 minutes per congregation and per set of parameters.
+                The answer is cached for 5 minutes per congregation and per set of parameters.
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
@@ -445,7 +449,7 @@ public static class AttendanceEndpoints
                 This is the only monthly endpoint for attendance: it serves a dashboard card (`months=6`), a full-year chart, or a donut over the months. The shape is always the same list, so the page decides how to draw it.
 
                 ### Caching
-                The answer is cached for 2 minutes per congregation and per set of parameters, so asking again straight away costs nothing. A change shows up within 2 minutes.
+                The answer is cached for 5 minutes per congregation and per set of parameters, so asking again straight away costs nothing. A change shows up within 5 minutes.
 
                 ### Failure modes
                 - `400 BAD_REQUEST` — `months` is not between 1 and 12.

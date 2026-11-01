@@ -424,7 +424,7 @@ public static class ProjectEndpoints
                 - Categories with no matching projects are left out.
 
                 ### Caching
-                The answer is cached for 2 minutes per congregation and per set of parameters.
+                The answer is cached for 5 minutes per congregation and per set of parameters.
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.

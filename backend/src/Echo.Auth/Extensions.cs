@@ -32,7 +32,6 @@ public static class Extensions
         {
             options.ApiToken = configuration["Resend:ApiKey"]!;
         });
-        services.AddScoped<IEmailService, ResendEmailService>();
 
         services.AddScoped<CongregationProvisioningService>();
         services.AddScoped<RegistrationService>();
@@ -53,6 +52,12 @@ public static class Extensions
         services.AddScoped<ProfileService>();
         services.AddScoped<JwtTokenService>();
         services.AddScoped<SessionRepository>();
+        services
+            .AddOptions<InvitationOptions>()
+            .BindConfiguration(InvitationOptions.SectionName)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+        services.AddSingleton<InvitationCodeProtector>();
         services.AddScoped<InvitationRepository>();
         services.AddScoped<InvitationService>();
 

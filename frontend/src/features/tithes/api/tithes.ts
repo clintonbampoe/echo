@@ -36,6 +36,8 @@ export type TitheSummary = {
   // The method's name ("MobileMoney"), or nothing when no tithe matches.
   mostUsedPaymentMethod?: string | null;
   averagePerMember: number;
+  // How the tithes were paid, the way with the most tithes first.
+  byMethod?: { method: string; count: number; total: number }[];
   window?: DateWindow | null;
 };
 
@@ -70,8 +72,8 @@ export const listMemberTithes = (
     signal,
   });
 
-// One row per month in the range, oldest first. Months with nothing given come back as zero. With no range
-// the server answers for the last twelve months.
+// One row per month, oldest first, for `months` months (1 to 12) ending with the month of `to`. Months with
+// nothing given come back as zero. The server requires `months`.
 export type TitheMonth = {
   year: number;
   month: number;
@@ -88,11 +90,12 @@ export type TitheMonthsFor = {
 
 export const getTitheMonths = (
   who: TitheMonthsFor,
-  range: { from?: string; to?: string },
+  months: number,
+  to: string,
   signal?: AbortSignal,
 ) =>
   api.get<TitheMonth[]>("/v1/tithes/summary/monthly", {
-    query: { ...who, ...range },
+    query: { ...who, months, to },
     signal,
   });
 

@@ -1,6 +1,6 @@
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 
 namespace Echo.Auth.Sessions;
@@ -31,13 +31,14 @@ public static class SessionEndpoints
                 }
             )
             .WithName("LoginSession")
+            .RequireRateLimiting("login")
             .WithSummary("Authenticates a user and issues a token pair.")
             .WithDescription(
                 """
                 Exchanges an email and password for a short-lived access token and a long-lived refresh token. This is the only way to start a session.
 
                 ### Request body
-                - `email` — the account's verified email address.
+                - `email` — the account's email address. It does not have to be verified.
                 - `password` — the account's current password.
 
                 ### On success
@@ -54,7 +55,6 @@ public static class SessionEndpoints
                 - `400 BAD_REQUEST` — the request body is malformed (missing fields, wrong types).
                 - `400 VALIDATION_ERROR` — the email is not a valid email address, or a required field failed its format check. Inspect the `errors` object.
                 - `401 INVALID_CREDENTIALS` — the email/password combination is wrong. **Do not reveal which field was wrong** in the UI; the API deliberately returns the same code for both.
-                - `403 EMAIL_NOT_VERIFIED` — the credentials are correct but the account has not completed email verification. Route the user into the verification flow (`POST /auth/verifications/account`), not back to the login form.
 
                 ### Side effects
                 A new refresh token is created and persisted for the user. All previously issued refresh tokens remain valid — login does not invalidate other sessions. To end all sessions, use `POST /sessions/logout`.
@@ -140,6 +140,7 @@ public static class SessionEndpoints
                 }
             )
             .WithName("RefreshSession")
+            .RequireRateLimiting("session")
             .WithSummary("Rotates a refresh token and issues a new token pair.")
             .WithDescription(
                 """
@@ -191,6 +192,7 @@ public static class SessionEndpoints
                 }
             )
             .WithName("RevokeSession")
+            .RequireRateLimiting("session")
             .WithSummary("Revokes a single refresh token.")
             .WithDescription(
                 """

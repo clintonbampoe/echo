@@ -42,16 +42,22 @@ public class MemberRepository(AppDbContext context, TimeProvider timeProvider)
             .FirstOrDefaultAsync(ct);
     }
 
-    public async Task<List<Member>> Search(Guid congregationId, string name, CancellationToken ct)
-    {
-        return await _dbSet
+    public async Task<List<Member>> Search(
+        Guid congregationId,
+        string name,
+        CancellationToken ct
+    ) => await SearchQuery(congregationId, name).ToListAsync(ct);
+
+    internal IQueryable<Member> SearchQuery(Guid congregationId, string name) =>
+        _dbSet
             .AsNoTracking()
             .FilterDeleted()
             .Where(m => m.CongregationId == congregationId)
+            // The name index covers every congregation. Asking it for this one's people as well keeps a two-letter
+            // search from probing the members of everyone else who has an "ab" in their name.
+            .Where(m => m.Person.CongregationId == congregationId)
             .Include(m => m.Person)
-            .SearchName(name)
-            .ToListAsync(ct);
-    }
+            .SearchName(name);
 
     public async Task<MemberStats> GetSummaryStats(
         Guid congregationId,
@@ -64,7 +70,7 @@ public class MemberRepository(AppDbContext context, TimeProvider timeProvider)
         // One query, one pass: every count below is a FILTER aggregate over the same scan.
         var stats = await Scope(congregationId, filters)
             .SummarizeMembers(today)
-            .FirstOrDefaultAsync(ct);
+            .SingleOrDefaultAsync(ct);
 
         return stats ?? new MemberStats(0, 0, 0, 0, 0d, 0, 0, 0, 0, 0, 0);
     }
@@ -81,7 +87,7 @@ public class MemberRepository(AppDbContext context, TimeProvider timeProvider)
         var today = DateUtils.GetDateToday(timeProvider);
         var counts = await Scope(congregationId, filters with { From = null, To = null })
             .JoinedCounts(window, window.Previous(), new DateOnly(today.Year, 1, 1), today)
-            .FirstOrDefaultAsync(ct);
+            .SingleOrDefaultAsync(ct);
 
         return counts ?? new JoinedCounts(0, 0, 0);
     }
@@ -275,10 +281,7 @@ internal static class MemberQueryExtensions
         if (cursor is not null)
             query = query.Where(m =>
                 string.Compare(m.Person.Name, cursor.Name) >= 0
-                && (
-                    string.Compare(m.Person.Name, cursor.Name) > 0
-                    || m.PersonId > cursor.Id
-                )
+                && (string.Compare(m.Person.Name, cursor.Name) > 0 || m.PersonId > cursor.Id)
             );
 
         return query.Take(pageSize);
@@ -286,9 +289,24 @@ internal static class MemberQueryExtensions
 
     internal static IQueryable<Member> SearchName(this IQueryable<Member> query, string name)
     {
-        var pattern = $"%{Echo.Shared.Query.Extensions.EscapeLike(name.Trim())}%";
-        return query
-            .Where(x => EF.Functions.ILike(x.Person.Name, pattern))
+        var term = Echo.Shared.Query.Extensions.EscapeLike(name.Trim());
+        var matched =
+            term.Length >= Echo.Shared.Query.Extensions.MinContainsLength
+                ? query.Where(x => EF.Functions.ILike(x.Person.Name, $"%{term}%"))
+                : query.Where(x =>
+                    EF.Functions.ILike(x.Person.Name, $"{term}%")
+                    || EF.Functions.ILike(x.Person.Name, $"% {term}%")
+                );
+
+        // Similarity means nothing for one or two letters (every match scores about the same), so those list names
+        // that start with the letters first, then alphabetically.
+        if (term.Length < Echo.Shared.Query.Extensions.MinContainsLength)
+            return matched
+                .OrderByDescending(x => EF.Functions.ILike(x.Person.Name, $"{term}%"))
+                .ThenBy(x => x.Person.Name)
+                .Take(5);
+
+        return matched
             .OrderByDescending(x => EF.Functions.TrigramsSimilarity(x.Person.Name, name))
             .Take(5);
     }

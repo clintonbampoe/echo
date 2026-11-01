@@ -1,11 +1,32 @@
 import { ALL_TIME } from "@/lib/dates";
-import { get } from "./client";
+import { get, getMonthly } from "./client";
 
-// Members who joined in the range. From 2000 to today it is everyone. Members with no joined date are in
-// every range, which is why the dashboard takes them off (see useNewMembers).
-export const getMembers = (from: string, to: string, signal?: AbortSignal) =>
-  get<{ totalMembers: number }>("/v1/members/summary", from, to, signal).then(
-    (r) => r.totalMembers,
+// Members who joined in the range and in the stretch of the same length before it. Members with no joined date
+// are in neither.
+export type Joined = { joined: number; before: number };
+
+export const getJoined = (from: string, to: string, signal?: AbortSignal) =>
+  get<{ joinedInWindow: number; joinedInPreviousWindow: number }>(
+    "/v1/members/summary",
+    from,
+    to,
+    signal,
+  ).then((r): Joined => ({
+    joined: r.joinedInWindow,
+    before: r.joinedInPreviousWindow,
+  }));
+
+// New members in each of `months` months ending with the month of `to`.
+export const getJoinedMonths = (
+  months: number,
+  to: string,
+  signal?: AbortSignal,
+) =>
+  getMonthly<{ year: number; month: number; newMembers: number }>(
+    "/v1/members/summary/monthly",
+    months,
+    to,
+    signal,
   );
 
 // Every member, and how many are men and women, and how old they are. Not the period. The gender and
@@ -18,6 +39,8 @@ export type MemberMix = GenderFigures & {
   active: number;
   average: number;
   bands: AgeBand[];
+  // Members who joined this calendar year so far, whatever the range asked for.
+  joinedThisYear: number;
 };
 
 export const getMix = (signal?: AbortSignal) =>
@@ -28,6 +51,7 @@ export const getMix = (signal?: AbortSignal) =>
     femaleCount: number;
     averageAge: number;
     ageGroups: { label: string; count: number }[];
+    joinedThisYear: number;
   }>("/v1/members/summary", ALL_TIME.from, ALL_TIME.to, signal).then(
     (r): MemberMix => ({
       total: r.totalMembers,
@@ -36,5 +60,6 @@ export const getMix = (signal?: AbortSignal) =>
       female: r.femaleCount,
       average: r.averageAge,
       bands: r.ageGroups,
+      joinedThisYear: r.joinedThisYear,
     }),
   );

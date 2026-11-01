@@ -344,6 +344,7 @@ public static class TitheEndpoints
                 "/summary",
                 async (
                     [AsParameters] TitheFilters filters,
+                    [FromQuery] bool? includePrevious,
                     TitheService service,
                     HttpContext context,
                     CancellationToken ct
@@ -357,6 +358,7 @@ public static class TitheEndpoints
                     var result = await service.Summary(
                         context.User.GetCongregationId(),
                         filters,
+                        includePrevious == true,
                         ct
                     );
                     return result.ToResult();
@@ -370,6 +372,8 @@ public static class TitheEndpoints
 
                 ### Response fields
                 - `totalCollected` — sum of amounts across matching tithes.
+                - `previousTotalCollected` — the same sum for the stretch of the same length before the window (ending the day before `from`). **Zero unless you send `includePrevious=true`**, which costs one more query, so leave it out when you do not compare.
+                - `byMethod` — how the tithes were paid: for each method its `count` and `total`, the method with the most tithes first. Use it for a "how it was paid" split instead of asking once per method.
                 - `uniqueTithers` — count of distinct members who gave at least one matching tithe.
                 - `mostUsedPaymentMethod` — the payment method with the most matching tithes, as a string. Null when no tithes match.
                 - `averagePerMember` — `totalCollected / uniqueTithers`. Zero when there are no tithers.
@@ -381,6 +385,7 @@ public static class TitheEndpoints
                 - `paymentMethod` — only tithes paid this way.
                 - `year` / `month` — the period the tithe is *for* (not when it was paid).
                 - `from` / `to` — only tithes collected inside this date range.
+                - `includePrevious` — `true` to also add up the stretch of the same length before the window, into `previousTotalCollected`. Off by default: it costs one more query, so leave it out when you do not compare.
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
@@ -434,7 +439,7 @@ public static class TitheEndpoints
                 This is the only monthly endpoint for tithes: it serves a dashboard card (`months=6`), a full-year chart, or a donut over the months. The shape is always the same list, so the page decides how to draw it.
 
                 ### Caching
-                The answer is cached for 2 minutes per congregation and per set of parameters, so asking again straight away costs nothing. A change shows up within 2 minutes.
+                The answer is cached for 5 minutes per congregation and per set of parameters, so asking again straight away costs nothing. A change shows up within 5 minutes.
 
                 ### Failure modes
                 - `400 BAD_REQUEST` — `months` is not between 1 and 12.

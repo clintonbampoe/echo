@@ -1,0 +1,31 @@
+.tile {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--size);
+  height: var(--size);
+  border-radius: calc(var(--size) * 0.31);
+  background: var(--hover-option);
+  color: var(--text);
+  transition:
+    background-color var(--t-base) var(--ease-soft),
+    color var(--t-base) var(--ease-soft);
+}
+.tile[data-on] {
+  background: var(--accent);
+  color: var(--on-accent);
+}
+.tile[data-tone="neg"] {
+  color: var(--neg);
+}
+/* A new icon springs in from small. The global reduced-motion rule switches this off. */
+.tile svg {
+  animation: iconIn var(--t-spring) var(--ease-spring) both;
+}
+@keyframes iconIn {
+  from {
+    opacity: 0;
+    scale: 0.5;
+  }
+}

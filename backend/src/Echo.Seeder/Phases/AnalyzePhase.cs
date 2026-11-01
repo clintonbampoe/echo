@@ -18,6 +18,9 @@ namespace Echo.Seeder.Phases;
 /// the difference between measuring the queries and measuring the queries
 /// with the wrong plans.
 /// <br/><br/>
+/// The per-session attendance totals are refreshed first, because the API only refreshes them
+/// every few minutes and a bulk load would otherwise leave the summaries empty until then.
+/// <br/><br/>
 /// It also creates pg_stat_statements if it is missing: that extension is
 /// the ranked list of the slowest queries the server has run, and it is the
 /// instrument every later move reads.
@@ -29,6 +32,7 @@ public sealed class AnalyzePhase : ISeedPhase
     public async Task RunAsync(SeederContext ctx, CancellationToken ct)
     {
         await Execute(ctx, "CREATE EXTENSION IF NOT EXISTS pg_stat_statements", ct);
+        await Execute(ctx, "REFRESH MATERIALIZED VIEW attendance_per_session", ct);
         await Execute(ctx, "ANALYZE", ct);
 
         await using var cmd = new NpgsqlCommand(

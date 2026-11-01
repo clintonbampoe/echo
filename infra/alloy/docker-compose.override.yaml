@@ -1,0 +1,14 @@
+# Development only. The observability stack runs on this same machine, so Alloy also joins its Docker network and
+# reaches Loki, Prometheus and Tempo by name. Compose loads this file by itself.
+#
+# Production (the observability stack on a separate server) must NOT load it. There, run:
+#   docker compose -f docker-compose.yaml up -d --build
+# and set LOKI_URL, PROMETHEUS_URL and TEMPO_OTLP_ENDPOINT in .env (see .env.example).
+services:
+  alloy:
+    networks: [obs, app]
+
+networks:
+  obs:
+    external: true
+    name: obs_default
