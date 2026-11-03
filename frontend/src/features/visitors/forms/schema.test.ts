@@ -6,12 +6,14 @@ const parse = (change: Partial<typeof emptyVisitor>) =>
     ...emptyVisitor,
     firstName: "Esi",
     lastName: "Mensah",
+    gender: "Female",
     ...change,
   });
 
 describe("visitor form", () => {
-  it("needs only a name", () => {
+  it("needs a name and a gender", () => {
     expect(parse({}).success).toBe(true);
+    expect(parse({ gender: undefined }).success).toBe(false);
     expect(visitorSchema.safeParse(emptyVisitor).success).toBe(false);
   });
 
@@ -19,8 +21,6 @@ describe("visitor form", () => {
     expect(parse({ phoneNumber: "12" }).success).toBe(false);
     expect(parse({ phoneNumber: "055 212 3344" }).success).toBe(true);
     expect(parse({ emailAddress: "esi@" }).success).toBe(false);
-    expect(parse({ dateOfBirth: "2999-01-01" }).success).toBe(false);
-    expect(parse({ dateOfBirth: "1996-08-22" }).success).toBe(true);
     expect(parse({ notes: "x".repeat(2001) }).success).toBe(false);
   });
 
@@ -30,9 +30,10 @@ describe("visitor form", () => {
         ...emptyVisitor,
         firstName: "Esi",
         lastName: "Mensah",
+        gender: "Female",
         notes: "  ",
       }),
-    ).toEqual({ firstName: "Esi", lastName: "Mensah" });
+    ).toEqual({ firstName: "Esi", lastName: "Mensah", gender: "Female" });
   });
 
   it("fills the edit form from a visitor, with empty text for what is missing", () => {
@@ -41,7 +42,7 @@ describe("visitor form", () => {
       name: "Esi Mensah",
       firstName: "Esi",
       lastName: "Mensah",
-      dateOfBirth: "1996-08-22T00:00:00",
+      gender: "Female",
       createdAt: "2026-09-20T09:00:00Z",
       visitCount: 3,
     };
@@ -50,7 +51,7 @@ describe("visitor form", () => {
       lastName: "Mensah",
       phoneNumber: "",
       emailAddress: "",
-      dateOfBirth: "1996-08-22",
+      gender: "Female",
       notes: "",
     });
   });

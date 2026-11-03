@@ -139,7 +139,7 @@ function Profile({ visitor: v }: { visitor: Visitor }) {
         aria-labelledby={`visitor-tab-${tab}`}
       >
         {tab === "details" ? (
-          <VisitorDetails v={v} today={today} />
+          <VisitorDetails v={v} />
         ) : (
           <PersonVisits personId={v.id} name={v.name} />
         )}

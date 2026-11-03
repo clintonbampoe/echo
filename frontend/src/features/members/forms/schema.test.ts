@@ -7,12 +7,6 @@ const valid: MemberValues = {
   lastName: "Asante",
   phoneNumber: "024 412 7788",
   dateOfBirth: "1988-02-14",
-  residentialAddress: "14 Palm Street, Osu",
-  city: "Accra",
-  hometown: "Kumasi",
-  nextOfKin: "Efua Asante",
-  emergencyContactName: "Efua Asante",
-  emergencyContactPhoneNumber: "055 301 4408",
 };
 
 const messages = (v: MemberValues) => {
@@ -21,7 +15,7 @@ const messages = (v: MemberValues) => {
 };
 
 describe("member form rules", () => {
-  it("accepts a complete member with every optional field left empty", () => {
+  it("accepts a member with only the required fields filled in", () => {
     expect(messages(valid)).toEqual([]);
   });
 
@@ -31,10 +25,17 @@ describe("member form rules", () => {
         "Enter a first name",
         "Enter a phone number",
         "Enter a date of birth",
-        "Enter a city",
-        "Enter a contact phone",
       ]),
     );
+  });
+
+  it("checks an optional contact phone only when it is filled in", () => {
+    expect(
+      messages({ ...valid, emergencyContactPhoneNumber: "call me" }),
+    ).toEqual(["Enter a valid phone number"]);
+    expect(
+      messages({ ...valid, emergencyContactPhoneNumber: "055 301 4408" }),
+    ).toEqual([]);
   });
 
   it("rejects a bad email, a bad phone number and a birth date in the future", () => {
@@ -54,6 +55,8 @@ describe("member form rules", () => {
     expect(sent.emailAddress).toBeUndefined();
     expect(sent.joinedDate).toBeUndefined();
     expect(sent.firstName).toBe("Kwame");
-    expect(sent.region).toBe("GreaterAccra");
+    expect(sent.region).toBeUndefined();
+    expect(sent.maritalStatus).toBeUndefined();
+    expect(sent.city).toBeUndefined();
   });
 });
