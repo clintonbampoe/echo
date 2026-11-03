@@ -5,6 +5,8 @@ namespace Echo.Application.Projects;
 public interface IProjectMapper
 {
     ProjectResponseDto ToDto(Project entity);
+
+    ProjectResponseDto ToDto(Project entity, string categoryName, string managerName);
     Project ToEntity(ProjectCreateDto dto);
     List<ProjectResponseDto> ToListDto(List<Project> entities);
 

@@ -18,6 +18,10 @@ public class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken>
             .HasIndex(x => new { x.UserId, x.RevokedAt })
             .HasFilter("revoked_at IS NULL AND deleted_at IS NULL");
 
+        // The filtered index above only covers live tokens, so the sweep of a user's expired and revoked ones, and the
+        // cascade when a user is deleted, would read the whole table without this.
+        builder.HasIndex(x => x.UserId);
+
         builder
             .HasOne(x => x.User)
             .WithMany()

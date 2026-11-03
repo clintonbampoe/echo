@@ -58,6 +58,15 @@ public sealed class AttendanceTotalsRefresher(
                 "REFRESH MATERIALIZED VIEW CONCURRENTLY attendance_per_session",
                 ct
             );
+            // The event list reads its registration and attendance counts the same way, and the project list its gift totals.
+            await db.Database.ExecuteSqlRawAsync(
+                "REFRESH MATERIALIZED VIEW CONCURRENTLY event_counts",
+                ct
+            );
+            await db.Database.ExecuteSqlRawAsync(
+                "REFRESH MATERIALIZED VIEW CONCURRENTLY project_totals",
+                ct
+            );
             await transaction.CommitAsync(ct);
 
             AttendanceLog.TotalsRefreshed(
