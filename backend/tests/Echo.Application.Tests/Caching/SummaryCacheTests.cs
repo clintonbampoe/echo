@@ -229,7 +229,7 @@ public class SummaryCacheTests
         _time.Advance(TimeSpan.FromSeconds(120));
 
         await Serve(congregation, new Filters(null, 2026));
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.Current.CancellationToken);
 
         Assert.Equal(1, _computed);
     }
@@ -245,7 +245,7 @@ public class SummaryCacheTests
             Enumerable.Range(0, 20).Select(_ => Serve(congregation, new Filters(null, 2026)))
         );
         await Until(() => _computed >= 2);
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.Current.CancellationToken);
 
         Assert.Equal(2, _computed);
     }
@@ -260,7 +260,7 @@ public class SummaryCacheTests
 
         await Serve(congregation, new Filters(null, 2026));
         await Until(() => _computed == 2);
-        await Task.Delay(100);
+        await Task.Delay(100, TestContext.Current.CancellationToken);
         var again = await Serve(congregation, new Filters(null, 2026));
 
         Assert.Equal(new Payload(1), Assert.IsType<Ok<Payload>>(again.ToResult()).Value);

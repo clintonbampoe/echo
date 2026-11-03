@@ -34,10 +34,10 @@ public class AttendanceTotalsRefresherTests
         await worker.StartAsync(CancellationToken.None);
         for (var i = 0; i < 2; i++)
         {
-            await Task.Delay(50);
+            await Task.Delay(50, TestContext.Current.CancellationToken);
             time.Advance(AttendanceTotalsRefresher.Interval);
         }
-        await Task.Delay(50);
+        await Task.Delay(50, TestContext.Current.CancellationToken);
         await worker.StopAsync(CancellationToken.None);
 
         Assert.Equal(2, scopes.Attempts);
@@ -56,7 +56,7 @@ public class AttendanceTotalsRefresherTests
 
         await worker.StartAsync(CancellationToken.None);
         time.Advance(AttendanceTotalsRefresher.Interval - TimeSpan.FromSeconds(1));
-        await Task.Delay(50);
+        await Task.Delay(50, TestContext.Current.CancellationToken);
         await worker.StopAsync(CancellationToken.None);
 
         Assert.Equal(0, scopes.Attempts);
