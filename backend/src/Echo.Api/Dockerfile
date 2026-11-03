@@ -1,5 +1,5 @@
 
-FROM mcr.microsoft.com/dotnet/sdk:10.0 AS restore
+FROM mcr.microsoft.com/dotnet/sdk:10.0.100 AS restore
 WORKDIR /build
 
 # ReadyToRun compiles the app to native code ahead of time, so a fresh container does not spend its first minute
@@ -8,6 +8,7 @@ ARG TARGETARCH
 RUN if [ "$TARGETARCH" = "arm64" ]; then echo linux-arm64; else echo linux-x64; fi > /rid
 
 COPY ["backend/Echo.slnx", "."]
+COPY ["./global.json", "."]
 COPY ["backend/Directory.Packages.props", "."]
 COPY ["backend/src/Echo.Api/Echo.Api.csproj", "./src/Echo.Api/"]
 COPY ["backend/src/Echo.Application/Echo.Application.csproj", "./src/Echo.Application/"]

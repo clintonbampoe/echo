@@ -7,6 +7,8 @@ namespace Echo.Shared.Utilities;
 /// </summary>
 public sealed class DateWindows(TimeProvider timeProvider)
 {
+    public DateOnly Today => DateUtils.GetDateToday(timeProvider);
+
     public DateWindow? ThisWeekToDate(DateOnly? from, DateOnly? to, bool hasParent) =>
         Resolve(
             from,

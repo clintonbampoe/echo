@@ -1,13 +1,14 @@
 // Marking people present at one session: what was marked from this screen, the undo, and the visitor who is
 // added and marked in one go. Talks to the server only through hooks.ts.
 import { useState } from "react";
+import type { Gender } from "@/features/members";
 import { useCreateVisitor } from "@/features/visitors";
 import { isApiError } from "@/lib/api";
 import { useCheckIn, useRemoveCheckIn } from ".";
 import type { Match } from "../model/matches";
 
 export type Marked = { checkInId: string; personId: string; name: string };
-export type NewName = { firstName: string; lastName: string };
+export type NewName = { firstName: string; lastName: string; gender: Gender };
 
 // `onSettled` runs after every try, so the panel can empty its search and keep the keyboard where it was.
 export function useMarking(sessionId: string, onSettled: () => void) {

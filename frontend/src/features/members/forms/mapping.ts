@@ -13,26 +13,39 @@ export const emptyMember: MemberValues = {
   dateOfBirth: "",
   joinedDate: "",
   gender: "Male",
-  maritalStatus: "Single",
+  maritalStatus: "",
   status: "Active",
   residentialAddress: "",
   city: "",
   hometown: "",
-  region: "GreaterAccra",
+  region: "",
   gpsAddress: "",
   nextOfKin: "",
   emergencyContactName: "",
   emergencyContactPhoneNumber: "",
 };
 
+// An empty form field is left out of what is sent.
+const orUndefined = <T extends string>(text: T | "") => text || undefined;
+// A missing value shows as an empty field.
+const orEmpty = (value?: string | null) => value ?? "";
+
 // The form holds text for every field; the API wants optional ones left out when empty.
 export function toInput(v: MemberValues): MemberInput {
   return {
     ...v,
-    otherNames: v.otherNames || undefined,
-    emailAddress: v.emailAddress || undefined,
-    joinedDate: v.joinedDate || undefined,
-    gpsAddress: v.gpsAddress || undefined,
+    otherNames: orUndefined(v.otherNames),
+    emailAddress: orUndefined(v.emailAddress),
+    joinedDate: orUndefined(v.joinedDate),
+    gpsAddress: orUndefined(v.gpsAddress),
+    residentialAddress: orUndefined(v.residentialAddress),
+    city: orUndefined(v.city),
+    hometown: orUndefined(v.hometown),
+    region: orUndefined(v.region),
+    maritalStatus: orUndefined(v.maritalStatus),
+    nextOfKin: orUndefined(v.nextOfKin),
+    emergencyContactName: orUndefined(v.emergencyContactName),
+    emergencyContactPhoneNumber: orUndefined(v.emergencyContactPhoneNumber),
   };
 }
 
@@ -41,22 +54,22 @@ export function fromMember(m: Member): MemberValues {
   return {
     firstName: m.firstName,
     lastName: m.lastName,
-    otherNames: m.otherNames ?? "",
+    otherNames: orEmpty(m.otherNames),
     phoneNumber: m.phoneNumber,
-    emailAddress: m.emailAddress ?? "",
+    emailAddress: orEmpty(m.emailAddress),
     dateOfBirth: m.dateOfBirth.slice(0, 10),
-    joinedDate: m.joinedDate?.slice(0, 10) ?? "",
+    joinedDate: orEmpty(m.joinedDate).slice(0, 10),
     gender: m.gender,
-    maritalStatus: m.maritalStatus,
+    maritalStatus: m.maritalStatus ?? "",
     status: m.status,
-    residentialAddress: m.residentialAddress,
-    city: m.city,
-    hometown: m.hometown,
-    region: m.region,
-    gpsAddress: m.gpsAddress ?? "",
-    nextOfKin: m.nextOfKin,
-    emergencyContactName: m.emergencyContactName,
-    emergencyContactPhoneNumber: m.emergencyContactPhoneNumber,
+    residentialAddress: orEmpty(m.residentialAddress),
+    city: orEmpty(m.city),
+    hometown: orEmpty(m.hometown),
+    region: orEmpty(m.region),
+    gpsAddress: orEmpty(m.gpsAddress),
+    nextOfKin: orEmpty(m.nextOfKin),
+    emergencyContactName: orEmpty(m.emergencyContactName),
+    emergencyContactPhoneNumber: orEmpty(m.emergencyContactPhoneNumber),
   };
 }
 
@@ -65,16 +78,3 @@ export function fromMember(m: Member): MemberValues {
 export const fieldMap = Object.fromEntries(
   Object.keys(emptyMember).map((k) => [k, k]),
 ) as Record<keyof MemberValues, keyof MemberValues>;
-
-// "Ama Serwaa Mensah" becomes first name "Ama", other names "Serwaa", last name "Mensah".
-export function splitName(full: string) {
-  const parts = full.trim().split(/\s+/);
-  const firstName = parts[0] ?? "";
-  const lastName = parts.length > 1 ? (parts[parts.length - 1] ?? "") : "";
-  const otherNames = parts.slice(1, -1).join(" ");
-  return { firstName, otherNames, lastName };
-}
-
-// The reverse of splitName, for showing the three parts as one name.
-export const joinName = (first: string, other: string, last: string) =>
-  [first, other, last].filter(Boolean).join(" ");

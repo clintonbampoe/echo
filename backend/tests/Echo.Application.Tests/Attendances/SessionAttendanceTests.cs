@@ -47,6 +47,43 @@ public class SessionAttendanceTests
         Assert.False(res.ContainsKey(other));
     }
 
+    private static Session OnDay(DateOnly date) => new() { Id = Guid.NewGuid(), Date = date };
+
+    [Fact]
+    public void SettledIds_AreTheSessionsFromBeforeYesterday_NotYesterdayOrLater()
+    {
+        var today = new DateOnly(2026, 11, 3);
+        var lastWeek = OnDay(today.AddDays(-7));
+        var dayBefore = OnDay(today.AddDays(-2));
+        var yesterday = OnDay(today.AddDays(-1));
+        var now = OnDay(today);
+        var upcoming = OnDay(today.AddDays(5));
+
+        var settled = SessionRepository.SettledIds([lastWeek, dayBefore, yesterday, now, upcoming], today);
+
+        Assert.Equal([lastWeek.Id, dayBefore.Id], settled);
+    }
+
+    [Fact]
+    public void SettledAttendance_ReadsTheViewRowsOfTheRequestedSessionsOnly()
+    {
+        var a = Guid.NewGuid();
+        var b = Guid.NewGuid();
+        var other = Guid.NewGuid();
+        var rows = new[]
+        {
+            new SessionAttendanceTotals { SessionId = a, Total = 40, Members = 30, Visitors = 10, FirstTime = 2 },
+            new SessionAttendanceTotals { SessionId = b, Total = 5, Members = 5, Visitors = 0, FirstTime = 0 },
+            new SessionAttendanceTotals { SessionId = other, Total = 9, Members = 9, Visitors = 0, FirstTime = 0 },
+        };
+
+        var res = rows.AsQueryable().SettledAttendance([a, b]).ToDictionary(x => x.Id);
+
+        Assert.Equal(new SessionAttendance(a, 40, 30, 10, 2), res[a]);
+        Assert.Equal(new SessionAttendance(b, 5, 5, 0, 0), res[b]);
+        Assert.False(res.ContainsKey(other));
+    }
+
     [Fact]
     public void WithAttendance_FillsTheCountsOnTheDto_AndLeavesASessionWithNoAttendanceAtZero()
     {

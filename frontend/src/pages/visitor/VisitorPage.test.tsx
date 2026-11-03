@@ -17,7 +17,7 @@ const visitor = aVisitor({
   lastName: "Mensah",
   phoneNumber: "024 555 0101",
   emailAddress: "esi@example.com",
-  dateOfBirth: "1995-05-02",
+  gender: "Female",
   notes: "Came with her sister.",
   createdAt: "2026-09-07T10:00:00Z",
   visitCount: 3,

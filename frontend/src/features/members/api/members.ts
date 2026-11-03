@@ -2,7 +2,7 @@
 import { api, type DateWindow, type Page } from "@/lib/api";
 import { pageSize } from "@/lib/paged";
 
-export type Gender = "Male" | "Female" | "Other";
+export type Gender = "Male" | "Female" | "NonBinary";
 export type MaritalStatus = "Single" | "Married" | "Widowed";
 export type MemberStatus = "Active" | "Inactive" | "Archived" | "Transferred";
 
@@ -17,15 +17,15 @@ export type Member = {
   dateOfBirth: string;
   joinedDate?: string | null;
   gender: Gender;
-  residentialAddress: string;
-  city: string;
-  hometown: string;
-  region: string;
+  residentialAddress?: string | null;
+  city?: string | null;
+  hometown?: string | null;
+  region?: string | null;
   gpsAddress?: string | null;
-  maritalStatus: MaritalStatus;
-  nextOfKin: string;
-  emergencyContactName: string;
-  emergencyContactPhoneNumber: string;
+  maritalStatus?: MaritalStatus | null;
+  nextOfKin?: string | null;
+  emergencyContactName?: string | null;
+  emergencyContactPhoneNumber?: string | null;
   status: MemberStatus;
   createdAt: string;
 };
@@ -90,15 +90,15 @@ export type MemberInput = {
   dateOfBirth: string;
   joinedDate?: string;
   gender: Gender;
-  residentialAddress: string;
-  city: string;
-  hometown: string;
-  region: string;
+  residentialAddress?: string;
+  city?: string;
+  hometown?: string;
+  region?: string;
   gpsAddress?: string;
-  maritalStatus: MaritalStatus;
-  nextOfKin: string;
-  emergencyContactName: string;
-  emergencyContactPhoneNumber: string;
+  maritalStatus?: MaritalStatus;
+  nextOfKin?: string;
+  emergencyContactName?: string;
+  emergencyContactPhoneNumber?: string;
   status: MemberStatus;
 };
 

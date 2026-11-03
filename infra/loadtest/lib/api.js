@@ -1,7 +1,7 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
 import exec from 'k6/execution';
-import { BASE_URL, THINK_MAX, THINK_MIN, TRACE_RATIO, WARMUP_SECONDS } from './config.js';
+import { BASE_URL, HOLD_MINUTES, RAMP_MINUTES, THINK_MAX, THINK_MIN, TRACE_RATIO, WARMUP_SECONDS } from './config.js';
 import { addressOf } from './ip.js';
 import { sessionFor } from './session.js';
 
@@ -13,7 +13,12 @@ const hex = (n) => {
 
 // The first minute is the API warming up (JIT, empty caches, connections opening). It is kept in the
 // data but tagged, so runs can be compared on the steady part only.
-const phase = () => (exec.instance.currentTestRunDuration < WARMUP_SECONDS * 1000 ? 'warmup' : 'steady');
+const phase = () => {
+  const t = exec.instance.currentTestRunDuration;
+  if (t < WARMUP_SECONDS * 1000) return 'warmup';
+  if (HOLD_MINUTES > 0) return t < RAMP_MINUTES * 60 * 1000 ? 'ramp' : 'hold';
+  return 'steady';
+};
 
 // One request as the browser would send it. `name` is the route template (/members/{id}) so that every
 // member does not become its own series in Prometheus; `profile` is who is asking. The traceparent header
@@ -25,7 +30,7 @@ export const request = (ctx, name, path, query = {}) => ({
   params: {
     headers: {
       authorization: `Bearer ${sessionFor(ctx.account)?.accessToken ?? ''}`,
-      'x-forwarded-for': addressOf(ctx.account.tenant),
+      'x-forwarded-for': addressOf(ctx.account),
       traceparent: `00-${hex(32)}-${hex(16)}-${Math.random() < TRACE_RATIO ? '01' : '00'}`,
     },
     tags: { name, profile: ctx.account.role, tenant_kind: ctx.kind, phase: phase(), kind: 'data' },

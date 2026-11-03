@@ -1,5 +1,6 @@
 import type { UseFormReturn } from "react-hook-form";
-import { ControlledDate, Field, FormSection, TextAreaField } from "@/ui";
+import { genderChoices } from "@/features/members";
+import { ControlledSegmented, Field, FormSection, TextAreaField } from "@/ui";
 import { NOTES_MAX, type VisitorValues } from "../../forms/schema";
 import styles from "./VisitorFields.module.css";
 
@@ -29,6 +30,14 @@ export function VisitorFields({ form }: Props) {
           error={e.lastName?.message}
           {...register("lastName")}
         />
+        <div className={styles.full}>
+          <ControlledSegmented
+            control={form.control}
+            name="gender"
+            label="Gender"
+            options={genderChoices}
+          />
+        </div>
       </FormSection>
       <FormSection title="Contact">
         <Field
@@ -52,15 +61,6 @@ export function VisitorFields({ form }: Props) {
           error={e.emailAddress?.message}
           {...register("emailAddress")}
         />
-        <div className={styles.full}>
-          <ControlledDate
-            control={form.control}
-            name="dateOfBirth"
-            label="Date of birth"
-            optional
-            kind="birth"
-          />
-        </div>
       </FormSection>
       <FormSection title="Follow-up">
         <div className={styles.full}>

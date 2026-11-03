@@ -1,6 +1,7 @@
 import { useId, type CSSProperties } from "react";
 import { Icon, type IconName } from "../layout/Icon";
 import { useFlip } from "../motion/useFlip";
+import fieldStyles from "./Field.module.css";
 import styles from "./SegmentedField.module.css";
 
 type Props<V extends string> = {
@@ -19,6 +20,8 @@ type Props<V extends string> = {
   stretch?: boolean;
   // With `joined`: smaller words, for a switch squeezed beside a card's title.
   compact?: boolean;
+  // What is wrong, shown underneath.
+  error?: string;
 };
 
 const groupClass = (
@@ -50,6 +53,7 @@ export function SegmentedField<V extends string>({
   fill,
   compact,
   stretch,
+  error,
 }: Props<V>) {
   const name = useId();
   const flip = useFlip(value);
@@ -90,6 +94,14 @@ export function SegmentedField<V extends string>({
           </label>
         ))}
       </div>
+      {error && (
+        <p
+          role="alert"
+          className={`${fieldStyles.message} ${fieldStyles.error} anim-fade`}
+        >
+          {error}
+        </p>
+      )}
     </fieldset>
   );
 }

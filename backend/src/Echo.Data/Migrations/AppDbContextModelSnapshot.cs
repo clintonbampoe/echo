@@ -666,6 +666,9 @@ namespace Echo.Data.Migrations
                         .IsUnique()
                         .HasDatabaseName("ix_refresh_tokens_token_hash");
 
+                    b.HasIndex("UserId")
+                        .HasDatabaseName("ix_refresh_tokens_user_id");
+
                     b.HasIndex("UserId", "RevokedAt")
                         .HasDatabaseName("ix_refresh_tokens_user_id_revoked_at")
                         .HasFilter("revoked_at IS NULL AND deleted_at IS NULL");
@@ -911,6 +914,25 @@ namespace Echo.Data.Migrations
                         .HasFilter("deleted_at IS NULL");
 
                     b.ToTable("event_attendances", (string)null);
+                });
+
+            modelBuilder.Entity("Echo.Domain.Events.EventCounts", b =>
+                {
+                    b.Property<int>("Attendees")
+                        .HasColumnType("integer")
+                        .HasColumnName("attendees");
+
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("event_id");
+
+                    b.Property<int>("Registrations")
+                        .HasColumnType("integer")
+                        .HasColumnName("registrations");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("event_counts", (string)null);
                 });
 
             modelBuilder.Entity("Echo.Domain.Events.EventRegistration", b =>
@@ -1523,6 +1545,25 @@ namespace Echo.Data.Migrations
                     NpgsqlIndexBuilderExtensions.IncludeProperties(b.HasIndex("CongregationId", "DateContributed", "Id"), new[] { "ProjectId", "Amount", "PaymentMethod" });
 
                     b.ToTable("project_contributions", (string)null);
+                });
+
+            modelBuilder.Entity("Echo.Domain.Projects.ProjectTotals", b =>
+                {
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("numeric")
+                        .HasColumnName("amount");
+
+                    b.Property<int>("Contributions")
+                        .HasColumnType("integer")
+                        .HasColumnName("contributions");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("project_id");
+
+                    b.ToTable((string)null);
+
+                    b.ToView("project_totals", (string)null);
                 });
 
             modelBuilder.Entity("Echo.Domain.Tithes.Tithe", b =>

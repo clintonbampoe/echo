@@ -3,6 +3,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { saveTokens } from "@/lib/tokens";
+import { pickDate } from "@/test/pickers";
 import { ConvertSheet } from "./ConvertSheet";
 import { aVisitor } from "../../testing/fixtures";
 
@@ -16,7 +17,7 @@ const esi = aVisitor({
   lastName: "Mensah",
   phoneNumber: "055 212 3344",
   emailAddress: "esi@example.com",
-  dateOfBirth: "1996-08-22",
+  gender: "Female",
   createdAt: "2026-09-20T09:00:00Z",
   visitCount: 3,
 });
@@ -55,6 +56,7 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals());
 
 async function fillRest(user: ReturnType<typeof userEvent.setup>) {
+  await pickDate(user, "Date of birth", "1996-08-22");
   await user.type(screen.getByLabelText("Residential address"), "14 Palm St");
   await user.type(screen.getByLabelText("City"), "Accra");
   await user.type(screen.getByLabelText("Hometown"), "Kumasi");
@@ -72,17 +74,14 @@ describe("ConvertSheet", () => {
     ).toBeInTheDocument();
     expect(screen.getByLabelText("First name")).toHaveValue("Esi");
     expect(screen.getByLabelText("Phone")).toHaveValue("055 212 3344");
-    expect(
-      screen.getByRole("button", { name: /Date of birth/ }),
-    ).toHaveTextContent("22 Aug 1996");
   });
 
-  it("asks for the details a visitor does not have and sends nothing until they are there", async () => {
+  it("asks for the birth date a visitor does not have and sends nothing until they are there", async () => {
     const user = userEvent.setup();
     show(() => json({}));
     await user.click(screen.getByRole("button", { name: "Make member" }));
     expect(
-      await screen.findByText("Enter a residential address"),
+      await screen.findByText("Enter a date of birth"),
     ).toBeInTheDocument();
     expect(fetchMock).not.toHaveBeenCalled();
   });

@@ -1,46 +1,4 @@
-import {
-  emptyMember,
-  fromMember,
-  joinName,
-  splitName,
-  toInput,
-} from "./mapping";
-
-describe("splitting a full name", () => {
-  it("takes the first word as first name, the last as last name, the rest in between", () => {
-    expect(splitName("Abena Serwaa Mensah")).toEqual({
-      firstName: "Abena",
-      otherNames: "Serwaa",
-      lastName: "Mensah",
-    });
-    expect(splitName("  Kwame   Asante ")).toEqual({
-      firstName: "Kwame",
-      otherNames: "",
-      lastName: "Asante",
-    });
-  });
-
-  it("leaves the last name empty until there is a second word, so the form can ask for it", () => {
-    expect(splitName("Abena")).toEqual({
-      firstName: "Abena",
-      otherNames: "",
-      lastName: "",
-    });
-    expect(splitName("")).toEqual({
-      firstName: "",
-      otherNames: "",
-      lastName: "",
-    });
-  });
-});
-
-describe("joining a name", () => {
-  it("puts the parts back together, skipping empty ones", () => {
-    expect(joinName("Abena", "Serwaa", "Mensah")).toBe("Abena Serwaa Mensah");
-    expect(joinName("Abena", "", "")).toBe("Abena");
-    expect(joinName("", "", "")).toBe("");
-  });
-});
+import { emptyMember, fromMember, toInput } from "./mapping";
 
 describe("member mapping", () => {
   it("round-trips a member through the form", () => {

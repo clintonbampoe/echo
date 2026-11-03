@@ -31,7 +31,7 @@ describe("pronouns", () => {
       leaves: "leaves",
     });
     expect(pronouns("Male").subject).toBe("He");
-    expect(pronouns("Other")).toEqual({
+    expect(pronouns("NonBinary")).toEqual({
       subject: "They",
       possessive: "Their",
       leaves: "leave",

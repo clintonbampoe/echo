@@ -96,15 +96,15 @@
       "id": 2,
       "gridPos": {
         "h": 4,
-        "w": 6,
+        "w": 5,
         "x": 0,
         "y": 1
       }
     },
     {
       "type": "stat",
-      "title": "Requests",
-      "description": "",
+      "title": "Requests (24 h)",
+      "description": "Requests from all churches over the last 24 hours. Fixed at 24 hours: it ignores the time picker.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -153,14 +153,14 @@
       "id": 3,
       "gridPos": {
         "h": 4,
-        "w": 6,
-        "x": 6,
+        "w": 5,
+        "x": 5,
         "y": 1
       }
     },
     {
       "type": "stat",
-      "title": "Logins",
+      "title": "Logins (24 h)",
       "description": "Successful sign-ins.",
       "datasource": {
         "type": "prometheus",
@@ -210,8 +210,8 @@
       "id": 4,
       "gridPos": {
         "h": 4,
-        "w": 6,
-        "x": 12,
+        "w": 5,
+        "x": 10,
         "y": 1
       }
     },
@@ -268,8 +268,8 @@
       "id": 5,
       "gridPos": {
         "h": 4,
-        "w": 3,
-        "x": 18,
+        "w": 5,
+        "x": 15,
         "y": 1
       }
     },
@@ -326,8 +326,8 @@
       "id": 6,
       "gridPos": {
         "h": 4,
-        "w": 3,
-        "x": 21,
+        "w": 4,
+        "x": 20,
         "y": 1
       }
     },
@@ -406,7 +406,7 @@
     {
       "type": "timeseries",
       "title": "Requests per second, top 5 churches",
-      "description": "",
+      "description": "Requests per second from the five churches that sent the most, by church.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"

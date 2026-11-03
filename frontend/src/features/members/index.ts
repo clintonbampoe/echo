@@ -21,6 +21,7 @@ export {
   fieldMap as memberFieldMap,
   toInput as toMemberInput,
 } from "./forms/mapping";
+export { genderChoices, genderLabel } from "./model/options";
 export { memberSchema, type MemberValues } from "./forms/schema";
 export type {
   Gender,
