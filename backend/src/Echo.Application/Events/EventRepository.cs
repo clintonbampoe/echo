@@ -87,6 +87,41 @@ public class EventRepository(AppDbContext context, TimeProvider timeProvider)
             .ToDictionaryAsync(x => x.Id, x => x.Count, ct);
     }
 
+    /// <summary>
+    /// How many registered and how many came, for a page of events. An event that ended before yesterday no longer
+    /// changes, so its counts are read from the per-event view (one row each) instead of counting every registration and
+    /// check-in, up to the refresh interval behind. Recent and upcoming events, and any the view does not hold yet, are
+    /// counted from the rows themselves, so someone who registered a moment ago shows.
+    /// </summary>
+    public async Task<(Dictionary<Guid, int> Registered, Dictionary<Guid, int> Attended)> GetCountsForList(
+        IReadOnlyList<Event> events,
+        CancellationToken ct = default
+    )
+    {
+        var settled = SettledIds(events, DateUtils.GetDateToday(timeProvider));
+        var rows =
+            settled.Count == 0
+                ? []
+                : await context
+                    .Set<EventCounts>()
+                    .AsNoTracking()
+                    .Where(c => settled.Contains(c.EventId))
+                    .ToListAsync(ct);
+        var registered = rows.ToDictionary(r => r.EventId, r => r.Registrations);
+        var attended = rows.ToDictionary(r => r.EventId, r => r.Attendees);
+
+        var counted = events.Select(e => e.Id).Where(id => !registered.ContainsKey(id)).ToList();
+        foreach (var (id, count) in await GetRegistrationCounts(counted, ct))
+            registered[id] = count;
+        foreach (var (id, count) in await GetAttendanceCounts(counted, ct))
+            attended[id] = count;
+        return (registered, attended);
+    }
+
+    // An event that ended yesterday may still be getting check-ins late, so a day is left alone.
+    internal static List<Guid> SettledIds(IEnumerable<Event> events, DateOnly today) =>
+        [.. events.Where(e => e.EndDate < today.AddDays(-1)).Select(e => e.Id)];
+
     // The newest events in the filters, each with how many registered and how many came.
     public async Task<List<EventSeriesDto>> GetSeries(
         Guid congregationId,

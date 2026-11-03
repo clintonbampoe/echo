@@ -255,16 +255,18 @@ internal static class MemberQueryExtensions
         if (filters.MaritalStatus.HasValue)
             query = query.Where(m => m.MaritalStatus == filters.MaritalStatus.Value);
 
-        // Members without a JoinedDate are kept in every window. This is one "undated, or inside the
-        // window" test, rather than one test per bound, so the database sees a single range plus
-        // the undated rows and can combine the two index lookups.
+        // Members without a JoinedDate are kept in every window. Each end is tested on its own ("undated, or on or after
+        // the start", and the same for the end) and not as one range. Postgres prepares this statement after a few runs and
+        // then plans it once for any dates, and for a range on two unknown dates it guesses that 0.5% of the members match,
+        // so it reads the members by date and sorts them: over 100 ms for a big church whenever the window is wide. For one
+        // unknown end it guesses a third, which keeps the plan that reads the people in name order and stops at the page size.
         if (filters.From is not null || filters.To is not null)
         {
             var from = filters.From ?? DateOnly.MinValue;
             var to = filters.To ?? DateOnly.MaxValue;
-            query = query.Where(m =>
-                m.JoinedDate == null || (m.JoinedDate >= from && m.JoinedDate <= to)
-            );
+            query = query
+                .Where(m => m.JoinedDate == null || m.JoinedDate >= from)
+                .Where(m => m.JoinedDate == null || m.JoinedDate <= to);
         }
 
         return query;

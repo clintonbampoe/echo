@@ -70,7 +70,7 @@ public class EmailDeliveryWorkerTests
         await rig.Worker.StopAsync(TestContext.Current.CancellationToken);
 
         Assert.Equal(1, rig.Email.Attempts);
-        Assert.Empty(rig.Logger.Entries.Where(e => e.Level >= LogLevel.Error));
+        Assert.DoesNotContain(rig.Logger.Entries, e => e.Level >= LogLevel.Error);
     }
 
     [Fact]
@@ -81,7 +81,7 @@ public class EmailDeliveryWorkerTests
 
         rig.Queue.TryEnqueue(Messages.To());
         await WaitFor(() => rig.Email.Attempts == 1);
-        await Task.Delay(50);
+        await Task.Delay(50, TestContext.Current.CancellationToken);
         Assert.Equal(1, rig.Email.Attempts); // still backing off, no time has passed
 
         await Pump(rig, () => rig.Email.Attempts == 3);
@@ -101,7 +101,7 @@ public class EmailDeliveryWorkerTests
         rig.Queue.TryEnqueue(Messages.To());
         await WaitFor(() => rig.Logger.Entries.Any(e => e.Level == LogLevel.Error));
         rig.Time.Advance(TimeSpan.FromMinutes(1));
-        await Task.Delay(50);
+        await Task.Delay(50, TestContext.Current.CancellationToken);
         await rig.Worker.StopAsync(TestContext.Current.CancellationToken);
 
         Assert.Equal(1, rig.Email.Attempts);
@@ -116,7 +116,7 @@ public class EmailDeliveryWorkerTests
         rig.Queue.TryEnqueue(Messages.To());
         await Pump(rig, () => rig.Logger.Entries.Any(e => e.Level == LogLevel.Error));
         rig.Time.Advance(TimeSpan.FromMinutes(1));
-        await Task.Delay(50);
+        await Task.Delay(50, TestContext.Current.CancellationToken);
         await rig.Worker.StopAsync(TestContext.Current.CancellationToken);
 
         Assert.Equal(4, rig.Email.Attempts);

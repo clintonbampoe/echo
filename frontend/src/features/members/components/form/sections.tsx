@@ -1,13 +1,22 @@
 import type { UseFormReturn } from "react-hook-form";
 import { regions } from "@/lib/regions";
-import { ControlledDate, ControlledSelect, Field, FormSection } from "@/ui";
+import { withAny } from "@/lib/options";
+import {
+  ControlledDate,
+  ControlledSegmented,
+  ControlledSelect,
+  Field,
+  FormSection,
+} from "@/ui";
 import {
   genderChoices,
-  maritalChoices,
+  optionalMaritalChoices,
   statusChoices,
 } from "../../model/options";
 import type { MemberValues } from "../../forms/schema";
 import styles from "./MemberFields.module.css";
+
+const regionOptions = withAny("Not set", regions);
 
 export type Form = { form: UseFormReturn<MemberValues> };
 
@@ -100,7 +109,7 @@ export function Personal({ form }: Form) {
         label="Joined church"
         optional
       />
-      <ControlledSelect
+      <ControlledSegmented
         control={form.control}
         name="gender"
         label="Gender"
@@ -110,7 +119,8 @@ export function Personal({ form }: Form) {
         control={form.control}
         name="maritalStatus"
         label="Marital status"
-        options={maritalChoices}
+        optional
+        options={optionalMaritalChoices}
       />
       <ControlledSelect
         control={form.control}
@@ -132,6 +142,7 @@ export function Address({ form }: Form) {
       <div className={styles.full}>
         <Field
           label="Residential address"
+          optional
           autoComplete="street-address"
           maxLength={255}
           placeholder="House number, street, area"
@@ -141,6 +152,7 @@ export function Address({ form }: Form) {
       </div>
       <Field
         label="City"
+        optional
         autoComplete="address-level2"
         maxLength={100}
         error={e.city?.message}
@@ -148,6 +160,7 @@ export function Address({ form }: Form) {
       />
       <Field
         label="Hometown"
+        optional
         maxLength={100}
         error={e.hometown?.message}
         {...register("hometown")}
@@ -156,7 +169,8 @@ export function Address({ form }: Form) {
         control={form.control}
         name="region"
         label="Region"
-        options={regions}
+        optional
+        options={regionOptions}
       />
       <Field
         label="Digital address"
@@ -180,6 +194,7 @@ export function Emergency({ form }: Form) {
       <div className={styles.full}>
         <Field
           label="Next of kin"
+          optional
           maxLength={100}
           error={e.nextOfKin?.message}
           {...register("nextOfKin")}
@@ -187,12 +202,14 @@ export function Emergency({ form }: Form) {
       </div>
       <Field
         label="Contact name"
+        optional
         maxLength={100}
         error={e.emergencyContactName?.message}
         {...register("emergencyContactName")}
       />
       <Field
         label="Contact phone"
+        optional
         type="tel"
         inputMode="tel"
         maxLength={20}

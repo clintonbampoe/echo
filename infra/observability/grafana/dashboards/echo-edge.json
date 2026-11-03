@@ -34,7 +34,7 @@
     {
       "type": "row",
       "id": 1,
-      "title": "Right now",
+      "title": "Over the selected period",
       "collapsed": false,
       "gridPos": {
         "h": 1,
@@ -46,8 +46,8 @@
     },
     {
       "type": "stat",
-      "title": "Requests (range)",
-      "description": "",
+      "title": "Requests (estimated)",
+      "description": "Requests nginx handled over the selected time range. nginx logs a random 1% of ordinary requests, so this is the logged count times 100: an estimate, and rough when traffic is low.",
       "datasource": {
         "type": "loki",
         "uid": "loki"
@@ -105,7 +105,7 @@
     {
       "type": "stat",
       "title": "Refused: 429",
-      "description": "",
+      "description": "Requests nginx refused because a caller went over the rate limit (50 a second per address, burst of 200). An exact count: every 429 is logged.",
       "datasource": {
         "type": "loki",
         "uid": "loki"
@@ -171,7 +171,7 @@
     {
       "type": "stat",
       "title": "Server errors: 5xx",
-      "description": "",
+      "description": "Requests that failed on the server side. An exact count: every error is logged.",
       "datasource": {
         "type": "loki",
         "uid": "loki"
@@ -237,7 +237,7 @@
     {
       "type": "stat",
       "title": "Client gave up: 499",
-      "description": "",
+      "description": "Requests where the caller closed the connection before nginx had answered, for example someone leaving the page or a client timeout. An exact count.",
       "datasource": {
         "type": "loki",
         "uid": "loki"
@@ -495,7 +495,7 @@
     {
       "type": "timeseries",
       "title": "Request time",
-      "description": "The whole request from nginx's side. The API's own share is on the API dashboard.",
+      "description": "The whole request from nginx's side. The API's own share is on the API dashboard. The last line is the part of the p95 that the API itself took (the rest is nginx and the network).",
       "datasource": {
         "type": "loki",
         "uid": "loki"
@@ -527,6 +527,15 @@
           },
           "expr": "quantile_over_time(0.99, {container=\"nginx\", stream=\"stdout\"} | sampled=\"1\" | rt != \"\" | unwrap rt [$__interval]) by ()",
           "legendFormat": "p99"
+        },
+        {
+          "refId": "D",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "expr": "quantile_over_time(0.95, {container=\"nginx\", stream=\"stdout\"} | sampled=\"1\" | urt != \"\" | urt != \"-\" | unwrap urt | __error__=\"\" [$__interval]) by ()",
+          "legendFormat": "p95 of that spent in the API"
         }
       ],
       "fieldConfig": {
@@ -780,7 +789,7 @@
       "id": 14,
       "gridPos": {
         "h": 10,
-        "w": 14,
+        "w": 12,
         "x": 0,
         "y": 23
       }
@@ -823,8 +832,8 @@
       "id": 15,
       "gridPos": {
         "h": 10,
-        "w": 10,
-        "x": 14,
+        "w": 12,
+        "x": 12,
         "y": 23
       }
     }

@@ -69,6 +69,38 @@ public class SessionRepository(AppDbContext context)
             .ToDictionaryAsync(x => x.Id, ct);
     }
 
+    /// <summary>
+    /// The totals for a page of sessions. A session from before yesterday no longer changes, so its totals are read from
+    /// the per-session view (one row each) instead of counting every check-in: the same figures the summaries use, up to
+    /// the refresh interval behind. Recent sessions, and any session the view does not hold yet (a backdated one, or one
+    /// nobody attended), are counted from the check-ins, so people marked present a moment ago show.
+    /// </summary>
+    public async Task<Dictionary<Guid, SessionAttendance>> GetAttendanceForList(
+        IReadOnlyList<Session> sessions,
+        DateOnly today,
+        CancellationToken ct = default
+    )
+    {
+        var settled = SettledIds(sessions, today);
+        var totals =
+            settled.Count == 0
+                ? []
+                : await context
+                    .Set<SessionAttendanceTotals>()
+                    .AsNoTracking()
+                    .SettledAttendance(settled)
+                    .ToDictionaryAsync(x => x.Id, ct);
+
+        var counted = sessions.Select(s => s.Id).Where(id => !totals.ContainsKey(id)).ToList();
+        foreach (var (id, attendance) in await GetAttendance(counted, ct))
+            totals[id] = attendance;
+        return totals;
+    }
+
+    // Yesterday's sessions may still be running past midnight in the congregation's time zone, so a day is left alone.
+    internal static List<Guid> SettledIds(IEnumerable<Session> sessions, DateOnly today) =>
+        [.. sessions.Where(s => s.Date < today.AddDays(-1)).Select(s => s.Id)];
+
     /// <summary>How many sessions were held (completed) among the ones the filters pick.</summary>
     public Task<int> CountCompleted(
         Guid congregationId,

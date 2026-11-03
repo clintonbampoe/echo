@@ -83,12 +83,23 @@ export const members = (ctx) => {
   if (list.length) get(ctx, 'GET /members/{id}', `/members/${pick(list).id}`);
 };
 
-// Typing a name: a request at two, four and six letters of a name that exists, a little apart.
+// Typing a name, a request after each letter group, a little apart. What a person types varies: every sequence gets to at
+// least three letters (where the name index can be used), and most start with two, which is what the box sends first and
+// which that index cannot serve.
+const typing = [
+  [2, 3, 4],
+  [2, 3],
+  [3, 4, 5],
+  [2, 4, 6],
+  [3, 6],
+  [2, 3, 4, 5, 6],
+];
+
 export const memberSearch = (ctx) => {
   const list = rows(get(ctx, 'GET /members', '/members', { pageSize: 50 }));
   if (!list.length) return;
   const name = pick(list).name.toLowerCase();
-  for (const length of [2, 4, 6]) {
+  for (const length of typing[Math.floor(Math.random() * typing.length)]) {
     get(ctx, 'GET /members/search', '/members/search', { q: name.slice(0, length) });
     sleep(0.3 + Math.random() * 0.5);
   }

@@ -195,6 +195,10 @@ describe("session page", () => {
       "Yaw Frimpong",
     );
     expect(await screen.findByText(/No visitor named/)).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Add as new visitor" }),
+    ).toBeDisabled();
+    await userEvent.click(screen.getByRole("radio", { name: "Male" }));
     await userEvent.click(
       screen.getByRole("button", { name: "Add as new visitor" }),
     );
@@ -202,6 +206,7 @@ describe("session page", () => {
     expect(body(sent("POST", "/v1/visitors")[0])).toEqual({
       firstName: "Yaw",
       lastName: "Frimpong",
+      gender: "Male",
     });
     expect(body(sent("POST", "/v1/attendance")[0]).personId).toBe("v9");
   });

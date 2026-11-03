@@ -86,8 +86,19 @@ public class VisitorService(
             ct
         );
 
+        var inviters = await repository.GetInviterNames(entities, ct);
+
         var data = entities
-            .Select(x => WithVisitStats(mapper.ToDto(x), x.PersonId, stats))
+            .Select(x =>
+                WithVisitStats(
+                    mapper.ToDto(x) with
+                    {
+                        InvitedByName = x.InvitedByMemberId is { } id ? inviters.GetValueOrDefault(id) : null,
+                    },
+                    x.PersonId,
+                    stats
+                )
+            )
             .ToList();
         activity?.SetTag("visitor.count", data.Count);
         VisitorLog.Listed(logger, congregationId, data.Count);

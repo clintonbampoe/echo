@@ -47,8 +47,8 @@
     },
     {
       "type": "stat",
-      "title": "Database",
-      "description": "",
+      "title": "Postgres up",
+      "description": "Whether the monitoring can reach Postgres.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -111,7 +111,7 @@
       "id": 2,
       "gridPos": {
         "h": 4,
-        "w": 3,
+        "w": 6,
         "x": 0,
         "y": 1
       }
@@ -176,8 +176,8 @@
       "id": 3,
       "gridPos": {
         "h": 4,
-        "w": 3,
-        "x": 3,
+        "w": 6,
+        "x": 6,
         "y": 1
       }
     },
@@ -241,15 +241,15 @@
       "id": 4,
       "gridPos": {
         "h": 4,
-        "w": 3,
-        "x": 6,
+        "w": 6,
+        "x": 12,
         "y": 1
       }
     },
     {
       "type": "stat",
       "title": "Size",
-      "description": "",
+      "description": "Size of the echo_db database on disk.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -297,15 +297,15 @@
       "id": 5,
       "gridPos": {
         "h": 4,
-        "w": 3,
-        "x": 9,
+        "w": 6,
+        "x": 18,
         "y": 1
       }
     },
     {
       "type": "stat",
-      "title": "Deadlocks (range)",
-      "description": "",
+      "title": "Deadlocks",
+      "description": "Deadlocks Postgres had to break in the selected range. Should be 0.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -358,9 +358,9 @@
       "id": 6,
       "gridPos": {
         "h": 4,
-        "w": 3,
-        "x": 12,
-        "y": 1
+        "w": 6,
+        "x": 0,
+        "y": 5
       }
     },
     {
@@ -423,9 +423,9 @@
       "id": 7,
       "gridPos": {
         "h": 4,
-        "w": 3,
-        "x": 15,
-        "y": 1
+        "w": 6,
+        "x": 6,
+        "y": 5
       }
     },
     {
@@ -488,15 +488,15 @@
       "id": 8,
       "gridPos": {
         "h": 4,
-        "w": 3,
-        "x": 18,
-        "y": 1
+        "w": 6,
+        "x": 12,
+        "y": 5
       }
     },
     {
       "type": "stat",
       "title": "API commands/s",
-      "description": "",
+      "description": "Database commands the API ran per second, counted by the API itself, not by Postgres.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -545,205 +545,9 @@
       "id": 9,
       "gridPos": {
         "h": 4,
-        "w": 3,
-        "x": 21,
-        "y": 1
-      }
-    },
-    {
-      "type": "row",
-      "id": 10,
-      "title": "The API's connection pool",
-      "collapsed": false,
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
+        "w": 6,
+        "x": 18,
         "y": 5
-      },
-      "panels": []
-    },
-    {
-      "type": "timeseries",
-      "title": "Pool connections",
-      "description": "Connections the API holds open. The pool limit is on the tile above (% in use).",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "expr": "sum by (db_client_connection_state) (db_client_connection_count)",
-          "legendFormat": "{{db_client_connection_state}}"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "short",
-          "custom": {
-            "lineWidth": 1,
-            "fillOpacity": 0,
-            "showPoints": "never",
-            "spanNulls": true,
-            "stacking": {
-              "mode": "none",
-              "group": "A"
-            }
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "legend": {
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true,
-          "calcs": []
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "id": 11,
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 0,
-        "y": 6
-      }
-    },
-    {
-      "type": "timeseries",
-      "title": "Command duration",
-      "description": "How long the API waits for each database command, as the API sees it.",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "expr": "histogram_quantile(0.5, sum by (le) (rate(db_client_operation_duration_seconds_bucket[$__rate_interval])))",
-          "legendFormat": "p50"
-        },
-        {
-          "refId": "B",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "expr": "histogram_quantile(0.95, sum by (le) (rate(db_client_operation_duration_seconds_bucket[$__rate_interval])))",
-          "legendFormat": "p95"
-        },
-        {
-          "refId": "C",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "expr": "histogram_quantile(0.99, sum by (le) (rate(db_client_operation_duration_seconds_bucket[$__rate_interval])))",
-          "legendFormat": "p99"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "s",
-          "custom": {
-            "lineWidth": 1,
-            "fillOpacity": 0,
-            "showPoints": "never",
-            "spanNulls": true,
-            "stacking": {
-              "mode": "none",
-              "group": "A"
-            }
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "legend": {
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true,
-          "calcs": []
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "id": 12,
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 8,
-        "y": 6
-      }
-    },
-    {
-      "type": "timeseries",
-      "title": "Time to open a connection",
-      "description": "Only moves when the pool has to open a new connection.",
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "expr": "histogram_quantile(0.95, sum by (le) (rate(db_client_connection_npgsql_create_time_seconds_bucket[$__rate_interval])))",
-          "legendFormat": "p95"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "s",
-          "custom": {
-            "lineWidth": 1,
-            "fillOpacity": 0,
-            "showPoints": "never",
-            "spanNulls": true,
-            "stacking": {
-              "mode": "none",
-              "group": "A"
-            }
-          }
-        },
-        "overrides": []
-      },
-      "options": {
-        "legend": {
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true,
-          "calcs": []
-        },
-        "tooltip": {
-          "mode": "multi",
-          "sort": "desc"
-        }
-      },
-      "id": 13,
-      "gridPos": {
-        "h": 8,
-        "w": 8,
-        "x": 16,
-        "y": 6
       }
     },
     {
@@ -755,7 +559,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 14
+        "y": 9
       },
       "panels": []
     },
@@ -820,13 +624,13 @@
         "h": 8,
         "w": 8,
         "x": 0,
-        "y": 15
+        "y": 10
       }
     },
     {
       "type": "timeseries",
       "title": "Transactions per second",
-      "description": "",
+      "description": "Transactions Postgres committed and rolled back per second. Rollbacks are failed or abandoned work.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -884,13 +688,13 @@
         "h": 8,
         "w": 8,
         "x": 8,
-        "y": 15
+        "y": 10
       }
     },
     {
       "type": "timeseries",
       "title": "Cache hit ratio over time",
-      "description": "",
+      "description": "Share of data reads served from memory instead of disk. Stays near 100% while the data in use fits in RAM.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -941,7 +745,7 @@
         "h": 8,
         "w": 8,
         "x": 16,
-        "y": 15
+        "y": 10
       }
     },
     {
@@ -1032,13 +836,13 @@
         "h": 8,
         "w": 8,
         "x": 0,
-        "y": 23
+        "y": 18
       }
     },
     {
       "type": "timeseries",
       "title": "Locks held",
-      "description": "",
+      "description": "Locks Postgres holds, by mode. Short spikes are normal. A growing count of exclusive locks can mean something is blocking others.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -1087,7 +891,7 @@
         "h": 8,
         "w": 8,
         "x": 8,
-        "y": 23
+        "y": 18
       }
     },
     {
@@ -1151,7 +955,212 @@
         "h": 8,
         "w": 8,
         "x": 16,
-        "y": 23
+        "y": 18
+      }
+    },
+    {
+      "type": "row",
+      "id": 10,
+      "title": "The API's connection pool",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 26
+      },
+      "panels": []
+    },
+    {
+      "type": "timeseries",
+      "title": "Pool connections",
+      "description": "Connections the API holds open. The pool limit is on the tile above (% in use). Requests waiting for a connection mean the pool is too small or connections are held too long.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (db_client_connection_state) (db_client_connection_count)",
+          "legendFormat": "{{db_client_connection_state}}"
+        },
+        {
+          "refId": "ZP",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(db_client_connection_npgsql_pending_requests) or vector(0)",
+          "legendFormat": "waiting for a connection"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 0,
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "id": 11,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 27
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Command duration",
+      "description": "How long the API waits for each database command, as the API sees it.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "histogram_quantile(0.5, sum by (le) (rate(db_client_operation_duration_seconds_bucket[$__rate_interval])))",
+          "legendFormat": "p50"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(db_client_operation_duration_seconds_bucket[$__rate_interval])))",
+          "legendFormat": "p95"
+        },
+        {
+          "refId": "C",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "histogram_quantile(0.99, sum by (le) (rate(db_client_operation_duration_seconds_bucket[$__rate_interval])))",
+          "legendFormat": "p99"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 0,
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "id": 12,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 27
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Time to open a connection",
+      "description": "Only moves when the pool has to open a new connection.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(db_client_connection_npgsql_create_time_seconds_bucket[$__rate_interval])))",
+          "legendFormat": "p95"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 0,
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "id": 13,
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 27
       }
     },
     {
@@ -1163,14 +1172,14 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 31
+        "y": 35
       },
       "panels": []
     },
     {
       "type": "table",
       "title": "Biggest tables (rows)",
-      "description": "",
+      "description": "The eight tables with the most rows. Row counts are Postgres's own estimate, not an exact count.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -1248,13 +1257,13 @@
         "h": 8,
         "w": 8,
         "x": 0,
-        "y": 32
+        "y": 36
       }
     },
     {
       "type": "table",
-      "title": "Sequential scans (range)",
-      "description": "A table scanned in full, over and over, and not tiny, usually wants an index.",
+      "title": "Tables read in full",
+      "description": "Rows Postgres read by scanning a whole table, per table, over the selected range. Only tables with more than 1,000 rows are listed: reading a tiny table in full is normal and faster than using an index. A big table near the top usually wants an index, unless a job does it on purpose: attendance is read in full every 5 minutes to refresh attendance_per_session.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -1266,7 +1275,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "topk(8, increase(pg_stat_user_tables_seq_scan{datname=\"echo_db\"}[$__range]) > 0)",
+          "expr": "topk(8, increase(pg_stat_user_tables_seq_tup_read{datname=\"echo_db\"}[$__range]) > 0 and on(relname) (pg_stat_user_tables_n_live_tup{datname=\"echo_db\"} > 1000))",
           "legendFormat": "",
           "instant": true,
           "range": false,
@@ -1298,7 +1307,7 @@
         "showHeader": true,
         "sortBy": [
           {
-            "displayName": "Seq scans",
+            "displayName": "Rows read",
             "desc": true
           }
         ]
@@ -1321,8 +1330,8 @@
             },
             "renameByName": {
               "relname": "Table",
-              "Value": "Seq scans",
-              "Value #A": "Seq scans"
+              "Value": "Rows read",
+              "Value #A": "Rows read"
             }
           }
         }
@@ -1332,7 +1341,7 @@
         "h": 8,
         "w": 8,
         "x": 8,
-        "y": 32
+        "y": 36
       }
     },
     {
@@ -1416,7 +1425,7 @@
         "h": 8,
         "w": 8,
         "x": 16,
-        "y": 32
+        "y": 36
       }
     },
     {
@@ -1428,14 +1437,14 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 40
+        "y": 44
       },
       "panels": []
     },
     {
       "type": "table",
-      "title": "Most expensive statements (range)",
-      "description": "Time spent per statement. Read the SQL in the database: SELECT query FROM pg_stat_statements WHERE queryid = <id>. The slow-statement log on the right shows the SQL as it ran.",
+      "title": "Most expensive statements",
+      "description": "Time spent per statement. The SQL is the start of the normalised statement for the busiest 40 by time and by calls; a statement outside those shows only its id.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -1447,7 +1456,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "topk(10, sum by (queryid) (increase(pg_stat_statements_seconds_total[$__range])))",
+          "expr": "(topk(10, sum by (queryid) (increase(pg_stat_statements_seconds_total[$__range]))) * on(queryid) group_left(query) max by (queryid, query) (pg_statement_text_info)) or (topk(10, sum by (queryid) (increase(pg_stat_statements_seconds_total[$__range]))) unless on(queryid) max by (queryid, query) (pg_statement_text_info))",
           "legendFormat": "",
           "instant": true,
           "range": false,
@@ -1485,7 +1494,7 @@
           "id": "filterFieldsByName",
           "options": {
             "include": {
-              "pattern": "^(queryid|Value.*)$"
+              "pattern": "^(queryid|query|Value.*)$"
             }
           }
         },
@@ -1494,12 +1503,14 @@
           "options": {
             "indexByName": {
               "queryid": 0,
-              "Value": 1
+              "query": 1,
+              "Value": 2
             },
             "renameByName": {
               "queryid": "Query id",
               "Value": "Total seconds",
-              "Value #A": "Total seconds"
+              "Value #A": "Total seconds",
+              "query": "SQL (start)"
             }
           }
         }
@@ -1509,13 +1520,13 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 41
+        "y": 45
       }
     },
     {
       "type": "table",
-      "title": "Most called statements (range)",
-      "description": "",
+      "title": "Most called statements",
+      "description": "Statements run most often in the selected range, by Postgres's query id. The SQL is the start of the normalised statement for the busiest 40 by time and by calls; a statement outside those shows only its id.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -1527,7 +1538,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "topk(10, sum by (queryid) (increase(pg_stat_statements_calls_total[$__range])))",
+          "expr": "(topk(10, sum by (queryid) (increase(pg_stat_statements_calls_total[$__range]))) * on(queryid) group_left(query) max by (queryid, query) (pg_statement_text_info)) or (topk(10, sum by (queryid) (increase(pg_stat_statements_calls_total[$__range]))) unless on(queryid) max by (queryid, query) (pg_statement_text_info))",
           "legendFormat": "",
           "instant": true,
           "range": false,
@@ -1569,7 +1580,7 @@
           "id": "filterFieldsByName",
           "options": {
             "include": {
-              "pattern": "^(queryid|Value.*)$"
+              "pattern": "^(queryid|query|Value.*)$"
             }
           }
         },
@@ -1578,12 +1589,14 @@
           "options": {
             "indexByName": {
               "queryid": 0,
-              "Value": 1
+              "query": 1,
+              "Value": 2
             },
             "renameByName": {
               "queryid": "Query id",
               "Value": "Calls",
-              "Value #A": "Calls"
+              "Value #A": "Calls",
+              "query": "SQL (start)"
             }
           }
         }
@@ -1593,7 +1606,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 41
+        "y": 45
       }
     },
     {
@@ -1634,9 +1647,9 @@
       "id": 28,
       "gridPos": {
         "h": 10,
-        "w": 14,
+        "w": 12,
         "x": 0,
-        "y": 49
+        "y": 53
       }
     },
     {
@@ -1677,9 +1690,9 @@
       "id": 29,
       "gridPos": {
         "h": 10,
-        "w": 10,
-        "x": 14,
-        "y": 49
+        "w": 12,
+        "x": 12,
+        "y": 53
       }
     }
   ],

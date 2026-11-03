@@ -1,7 +1,7 @@
 {
   "uid": "echo-overview",
   "title": "Echo / Overview",
-  "description": "Is Echo healthy right now? One screen: the API, the database, the machine and the front door. Click through to the dashboard behind each row.",
+  "description": "Is Echo healthy right now? One screen: the API, the database, the machine and the front door. Click through to the dashboard behind each row. Sign-in and renewal (the /auth routes) are not counted here: they are on Echo / Auth.",
   "tags": [
     "echo"
   ],
@@ -118,7 +118,7 @@
     {
       "type": "stat",
       "title": "Requests per second",
-      "description": "",
+      "description": "Requests the API handled per second, across all routes. Sign-in and renewal (the /auth routes) are not counted here: they are on Echo / Auth.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -130,7 +130,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(rate(http_server_request_duration_seconds_count[$__rate_interval]))",
+          "expr": "sum(rate(http_server_request_duration_seconds_count{http_route!~\".*/auth/.*\"}[$__rate_interval]))",
           "legendFormat": ""
         }
       ],
@@ -167,7 +167,7 @@
       "id": 3,
       "gridPos": {
         "h": 4,
-        "w": 5,
+        "w": 4,
         "x": 4,
         "y": 1
       }
@@ -175,7 +175,7 @@
     {
       "type": "stat",
       "title": "Server errors (5xx)",
-      "description": "Placeholder thresholds until the load test.",
+      "description": "Placeholder thresholds until the load test. Sign-in and renewal (the /auth routes) are not counted here: they are on Echo / Auth.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -187,7 +187,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "(100 * sum(rate(http_server_request_duration_seconds_count{http_response_status_code=~\"5..\"}[$__rate_interval])) / sum(rate(http_server_request_duration_seconds_count[$__rate_interval]))) or vector(0)",
+          "expr": "(100 * sum(rate(http_server_request_duration_seconds_count{http_route!~\".*/auth/.*\",http_response_status_code=~\"5..\"}[$__rate_interval])) / sum(rate(http_server_request_duration_seconds_count{http_route!~\".*/auth/.*\"}[$__rate_interval]))) or vector(0)",
           "legendFormat": ""
         }
       ],
@@ -232,15 +232,15 @@
       "id": 4,
       "gridPos": {
         "h": 4,
-        "w": 5,
-        "x": 9,
+        "w": 4,
+        "x": 8,
         "y": 1
       }
     },
     {
       "type": "stat",
       "title": "p95 latency",
-      "description": "Placeholder thresholds until the load test.",
+      "description": "Placeholder thresholds until the load test. Sign-in and renewal (the /auth routes) are not counted here: they are on Echo / Auth.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -252,7 +252,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.95, sum by (le) (rate(http_server_request_duration_seconds_bucket[$__rate_interval])))",
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(http_server_request_duration_seconds_bucket{http_route!~\".*/auth/.*\"}[$__rate_interval])))",
           "legendFormat": ""
         }
       ],
@@ -296,15 +296,79 @@
       "id": 5,
       "gridPos": {
         "h": 4,
-        "w": 5,
-        "x": 14,
+        "w": 4,
+        "x": 12,
+        "y": 1
+      }
+    },
+    {
+      "type": "stat",
+      "title": "Sign-in p95",
+      "description": "How long 95% of sign-ins took to answer, over the selected range. A sign-in checks the password with bcrypt, about 175 ms of CPU by design, so this is a different thing from the API's p95. The aim is 300 to 500 ms at most.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(http_server_request_duration_seconds_bucket{http_route=~\".*/auth/sessions/login\"}[$__rate_interval])))",
+          "legendFormat": ""
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 0.5
+              },
+              {
+                "color": "red",
+                "value": 1
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "area",
+        "textMode": "auto",
+        "justifyMode": "auto",
+        "orientation": "auto"
+      },
+      "id": 27,
+      "gridPos": {
+        "h": 4,
+        "w": 4,
+        "x": 16,
         "y": 1
       }
     },
     {
       "type": "stat",
       "title": "Summary cache hits",
-      "description": "",
+      "description": "Share of summary requests (the dashboard numbers) answered from the API's cache over the selected range. Higher means less work for the database.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -366,8 +430,8 @@
       "id": 6,
       "gridPos": {
         "h": 4,
-        "w": 5,
-        "x": 19,
+        "w": 4,
+        "x": 20,
         "y": 1
       }
     },
@@ -386,7 +450,7 @@
     },
     {
       "type": "stat",
-      "title": "Database",
+      "title": "Database up",
       "description": "Whether the exporter can reach Postgres.",
       "datasource": {
         "type": "prometheus",
@@ -450,7 +514,7 @@
       "id": 8,
       "gridPos": {
         "h": 4,
-        "w": 4,
+        "w": 5,
         "x": 0,
         "y": 6
       }
@@ -516,13 +580,13 @@
       "gridPos": {
         "h": 4,
         "w": 5,
-        "x": 4,
+        "x": 5,
         "y": 6
       }
     },
     {
       "type": "stat",
-      "title": "Pool in use (API)",
+      "title": "API pool in use",
       "description": "Of the API's Npgsql connection pool. At 100% requests wait for a connection.",
       "datasource": {
         "type": "prometheus",
@@ -581,14 +645,14 @@
       "gridPos": {
         "h": 4,
         "w": 5,
-        "x": 9,
+        "x": 10,
         "y": 6
       }
     },
     {
       "type": "stat",
       "title": "Disk used (/)",
-      "description": "",
+      "description": "How full the host's root disk is.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -646,14 +710,14 @@
       "gridPos": {
         "h": 4,
         "w": 5,
-        "x": 14,
+        "x": 15,
         "y": 6
       }
     },
     {
       "type": "stat",
       "title": "Memory used",
-      "description": "",
+      "description": "Share of the host's RAM in use, counting everything that cannot be handed back (total minus available).",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -710,8 +774,8 @@
       "id": 12,
       "gridPos": {
         "h": 4,
-        "w": 5,
-        "x": 19,
+        "w": 4,
+        "x": 20,
         "y": 6
       }
     },
@@ -730,8 +794,8 @@
     },
     {
       "type": "stat",
-      "title": "Requests (range)",
-      "description": "",
+      "title": "Requests (estimated)",
+      "description": "Requests nginx handled over the selected time range. nginx logs a random 1% of ordinary requests, so this is the logged count times 100: an estimate, and rough when traffic is low.",
       "datasource": {
         "type": "loki",
         "uid": "loki"
@@ -788,7 +852,7 @@
     },
     {
       "type": "stat",
-      "title": "Refused: 429 (range)",
+      "title": "Refused: 429",
       "description": "Requests nginx or the API turned away for being too frequent.",
       "datasource": {
         "type": "loki",
@@ -854,7 +918,7 @@
     },
     {
       "type": "stat",
-      "title": "Server errors: 5xx (range)",
+      "title": "Server errors: 5xx",
       "description": "502 and 504 mean nginx could not reach the API.",
       "datasource": {
         "type": "loki",
@@ -920,7 +984,7 @@
     },
     {
       "type": "stat",
-      "title": "Client gave up: 499 (range)",
+      "title": "Client gave up: 499",
       "description": "The browser closed the connection before the answer came.",
       "datasource": {
         "type": "loki",
@@ -996,7 +1060,7 @@
     {
       "type": "timeseries",
       "title": "Requests per second and errors",
-      "description": "",
+      "description": "Requests per second, with the ones that returned 5xx as a second line. Sign-in and renewal (the /auth routes) are not counted here: they are on Echo / Auth.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -1008,7 +1072,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(rate(http_server_request_duration_seconds_count[$__rate_interval]))",
+          "expr": "sum(rate(http_server_request_duration_seconds_count{http_route!~\".*/auth/.*\"}[$__rate_interval]))",
           "legendFormat": "requests"
         },
         {
@@ -1017,7 +1081,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum(rate(http_server_request_duration_seconds_count{http_response_status_code=~\"5..\"}[$__rate_interval]))",
+          "expr": "sum(rate(http_server_request_duration_seconds_count{http_route!~\".*/auth/.*\",http_response_status_code=~\"5..\"}[$__rate_interval]))",
           "legendFormat": "5xx"
         }
       ],
@@ -1060,7 +1124,7 @@
     {
       "type": "timeseries",
       "title": "p95 latency",
-      "description": "",
+      "description": "95% of operations finished faster than this. One line for the API's requests, one for the database commands the API runs. Sign-in and renewal (the /auth routes) are not counted here: they are on Echo / Auth.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -1072,7 +1136,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "histogram_quantile(0.95, sum by (le) (rate(http_server_request_duration_seconds_bucket[$__rate_interval])))",
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(http_server_request_duration_seconds_bucket{http_route!~\".*/auth/.*\"}[$__rate_interval])))",
           "legendFormat": "API p95"
         },
         {
@@ -1124,7 +1188,7 @@
     {
       "type": "timeseries",
       "title": "Connections",
-      "description": "",
+      "description": "Database connections by state, as Postgres sees them, and as the API's connection pool sees them.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -1188,7 +1252,7 @@
     {
       "type": "timeseries",
       "title": "Container CPU (cores)",
-      "description": "",
+      "description": "CPU each container used, in cores: 1 means one core fully busy.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -1243,7 +1307,7 @@
     {
       "type": "timeseries",
       "title": "Container memory",
-      "description": "",
+      "description": "Memory each container holds in RAM (working set).",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
