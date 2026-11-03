@@ -1,5 +1,6 @@
 using Echo.Shared.Caching.Extensions;
 using Echo.Shared.Options.Frontend;
+using Echo.Shared.Options.Mail;
 using Echo.Shared.Services.Email;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
@@ -40,6 +41,12 @@ public static class RegisterServices
         services
             .AddOptions<FrontendOptions>()
             .BindConfiguration(FrontendOptions.Section)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        services
+            .AddOptions<MailClientOptions>()
+            .BindConfiguration(MailClientOptions.Section)
             .ValidateDataAnnotations()
             .ValidateOnStart();
 

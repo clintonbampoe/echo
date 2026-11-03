@@ -1,4 +1,5 @@
 using Echo.Data;
+using Echo.Domain.Members;
 using Echo.Domain.Projects;
 using Echo.Shared.Query;
 using Echo.Shared.Utilities;
@@ -24,14 +25,42 @@ public class ProjectRepository(AppDbContext context)
             .AsNoTracking()
             .FilterDeleted()
             .Where(p => p.CongregationId == congregationId)
-            .Include(p => p.Category)
-            .Include(p => p.Manager)
-                .ThenInclude(m => m.Person)
             .Filter(filters)
             .OrderBy(p => p.StartDate)
             .ThenBy(p => p.Id)
             .Paginate(cursor, pageSize)
             .ToListAsync(ct);
+    }
+
+    /// <summary>
+    /// The category and manager names of a page of projects. The list shows only the names, so they are read here (a
+    /// few rows each) instead of loading the category, the manager's member row and the manager's person row with every
+    /// project.
+    /// </summary>
+    public async Task<(Dictionary<int, string> Categories, Dictionary<Guid, string> Managers)> GetListNames(
+        IReadOnlyList<Project> projects,
+        CancellationToken ct = default
+    )
+    {
+        if (projects.Count == 0)
+            return ([], []);
+
+        var categoryIds = projects.Select(p => p.CategoryId).Distinct().ToList();
+        var managerIds = projects.Select(p => p.ManagerId).Distinct().ToList();
+
+        var categories = await context
+            .Set<ProjectCategory>()
+            .AsNoTracking()
+            .Where(c => categoryIds.Contains(c.Id))
+            .Select(c => new { c.Id, c.Name })
+            .ToDictionaryAsync(c => c.Id, c => c.Name, ct);
+        var managers = await context
+            .Set<Person>()
+            .AsNoTracking()
+            .Where(p => managerIds.Contains(p.Id))
+            .Select(p => new { p.Id, p.Name })
+            .ToDictionaryAsync(p => p.Id, p => p.Name, ct);
+        return (categories, managers);
     }
 
     public async Task<Project?> GetById(Guid congregationId, Guid id, CancellationToken ct)
@@ -70,6 +99,43 @@ public class ProjectRepository(AppDbContext context)
             .ContributionTotalsPerProject(projectIds)
             .ToDictionaryAsync(x => x.Id, ct);
     }
+
+    /// <summary>
+    /// The gift totals for a page of projects. A project that ended before yesterday takes no more gifts to speak of, so its
+    /// totals are read from the per-project view (one row each) instead of adding up every gift, up to the refresh interval
+    /// behind. Ongoing and recent projects, and any the view does not hold yet, are added up from the gifts themselves, so
+    /// a gift recorded a moment ago shows.
+    /// </summary>
+    public async Task<Dictionary<Guid, ProjectContributionTotal>> GetContributionTotalsForList(
+        IReadOnlyList<Project> projects,
+        DateOnly today,
+        CancellationToken ct = default
+    )
+    {
+        var settled = SettledIds(projects, today);
+        var totals =
+            settled.Count == 0
+                ? []
+                : await context
+                    .Set<ProjectTotals>()
+                    .AsNoTracking()
+                    .Where(t => settled.Contains(t.ProjectId))
+                    .ToDictionaryAsync(
+                        t => t.ProjectId,
+                        t => new ProjectContributionTotal(t.ProjectId, t.Amount, t.Contributions),
+                        ct
+                    );
+
+        var counted = projects.Select(p => p.Id).Where(id => !totals.ContainsKey(id)).ToList();
+        foreach (var (id, total) in await GetContributionTotals(counted, ct))
+            totals[id] = total;
+        return totals;
+    }
+
+    // A project with no end date is ongoing. One that ended yesterday may still be getting its last gifts, so a day is
+    // left alone.
+    internal static List<Guid> SettledIds(IEnumerable<Project> projects, DateOnly today) =>
+        [.. projects.Where(p => p.EndDate is { } end && end < today.AddDays(-1)).Select(p => p.Id)];
 
     public async Task<ProjectStats> GetSummaryStats(
         Guid congregationId,

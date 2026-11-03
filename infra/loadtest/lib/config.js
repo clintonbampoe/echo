@@ -1,14 +1,20 @@
 // Through nginx, the way every real request arrives (its connection handling, rate limit, compression and log are
 // part of what is measured). 5025 is the API itself, for when nginx is the question.
-export const BASE_URL = __ENV.BASE_URL || 'http://localhost:8080/api/v1';
+export const BASE_URL = __ENV.BASE_URL || 'https://echo.localhost/api/v1';
 
 // Share of requests that ask the API to record a trace. The API traces 1% by default, and it follows the caller's
 // flag, so the test sends the same share a real fleet would (browsers send none, and the API's 1% applies).
-export const TRACE_RATIO = Number(__ENV.TRACE_RATIO || 0.01);
+export const TRACE_RATIO = Number(__ENV.TRACE_RATIO || 1);
 
 // "Today" for the seeded data. The seeder's ReferenceNow, not the clock: nothing was recorded after it,
 // so dashboard ranges ending on the real date would be empty.
 export const TODAY = __ENV.REF_DATE || '2026-10-20';
+
+// A burst of sign-ins on top of the usual load, to see how much bcrypt (about 200 ms of CPU each) takes from everything
+// else. Off unless STORM_RATE (sign-ins a second) is set; it starts STORM_START_MINUTES in and lasts STORM_MINUTES.
+export const STORM_RATE = Number(__ENV.STORM_RATE || 0);
+export const STORM_MINUTES = Number(__ENV.STORM_MINUTES || 2);
+export const STORM_START_MINUTES = Number(__ENV.STORM_START_MINUTES || 8);
 
 export const SEED_PASSWORD = __ENV.SEED_PASSWORD || 'admin@123';
 
@@ -20,7 +26,12 @@ export const FOCUS_ARRIVAL_MINUTES = Number(__ENV.FOCUS_ARRIVAL_MINUTES || 1);
 
 // People signed in at the end of the ramp, the focus staff included.
 export const PEAK_VUS = Number(__ENV.PEAK_VUS || 500);
-export const RAMP_MINUTES = Number(__ENV.RAMP_MINUTES || 15);
+export const RAMP_MINUTES = Number(__ENV.RAMP_MINUTES || 7);
+// Minutes to hold at the peak after the ramp: people arrive evenly over RAMP_MINUTES (7 by default) and the peak is held
+// for HOLD_MINUTES (3), so the run is 10 minutes by default. The
+// numbers that count are taken only from the hold (phase "hold"), at a constant load. HOLD_MINUTES=0 gives the old shape:
+// the last tenth of RAMP_MINUTES is the hold and everything after the first minute counts (phase "steady").
+export const HOLD_MINUTES = __ENV.HOLD_MINUTES === undefined ? 3 : Number(__ENV.HOLD_MINUTES);
 
 // Seconds a person looks at a page before doing the next thing.
 export const THINK_MIN = Number(__ENV.THINK_MIN || 3);

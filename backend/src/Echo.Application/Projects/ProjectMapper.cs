@@ -7,13 +7,17 @@ namespace Echo.Application.Projects;
 public partial class ProjectMapper : IProjectMapper
 {
     public ProjectResponseDto ToDto(Project entity) =>
+        ToDto(entity, entity.Category.Name, entity.Manager.Person.Name);
+
+    // For a list, where the names are read separately and the category and manager are not loaded.
+    public ProjectResponseDto ToDto(Project entity, string categoryName, string managerName) =>
         new()
         {
             Id = entity.Id,
             CategoryId = entity.CategoryId,
-            CategoryName = entity.Category.Name,
+            CategoryName = categoryName,
             ManagerId = entity.ManagerId,
-            ManagerName = entity.Manager.Person.Name,
+            ManagerName = managerName,
             Name = entity.Name,
             TargetAmount = entity.TargetAmount,
             Status = entity.Status,

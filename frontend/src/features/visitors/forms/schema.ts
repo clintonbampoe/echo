@@ -1,11 +1,10 @@
 // What the visitor form accepts, and the words shown when it does not. The server has the final
 // say; this catches the obvious mistakes before a round trip. No React in this file.
 import { z } from "zod";
-import { todayText } from "@/lib/dates";
 import { required } from "@/lib/validation";
 import type { Visitor, VisitorInput } from "../api/visitors";
 
-// Only a name is needed. Everything else may be left empty, but when it is filled it must make sense.
+// A name and a gender are needed (visitors give their gender, not their age). Everything else may be left empty, but when it is filled it must make sense.
 const optionalPhone = z
   .string()
   .trim()
@@ -13,9 +12,6 @@ const optionalPhone = z
     (v) => v === "" || /^\+?[\d\s()-]{7,20}$/.test(v),
     "Enter a valid phone number",
   );
-const optionalBirthDate = z
-  .string()
-  .refine((v) => v <= todayText(), "Birth date cannot be in the future");
 
 export const NOTES_MAX = 2000;
 
@@ -27,7 +23,7 @@ export const visitorSchema = z.object({
     z.literal(""),
     z.email("Enter a valid email address"),
   ]),
-  dateOfBirth: optionalBirthDate,
+  gender: z.enum(["Male", "Female", "NonBinary"], "Choose a gender"),
   notes: z.string().max(NOTES_MAX),
 });
 
@@ -38,7 +34,7 @@ export const emptyVisitor: VisitorValues = {
   lastName: "",
   phoneNumber: "",
   emailAddress: "",
-  dateOfBirth: "",
+  gender: "" as VisitorValues["gender"],
   notes: "",
 };
 
@@ -49,7 +45,7 @@ export function toInput(v: VisitorValues): VisitorInput {
     lastName: v.lastName,
     phoneNumber: v.phoneNumber || undefined,
     emailAddress: v.emailAddress || undefined,
-    dateOfBirth: v.dateOfBirth || undefined,
+    gender: v.gender,
     notes: v.notes.trim() || undefined,
   };
 }
@@ -61,7 +57,7 @@ export function fromVisitor(v: Visitor): VisitorValues {
     lastName: v.lastName,
     phoneNumber: v.phoneNumber ?? "",
     emailAddress: v.emailAddress ?? "",
-    dateOfBirth: v.dateOfBirth?.slice(0, 10) ?? "",
+    gender: v.gender ?? ("" as VisitorValues["gender"]),
     notes: v.notes ?? "",
   };
 }

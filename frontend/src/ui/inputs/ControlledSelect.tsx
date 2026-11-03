@@ -13,6 +13,7 @@ type Props<T extends FieldValues> = {
   label: string;
   options: readonly Option[];
   placeholder?: string;
+  optional?: boolean;
 };
 
 // A choice from a fixed list, wired to a react-hook-form field. SelectField is a controlled field, so
@@ -23,6 +24,7 @@ export function ControlledSelect<T extends FieldValues>({
   label,
   options,
   placeholder,
+  optional,
 }: Props<T>) {
   return (
     <Controller
@@ -33,6 +35,7 @@ export function ControlledSelect<T extends FieldValues>({
           label={label}
           options={options}
           placeholder={placeholder}
+          optional={optional}
           error={fieldState.error?.message}
           {...field}
         />

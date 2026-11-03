@@ -247,6 +247,15 @@ internal static class AttendanceQueryExtensions
                 g.Count(a => a.IsFirstVisit)
             ));
 
+    // The same figures read from the per-session view: one row per session instead of every check-in.
+    internal static IQueryable<SessionAttendance> SettledAttendance(
+        this IQueryable<SessionAttendanceTotals> query,
+        IReadOnlyList<Guid> sessionIds
+    ) =>
+        query
+            .Where(t => sessionIds.Contains(t.SessionId))
+            .Select(t => new SessionAttendance(t.SessionId, t.Total, t.Members, t.Visitors, t.FirstTime));
+
     // Each month's sessions added up, split into members, visitors and first-time visitors.
     internal static IQueryable<AttendanceMonthlyDto> MonthlyTotals(
         this IQueryable<SessionAttendanceTotals> query

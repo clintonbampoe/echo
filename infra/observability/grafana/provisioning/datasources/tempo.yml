@@ -8,15 +8,11 @@ datasources:
     isDefault: false
     editable: false
     jsonData:
-      # From a trace, jump to logs. Custom query because logs are ingested
-      # via native OTLP: trace_id lives in structured metadata, 'service_name'
-      # is a label. ${__tags} expands via the tag mapping below.
+      # From a trace, jump to its logs: the API's (native OTLP, trace_id in structured metadata) and nginx's request line
+      # (the same trace_id, written by Alloy). service_name is a label on both.
       tracesToLogsV2:
         datasourceUid: loki
         customQuery: true
-        query: '{ $${__tags} } | trace_id= `$$__trace.traceId`'
-        tags:
-          - key: service.name
-            value: service_name
+        query: '{ service_name=~"Echo.Api|nginx" } | trace_id= `$$__trace.traceId`'
         spanStartTimeShift: 1h
         spanEndTimeShift: -1h

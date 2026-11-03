@@ -1,7 +1,15 @@
 ---
-# Adds the one thing the load test needs from nginx. Use it on top of the usual files:
-#   docker compose -f docker-compose.yml -f docker-compose.override.yml -f infra/loadtest/docker-compose.loadtest.yml up -d nginx
+# What the load test needs from the stack. Use it on top of the usual files:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml -f infra/loadtest/docker-compose.loadtest.yml up -d api db nginx
+#
+# nginx gets the realip file. The app containers are pinned to two cores, because the production box has 2 vCPUs for
+# everything on it (Alloy too, which run.sh pins). run.sh keeps k6 on the other cores so it does not take their CPU.
 services:
+  api:
+    cpuset: "0,1"
+  db:
+    cpuset: "0,1"
   nginx:
+    cpuset: "0,1"
     volumes:
       - ./infra/loadtest/nginx-realip.conf:/etc/nginx/extra/realip.conf:ro

@@ -68,6 +68,7 @@ export { Lookup, type LookupItem } from "./inputs/Lookup";
 export { SearchBox } from "./inputs/SearchBox";
 export { SearchField } from "./inputs/SearchField";
 export { Section } from "./layout/Section";
+export { ControlledSegmented } from "./inputs/ControlledSegmented";
 export { SegmentedField } from "./inputs/SegmentedField";
 export { SelectField } from "./inputs/SelectField";
 export { Sheet } from "./overlays/Sheet";

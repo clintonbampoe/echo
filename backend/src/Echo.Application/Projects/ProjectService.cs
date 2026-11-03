@@ -64,11 +64,20 @@ public class ProjectService(
 
         var nextCursor = hasMore ? encoder.Encode(BuildCursor(entities.Last())) : null;
 
-        var totals = await repository.GetContributionTotals(
-            entities.Select(x => x.Id).ToList(),
-            ct
-        );
-        var data = entities.Select(x => WithTotals(mapper.ToDto(x), totals)).ToList();
+        var totals = await repository.GetContributionTotalsForList(entities, dateWindows.Today, ct);
+        var (categories, managers) = await repository.GetListNames(entities, ct);
+        var data = entities
+            .Select(x =>
+                WithTotals(
+                    mapper.ToDto(
+                        x,
+                        categories.GetValueOrDefault(x.CategoryId, string.Empty),
+                        managers.GetValueOrDefault(x.ManagerId, string.Empty)
+                    ),
+                    totals
+                )
+            )
+            .ToList();
         activity?.SetTag("project.count", data.Count);
         ProjectLog.Listed(logger, congregationId, data.Count);
 

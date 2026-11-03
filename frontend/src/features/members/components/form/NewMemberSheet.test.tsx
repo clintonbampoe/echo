@@ -30,26 +30,33 @@ function renderSheet(onClose = vi.fn()) {
   return onClose;
 }
 
-// What a front-desk person fills in, then the details the server insists on, behind "More details".
+// What a front-desk person fills in: the four things needed, then a few optional details behind "More details".
 async function fillEverything(user: User) {
   const type = (label: string, text: string) =>
     user.type(screen.getByLabelText(label), text);
-  await type("Full name", "Kwame Asante");
+  await type("First name", "Kwame");
+  await type("Last name", "Asante");
   await type("Phone", "024 412 7788");
   await pickDate(user, "Date of birth", "1988-02-14");
   await user.click(screen.getByRole("button", { name: /More details/ }));
   await type("Residential address", "14 Palm Street");
   await type("City", "Accra");
   await type("Hometown", "Kumasi");
-  await type("Next of kin", "Efua Asante");
-  await type("Contact name", "Efua Asante");
-  await type("Contact phone", "055 301 4408");
+}
+
+async function fillRequired(user: User) {
+  await user.type(screen.getByLabelText("First name"), "Kwame");
+  await user.type(screen.getByLabelText("Last name"), "Asante");
+  await user.type(screen.getByLabelText("Phone"), "024 412 7788");
+  await pickDate(user, "Date of birth", "1988-02-14");
 }
 
 describe("add member sheet", () => {
   it("leads with the few things you have to hand, and folds the rest away", () => {
     renderSheet();
-    expect(screen.getByLabelText("Full name")).toBeInTheDocument();
+    expect(screen.getByLabelText("First name")).toBeInTheDocument();
+    expect(screen.getByLabelText("Last name")).toBeInTheDocument();
+    expect(screen.getByLabelText(/Other names/)).toBeInTheDocument();
     expect(screen.getByLabelText("Phone")).toBeInTheDocument();
     expect(screen.getByRole("radio", { name: "Female" })).toBeInTheDocument();
     expect(screen.getByRole("radio", { name: "Male" })).toBeChecked();
@@ -58,7 +65,7 @@ describe("add member sheet", () => {
     ).toHaveAttribute("aria-expanded", "false");
   });
 
-  it("names the church, and on an empty form says what to fix and opens the fold that hides some of it", async () => {
+  it("names the church, and on an empty form says what to fix", async () => {
     const user = userEvent.setup();
     renderSheet();
     expect(
@@ -67,16 +74,39 @@ describe("add member sheet", () => {
     await user.click(screen.getByRole("button", { name: "Add member" }));
     expect(await screen.findByText("Enter a first name")).toBeInTheDocument();
     expect(screen.getByText(/Fix \d+ fields to continue/)).toBeInTheDocument();
+    expect(posts()).toHaveLength(0);
+  });
+
+  it("needs only a name, phone, gender and birth date, and opens the fold when a detail in it is wrong", async () => {
+    const user = userEvent.setup();
+    const onClose = renderSheet();
+    await fillRequired(user);
+    await user.click(screen.getByRole("button", { name: /More details/ }));
+    await user.type(screen.getByLabelText(/Email/), "kwame@");
+    await user.click(screen.getByRole("button", { name: /More details/ }));
+    await user.click(screen.getByRole("button", { name: "Add member" }));
+    expect(
+      await screen.findByText("Enter a valid email address"),
+    ).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: /More details/ }),
     ).toHaveAttribute("aria-expanded", "true");
-    expect(posts()).toHaveLength(0);
+    await user.clear(screen.getByLabelText(/Email/));
+    await user.click(screen.getByRole("button", { name: "Add member" }));
+    await waitFor(() => expect(onClose).toHaveBeenCalled());
+    const body = JSON.parse(
+      (posts()[0]![1] as RequestInit).body as string,
+    ) as Record<string, unknown>;
+    expect(body).toMatchObject({ firstName: "Kwame", gender: "Male" });
+    expect(body).not.toHaveProperty("city");
+    expect(body).not.toHaveProperty("region");
+    expect(body).not.toHaveProperty("maritalStatus");
   });
 
   it("asks for a last name when only one name is typed", async () => {
     const user = userEvent.setup();
     renderSheet();
-    await user.type(screen.getByLabelText("Full name"), "Abena");
+    await user.type(screen.getByLabelText("First name"), "Abena");
     await user.click(screen.getByRole("button", { name: "Add member" }));
     expect(await screen.findByText("Enter a last name")).toBeInTheDocument();
   });
@@ -98,7 +128,7 @@ describe("add member sheet", () => {
       lastName: "Asante",
       dateOfBirth: "1988-02-14",
       gender: "Male",
-      region: "GreaterAccra",
+      city: "Accra",
       status: "Active",
     });
     expect(body).not.toHaveProperty("emailAddress");
@@ -120,7 +150,7 @@ describe("add member sheet", () => {
     );
     expect(onClose).not.toHaveBeenCalled();
     await waitFor(() =>
-      expect(screen.getByLabelText("Full name")).toHaveValue(""),
+      expect(screen.getByLabelText("First name")).toHaveValue(""),
     );
     expect(screen.getByLabelText("Phone")).toHaveValue("");
   });

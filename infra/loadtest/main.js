@@ -1,8 +1,18 @@
+import { sleep } from 'k6';
 import exec from 'k6/execution';
 import { focusAccounts, otherAccounts } from './lib/accounts.js';
 import { visitOne, think } from './lib/api.js';
-import { FOCUS_ARRIVAL_MINUTES, FOCUS_VUS, PEAK_VUS, RAMP_MINUTES } from './lib/config.js';
-import { sessionFor } from './lib/session.js';
+import {
+  FOCUS_ARRIVAL_MINUTES,
+  FOCUS_VUS,
+  HOLD_MINUTES,
+  PEAK_VUS,
+  RAMP_MINUTES,
+  STORM_MINUTES,
+  STORM_RATE,
+  STORM_START_MINUTES,
+} from './lib/config.js';
+import { sessionFor, stormSignIn } from './lib/session.js';
 import { profiles } from './profiles/index.js';
 import { shell } from './profiles/pages.js';
 
@@ -12,6 +22,10 @@ import { shell } from './profiles/pages.js';
 const backgroundPeak = PEAK_VUS - FOCUS_VUS;
 const warm = Math.max(1, Math.round(RAMP_MINUTES * 0.1));
 const arrival = Math.min(FOCUS_ARRIVAL_MINUTES, Math.max(1, RAMP_MINUTES - 1));
+// With HOLD_MINUTES the ramp is RAMP_MINUTES long and the hold comes after it; without, the hold is the last tenth.
+const hold = HOLD_MINUTES > 0 ? HOLD_MINUTES : warm;
+const rampRest = HOLD_MINUTES > 0 ? RAMP_MINUTES - warm : RAMP_MINUTES - 2 * warm;
+const total = warm + rampRest + hold;
 
 export const options = {
   scenarios: {
@@ -21,7 +35,7 @@ export const options = {
       startVUs: 0,
       stages: [
         { duration: `${arrival}m`, target: FOCUS_VUS },
-        { duration: `${RAMP_MINUTES - arrival}m`, target: FOCUS_VUS },
+        { duration: `${total - arrival}m`, target: FOCUS_VUS },
       ],
       gracefulRampDown: '30s',
     },
@@ -29,23 +43,45 @@ export const options = {
       executor: 'ramping-vus',
       exec: 'background',
       startVUs: 0,
-      stages: [
-        { duration: `${warm}m`, target: Math.round(backgroundPeak / 5) },
-        { duration: `${RAMP_MINUTES - 2 * warm}m`, target: backgroundPeak },
-        { duration: `${warm}m`, target: backgroundPeak },
-      ],
+      stages:
+        HOLD_MINUTES > 0
+          ? [
+              // People arrive evenly, so the peak lands at RAMP_MINUTES and is then held at a constant load.
+              { duration: `${RAMP_MINUTES}m`, target: backgroundPeak },
+              { duration: `${HOLD_MINUTES}m`, target: backgroundPeak },
+            ]
+          : [
+              { duration: `${warm}m`, target: Math.round(backgroundPeak / 5) },
+              { duration: `${rampRest}m`, target: backgroundPeak },
+              { duration: `${hold}m`, target: backgroundPeak },
+            ],
       gracefulRampDown: '30s',
     },
+    ...(STORM_RATE > 0 && {
+      storm: {
+        executor: 'constant-arrival-rate',
+        exec: 'storm',
+        rate: STORM_RATE,
+        timeUnit: '1s',
+        duration: `${STORM_MINUTES}m`,
+        startTime: `${STORM_START_MINUTES}m`,
+        preAllocatedVUs: 20,
+        maxVUs: 400,
+      },
+    }),
   },
-  // The target for now (2 vCPU, 4 GB): 500 people signed in, and the app's data requests answer in under 25 ms
-  // for 95 in 100 and under 50 ms for 99 in 100. Sign-in is not in it: bcrypt takes about 200 ms by design.
-  // The first minute is warm-up and is left out. We only raise the bar when there are more users.
+  // The targets (2 vCPU, 4 GB, 500 people signed in). The app's data requests: p95 under 10 ms, and 15 ms at the very
+  // most (the 10 is reported by run.sh; the 15 fails the run). Sign-in is its own thing, bcrypt takes about 175 ms by
+  // design: p95 under 500 ms. Renewals are not bcrypt and are judged like the data. The first minute is warm-up; with
+  // HOLD_MINUTES only the hold counts, at constant load.
   thresholds: {
     http_req_failed: ['rate<0.01'],
-    'http_req_duration{kind:data,phase:steady}': ['p(95)<25', 'p(99)<50'],
-    'http_req_duration{name:POST /auth/sessions/login}': ['p(95)<1000'],
+    [`http_req_duration{kind:data,phase:${HOLD_MINUTES > 0 ? 'hold' : 'steady'}}`]: ['p(95)<15', 'p(99)<50'],
+    'http_req_duration{name:POST /auth/sessions/login}': ['p(95)<500'],
+    'http_req_duration{name:POST /auth/sessions/refresh}': ['p(95)<50'],
     session_refresh_rejected: ['count==0'],
     session_signin_rejected: ['count==0'],
+    session_signin_failed: ['count==0'],
   },
   summaryTrendStats: ['avg', 'med', 'p(90)', 'p(95)', 'p(99)', 'max'],
   tags: { testid: __ENV.TESTID || 'adhoc' },
@@ -61,7 +97,7 @@ const visit = (kind, accounts) => {
   const ctx = { account, kind };
 
   if (!sessionFor(account)) {
-    think(); // could not sign in; try again next time round
+    sleep(30 + Math.random() * 30); // could not sign in: a person waits a while, they do not retry every few seconds
     return;
   }
 
@@ -73,6 +109,9 @@ const visit = (kind, accounts) => {
   }
   think();
 };
+
+// People signing in at once: a different account each time, so none of it is a repeat of a cached answer.
+export const storm = () => stormSignIn(otherAccounts[exec.scenario.iterationInTest % otherAccounts.length]);
 
 export const focus = () => visit('focus', focusAccounts);
 export const background = () => visit('background', otherAccounts);

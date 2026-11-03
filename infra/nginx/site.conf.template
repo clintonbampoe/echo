@@ -1,0 +1,50 @@
+# Production: serve the built web app over HTTPS, and proxy the API. Rendered at start-up: the image fills in
+# ${APP_DOMAIN} from the environment (see the web stage of the Dockerfile).
+
+server {
+    listen 80;
+    server_name ${APP_DOMAIN};
+
+    # Let's Encrypt proves we own the name by fetching a file from here.
+    location /.well-known/acme-challenge/ {
+        root /var/www/certbot;
+    }
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl;
+    http2 on;
+    server_name ${APP_DOMAIN};
+
+    ssl_certificate     /etc/letsencrypt/live/${APP_DOMAIN}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/${APP_DOMAIN}/privkey.pem;
+    include /etc/nginx/tls.conf;
+
+    root /usr/share/nginx/html;
+    index index.html;
+
+    include /etc/nginx/api-locations.conf;
+
+    # Hashed build output never changes, so it can be cached for a year.
+    location /assets/ {
+        include /etc/nginx/spa-headers.conf;
+        expires 1y;
+        try_files $uri =404;
+    }
+
+    # index.html must always be re-checked so a new deploy is picked up.
+    location = /index.html {
+        include /etc/nginx/spa-headers.conf;
+        expires -1;
+    }
+
+    # Single-page app: any other path is a client-side route, so serve index.html.
+    location / {
+        include /etc/nginx/spa-headers.conf;
+        try_files $uri $uri/ /index.html;
+    }
+}

@@ -20,6 +20,10 @@ services:
     stop_grace_period: 35s
     restart: unless-stopped
   db:
+    # Weights, not caps: when the two cores are contended, the database and nginx (short bursts that every request
+    # waits on) are served ahead of the API (the heavy user, 1024 by default), and when nothing else wants the CPU
+    # any container can use both cores. Starting values, to be checked against the CPU-pressure panels.
+    cpu_shares: 2048
     mem_limit: 2g
     memswap_limit: 2g
     # Parallel queries and hash joins share memory through /dev/shm, which Docker sizes at 64 MB by default.
@@ -32,10 +36,29 @@ services:
     mem_limit: 128m
     memswap_limit: 128m
     restart: unless-stopped
-    ports: [80:80]
+    cpu_shares: 2048
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN:?set APP_DOMAIN}
+    ports: ["80:80", "443:443"]
+    volumes:
+      # The certificate (certbot writes it) and the folder Let's Encrypt's challenge file is served from.
+      - letsencrypt:/etc/letsencrypt:ro
+      - certbot-webroot:/var/www/certbot:ro
   backup:
     mem_limit: 256m
     memswap_limit: 256m
     # A dump compresses with a core of its own. With these shares it gets about a ninth of the CPU while the API
     # and the database are busy, and everything it can use when they are not.
     cpu_shares: 128
+
+  # Not started with the stack: run on demand by infra/nginx/certs.sh.
+  certbot:
+    image: certbot/certbot
+    profiles: [certbot]
+    volumes:
+      - letsencrypt:/etc/letsencrypt
+      - certbot-webroot:/var/www/certbot
+
+volumes:
+  letsencrypt:
+  certbot-webroot:

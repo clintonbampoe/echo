@@ -16,14 +16,14 @@ describe("toMemberValues", () => {
       ...visitor,
       phoneNumber: "024 555 0101",
       emailAddress: "esi@example.com",
-      dateOfBirth: "1995-05-02T00:00:00Z",
+      gender: "Female",
     });
     expect(v).toMatchObject({
       firstName: "Esi",
       lastName: "Mensah",
       phoneNumber: "024 555 0101",
       emailAddress: "esi@example.com",
-      dateOfBirth: "1995-05-02",
+      gender: "Female",
     });
   });
 

@@ -29,6 +29,7 @@ public partial class UserMapper : IUserMapper
     [MapperIgnoreSource(nameof(entity.FirstName))]
     [MapperIgnoreSource(nameof(entity.LastName))]
     [MapperIgnoreSource(nameof(entity.OtherNames))]
+    [MapperIgnoreSource(nameof(entity.PasswordChangedAt))]
     [MapperIgnoreSource(nameof(entity.CreatedAt))]
     [MapperIgnoreSource(nameof(entity.DeletedAt))]
     public partial UserAuthDto ToAuthDto(User entity);

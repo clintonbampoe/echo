@@ -1,0 +1,31 @@
+# Extra Postgres queries for the exporter in config.alloy.
+#
+# pg_stat_statements metrics carry only a queryid, which says nothing to a person reading a dashboard. This adds the start of
+# each statement's SQL for the busiest ones, so a table can show "SELECT m.person_id ... FROM members" next to the id.
+# pg_stat_statements stores the SQL normalised ($1 in place of every value), so no church data is in it. Only the
+# 40 most expensive and the 40 most called statements are kept, to bound the number of series.
+pg_statement_text:
+  query: |
+    SELECT queryid::text AS queryid,
+           max(left(regexp_replace(query, '\s+', ' ', 'g'), 110)) AS query,
+           1 AS info
+    FROM (
+      (SELECT queryid, query FROM pg_stat_statements
+        WHERE dbid = (SELECT oid FROM pg_database WHERE datname = current_database()) AND queryid IS NOT NULL
+        ORDER BY total_exec_time DESC LIMIT 40)
+      UNION
+      (SELECT queryid, query FROM pg_stat_statements
+        WHERE dbid = (SELECT oid FROM pg_database WHERE datname = current_database()) AND queryid IS NOT NULL
+        ORDER BY calls DESC LIMIT 40)
+    ) busiest
+    GROUP BY queryid
+  metrics:
+    - queryid:
+        usage: "LABEL"
+        description: "The statement's query id, the same as on the pg_stat_statements metrics"
+    - query:
+        usage: "LABEL"
+        description: "The first 110 characters of the normalised SQL"
+    - info:
+        usage: "GAUGE"
+        description: "Always 1; join it to a pg_stat_statements metric on queryid to get the query label"
