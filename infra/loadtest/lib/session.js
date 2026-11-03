@@ -8,14 +8,24 @@ import { addressOf } from './ip.js';
 export const refreshRejected = new Counter('session_refresh_rejected');
 export const signInRejected = new Counter('session_signin_rejected');
 export const startedOver = new Counter('session_started_over');
+// Sign-ins refused for any other reason (wrong password, unverified email): a broken account, not load.
+export const signInFailed = new Counter('session_signin_failed');
 
 // One person's session. A virtual user keeps it between iterations, like a browser tab.
 let session = null;
 
 const post = (account, name, path, body) =>
   http.post(`${BASE_URL}${path}`, JSON.stringify(body), {
-    headers: { 'content-type': 'application/json', 'x-forwarded-for': addressOf(account.tenant) },
+    headers: { 'content-type': 'application/json', 'x-forwarded-for': addressOf(account) },
     tags: { name: `POST ${path}`, profile: account.role, tenant_kind: 'session', kind: 'auth' },
+  });
+
+// One sign-in that keeps nothing, for the login storm. Its own route name keeps it out of the sign-in numbers of the
+// people in the test, so the storm shows up as its own series.
+export const stormSignIn = (account) =>
+  http.post(`${BASE_URL}/auth/sessions/login`, JSON.stringify({ email: account.email, password: SEED_PASSWORD }), {
+    headers: { 'content-type': 'application/json', 'x-forwarded-for': addressOf(account) },
+    tags: { name: 'POST /auth/sessions/login (storm)', profile: account.role, tenant_kind: 'storm', kind: 'auth' },
   });
 
 const keep = (res) => {
@@ -43,6 +53,7 @@ const signIn = (account) => {
   const res = withRetries(signInRejected, () =>
     post(account, 'login', '/auth/sessions/login', { email: account.email, password: SEED_PASSWORD }),
   );
+  if (res.status !== 200 && res.status !== 429) signInFailed.add(1);
   return check(res, { 'sign-in is 200': (r) => r.status === 200 }) ? keep(res) : null;
 };
 
