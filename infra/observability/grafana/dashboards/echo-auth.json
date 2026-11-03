@@ -47,7 +47,7 @@
     {
       "type": "stat",
       "title": "Logins per minute",
-      "description": "",
+      "description": "Successful sign-ins per minute.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -298,8 +298,8 @@
     },
     {
       "type": "row",
-      "id": 6,
-      "title": "Attempts",
+      "id": 18,
+      "title": "Sign-in latency",
       "collapsed": false,
       "gridPos": {
         "h": 1,
@@ -310,9 +310,207 @@
       "panels": []
     },
     {
+      "type": "stat",
+      "title": "Sign-in p95",
+      "description": "How long 95% of sign-ins took, over the selected range. Each checks the password with bcrypt (about 175 ms of CPU), so this is kept apart from the API's latency. The aim is 300 to 500 ms at most; much more than that means sign-ins are queueing for CPU.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(http_server_request_duration_seconds_bucket{http_route=~\".*/auth/sessions/login\"}[$__rate_interval])))",
+          "legendFormat": ""
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "decimals": 2
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "area",
+        "textMode": "auto",
+        "justifyMode": "auto",
+        "orientation": "auto"
+      },
+      "id": 15,
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 0,
+        "y": 6
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Sign-in latency",
+      "description": "Sign-in time as p50, p95 and p99. Compare with the API dashboard: a burst of sign-ins takes CPU from everything else, so a rise here is often followed by a rise there.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "histogram_quantile(0.5, sum by (le) (rate(http_server_request_duration_seconds_bucket{http_route=~\".*/auth/sessions/login\"}[$__rate_interval])))",
+          "legendFormat": "p50"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(http_server_request_duration_seconds_bucket{http_route=~\".*/auth/sessions/login\"}[$__rate_interval])))",
+          "legendFormat": "p95"
+        },
+        {
+          "refId": "C",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "histogram_quantile(0.99, sum by (le) (rate(http_server_request_duration_seconds_bucket{http_route=~\".*/auth/sessions/login\"}[$__rate_interval])))",
+          "legendFormat": "p99"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "mode": "normal",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "id": 16,
+      "gridPos": {
+        "h": 8,
+        "w": 9,
+        "x": 6,
+        "y": 6
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Auth latency by route (p95)",
+      "description": "95th percentile time for each /auth route. Sign-in is slow by design (bcrypt). Renewal and sign-out do not hash a password and should be as fast as the API's own routes.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "label_replace(histogram_quantile(0.95, sum by (le, http_route) (rate(http_server_request_duration_seconds_bucket{http_route=~\".*/auth/.*\"}[$__rate_interval]))), \"route\", \"$1\", \"http_route\", \"/api/v\\\\{version:apiVersion\\\\}(.*)\")",
+          "legendFormat": "{{route}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "mode": "normal",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "id": 17,
+      "gridPos": {
+        "h": 8,
+        "w": 9,
+        "x": 15,
+        "y": 6
+      }
+    },
+    {
+      "type": "row",
+      "id": 6,
+      "title": "Attempts",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 14
+      },
+      "panels": []
+    },
+    {
       "type": "timeseries",
       "title": "Login attempts by result",
-      "description": "",
+      "description": "Sign-in attempts per second, split by outcome. A rise in failures can mean someone is guessing passwords.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -361,7 +559,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 6
+        "y": 15
       }
     },
     {
@@ -416,7 +614,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 6
+        "y": 15
       }
     },
     {
@@ -428,7 +626,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 14
+        "y": 23
       },
       "panels": []
     },
@@ -503,7 +701,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 15
+        "y": 24
       }
     },
     {
@@ -568,7 +766,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 15
+        "y": 24
       }
     },
     {
@@ -580,14 +778,14 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 23
+        "y": 32
       },
       "panels": []
     },
     {
       "type": "timeseries",
       "title": "401 and 403 responses by route",
-      "description": "",
+      "description": "Requests the API refused, by route. 401: not signed in or the token expired. 403: signed in but not allowed. A steady trickle of 401s is normal, because expired tokens cause them.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -637,13 +835,13 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 24
+        "y": 33
       }
     },
     {
       "type": "timeseries",
       "title": "Authorization decisions",
-      "description": "",
+      "description": "How often the API's access checks allowed or denied a request, and how often it challenged a caller who was not signed in.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -701,7 +899,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 24
+        "y": 33
       }
     }
   ],

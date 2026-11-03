@@ -125,14 +125,14 @@
       "id": 2,
       "gridPos": {
         "h": 4,
-        "w": 4,
+        "w": 5,
         "x": 0,
         "y": 1
       }
     },
     {
       "type": "stat",
-      "title": "Restarts (time range)",
+      "title": "Container restarts",
       "description": "Times a selected container started again.",
       "datasource": {
         "type": "prometheus",
@@ -190,15 +190,15 @@
       "id": 3,
       "gridPos": {
         "h": 4,
-        "w": 4,
-        "x": 4,
+        "w": 5,
+        "x": 5,
         "y": 1
       }
     },
     {
       "type": "stat",
-      "title": "Out-of-memory kills (time range)",
-      "description": "",
+      "title": "Out-of-memory kills",
+      "description": "Times the kernel killed a container for running out of memory in the selected range. Should be 0.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -251,15 +251,15 @@
       "id": 4,
       "gridPos": {
         "h": 4,
-        "w": 4,
-        "x": 8,
+        "w": 5,
+        "x": 10,
         "y": 1
       }
     },
     {
       "type": "stat",
-      "title": "Containers' memory",
-      "description": "",
+      "title": "Memory, selected containers",
+      "description": "Combined memory (working set) of the containers chosen in the filter.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -307,15 +307,15 @@
       "id": 5,
       "gridPos": {
         "h": 4,
-        "w": 6,
-        "x": 12,
+        "w": 5,
+        "x": 15,
         "y": 1
       }
     },
     {
       "type": "stat",
-      "title": "Containers' CPU (cores)",
-      "description": "",
+      "title": "CPU, selected containers (cores)",
+      "description": "Combined CPU of the containers chosen in the filter, in cores: 1 means one core fully busy.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -364,8 +364,8 @@
       "id": 6,
       "gridPos": {
         "h": 4,
-        "w": 6,
-        "x": 18,
+        "w": 4,
+        "x": 20,
         "y": 1
       }
     },
@@ -384,7 +384,7 @@
     },
     {
       "type": "timeseries",
-      "title": "CPU (cores) by container",
+      "title": "CPU by container (cores)",
       "description": "1 = one full core.",
       "datasource": {
         "type": "prometheus",
@@ -432,15 +432,15 @@
       "id": 8,
       "gridPos": {
         "h": 8,
-        "w": 12,
+        "w": 8,
         "x": 0,
         "y": 6
       }
     },
     {
       "type": "timeseries",
-      "title": "Memory (working set) by container",
-      "description": "",
+      "title": "Memory by container",
+      "description": "Memory each container holds in RAM that cannot easily be given back. The closest figure to what a container's memory limit reacts to.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -487,8 +487,8 @@
       "id": 9,
       "gridPos": {
         "h": 8,
-        "w": 12,
-        "x": 12,
+        "w": 8,
+        "x": 8,
         "y": 6
       }
     },
@@ -551,9 +551,9 @@
       "id": 10,
       "gridPos": {
         "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 14
+        "w": 8,
+        "x": 16,
+        "y": 6
       }
     },
     {
@@ -615,8 +615,8 @@
       "id": 11,
       "gridPos": {
         "h": 8,
-        "w": 12,
-        "x": 12,
+        "w": 8,
+        "x": 0,
         "y": 14
       }
     },
@@ -673,9 +673,9 @@
       "id": 12,
       "gridPos": {
         "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 22
+        "w": 8,
+        "x": 8,
+        "y": 14
       }
     },
     {
@@ -730,9 +730,9 @@
       "id": 13,
       "gridPos": {
         "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 22
+        "w": 8,
+        "x": 16,
+        "y": 14
       }
     },
     {
@@ -744,14 +744,14 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 30
+        "y": 22
       },
       "panels": []
     },
     {
       "type": "stat",
-      "title": "CPU busy",
-      "description": "",
+      "title": "Host CPU busy",
+      "description": "Share of the host's CPU in use, averaged over all cores.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -810,12 +810,12 @@
         "h": 4,
         "w": 6,
         "x": 0,
-        "y": 31
+        "y": 23
       }
     },
     {
       "type": "stat",
-      "title": "Memory used",
+      "title": "Host memory used",
       "description": "Counts caches as free, as the kernel does.",
       "datasource": {
         "type": "prometheus",
@@ -875,13 +875,13 @@
         "h": 4,
         "w": 6,
         "x": 6,
-        "y": 31
+        "y": 23
       }
     },
     {
       "type": "stat",
-      "title": "Disk used (/)",
-      "description": "",
+      "title": "Host disk used (/)",
+      "description": "How full the host's root disk is.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -940,12 +940,12 @@
         "h": 4,
         "w": 6,
         "x": 12,
-        "y": 31
+        "y": 23
       }
     },
     {
       "type": "stat",
-      "title": "Load (1 min)",
+      "title": "Host load (1 min)",
       "description": "Compare with the number of cores.",
       "datasource": {
         "type": "prometheus",
@@ -997,12 +997,12 @@
         "h": 4,
         "w": 6,
         "x": 18,
-        "y": 31
+        "y": 23
       }
     },
     {
       "type": "timeseries",
-      "title": "CPU by mode",
+      "title": "Host CPU by mode",
       "description": "Of all cores. `iowait` high means waiting on disk.",
       "datasource": {
         "type": "prometheus",
@@ -1052,13 +1052,13 @@
         "h": 8,
         "w": 8,
         "x": 0,
-        "y": 35
+        "y": 27
       }
     },
     {
       "type": "timeseries",
-      "title": "Memory",
-      "description": "",
+      "title": "Host memory",
+      "description": "Host memory: used (total minus available), cached by the kernel (given back when needed), and swap in use. Swap in use means the host has run short of RAM.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -1125,13 +1125,13 @@
         "h": 8,
         "w": 8,
         "x": 8,
-        "y": 35
+        "y": 27
       }
     },
     {
       "type": "timeseries",
-      "title": "Load",
-      "description": "",
+      "title": "Host load average",
+      "description": "Load average over 1, 5 and 15 minutes: roughly how many processes want a CPU at once. Compare with the number of cores (2 on the production box).",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -1198,13 +1198,13 @@
         "h": 8,
         "w": 8,
         "x": 16,
-        "y": 35
+        "y": 27
       }
     },
     {
       "type": "timeseries",
-      "title": "Disk space used by filesystem",
-      "description": "",
+      "title": "Host disk space by filesystem",
+      "description": "How full each disk or partition is.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -1255,12 +1255,12 @@
         "h": 8,
         "w": 8,
         "x": 0,
-        "y": 43
+        "y": 35
       }
     },
     {
       "type": "timeseries",
-      "title": "Disk space left, projected",
+      "title": "Host disk space left (projected)",
       "description": "Where the free space on / is heading, from the last 6 hours. Below zero means it fills up within a day.",
       "datasource": {
         "type": "prometheus",
@@ -1310,13 +1310,13 @@
         "h": 8,
         "w": 8,
         "x": 8,
-        "y": 43
+        "y": 35
       }
     },
     {
       "type": "timeseries",
-      "title": "Disk IO",
-      "description": "",
+      "title": "Host disk I/O",
+      "description": "Bytes the host reads from disk (above zero) and writes to it (below zero) per second.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -1374,13 +1374,13 @@
         "h": 8,
         "w": 8,
         "x": 16,
-        "y": 43
+        "y": 35
       }
     },
     {
       "type": "timeseries",
-      "title": "Network (host)",
-      "description": "",
+      "title": "Host network",
+      "description": "Bytes the host receives (above zero) and sends (below zero) per second, leaving out the Docker bridges and loopback.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -1438,6 +1438,171 @@
         "h": 8,
         "w": 12,
         "x": 0,
+        "y": 43
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Container network errors and drops",
+      "description": "Network errors and dropped packets per container, per second. Should be flat at 0: anything else points at a broken link or an overloaded interface.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (container) (rate(container_network_receive_errors_total{container=~\"$container\"}[$__rate_interval])) + sum by (container) (rate(container_network_transmit_errors_total{container=~\"$container\"}[$__rate_interval])) + sum by (container) (rate(container_network_receive_packets_dropped_total{container=~\"$container\"}[$__rate_interval])) + sum by (container) (rate(container_network_transmit_packets_dropped_total{container=~\"$container\"}[$__rate_interval]))",
+          "legendFormat": "{{container}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "pps",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "id": 28,
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 43
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Host CPU waiting for a core",
+      "description": "Share of time at least one task was ready to run but had no free core (Linux pressure stall information). Near 0 is healthy. Sustained 10 to 20% or more means requests wait for CPU even when the CPU is not at 100%, which shows up as latency with nothing else wrong.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "100 * rate(node_pressure_cpu_waiting_seconds_total[$__rate_interval])",
+          "legendFormat": "tasks waiting"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percent",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 0,
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "id": 29,
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 51
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Tasks waiting for a core, by core",
+      "description": "Average number of tasks queued for each core (from the kernel's run queue statistics). Above 1 on a core means work is waiting its turn. Compare cores 0 and 1 with the rest during a load test: the app runs on those two.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "rate(node_schedstat_waiting_seconds_total[$__rate_interval])",
+          "legendFormat": "core {{cpu}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 0,
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "id": 30,
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
         "y": 51
       }
     },

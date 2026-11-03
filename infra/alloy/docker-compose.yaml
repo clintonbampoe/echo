@@ -15,12 +15,17 @@ services:
     environment:
       GOMEMLIMIT: 200MiB
       PG_MONITOR_DSN: ${PG_MONITOR_DSN}
-      # Empty means "the observability stack on this machine". See .env.example for a separate server.
+      # The observability server's private address. Empty means "the observability stack on this machine".
+      OBS_HOST: ${OBS_HOST:-}
+      # Optional overrides, for when one of the three is somewhere else. They win over OBS_HOST.
       LOKI_URL: ${LOKI_URL:-}
       PROMETHEUS_URL: ${PROMETHEUS_URL:-}
       TEMPO_OTLP_ENDPOINT: ${TEMPO_OTLP_ENDPOINT:-}
       # The lowest level of API log kept. 13 is warnings and above; 9 adds information.
       API_LOG_MIN_SEVERITY: ${API_LOG_MIN_SEVERITY:-13}
+      # The share of ordinary traces kept, in percent. Failed, rejected (400, 403, 409, 429) and slow (over 100 ms) requests are always
+      # kept. 100 keeps everything while debugging.
+      TRACES_SAMPLE_PERCENT: ${TRACES_SAMPLE_PERCENT:-1}
     # cAdvisor reads the cgroup tree to find each container. A private cgroup namespace shows only Alloy's own.
     cgroup: host
     # Network use per container is read through each container's own process; needs the host's process list.
