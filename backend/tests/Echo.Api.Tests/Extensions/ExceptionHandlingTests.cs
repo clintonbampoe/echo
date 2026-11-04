@@ -1,7 +1,9 @@
 using System.Diagnostics;
 using System.Text.Json;
 using Echo.Api.Extensions;
+using Echo.Shared.Services.Hashing;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Echo.Api.Tests.Extensions;
 
@@ -70,5 +72,23 @@ public class ExceptionHandlingTests
         context.Response.Body.Position = 0;
         var body = JsonDocument.Parse(context.Response.Body).RootElement;
         Assert.Equal("request-trace-2", body.GetProperty("traceId").GetString());
+    }
+
+    [Fact]
+    public async Task WhenPasswordChecksAreBacklogged_AnyRouteAnswers503_WithRetryAfter()
+    {
+        var context = new DefaultHttpContext
+        {
+            RequestServices = new ServiceCollection().AddLogging().BuildServiceProvider(),
+        };
+        context.Response.Body = new MemoryStream();
+
+        await ExceptionHandlingExtensions.WriteBusy(
+            context,
+            new HashingBusyException(TimeSpan.FromSeconds(4))
+        );
+
+        Assert.Equal(503, context.Response.StatusCode);
+        Assert.Equal("4", context.Response.Headers.RetryAfter.ToString());
     }
 }

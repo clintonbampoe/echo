@@ -18,5 +18,6 @@ public static class ErrorTypes
     public static string NotFound => $"{_base}/not-found";
     public static string ForeignKeyNotFound => $"{_base}/foreign-key-not-found";
     public static string Conflict => $"{_base}/conflict";
+    public static string ServiceBusy => $"{_base}/service-busy";
     public static string InternalServerError => $"{_base}/internal-server-error";
 }
