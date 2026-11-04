@@ -20,7 +20,7 @@ public static class AddRateLimitingExtensions
     // Counted by address, because the caller has no usable token yet. A church shares one address, so each
     // allowance is sized for a whole office, by how much there is to guess:
     //   auth     sign-up, password mail, verification, invitation codes, sign out everywhere: the abuse targets
-    //   login    a church signing in together; the password is checked with bcrypt, which is slow anyway
+    //   login    a church signing in together; the password is checked with Argon2id, which is slow on purpose
     //   session  renewing and revoking with a refresh token nobody can guess, so only floods matter
     internal const int AuthPerMinute = 5;
     internal const int LoginPerMinute = 30;
