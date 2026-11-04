@@ -106,7 +106,11 @@ public class EmailVerificationService(
             };
 
             var verificationLink = linkBuilder.BuildEmailVerificationLink(token);
-            var emailContent = new EmailVerificationMessageBody(user.Name, verificationLink);
+            var emailContent = new EmailVerificationMessageBody(
+                user.FirstName,
+                verificationLink,
+                linkBuilder.SiteUrl
+            );
 
             using (instrumentation.ActivitySource.StartActivity("email_verification_token.create"))
             {

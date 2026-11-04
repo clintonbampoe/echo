@@ -95,7 +95,7 @@ public class PasswordResetService(
             emailQueue.TryEnqueue(
                 new EmailMessage(
                     user.EmailAddress,
-                    new PasswordResetEmailBody(user.Name, resetLink),
+                    new PasswordResetEmailBody(user.FirstName, resetLink, linkBuilder.SiteUrl),
                     "password_reset",
                     user.Id,
                     user.CongregationId
