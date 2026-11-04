@@ -25,6 +25,8 @@ public class EmailVerificationService(
     ILogger<EmailVerificationService> logger
 )
 {
+    private const string SentMessage = "Email has been sent if user is valid";
+
     public async Task<IOperationResult> GetStatus(
         Guid congregationId,
         Guid userId,
@@ -64,7 +66,7 @@ public class EmailVerificationService(
         {
             RecordVerificationSent(span, "user_not_found", "unknown");
             EmailVerificationLog.SendVerificationFailedUserNotFound(logger);
-            return new SuccessResult<string>("Email has been sent if user is valid");
+            return new SuccessResult<string>(SentMessage);
         }
 
         return await IssueLink(match.User, match.ActiveToken, ct);
@@ -117,7 +119,10 @@ public class EmailVerificationService(
 
             QueueVerificationEmail(user, token);
 
-            return new SuccessResult<string>($"Operation Completed Successfully. Token: {token}");
+            // The token is only ever sent by email. Answering with it would let anyone who knows an
+            // address verify that account, and a different answer for a known address would tell
+            // callers which addresses have accounts, so this matches the unknown-address reply.
+            return new SuccessResult<string>(SentMessage);
         }
         catch (Exception ex)
         {

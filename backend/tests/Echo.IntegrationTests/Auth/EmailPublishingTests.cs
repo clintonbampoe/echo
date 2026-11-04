@@ -58,6 +58,20 @@ public class EmailPublishingTests(PostgresFixture db)
     }
 
     [Fact]
+    public async Task SendVerificationLinkToEmail_NeverReturnsTheToken_AndAnswersLikeAnUnknownEmail()
+    {
+        var (host, queue, user) = await Arrange();
+        await using var _ = host;
+
+        var result = await host.Get<EmailVerificationService>().SendVerificationLinkToEmail(user.EmailAddress, Ct);
+
+        Assert.Equal("Email has been sent if user is valid", result.Message());
+        var link = queue.Messages.Single().Content.HtmlBody;
+        var token = link.Split("token=")[1].Split('"')[0];
+        Assert.DoesNotContain(token, result.Message());
+    }
+
+    [Fact]
     public async Task SendVerificationLinkToEmail_UnknownEmail_QueuesNothing_SameMessage()
     {
         var (host, queue, _) = await Arrange();
