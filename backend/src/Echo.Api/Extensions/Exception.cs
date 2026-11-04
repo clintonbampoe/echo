@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Echo.Shared.HttpResults;
+using Echo.Shared.Services.Hashing;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 
@@ -25,12 +26,23 @@ public static class ExceptionHandlingExtensions
                     return;
                 }
 
+                if (exceptionFeature?.Error is HashingBusyException busy)
+                {
+                    await WriteBusy(context, busy);
+                    return;
+                }
+
                 await WriteServerError(context, exceptionFeature?.Error, isDevelopment);
             });
         });
 
         return app;
     }
+
+    // Password checks are backlogged (many people signing in at once): not a failure of this request, so 503 with how
+    // long to wait. Sign-in answers this itself; this covers the rarer routes that hash a password.
+    internal static Task WriteBusy(HttpContext context, HashingBusyException exception) =>
+        new ServiceBusyResult(exception.RetryAfter).ToResult().ExecuteAsync(context);
 
     internal static async Task WriteBadRequest(
         HttpContext context,

@@ -22,10 +22,32 @@ public class SessionService(
     // A valid bcrypt hash (cost 10) of a throwaway string; nobody's password hashes to it.
     private const string DummyHash = "$2a$10$uAV3pq9RPnRtPbczFax2euG34T7Bf0qq6qO2Gfc9rgww4W7VqVHD6";
 
+    /// <summary>
+    /// When many people sign in at once the password checks queue up (see HashGate) and a caller who would wait too long
+    /// is told to try again. That is answered here as a plain 503, not left to the error handler: it is expected under
+    /// load, and an exception per refused caller would cost log lines and stack traces exactly when the CPU is short.
+    /// </summary>
     public async Task<IOperationResult> Login(
         string email,
         string password,
         CancellationToken ct = default
+    )
+    {
+        try
+        {
+            return await Authenticate(email, password, ct);
+        }
+        catch (HashingBusyException busy)
+        {
+            RecordLogin(Activity.Current, "busy", "unknown");
+            return new ServiceBusyResult(busy.RetryAfter);
+        }
+    }
+
+    private async Task<IOperationResult> Authenticate(
+        string email,
+        string password,
+        CancellationToken ct
     )
     {
         using var span = instrumentation.ActivitySource.StartActivity("svc.session.login");
@@ -37,7 +59,7 @@ public class SessionService(
         {
             // Do the same hashing work as for a real account, so response time does not tell an
             // attacker which email addresses are registered.
-            await hashService.VerifyAsync(password, DummyHash);
+            await hashService.VerifyAsync(password, DummyHash, ct);
 
             RecordLogin(span, "user_not_found", "unknown");
             SessionLog.LoginUserNotFound(logger);
@@ -49,7 +71,7 @@ public class SessionService(
 
         using (instrumentation.ActivitySource.StartActivity("svc.session.validate.password"))
         {
-            var isPasswordValid = await hashService.VerifyAsync(password, entity.PasswordHash);
+            var isPasswordValid = await hashService.VerifyAsync(password, entity.PasswordHash, ct);
             if (!isPasswordValid)
             {
                 RecordLogin(span, "invalid_credentials", entity.CongregationId.ToString());

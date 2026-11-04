@@ -1,23 +1,14 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
-import exec from 'k6/execution';
-import { BASE_URL, HOLD_MINUTES, RAMP_MINUTES, THINK_MAX, THINK_MIN, TRACE_RATIO, WARMUP_SECONDS } from './config.js';
+import { BASE_URL, THINK_MAX, THINK_MIN, TRACE_RATIO } from './config.js';
 import { addressOf } from './ip.js';
-import { sessionFor } from './session.js';
+import { tagsNow } from '../patterns/index.js';
+import { rateLimited, sessionFor } from './session.js';
 
 const hex = (n) => {
   let s = '';
   for (let i = 0; i < n; i++) s += Math.floor(Math.random() * 16).toString(16);
   return s;
-};
-
-// The first minute is the API warming up (JIT, empty caches, connections opening). It is kept in the
-// data but tagged, so runs can be compared on the steady part only.
-const phase = () => {
-  const t = exec.instance.currentTestRunDuration;
-  if (t < WARMUP_SECONDS * 1000) return 'warmup';
-  if (HOLD_MINUTES > 0) return t < RAMP_MINUTES * 60 * 1000 ? 'ramp' : 'hold';
-  return 'steady';
 };
 
 // One request as the browser would send it. `name` is the route template (/members/{id}) so that every
@@ -33,7 +24,7 @@ export const request = (ctx, name, path, query = {}) => ({
       'x-forwarded-for': addressOf(ctx.account),
       traceparent: `00-${hex(32)}-${hex(16)}-${Math.random() < TRACE_RATIO ? '01' : '00'}`,
     },
-    tags: { name, profile: ctx.account.role, tenant_kind: ctx.kind, phase: phase(), kind: 'data' },
+    tags: { name, profile: ctx.account.role, tenant_kind: ctx.kind, ...tagsNow(), kind: 'data' },
   },
 });
 
@@ -46,7 +37,8 @@ const toQuery = (q) => {
 
 const checked = (res) => {
   check(res, { 'status is 2xx': (r) => r.status >= 200 && r.status < 300 });
-  if (res.status >= 400 && res.status !== 429)
+  if (res.status === 429) rateLimited.add(1);
+  else if (res.status >= 400)
     console.warn(`${res.status} ${res.request.method} ${res.request.url} trace=${res.request.headers.Traceparent}`);
   return res;
 };
