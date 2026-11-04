@@ -139,7 +139,7 @@ public class HashGateTests
     }
 
     [Fact]
-    public void TheHashDurationBuckets_ResolveTenthsOfASecondAroundTheCostTheLineIsSizedOn()
+    public void TheHashDurationBuckets_ResolveMillisecondsAroundTheCostTheLineIsSizedOn()
     {
         IReadOnlyList<double>? boundaries = null;
         using var listener = new System.Diagnostics.Metrics.MeterListener();
@@ -153,10 +153,11 @@ public class HashGateTests
 
         using var gate = new HashGate(permits: 1, maxQueued: 5);
 
-        // Every hash on a fast machine landed in one bucket (0.15-0.2 s) when the steps were that coarse.
-        Assert.Contains(0.125, boundaries!);
-        Assert.Contains(0.175, boundaries!);
-        Assert.Contains(0.225, boundaries!);
+        // A hash is 25-40 ms, so a bucket per 10 ms or coarser would put every one in the same bucket.
+        Assert.Contains(0.025, boundaries!);
+        Assert.Contains(0.03, boundaries!);
+        Assert.Contains(0.035, boundaries!);
+        Assert.Contains(0.045, boundaries!);
     }
 
     [Fact]
@@ -230,7 +231,7 @@ public class HashingOptionsTests
         using var gate = HashGate.From(new HashingOptions(), processorCount: 4);
 
         Assert.Equal(3, gate.Permits);
-        Assert.Equal(150, gate.MaxQueued); // 3 permits x 10 s / 0.2 s a hash
+        Assert.Equal(750, gate.MaxQueued); // 3 permits x 10 s / 0.04 s a hash
     }
 
     [Fact]
@@ -249,7 +250,7 @@ public class HashingOptionsTests
             processorCount: 2
         );
 
-        Assert.Equal(20, gate.MaxQueued); // 1 permit x 4 s / 0.2 s a hash
+        Assert.Equal(100, gate.MaxQueued); // 1 permit x 4 s / 0.04 s a hash
     }
 
     [Theory]
