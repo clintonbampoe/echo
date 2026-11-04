@@ -135,39 +135,26 @@ public class SessionService(
     {
         using var span = instrumentation.ActivitySource.StartActivity("svc.session.logout_all");
 
-        User? entity;
-        entity = await userRepository.GetByEmail(email, ct);
-
-        if (entity is null)
+        try
         {
-            span?.SetTag("auth.result", "user_not_found");
-            SessionLog.LogoutOfAllSessionsFailed(logger);
+            int revoked;
+            using (instrumentation.ActivitySource.StartActivity("svc.session.persist.revoke_all"))
+            {
+                // One statement: the same answer whether or not the email has an account.
+                revoked = await jwtTokenService.RevokeAllActiveSessionsForEmail(email, ct);
+            }
+
+            RecordLogoutAll(span, "success", "unknown");
+            SessionLog.LogoutOfAllSessionsCompleted(logger, revoked);
+
             return new SuccessResult<string>(
                 "All active sessions for this user have been terminated."
             );
         }
-
-        span?.SetTag("congregation.id", entity.CongregationId);
-        span?.SetTag("user.id", entity.Id);
-
-        try
-        {
-            using (instrumentation.ActivitySource.StartActivity("svc.session.persist.revoke_all"))
-            {
-                await jwtTokenService.RevokeAllActiveSessionsForUserById(entity.Id, ct);
-                await unitOfWork.CommitAsync(ct);
-                RecordLogoutAll(span, "success", entity.CongregationId.ToString());
-                SessionLog.LogoutOfAllSessionsSucceeded(logger, entity.Id, entity.CongregationId);
-
-                return new SuccessResult<string>(
-                    "All active sessions for this user have been terminated."
-                );
-            }
-        }
         catch (Exception ex)
         {
             span?.SetStatus(ActivityStatusCode.Error, ex.Message);
-            SessionLog.LogoutAllFailed(logger, ex, entity.Id, entity.CongregationId);
+            SessionLog.LogoutAllFailed(logger, ex);
             throw;
         }
     }
@@ -240,8 +227,8 @@ public class SessionService(
         {
             using (instrumentation.ActivitySource.StartActivity("svc.session.persist.revoke_token"))
             {
+                // One statement; there is nothing for a save to do.
                 await jwtTokenService.RevokeToken(refreshToken, ct);
-                await unitOfWork.CommitAsync(ct);
             }
 
             RecordTokenRevocation(span, "success");

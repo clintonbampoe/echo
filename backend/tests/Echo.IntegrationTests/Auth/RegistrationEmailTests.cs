@@ -3,9 +3,12 @@ using Echo.Application.Users;
 using Echo.Auth.Invitations;
 using Echo.Auth.Registrations;
 using Echo.Data;
+using Echo.Domain.Auth;
 using Echo.Domain.Users;
 using Echo.IntegrationTests.Support;
 using Echo.Shared.Services.Hashing;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Echo.IntegrationTests.Auth;
 
@@ -63,9 +66,14 @@ public class RegistrationEmailTests(PostgresFixture db)
         Assert.Equal("welcome", welcome.Kind);
         Assert.StartsWith("Welcome to Grace Chapel ", welcome.Content.Subject);
         Assert.Contains("Hi Kofi,", welcome.Content.HtmlBody);
-        // 7 -> 6 when the user stopped being re-fetched, +1 for pruning old verification tokens,
-        // +1 for reading the church's name for the welcome email.
-        Assert.Equal(8, host.Commands.Count);
+        // The invitation (with its church), the email check, the claim, and one save that holds the
+        // user, the session and the verification token.
+        Assert.Equal(4, host.Commands.Count);
+        using var scope = host.NewScope();
+        Assert.Equal(
+            1,
+            await scope.ServiceProvider.GetRequiredService<AppDbContext>().Set<EmailVerificationToken>().CountAsync(Ct)
+        );
     }
 
     [Fact]
@@ -89,12 +97,14 @@ public class RegistrationEmailTests(PostgresFixture db)
             db,
             TestHostExtensions.WithRecordedEmail(queue)
         );
+        host.Commands.Reset();
 
         await host.Get<RegistrationService>()
             .RegisterCongregation(NewCongregation(), NewMember("admin@echo.test"), Ct)
             .WaitAsync(Patience, Ct);
 
         Assert.Equal(2, queue.Messages.Count);
+        Assert.Equal(2, host.Commands.Count); // the email check, then one save for everything
         Assert.All(queue.Messages, m => Assert.Equal("admin@echo.test", m.To));
         Assert.Equal("email_verification", queue.Messages[0].Kind);
         var setUp = queue.Messages[1];

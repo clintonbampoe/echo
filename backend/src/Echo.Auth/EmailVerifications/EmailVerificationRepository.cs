@@ -1,6 +1,7 @@
 using Echo.Shared.Query;
 using Echo.Data;
 using Echo.Domain.Auth;
+using Echo.Domain.Users;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Auth.EmailVerifications;
@@ -20,6 +21,40 @@ public class EmailVerificationRepository(AppDbContext context, TimeProvider time
             .FirstOrDefaultAsync(e => e.TokenHash == hashedInput, cancellationToken: ct);
 
         return entity;
+    }
+
+    /// <summary>
+    /// The user with this email address and their newest verification link that can still be
+    /// used, in one query. Null when there is no such user. Both are tracked.
+    /// </summary>
+    public async Task<(User User, EmailVerificationToken? ActiveToken)?> GetUserWithActiveToken(
+        string emailAddress,
+        CancellationToken ct = default
+    )
+    {
+        var now = timeProvider.GetUtcNow().UtcDateTime;
+        var row = await context
+            .Set<User>()
+            .FilterDeleted()
+            .Where(u => u.EmailAddress == emailAddress)
+            .Select(u => new
+            {
+                User = u,
+                Tokens = _tokens
+                    .Where(e =>
+                        e.UserId == u.Id
+                        && e.DeletedAt == null
+                        && e.ExpiresAt > now
+                        && e.InvalidatedAt == null
+                        && e.UsedAt == null
+                    )
+                    .OrderByDescending(e => e.CreatedAt)
+                    .Take(1)
+                    .ToList(),
+            })
+            .FirstOrDefaultAsync(ct);
+
+        return row is null ? null : (row.User, row.Tokens.FirstOrDefault());
     }
 
     public async Task<EmailVerificationToken?> GetTokenByUserId(

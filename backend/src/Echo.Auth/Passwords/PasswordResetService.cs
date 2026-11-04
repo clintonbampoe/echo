@@ -14,7 +14,6 @@ namespace Echo.Auth.Passwords;
 
 public class PasswordResetService(
     PasswordResetRepository passwordVerificationTokenRepository,
-    UserRepository userRepository,
     JwtTokenService refreshTokenService,
     IEmailQueue emailQueue,
     IUnitOfWork unitOfWork,
@@ -36,15 +35,17 @@ public class PasswordResetService(
     {
         using var span = instrumentation.ActivitySource.StartActivity("svc.password.forgot");
 
-        User? user;
-        user = await userRepository.GetByEmail(email, ct);
+        // The user and their live reset links come back in one query.
+        var found = await passwordVerificationTokenRepository.GetUserWithActiveTokens(email, ct);
 
-        if (user is null)
+        if (found is not { } match)
         {
             RecordPasswordResetRequest(span, "user_not_found", "unknown");
             PasswordLog.PasswordResetRequestUserNotFound(logger);
             return new SuccessResult<string>("Reset link has been sent.");
         }
+
+        var (user, activeTokens) = match;
 
         span?.SetTag("congregation.id", user.CongregationId);
         span?.SetTag("user.id", user.Id);
@@ -52,15 +53,6 @@ public class PasswordResetService(
         try
         {
             var now = timeProvider.GetUtcNow().UtcDateTime;
-
-            List<PasswordResetToken> activeTokens;
-            using (instrumentation.ActivitySource.StartActivity("svc.password.fetch.active_tokens"))
-            {
-                activeTokens = await passwordVerificationTokenRepository.GetActiveTokensForUser(
-                    user.Id,
-                    ct
-                );
-            }
 
             // One link a minute is enough; answering the same way keeps this from telling anyone
             // whether the address has an account.

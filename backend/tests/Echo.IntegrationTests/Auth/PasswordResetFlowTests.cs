@@ -46,6 +46,18 @@ public class PasswordResetFlowTests(PostgresFixture db)
     }
 
     [Fact]
+    public async Task Forgot_UsesThreeStatements_UserWithLinks_Prune_Save()
+    {
+        var (host, _, user) = await Arrange();
+        await using var _host = host;
+        host.Commands.Reset();
+
+        await host.Get<PasswordResetService>().SendForgotPasswordLinkToEmail(user.EmailAddress, Ct);
+
+        Assert.Equal(3, host.Commands.Count);
+    }
+
+    [Fact]
     public async Task Forgot_Twice_InsideSixtySeconds_QueuesOneEmail_BothReturnTheSameMessage()
     {
         var (host, queue, user) = await Arrange();
