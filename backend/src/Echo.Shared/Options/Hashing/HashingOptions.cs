@@ -14,7 +14,7 @@ public class HashingOptions
     /// <summary>
     /// Hashes running at once. Left out, it is one less than the cores the API may use (at least 1), so one core is
     /// always free for the people who are already signed in. More means a crowd signs in faster and everyone else waits
-    /// longer; each hash takes about 175 ms of one core.
+    /// longer; each hash takes about 30 ms of one core.
     /// </summary>
     [Range(1, 256, ErrorMessage = "Hashing:MaxConcurrent must be between 1 and 256.")]
     public int? MaxConcurrent { get; init; }
