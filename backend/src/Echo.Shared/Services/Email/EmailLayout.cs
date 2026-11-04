@@ -10,11 +10,6 @@ namespace Echo.Shared.Services.Email;
 /// </summary>
 public static class EmailLayout
 {
-    // The logo files live in the frontend's public/email folder. Emails already sent point at
-    // these paths, so do not rename them.
-    private const string LogoInkPath = "/email/echo-mark.png";
-    private const string LogoPaperPath = "/email/echo-mark-light.png";
-
     private const string Font =
         "Geist,-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif";
     private const string Mono = "ui-monospace,SFMono-Regular,Menlo,Consolas,monospace";
@@ -41,8 +36,6 @@ public static class EmailLayout
           .c-line2 { border-color: #2E2E34 !important; }
           .c-btn { background-color: #FAFAFA !important; }
           .c-btn-text { color: #09090A !important; }
-          .logo-ink { display: none !important; }
-          .logo-paper { display: inline-block !important; }
         }
         @media (max-width: 480px) {
           .outer { padding: 16px 12px 28px !important; }
@@ -122,14 +115,11 @@ public static class EmailLayout
 
     private static void AppendHeader(StringBuilder html, EmailPage page)
     {
-        var site = page.SiteUrl.TrimEnd('/');
         html.Append($"""
             <tr><td class="px-head c-line" style="padding:22px 44px;border-bottom:1px solid {Line}">
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
             <td valign="middle">
-            <img src="{Esc(site + LogoInkPath)}" width="24" height="24" alt="" class="logo-ink" style="display:inline-block;vertical-align:middle;border:0">
-            <img src="{Esc(site + LogoPaperPath)}" width="24" height="24" alt="" class="logo-paper" style="display:none;vertical-align:middle;border:0">
-            <span class="c-ink" style="vertical-align:middle;padding-left:10px;font-size:18px;font-weight:600;letter-spacing:-0.03em;color:{Ink}">Echo</span>
+            <span class="c-ink" style="font-size:18px;font-weight:600;letter-spacing:-0.03em;color:{Ink}">Echo</span>
             </td>
             <td align="right" valign="middle" class="c-ink3" style="font-size:13.5px;font-weight:500;color:{Ink3}">{Esc(page.Category)}</td>
             </tr></table>

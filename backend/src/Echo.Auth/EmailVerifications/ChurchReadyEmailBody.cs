@@ -7,8 +7,7 @@ namespace Echo.Auth.EmailVerifications;
 public class ChurchReadyEmailBody(
     string firstName,
     string congregationName,
-    string invitationsLink,
-    string siteUrl
+    string invitationsLink
 ) : IEmailContent
 {
     public string Subject => $"{congregationName} is ready on Echo";
@@ -35,7 +34,6 @@ public class ChurchReadyEmailBody(
                 ),
                 Button = new EmailButton("Invite your team", invitationsLink),
                 Reason = $"You are getting this because you created {congregationName} on Echo and verified your account.",
-                SiteUrl = siteUrl,
             }
         );
 }

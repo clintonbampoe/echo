@@ -111,8 +111,7 @@ public class EmailVerificationService(
             var verificationLink = linkBuilder.BuildEmailVerificationLink(token);
             var emailContent = new EmailVerificationMessageBody(
                 user.FirstName,
-                verificationLink,
-                linkBuilder.SiteUrl
+                verificationLink
             );
 
             using (instrumentation.ActivitySource.StartActivity("email_verification_token.create"))
@@ -259,8 +258,7 @@ public class EmailVerificationService(
                 content = new ChurchReadyEmailBody(
                     user.FirstName,
                     churchName,
-                    linkBuilder.BuildInvitationsLink(),
-                    linkBuilder.SiteUrl
+                    linkBuilder.BuildInvitationsLink()
                 );
                 kind = "church_ready";
             }
@@ -269,8 +267,7 @@ public class EmailVerificationService(
                 content = new WelcomeEmailBody(
                     user.FirstName,
                     churchName,
-                    linkBuilder.BuildDashboardLink(),
-                    linkBuilder.SiteUrl
+                    linkBuilder.BuildDashboardLink()
                 );
                 kind = "welcome";
             }

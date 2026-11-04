@@ -3,8 +3,7 @@ using Echo.Shared.Services.Email;
 
 namespace Echo.Auth.Passwords;
 
-public class PasswordResetEmailBody(string firstName, string resetLink, string siteUrl)
-    : IEmailContent
+public class PasswordResetEmailBody(string firstName, string resetLink) : IEmailContent
 {
     public string Subject => "Reset your Echo password";
 
@@ -23,7 +22,6 @@ public class PasswordResetEmailBody(string firstName, string resetLink, string s
                 Note = "This link works for 1 hour.",
                 ShowLinkFallback = true,
                 Reason = "If you did not ask for this, ignore this message. Your password stays the same.",
-                SiteUrl = siteUrl,
             }
         );
 }

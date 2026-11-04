@@ -93,8 +93,7 @@ public class InvitationService(
                 entity.AllowedRole,
                 code,
                 linkBuilder.BuildJoinLink(code),
-                entity.ExpiresAt,
-                linkBuilder.SiteUrl
+                entity.ExpiresAt
             );
             var queued = emailQueue.TryEnqueue(
                 new EmailMessage(

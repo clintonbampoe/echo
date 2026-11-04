@@ -24,8 +24,7 @@ public class InvitationEmailTests
             UserRole.Clerk,
             "K7QX-92MD-PW4T",
             "https://echo.test/join/K7QX-92MD-PW4T",
-            new DateTime(2026, 12, 1, 0, 0, 0, DateTimeKind.Utc),
-            "https://echo.test"
+            new DateTime(2026, 12, 1, 0, 0, 0, DateTimeKind.Utc)
         );
 
         Assert.Contains("https://echo.test/join/K7QX-92MD-PW4T", body.HtmlBody);
@@ -43,8 +42,7 @@ public class InvitationEmailTests
             UserRole.Member,
             "C",
             "https://x/join/C",
-            null,
-            "https://echo.test"
+            null
         );
 
         Assert.Contains("does not expire", body.HtmlBody);
@@ -58,8 +56,7 @@ public class InvitationEmailTests
             UserRole.Accountant,
             "C",
             "https://x/join/C",
-            null,
-            "https://echo.test"
+            null
         );
 
         Assert.Contains("It can be used once.", body.HtmlBody);

@@ -80,8 +80,7 @@ public class ProfileService(
                         user.FirstName,
                         user.EmailAddress,
                         changedAt,
-                        linkBuilder.BuildForgotPasswordLink(),
-                        linkBuilder.SiteUrl
+                        linkBuilder.BuildForgotPasswordLink()
                     ),
                     "password_changed",
                     user.Id,

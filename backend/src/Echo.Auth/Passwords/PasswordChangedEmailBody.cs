@@ -8,8 +8,7 @@ public class PasswordChangedEmailBody(
     string firstName,
     string emailAddress,
     DateTime changedAtUtc,
-    string forgotPasswordLink,
-    string siteUrl
+    string forgotPasswordLink
 ) : IEmailContent
 {
     public string Subject => "Your Echo password was changed";
@@ -36,7 +35,6 @@ public class PasswordChangedEmailBody(
                 ),
                 Button = new EmailButton("Reset password", forgotPasswordLink),
                 Reason = "We send this every time a password changes, so you always know.",
-                SiteUrl = siteUrl,
             }
         );
 

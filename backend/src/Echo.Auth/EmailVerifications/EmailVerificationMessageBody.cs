@@ -3,7 +3,7 @@ using Echo.Shared.Services.Email;
 
 namespace Echo.Auth.EmailVerifications;
 
-public class EmailVerificationMessageBody(string firstName, string verificationLink, string siteUrl)
+public class EmailVerificationMessageBody(string firstName, string verificationLink)
     : IEmailContent
 {
     public string Subject => "Verify your Echo account";
@@ -23,7 +23,6 @@ public class EmailVerificationMessageBody(string firstName, string verificationL
                 Note = "This link works for 24 hours.",
                 ShowLinkFallback = true,
                 Reason = "You are getting this because an Echo account was created with this address. If that was not you, ignore this message and nothing will happen.",
-                SiteUrl = siteUrl,
             }
         );
 }

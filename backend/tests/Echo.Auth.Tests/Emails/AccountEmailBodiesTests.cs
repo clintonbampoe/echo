@@ -11,7 +11,7 @@ public class AccountEmailBodiesTests
     [Fact]
     public void Verification_GreetsByFirstName_AndSaysVerifyAccount()
     {
-        var body = new EmailVerificationMessageBody("Ama", Site + "/verify-email?token=t", Site);
+        var body = new EmailVerificationMessageBody("Ama", Site + "/verify-email?token=t");
 
         Assert.Equal("Verify your Echo account", body.Subject);
         Assert.Contains("Hi Ama,", body.HtmlBody);
@@ -23,7 +23,7 @@ public class AccountEmailBodiesTests
     [Fact]
     public void Verification_EscapesTheName()
     {
-        var body = new EmailVerificationMessageBody("<b>Ama</b>", Site + "/verify-email?token=t", Site);
+        var body = new EmailVerificationMessageBody("<b>Ama</b>", Site + "/verify-email?token=t");
 
         Assert.DoesNotContain("<b>Ama</b>", body.HtmlBody);
         Assert.Contains("&lt;b&gt;Ama&lt;/b&gt;", body.HtmlBody);
@@ -32,7 +32,7 @@ public class AccountEmailBodiesTests
     [Fact]
     public void PasswordReset_GreetsByFirstName_AndSaysHowLongTheLinkWorks()
     {
-        var body = new PasswordResetEmailBody("Ama", Site + "/reset-password?token=t", Site);
+        var body = new PasswordResetEmailBody("Ama", Site + "/reset-password?token=t");
 
         Assert.Equal("Reset your Echo password", body.Subject);
         Assert.Contains("Hi Ama,", body.HtmlBody);
@@ -47,8 +47,7 @@ public class AccountEmailBodiesTests
             "Ama",
             "ama@echo.test",
             new DateTime(2026, 11, 4, 11, 42, 0, DateTimeKind.Utc),
-            Site + "/forgot",
-            Site
+            Site + "/forgot"
         );
 
         Assert.Equal("Your Echo password was changed", body.Subject);
@@ -60,7 +59,7 @@ public class AccountEmailBodiesTests
     [Fact]
     public void Welcome_NamesTheChurch_AndLinksToTheApp()
     {
-        var body = new WelcomeEmailBody("Kofi", "Grace Chapel", Site + "/dashboard", Site);
+        var body = new WelcomeEmailBody("Kofi", "Grace Chapel", Site + "/dashboard");
 
         Assert.Equal("Your Echo account is verified", body.Subject);
         Assert.Contains("Hi Kofi,", body.HtmlBody);
@@ -72,7 +71,7 @@ public class AccountEmailBodiesTests
     [Fact]
     public void ChurchReady_NamesTheChurch_AndPointsAtInvitations()
     {
-        var body = new ChurchReadyEmailBody("Ama", "Grace Chapel", Site + "/invitations", Site);
+        var body = new ChurchReadyEmailBody("Ama", "Grace Chapel", Site + "/invitations");
 
         Assert.Equal("Grace Chapel is ready on Echo", body.Subject);
         Assert.Contains("Grace Chapel is ready", body.HtmlBody);
@@ -83,7 +82,7 @@ public class AccountEmailBodiesTests
     [Fact]
     public void ChurchReady_EscapesTheChurchName()
     {
-        var body = new ChurchReadyEmailBody("Ama", "Grace <i>Chapel</i>", Site + "/invitations", Site);
+        var body = new ChurchReadyEmailBody("Ama", "Grace <i>Chapel</i>", Site + "/invitations");
 
         Assert.DoesNotContain("<i>Chapel</i>", body.HtmlBody);
         Assert.Contains("Grace &lt;i&gt;Chapel&lt;/i&gt;", body.HtmlBody);

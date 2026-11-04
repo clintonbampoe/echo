@@ -10,8 +10,7 @@ public class InvitationEmailBody(
     UserRole role,
     string code,
     string joinLink,
-    DateTime? expiresAt,
-    string siteUrl
+    DateTime? expiresAt
 ) : IEmailContent
 {
     public string Subject => $"You're invited to join {congregationName} on Echo";
@@ -33,7 +32,6 @@ public class InvitationEmailBody(
                 Code = new EmailCode("Or enter this code on the join screen", code),
                 Note = $"{Expiry} It can be used once.",
                 Reason = $"You are getting this because an admin at {congregationName} invited this address. If you were not expecting it, ignore this message.",
-                SiteUrl = siteUrl,
             }
         );
 

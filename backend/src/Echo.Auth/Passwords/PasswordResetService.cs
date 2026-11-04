@@ -95,7 +95,7 @@ public class PasswordResetService(
             emailQueue.TryEnqueue(
                 new EmailMessage(
                     user.EmailAddress,
-                    new PasswordResetEmailBody(user.FirstName, resetLink, linkBuilder.SiteUrl),
+                    new PasswordResetEmailBody(user.FirstName, resetLink),
                     "password_reset",
                     user.Id,
                     user.CongregationId
@@ -228,8 +228,7 @@ public class PasswordResetService(
                         tokenEntity.User.FirstName,
                         tokenEntity.User.EmailAddress,
                         changedAt,
-                        linkBuilder.BuildForgotPasswordLink(),
-                        linkBuilder.SiteUrl
+                        linkBuilder.BuildForgotPasswordLink()
                     ),
                     "password_changed",
                     tokenEntity.UserId,

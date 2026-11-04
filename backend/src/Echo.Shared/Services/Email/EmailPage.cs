@@ -31,9 +31,6 @@ public sealed class EmailPage
     /// <summary>Why the person got this email, shown in the footer.</summary>
     public required string Reason { get; init; }
 
-    /// <summary>The frontend's base URL. The logo is served from it.</summary>
-    public required string SiteUrl { get; init; }
-
     public IReadOnlyList<EmailRow> Rows { get; init; } = [];
     public IReadOnlyList<EmailStep> Steps { get; init; } = [];
     public EmailSection? Section { get; init; }

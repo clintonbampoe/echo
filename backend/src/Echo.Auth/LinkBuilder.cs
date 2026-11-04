@@ -7,9 +7,6 @@ public class LinkBuilder(IOptions<FrontendOptions> options)
 {
     private readonly string _baseUrl = options.Value.BaseUrl;
 
-    /// <summary>The frontend's base URL. Emails load their logo from it.</summary>
-    public string SiteUrl => _baseUrl;
-
     public string BuildEmailVerificationLink(string token)
     {
         var link = $"{_baseUrl}/verify-email?token={Uri.EscapeDataString(token)}";

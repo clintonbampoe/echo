@@ -14,7 +14,6 @@ public class EmailLayoutTests
             Paragraphs = ["First line."],
             Button = new EmailButton("Go", url),
             Reason = "Because.",
-            SiteUrl = "https://echo.test",
         };
 
     [Fact]
@@ -50,24 +49,12 @@ public class EmailLayoutTests
     }
 
     [Fact]
-    public void Render_LoadsBothLogosFromTheSite_WithoutADoubleSlash()
+    public void Render_LoadsNoImages_SoNothingDependsOnTheNetwork()
     {
-        var page = new EmailPage
-        {
-            Category = "Account",
-            Heading = "Hello",
-            Preheader = "p",
-            Paragraphs = ["x"],
-            Button = new EmailButton("Go", "https://echo.test/go"),
-            Reason = "r",
-            SiteUrl = "https://echo.test/",
-        };
+        var html = EmailLayout.Render(Page());
 
-        var html = EmailLayout.Render(page);
-
-        Assert.Contains("https://echo.test/email/echo-mark.png", html);
-        Assert.Contains("https://echo.test/email/echo-mark-light.png", html);
-        Assert.DoesNotContain("echo.test//email", html);
+        Assert.DoesNotContain("<img", html);
+        Assert.Contains(">Echo</span>", html);
     }
 
     [Fact]
@@ -90,7 +77,6 @@ public class EmailLayoutTests
             Paragraphs = ["x"],
             Button = new EmailButton("Go", "https://echo.test/go"),
             Reason = "r",
-            SiteUrl = "https://echo.test",
             ShowLinkFallback = true,
         };
 
@@ -108,7 +94,6 @@ public class EmailLayoutTests
             Paragraphs = ["x"],
             Button = new EmailButton("Go", "https://echo.test/go"),
             Reason = "r",
-            SiteUrl = "https://echo.test",
             Rows = [new EmailRow("Church", "Grace Chapel")],
             Steps = [new EmailStep("Add your members", "Start the list.")],
             Code = new EmailCode("Enter this code", "K7QX-92MD-PW4T"),

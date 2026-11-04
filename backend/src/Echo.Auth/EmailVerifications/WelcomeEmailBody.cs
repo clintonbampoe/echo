@@ -7,8 +7,7 @@ namespace Echo.Auth.EmailVerifications;
 public class WelcomeEmailBody(
     string firstName,
     string congregationName,
-    string dashboardLink,
-    string siteUrl
+    string dashboardLink
 ) : IEmailContent
 {
     public string Subject => "Your Echo account is verified";
@@ -41,7 +40,6 @@ public class WelcomeEmailBody(
                 ],
                 Button = new EmailButton("Open Echo", dashboardLink),
                 Reason = "You are getting this because your Echo account was just verified.",
-                SiteUrl = siteUrl,
             }
         );
 }
