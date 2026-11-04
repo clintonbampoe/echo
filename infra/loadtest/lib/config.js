@@ -17,6 +17,8 @@ export const TODAY = __ENV.REF_DATE || '2026-10-20';
 export const STORM_RATES = (__ENV.STORM_RATES || __ENV.STORM_RATE || '0').split(',').map(Number);
 export const STORM_MINUTES = Number(__ENV.STORM_MINUTES || 2);
 export const STORM_STEP_SECONDS = Number(__ENV.STORM_STEP_SECONDS || STORM_MINUTES * 60);
+// Seconds a step takes to climb to its rate (a ramp), then it holds there for the rest of STORM_STEP_SECONDS.
+export const STORM_RAMP_SECONDS = Number(__ENV.STORM_RAMP_SECONDS || 1);
 export const STORM_START_MINUTES = Number(__ENV.STORM_START_MINUTES || 8);
 // The rate at second t of the storm, so each sign-in can be told apart by the rate it arrived at.
 export const stormRateAt = (t) => STORM_RATES[Math.min(Math.floor(t / STORM_STEP_SECONDS), STORM_RATES.length - 1)];
