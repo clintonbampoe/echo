@@ -116,7 +116,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "(sum(rate(auth_login_attempts_total{auth_result!=\"success\"}[$__rate_interval])) * 60) or vector(0)",
+          "expr": "(sum(rate(auth_login_attempts_total{auth_result!~\"success|busy\"}[$__rate_interval])) * 60) or vector(0)",
           "legendFormat": ""
         }
       ],
@@ -181,7 +181,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "(100 * sum(rate(auth_login_attempts_total{auth_result!=\"success\"}[$__rate_interval])) / sum(rate(auth_login_attempts_total[$__rate_interval]))) or vector(0)",
+          "expr": "(100 * sum(rate(auth_login_attempts_total{auth_result!~\"success|busy\"}[$__rate_interval])) / sum(rate(auth_login_attempts_total[$__rate_interval]))) or vector(0)",
           "legendFormat": ""
         }
       ],
@@ -496,6 +496,1459 @@
     },
     {
       "type": "row",
+      "id": 20,
+      "title": "Auth routes: the slowest and the busiest",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 14
+      },
+      "panels": []
+    },
+    {
+      "type": "table",
+      "id": 21,
+      "title": "Auth routes, slowest first",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "Every /auth route over the selected range, sorted by 95th percentile. Requests/s is the average over the range; failed is the share answered 4xx or 5xx (a wrong password is a 400, so sign-in always has some).",
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "label_replace(histogram_quantile(0.5, sum by (le, http_route) (rate(http_server_request_duration_seconds_bucket{http_route=~\".*/auth/.*\"}[$__range]))), \"route\", \"$1\", \"http_route\", \"/api/v\\\\{version:apiVersion\\\\}(.*)\")",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "label_replace(histogram_quantile(0.95, sum by (le, http_route) (rate(http_server_request_duration_seconds_bucket{http_route=~\".*/auth/.*\"}[$__range]))), \"route\", \"$1\", \"http_route\", \"/api/v\\\\{version:apiVersion\\\\}(.*)\")",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        },
+        {
+          "refId": "C",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "label_replace(histogram_quantile(0.99, sum by (le, http_route) (rate(http_server_request_duration_seconds_bucket{http_route=~\".*/auth/.*\"}[$__range]))), \"route\", \"$1\", \"http_route\", \"/api/v\\\\{version:apiVersion\\\\}(.*)\")",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        },
+        {
+          "refId": "D",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "label_replace(sum by (http_route) (rate(http_server_request_duration_seconds_count{http_route=~\".*/auth/.*\"}[$__range])), \"route\", \"$1\", \"http_route\", \"/api/v\\\\{version:apiVersion\\\\}(.*)\")",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        },
+        {
+          "refId": "E",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "label_replace(sum by (http_route) (rate(http_server_request_duration_seconds_count{http_route=~\".*/auth/.*\",http_response_status_code=~\"[45]..\"}[$__range])) / sum by (http_route) (rate(http_server_request_duration_seconds_count{http_route=~\".*/auth/.*\"}[$__range])) or sum by (http_route) (rate(http_server_request_duration_seconds_count{http_route=~\".*/auth/.*\"}[$__range])) * 0, \"route\", \"$1\", \"http_route\", \"/api/v\\\\{version:apiVersion\\\\}(.*)\")",
+          "instant": true,
+          "range": false,
+          "format": "table"
+        }
+      ],
+      "transformations": [
+        {
+          "id": "merge",
+          "options": {}
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "http_route": true
+            },
+            "renameByName": {
+              "route": "Route",
+              "Value #A": "p50",
+              "Value #B": "p95",
+              "Value #C": "p99",
+              "Value #D": "Requests/s",
+              "Value #E": "Failed"
+            },
+            "indexByName": {
+              "route": 0,
+              "Value #B": 1,
+              "Value #C": 2,
+              "Value #A": 3,
+              "Value #D": 4,
+              "Value #E": 5
+            }
+          }
+        },
+        {
+          "id": "sortBy",
+          "options": {
+            "fields": {},
+            "sort": [
+              {
+                "field": "p95",
+                "desc": true
+              }
+            ]
+          }
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto"
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "p50|p95|p99"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "s"
+              },
+              {
+                "id": "decimals",
+                "value": 3
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Requests/s"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "reqps"
+              },
+              {
+                "id": "decimals",
+                "value": 2
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Failed"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percentunit"
+              },
+              {
+                "id": "decimals",
+                "value": 1
+              }
+            ]
+          }
+        ]
+      },
+      "options": {
+        "showHeader": true,
+        "cellHeight": "sm"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 15
+      }
+    },
+    {
+      "type": "timeseries",
+      "id": 22,
+      "title": "Requests per second by auth route",
+      "description": "How busy each /auth route is. Sign-in and renewal are the two that matter; the rest are rare.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "label_replace(sum by (http_route) (rate(http_server_request_duration_seconds_count{http_route=~\".*/auth/.*\"}[$__rate_interval])), \"route\", \"$1\", \"http_route\", \"/api/v\\\\{version:apiVersion\\\\}(.*)\")",
+          "legendFormat": "{{route}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "mode": "normal",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 23
+      }
+    },
+    {
+      "type": "timeseries",
+      "id": 23,
+      "title": "Auth requests per second by status",
+      "description": "Every /auth answer by HTTP status. 400 on sign-in is a wrong password or email; 429 is the rate limiter; 5xx is the API failing.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (http_response_status_code) (rate(http_server_request_duration_seconds_count{http_route=~\".*/auth/.*\"}[$__rate_interval]))",
+          "legendFormat": "{{http_response_status_code}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "reqps",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "mode": "normal",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 23
+      }
+    },
+    {
+      "type": "timeseries",
+      "id": 24,
+      "title": "Auth latency by route (p99)",
+      "description": "99th percentile time for each /auth route: the slowest 1% of sign-ins and renewals. Next to the p95 above, a gap that widens under load means requests are queueing.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "label_replace(histogram_quantile(0.99, sum by (le, http_route) (rate(http_server_request_duration_seconds_bucket{http_route=~\".*/auth/.*\"}[$__rate_interval]))), \"route\", \"$1\", \"http_route\", \"/api/v\\\\{version:apiVersion\\\\}(.*)\")",
+          "legendFormat": "{{route}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 23
+      }
+    },
+    {
+      "type": "row",
+      "id": 25,
+      "title": "Inside sign-in and renewal",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 31
+      },
+      "panels": []
+    },
+    {
+      "type": "heatmap",
+      "id": 26,
+      "title": "Sign-in time, every request",
+      "description": "How long sign-ins took, as a distribution: one column per interval, darker is more requests. Sign-in is bcrypt, about 175 ms of CPU by design, so a band near 0.2 s is normal. A band that climbs under load is requests waiting for a core.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (le) (increase(http_server_request_duration_seconds_bucket{http_route=~\".*/auth/sessions/login\"}[$__rate_interval]))",
+          "format": "heatmap",
+          "legendFormat": "{{le}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "scaleDistribution": {
+              "type": "linear"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "calculate": false,
+        "yAxis": {
+          "axisPlacement": "left",
+          "unit": "s"
+        },
+        "cellGap": 1,
+        "showValue": "never",
+        "color": {
+          "mode": "scheme",
+          "scheme": "Oranges",
+          "fill": "dark-orange",
+          "scale": "exponential",
+          "exponent": 0.5,
+          "steps": 64,
+          "reverse": false
+        },
+        "rowsFrame": {
+          "layout": "auto"
+        },
+        "tooltip": {
+          "show": true,
+          "yHistogram": true
+        },
+        "legend": {
+          "show": true
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 32
+      }
+    },
+    {
+      "type": "heatmap",
+      "id": 27,
+      "title": "Renewal time, every request",
+      "description": "The same for renewals. They do not hash a password, so they should sit near the API's own routes (a few ms). A band that climbs here, without a matching climb in the data routes, points at the refresh-token queries.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (le) (increase(http_server_request_duration_seconds_bucket{http_route=~\".*/auth/sessions/refresh\"}[$__rate_interval]))",
+          "format": "heatmap",
+          "legendFormat": "{{le}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "scaleDistribution": {
+              "type": "linear"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "calculate": false,
+        "yAxis": {
+          "axisPlacement": "left",
+          "unit": "s"
+        },
+        "cellGap": 1,
+        "showValue": "never",
+        "color": {
+          "mode": "scheme",
+          "scheme": "Oranges",
+          "fill": "dark-orange",
+          "scale": "exponential",
+          "exponent": 0.5,
+          "steps": 64,
+          "reverse": false
+        },
+        "rowsFrame": {
+          "layout": "auto"
+        },
+        "tooltip": {
+          "show": true,
+          "yHistogram": true
+        },
+        "legend": {
+          "show": true
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 32
+      }
+    },
+    {
+      "type": "timeseries",
+      "id": 28,
+      "title": "API CPU in use",
+      "description": "Cores the API process used. The app is pinned to two cores in the load test and the production box has two, so 2 is full. Sign-in is the CPU-heavy request: compare this with the sign-in rate above.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(rate(dotnet_process_cpu_time_seconds_total{job=\"Echo.Api\"}[$__rate_interval]))",
+          "legendFormat": "cores"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 40
+      }
+    },
+    {
+      "type": "timeseries",
+      "id": 29,
+      "title": "Thread pool queue",
+      "description": "Work waiting for a thread in the API. Above zero for long means the API has more to do than threads to do it, which is what sign-ins piling up looks like.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "dotnet_thread_pool_queue_length_total{job=\"Echo.Api\"}",
+          "legendFormat": "waiting"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 40
+      }
+    },
+    {
+      "type": "row",
+      "id": 35,
+      "title": "Password check queue",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 48
+      },
+      "panels": []
+    },
+    {
+      "type": "timeseries",
+      "id": 36,
+      "title": "Password checks running and waiting",
+      "description": "Hashes running now (at most the permit count: one less than the cores unless Hashing:MaxConcurrent is set) and hashes waiting for a permit. Waiting above zero means more people are signing in than the permits can serve; the line is capped, and past the cap sign-ins are asked to wait.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max(auth_hash_in_use)",
+          "legendFormat": "running"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max(auth_hash_waiting)",
+          "legendFormat": "waiting"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 49
+      }
+    },
+    {
+      "type": "timeseries",
+      "id": 37,
+      "title": "Wait for a password check",
+      "description": "How long a sign-in waited for a permit before it was hashed: median, 95th and 99th percentile. Near zero is normal; seconds means a crowd is signing in.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "histogram_quantile(0.5, sum by (le) (rate(auth_hash_wait_seconds_bucket[$__rate_interval])))",
+          "legendFormat": "p50"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(auth_hash_wait_seconds_bucket[$__rate_interval])))",
+          "legendFormat": "p95"
+        },
+        {
+          "refId": "C",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "histogram_quantile(0.99, sum by (le) (rate(auth_hash_wait_seconds_bucket[$__rate_interval])))",
+          "legendFormat": "p99"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 49
+      }
+    },
+    {
+      "type": "timeseries",
+      "id": 38,
+      "title": "Sign-ins asked to wait (503)",
+      "description": "Password checks refused because the line was already as long as allowed, and sign-ins that answered 503 with Retry-After. The people affected try again after the time they are told.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "(sum(rate(auth_hash_refused_total[$__rate_interval]))) or vector(0)",
+          "legendFormat": "password checks refused"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "(sum(rate(auth_login_attempts_total{auth_result=\"busy\"}[$__rate_interval]))) or vector(0)",
+          "legendFormat": "sign-ins answered 503"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 49
+      }
+    },
+    {
+      "type": "timeseries",
+      "id": 44,
+      "title": "How long a hash takes",
+      "description": "The time one password hash took once it started: median, 95th and 99th percentile. The password-check line is sized on 0.2 s a hash (the dashed line): above it, a full line waits longer than 10 s and \"try again in N seconds\" is too short. Rises when the CPU is busy with other work. The average is the sum of hash time over the count, exact; the percentiles are read off buckets.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "histogram_quantile(0.5, sum by (le) (rate(auth_hash_duration_seconds_bucket[$__rate_interval])))",
+          "legendFormat": "p50"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "histogram_quantile(0.95, sum by (le) (rate(auth_hash_duration_seconds_bucket[$__rate_interval])))",
+          "legendFormat": "p95"
+        },
+        {
+          "refId": "C",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "histogram_quantile(0.99, sum by (le) (rate(auth_hash_duration_seconds_bucket[$__rate_interval])))",
+          "legendFormat": "p99"
+        },
+        {
+          "refId": "D",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "legendFormat": "average",
+          "expr": "sum(rate(auth_hash_duration_seconds_sum[$__rate_interval])) / sum(rate(auth_hash_duration_seconds_count[$__rate_interval]))"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            },
+            "thresholdsStyle": {
+              "mode": "dashed"
+            }
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 0.2
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 57
+      }
+    },
+    {
+      "type": "timeseries",
+      "id": 45,
+      "title": "Password hashes per second",
+      "description": "Hashes finished per second, next to the most the permits allow: permits divided by 0.2 s. A rate on the ceiling with a growing line means sign-ins are arriving faster than the box can hash them.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(rate(auth_hash_duration_seconds_count[$__rate_interval]))",
+          "legendFormat": "hashes done"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 57
+      }
+    },
+    {
+      "type": "row",
+      "id": 39,
+      "title": "Who we turned away",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 65
+      },
+      "panels": []
+    },
+    {
+      "type": "stat",
+      "id": 40,
+      "title": "Sign-ins turned away",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "description": "Share of sign-in attempts over the selected range that were answered 503 \"busy\" because too many password checks were waiting. Zero is normal. These people were told to try again; the server cannot see whether they did.",
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "(sum(increase(auth_login_attempts_total{auth_result=\"busy\"}[$__range])) / sum(increase(auth_login_attempts_total[$__range]))) or vector(0)",
+          "instant": true
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "decimals": 1,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "orange",
+                "value": 0.01
+              },
+              {
+                "color": "red",
+                "value": 0.05
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "none",
+        "textMode": "auto",
+        "justifyMode": "auto",
+        "orientation": "auto"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 6,
+        "x": 0,
+        "y": 66
+      }
+    },
+    {
+      "type": "timeseries",
+      "id": 41,
+      "title": "Sign-ins let in and turned away",
+      "description": "Per minute: sign-ins that succeeded, and sign-ins refused with 503 because the password-check line was full. When the second grows, the first is at the most the server can hash.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(rate(auth_login_attempts_total{auth_result=\"success\"}[$__rate_interval])) * 60",
+          "legendFormat": "let in"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "(sum(rate(auth_login_attempts_total{auth_result=\"busy\"}[$__rate_interval])) * 60) or vector(0)",
+          "legendFormat": "turned away (503)"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "opm",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "mode": "normal",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 9,
+        "x": 6,
+        "y": 66
+      }
+    },
+    {
+      "type": "timeseries",
+      "id": 42,
+      "title": "Gave up in the line",
+      "description": "Per minute: people who were waiting for a password check and gave up before it started (closed the page, lost the connection, timed out). They were in the line, so they are counted as lost.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "(sum(rate(auth_hash_abandoned_total[$__rate_interval])) * 60) or vector(0)",
+          "legendFormat": "gave up waiting"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "opm",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 9,
+        "x": 15,
+        "y": 66
+      }
+    },
+    {
+      "type": "timeseries",
+      "id": 43,
+      "title": "Closed the page during sign-in (499)",
+      "description": "Sign-in requests where the browser hung up before the answer, seen by nginx. Includes people who gave up in the line and people who waited out a slow answer.",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "expr": "sum(count_over_time({container=\"nginx\", stream=\"stdout\", status=\"499\"} | path=~\".*/auth/sessions/login\" [$__interval]))",
+          "legendFormat": "499 on sign-in",
+          "queryType": "range"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 74
+      }
+    },
+    {
+      "type": "row",
+      "id": 30,
+      "title": "Slow auth requests",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 82
+      },
+      "panels": []
+    },
+    {
+      "type": "stat",
+      "id": 31,
+      "title": "Slow auth requests (500 ms+)",
+      "description": "/auth requests where the work itself took 500 ms or more, over the selected range. Time spent waiting in the password-check line is left out: in a burst the line holds people for up to 10 s on purpose (see \"Password check queue\"), and that is not slowness. Every one is logged, starting with \"slow request:\". Sign-in takes about 175 ms by design.",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "expr": "sum(count_over_time({service_name=\"Echo.Api\"} | slow_request=\"true\" | category=\"auth\" [$__range]))",
+          "queryType": "instant"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "decimals": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          },
+          "noValue": "0"
+        },
+        "overrides": []
+      },
+      "options": {
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "colorMode": "value",
+        "graphMode": "area",
+        "textMode": "auto",
+        "justifyMode": "auto",
+        "orientation": "auto"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 0,
+        "y": 83
+      }
+    },
+    {
+      "type": "timeseries",
+      "id": 32,
+      "title": "Slow auth requests over time, by route",
+      "description": "Slow /auth requests (the work took 500 ms or more, not counting time in the password-check line) per interval, by route. A rise that follows the sign-in rate up, with the line short, means sign-ins are running out of CPU.",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "expr": "sum by (http_route) (count_over_time({service_name=\"Echo.Api\"} | slow_request=\"true\" | category=\"auth\" [$__interval]))",
+          "legendFormat": "{{http_route}}",
+          "queryType": "range"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": true,
+            "stacking": {
+              "mode": "none",
+              "group": "A"
+            }
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 18,
+        "x": 6,
+        "y": 83
+      }
+    },
+    {
+      "type": "logs",
+      "id": 33,
+      "title": "Slow auth requests (with trace link)",
+      "description": "One line per /auth request whose work took 500 ms or more, newest first: \"slow request:\", method, path, status and milliseconds (the total, including any time in the password-check line, which is shown as queue_wait_ms when you open the line). Open a line and use View trace to see where the time went.",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "expr": "{service_name=\"Echo.Api\"} | slow_request=\"true\" | category=\"auth\"",
+          "queryType": "range"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "Nothing in this period"
+        },
+        "overrides": []
+      },
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "showCommonLabels": false,
+        "wrapLogMessage": true,
+        "enableLogDetails": true,
+        "sortOrder": "Descending",
+        "dedupStrategy": "none",
+        "prettifyLogMessage": false
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 89
+      }
+    },
+    {
+      "type": "logs",
+      "id": 34,
+      "title": "Auth log",
+      "description": "Everything the API logged from its auth code (sign-in failures, refresh rejections, errors) plus the slow /auth requests, newest first. Only warnings and above are kept, unless API_LOG_MIN_SEVERITY is lowered.",
+      "datasource": {
+        "type": "loki",
+        "uid": "loki"
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "loki",
+            "uid": "loki"
+          },
+          "expr": "{service_name=\"Echo.Api\"} | category=\"auth\"",
+          "queryType": "range"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "noValue": "Nothing in this period"
+        },
+        "overrides": []
+      },
+      "options": {
+        "showTime": true,
+        "showLabels": false,
+        "showCommonLabels": false,
+        "wrapLogMessage": true,
+        "enableLogDetails": true,
+        "sortOrder": "Descending",
+        "dedupStrategy": "none",
+        "prettifyLogMessage": false
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 99
+      }
+    },
+    {
+      "type": "row",
       "id": 6,
       "title": "Attempts",
       "collapsed": false,
@@ -503,7 +1956,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 14
+        "y": 109
       },
       "panels": []
     },
@@ -559,7 +2012,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 15
+        "y": 110
       }
     },
     {
@@ -577,7 +2030,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "label_replace(topk(5, sum by (congregation_id) (rate(auth_login_attempts_total{auth_result!=\"success\"}[$__rate_interval]))), \"church\", \"$1\", \"congregation_id\", \"(.{1,8}).*\")",
+          "expr": "label_replace(topk(5, sum by (congregation_id) (rate(auth_login_attempts_total{auth_result!~\"success|busy\"}[$__rate_interval]))), \"church\", \"$1\", \"congregation_id\", \"(.{1,8}).*\")",
           "legendFormat": "{{church}}"
         }
       ],
@@ -614,7 +2067,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 15
+        "y": 110
       }
     },
     {
@@ -626,7 +2079,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 23
+        "y": 118
       },
       "panels": []
     },
@@ -701,7 +2154,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 24
+        "y": 119
       }
     },
     {
@@ -766,7 +2219,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 24
+        "y": 119
       }
     },
     {
@@ -778,7 +2231,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 32
+        "y": 127
       },
       "panels": []
     },
@@ -835,7 +2288,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 33
+        "y": 128
       }
     },
     {
@@ -899,7 +2352,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 33
+        "y": 128
       }
     }
   ],
