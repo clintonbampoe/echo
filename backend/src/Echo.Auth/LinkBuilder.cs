@@ -20,8 +20,6 @@ public class LinkBuilder(IOptions<FrontendOptions> options)
 
     public string BuildDashboardLink() => $"{_baseUrl}/dashboard";
 
-    public string BuildInvitationsLink() => $"{_baseUrl}/invitations";
-
     public string BuildPasswordResetLink(string token)
     {
         var link = $"{_baseUrl}/reset-password?token={Uri.EscapeDataString(token)}";

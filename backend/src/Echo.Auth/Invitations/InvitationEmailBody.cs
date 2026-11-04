@@ -13,7 +13,7 @@ public class InvitationEmailBody(
     DateTime? expiresAt
 ) : IEmailContent
 {
-    public string Subject => $"You're invited to join {congregationName} on Echo";
+    public string Subject => $"You are invited to join {congregationName} on Echo";
 
     public string HtmlBody =>
         EmailLayout.Render(
@@ -22,20 +22,25 @@ public class InvitationEmailBody(
                 Category = "Invitation",
                 Heading = $"Join {congregationName} on Echo",
                 Preheader = $"Join as {RoleLabel}. Use the button or the code.",
-                Paragraphs = [$"You have been invited to join {congregationName} on Echo."],
+                Paragraphs =
+                [
+                    $"{congregationName} has invited you to join Echo as {AOrAn} {RoleLabel}. Accept the invitation below, or enter the code on the join screen.",
+                ],
                 Rows =
                 [
                     new EmailRow("Church", congregationName),
                     new EmailRow("Your role", RoleLabel),
                 ],
                 Button = new EmailButton("Accept invitation", joinLink),
-                Code = new EmailCode("Or enter this code on the join screen", code),
+                Code = new EmailCode("Or enter this code on the join screen:", code),
                 Note = $"{Expiry} It can be used once.",
-                Reason = $"You are getting this because an admin at {congregationName} invited this address. If you were not expecting it, ignore this message.",
+                Reason = $"An admin at {congregationName} invited this email address. If you were not expecting this, ignore this email.",
             }
         );
 
     private string RoleLabel => role.ToString();
+
+    private string AOrAn => "AEIOU".Contains(RoleLabel[0]) ? "an" : "a";
 
     private string Expiry =>
         expiresAt is null

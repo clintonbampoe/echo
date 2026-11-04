@@ -22,7 +22,7 @@ public class PasswordChangedEmailBody(
                 Preheader = "If this was not you, reset it now.",
                 Paragraphs =
                 [
-                    $"{EmailLayout.Greeting(firstName)} the password for your Echo account was changed. If this was you, there is nothing more to do.",
+                    $"{EmailLayout.Greeting(firstName)} the password for your Echo account was changed. If this was you, no action is needed.",
                 ],
                 Rows =
                 [
@@ -31,10 +31,10 @@ public class PasswordChangedEmailBody(
                 ],
                 Callout = new EmailCallout(
                     "Was this not you?",
-                    "Reset your password straight away."
+                    "Reset your password now to secure your account."
                 ),
                 Button = new EmailButton("Reset password", forgotPasswordLink),
-                Reason = "We send this every time a password changes, so you always know.",
+                Reason = "We send this email every time a password is changed.",
             }
         );
 

@@ -1,45 +1,40 @@
+using Echo.Domain.Users;
 using Echo.Shared.Models;
 using Echo.Shared.Services.Email;
 
 namespace Echo.Auth.EmailVerifications;
 
-/// <summary>Sent when an account is verified, to everyone except the person who created the church.</summary>
+/// <summary>Sent when someone signs up to join a church with an invitation code.</summary>
 public class WelcomeEmailBody(
     string firstName,
     string congregationName,
+    UserRole role,
     string dashboardLink
 ) : IEmailContent
 {
-    public string Subject => "Your Echo account is verified";
+    public string Subject => $"Welcome to {congregationName} on Echo";
 
     public string HtmlBody =>
         EmailLayout.Render(
             new EmailPage
             {
-                Category = "Account",
-                Heading = "Account verified",
-                Preheader = "Here is where most churches start.",
+                Category = "Welcome",
+                Heading = $"Welcome to {congregationName}",
+                Preheader = $"You joined as {AOrAn} {role}.",
                 Paragraphs =
                 [
-                    $"{EmailLayout.Greeting(firstName)} welcome to {congregationName} on Echo. Here is where most churches start.",
+                    $"{EmailLayout.Greeting(firstName)} you have joined {congregationName} on Echo as {AOrAn} {role}. Open Echo to get started.",
                 ],
-                Steps =
+                Rows =
                 [
-                    new EmailStep(
-                        "Add your members",
-                        "Build the list everything else is recorded against."
-                    ),
-                    new EmailStep(
-                        "Create a service session",
-                        "Set up Sunday service so check-ins have somewhere to go."
-                    ),
-                    new EmailStep(
-                        "Record tithes",
-                        "Log what was given and see it month by month."
-                    ),
+                    new EmailRow("Church", congregationName),
+                    new EmailRow("Your role", role.ToString()),
                 ],
                 Button = new EmailButton("Open Echo", dashboardLink),
-                Reason = "You are getting this because your Echo account was just verified.",
+                Note = "We also sent a separate email to verify your account.",
+                Reason = "You are getting this because you signed up for Echo with this email address.",
             }
         );
+
+    private string AOrAn => "AEIOU".Contains(role.ToString()[0]) ? "an" : "a";
 }

@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using Echo.Application.Congregations;
 using Echo.Application.Users;
 using Echo.Data;
 using Echo.Domain.Auth;
@@ -16,7 +15,6 @@ namespace Echo.Auth.EmailVerifications;
 public class EmailVerificationService(
     EmailVerificationRepository emailVerificationTokenRepository,
     UserRepository userRepository,
-    CongregationRepository congregationRepository,
     IEmailQueue emailQueue,
     IUnitOfWork unitOfWork,
     ITokenGenerator tokenGenerator,
@@ -222,8 +220,6 @@ public class EmailVerificationService(
                 );
             }
 
-            await QueueWelcomeEmail(tokenRecord.User, ct);
-
             return new SuccessResult<string>("Operation Completed successfully.");
         }
         catch (Exception ex)
@@ -236,49 +232,6 @@ public class EmailVerificationService(
                 tokenRecord.User.CongregationId
             );
             throw;
-        }
-    }
-
-    /// <summary>
-    /// Queues the email that follows a verified account: "church ready" for the person who
-    /// created the congregation, "welcome" for everyone else. The account is already verified,
-    /// so a failure here is logged and never fails the request.
-    /// </summary>
-    private async Task QueueWelcomeEmail(User user, CancellationToken ct)
-    {
-        try
-        {
-            var congregation = await congregationRepository.GetById(user.CongregationId, ct);
-            var churchName = congregation?.Name ?? "your church";
-
-            IEmailContent content;
-            string kind;
-            if (await userRepository.IsFirstUserOfCongregation(user, ct))
-            {
-                content = new ChurchReadyEmailBody(
-                    user.FirstName,
-                    churchName,
-                    linkBuilder.BuildInvitationsLink()
-                );
-                kind = "church_ready";
-            }
-            else
-            {
-                content = new WelcomeEmailBody(
-                    user.FirstName,
-                    churchName,
-                    linkBuilder.BuildDashboardLink()
-                );
-                kind = "welcome";
-            }
-
-            emailQueue.TryEnqueue(
-                new EmailMessage(user.EmailAddress, content, kind, user.Id, user.CongregationId)
-            );
-        }
-        catch (Exception ex) when (ex is not OperationCanceledException)
-        {
-            EmailVerificationLog.WelcomeEmailFailed(logger, ex, user.Id, user.CongregationId);
         }
     }
 

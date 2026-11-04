@@ -99,15 +99,4 @@ public static partial class EmailVerificationLog
         Guid userId,
         Guid congregationId
     );
-
-    [LoggerMessage(
-        Level = LogLevel.Warning,
-        Message = "Welcome email could not be queued for user {UserId} in congregation {CongregationId}"
-    )]
-    public static partial void WelcomeEmailFailed(
-        ILogger logger,
-        Exception ex,
-        Guid userId,
-        Guid congregationId
-    );
 }

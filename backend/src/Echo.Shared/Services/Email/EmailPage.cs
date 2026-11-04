@@ -8,8 +8,6 @@ public sealed record EmailButton(string Text, string Url);
 
 public sealed record EmailCallout(string Title, string Body);
 
-public sealed record EmailSection(string Title, string Body);
-
 public sealed record EmailCode(string Label, string Value);
 
 /// <summary>
@@ -19,7 +17,7 @@ public sealed record EmailCode(string Label, string Value);
 /// </summary>
 public sealed class EmailPage
 {
-    /// <summary>Small label in the header, for example "Account" or "Security".</summary>
+    /// <summary>Small capitalised label in the header block, for example "Account" or "Security".</summary>
     public required string Category { get; init; }
     public required string Heading { get; init; }
 
@@ -33,7 +31,6 @@ public sealed class EmailPage
 
     public IReadOnlyList<EmailRow> Rows { get; init; } = [];
     public IReadOnlyList<EmailStep> Steps { get; init; } = [];
-    public EmailSection? Section { get; init; }
     public EmailCallout? Callout { get; init; }
     public EmailCode? Code { get; init; }
 

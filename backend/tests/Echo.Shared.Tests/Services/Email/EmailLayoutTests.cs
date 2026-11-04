@@ -58,6 +58,18 @@ public class EmailLayoutTests
     }
 
     [Fact]
+    public void Render_PutsTheWordmarkCategoryAndHeadingInTheHeaderBlock()
+    {
+        var html = EmailLayout.Render(Page(heading: "Verify your account"));
+
+        var hero = html.IndexOf("c-hero", StringComparison.Ordinal);
+        Assert.True(hero > 0);
+        Assert.True(html.IndexOf(">Echo</span>", StringComparison.Ordinal) > hero);
+        Assert.True(html.IndexOf(">Account</td>", StringComparison.Ordinal) > hero);
+        Assert.True(html.IndexOf(">Verify your account</td>", StringComparison.Ordinal) > hero);
+    }
+
+    [Fact]
     public void Render_LeavesOutWhatThePageDoesNotUse()
     {
         var html = EmailLayout.Render(Page());

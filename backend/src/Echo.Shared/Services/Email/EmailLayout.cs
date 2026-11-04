@@ -24,6 +24,11 @@ public static class EmailLayout
     private const string Line2 = "#CFCFD5";
     private const string Soft = "#F6F6F7";
 
+    // The header block and the code block are inverted: black on light, white in dark mode.
+    private const string Hero = "#0A0A0B";
+    private const string HeroInk = "#FFFFFF";
+    private const string HeroInk2 = "#A1A1AA";
+
     private const string Styles = """
         @media (prefers-color-scheme: dark) {
           .c-bg { background-color: #09090A !important; }
@@ -34,16 +39,21 @@ public static class EmailLayout
           .c-ink3 { color: #85858D !important; }
           .c-line { border-color: #1F1F23 !important; }
           .c-line2 { border-color: #2E2E34 !important; }
+          .c-hero { background-color: #FAFAFA !important; }
+          .c-hero-ink { color: #09090A !important; }
+          .c-hero-ink2 { color: #52525B !important; }
           .c-btn { background-color: #FAFAFA !important; }
           .c-btn-text { color: #09090A !important; }
         }
         @media (max-width: 480px) {
           .outer { padding: 16px 12px 28px !important; }
-          .px-head { padding: 18px 24px !important; }
-          .px-body { padding: 36px 24px 40px !important; }
-          .px-foot { padding: 26px 24px 30px !important; }
-          .h1 { font-size: 28px !important; }
-          .code { font-size: 20px !important; }
+          .px-head { padding: 28px 24px 36px !important; }
+          .px-body { padding: 32px 24px 40px !important; }
+          .px-foot { padding: 28px 24px 32px !important; }
+          .h1 { font-size: 38px !important; padding-top: 40px !important; }
+          .body-text { font-size: 18px !important; }
+          .step-num { font-size: 34px !important; }
+          .code { font-size: 24px !important; }
           .btn-table { width: 100% !important; }
           .btn-text { display: block !important; }
         }
@@ -59,18 +69,19 @@ public static class EmailLayout
         AppendHead(html, page);
         AppendHeader(html, page);
 
-        html.Append("""<tr><td class="px-body" style="padding:48px 44px 52px">""");
+        html.Append("""<tr><td class="px-body" style="padding:44px 48px 52px">""");
         html.Append("""<table role="presentation" width="100%" cellpadding="0" cellspacing="0">""");
 
-        AppendHeading(html, page.Heading);
+        var first = true;
         foreach (var paragraph in page.Paragraphs)
-            AppendParagraph(html, paragraph);
+        {
+            AppendParagraph(html, paragraph, first);
+            first = false;
+        }
         if (page.Rows.Count > 0)
             AppendRows(html, page.Rows);
         if (page.Steps.Count > 0)
             AppendSteps(html, page.Steps);
-        if (page.Section is not null)
-            AppendSection(html, page.Section);
         if (page.Callout is not null)
             AppendCallout(html, page.Callout);
         AppendButton(html, page.Button);
@@ -109,32 +120,26 @@ public static class EmailLayout
             <div style="display:none;max-height:0;max-width:0;overflow:hidden;opacity:0;font-size:1px;line-height:1px;mso-hide:all">{Esc(page.Preheader)}</div>
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="c-bg" style="background-color:{Bg}">
             <tr><td align="center" class="outer" style="padding:28px 28px 44px">
-            <table role="presentation" width="640" cellpadding="0" cellspacing="0" class="c-card c-line" style="width:100%;max-width:640px;background-color:{Card};border:1px solid {Line};border-radius:24px;overflow:hidden;font-family:{Font}">
+            <table role="presentation" width="640" cellpadding="0" cellspacing="0" class="c-card c-line" style="width:100%;max-width:640px;background-color:{Card};border:1px solid {Line};border-radius:28px;overflow:hidden;font-family:{Font}">
             """);
     }
 
-    private static void AppendHeader(StringBuilder html, EmailPage page)
-    {
+    private static void AppendHeader(StringBuilder html, EmailPage page) =>
         html.Append($"""
-            <tr><td class="px-head c-line" style="padding:22px 44px;border-bottom:1px solid {Line}">
-            <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
-            <td valign="middle">
-            <span class="c-ink" style="font-size:18px;font-weight:600;letter-spacing:-0.03em;color:{Ink}">Echo</span>
-            </td>
-            <td align="right" valign="middle" class="c-ink3" style="font-size:13.5px;font-weight:500;color:{Ink3}">{Esc(page.Category)}</td>
-            </tr></table>
+            <tr><td class="px-head c-hero" style="padding:40px 48px 52px;background-color:{Hero}">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+            <td valign="middle"><span class="c-hero-ink" style="font-size:24px;font-weight:600;letter-spacing:-0.04em;color:{HeroInk}">Echo</span></td>
+            <td align="right" valign="middle" class="c-hero-ink2" style="font-size:15px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;color:{HeroInk2}">{Esc(page.Category)}</td>
+            </tr>
+            <tr><td colspan="2" class="h1 c-hero-ink" style="padding-top:56px;font-size:56px;line-height:1.05;font-weight:600;letter-spacing:-0.045em;color:{HeroInk}">{Esc(page.Heading)}</td></tr>
+            </table>
             </td></tr>
             """);
-    }
 
-    private static void AppendHeading(StringBuilder html, string heading) =>
+    private static void AppendParagraph(StringBuilder html, string text, bool first) =>
         html.Append($"""
-            <tr><td class="h1 c-ink" style="font-size:32px;line-height:1.12;font-weight:600;letter-spacing:-0.035em;color:{Ink}">{Esc(heading)}</td></tr>
-            """);
-
-    private static void AppendParagraph(StringBuilder html, string text) =>
-        html.Append($"""
-            <tr><td class="c-ink2" style="padding-top:18px;font-size:16.5px;line-height:1.65;color:{Ink2}">{Esc(text)}</td></tr>
+            <tr><td class="body-text c-ink" style="padding-top:{(first ? 0 : 18)}px;font-size:19.5px;line-height:1.6;color:{Ink}">{Esc(text)}</td></tr>
             """);
 
     private static void AppendRows(StringBuilder html, IReadOnlyList<EmailRow> rows)
@@ -147,8 +152,8 @@ public static class EmailLayout
         {
             html.Append($"""
                 <tr>
-                <td class="c-ink3 c-line" style="padding:15px 20px 15px 0;border-bottom:1px solid {Line};font-size:15.5px;line-height:1.4;color:{Ink3}" valign="top">{Esc(row.Label)}</td>
-                <td align="right" class="c-ink c-line" style="padding:15px 0;border-bottom:1px solid {Line};font-size:15.5px;line-height:1.4;font-weight:500;color:{Ink};word-break:break-word" valign="top">{Esc(row.Value)}</td>
+                <td class="c-ink3 c-line" style="padding:18px 20px 18px 0;border-bottom:1px solid {Line};font-size:18px;line-height:1.4;color:{Ink3}" valign="top">{Esc(row.Label)}</td>
+                <td align="right" class="c-ink c-line" style="padding:18px 0;border-bottom:1px solid {Line};font-size:18px;line-height:1.4;font-weight:600;color:{Ink};word-break:break-word" valign="top">{Esc(row.Value)}</td>
                 </tr>
                 """);
         }
@@ -157,17 +162,15 @@ public static class EmailLayout
 
     private static void AppendSteps(StringBuilder html, IReadOnlyList<EmailStep> steps)
     {
-        html.Append("""<tr><td style="padding-top:32px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0">""");
+        html.Append($"""<tr><td style="padding-top:32px"><table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="c-line" style="border-top:1px solid {Line}">""");
         for (var i = 0; i < steps.Count; i++)
         {
-            var gap = i == 0 ? 0 : 22;
             html.Append($"""
                 <tr>
-                <td width="32" valign="top" style="width:32px;padding-top:{gap}px"><div class="c-ink c-line2" style="width:30px;height:30px;border:1px solid {Line2};border-radius:16px;text-align:center;line-height:30px;font-size:14px;font-weight:600;color:{Ink}">{i + 1}</div></td>
-                <td width="16" style="width:16px">&nbsp;</td>
-                <td valign="top" style="padding-top:{gap + 4}px">
-                <div class="c-ink" style="font-size:16.5px;line-height:1.3;font-weight:600;letter-spacing:-0.01em;color:{Ink}">{Esc(steps[i].Title)}</div>
-                <div class="c-ink2" style="padding-top:4px;font-size:15.5px;line-height:1.55;color:{Ink2}">{Esc(steps[i].Body)}</div>
+                <td width="44" valign="top" class="step-num c-ink c-line" style="width:44px;padding:24px 0;border-bottom:1px solid {Line};font-size:48px;line-height:1;font-weight:600;letter-spacing:-0.04em;color:{Ink}">{i + 1}</td>
+                <td valign="top" class="c-line" style="padding:26px 0 24px 20px;border-bottom:1px solid {Line}">
+                <div class="c-ink" style="font-size:20px;line-height:1.3;font-weight:600;letter-spacing:-0.015em;color:{Ink}">{Esc(steps[i].Title)}</div>
+                <div class="c-ink2" style="padding-top:6px;font-size:17px;line-height:1.55;color:{Ink2}">{Esc(steps[i].Body)}</div>
                 </td>
                 </tr>
                 """);
@@ -175,21 +178,13 @@ public static class EmailLayout
         html.Append("</table></td></tr>");
     }
 
-    private static void AppendSection(StringBuilder html, EmailSection section) =>
-        html.Append($"""
-            <tr><td style="padding-top:32px">
-            <div class="c-ink" style="font-size:18px;line-height:1.3;font-weight:600;letter-spacing:-0.02em;color:{Ink}">{Esc(section.Title)}</div>
-            <div class="c-ink2" style="padding-top:8px;font-size:16.5px;line-height:1.65;color:{Ink2}">{Esc(section.Body)}</div>
-            </td></tr>
-            """);
-
     private static void AppendCallout(StringBuilder html, EmailCallout callout) =>
         html.Append($"""
             <tr><td style="padding-top:32px">
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
-            <td class="c-soft c-line2" style="padding:20px 24px;background-color:{Soft};border:1px solid {Line2};border-radius:16px">
-            <div class="c-ink" style="font-size:16.5px;line-height:1.3;font-weight:600;letter-spacing:-0.01em;color:{Ink}">{Esc(callout.Title)}</div>
-            <div class="c-ink2" style="padding-top:6px;font-size:15.5px;line-height:1.55;color:{Ink2}">{Esc(callout.Body)}</div>
+            <td class="c-soft c-line2" style="padding:24px 26px;background-color:{Soft};border:1px solid {Line2};border-radius:20px">
+            <div class="c-ink" style="font-size:20px;line-height:1.3;font-weight:600;letter-spacing:-0.015em;color:{Ink}">{Esc(callout.Title)}</div>
+            <div class="c-ink2" style="padding-top:8px;font-size:17px;line-height:1.55;color:{Ink2}">{Esc(callout.Body)}</div>
             </td>
             </tr></table>
             </td></tr>
@@ -200,7 +195,7 @@ public static class EmailLayout
             <tr><td style="padding-top:36px">
             <table role="presentation" cellpadding="0" cellspacing="0" class="btn-table"><tr>
             <td align="center" class="c-btn" style="background-color:{Ink};border-radius:999px">
-            <a href="{Esc(button.Url)}" class="btn-text c-btn-text" style="display:inline-block;padding:0 34px;height:52px;line-height:52px;font-size:16px;font-weight:600;letter-spacing:-0.005em;color:#FFFFFF;text-decoration:none;border-radius:999px">{Esc(button.Text)}</a>
+            <a href="{Esc(button.Url)}" class="btn-text c-btn-text" style="display:inline-block;padding:0 44px;height:62px;line-height:62px;font-size:18px;font-weight:600;letter-spacing:-0.01em;color:#FFFFFF;text-decoration:none;border-radius:999px">{Esc(button.Text)}</a>
             </td>
             </tr></table>
             </td></tr>
@@ -209,33 +204,33 @@ public static class EmailLayout
     private static void AppendCode(StringBuilder html, EmailCode code) =>
         html.Append($"""
             <tr><td style="padding-top:32px">
-            <div class="c-ink2" style="padding-bottom:12px;font-size:14.5px;line-height:1.5;color:{Ink2}">{Esc(code.Label)}</div>
+            <div class="c-ink2" style="padding-bottom:14px;font-size:17px;line-height:1.5;color:{Ink2}">{Esc(code.Label)}</div>
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
-            <td align="center" class="code c-soft c-line c-ink" style="padding:20px 18px;background-color:{Soft};border:1px solid {Line};border-radius:16px;font-family:{Mono};font-size:24px;font-weight:600;letter-spacing:0.12em;color:{Ink}">{Esc(code.Value)}</td>
+            <td align="center" class="code c-hero c-hero-ink" style="padding:26px 18px;background-color:{Hero};border-radius:20px;font-family:{Mono};font-size:34px;font-weight:600;letter-spacing:0.1em;color:{HeroInk}">{Esc(code.Value)}</td>
             </tr></table>
             </td></tr>
             """);
 
     private static void AppendNote(StringBuilder html, string note) =>
         html.Append($"""
-            <tr><td class="c-ink3" style="padding-top:18px;font-size:14px;line-height:1.55;color:{Ink3}">{Esc(note)}</td></tr>
+            <tr><td class="c-ink3" style="padding-top:24px;font-size:16px;line-height:1.55;color:{Ink3}">{Esc(note)}</td></tr>
             """);
 
     private static void AppendLinkFallback(StringBuilder html, string url) =>
         html.Append($"""
             <tr><td style="padding-top:32px">
-            <div class="c-ink3" style="padding-bottom:10px;font-size:14px;line-height:1.5;color:{Ink3}">Button not working? Paste this link into your browser.</div>
+            <div class="c-ink3" style="padding-bottom:12px;font-size:16px;line-height:1.5;color:{Ink3}">Button not working? Paste this link into your browser.</div>
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>
-            <td class="c-soft c-line c-ink2" style="padding:14px 16px;background-color:{Soft};border:1px solid {Line};border-radius:16px;font-family:{Mono};font-size:12.5px;line-height:1.6;color:{Ink2};word-break:break-all">{Esc(url)}</td>
+            <td class="c-soft c-line c-ink2" style="padding:16px 18px;background-color:{Soft};border:1px solid {Line};border-radius:16px;font-family:{Mono};font-size:14px;line-height:1.6;color:{Ink2};word-break:break-all">{Esc(url)}</td>
             </tr></table>
             </td></tr>
             """);
 
     private static void AppendFooter(StringBuilder html, string reason) =>
         html.Append($"""
-            <tr><td class="px-foot c-soft c-line" style="padding:30px 44px 36px;background-color:{Soft};border-top:1px solid {Line}">
-            <div class="c-ink3" style="font-size:13.5px;line-height:1.6;color:{Ink3}">{Esc(reason)}</div>
-            <div class="c-ink3" style="padding-top:14px;font-size:13px;font-weight:500;color:{Ink3}">Echo · Your church, answered.</div>
+            <tr><td class="px-foot c-soft c-line" style="padding:32px 48px 38px;background-color:{Soft};border-top:1px solid {Line}">
+            <div class="c-ink3" style="font-size:15.5px;line-height:1.6;color:{Ink3}">{Esc(reason)}</div>
+            <div class="c-ink2" style="padding-top:16px;font-size:15px;font-weight:600;color:{Ink2}">Echo · Your church, answered.</div>
             </td></tr>
             """);
 }

@@ -1,5 +1,7 @@
 using Echo.Auth.EmailVerifications;
+using Echo.Auth.Invitations;
 using Echo.Auth.Passwords;
+using Echo.Domain.Users;
 
 namespace Echo.Auth.Tests.Emails;
 
@@ -57,32 +59,46 @@ public class AccountEmailBodiesTests
     }
 
     [Fact]
-    public void Welcome_NamesTheChurch_AndLinksToTheApp()
+    public void Invitation_SaysTheRoleWithTheRightArticle()
     {
-        var body = new WelcomeEmailBody("Kofi", "Grace Chapel", Site + "/dashboard");
+        var accountant = new InvitationEmailBody("Grace Chapel", UserRole.Accountant, "K7QX92MDPW4T", Site + "/join/c", null);
+        var clerk = new InvitationEmailBody("Grace Chapel", UserRole.Clerk, "K7QX92MDPW4T", Site + "/join/c", null);
 
-        Assert.Equal("Your Echo account is verified", body.Subject);
+        Assert.Equal("You are invited to join Grace Chapel on Echo", accountant.Subject);
+        Assert.Contains("as an Accountant", accountant.HtmlBody);
+        Assert.Contains("as a Clerk", clerk.HtmlBody);
+    }
+
+    [Fact]
+    public void Welcome_NamesTheChurchAndRole_AndLinksToTheApp()
+    {
+        var body = new WelcomeEmailBody("Kofi", "Grace Chapel", UserRole.Accountant, Site + "/dashboard");
+
+        Assert.Equal("Welcome to Grace Chapel on Echo", body.Subject);
         Assert.Contains("Hi Kofi,", body.HtmlBody);
-        Assert.Contains("Grace Chapel", body.HtmlBody);
+        Assert.Contains("as an Accountant", body.HtmlBody);
+        Assert.Contains(">Accountant<", body.HtmlBody);
         Assert.Contains("href=\"https://echo.test/dashboard\"", body.HtmlBody);
+        Assert.Contains("separate email to verify your account", body.HtmlBody);
+    }
+
+    [Fact]
+    public void SetUpChurch_ListsTheThreeSteps_AndLinksToTheApp()
+    {
+        var body = new SetUpChurchEmailBody("Ama", "Grace Chapel", Site + "/dashboard");
+
+        Assert.Equal("Set up Grace Chapel on Echo", body.Subject);
+        Assert.Contains("Hi Ama,", body.HtmlBody);
         Assert.Contains("Add your members", body.HtmlBody);
+        Assert.Contains("Create your first service session", body.HtmlBody);
+        Assert.Contains("Invite your team", body.HtmlBody);
+        Assert.Contains("href=\"https://echo.test/dashboard\"", body.HtmlBody);
     }
 
     [Fact]
-    public void ChurchReady_NamesTheChurch_AndPointsAtInvitations()
+    public void SetUpChurch_EscapesTheChurchName()
     {
-        var body = new ChurchReadyEmailBody("Ama", "Grace Chapel", Site + "/invitations");
-
-        Assert.Equal("Grace Chapel is ready on Echo", body.Subject);
-        Assert.Contains("Grace Chapel is ready", body.HtmlBody);
-        Assert.Contains(">Admin<", body.HtmlBody);
-        Assert.Contains("href=\"https://echo.test/invitations\"", body.HtmlBody);
-    }
-
-    [Fact]
-    public void ChurchReady_EscapesTheChurchName()
-    {
-        var body = new ChurchReadyEmailBody("Ama", "Grace <i>Chapel</i>", Site + "/invitations");
+        var body = new SetUpChurchEmailBody("Ama", "Grace <i>Chapel</i>", Site + "/dashboard");
 
         Assert.DoesNotContain("<i>Chapel</i>", body.HtmlBody);
         Assert.Contains("Grace &lt;i&gt;Chapel&lt;/i&gt;", body.HtmlBody);
