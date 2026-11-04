@@ -1,5 +1,6 @@
 using Echo.Shared.Caching.Extensions;
 using Echo.Shared.Options.Frontend;
+using Echo.Shared.Options.Hashing;
 using Echo.Shared.Options.Mail;
 using Echo.Shared.Services.Email;
 using Echo.Shared.Services.Encoders;
@@ -31,6 +32,14 @@ public static class RegisterServices
         services.AddSingleton<IIdGenerator, IdGenerator>();
         services.AddSingleton<ITokenGenerator, TokenGenerator>();
         services.AddSingleton<IPasswordHasher, BcryptHashService>();
+        services
+            .AddOptions<HashingOptions>()
+            .BindConfiguration(HashingOptions.Section)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+        services.AddSingleton(sp =>
+            HashGate.From(sp.GetRequiredService<IOptions<HashingOptions>>().Value, Environment.ProcessorCount)
+        );
         services.AddSingleton<ITokenHasher, Sha256HashService>();
         services.AddSingleton<IEncoder, CursorEncoder>();
         services.AddScoped<IEmailService, ResendEmailService>();

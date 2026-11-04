@@ -47,7 +47,7 @@ public class ProfileService(
         var changingPassword = dto.NewPassword is not null;
         if (
             changingPassword
-            && !await passwordHasher.VerifyAsync(dto.CurrentPassword!, user.PasswordHash)
+            && !await passwordHasher.VerifyAsync(dto.CurrentPassword!, user.PasswordHash, ct)
         )
             return new BadRequestResult("The current password is incorrect.");
 
@@ -55,7 +55,7 @@ public class ProfileService(
 
         if (changingPassword)
         {
-            user.PasswordHash = await passwordHasher.HashAsync(dto.NewPassword!);
+            user.PasswordHash = await passwordHasher.HashAsync(dto.NewPassword!, ct);
             user.PasswordChangedAt = timeProvider.GetUtcNow().UtcDateTime;
             // As with a password reset, changing the password signs the user out everywhere. The
             // bulk revoke runs at once, so it shares a transaction with the save.

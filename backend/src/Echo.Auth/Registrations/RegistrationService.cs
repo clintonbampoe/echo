@@ -78,7 +78,7 @@ public class RegistrationService(
         try
         {
             // The mapper copies the plain password into PasswordHash, so hash it before saving.
-            user.PasswordHash = await passwordHashService.HashAsync(userDto.Password);
+            user.PasswordHash = await passwordHashService.HashAsync(userDto.Password, ct);
             user.PasswordChangedAt = timeProvider.GetUtcNow().UtcDateTime;
 
             TokenPairResponseDtos session;
@@ -177,7 +177,7 @@ public class RegistrationService(
                 )
             )
             {
-                passwordHash = await passwordHashService.HashAsync(request.UserInfo.Password);
+                passwordHash = await passwordHashService.HashAsync(request.UserInfo.Password, ct);
             }
 
             var user = new User
