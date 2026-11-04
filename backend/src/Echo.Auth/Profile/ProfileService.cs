@@ -1,8 +1,10 @@
 using Echo.Application.Users;
+using Echo.Auth.Passwords;
 using Echo.Auth.Sessions;
 using Echo.Data;
 using Echo.Domain.Users;
 using Echo.Shared.HttpResults;
+using Echo.Shared.Services.Email;
 using Echo.Shared.Services.Hashing;
 
 namespace Echo.Auth.Profile;
@@ -13,6 +15,8 @@ public class ProfileService(
     IPasswordHasher passwordHasher,
     IUserMapper mapper,
     IUnitOfWork unitOfWork,
+    IEmailQueue emailQueue,
+    LinkBuilder linkBuilder,
     TimeProvider timeProvider,
     AuthInstrumentation instrumentation
 )
@@ -56,7 +60,8 @@ public class ProfileService(
         if (changingPassword)
         {
             user.PasswordHash = await passwordHasher.HashAsync(dto.NewPassword!, ct);
-            user.PasswordChangedAt = timeProvider.GetUtcNow().UtcDateTime;
+            var changedAt = timeProvider.GetUtcNow().UtcDateTime;
+            user.PasswordChangedAt = changedAt;
             // As with a password reset, changing the password signs the user out everywhere. The
             // bulk revoke runs at once, so it shares a transaction with the save.
             await unitOfWork.ExecuteInTransactionAsync(
@@ -66,6 +71,22 @@ public class ProfileService(
                     await unitOfWork.CommitAsync(token);
                 },
                 ct
+            );
+
+            emailQueue.TryEnqueue(
+                new EmailMessage(
+                    user.EmailAddress,
+                    new PasswordChangedEmailBody(
+                        user.FirstName,
+                        user.EmailAddress,
+                        changedAt,
+                        linkBuilder.BuildForgotPasswordLink(),
+                        linkBuilder.SiteUrl
+                    ),
+                    "password_changed",
+                    user.Id,
+                    user.CongregationId
+                )
             );
         }
         else

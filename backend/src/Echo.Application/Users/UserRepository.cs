@@ -58,6 +58,23 @@ public class UserRepository(AppDbContext context)
             .FirstOrDefaultAsync(ct);
     }
 
+    /// <summary>
+    /// True when this user is the first one of their congregation, which is the person who
+    /// created it (every other user joins later). User ids are time-ordered (UUIDv7), so the
+    /// smallest id is the earliest user; CreatedAt cannot be used because nothing sets it.
+    /// Users who were deleted still count, so removing the creator does not crown someone else.
+    /// </summary>
+    public async Task<bool> IsFirstUserOfCongregation(User user, CancellationToken ct)
+    {
+        var firstId = await _dbSet
+            .Where(u => u.CongregationId == user.CongregationId)
+            .OrderBy(u => u.Id)
+            .Select(u => u.Id)
+            .FirstAsync(ct);
+
+        return firstId == user.Id;
+    }
+
     public async Task<bool> IsEmailAddressTaken(string emailAddress, CancellationToken ct)
     {
         var exists = await _dbSet.FilterDeleted().AnyAsync(u => u.EmailAddress == emailAddress, ct);
