@@ -96,6 +96,26 @@ describe("sign in", () => {
     expect(getTokens()).toBeNull();
   });
 
+  it("says the server is busy, and for how long, when many people are signing in", async () => {
+    fetchMock.mockResolvedValueOnce(
+      json(503, {
+        errorCode: "SERVICE_BUSY",
+        detail: "We are busy right now. Please try again in 7 seconds.",
+      }),
+    );
+    renderAt("/signin");
+
+    await userEvent.type(
+      await screen.findByLabelText("Email address"),
+      "ama@example.com",
+    );
+    await userEvent.type(screen.getByLabelText("Password"), "right-pass");
+    await userEvent.click(screen.getByRole("button", { name: "Sign in" }));
+
+    expect(await screen.findByText("We are busy right now")).toBeInTheDocument();
+    expect(screen.getByText(/try again in 7 seconds/)).toBeInTheDocument();
+  });
+
   it("checks the form before calling the server", async () => {
     renderAt("/signin");
     await userEvent.click(
