@@ -6,6 +6,7 @@ import {
   FOCUS_ARRIVAL_MINUTES,
   FOCUS_VUS,
   LIMITS,
+  STORM_RAMP_SECONDS,
   STORM_RATES,
   STORM_START_MINUTES,
   STORM_STEP_SECONDS,
@@ -55,8 +56,8 @@ export const options = {
         startRate: STORM_RATES[0],
         timeUnit: '1s',
         stages: STORM_RATES.flatMap((rate) => [
-          { duration: '1s', target: rate },
-          { duration: `${STORM_STEP_SECONDS - 1}s`, target: rate },
+          { duration: `${STORM_RAMP_SECONDS}s`, target: rate },
+          { duration: `${STORM_STEP_SECONDS - STORM_RAMP_SECONDS}s`, target: rate },
         ]),
         startTime: `${STORM_START_MINUTES}m`,
         preAllocatedVUs: 20,
