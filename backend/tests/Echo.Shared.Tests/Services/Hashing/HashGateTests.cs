@@ -231,7 +231,7 @@ public class HashingOptionsTests
         using var gate = HashGate.From(new HashingOptions(), processorCount: 4);
 
         Assert.Equal(3, gate.Permits);
-        Assert.Equal(750, gate.MaxQueued); // 3 permits x 10 s / 0.04 s a hash
+        Assert.Equal(600, gate.MaxQueued); // 3 permits x 10 s / 0.05 s a hash
     }
 
     [Fact]
@@ -250,7 +250,7 @@ public class HashingOptionsTests
             processorCount: 2
         );
 
-        Assert.Equal(100, gate.MaxQueued); // 1 permit x 4 s / 0.04 s a hash
+        Assert.Equal(80, gate.MaxQueued); // 1 permit x 4 s / 0.05 s a hash
     }
 
     [Theory]

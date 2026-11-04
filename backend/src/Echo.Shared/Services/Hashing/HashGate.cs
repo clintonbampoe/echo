@@ -32,8 +32,8 @@ public sealed class HashGate : IDisposable
     public const string MeterName = "Echo.Shared.Hashing";
 
     // What one Argon2id hash (19 MiB, two passes) costs, to turn a queue length into a wait for the caller to be told.
-    // Measured at 25-30 ms on an idle core; the rest is room for a busy one.
-    internal const double ExpectedHashSeconds = 0.04;
+    // Measured at 25-30 ms on an idle core; the rest is room for a busy one, so the CPU is not driven flat out.
+    internal const double ExpectedHashSeconds = 0.05;
 
     private readonly SemaphoreSlim _permits;
     private readonly int _permitCount;
@@ -63,7 +63,7 @@ public sealed class HashGate : IDisposable
             unit: "{hash}",
             description: "Password hashes waiting for a free permit"
         );
-        // Seconds, in steps that fit a hash of 0.04 s and a line of up to 10 s. OpenTelemetry's default buckets are for
+        // Seconds, in steps that fit a hash of 0.05 s and a line of up to 10 s. OpenTelemetry's default buckets are for
         // milliseconds and would put all of these in the first one.
         _wait = _meter.CreateHistogram<double>(
             "auth.hash.wait",
@@ -77,7 +77,7 @@ public sealed class HashGate : IDisposable
         _duration = _meter.CreateHistogram<double>(
             "auth.hash.duration",
             unit: "s",
-            description: "Time a password hash took once it started: the cost the queue is sized on (0.04 s)",
+            description: "Time a password hash took once it started: the cost the queue is sized on (0.05 s)",
             advice: new InstrumentAdvice<double>
             {
                 HistogramBucketBoundaries = [0.01, 0.02, 0.025, 0.03, 0.035, 0.04, 0.045, 0.05, 0.06, 0.075, 0.1, 0.15, 0.2, 0.3, 0.5, 1, 2.5],
