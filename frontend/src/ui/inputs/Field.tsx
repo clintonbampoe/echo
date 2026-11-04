@@ -81,14 +81,21 @@ export function PasswordField({
           aria-describedby={described}
           className={`${styles.control} ${styles.padRight}`}
         />
+        {/* The icon shows what the button will do: an open eye while the password is hidden (press to
+            show it), a crossed-out eye while it is shown (press to hide it). */}
         <button
           type="button"
           className={styles.toggle}
           aria-label={shown ? "Hide password" : "Show password"}
-          aria-pressed={shown}
+          data-shown={shown}
           onClick={() => setShown(!shown)}
         >
-          <Icon name="eye" />
+          <span className={`${styles.glyph} ${styles.glyphOpen}`}>
+            <Icon name="eye" />
+          </span>
+          <span className={`${styles.glyph} ${styles.glyphCrossed}`}>
+            <Icon name="eye-off" />
+          </span>
         </button>
       </div>
     </Shell>
