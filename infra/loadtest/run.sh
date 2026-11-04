@@ -62,6 +62,29 @@ if [ -n "$K6_CPUS" ]; then
 fi
 echo "app on cpus $APP_CPUS, k6 and monitoring on cpus ${K6_CPUS:-all (no spare cores)}"
 
+# The machine's power settings change what a run measures (a hash takes 160 ms in one and 200 ms in another), so every run
+# records them and refuses to start in any profile but the expected one (balanced). A run compared with the one before it
+# says if anything differs. POWER_PROFILE_OK=1 skips the refusal; EXPECTED_PROFILE=<name> changes the expected profile.
+cpu=/sys/devices/system/cpu
+val() { cat "$1" 2>/dev/null | head -1 || true; }
+profile=$(val /sys/firmware/acpi/platform_profile)
+env_lines="power profile (platform): ${profile:-n/a}
+power profile (tuned): $(tuned-adm active 2>/dev/null | sed 's/.*: //' || true)
+governor / energy preference: $(val $cpu/cpu0/cpufreq/scaling_governor) / $(val $cpu/cpu0/cpufreq/energy_performance_preference)
+turbo: $([ "$(val $cpu/intel_pstate/no_turbo)" = 1 ] && echo off || echo on)
+clock limit: $(val $cpu/cpu0/cpufreq/scaling_max_freq | awk '{ printf "%d MHz", $1 / 1000 }')"
+mkdir -p results
+echo "$env_lines" | tee "results/${TESTID}-env.txt"
+if [ -f results/.last-env ] && ! diff -q results/.last-env "results/${TESTID}-env.txt" >/dev/null; then
+  echo "WARNING: the machine's power settings are not the same as in the previous run:" >&2
+  diff results/.last-env "results/${TESTID}-env.txt" >&2 || true
+fi
+cp "results/${TESTID}-env.txt" results/.last-env
+if [ -n "$profile" ] && [ "$profile" != "${EXPECTED_PROFILE:-balanced}" ] && [ "${POWER_PROFILE_OK:-}" != 1 ]; then
+  echo "The power profile is '$profile', not '${EXPECTED_PROFILE:-balanced}'. Switch it (or set POWER_PROFILE_OK=1) and run again." >&2
+  exit 1
+fi
+
 # Postgres keeps per-statement totals since they were last reset; start from zero so the run is all it shows.
 sql() { docker exec database psql -U postgres -d echo_db -c "$1" 2>/dev/null; }
 sql "SELECT pg_stat_statements_reset()" > /dev/null || echo "(could not reset pg_stat_statements; SQL report skipped)"
@@ -77,6 +100,13 @@ echo "testid=$TESTID"
 status=0
 started=$(date +%s)
 "${pin_k6[@]}" k6 run -o experimental-prometheus-rw --summary-export "results/${TESTID}.json" main.js || status=$?
+
+# Did the CPU throttle during the run? A two-hour run on a laptop can, and it would look like the API getting slower.
+# The kernel counts every time a core or the package was throttled; any increase is worth knowing about.
+throttles=$(curl -sS -m 20 -G "${PROMETHEUS_URL:-http://localhost:9090}/api/v1/query" \
+  --data-urlencode "query=sum(increase(node_cpu_core_throttles_total[$(( $(date +%s) - started + 30 ))s])) + sum(increase(node_cpu_package_throttles_total[$(( $(date +%s) - started + 30 ))s]))" \
+  2>/dev/null | jq -r '.data.result[0].value[1] // "unavailable" | if . == "unavailable" then . else (tonumber | floor | tostring) end' 2>/dev/null) || throttles=unavailable
+echo "CPU throttle events during the run: ${throttles:-unavailable}$([ "${throttles:-0}" != 0 ] && [ "${throttles:-}" != unavailable ] && echo '   <-- the clock was reduced')" | tee -a "results/${TESTID}-env.txt"
 
 # The verdict, step by step: each step is judged on its hold, against the limits in lib/config.js (k6 says which
 # thresholds each step missed). The API carries the highest step before the first one
