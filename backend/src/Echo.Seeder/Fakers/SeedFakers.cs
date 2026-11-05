@@ -32,11 +32,11 @@ public sealed class SeedFakers
             .RuleFor(u => u.FirstName, f => f.Name.FirstName())
             .RuleFor(u => u.LastName, f => f.Name.LastName())
             .RuleFor(u => u.OtherNames, _ => null)
-            // A real bcrypt hash (cost 10) of the literal string "admin@123".
+            // A real Argon2id hash (19 MiB, two passes) of the literal string "admin@123".
             // Every seeded user signs in with this password.
             .RuleFor(
                 u => u.PasswordHash,
-                _ => "$2a$10$7L3PEPyl.S5oMOGZI8sJge9reZ4VB1Y8.KuAyGLF3spikGluNEXo6"
+                _ => "$argon2id$v=19$m=19456,t=2,p=1$TIwPJF7ovo4hjpRqBb1Cyg$IN99uOI+1gmcvflVfv2mVSxKIel3CE64TsT0eX4+ZXk"
             )
             .RuleFor(u => u.Role, _ => UserRole.Admin);
     }

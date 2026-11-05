@@ -19,8 +19,8 @@ public class SessionService(
     ILogger<SessionService> logger
 )
 {
-    // A valid bcrypt hash (cost 10) of a throwaway string; nobody's password hashes to it.
-    private const string DummyHash = "$2a$10$uAV3pq9RPnRtPbczFax2euG34T7Bf0qq6qO2Gfc9rgww4W7VqVHD6";
+    // A valid Argon2id hash (the same settings as real ones) of a throwaway string; nobody's password hashes to it.
+    private const string DummyHash = "$argon2id$v=19$m=19456,t=2,p=1$azKDxfBAGiQdtl1SqDYPxQ$7YJ87MxLdkExeog/dQ7L+zZSRVB/yxzmdT/5b1CegcU";
 
     /// <summary>
     /// When many people sign in at once the password checks queue up (see HashGate) and a caller who would wait too long
