@@ -194,7 +194,10 @@ public class InvitationService(
         InvitationToken? tokenRecord;
         using (instrumentation.ActivitySource.StartActivity("svc.invitation.fetch.token_by_hash"))
         {
-            tokenRecord = await invitationTokenRepository.GetTokenRecordByHash(hashedInput, ct);
+            tokenRecord = await invitationTokenRepository.GetTokenRecordByHashWithCongregation(
+                hashedInput,
+                ct
+            );
         }
 
         if (tokenRecord is null)

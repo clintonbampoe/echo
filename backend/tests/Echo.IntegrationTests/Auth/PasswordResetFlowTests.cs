@@ -46,6 +46,18 @@ public class PasswordResetFlowTests(PostgresFixture db)
     }
 
     [Fact]
+    public async Task Forgot_UsesThreeStatements_UserWithLinks_Prune_Save()
+    {
+        var (host, _, user) = await Arrange();
+        await using var _host = host;
+        host.Commands.Reset();
+
+        await host.Get<PasswordResetService>().SendForgotPasswordLinkToEmail(user.EmailAddress, Ct);
+
+        Assert.Equal(3, host.Commands.Count);
+    }
+
+    [Fact]
     public async Task Forgot_Twice_InsideSixtySeconds_QueuesOneEmail_BothReturnTheSameMessage()
     {
         var (host, queue, user) = await Arrange();
@@ -79,6 +91,34 @@ public class PasswordResetFlowTests(PostgresFixture db)
         Assert.IsType<InvalidTokenResult>(oldLink);
         var newLink = await service.ResetPassword(TokenFromEmail(queue.Messages[1]), "brand new password", Ct);
         Assert.IsNotType<InvalidTokenResult>(newLink);
+    }
+
+    [Fact]
+    public async Task ResetPassword_QueuesAPasswordChangedEmail()
+    {
+        var (host, queue, user) = await Arrange();
+        await using var _host = host;
+        var service = host.Get<PasswordResetService>();
+        await service.SendForgotPasswordLinkToEmail(user.EmailAddress, Ct);
+
+        await service.ResetPassword(TokenFromEmail(queue.Messages[0]), "brand new password", Ct);
+
+        Assert.Equal(2, queue.Messages.Count);
+        var changed = queue.Messages[1];
+        Assert.Equal("password_changed", changed.Kind);
+        Assert.Equal(user.EmailAddress, changed.To);
+        Assert.Equal(user.Id, changed.UserId);
+    }
+
+    [Fact]
+    public async Task ResetPassword_WithABadToken_QueuesNoPasswordChangedEmail()
+    {
+        var (host, queue, _) = await Arrange();
+        await using var _host = host;
+
+        await host.Get<PasswordResetService>().ResetPassword("no-such-token", "brand new password", Ct);
+
+        Assert.Empty(queue.Messages);
     }
 
     [Fact]

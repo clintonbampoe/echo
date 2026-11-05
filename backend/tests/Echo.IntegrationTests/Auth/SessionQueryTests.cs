@@ -119,9 +119,56 @@ public class SessionQueryTests(PostgresFixture db)
 
         await host.Get<SessionService>().RevokeAccessToken(pair.RefreshToken, Ct);
 
-        Assert.Equal(2, host.Commands.Count); // select the token, update it
+        Assert.Equal(1, host.Commands.Count); // one update, no select
         Assert.DoesNotContain(host.Commands.Statements, sql => sql.Contains("JOIN", StringComparison.OrdinalIgnoreCase));
         Assert.All(await TokensOf(host, user.Id), t => Assert.NotNull(t.RevokedAt));
+    }
+
+    [Fact]
+    public async Task RevokeToken_Twice_KeepsTheFirstRevokeTime()
+    {
+        var (host, user, pair) = await Arrange();
+        await using var _ = host;
+        var sessions = host.Get<SessionService>();
+        await sessions.RevokeAccessToken(pair.RefreshToken, Ct);
+        var first = (await TokensOf(host, user.Id)).Single().RevokedAt;
+        host.Time.Advance(TimeSpan.FromHours(1));
+
+        await sessions.RevokeAccessToken(pair.RefreshToken, Ct);
+
+        Assert.Equal(first, (await TokensOf(host, user.Id)).Single().RevokedAt);
+    }
+
+    [Fact]
+    public async Task LogoutOfAllSessions_ByEmail_UsesOneStatement_AndLeavesOtherUsersAlone()
+    {
+        var (host, user, _) = await Arrange();
+        await using var _host = host;
+        await StartSession(host, user); // a second active session
+        var other = TestHostExtensions.NewUser(user.CongregationId, "other@echo.test");
+        host.Get<UserRepository>().Create(other);
+        await host.Get<IUnitOfWork>().CommitAsync(Ct);
+        await StartSession(host, other);
+        host.Commands.Reset();
+
+        var result = await host.Get<SessionService>().LogoutOfAllSessions(user.EmailAddress, Ct);
+
+        Assert.IsType<SuccessResult<string>>(result);
+        Assert.Equal(1, host.Commands.Count);
+        Assert.All(await TokensOf(host, user.Id), t => Assert.NotNull(t.RevokedAt));
+        Assert.All(await TokensOf(host, other.Id), t => Assert.Null(t.RevokedAt));
+    }
+
+    [Fact]
+    public async Task LogoutOfAllSessions_UnknownEmail_AnswersTheSameWay()
+    {
+        var (host, user, _) = await Arrange();
+        await using var _host = host;
+
+        var result = await host.Get<SessionService>().LogoutOfAllSessions("nobody@echo.test", Ct);
+
+        Assert.IsType<SuccessResult<string>>(result);
+        Assert.All(await TokensOf(host, user.Id), t => Assert.Null(t.RevokedAt));
     }
 
     [Fact]

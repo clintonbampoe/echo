@@ -1,6 +1,7 @@
-using System.Net;
+using System.Globalization;
 using Echo.Domain.Users;
 using Echo.Shared.Models;
+using Echo.Shared.Services.Email;
 
 namespace Echo.Auth.Invitations;
 
@@ -12,25 +13,37 @@ public class InvitationEmailBody(
     DateTime? expiresAt
 ) : IEmailContent
 {
-    public string Subject => $"You're invited to join {congregationName} on Echo";
+    public string Subject => $"You are invited to join {congregationName} on Echo";
 
     public string HtmlBody =>
-        $"""
-            <html>
-              <body style="font-family: Arial, sans-serif; color: #333;">
-                <h2>You're invited to {WebUtility.HtmlEncode(congregationName)}</h2>
-                <p>You have been invited to join {WebUtility.HtmlEncode(congregationName)} on Echo as {role}.</p>
-                <p>
-                  <a href="{joinLink}"
-                     style="display:inline-block; padding:5px 12px; background-color:#2563eb; color:#fff; text-decoration:none; border-radius:6px;">
-                    Accept invitation
-                  </a>
-                </p>
-                <p>Or enter this code on the join screen: <strong>{code}</strong></p>
-                <p>{(expiresAt is null
-                    ? "This invitation does not expire."
-                    : $"This invitation expires on {expiresAt:d MMMM yyyy}.")} It can be used once.</p>
-              </body>
-            </html>
-            """;
+        EmailLayout.Render(
+            new EmailPage
+            {
+                Category = "Invitation",
+                Heading = $"Join {congregationName} on Echo",
+                Preheader = $"Join as {RoleLabel}. Use the button or the code.",
+                Paragraphs =
+                [
+                    $"{congregationName} has invited you to join Echo as {AOrAn} {RoleLabel}. Accept the invitation below, or enter the code on the join screen.",
+                ],
+                Rows =
+                [
+                    new EmailRow("Church", congregationName),
+                    new EmailRow("Your role", RoleLabel),
+                ],
+                Button = new EmailButton("Accept invitation", joinLink),
+                Code = new EmailCode("Or enter this code on the join screen:", code),
+                Note = $"{Expiry} It can be used once.",
+                Reason = $"An admin at {congregationName} invited this email address. If you were not expecting this, ignore this email.",
+            }
+        );
+
+    private string RoleLabel => role.ToString();
+
+    private string AOrAn => "AEIOU".Contains(RoleLabel[0]) ? "an" : "a";
+
+    private string Expiry =>
+        expiresAt is null
+            ? "This invitation does not expire."
+            : $"This invitation expires on {expiresAt.Value.ToString("d MMMM yyyy", CultureInfo.InvariantCulture)}.";
 }
