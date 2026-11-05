@@ -4,6 +4,7 @@ using Echo.Data;
 using Echo.Domain.Auth;
 using Echo.Domain.Users;
 using Echo.Shared.HttpResults;
+using Echo.Shared.Models;
 using Echo.Shared.Services.Email;
 using Echo.Shared.Services.Generators;
 using Echo.Shared.Services.Hashing;
@@ -106,7 +107,10 @@ public class EmailVerificationService(
             };
 
             var verificationLink = linkBuilder.BuildEmailVerificationLink(token);
-            var emailContent = new EmailVerificationMessageBody(user.Name, verificationLink);
+            var emailContent = new EmailVerificationMessageBody(
+                user.FirstName,
+                verificationLink
+            );
 
             using (instrumentation.ActivitySource.StartActivity("email_verification_token.create"))
             {

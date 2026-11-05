@@ -8,6 +8,8 @@ using Echo.Data;
 using Echo.Domain.Auth;
 using Echo.Domain.Users;
 using Echo.Shared.HttpResults;
+using Echo.Shared.Models;
+using Echo.Shared.Services.Email;
 using Echo.Shared.Services.Generators;
 using Echo.Shared.Services.Hashing;
 using Microsoft.EntityFrameworkCore;
@@ -20,6 +22,8 @@ public class RegistrationService(
     CongregationRepository congregationRepository,
     UserRepository userRepository,
     EmailVerificationService emailVerificationService,
+    IEmailQueue emailQueue,
+    LinkBuilder linkBuilder,
     SessionService sessionService,
     InvitationService invitationService,
     CongregationProvisioningService provisioningService,
@@ -105,6 +109,7 @@ public class RegistrationService(
             }
 
             await emailVerificationService.SendVerificationLink(user, ct);
+            QueueSetUpChurchEmail(user, congregation.Name);
 
             RecordCongregationRegistration(span, "success");
             RegistrationLog.CongregationRegistrationSucceeded(logger, congregation.Id, user.Id);
@@ -245,6 +250,8 @@ public class RegistrationService(
                 await emailVerificationService.SendVerificationLink(user, ct);
             }
 
+            await QueueWelcomeEmail(user, ct);
+
             RecordUserRegistration(span, "success", invitation.CongregationId.ToString());
             RegistrationLog.UserRegistrationSucceeded(logger, user.Id, invitation.CongregationId);
 
@@ -255,6 +262,54 @@ public class RegistrationService(
             span?.SetStatus(ActivityStatusCode.Error, ex.Message);
             RegistrationLog.UserRegistrationFailed(logger, ex, invitation.CongregationId);
             throw;
+        }
+    }
+
+    // The two emails below follow the verification email. The account already exists by now, so
+    // a failure is logged and never fails the sign-up.
+    private void QueueSetUpChurchEmail(User admin, string congregationName)
+    {
+        try
+        {
+            var content = new SetUpChurchEmailBody(
+                admin.FirstName,
+                congregationName,
+                linkBuilder.BuildDashboardLink()
+            );
+            emailQueue.TryEnqueue(
+                new EmailMessage(
+                    admin.EmailAddress,
+                    content,
+                    "set_up_church",
+                    admin.Id,
+                    admin.CongregationId
+                )
+            );
+        }
+        catch (Exception ex)
+        {
+            RegistrationLog.SetUpChurchEmailFailed(logger, ex, admin.Id, admin.CongregationId);
+        }
+    }
+
+    private async Task QueueWelcomeEmail(User user, CancellationToken ct)
+    {
+        try
+        {
+            var congregation = await congregationRepository.GetById(user.CongregationId, ct);
+            var content = new WelcomeEmailBody(
+                user.FirstName,
+                congregation?.Name ?? "your church",
+                user.Role,
+                linkBuilder.BuildDashboardLink()
+            );
+            emailQueue.TryEnqueue(
+                new EmailMessage(user.EmailAddress, content, "welcome", user.Id, user.CongregationId)
+            );
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            RegistrationLog.WelcomeEmailFailed(logger, ex, user.Id, user.CongregationId);
         }
     }
 

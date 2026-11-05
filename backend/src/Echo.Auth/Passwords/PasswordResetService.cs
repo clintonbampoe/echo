@@ -95,7 +95,7 @@ public class PasswordResetService(
             emailQueue.TryEnqueue(
                 new EmailMessage(
                     user.EmailAddress,
-                    new PasswordResetEmailBody(user.Name, resetLink),
+                    new PasswordResetEmailBody(user.FirstName, resetLink),
                     "password_reset",
                     user.Id,
                     user.CongregationId
@@ -198,8 +198,9 @@ public class PasswordResetService(
                 tokenEntity.User.PasswordHash = await passwordHashService.HashAsync(newPassword);
             }
 
-            tokenEntity.User.PasswordChangedAt = timeProvider.GetUtcNow().UtcDateTime;
-            tokenEntity.UsedAt = timeProvider.GetUtcNow().UtcDateTime;
+            var changedAt = timeProvider.GetUtcNow().UtcDateTime;
+            tokenEntity.User.PasswordChangedAt = changedAt;
+            tokenEntity.UsedAt = changedAt;
 
             using (
                 instrumentation.ActivitySource.StartActivity("svc.password.persist.revoke_sessions")
@@ -219,6 +220,21 @@ public class PasswordResetService(
                     ct
                 );
             }
+
+            emailQueue.TryEnqueue(
+                new EmailMessage(
+                    tokenEntity.User.EmailAddress,
+                    new PasswordChangedEmailBody(
+                        tokenEntity.User.FirstName,
+                        tokenEntity.User.EmailAddress,
+                        changedAt,
+                        linkBuilder.BuildForgotPasswordLink()
+                    ),
+                    "password_changed",
+                    tokenEntity.UserId,
+                    tokenEntity.User.CongregationId
+                )
+            );
 
             RecordPasswordReset(span, "success", tokenEntity.User.CongregationId.ToString());
             PasswordLog.PasswordResetSucceeded(
