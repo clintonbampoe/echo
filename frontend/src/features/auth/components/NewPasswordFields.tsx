@@ -4,17 +4,19 @@ import { PasswordField } from "@/ui";
 type Props = {
   password: UseFormRegisterReturn;
   confirm: UseFormRegisterReturn;
+  // The password so far, for the strength meter.
+  value: string;
   errors: FieldErrors<{ password: string; confirm: string }>;
 };
 
 // A new password asked for twice, so a typo cannot lock someone out of their own account.
-export function NewPasswordFields({ password, confirm, errors }: Props) {
+export function NewPasswordFields({ password, confirm, value, errors }: Props) {
   return (
     <>
       <PasswordField
         label="Password"
         autoComplete="new-password"
-        hint="At least 8 characters."
+        strengthOf={value}
         error={errors.password?.message}
         {...password}
       />

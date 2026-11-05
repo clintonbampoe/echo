@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { Button, Field } from "@/ui";
 import { AuthLinks } from "../components/AuthLinks";
@@ -15,11 +15,14 @@ export function SignUpAccountPage() {
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
   } = useForm<AccountValues>({
     resolver: zodResolver(accountSchema),
     defaultValues: account ?? undefined,
   });
+
+  const password = useWatch({ control, name: "password" });
 
   function onSubmit(values: AccountValues) {
     setAccount(values);
@@ -63,6 +66,7 @@ export function SignUpAccountPage() {
         <NewPasswordFields
           password={register("password")}
           confirm={register("confirm")}
+          value={password ?? ""}
           errors={errors}
         />
         <Button type="submit" size="lg" pill block className={styles.submit}>
