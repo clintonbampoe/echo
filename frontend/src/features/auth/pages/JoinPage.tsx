@@ -4,9 +4,10 @@ import { useForm } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import type { ApiError } from "@/lib/api";
 import { handleSubmitError } from "@/lib/forms";
-import { Alert, Button, Field, PasswordField } from "@/ui";
+import { Alert, Button, Field } from "@/ui";
 import { AuthLinks } from "../components/AuthLinks";
 import { AuthScreen } from "../components/AuthScreen";
+import { NewPasswordFields } from "../components/NewPasswordFields";
 import {
   InvalidInvitation,
   InvitationGate,
@@ -113,12 +114,10 @@ function JoinForm({
           error={errors.email?.message}
           {...form.register("email")}
         />
-        <PasswordField
-          label="Password"
-          autoComplete="new-password"
-          hint="At least 8 characters."
-          error={errors.password?.message}
-          {...form.register("password")}
+        <NewPasswordFields
+          password={form.register("password")}
+          confirm={form.register("confirm")}
+          errors={errors}
         />
         <Button
           type="submit"
