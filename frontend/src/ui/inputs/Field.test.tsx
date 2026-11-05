@@ -51,4 +51,17 @@ describe("PasswordField", () => {
       screen.getByRole("button", { name: "Hide password" }),
     ).toBeInTheDocument();
   });
+
+  it("marks the button while the password is shown, and clears it when hidden again", async () => {
+    render(<PasswordField label="Password" />);
+    const button = screen.getByRole("button", { name: "Show password" });
+    expect(button).toHaveAttribute("data-shown", "false");
+
+    await userEvent.click(button);
+    expect(button).toHaveAttribute("data-shown", "true");
+
+    await userEvent.click(button);
+    expect(button).toHaveAttribute("data-shown", "false");
+    expect(button).toHaveAccessibleName("Show password");
+  });
 });
