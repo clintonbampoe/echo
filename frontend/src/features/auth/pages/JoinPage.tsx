@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import type { ApiError } from "@/lib/api";
 import { handleSubmitError } from "@/lib/forms";
@@ -48,6 +48,7 @@ function JoinForm({
   const [problem, setProblem] = useState<ApiError | null>(null);
   const form = useForm<JoinValues>({ resolver: zodResolver(joinSchema) });
   const { errors } = form.formState;
+  const password = useWatch({ control: form.control, name: "password" });
 
   async function onSubmit(v: JoinValues) {
     setProblem(null);
@@ -117,6 +118,7 @@ function JoinForm({
         <NewPasswordFields
           password={form.register("password")}
           confirm={form.register("confirm")}
+          value={password ?? ""}
           errors={errors}
         />
         <Button

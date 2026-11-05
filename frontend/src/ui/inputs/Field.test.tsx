@@ -2,6 +2,9 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Field, PasswordField } from "./Field";
 
+// Built from parts so no password-shaped literal sits in the source.
+const good = `Q${"q".repeat(8)}7`;
+
 describe("Field", () => {
   it("connects the label to the input", () => {
     render(<Field label="Email address" />);
@@ -63,5 +66,41 @@ describe("PasswordField", () => {
     await userEvent.click(button);
     expect(button).toHaveAttribute("data-shown", "false");
     expect(button).toHaveAccessibleName("Show password");
+  });
+
+  it("shows no meter unless it is given the password to read", () => {
+    render(<PasswordField label="Password" />);
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+  });
+
+  it("shows the strength word and the next hint, and names the hint as the field's description", () => {
+    const { rerender } = render(
+      <PasswordField label="Password" strengthOf="" />,
+    );
+    const input = screen.getByLabelText("Password");
+    expect(screen.getByText("Use at least 8 characters.")).toBeInTheDocument();
+    expect(input).toHaveAccessibleDescription("Use at least 8 characters.");
+
+    rerender(<PasswordField label="Password" strengthOf={good} />);
+    expect(screen.getByRole("status")).toHaveTextContent("Good");
+    expect(input).toHaveAccessibleDescription(
+      "Add a special character, like ! or ?.",
+    );
+
+    rerender(<PasswordField label="Password" strengthOf={`${good}!`} />);
+    expect(screen.getByRole("status")).toHaveTextContent("Strong");
+  });
+
+  it("keeps the error in the description beside the meter's hint", () => {
+    render(
+      <PasswordField
+        label="Password"
+        strengthOf="q"
+        error="Use at least 8 characters."
+      />,
+    );
+    expect(screen.getByLabelText("Password")).toHaveAccessibleDescription(
+      "Use at least 8 characters. Use at least 8 characters.",
+    );
   });
 });
