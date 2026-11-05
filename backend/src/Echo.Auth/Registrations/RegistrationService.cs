@@ -86,6 +86,7 @@ public class RegistrationService(
             user.PasswordChangedAt = timeProvider.GetUtcNow().UtcDateTime;
 
             TokenPairResponseDtos session;
+            string? verificationToken = null;
             using (
                 var activity = instrumentation.ActivitySource.StartActivity(
                     "svc.registration.persist.setup"
@@ -104,11 +105,14 @@ public class RegistrationService(
                 session = await sessionService.StartSession(user, ct, prune: false);
                 activity?.AddEvent(new ActivityEvent("session.start"));
 
+                // Saved in the same commit as the user, so it costs no extra round trip.
+                verificationToken = emailVerificationService.StageFirstToken(user);
+
                 await unitOfWork.CommitAsync(ct);
                 activity?.AddEvent(new ActivityEvent("db.commit"));
             }
 
-            await emailVerificationService.SendVerificationLink(user, ct);
+            emailVerificationService.QueueVerificationEmail(user, verificationToken!);
             QueueSetUpChurchEmail(user, congregation.Name);
 
             RecordCongregationRegistration(span, "success");
@@ -205,6 +209,7 @@ public class RegistrationService(
             // signup that fails gives the use back.
             var claimed = false;
             TokenPairResponseDtos? session = null;
+            string? verificationToken = null;
             try
             {
                 using (
@@ -220,6 +225,7 @@ public class RegistrationService(
 
                             userRepository.Create(user);
                             session = await sessionService.StartSession(user, token, prune: false);
+                            verificationToken = emailVerificationService.StageFirstToken(user);
                             await unitOfWork.CommitAsync(token);
                         },
                         ct
@@ -247,10 +253,10 @@ public class RegistrationService(
                 )
             )
             {
-                await emailVerificationService.SendVerificationLink(user, ct);
+                emailVerificationService.QueueVerificationEmail(user, verificationToken!);
             }
 
-            await QueueWelcomeEmail(user, ct);
+            QueueWelcomeEmail(user, invitation.Congregation.Name);
 
             RecordUserRegistration(span, "success", invitation.CongregationId.ToString());
             RegistrationLog.UserRegistrationSucceeded(logger, user.Id, invitation.CongregationId);
@@ -292,14 +298,13 @@ public class RegistrationService(
         }
     }
 
-    private async Task QueueWelcomeEmail(User user, CancellationToken ct)
+    private void QueueWelcomeEmail(User user, string congregationName)
     {
         try
         {
-            var congregation = await congregationRepository.GetById(user.CongregationId, ct);
             var content = new WelcomeEmailBody(
                 user.FirstName,
-                congregation?.Name ?? "your church",
+                congregationName,
                 user.Role,
                 linkBuilder.BuildDashboardLink()
             );
@@ -307,7 +312,7 @@ public class RegistrationService(
                 new EmailMessage(user.EmailAddress, content, "welcome", user.Id, user.CongregationId)
             );
         }
-        catch (Exception ex) when (ex is not OperationCanceledException)
+        catch (Exception ex)
         {
             RegistrationLog.WelcomeEmailFailed(logger, ex, user.Id, user.CongregationId);
         }

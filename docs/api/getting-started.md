@@ -91,20 +91,18 @@ Verifying your email is not needed to log in. The app reminds you until you do (
 }
 ```
 
-### ⚠️ Development Workaround: Email Tokens
-In production, the verification token is sent via email using Resend. However, because we are using a trial account without a custom domain, emails can only be sent to the registered account (`clintbamp@gmail.com`).
-
-To prevent blocking development for other users, this endpoint returns the token directly in the response during development.
+### Where the token comes from
+The verification token is only sent by email (Resend); the response never contains it. Until the sending domain is verified in Resend, mail can only reach the account's own address, so use that address when testing.
 
 **Response (200 OK)**
 ```json
 {
-  "message": "Operation Completed Successfully. Token: 35p7O2pX8RVnzmEK4btktg"
+  "message": "Email has been sent if user is valid"
 }
 ```
 
 ### Completing Verification
-Take the token received above and pass it to the verify-email endpoint.
+Take the token from the email and pass it to the verify-email endpoint.
 
 **Endpoint**: `GET /api/auth/v1/verifications/verify-email?token=####`
 (Replace `####` with your token)

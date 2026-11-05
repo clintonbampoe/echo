@@ -25,6 +25,8 @@ public class EmailVerificationService(
     ILogger<EmailVerificationService> logger
 )
 {
+    private const string SentMessage = "Email has been sent if user is valid";
+
     public async Task<IOperationResult> GetStatus(
         Guid congregationId,
         Guid userId,
@@ -54,32 +56,39 @@ public class EmailVerificationService(
     {
         using var span = instrumentation.ActivitySource.StartActivity("email.verification.send");
 
-        User? user;
-        user = await userRepository.GetByEmail(emailAddress, ct);
+        // The user and their live link come back in one query.
+        var found = await emailVerificationTokenRepository.GetUserWithActiveToken(
+            emailAddress,
+            ct
+        );
 
-        if (user is null)
+        if (found is not { } match)
         {
             RecordVerificationSent(span, "user_not_found", "unknown");
             EmailVerificationLog.SendVerificationFailedUserNotFound(logger);
-            return new SuccessResult<string>("Email has been sent if user is valid");
+            return new SuccessResult<string>(SentMessage);
         }
 
-        return await SendVerificationLink(user, ct);
+        return await IssueLink(match.User, match.ActiveToken, ct);
     }
 
     /// <summary>
     /// Issues a verification token for a user we already have and queues the email. Does not wait
     /// for the email to be sent.
     /// </summary>
-    public async Task<IOperationResult> SendVerificationLink(User user, CancellationToken ct)
+    public async Task<IOperationResult> SendVerificationLink(User user, CancellationToken ct) =>
+        await IssueLink(user, await GetActiveTokenForUser(user.Id, ct), ct);
+
+    private async Task<IOperationResult> IssueLink(
+        User user,
+        EmailVerificationToken? existingToken,
+        CancellationToken ct
+    )
     {
         using var span = instrumentation.ActivitySource.StartActivity("email.verification.issue");
 
         span?.SetTag("congregation.id", user.CongregationId);
         span?.SetTag("user.id", user.Id);
-
-        EmailVerificationToken? existingToken;
-        existingToken = await GetActiveTokenForUser(user.Id, ct);
 
         if (RateLimitActive(existingToken))
         {
@@ -99,18 +108,7 @@ public class EmailVerificationService(
         try
         {
             var token = tokenGenerator.GenerateToken(16);
-            var tokenObject = new EmailVerificationToken(user.Id)
-            {
-                UserId = user.Id,
-                TokenHash = hashService.Hash(token),
-                CreatedAt = timeProvider.GetUtcNow().UtcDateTime,
-            };
-
-            var verificationLink = linkBuilder.BuildEmailVerificationLink(token);
-            var emailContent = new EmailVerificationMessageBody(
-                user.FirstName,
-                verificationLink
-            );
+            var tokenObject = NewToken(user, token);
 
             using (instrumentation.ActivitySource.StartActivity("email_verification_token.create"))
             {
@@ -119,20 +117,12 @@ public class EmailVerificationService(
                 await unitOfWork.CommitAsync(ct);
             }
 
-            emailQueue.TryEnqueue(
-                new EmailMessage(
-                    user.EmailAddress,
-                    emailContent,
-                    "email_verification",
-                    user.Id,
-                    user.CongregationId
-                )
-            );
+            QueueVerificationEmail(user, token);
 
-            RecordVerificationSent(span, "success", user.CongregationId.ToString());
-            EmailVerificationLog.SendVerificationSucceeded(logger, user.Id, user.CongregationId);
-
-            return new SuccessResult<string>($"Operation Completed Successfully. Token: {token}");
+            // The token is only ever sent by email. Answering with it would let anyone who knows an
+            // address verify that account, and a different answer for a known address would tell
+            // callers which addresses have accounts, so this matches the unknown-address reply.
+            return new SuccessResult<string>(SentMessage);
         }
         catch (Exception ex)
         {
@@ -141,6 +131,52 @@ public class EmailVerificationService(
             throw;
         }
     }
+
+    /// <summary>
+    /// Adds a verification token for a brand-new user to the context, without saving, so a signup
+    /// stores the user, the session and the token in one commit. A new user has no old tokens to
+    /// look up or clear. Once the commit succeeds, call <see cref="QueueVerificationEmail"/> with
+    /// the returned token.
+    /// </summary>
+    public string StageFirstToken(User user)
+    {
+        var token = tokenGenerator.GenerateToken(16);
+        emailVerificationTokenRepository.Create(NewToken(user, token));
+        return token;
+    }
+
+    /// <summary>Queues the verification email for a token that is already saved. Does not wait for it to be sent.</summary>
+    public void QueueVerificationEmail(User user, string token)
+    {
+        using var span = instrumentation.ActivitySource.StartActivity("email.verification.queue");
+
+        span?.SetTag("congregation.id", user.CongregationId);
+        span?.SetTag("user.id", user.Id);
+
+        emailQueue.TryEnqueue(
+            new EmailMessage(
+                user.EmailAddress,
+                new EmailVerificationMessageBody(
+                    user.FirstName,
+                    linkBuilder.BuildEmailVerificationLink(token)
+                ),
+                "email_verification",
+                user.Id,
+                user.CongregationId
+            )
+        );
+
+        RecordVerificationSent(span, "success", user.CongregationId.ToString());
+        EmailVerificationLog.SendVerificationSucceeded(logger, user.Id, user.CongregationId);
+    }
+
+    private EmailVerificationToken NewToken(User user, string token) =>
+        new(user.Id)
+        {
+            UserId = user.Id,
+            TokenHash = hashService.Hash(token),
+            CreatedAt = timeProvider.GetUtcNow().UtcDateTime,
+        };
 
     public async Task<IOperationResult> VerifyEmail(string token, CancellationToken ct = default)
     {
