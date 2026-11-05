@@ -1,6 +1,7 @@
 using Echo.Shared.Query;
 using Echo.Data;
 using Echo.Domain.Auth;
+using Echo.Domain.Users;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Auth.Passwords;
@@ -18,6 +19,38 @@ public class PasswordResetRepository(AppDbContext dbContext, TimeProvider timePr
             .FilterDeleted()
             .Include(t => t.User)
             .FirstOrDefaultAsync(t => t.TokenHash == hashedInput, ct);
+    }
+
+    /// <summary>
+    /// The user with this email address and their reset links that can still be used, in one
+    /// query. Null when there is no such user. Both are tracked, so the caller can change them.
+    /// </summary>
+    public async Task<(User User, List<PasswordResetToken> ActiveTokens)?> GetUserWithActiveTokens(
+        string emailAddress,
+        CancellationToken ct
+    )
+    {
+        var now = timeProvider.GetUtcNow().UtcDateTime;
+        var row = await dbContext
+            .Set<User>()
+            .FilterDeleted()
+            .Where(u => u.EmailAddress == emailAddress)
+            .Select(u => new
+            {
+                User = u,
+                Tokens = _tokens
+                    .Where(t =>
+                        t.UserId == u.Id
+                        && t.DeletedAt == null
+                        && t.ExpiresAt > now
+                        && t.UsedAt == null
+                        && t.InvalidatedAt == null
+                    )
+                    .ToList(),
+            })
+            .FirstOrDefaultAsync(ct);
+
+        return row is null ? null : (row.User, row.Tokens);
     }
 
     /// <summary>The user's reset links that can still be used.</summary>

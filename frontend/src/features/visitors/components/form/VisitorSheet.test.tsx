@@ -15,6 +15,7 @@ const esi = aVisitor({
   firstName: "Esi",
   lastName: "Mensah",
   phoneNumber: "055 212 3344",
+  gender: "Female",
   createdAt: "2026-09-20T09:00:00Z",
   visitCount: 3,
 });
@@ -49,12 +50,13 @@ const bodyOf = () =>
   );
 
 describe("new visitor sheet", () => {
-  it("asks for a name and sends nothing until there is one", async () => {
+  it("asks for a name and a gender and sends nothing until there are", async () => {
     const user = userEvent.setup();
     wrap(<VisitorSheet open onClose={() => {}} />);
     await user.click(screen.getByRole("button", { name: "Create visitor" }));
     expect(await screen.findByText("Enter a first name")).toBeInTheDocument();
     expect(screen.getByText("Enter a last name")).toBeInTheDocument();
+    expect(screen.getByText("Choose a gender")).toBeInTheDocument();
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
@@ -64,12 +66,14 @@ describe("new visitor sheet", () => {
     wrap(<VisitorSheet open onClose={onClose} />);
     await user.type(screen.getByLabelText("First name"), "Esi");
     await user.type(screen.getByLabelText("Last name"), "Mensah");
+    await user.click(screen.getByRole("radio", { name: "Female" }));
     await user.type(screen.getByLabelText("Notes"), "Came with Abena.");
     await user.click(screen.getByRole("button", { name: "Create visitor" }));
     await waitFor(() => expect(onClose).toHaveBeenCalled());
     expect(bodyOf()).toEqual({
       firstName: "Esi",
       lastName: "Mensah",
+      gender: "Female",
       notes: "Came with Abena.",
     });
   });

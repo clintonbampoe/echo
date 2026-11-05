@@ -81,8 +81,7 @@ public class SessionService(
 
         var nextCursor = hasMore ? encoder.Encode(BuildCursor(entities.Last())) : null;
 
-        var ids = entities.Select(s => s.Id).ToList();
-        var attendance = await repository.GetAttendance(ids, ct);
+        var attendance = await repository.GetAttendanceForList(entities, dateWindows.Today, ct);
 
         var data = entities.Select(s => WithAttendance(mapper.ToDto(s), attendance)).ToList();
 

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { useSearchParams } from "react-router-dom";
 import { isApiError } from "@/lib/api";
 import { Alert, Button, LinkButton, PasswordField } from "@/ui";
@@ -32,8 +32,10 @@ export function ResetPasswordPage() {
     register,
     handleSubmit,
     setError,
+    control,
     formState: { errors },
   } = useForm<ResetValues>({ resolver: zodResolver(resetSchema) });
+  const newPassword = useWatch({ control, name: "newPassword" });
 
   async function onSubmit({ newPassword }: ResetValues) {
     setProblem("");
@@ -78,7 +80,7 @@ export function ResetPasswordPage() {
         <PasswordField
           label="New password"
           autoComplete="new-password"
-          hint="At least 8 characters."
+          strengthOf={newPassword ?? ""}
           error={errors.newPassword?.message}
           {...register("newPassword")}
         />

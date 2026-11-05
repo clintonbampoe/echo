@@ -14,7 +14,6 @@ namespace Echo.Auth.Passwords;
 
 public class PasswordResetService(
     PasswordResetRepository passwordVerificationTokenRepository,
-    UserRepository userRepository,
     JwtTokenService refreshTokenService,
     IEmailQueue emailQueue,
     IUnitOfWork unitOfWork,
@@ -36,15 +35,17 @@ public class PasswordResetService(
     {
         using var span = instrumentation.ActivitySource.StartActivity("svc.password.forgot");
 
-        User? user;
-        user = await userRepository.GetByEmail(email, ct);
+        // The user and their live reset links come back in one query.
+        var found = await passwordVerificationTokenRepository.GetUserWithActiveTokens(email, ct);
 
-        if (user is null)
+        if (found is not { } match)
         {
             RecordPasswordResetRequest(span, "user_not_found", "unknown");
             PasswordLog.PasswordResetRequestUserNotFound(logger);
             return new SuccessResult<string>("Reset link has been sent.");
         }
+
+        var (user, activeTokens) = match;
 
         span?.SetTag("congregation.id", user.CongregationId);
         span?.SetTag("user.id", user.Id);
@@ -52,15 +53,6 @@ public class PasswordResetService(
         try
         {
             var now = timeProvider.GetUtcNow().UtcDateTime;
-
-            List<PasswordResetToken> activeTokens;
-            using (instrumentation.ActivitySource.StartActivity("svc.password.fetch.active_tokens"))
-            {
-                activeTokens = await passwordVerificationTokenRepository.GetActiveTokensForUser(
-                    user.Id,
-                    ct
-                );
-            }
 
             // One link a minute is enough; answering the same way keeps this from telling anyone
             // whether the address has an account.
@@ -95,7 +87,7 @@ public class PasswordResetService(
             emailQueue.TryEnqueue(
                 new EmailMessage(
                     user.EmailAddress,
-                    new PasswordResetEmailBody(user.Name, resetLink),
+                    new PasswordResetEmailBody(user.FirstName, resetLink),
                     "password_reset",
                     user.Id,
                     user.CongregationId
@@ -198,8 +190,9 @@ public class PasswordResetService(
                 tokenEntity.User.PasswordHash = await passwordHashService.HashAsync(newPassword);
             }
 
-            tokenEntity.User.PasswordChangedAt = timeProvider.GetUtcNow().UtcDateTime;
-            tokenEntity.UsedAt = timeProvider.GetUtcNow().UtcDateTime;
+            var changedAt = timeProvider.GetUtcNow().UtcDateTime;
+            tokenEntity.User.PasswordChangedAt = changedAt;
+            tokenEntity.UsedAt = changedAt;
 
             using (
                 instrumentation.ActivitySource.StartActivity("svc.password.persist.revoke_sessions")
@@ -219,6 +212,21 @@ public class PasswordResetService(
                     ct
                 );
             }
+
+            emailQueue.TryEnqueue(
+                new EmailMessage(
+                    tokenEntity.User.EmailAddress,
+                    new PasswordChangedEmailBody(
+                        tokenEntity.User.FirstName,
+                        tokenEntity.User.EmailAddress,
+                        changedAt,
+                        linkBuilder.BuildForgotPasswordLink()
+                    ),
+                    "password_changed",
+                    tokenEntity.UserId,
+                    tokenEntity.User.CongregationId
+                )
+            );
 
             RecordPasswordReset(span, "success", tokenEntity.User.CongregationId.ToString());
             PasswordLog.PasswordResetSucceeded(

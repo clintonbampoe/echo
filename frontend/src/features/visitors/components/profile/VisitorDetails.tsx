@@ -1,11 +1,11 @@
-import { ageOn } from "@/lib/dates";
 import { formatDate } from "@/lib/format";
+import { genderLabel } from "@/features/members";
 import { DetailBlock, DetailCard, DetailGroup } from "@/ui";
 import type { Visitor } from "../../api/visitors";
 import styles from "./VisitorDetails.module.css";
 
 // What we know about a visitor. On a wide screen it sits under their name; on a tablet or phone it follows the numbers.
-export function VisitorDetails({ v, today }: { v: Visitor; today: string }) {
+export function VisitorDetails({ v }: { v: Visitor }) {
   return (
     <DetailCard label="Details">
       <DetailGroup
@@ -18,12 +18,7 @@ export function VisitorDetails({ v, today }: { v: Visitor; today: string }) {
       <DetailGroup
         title="Personal"
         rows={[
-          [
-            "Date of birth",
-            v.dateOfBirth
-              ? `${formatDate(v.dateOfBirth)} (${ageOn(v.dateOfBirth, today)})`
-              : null,
-          ],
+          ["Gender", v.gender ? genderLabel(v.gender) : null],
           ["First added", formatDate(v.createdAt)],
         ]}
       />

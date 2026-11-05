@@ -10,6 +10,6 @@ export function toMemberValues(v: Visitor): MemberValues {
     lastName: v.lastName,
     phoneNumber: v.phoneNumber ?? "",
     emailAddress: v.emailAddress ?? "",
-    dateOfBirth: v.dateOfBirth?.slice(0, 10) ?? "",
+    gender: v.gender ?? emptyMember.gender,
   };
 }

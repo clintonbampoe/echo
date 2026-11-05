@@ -56,7 +56,7 @@ images, so after editing one run `docker compose up -d --build <service>` in its
 | Data | From | Notes |
 |---|---|---|
 | API metrics | OTLP, once a minute | ASP.NET Core, Kestrel, .NET runtime, HTTP client, rate limiting, `auth_*` counters, `echo_congregation_request_volume_total` |
-| Traces | OTLP | Includes Npgsql spans; health checks are left out |
+| Traces | OTLP | Includes Npgsql spans; health checks are left out. The API traces every request and Alloy keeps a trace if it had an exception or a 5xx, a 400, 403, 409 or 429 response, or took over 100 ms (about twelve times the p95; raise it if too many traces are kept); other traces are kept at `TRACES_SAMPLE_PERCENT` (default 1). Alloy holds a request's spans for 10 s before deciding |
 | API logs | OTLP | **Warnings and above only** (Alloy drops the rest). Carry `trace_id`, so Grafana links a log line to its trace and back |
 | API connection pool | OTLP (Npgsql meter) | `db_client_connection_*` (used, idle, limit), `db_client_operation_duration_*` |
 | Summary cache | OTLP | `echo_summary_requests_total{summary, cached}` |

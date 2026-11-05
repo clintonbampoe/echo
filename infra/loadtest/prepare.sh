@@ -26,7 +26,8 @@ docker exec database psql -U postgres -d echo_db -At -F'|' -c "
              row_number() OVER (PARTITION BY c.id, u.role ORDER BY u.created_at) AS turn
       FROM users u JOIN congregations c ON c.id = u.congregation_id
       WHERE u.deleted_at IS NULL AND c.deleted_at IS NULL
-        AND length(u.password_hash) = 60 AND left(u.password_hash, 1) = chr(36)
+        AND u.password_changed_at IS NULL   -- a changed password is no longer the seed one: that account cannot sign in
+        AND left(u.password_hash, 10) = chr(36) || 'argon2id' || chr(36)   -- an Argon2id hash, not a plain-text password
     ) ranked
   ) x
   WHERE tenant = '${FOCUS_TENANT//\'/\'\'}' OR n <= ${PER_TENANT}

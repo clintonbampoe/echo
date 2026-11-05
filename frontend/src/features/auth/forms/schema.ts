@@ -18,12 +18,20 @@ export const signInSchema = z.object({
 
 export const emailOnlySchema = z.object({ email });
 
-export const accountSchema = z.object({
-  firstName: required("Enter your first name.").max(100),
-  lastName: required("Enter your last name.").max(100),
-  email,
-  password: newPassword,
-});
+const PASSWORDS_DIFFER = "The passwords do not match.";
+
+export const accountSchema = z
+  .object({
+    firstName: required("Enter your first name.").max(100),
+    lastName: required("Enter your last name.").max(100),
+    email,
+    password: newPassword,
+    confirm: z.string(),
+  })
+  .refine((v) => v.password === v.confirm, {
+    path: ["confirm"],
+    message: PASSWORDS_DIFFER,
+  });
 
 export const churchSchema = z.object({
   name: required("Enter your church name.").max(100),
@@ -43,20 +51,26 @@ export const resetSchema = z
   .object({ newPassword, confirm: z.string() })
   .refine((v) => v.newPassword === v.confirm, {
     path: ["confirm"],
-    message: "The passwords do not match.",
+    message: PASSWORDS_DIFFER,
   });
 
 export const codeSchema = z.object({
   code: required("Enter your invitation code."),
 });
 
-export const joinSchema = z.object({
-  firstName: required("Enter your first name.").max(100),
-  lastName: required("Enter your last name.").max(100),
-  otherNames: z.string().trim().max(100),
-  email,
-  password: newPassword,
-});
+export const joinSchema = z
+  .object({
+    firstName: required("Enter your first name.").max(100),
+    lastName: required("Enter your last name.").max(100),
+    otherNames: z.string().trim().max(100),
+    email,
+    password: newPassword,
+    confirm: z.string(),
+  })
+  .refine((v) => v.password === v.confirm, {
+    path: ["confirm"],
+    message: PASSWORDS_DIFFER,
+  });
 
 export type SignInValues = z.infer<typeof signInSchema>;
 export type EmailOnlyValues = z.infer<typeof emailOnlySchema>;

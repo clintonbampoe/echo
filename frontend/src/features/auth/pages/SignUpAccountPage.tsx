@@ -1,9 +1,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { Button, Field, PasswordField } from "@/ui";
+import { Button, Field } from "@/ui";
 import { AuthLinks } from "../components/AuthLinks";
 import { AuthScreen } from "../components/AuthScreen";
+import { NewPasswordFields } from "../components/NewPasswordFields";
 import { accountSchema, type AccountValues } from "../forms/schema";
 import { useSignUp } from "../hooks/signUp";
 import styles from "./form.module.css";
@@ -14,11 +15,14 @@ export function SignUpAccountPage() {
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
   } = useForm<AccountValues>({
     resolver: zodResolver(accountSchema),
     defaultValues: account ?? undefined,
   });
+
+  const password = useWatch({ control, name: "password" });
 
   function onSubmit(values: AccountValues) {
     setAccount(values);
@@ -59,12 +63,11 @@ export function SignUpAccountPage() {
           error={errors.email?.message}
           {...register("email")}
         />
-        <PasswordField
-          label="Password"
-          autoComplete="new-password"
-          hint="At least 8 characters."
-          error={errors.password?.message}
-          {...register("password")}
+        <NewPasswordFields
+          password={register("password")}
+          confirm={register("confirm")}
+          value={password ?? ""}
+          errors={errors}
         />
         <Button type="submit" size="lg" pill block className={styles.submit}>
           Continue

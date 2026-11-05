@@ -1,3 +1,4 @@
+using Echo.Shared.Services.Hashing;
 using Echo.Application.Congregations;
 using Echo.Auth.EmailVerifications;
 using Echo.Auth.Invitations;
@@ -75,7 +76,11 @@ public static class Extensions
             {
                 AuthInstrumentation.ConfigureTracing(tracing);
             })
-            .WithMetrics(metrics => AuthInstrumentation.ConfigureMetrics(metrics));
+            .WithMetrics(metrics =>
+            {
+                AuthInstrumentation.ConfigureMetrics(metrics);
+                metrics.AddMeter(HashGate.MeterName);
+            });
         return builder;
     }
 

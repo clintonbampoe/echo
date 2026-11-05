@@ -1,5 +1,6 @@
 using Echo.Data;
 using Echo.Domain.Auth;
+using Echo.Domain.Users;
 using Echo.Shared.Query;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,11 +9,6 @@ namespace Echo.Auth.Sessions;
 public class SessionRepository(AppDbContext context, TimeProvider timeProvider)
 {
     private readonly DbSet<RefreshToken> _tokens = context.Set<RefreshToken>();
-
-    public async Task<RefreshToken?> GetTokenRecordByHash(
-        string hashedInput,
-        CancellationToken ct = default
-    ) => await _tokens.FilterDeleted().FirstOrDefaultAsync(x => x.TokenHash == hashedInput, ct);
 
     public async Task<RefreshToken?> GetTokenRecordByHashWithUser(
         string hashedInput,
@@ -49,6 +45,40 @@ public class SessionRepository(AppDbContext context, TimeProvider timeProvider)
     {
         token.RevokedAt = timeProvider.GetUtcNow().UtcDateTime;
         token.ReplacedByTokenId = replacedByTokenId;
+    }
+
+    /// <summary>
+    /// Revokes the token with this hash in one statement, if it is still active. A token that is
+    /// unknown or already revoked is left alone, so its original revoke time is kept.
+    /// </summary>
+    public async Task RevokeByHash(string hashedInput, CancellationToken ct = default)
+    {
+        var now = timeProvider.GetUtcNow().UtcDateTime;
+        await _tokens
+            .FilterDeleted()
+            .Where(t => t.TokenHash == hashedInput && t.RevokedAt == null)
+            .ExecuteUpdateAsync(s => s.SetProperty(t => t.RevokedAt, now), ct);
+    }
+
+    /// <summary>
+    /// Revokes every active token of the account with this email address in one statement, so
+    /// the user does not have to be loaded first. Returns how many tokens it revoked.
+    /// </summary>
+    public async Task<int> RevokeAllActiveSessionsForEmail(
+        string emailAddress,
+        CancellationToken ct = default
+    )
+    {
+        var now = timeProvider.GetUtcNow().UtcDateTime;
+        return await _tokens
+            .FilterDeleted()
+            .Where(t =>
+                t.RevokedAt == null
+                && context
+                    .Set<User>()
+                    .Any(u => u.Id == t.UserId && u.EmailAddress == emailAddress && u.DeletedAt == null)
+            )
+            .ExecuteUpdateAsync(s => s.SetProperty(t => t.RevokedAt, now), ct);
     }
 
     /// <summary>

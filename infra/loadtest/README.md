@@ -2,12 +2,12 @@
 
 k6 scripts that act like the church staff using the app, so we can measure the API before and after a change.
 Local for now; the same scripts run against the real box later. The test goes **through nginx** (`BASE_URL` is the
-dev nginx on port 8080), so its connection handling, rate limit, compression and access log are part of what is
+production stack's nginx at `https://echo.localhost`, set up by `infra/nginx/local-certs.sh`), so its connection handling, rate limit, compression and access log are part of what is
 measured. k6 gives each church its own address in `X-Forwarded-For`, which nginx only believes with the extra file in
 this folder, so start the stack like this before a run (`run.sh` checks and says so if you forget):
 
 ```bash
-docker compose -f docker-compose.yml -f docker-compose.override.yml -f infra/loadtest/docker-compose.loadtest.yml up -d nginx
+docker compose -f docker-compose.yml -f docker-compose.prod.yml -f infra/loadtest/docker-compose.loadtest.yml up -d nginx
 ```
 
 nginx limits each address to 50 requests a second (burst 200). A church's staff share one address and a dashboard
@@ -62,7 +62,7 @@ the host panel, and treat the first big run as a way to find out whether the mac
 
 | Variable | Default | |
 |---|---|---|
-| `BASE_URL` | `http://localhost:8080/api/v1` | nginx. `http://localhost:5025/api/v1` is the API itself |
+| `BASE_URL` | `https://echo.localhost/api/v1` | the production stack's nginx. `http://localhost:5025/api/v1` is the API itself |
 | `TRACE_RATIO` | `0.01` | share of requests that ask the API to record a trace (it traces 1% by default) |
 | `PEAK_VUS` | 500 | people signed in at the end of the ramp, focus staff included |
 | `RAMP_MINUTES` | 15 | length of the run |

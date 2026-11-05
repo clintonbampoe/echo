@@ -2,7 +2,7 @@
 import { api, type DateWindow, type Page } from "@/lib/api";
 import { ALL_TIME } from "@/lib/dates";
 import { pageSize } from "@/lib/paged";
-import type { Member, MemberInput } from "@/features/members";
+import type { Gender, Member, MemberInput } from "@/features/members";
 
 export type Visitor = {
   id: string;
@@ -11,7 +11,8 @@ export type Visitor = {
   lastName: string;
   phoneNumber?: string | null;
   emailAddress?: string | null;
-  dateOfBirth?: string | null;
+  // Empty for visitors recorded before gender was asked.
+  gender?: Gender | null;
   notes?: string | null;
   // Set once the visitor has become a member. The member's id is the visitor's id.
   convertedToMemberPersonId?: string | null;
@@ -97,7 +98,7 @@ export type VisitorInput = {
   lastName: string;
   phoneNumber?: string;
   emailAddress?: string;
-  dateOfBirth?: string;
+  gender: Gender;
   notes?: string;
 };
 

@@ -22,19 +22,33 @@ public class VisitorRepository(AppDbContext context)
     {
         return await _dbSet
             .AsNoTracking()
-            .FilterDeleted()
-            .Where(v => v.CongregationId == congregationId)
-            // A visitor's person is always in the same congregation. Saying so lets the database
-            // read the people in name order from the (congregation, name) index.
-            .Where(v => v.Person.CongregationId == congregationId)
-            .Include(v => v.Person)
-            .Include(v => v.InvitedBy)
-                .ThenInclude(m => m!.Person)
-            .Filter(filters)
-            .OrderBy(v => v.Person.Name)
-            .ThenBy(v => v.PersonId)
-            .Paginate(cursor, pageSize)
+            .ListScope(congregationId, filters, cursor, pageSize)
             .ToListAsync(ct);
+    }
+
+    /// <summary>
+    /// The names of the members who invited these visitors. The list shows only the name, so it is read here (a few
+    /// rows) instead of loading each inviter's member and person rows with every visitor.
+    /// </summary>
+    public async Task<Dictionary<Guid, string>> GetInviterNames(
+        IEnumerable<Visitor> visitors,
+        CancellationToken ct = default
+    )
+    {
+        var ids = visitors
+            .Where(v => v.InvitedByMemberId is not null)
+            .Select(v => v.InvitedByMemberId!.Value)
+            .Distinct()
+            .ToList();
+        if (ids.Count == 0)
+            return [];
+
+        return await context
+            .Set<Person>()
+            .AsNoTracking()
+            .Where(p => ids.Contains(p.Id))
+            .Select(p => new { p.Id, p.Name })
+            .ToDictionaryAsync(p => p.Id, p => p.Name, ct);
     }
 
     public async Task<Visitor?> GetById(Guid congregationId, Guid id, CancellationToken ct)
@@ -123,6 +137,26 @@ internal readonly record struct VisitStats(Guid PersonId, int Count, DateOnly La
 
 internal static class VisitorQueryExtensions
 {
+    // One page of a congregation's visitors in name order, each with the person.
+    internal static IQueryable<Visitor> ListScope(
+        this IQueryable<Visitor> visitors,
+        Guid congregationId,
+        VisitorFilters filters,
+        VisitorCursor? cursor,
+        int pageSize
+    ) =>
+        visitors
+            .FilterDeleted()
+            .Where(v => v.CongregationId == congregationId)
+            // A visitor's person is always in the same congregation. Saying so lets the database
+            // read the people in name order from the (congregation, name) index.
+            .Where(v => v.Person.CongregationId == congregationId)
+            .Include(v => v.Person)
+            .Filter(filters)
+            .OrderBy(v => v.Person.Name)
+            .ThenBy(v => v.PersonId)
+            .Paginate(cursor, pageSize);
+
     /// <summary>
     /// Visits are attendance records made while the person was a visitor.
     /// </summary>

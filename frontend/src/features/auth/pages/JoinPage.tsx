@@ -1,12 +1,13 @@
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import type { ApiError } from "@/lib/api";
 import { handleSubmitError } from "@/lib/forms";
-import { Alert, Button, Field, PasswordField } from "@/ui";
+import { Alert, Button, Field } from "@/ui";
 import { AuthLinks } from "../components/AuthLinks";
 import { AuthScreen } from "../components/AuthScreen";
+import { NewPasswordFields } from "../components/NewPasswordFields";
 import {
   InvalidInvitation,
   InvitationGate,
@@ -47,6 +48,7 @@ function JoinForm({
   const [problem, setProblem] = useState<ApiError | null>(null);
   const form = useForm<JoinValues>({ resolver: zodResolver(joinSchema) });
   const { errors } = form.formState;
+  const password = useWatch({ control: form.control, name: "password" });
 
   async function onSubmit(v: JoinValues) {
     setProblem(null);
@@ -113,12 +115,11 @@ function JoinForm({
           error={errors.email?.message}
           {...form.register("email")}
         />
-        <PasswordField
-          label="Password"
-          autoComplete="new-password"
-          hint="At least 8 characters."
-          error={errors.password?.message}
-          {...form.register("password")}
+        <NewPasswordFields
+          password={form.register("password")}
+          confirm={form.register("confirm")}
+          value={password ?? ""}
+          errors={errors}
         />
         <Button
           type="submit"

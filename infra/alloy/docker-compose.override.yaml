@@ -3,7 +3,7 @@
 #
 # Production (the observability stack on a separate server) must NOT load it. There, run:
 #   docker compose -f docker-compose.yaml up -d --build
-# and set LOKI_URL, PROMETHEUS_URL and TEMPO_OTLP_ENDPOINT in .env (see .env.example).
+# and set OBS_HOST in .env (see .env.example).
 services:
   alloy:
     networks: [obs, app]

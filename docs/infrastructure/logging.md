@@ -26,7 +26,7 @@ Only a small share of normal traffic is recorded; everything that went wrong alw
 | Source | Normal requests | Warnings and errors |
 |---|---|---|
 | API logs | off (`Logging__LogLevel__Default` is `Warning`; set `API_LOG_LEVEL=Information` to see them) | all |
-| API traces | 1% (`OTEL_TRACES_SAMPLER_ARG=0.01`; a caller's own sampling flag wins) | the same 1%, so most failed requests have no trace; their log line has the exception |
+| API traces | 1% of the fast successful ones (`TRACES_SAMPLE_PERCENT` on Alloy) | all of them, whole: 5xx, the 4xx that matter (400, 403, 409, 429) and anything over 100 ms are always kept (tail sampling in Alloy) |
 | nginx access log | a random 1%, each line marked `"sampled":1` | all 4xx and 5xx |
 
 The nginx sample is uniform, so it can be scaled back up: a request count is the lines with `sampled="1"` times 100,

@@ -61,7 +61,7 @@
     },
     {
       "type": "stat",
-      "title": "People signed in",
+      "title": "People signed in now",
       "description": "k6 virtual users.",
       "datasource": {
         "type": "prometheus",
@@ -107,7 +107,7 @@
     {
       "type": "stat",
       "title": "Requests per second",
-      "description": "",
+      "description": "Requests k6 sent per second in the selected run.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -255,7 +255,7 @@
     {
       "type": "timeseries",
       "title": "People signed in",
-      "description": "",
+      "description": "Virtual users active in the run. Each is one person with a real session. Follows the ramp up to the peak.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -306,7 +306,7 @@
     {
       "type": "timeseries",
       "title": "Requests per second by status",
-      "description": "",
+      "description": "k6's requests per second by HTTP status. Anything but 2xx deserves a look. A 429 is nginx's rate limit.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -472,7 +472,7 @@
     {
       "type": "timeseries",
       "title": "p95 by route (slowest 8)",
-      "description": "",
+      "description": "95th percentile response time for the eight slowest routes in the selected run.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -659,6 +659,135 @@
       }
     },
     {
+      "type": "timeseries",
+      "title": "Connection setup (p95)",
+      "description": "Time k6 spent before the request was sent: waiting for a free connection (blocked), opening it (connecting) and the HTTPS handshake (tls). Large values mean connections are not reused or the server is slow to accept them, not that the API is slow.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "id": 26,
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 29
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max(k6_http_req_blocked_p95{testid=~\"$testid\"})",
+          "legendFormat": "blocked"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max(k6_http_req_connecting_p95{testid=~\"$testid\"})",
+          "legendFormat": "connecting"
+        },
+        {
+          "refId": "C",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max(k6_http_req_tls_handshaking_p95{testid=~\"$testid\"})",
+          "legendFormat": "TLS handshake"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": true
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
+      "type": "timeseries",
+      "title": "Data transferred",
+      "description": "Bytes k6 received from and sent to the server per second. Responses are far larger than requests; a sudden rise means a route started returning more.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "id": 27,
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 29
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(rate(k6_data_received_total{testid=~\"$testid\"}[$__rate_interval]))",
+          "legendFormat": "received"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum(rate(k6_data_sent_total{testid=~\"$testid\"}[$__rate_interval]))",
+          "legendFormat": "sent"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "Bps",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never",
+            "spanNulls": true
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true,
+          "calcs": []
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      }
+    },
+    {
       "type": "row",
       "id": 14,
       "title": "Every route over the selected time range",
@@ -667,7 +796,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 29
+        "y": 37
       },
       "panels": []
     },
@@ -684,7 +813,7 @@
         "h": 12,
         "w": 24,
         "x": 0,
-        "y": 30
+        "y": 38
       },
       "targets": [
         {
@@ -760,7 +889,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 42
+        "y": 50
       },
       "panels": []
     },
@@ -777,7 +906,7 @@
         "h": 8,
         "w": 8,
         "x": 0,
-        "y": 43
+        "y": 51
       },
       "targets": [
         {
@@ -818,7 +947,7 @@
     {
       "type": "timeseries",
       "title": "Memory: api and database",
-      "description": "",
+      "description": "Memory of the api and database containers over time, to see whether the run pushed them toward their limits (800 MB and 2 GB in production). Shows all time in view, not just the selected run.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -828,7 +957,7 @@
         "h": 8,
         "w": 8,
         "x": 8,
-        "y": 43
+        "y": 51
       },
       "targets": [
         {
@@ -879,7 +1008,7 @@
         "h": 8,
         "w": 8,
         "x": 16,
-        "y": 43
+        "y": 51
       },
       "targets": [
         {
@@ -939,7 +1068,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 51
+        "y": 59
       },
       "targets": [
         {
@@ -999,7 +1128,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 51
+        "y": 59
       },
       "targets": [
         {
@@ -1046,7 +1175,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 59
+        "y": 67
       },
       "panels": []
     },
@@ -1063,7 +1192,7 @@
         "h": 8,
         "w": 8,
         "x": 0,
-        "y": 60
+        "y": 68
       },
       "targets": [
         {
@@ -1104,7 +1233,7 @@
     {
       "type": "timeseries",
       "title": "Sign-in and renewal p95",
-      "description": "",
+      "description": "95th percentile time to sign in and to renew a session. Sign-in checks a password hash on purpose and takes about 200 ms. The run requires under 1 s.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -1114,7 +1243,7 @@
         "h": 8,
         "w": 8,
         "x": 8,
-        "y": 60
+        "y": 68
       },
       "targets": [
         {
@@ -1165,7 +1294,7 @@
         "h": 8,
         "w": 8,
         "x": 16,
-        "y": 60
+        "y": 68
       },
       "targets": [
         {

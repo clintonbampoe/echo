@@ -427,9 +427,7 @@ public class EventService(
         CancellationToken ct
     )
     {
-        var ids = entities.Select(x => x.Id).ToList();
-        var registered = await repository.GetRegistrationCounts(ids, ct);
-        var attended = await repository.GetAttendanceCounts(ids, ct);
+        var (registered, attended) = await repository.GetCountsForList(entities, ct);
 
         return
         [

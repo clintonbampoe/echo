@@ -20,12 +20,15 @@ RUN rm -rf /usr/share/nginx/html/*
 COPY infra/nginx/nginx.conf /etc/nginx/nginx.conf
 COPY infra/nginx/api-locations.conf /etc/nginx/api-locations.conf
 COPY infra/nginx/spa-headers.conf /etc/nginx/spa-headers.conf
+COPY infra/nginx/tls.conf /etc/nginx/tls.conf
 
 # Development: pass the web app through to Vite. The Node stages above are skipped.
 FROM base AS dev
 COPY infra/nginx/site.dev.conf /etc/nginx/site.conf
 
-# Production: serve the built web app. Last stage, so it is the default.
+# Production: serve the built web app over HTTPS. Last stage, so it is the default.
+# The site file is a template: at start-up the image fills in APP_DOMAIN and writes it to /etc/nginx/site.conf.
 FROM base AS web
-COPY infra/nginx/site.conf /etc/nginx/site.conf
+ENV NGINX_ENVSUBST_OUTPUT_DIR=/etc/nginx
+COPY infra/nginx/site.conf.template /etc/nginx/templates/site.conf.template
 COPY --from=web-build /app/dist /usr/share/nginx/html

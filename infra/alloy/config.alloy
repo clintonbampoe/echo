@@ -51,7 +51,7 @@ loki.process "logs" {
     selector = "{container=\"nginx\", stream=\"stdout\"}"
 
     stage.json {
-      expressions = { status = "status", method = "method", path = "path", rt = "rt", urt = "urt", ip = "ip", ua = "ua", bytes = "bytes", sampled = "sampled" }
+      expressions = { status = "status", method = "method", path = "path", rt = "rt", urt = "urt", ip = "ip", ua = "ua", bytes = "bytes", sampled = "sampled", trace_id = "trace_id" }
     }
 
     stage.labels {
@@ -59,7 +59,7 @@ loki.process "logs" {
     }
 
     stage.structured_metadata {
-      values = { path = "", rt = "", urt = "", ip = "", ua = "", bytes = "", sampled = "" }
+      values = { path = "", rt = "", urt = "", ip = "", ua = "", bytes = "", sampled = "", trace_id = "" }
     }
 
     stage.template {
@@ -150,7 +150,7 @@ loki.process "logs" {
 
 loki.write "obs" {
   endpoint {
-    url = coalesce(sys.env("LOKI_URL"), "http://loki:3100") + "/loki/api/v1/push"
+    url = coalesce(sys.env("LOKI_URL"), string.format("http://%s:3100", coalesce(sys.env("OBS_HOST"), "loki"))) + "/loki/api/v1/push"
   }
 }
 
@@ -164,7 +164,7 @@ otelcol.receiver.otlp "apps" {
 
   output {
     logs    = [otelcol.processor.filter.warnings.input]
-    traces  = [otelcol.processor.batch.traces.input]
+    traces  = [otelcol.processor.tail_sampling.traces.input]
     metrics = [otelcol.exporter.otlphttp.prometheus.input]
   }
 }
@@ -185,7 +185,8 @@ otelcol.processor.filter "warnings" {
 }
 
 // ASP.NET and EF attach a dozen bookkeeping attributes to every log record (connection id, parent span, SDK
-// version...). They bury the two that matter (trace_id for the trace link, RequestPath), so leave them out.
+// version...). They bury the two that matter (trace_id for the trace link, RequestPath), so leave them out. Logs from
+// the Echo.Auth classes (sign-in, renewal, passwords...) get category="auth", so the auth dashboard can show them.
 otelcol.processor.transform "tidy_logs" {
   error_mode = "ignore"
 
@@ -197,6 +198,7 @@ otelcol.processor.transform "tidy_logs" {
       `delete_key(attributes, "SpanId")`,
       `delete_key(attributes, "TraceId")`,
       `delete_key(attributes, "{OriginalFormat}")`,
+      `set(attributes["category"], "auth") where IsMatch(instrumentation_scope.name, "^Echo[.]Auth[.]")`,
     ]
   }
 
@@ -206,6 +208,152 @@ otelcol.processor.transform "tidy_logs" {
       `delete_key(attributes, "telemetry.sdk.language")`,
       `delete_key(attributes, "telemetry.sdk.name")`,
       `delete_key(attributes, "telemetry.sdk.version")`,
+    ]
+  }
+
+  output {
+    logs = [otelcol.exporter.otlphttp.loki.input]
+  }
+}
+
+// The API traces every request; this is where the keep-or-drop decision is made, once a trace is complete. A trace is
+// kept if ANY policy matches, so every failed, rejected or slow request is kept whole (all its spans, database queries
+// included) and only ordinary fast successes are thinned to TRACES_SAMPLE_PERCENT. Spans are held for decision_wait
+// before the decision, so this needs every span of a request to reach this one Alloy.
+otelcol.processor.tail_sampling "traces" {
+  decision_wait = "10s"
+  num_traces    = 10000
+
+  // Slow means over 100 ms, about twelve times the API's p95 (8.5 ms), so only the slowest few percent are kept.
+  // Exceptions and 5xx: ASP.NET marks these spans as errors.
+  policy {
+    name = "errors"
+    type = "status_code"
+
+    status_code {
+      status_codes = ["ERROR"]
+    }
+  }
+
+  // The 4xx worth a trace: 400 (a request the API did not accept), 403 (a permission or congregation boundary),
+  // 409 (a conflict) and 429 (rate limited). ASP.NET does not mark these as errors, so match on the status code.
+  // 401 (every expired token) and 404 (bots, stale links) are left out: they are routine and would fill Tempo.
+  policy {
+    name = "client-errors"
+    type = "ottl_condition"
+
+    ottl_condition {
+      error_mode = "ignore"
+      span       = [`attributes["http.response.status_code"] == 400 or attributes["http.response.status_code"] == 403 or attributes["http.response.status_code"] == 409 or attributes["http.response.status_code"] == 429`]
+    }
+  }
+
+  // A sign-in refused because the password-check line was full (503, auth.result = busy). ASP.NET marks every 5xx as an
+  // error, so without this each refused person would keep a whole trace, and in a burst there are hundreds a second. They
+  // are counted by the auth dashboard (sign-ins turned away) instead. A drop policy wins over every policy that matches.
+  policy {
+    name = "refused-sign-ins"
+    type = "drop"
+
+    drop {
+      drop_sub_policy {
+        name = "busy"
+        type = "string_attribute"
+
+        string_attribute {
+          key    = "auth.result"
+          values = ["busy"]
+        }
+      }
+    }
+  }
+
+  policy {
+    name = "slow"
+    type = "latency"
+
+    latency {
+      threshold_ms = 100
+    }
+  }
+
+  policy {
+    name = "sample"
+    type = "probabilistic"
+
+    probabilistic {
+      sampling_percentage = encoding.from_json(sys.env("TRACES_SAMPLE_PERCENT"))
+    }
+  }
+
+  output {
+    traces = [otelcol.processor.batch.traces.input, otelcol.processor.filter.slow_requests.input]
+  }
+}
+
+// A log line for every slow request, built from the API's own spans, so its duration is what the API measured and its
+// trace id is the real one. Only server spans (one per request) of 100 ms or more are kept, and 500 ms or more for the
+// /auth routes, where a sign-in takes about 175 ms by design (bcrypt) and 100 ms would log every one. Time a sign-in spent
+// waiting in line for a password check (the API tags it auth.hash.wait_ms) is left out: the line is meant to hold people
+// for up to 10 s in a burst, and that is not slowness. It is counted by the auth dashboard instead; a sign-in is logged only
+// when the rest of its time, the work, is 500 ms or more. The traces that reach here are
+// the ones tail sampling kept, and every slow one is. When most requests are slow, as in an overload, this logs most of
+// them.
+otelcol.processor.filter "slow_requests" {
+  error_mode = "ignore"
+
+  traces {
+    span = [
+      `kind != SPAN_KIND_SERVER`,
+      `not IsMatch(attributes["http.route"], ".*/auth/.*") and (end_time_unix_nano - start_time_unix_nano) < 100000000`,
+      `IsMatch(attributes["http.route"], ".*/auth/.*") and attributes["auth.hash.wait_ms"] == nil and (end_time_unix_nano - start_time_unix_nano) < 500000000`,
+      `IsMatch(attributes["http.route"], ".*/auth/.*") and attributes["auth.hash.wait_ms"] != nil and (end_time_unix_nano - start_time_unix_nano - attributes["auth.hash.wait_ms"] * 1000000) < 500000000`,
+    ]
+  }
+
+  output {
+    traces = [otelcol.connector.spanlogs.slow_requests.input]
+  }
+}
+
+otelcol.connector.spanlogs "slow_requests" {
+  spans           = true
+  span_attributes = ["http.request.method", "http.route", "http.response.status_code", "url.path", "auth.hash.wait_ms"]
+
+  output {
+    logs = [otelcol.processor.transform.slow_request_logs.input]
+  }
+}
+
+// The connector writes everything inside one line (tid=..., dur=208347000ns). Loki and the dashboards expect the trace id
+// as the trace_id field, as on the API's own logs, which is what the "View trace" link reads, and a person wants
+// "slow request: POST /api/v1/auth/sessions/login · 200 · 208 ms". The route template and duration stay as fields for
+// queries, and requests under /auth get category="auth", the same as the API's own logs from the Echo.Auth classes.
+otelcol.processor.transform "slow_request_logs" {
+  error_mode = "ignore"
+
+  log_statements {
+    context    = "log"
+    statements = [
+      `set(attributes["trace_id"], ExtractPatterns(body, "tid=(?P<v>[0-9a-f]{32})")["v"])`,
+      `set(attributes["duration_ms"], Int(ExtractPatterns(body, "dur=(?P<v>[0-9]+)ns")["v"]) / 1000000)`,
+      `set(attributes["http.request.method"], ExtractPatterns(body, "http.request.method=(?P<v>[^ ]+)")["v"])`,
+      `set(attributes["http.route"], ExtractPatterns(body, "http.route=(?P<v>[^ ]+)")["v"])`,
+      `set(attributes["http.response.status_code"], ExtractPatterns(body, "http.response.status_code=(?P<v>[0-9]+)")["v"])`,
+      `set(attributes["url.path"], ExtractPatterns(body, "url.path=(?P<v>[^ ]+)")["v"])`,
+      `set(attributes["queue_wait_ms"], Int(ExtractPatterns(body, "auth.hash.wait_ms=(?P<v>[0-9]+)")["v"]))`,
+      `set(attributes["slow_request"], true)`,
+      `set(attributes["category"], "auth") where IsMatch(attributes["http.route"], ".*/auth/.*")`,
+      `set(body, Concat(["slow request:", attributes["http.request.method"], attributes["url.path"], "·", attributes["http.response.status_code"], "·", Concat([attributes["duration_ms"], "ms"], " ")], " "))`,
+      `set(severity_number, SEVERITY_NUMBER_INFO)`,
+      `set(severity_text, "INFO")`,
+    ]
+  }
+
+  log_statements {
+    context    = "resource"
+    statements = [
+      `set(attributes["service.name"], "Echo.Api")`,
     ]
   }
 
@@ -225,7 +373,7 @@ otelcol.processor.batch "traces" {
 
 otelcol.exporter.otlp "tempo" {
   client {
-    endpoint = coalesce(sys.env("TEMPO_OTLP_ENDPOINT"), "tempo:4317")
+    endpoint = coalesce(sys.env("TEMPO_OTLP_ENDPOINT"), string.format("%s:4317", coalesce(sys.env("OBS_HOST"), "tempo")))
     tls {
       insecure = true
     }
@@ -237,7 +385,7 @@ otelcol.exporter.otlp "tempo" {
 // (The old otelcol.exporter.loki flattened every record into raw JSON.)
 otelcol.exporter.otlphttp "loki" {
   client {
-    endpoint = coalesce(sys.env("LOKI_URL"), "http://loki:3100") + "/otlp"
+    endpoint = coalesce(sys.env("LOKI_URL"), string.format("http://%s:3100", coalesce(sys.env("OBS_HOST"), "loki"))) + "/otlp"
   }
 }
 
@@ -246,13 +394,13 @@ otelcol.exporter.otlphttp "loki" {
 // below still use remote write: they are gauges and scraped counters that never start mid-flight.
 otelcol.exporter.otlphttp "prometheus" {
   client {
-    endpoint = coalesce(sys.env("PROMETHEUS_URL"), "http://prometheus:9090") + "/api/v1/otlp"
+    endpoint = coalesce(sys.env("PROMETHEUS_URL"), string.format("http://%s:9090", coalesce(sys.env("OBS_HOST"), "prometheus"))) + "/api/v1/otlp"
   }
 }
 
 prometheus.remote_write "obs" {
   endpoint {
-    url = coalesce(sys.env("PROMETHEUS_URL"), "http://prometheus:9090") + "/api/v1/write"
+    url = coalesce(sys.env("PROMETHEUS_URL"), string.format("http://%s:9090", coalesce(sys.env("OBS_HOST"), "prometheus"))) + "/api/v1/write"
   }
 }
 
@@ -316,7 +464,9 @@ prometheus.exporter.unix "host" {
   sysfs_path  = "/host/sys"
   rootfs_path = "/host/root"
 
-  set_collectors = ["cpu", "loadavg", "meminfo", "vmstat", "diskstats", "filesystem", "netdev", "stat", "time", "uname"]
+  // "pressure" (how long tasks waited for a core, from Linux's pressure stall information) and "schedstat" (the same per
+  // core) show a CPU that is too busy to answer quickly even when it is not at 100%.
+  set_collectors = ["cpu", "loadavg", "meminfo", "vmstat", "diskstats", "filesystem", "netdev", "stat", "time", "uname", "pressure", "schedstat"]
 }
 
 prometheus.scrape "host" {
@@ -342,6 +492,8 @@ prometheus.relabel "host" {
 // ---------------------------------------------------------------------------
 prometheus.exporter.postgres "db" {
   data_source_names  = [sys.env("PG_MONITOR_DSN")]
+  // The SQL behind the busiest query ids (queries.yaml), so the statements tables on the Database dashboard can show it.
+  custom_queries_config_path = "/etc/alloy/queries.yaml"
   // Named in full: only the collectors listed here run.
   enabled_collectors = [
     "database",

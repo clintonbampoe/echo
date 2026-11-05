@@ -1,24 +1,28 @@
 using Echo.Shared.Models;
+using Echo.Shared.Services.Email;
 
 namespace Echo.Auth.EmailVerifications;
 
-public class EmailVerificationMessageBody(string recipientName, string verificationLink) : IEmailContent
+public class EmailVerificationMessageBody(string firstName, string verificationLink)
+    : IEmailContent
 {
     public string Subject => "Verify your Echo account";
 
-    public string HtmlBody => $"""
-                               <html>
-                                 <body style="font-family: Arial, sans-serif; color: #333;">
-                                   <h2>Welcome to Echo, {recipientName}!</h2>
-                                   <p>Thanks for signing up. Please verify your email address to activate your account.</p>
-                                   <p>
-                                     <a href="{verificationLink}"
-                                        style="display:inline-block; padding:5px 12px; background-color:#2563eb; color:#fff; text-decoration:none; border-radius:6px;">
-                                       Verify Email
-                                     </a>
-                                   </p>
-                                   <p>This link will expire in 24 hours. If you didn't create this account, you can safely ignore this email.</p>
-                                 </body>
-                               </html>
-                               """;
+    public string HtmlBody =>
+        EmailLayout.Render(
+            new EmailPage
+            {
+                Category = "Account",
+                Heading = "Verify your account",
+                Preheader = "Verify your account to start using Echo.",
+                Paragraphs =
+                [
+                    $"{EmailLayout.Greeting(firstName)} thanks for signing up for Echo. Select the button below to verify your account and start using it.",
+                ],
+                Button = new EmailButton("Verify account", verificationLink),
+                Note = "This link works for 24 hours. After that, request a new one from Echo.",
+                ShowLinkFallback = true,
+                Reason = "You are getting this because an Echo account was created with this email address. If that was not you, ignore this email and nothing will happen.",
+            }
+        );
 }

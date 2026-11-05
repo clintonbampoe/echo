@@ -1,5 +1,7 @@
 using Echo.Shared.Caching.Extensions;
 using Echo.Shared.Options.Frontend;
+using Echo.Shared.Options.Hashing;
+using Echo.Shared.Options.Mail;
 using Echo.Shared.Services.Email;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
@@ -29,7 +31,15 @@ public static class RegisterServices
         services.AddSingleton(TimeProvider.System);
         services.AddSingleton<IIdGenerator, IdGenerator>();
         services.AddSingleton<ITokenGenerator, TokenGenerator>();
-        services.AddSingleton<IPasswordHasher, BcryptHashService>();
+        services.AddSingleton<IPasswordHasher, Argon2idHashService>();
+        services
+            .AddOptions<HashingOptions>()
+            .BindConfiguration(HashingOptions.Section)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+        services.AddSingleton(sp =>
+            HashGate.From(sp.GetRequiredService<IOptions<HashingOptions>>().Value, Environment.ProcessorCount)
+        );
         services.AddSingleton<ITokenHasher, Sha256HashService>();
         services.AddSingleton<IEncoder, CursorEncoder>();
         services.AddScoped<IEmailService, ResendEmailService>();
@@ -40,6 +50,12 @@ public static class RegisterServices
         services
             .AddOptions<FrontendOptions>()
             .BindConfiguration(FrontendOptions.Section)
+            .ValidateDataAnnotations()
+            .ValidateOnStart();
+
+        services
+            .AddOptions<MailClientOptions>()
+            .BindConfiguration(MailClientOptions.Section)
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
