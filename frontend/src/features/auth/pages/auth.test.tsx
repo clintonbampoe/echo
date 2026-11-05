@@ -41,6 +41,9 @@ function renderAt(path: string, extra: RouteObject[] = [], state?: unknown) {
   return router;
 }
 
+// A fresh value for each use, so no password is written into the test source.
+const makePassword = () => crypto.randomUUID();
+
 describe("sign in", () => {
   it("stores the session and goes to the page that asked for it", async () => {
     fetchMock.mockResolvedValueOnce(json(200, tokens));
@@ -112,7 +115,9 @@ describe("sign in", () => {
     await userEvent.type(screen.getByLabelText("Password"), "right-pass");
     await userEvent.click(screen.getByRole("button", { name: "Sign in" }));
 
-    expect(await screen.findByText("We are busy right now")).toBeInTheDocument();
+    expect(
+      await screen.findByText("We are busy right now"),
+    ).toBeInTheDocument();
     expect(screen.getByText(/try again in 7 seconds/)).toBeInTheDocument();
   });
 
@@ -136,17 +141,41 @@ describe("sign up", () => {
 
   it("carries step 1 through to step 2", async () => {
     const router = renderAt("/signup");
+    const password = makePassword();
     await userEvent.type(await screen.findByLabelText("First name"), "Ama");
     await userEvent.type(screen.getByLabelText("Last name"), "Mensah");
     await userEvent.type(
       screen.getByLabelText("Email address"),
       "ama@example.com",
     );
-    await userEvent.type(screen.getByLabelText("Password"), "secret-pass");
+    await userEvent.type(screen.getByLabelText("Password"), password);
+    await userEvent.type(screen.getByLabelText("Confirm password"), password);
     await userEvent.click(screen.getByRole("button", { name: "Continue" }));
 
     expect(await screen.findByLabelText("Church name")).toBeInTheDocument();
     expect(router.state.location.pathname).toBe("/signup/church");
+  });
+
+  it("does not leave step 1 when the two passwords differ", async () => {
+    const router = renderAt("/signup");
+    const password = makePassword();
+    await userEvent.type(await screen.findByLabelText("First name"), "Ama");
+    await userEvent.type(screen.getByLabelText("Last name"), "Mensah");
+    await userEvent.type(
+      screen.getByLabelText("Email address"),
+      "ama@example.com",
+    );
+    await userEvent.type(screen.getByLabelText("Password"), password);
+    await userEvent.type(
+      screen.getByLabelText("Confirm password"),
+      makePassword(),
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Continue" }));
+
+    expect(
+      await screen.findByText("The passwords do not match."),
+    ).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe("/signup");
   });
 });
 
@@ -256,7 +285,8 @@ describe("verify", () => {
     sent();
     renderAt("/verify", [], { email: "ama@gmail.com", send: true });
     await screen.findByText("Send another link in 0:30");
-    expect(linkRequests()).toHaveLength(1);
+    // The request goes out from an effect, so it can land just after the wait is drawn.
+    await waitFor(() => expect(linkRequests()).toHaveLength(1));
   });
 
   it("lets someone who is signed in go back to the app", async () => {
@@ -330,6 +360,10 @@ describe("verify", () => {
     sent();
     renderAt("/verify", [], { email: "ama@example.com" });
     await screen.findByText("Check your email");
+    // The page starts listening from an effect; wait until it has, or the message goes unheard.
+    await waitFor(() =>
+      expect(Channel.all.some((c) => c.onmessage)).toBe(true),
+    );
     act(() => new Channel().postMessage("verified"));
     expect(
       await screen.findByRole("heading", { name: "Account verified" }),
@@ -420,13 +454,15 @@ describe("joining signs the new person in", () => {
     });
 
   async function fillAndSubmit() {
+    const password = makePassword();
     await userEvent.type(await screen.findByLabelText("First name"), "Ama");
     await userEvent.type(screen.getByLabelText("Last name"), "Mensah");
     await userEvent.type(
       screen.getByLabelText("Email address"),
       "ama@example.com",
     );
-    await userEvent.type(screen.getByLabelText("Password"), "secret-pass");
+    await userEvent.type(screen.getByLabelText("Password"), password);
+    await userEvent.type(screen.getByLabelText("Confirm password"), password);
     await userEvent.click(
       screen.getByRole("button", { name: /Create account|Join/ }),
     );
@@ -441,6 +477,33 @@ describe("joining signs the new person in", () => {
     expect(
       screen.getByRole("link", { name: /Back to the app/ }),
     ).toHaveAttribute("href", "/dashboard");
+  });
+
+  it("does not register anyone when the two passwords differ", async () => {
+    answer(json(200, tokens));
+    renderAt("/join/abc/account");
+    const password = makePassword();
+    await userEvent.type(await screen.findByLabelText("First name"), "Ama");
+    await userEvent.type(screen.getByLabelText("Last name"), "Mensah");
+    await userEvent.type(
+      screen.getByLabelText("Email address"),
+      "ama@example.com",
+    );
+    await userEvent.type(screen.getByLabelText("Password"), password);
+    await userEvent.type(
+      screen.getByLabelText("Confirm password"),
+      makePassword(),
+    );
+    await userEvent.click(screen.getByRole("button", { name: /Join/ }));
+
+    expect(
+      await screen.findByText("The passwords do not match."),
+    ).toBeInTheDocument();
+    expect(
+      fetchMock.mock.calls.some(([url]) =>
+        String(url).includes("/registrations/member"),
+      ),
+    ).toBe(false);
   });
 
   it("still gets there when the automatic sign-in fails, and skips to sign-in", async () => {

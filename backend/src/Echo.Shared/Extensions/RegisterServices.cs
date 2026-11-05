@@ -31,7 +31,7 @@ public static class RegisterServices
         services.AddSingleton(TimeProvider.System);
         services.AddSingleton<IIdGenerator, IdGenerator>();
         services.AddSingleton<ITokenGenerator, TokenGenerator>();
-        services.AddSingleton<IPasswordHasher, BcryptHashService>();
+        services.AddSingleton<IPasswordHasher, Argon2idHashService>();
         services
             .AddOptions<HashingOptions>()
             .BindConfiguration(HashingOptions.Section)

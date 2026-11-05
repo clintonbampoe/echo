@@ -15,7 +15,7 @@
 
   <ItemGroup>
     <PackageReference Include="Asp.Versioning.Mvc" />
-    <PackageReference Include="BCrypt.Net-Next" />
+    <PackageReference Include="Sodium.Core" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" />
     <PackageReference Include="Resend" />
   </ItemGroup>

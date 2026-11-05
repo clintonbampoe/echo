@@ -1,6 +1,7 @@
 import { useId, useState, type ComponentProps } from "react";
 import { Icon } from "../layout/Icon";
 import { Shell, type Shared } from "./FieldShell";
+import { PasswordStrength } from "./PasswordStrength";
 import styles from "./Field.module.css";
 
 type FieldProps = Shared &
@@ -58,11 +59,19 @@ export function PasswordField({
   error,
   aside,
   optional,
+  strengthOf,
   ...input
-}: Omit<FieldProps, "type">) {
+}: Omit<FieldProps, "type"> & {
+  // Pass the password so far to show a strength meter under the field. Leave it out for a sign-in field.
+  strengthOf?: string;
+}) {
   const id = useId();
   const [shown, setShown] = useState(false);
-  const described = error || hint ? `${id}-msg` : undefined;
+  const hintId = `${id}-strength`;
+  const described =
+    [error || hint ? `${id}-msg` : "", strengthOf === undefined ? "" : hintId]
+      .filter(Boolean)
+      .join(" ") || undefined;
   return (
     <Shell
       id={id}
@@ -81,16 +90,26 @@ export function PasswordField({
           aria-describedby={described}
           className={`${styles.control} ${styles.padRight}`}
         />
+        {/* The icon shows what the button will do: an open eye while the password is hidden (press to
+            show it), a crossed-out eye while it is shown (press to hide it). */}
         <button
           type="button"
           className={styles.toggle}
           aria-label={shown ? "Hide password" : "Show password"}
-          aria-pressed={shown}
+          data-shown={shown}
           onClick={() => setShown(!shown)}
         >
-          <Icon name="eye" />
+          <span className={`${styles.glyph} ${styles.glyphOpen}`}>
+            <Icon name="eye" />
+          </span>
+          <span className={`${styles.glyph} ${styles.glyphCrossed}`}>
+            <Icon name="eye-off" />
+          </span>
         </button>
       </div>
+      {strengthOf !== undefined && (
+        <PasswordStrength value={strengthOf} hintId={hintId} />
+      )}
     </Shell>
   );
 }

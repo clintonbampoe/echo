@@ -19,8 +19,8 @@ public class SessionService(
     ILogger<SessionService> logger
 )
 {
-    // A valid bcrypt hash (cost 10) of a throwaway string; nobody's password hashes to it.
-    private const string DummyHash = "$2a$10$uAV3pq9RPnRtPbczFax2euG34T7Bf0qq6qO2Gfc9rgww4W7VqVHD6";
+    // A valid Argon2id hash (the same settings as real ones) of a throwaway string; nobody's password hashes to it.
+    private const string DummyHash = "$argon2id$v=19$m=19456,t=2,p=1$azKDxfBAGiQdtl1SqDYPxQ$7YJ87MxLdkExeog/dQ7L+zZSRVB/yxzmdT/5b1CegcU";
 
     /// <summary>
     /// When many people sign in at once the password checks queue up (see HashGate) and a caller who would wait too long
@@ -135,39 +135,26 @@ public class SessionService(
     {
         using var span = instrumentation.ActivitySource.StartActivity("svc.session.logout_all");
 
-        User? entity;
-        entity = await userRepository.GetByEmail(email, ct);
-
-        if (entity is null)
+        try
         {
-            span?.SetTag("auth.result", "user_not_found");
-            SessionLog.LogoutOfAllSessionsFailed(logger);
+            int revoked;
+            using (instrumentation.ActivitySource.StartActivity("svc.session.persist.revoke_all"))
+            {
+                // One statement: the same answer whether or not the email has an account.
+                revoked = await jwtTokenService.RevokeAllActiveSessionsForEmail(email, ct);
+            }
+
+            RecordLogoutAll(span, "success", "unknown");
+            SessionLog.LogoutOfAllSessionsCompleted(logger, revoked);
+
             return new SuccessResult<string>(
                 "All active sessions for this user have been terminated."
             );
         }
-
-        span?.SetTag("congregation.id", entity.CongregationId);
-        span?.SetTag("user.id", entity.Id);
-
-        try
-        {
-            using (instrumentation.ActivitySource.StartActivity("svc.session.persist.revoke_all"))
-            {
-                await jwtTokenService.RevokeAllActiveSessionsForUserById(entity.Id, ct);
-                await unitOfWork.CommitAsync(ct);
-                RecordLogoutAll(span, "success", entity.CongregationId.ToString());
-                SessionLog.LogoutOfAllSessionsSucceeded(logger, entity.Id, entity.CongregationId);
-
-                return new SuccessResult<string>(
-                    "All active sessions for this user have been terminated."
-                );
-            }
-        }
         catch (Exception ex)
         {
             span?.SetStatus(ActivityStatusCode.Error, ex.Message);
-            SessionLog.LogoutAllFailed(logger, ex, entity.Id, entity.CongregationId);
+            SessionLog.LogoutAllFailed(logger, ex);
             throw;
         }
     }
@@ -240,8 +227,8 @@ public class SessionService(
         {
             using (instrumentation.ActivitySource.StartActivity("svc.session.persist.revoke_token"))
             {
+                // One statement; there is nothing for a save to do.
                 await jwtTokenService.RevokeToken(refreshToken, ct);
-                await unitOfWork.CommitAsync(ct);
             }
 
             RecordTokenRevocation(span, "success");

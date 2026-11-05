@@ -91,14 +91,13 @@ public class JwtTokenService(
         };
     }
 
-    public async Task RevokeToken(string presentedToken, CancellationToken ct = default)
-    {
-        var hashedInput = tokenHashService.Hash(presentedToken);
-        var existing = await refreshTokenRepository.GetTokenRecordByHash(hashedInput, ct);
+    public async Task RevokeToken(string presentedToken, CancellationToken ct = default) =>
+        await refreshTokenRepository.RevokeByHash(tokenHashService.Hash(presentedToken), ct);
 
-        if (existing is not null)
-            refreshTokenRepository.Revoke(existing);
-    }
+    public async Task<int> RevokeAllActiveSessionsForEmail(
+        string emailAddress,
+        CancellationToken ct = default
+    ) => await refreshTokenRepository.RevokeAllActiveSessionsForEmail(emailAddress, ct);
 
     public async Task RevokeAllActiveSessionsForUserById(
         Guid userId,

@@ -9,16 +9,6 @@ public class InvitationRepository(AppDbContext context, TimeProvider timeProvide
 {
     private readonly DbSet<InvitationToken> _tokens = context.Set<InvitationToken>();
 
-    public async Task<InvitationToken?> GetTokenRecordByHash(
-        string hashedInput,
-        CancellationToken ct = default
-    )
-    {
-        return await _tokens
-            .FilterDeleted()
-            .FirstOrDefaultAsync(i => i.TokenHash == hashedInput, ct);
-    }
-
     public async Task<InvitationToken?> GetTokenRecordByHashWithCongregation(
         string hashedInput,
         CancellationToken ct = default
