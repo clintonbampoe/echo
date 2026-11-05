@@ -285,7 +285,8 @@ describe("verify", () => {
     sent();
     renderAt("/verify", [], { email: "ama@gmail.com", send: true });
     await screen.findByText("Send another link in 0:30");
-    expect(linkRequests()).toHaveLength(1);
+    // The request goes out from an effect, so it can land just after the wait is drawn.
+    await waitFor(() => expect(linkRequests()).toHaveLength(1));
   });
 
   it("lets someone who is signed in go back to the app", async () => {
@@ -359,6 +360,10 @@ describe("verify", () => {
     sent();
     renderAt("/verify", [], { email: "ama@example.com" });
     await screen.findByText("Check your email");
+    // The page starts listening from an effect; wait until it has, or the message goes unheard.
+    await waitFor(() =>
+      expect(Channel.all.some((c) => c.onmessage)).toBe(true),
+    );
     act(() => new Channel().postMessage("verified"));
     expect(
       await screen.findByRole("heading", { name: "Account verified" }),
