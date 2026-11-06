@@ -1,10 +1,5 @@
 #!/bin/sh
-# Creates the read-only role Alloy's Postgres exporter signs in as. Safe to run again (it resets the password).
-#
-#   MONITOR_PASSWORD=... ./infra/postgres/create-monitor-role.sh
-#
-# Runs psql inside the `database` container, as the database's own user. pg_monitor can read the statistics views
-# (including pg_stat_statements) and nothing else: it cannot read a single row of the church's data.
+# Creates the read-only Postgres role the exporter uses.
 set -eu
 : "${MONITOR_PASSWORD:?set MONITOR_PASSWORD}"
 

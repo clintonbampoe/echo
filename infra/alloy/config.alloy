@@ -30,23 +30,12 @@ loki.source.docker "docker_logs" {
 loki.process "logs" {
   stage.docker {}
 
-  // Not worth keeping: the observability stack's own logs, the API's stdout (the API sends the same lines over OTLP,
-  // with trace ids), the Vite dev server and Portainer.
   stage.drop {
     source              = "container"
     expression          = "^(alloy|grafana|loki|prometheus|tempo|api|frontend|portainer)$"
     drop_counter_reason = "not-kept"
   }
 
-  // ------------------------------------------------------------------------------------------------------------
-  // nginx access log. nginx writes JSON (easy to parse); Loki stores a readable line instead:
-  //     GET /api/v1/members · 200 · 0.032 s · 172.19.0.1
-  // "status", "method" and a "level" (error for 5xx, warn for 4xx) are labels, so Grafana colours the row and
-  // "every 429 in the last hour" is a cheap query. The rest (path, request time, upstream time, address, browser,
-  // bytes) are fields shown when a line is opened, and usable in queries, but are not part of the line.
-  // nginx logs every error and a random 1% of the rest. "sampled" is 1 for that 1%: a request count is the lines
-  // with sampled="1" times 100, and a request-time percentile is taken over those lines only.
-  // ------------------------------------------------------------------------------------------------------------
   stage.match {
     selector = "{container=\"nginx\", stream=\"stdout\"}"
 
@@ -96,7 +85,6 @@ loki.process "logs" {
     }
   }
 
-  // nginx's own error log is plain text: "2026/10/30 22:00:00 [error] 29#29: ...". Its level becomes the label.
   stage.match {
     selector = "{container=\"nginx\", stream=\"stderr\"}"
 
@@ -109,12 +97,6 @@ loki.process "logs" {
     }
   }
 
-  // ------------------------------------------------------------------------------------------------------------
-  // Postgres. A statement can run over many lines, and Docker records each line as its own entry, so first gather
-  // every line that does not start with a timestamp into the entry before it. Then take the prefix
-  // ("2026-10-30 22:21:05.995 UTC [27568] postgres@echo_db LOG:  ") apart: the message becomes the line, the level
-  // becomes a label (error, warn or info), and the process id, user and database become fields.
-  // ------------------------------------------------------------------------------------------------------------
   stage.match {
     selector = "{container=\"database\"}"
 
@@ -169,9 +151,6 @@ otelcol.receiver.otlp "apps" {
   }
 }
 
-// Only warnings and above from the API reach Loki by default. Everything below is request chatter that the traces
-// already show, and a load test turns it into thousands of lines a second. To see more, set API_LOG_MIN_SEVERITY in
-// .env (OpenTelemetry numbers: 5 debug, 9 information, 13 warning, 17 error) and recreate Alloy.
 otelcol.processor.filter "warnings" {
   error_mode = "ignore"
 
@@ -184,9 +163,6 @@ otelcol.processor.filter "warnings" {
   }
 }
 
-// ASP.NET and EF attach a dozen bookkeeping attributes to every log record (connection id, parent span, SDK
-// version...). They bury the two that matter (trace_id for the trace link, RequestPath), so leave them out. Logs from
-// the Echo.Auth classes (sign-in, renewal, passwords...) get category="auth", so the auth dashboard can show them.
 otelcol.processor.transform "tidy_logs" {
   error_mode = "ignore"
 
@@ -216,16 +192,10 @@ otelcol.processor.transform "tidy_logs" {
   }
 }
 
-// The API traces every request; this is where the keep-or-drop decision is made, once a trace is complete. A trace is
-// kept if ANY policy matches, so every failed, rejected or slow request is kept whole (all its spans, database queries
-// included) and only ordinary fast successes are thinned to TRACES_SAMPLE_PERCENT. Spans are held for decision_wait
-// before the decision, so this needs every span of a request to reach this one Alloy.
 otelcol.processor.tail_sampling "traces" {
   decision_wait = "10s"
   num_traces    = 10000
 
-  // Slow means over 100 ms, about twelve times the API's p95 (8.5 ms), so only the slowest few percent are kept.
-  // Exceptions and 5xx: ASP.NET marks these spans as errors.
   policy {
     name = "errors"
     type = "status_code"
@@ -235,9 +205,6 @@ otelcol.processor.tail_sampling "traces" {
     }
   }
 
-  // The 4xx worth a trace: 400 (a request the API did not accept), 403 (a permission or congregation boundary),
-  // 409 (a conflict) and 429 (rate limited). ASP.NET does not mark these as errors, so match on the status code.
-  // 401 (every expired token) and 404 (bots, stale links) are left out: they are routine and would fill Tempo.
   policy {
     name = "client-errors"
     type = "ottl_condition"
@@ -248,9 +215,6 @@ otelcol.processor.tail_sampling "traces" {
     }
   }
 
-  // A sign-in refused because the password-check line was full (503, auth.result = busy). ASP.NET marks every 5xx as an
-  // error, so without this each refused person would keep a whole trace, and in a burst there are hundreds a second. They
-  // are counted by the auth dashboard (sign-ins turned away) instead. A drop policy wins over every policy that matches.
   policy {
     name = "refused-sign-ins"
     type = "drop"
@@ -291,14 +255,6 @@ otelcol.processor.tail_sampling "traces" {
   }
 }
 
-// A log line for every slow request, built from the API's own spans, so its duration is what the API measured and its
-// trace id is the real one. Only server spans (one per request) of 100 ms or more are kept, and 500 ms or more for the
-// /auth routes, where a sign-in takes about 175 ms by design (bcrypt) and 100 ms would log every one. Time a sign-in spent
-// waiting in line for a password check (the API tags it auth.hash.wait_ms) is left out: the line is meant to hold people
-// for up to 10 s in a burst, and that is not slowness. It is counted by the auth dashboard instead; a sign-in is logged only
-// when the rest of its time, the work, is 500 ms or more. The traces that reach here are
-// the ones tail sampling kept, and every slow one is. When most requests are slow, as in an overload, this logs most of
-// them.
 otelcol.processor.filter "slow_requests" {
   error_mode = "ignore"
 
@@ -325,10 +281,6 @@ otelcol.connector.spanlogs "slow_requests" {
   }
 }
 
-// The connector writes everything inside one line (tid=..., dur=208347000ns). Loki and the dashboards expect the trace id
-// as the trace_id field, as on the API's own logs, which is what the "View trace" link reads, and a person wants
-// "slow request: POST /api/v1/auth/sessions/login · 200 · 208 ms". The route template and duration stay as fields for
-// queries, and requests under /auth get category="auth", the same as the API's own logs from the Echo.Auth classes.
 otelcol.processor.transform "slow_request_logs" {
   error_mode = "ignore"
 
@@ -380,18 +332,12 @@ otelcol.exporter.otlp "tempo" {
   }
 }
 
-// Native OTLP ingestion: Loki 3.5 parses the protobuf itself -> log body becomes
-// the message text, trace_id/span_id/severity become structured metadata.
-// (The old otelcol.exporter.loki flattened every record into raw JSON.)
 otelcol.exporter.otlphttp "loki" {
   client {
     endpoint = coalesce(sys.env("LOKI_URL"), string.format("http://%s:3100", coalesce(sys.env("OBS_HOST"), "loki"))) + "/otlp"
   }
 }
 
-// The API's metrics go to Prometheus's own OTLP endpoint (not through remote write), because OTLP carries each counter's
-// start time and Prometheus uses it to count a counter's first event. The machine, container and Postgres metrics
-// below still use remote write: they are gauges and scraped counters that never start mid-flight.
 otelcol.exporter.otlphttp "prometheus" {
   client {
     endpoint = coalesce(sys.env("PROMETHEUS_URL"), string.format("http://%s:9090", coalesce(sys.env("OBS_HOST"), "prometheus"))) + "/api/v1/otlp"
@@ -404,18 +350,10 @@ prometheus.remote_write "obs" {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Container and host metrics. Alloy's built-in exporters, so no extra containers.
-// They write straight to Prometheus (not through the app pipeline above, which
-// copies the OTLP "job" into service_name).
-// ---------------------------------------------------------------------------
-
-// One series per Docker container: CPU, memory, network, disk IO, OOM kills.
 prometheus.exporter.cadvisor "containers" {
   docker_host      = "unix:///var/run/docker.sock"
   docker_only      = true
   storage_duration = "5m"
-  // Docker labels (compose dependency lists, paths) would become long metric labels. Not wanted.
   store_container_labels = false
   enabled_metrics  = ["cpu", "memory", "network", "diskIO", "oom_event"]
 }
@@ -430,19 +368,16 @@ prometheus.scrape "containers" {
 prometheus.relabel "containers" {
   forward_to = [prometheus.remote_write.obs.receiver]
 
-  // Keep only what the dashboards and alerts use. cAdvisor emits hundreds of series per container.
   rule {
     source_labels = ["__name__"]
     regex         = "container_(cpu_usage_seconds_total|cpu_cfs_throttled_periods_total|cpu_cfs_periods_total|memory_working_set_bytes|memory_usage_bytes|memory_cache|memory_failcnt|spec_memory_limit_bytes|spec_cpu_quota|network_(receive|transmit)_(bytes|errors|packets_dropped)_total|fs_(reads|writes)_bytes_total|oom_events_total|start_time_seconds|last_seen)"
     action        = "keep"
   }
 
-  // The name the logs use ("api", "database"), so one dashboard variable drives metrics and logs.
   rule {
     source_labels = ["name"]
     target_label  = "container"
   }
-  // Only containers with a name (the Docker containers); drops the cgroup roots.
   rule {
     source_labels = ["container"]
     regex         = ""
@@ -458,14 +393,11 @@ prometheus.relabel "containers" {
   }
 }
 
-// The machine itself: CPU, load, memory, swap, disk space and IO, network.
 prometheus.exporter.unix "host" {
   procfs_path = "/host/proc"
   sysfs_path  = "/host/sys"
   rootfs_path = "/host/root"
 
-  // "pressure" (how long tasks waited for a core, from Linux's pressure stall information) and "schedstat" (the same per
-  // core) show a CPU that is too busy to answer quickly even when it is not at 100%.
   set_collectors = ["cpu", "loadavg", "meminfo", "vmstat", "diskstats", "filesystem", "netdev", "stat", "time", "uname", "pressure", "schedstat"]
 }
 
@@ -485,16 +417,9 @@ prometheus.relabel "host" {
   }
 }
 
-// ---------------------------------------------------------------------------
-// Postgres: connections, cache hit ratio, locks, transactions, size, checkpoints, and per-query statistics
-// (pg_stat_statements, normalised: $1 in place of every value, so it holds no data of the church's).
-// Signs in as the read-only "monitor" role (infra/postgres/create-monitor-role.sh).
-// ---------------------------------------------------------------------------
 prometheus.exporter.postgres "db" {
   data_source_names  = [sys.env("PG_MONITOR_DSN")]
-  // The SQL behind the busiest query ids (queries.yaml), so the statements tables on the Database dashboard can show it.
   custom_queries_config_path = "/etc/alloy/queries.yaml"
-  // Named in full: only the collectors listed here run.
   enabled_collectors = [
     "database",
     "locks",

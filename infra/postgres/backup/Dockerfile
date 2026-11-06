@@ -1,31 +1,27 @@
 FROM alpine:3.20
 
-# Install client tools and dependencies
-# postgresql18-client is the specific package for version 18
 RUN apk add --no-cache \
   ca-certificates \
   curl \
   bash
 
-# Install Postgres 18 Client from Edge
 RUN apk add --no-cache \
   --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main \
   postgresql18-client
 
-# Install Supercronic package
-# Latest releases available at https://github.com/aptible/supercronic/releases
-ENV SUPERCRONIC_URL=https://github.com/aptible/supercronic/releases/download/v0.2.49/supercronic-linux-amd64 \
-  SUPERCRONIC_SHA1SUM=e63c11a9726b775a6a11801e81af4f3fb926aa68 \
-  SUPERCRONIC=supercronic-linux-amd64
+ARG TARGETARCH
+ARG SUPERCRONIC_VERSION=v0.2.49
+ARG SUPERCRONIC_SHA1_AMD64=e63c11a9726b775a6a11801e81af4f3fb926aa68
+ARG SUPERCRONIC_SHA1_ARM64=0b6c5bb743e0b0dafed1132198c81807927ac413
 
-RUN curl -fsSLO "$SUPERCRONIC_URL" \
-  && echo "${SUPERCRONIC_SHA1SUM}  ${SUPERCRONIC}" | sha1sum -c - \
-  && chmod +x "$SUPERCRONIC" \
-  && mv "$SUPERCRONIC" "/usr/local/bin/${SUPERCRONIC}" \
-  && ln -s "/usr/local/bin/${SUPERCRONIC}" /usr/local/bin/supercronic
+RUN if [ "$TARGETARCH" = "arm64" ]; then ARCH=arm64; SHA1="$SUPERCRONIC_SHA1_ARM64"; \
+  else ARCH=amd64; SHA1="$SUPERCRONIC_SHA1_AMD64"; fi \
+  && curl -fsSLo /usr/local/bin/supercronic \
+    "https://github.com/aptible/supercronic/releases/download/${SUPERCRONIC_VERSION}/supercronic-linux-${ARCH}" \
+  && echo "${SHA1}  /usr/local/bin/supercronic" | sha1sum -c - \
+  && chmod +x /usr/local/bin/supercronic
 
-# Crontab is copied here
-COPY infra/postgres/backup/crontab app/crontab
+COPY infra/postgres/backup/crontab /app/crontab
+COPY --chmod=755 infra/postgres/backup/backup.sh infra/postgres/backup/restore.sh /app/
 
-# Run Supercronic
 CMD ["supercronic", "/app/crontab"]

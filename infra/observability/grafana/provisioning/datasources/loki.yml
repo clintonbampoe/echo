@@ -1,6 +1,4 @@
 apiVersion: 1
-# The old Prometheus entry lived here too, causing a duplicate; gone now,
-# prometheus.yml owns it (deleteDatasources cleans up the leftover).
 deleteDatasources:
   - name: Prometheus
     orgId: 1
@@ -16,8 +14,6 @@ datasources:
     jsonData:
       maxLines: 500
       derivedFields:
-        # Native OTLP logs: trace_id lives in structured metadata, not the line.
-        # Type "label" matches labels AND structured metadata keys.
         - name: TraceID
           matcherType: label
           matcherRegex: trace_id

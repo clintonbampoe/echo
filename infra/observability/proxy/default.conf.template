@@ -1,7 +1,4 @@
-# The observability server's front door. Rendered at start-up: the image fills in ${OBS_DOMAIN} from the environment.
-# Only Grafana is reachable from the browser. Loki, Prometheus and Tempo stay on the private network.
 
-# Grafana Live (the dashboards' push updates) is a WebSocket: pass the upgrade through, and only when asked for.
 map $http_upgrade $connection_upgrade {
     default upgrade;
     ""      close;
@@ -11,7 +8,6 @@ server {
     listen 80;
     server_name ${OBS_DOMAIN};
 
-    # Let's Encrypt proves we own the name by fetching a file from here.
     location /.well-known/acme-challenge/ {
         root /var/www/certbot;
     }
@@ -37,7 +33,6 @@ server {
         return 302 /grafana/;
     }
 
-    # Grafana is told it lives under /grafana (serve_from_sub_path), so the path goes through unchanged.
     location /grafana/ {
         proxy_pass http://grafana:3000;
         proxy_set_header Host $host;
@@ -45,7 +40,6 @@ server {
         proxy_set_header X-Forwarded-For $remote_addr;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection $connection_upgrade;
-        # Grafana sends its own HSTS; tls.conf already did.
         proxy_hide_header Strict-Transport-Security;
     }
 

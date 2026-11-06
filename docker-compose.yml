@@ -1,7 +1,4 @@
 ---
-# Docker's default json-file driver never rotates. Every service below inherits
-# this anchor so no container can fill the host disk with logs (50 MiB ceiling
-# each: 10 MiB x 5 files).
 x-logging: &default-logging
   driver: json-file
   options:
@@ -9,6 +6,7 @@ x-logging: &default-logging
     max-file: '10'
 services:
   api:
+    image: ${IMAGE_REGISTRY:-local}/echo-api:${IMAGE_TAG:-dev}
     build:
       context: .
       dockerfile: backend/src/Echo.Api/Dockerfile
@@ -18,18 +16,11 @@ services:
       ConnectionStrings__echodb: ${ConnectionStrings__echodb}
       OTEL_EXPORTER_OTLP_ENDPOINT: ${OTEL_EXPORTER_OTLP_ENDPOINT}
       OTEL_SERVICE_NAME: ${OTEL_SERVICE_NAME}
-      # How often the API pushes its metrics. The default is 60 s, which makes a dashboard trail what just happened by a
-      # minute or more. 15 s costs nothing at this size.
       OTEL_METRIC_EXPORT_INTERVAL: ${OTEL_METRIC_EXPORT_INTERVAL:-15000}
-      # Every request is traced here; Alloy decides which traces to keep once they are complete (all failed, rejected
-      # and slow ones, and a share of the rest). See infra/alloy/config.alloy.
       OTEL_TRACES_SAMPLER: parentbased_always_on
-      # Warnings and errors are always logged; the Information lines (one or more per request) are off. Set
-      # API_LOG_LEVEL=Information to see them while debugging.
       Logging__LogLevel__Default: ${API_LOG_LEVEL:-Warning}
       Jwt__PrivateKey: ${Jwt__PrivateKey}
       Jwt__PublicKey: ${Jwt__PublicKey}
-      # Only set during a key rotation grace period; empty the rest of the time.
       Jwt__PreviousPublicKey: ${Jwt__PreviousPublicKey:-}
       Jwt__Issuer: ${Jwt__Issuer}
       Jwt__Audience: ${Jwt__Audience}
@@ -40,9 +31,7 @@ services:
       Resend__ApiKey: ${Resend__ApiKey}
       Invitations__CodeKey: ${Invitations__CodeKey}
       RunMigrationsOnStartup: ${RunMigrationsOnStartup}
-    volumes:
-      # ASP.NET writes its data-protection keys here; without a volume they are lost on every rebuild.
-      - api-keys:/root/.aspnet/DataProtection-Keys
+    volumes: [api-keys:/root/.aspnet/DataProtection-Keys]
     healthcheck:
       test: [CMD, curl, -f, http://localhost:5025/api/health/live]
       interval: 5s
@@ -53,23 +42,17 @@ services:
         condition: service_healthy
     networks: [echo-network]
   db:
-    image: postgres:18
+    image: ${IMAGE_REGISTRY:-local}/echo-postgres:${IMAGE_TAG:-dev}
+    build:
+      context: .
+      dockerfile: infra/postgres/Dockerfile
     logging: *default-logging
     container_name: database
     environment:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USERNAME: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-    volumes:
-      - postgres-data:/var/lib/postgresql
-      - ./infra/postgres/init/extensions.sql:/docker-entrypoint-initdb.d/extensions.sql
-      - ./infra/postgres/postgresql.conf:/etc/postgresql/postgresql.conf:ro
-      - ./infra/postgres/conf:/etc/postgresql/conf.d:ro
-      - ./infra/postgres/backup/db_dumps:/db_dumps:ro
-    command:
-      - postgres
-      - -c
-      - config_file=/etc/postgresql/postgresql.conf
+    volumes: [postgres-data:/var/lib/postgresql]
     healthcheck:
       test: [CMD-SHELL, 'pg_isready -U ${DB_USERNAME} -d ${DB_NAME}']
       interval: 5s
@@ -77,6 +60,7 @@ services:
       retries: 5
     networks: [echo-network]
   nginx:
+    image: ${IMAGE_REGISTRY:-local}/echo-nginx:${IMAGE_TAG:-dev}
     build:
       context: .
       dockerfile: infra/nginx/Dockerfile
@@ -87,6 +71,7 @@ services:
         condition: service_healthy
     networks: [echo-network]
   backup:
+    image: ${IMAGE_REGISTRY:-local}/echo-backup:${IMAGE_TAG:-dev}
     build:
       context: .
       dockerfile: infra/postgres/backup/Dockerfile
@@ -96,12 +81,7 @@ services:
       DB_NAME: ${DB_NAME}
       DB_USERNAME: ${DB_USERNAME}
       PGPASSWORD: ${DB_PASSWORD}
-    volumes:
-      - ./infra/postgres/backup/backup.sh:/app/backup.sh:ro
-      - ./infra/postgres/backup/restore.sh:/app/restore.sh:ro
-      - ./infra/postgres/backup/dumps/:/app/dumps
-    # Entry point is defined per environment in override/prod files
-    # Since schedule differs between dev and prod
+    volumes: ['${BACKUP_DIR:-./infra/postgres/backup/dumps}:/app/dumps']
     depends_on:
       db:
         condition: service_healthy
@@ -109,6 +89,7 @@ services:
     profiles: [db-tools]
     restart: unless-stopped
   migrator:
+    image: ${IMAGE_REGISTRY:-local}/echo-migrator:${IMAGE_TAG:-dev}
     build:
       context: .
       dockerfile: backend/src/Echo.MigrationService/Dockerfile
@@ -130,7 +111,7 @@ services:
     environment:
       ConnectionStrings__echodb: ${ConnectionStrings__echodb}
     depends_on:
-      db: 
+      db:
         condition: service_healthy
     networks: [echo-network]
     profiles: [db-tools]

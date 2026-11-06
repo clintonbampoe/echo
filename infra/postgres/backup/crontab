@@ -1,2 +1,1 @@
-# Run database backups everyday at 2am
 0 2 * * * /app/backup.sh 2>&1 | tee -a /app/dumps/backup.log
