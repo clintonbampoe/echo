@@ -1,0 +1,54 @@
+---
+name: Release observability
+on:
+  push:
+    branches: [main]
+    paths:
+      - infra/observability/**
+      - infra/nginx/tls.conf
+      - infra/certbot/**
+      - infra/nginx/reload-on-renewal.sh
+      - .github/workflows/release-obs.yaml
+  workflow_dispatch:
+concurrency: release-obs
+permissions:
+  contents: read
+  packages: write
+jobs:
+  images:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {name: echo-loki, context: infra/observability/loki, dockerfile: infra/observability/loki/Dockerfile}
+          - {name: echo-prometheus, context: infra/observability/prometheus, dockerfile: infra/observability/prometheus/Dockerfile}
+          - {name: echo-tempo, context: infra/observability/tempo, dockerfile: infra/observability/tempo/Dockerfile}
+          - {name: echo-grafana, context: infra/observability/grafana, dockerfile: infra/observability/grafana/Dockerfile}
+          - {name: echo-certbot, context: ., dockerfile: infra/certbot/Dockerfile}
+          - {name: echo-obs-proxy, context: ., dockerfile: infra/observability/proxy/Dockerfile}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Image name
+        run: |
+          echo "OWNER=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_ENV"
+          echo "TAG=${GITHUB_SHA::7}" >> "$GITHUB_ENV"
+      - uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ghcr.io/${{ env.OWNER }}/${{ matrix.name }}:${{ env.TAG }}
+          labels: org.opencontainers.image.source=https://github.com/${{ github.repository }}
+          cache-from: type=gha,scope=${{ matrix.name }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.name }}

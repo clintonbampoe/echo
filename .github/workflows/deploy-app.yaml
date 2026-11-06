@@ -1,0 +1,56 @@
+---
+name: Deploy app
+on:
+  workflow_run:
+    workflows: [Release app]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: Commit to deploy (default, the latest on the selected branch)
+      rollback:
+        description: Go back one release instead
+        type: boolean
+        default: false
+concurrency: deploy-app
+permissions:
+  contents: read
+jobs:
+  deploy:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion
+      == 'success'
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      SHA: ${{ github.event.workflow_run.head_sha || inputs.sha || github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.SHA }}
+      - name: Connect
+        env:
+          KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+          HOST: ${{ vars.DEPLOY_HOST }}
+          USER_NAME: ${{ vars.DEPLOY_USER }}
+        run: |
+          install -m 700 -d ~/.ssh
+          echo "$KEY" > ~/.ssh/id_deploy && chmod 600 ~/.ssh/id_deploy
+          echo "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          printf 'Host app\n  HostName %s\n  User %s\n  IdentityFile ~/.ssh/id_deploy\n  StrictHostKeyChecking yes\n  ServerAliveInterval 30\n' "$HOST" "$USER_NAME" > ~/.ssh/config
+      - name: Roll back
+        if: inputs.rollback
+        run: ssh -n app rollback
+      - name: Deploy
+        if: ${{ !inputs.rollback }}
+        run: |-
+          tag=${SHA::7}
+          mkdir release
+          cp docker-compose.yml docker-compose.prod.yml release/
+          cp infra/alloy/docker-compose.yaml release/alloy.yaml
+          cp infra/deploy/deploy-app.sh release/deploy.sh
+          cp infra/nginx/certs.sh release/certs.sh
+          printf 'IMAGE_REGISTRY=ghcr.io/%s\nIMAGE_TAG=%s\n' "${GITHUB_REPOSITORY_OWNER,,}" "$tag" > release/release.env
+          tar -C release -c . | ssh app "upload $tag"
+          ssh -n app "deploy $tag"

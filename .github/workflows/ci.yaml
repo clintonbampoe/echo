@@ -1,3 +1,4 @@
+---
 name: Echo CI
 on:
   push:
@@ -9,7 +10,6 @@ on:
       - backend/**
       - frontend/**
 
-  # Cancel in-flight runs on the same ref when a new push arrives.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -51,7 +51,6 @@ jobs:
         with:
           node-version: 24
           cache: npm
-            # Relative to working-directory (frontend), resolves to frontend/package-lock.json.
           cache-dependency-path: frontend/package-lock.json
       - name: Install
         run: npm ci --no-audit --no-fund
