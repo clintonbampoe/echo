@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
-# Brings the app up the way the load test needs it: the production setup (HTTPS, memory limits) plus the load test's own
-# file (nginx trusts the addresses k6 sends, the app is pinned to two cores). Then run ./run.sh <label>.
+# Brings the stack up the way the load test needs it: the production setup (HTTPS, memory limits, CPU weights) plus the
+# load test's own file (nginx trusts the addresses k6 sends, the whole stack is pinned to 4 CPUs). Then run
+# ./run.sh <label>.
 #
-# Run from anywhere. It recreates api, database and nginx, so do not run it during a test.
+# Run from anywhere. It recreates the whole stack, so do not run it during a test.
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 

@@ -42,10 +42,14 @@ error (at 25 requests a second and a burst of 50 the 500-user test refused 0.28%
 
 ## The target
 
-For now, on 2 vCPU and 4 GB: **500 people signed in, with the app's data requests at p95 under 25 ms and p99 under
-50 ms** (steady phase, so the warm-up minute is left out), no failures, and no sign-in or renewal turned away. They are
-the thresholds in `main.js`; k6 exits non-zero and `run.sh` still writes the SQL report when one is missed. Sign-in
-(bcrypt, about 200 ms by design) is judged separately, at p95 under 1 s. We raise the bar when there are more users.
+The target server has 4 vCPU and 8 GB, with the monitoring stack on the same machine. The test runs the whole stack on
+4 CPUs of this machine (see `docker-compose.loadtest.yml`) and the CPU weights decide who wins when they are busy.
+
+The thresholds in `main.js` are **500 people signed in, with the app's data requests at p95 under 25 ms and p99 under
+50 ms** (steady phase, so the warm-up minute is left out), no failures, and no sign-in or renewal turned away. They were
+set on the earlier 2 vCPU and 4 GB box: the first runs on this setup are the new baseline, and the bar is raised from
+there. k6 exits non-zero and `run.sh` still writes the SQL report when one is missed. Sign-in (bcrypt, about 200 ms by
+design) is judged separately, at p95 under 1 s.
 
 ## Run it
 
