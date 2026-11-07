@@ -42,9 +42,12 @@ services:
     mem_limit: 256m
     memswap_limit: 256m
     restart: unless-stopped
+    environment:
+      STATUS_HEARTBEAT_TOKEN: ${STATUS_HEARTBEAT_TOKEN:?set STATUS_HEARTBEAT_TOKEN}
     volumes:
       - letsencrypt:/etc/letsencrypt
       - certbot-webroot:/var/www/certbot
+    networks: [echo-network]
   alloy:
     cpu_shares: 512
     mem_limit: 256m
@@ -79,6 +82,10 @@ services:
       GF_SECURITY_DISABLE_GRAVATAR: 'true'
       GF_ANALYTICS_REPORTING_ENABLED: 'false'
       GF_ANALYTICS_CHECK_FOR_UPDATES: 'false'
+  status:
+    cpu_shares: 128
+    mem_limit: 128m
+    memswap_limit: 128m
 volumes:
   letsencrypt:
   certbot-webroot:

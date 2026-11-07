@@ -6,7 +6,7 @@ set -euo pipefail
 NEW=$(cd "$(dirname "$0")" && pwd -P)
 ROOT=$(dirname "$(dirname "$NEW")")
 core=(db api nginx backup certbot)
-monitoring=(alloy loki prometheus tempo grafana)
+monitoring=(alloy loki prometheus tempo grafana status)
 
 log() { echo "[$(date +%T)] $*"; }
 die() {

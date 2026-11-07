@@ -11,7 +11,7 @@ repo=$(cd "$(dirname "$0")/../.." && pwd)
 certs=$(mktemp -d)
 trap 'rm -rf "$certs"' EXIT
 mkcert -install # adds mkcert's own certificate authority to this machine's trust stores, once
-mkcert -cert-file "$certs/fullchain.pem" -key-file "$certs/privkey.pem" "$app"
+mkcert -cert-file "$certs/fullchain.pem" -key-file "$certs/privkey.pem" "$app" "status.$app"
 
 cd "$repo"
 APP_DOMAIN=$app docker compose -f docker-compose.yml -f docker-compose.prod.yml \

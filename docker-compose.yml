@@ -82,6 +82,7 @@ services:
       DB_NAME: ${DB_NAME}
       DB_USERNAME: ${DB_USERNAME}
       PGPASSWORD: ${DB_PASSWORD}
+      STATUS_HEARTBEAT_TOKEN: ${STATUS_HEARTBEAT_TOKEN:?set STATUS_HEARTBEAT_TOKEN}
     volumes: ['${BACKUP_DIR:-./infra/postgres/backup/dumps}:/app/dumps']
     depends_on:
       db:
@@ -222,6 +223,20 @@ services:
       start_period: 15s
     networks: [echo-network]
     profiles: [obs]
+  status:
+    image: ${IMAGE_REGISTRY:-local}/echo-status:${IMAGE_TAG:-dev}
+    build:
+      context: .
+      dockerfile: infra/status/Dockerfile
+    logging: *default-logging
+    container_name: status
+    restart: unless-stopped
+    environment:
+      STATUS_PASSWORD_HASH: ${STATUS_PASSWORD_HASH:?set STATUS_PASSWORD_HASH}
+      STATUS_HEARTBEAT_TOKEN: ${STATUS_HEARTBEAT_TOKEN:?set STATUS_HEARTBEAT_TOKEN}
+    volumes: [status-data:/data]
+    networks: [echo-network]
+    profiles: [obs]
 networks:
   echo-network:
 volumes:
@@ -232,3 +247,4 @@ volumes:
   prometheus-data:
   tempo-data:
   grafana-data:
+  status-data:

@@ -34,6 +34,7 @@ jobs:
           - {name: echo-prometheus, dockerfile: infra/observability/prometheus/Dockerfile}
           - {name: echo-tempo, dockerfile: infra/observability/tempo/Dockerfile}
           - {name: echo-grafana, dockerfile: infra/observability/grafana/Dockerfile}
+          - {name: echo-status, dockerfile: infra/status/Dockerfile}
           - {name: echo-postgres, dockerfile: infra/postgres/Dockerfile}
           - {name: echo-certbot, dockerfile: infra/certbot/Dockerfile}
           - {name: echo-backup, dockerfile: infra/postgres/backup/Dockerfile}

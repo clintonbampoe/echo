@@ -28,7 +28,9 @@ case "$action" in
   placeholder)
     "${certbot[@]}" --entrypoint sh certbot -c "[ -f $live/fullchain.pem ] || {
       mkdir -p $live && openssl req -x509 -nodes -newkey rsa:2048 -days 1 \
-        -subj /CN=$domain -keyout $live/privkey.pem -out $live/fullchain.pem; }"
+        -subj /CN=$domain \
+        -addext subjectAltName=DNS:$domain,DNS:status.$domain \
+        -keyout $live/privkey.pem -out $live/fullchain.pem; }"
     ;;
   init)
     email=$(env_value CERTBOT_EMAIL)
@@ -39,7 +41,7 @@ case "$action" in
       /etc/letsencrypt/archive/$domain /etc/letsencrypt/renewal/$domain.conf"
     "${certbot[@]}" --entrypoint certbot certbot certonly \
       --webroot -w /var/www/certbot "${flags[@]}" \
-      -d "$domain" --email "$email" --agree-tos --no-eff-email
+      -d "$domain" -d "status.$domain" --email "$email" --agree-tos --no-eff-email
     "${compose[@]}" exec -T "$service" nginx -s reload
     ;;
   *)

@@ -1,0 +1,80 @@
+web:
+  port: 8080
+
+ui:
+  title: Echo status
+  header: Echo status
+
+security:
+  basic:
+    username: admin
+    password-bcrypt-base64: ${STATUS_PASSWORD_HASH}
+
+storage:
+  type: sqlite
+  path: /data/status.db
+
+endpoint-defaults: &defaults
+  interval: 30s
+  client:
+    timeout: 5s
+    insecure: true
+
+endpoints:
+  - name: Website
+    group: Services
+    url: https://nginx/
+    <<: *defaults
+    conditions: ["[STATUS] == 200"]
+  - name: API
+    group: Services
+    url: https://nginx/api/health/ready
+    <<: *defaults
+    conditions: ["[STATUS] == 200"]
+  - name: API (direct)
+    group: Services
+    url: http://api:5025/api/health/ready
+    <<: *defaults
+    conditions: ["[STATUS] == 200"]
+  - name: Database
+    group: Services
+    url: tcp://db:5432
+    <<: *defaults
+    conditions: ["[CONNECTED] == true"]
+  - name: Grafana
+    group: Observability
+    url: https://nginx/grafana/api/health
+    <<: *defaults
+    conditions: ["[STATUS] == 200"]
+  - name: Loki
+    group: Observability
+    url: http://loki:3100/ready
+    <<: *defaults
+    conditions: ["[STATUS] == 200"]
+  - name: Prometheus
+    group: Observability
+    url: http://prometheus:9090/-/ready
+    <<: *defaults
+    conditions: ["[STATUS] == 200"]
+  - name: Tempo
+    group: Observability
+    url: http://tempo:3200/ready
+    <<: *defaults
+    conditions: ["[STATUS] == 200"]
+  - name: Alloy
+    group: Observability
+    url: http://alloy:12345/-/ready
+    <<: *defaults
+    conditions: ["[STATUS] == 200"]
+
+external-endpoints:
+  - name: Backup
+    group: Jobs
+    token: ${STATUS_HEARTBEAT_TOKEN}
+    heartbeat:
+      interval: 26h
+  - name: Certificate renewal
+    group: Jobs
+    token: ${STATUS_HEARTBEAT_TOKEN}
+    heartbeat:
+      interval: 26h
