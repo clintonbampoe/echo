@@ -1,0 +1,81 @@
+# CI and workflows
+
+Three GitHub Actions workflows in `.github/workflows/`.
+
+| Workflow | Runs on | Does |
+|---|---|---|
+| `ci.yaml` (Echo CI) | every pull request to `main`, every push to `main` | `api`, `frontend` and `infra` jobs |
+| `release.yaml` (Release) | a pushed tag `vMAJOR.MINOR.PATCH` | checks the tag is on `main`, builds and pushes the 12 images |
+| `deploy.yaml` (Deploy) | Release finishing, or started by hand with a version | uploads a release folder to the server and deploys it |
+
+## Echo CI
+
+The workflow starts on every pull request and every push to `main`, so its
+checks always report. A `changes` job reads what a pull request touched, and
+each job skips itself when its files are untouched. On a push to `main` every
+job runs.
+
+| Job | Runs when the pull request changes | Does |
+|---|---|---|
+| `api` | `backend/`, `global.json` or `ci.yaml` | restore, build (Release) and the unit tests (`Category=Unit`) of `backend/Echo.slnx`. The Testcontainers integration tests are not run in CI; see [Backend testing](../backend/testing.md) |
+| `frontend` | `frontend/` or `ci.yaml` | `npm ci`, lint, typecheck, tests and build |
+| `infra` | `infra/`, `docs/`, `.github/`, a compose file or any `.md` file | `shellcheck` on `infra/**/*.sh` and `docs/check-links.sh`, `actionlint` on the workflows, both compose stacks rendered with an env from `make-env.sh`, `infra/deploy/test-server-entry.sh`, and `docs/check-links.sh` (every relative link must resolve and every page in `docs/` must be linked from somewhere) |
+| `ci` | always | passes when every job passed or was skipped, and fails when one failed, was cancelled, or `changes` itself failed |
+
+A workflow-level `paths:` filter would stop the workflow from starting at all,
+and a required check that never reports blocks the pull request forever. A job
+skipped by its own `if:` reports as passing, so the filter lives in the jobs.
+
+Branch protection on `main` should require `ci` and the GitGuardian check.
+`ci` covers the three jobs, so adding or renaming one never needs a settings
+change. Until protection is switched, `api` and `frontend` still work as
+required checks, because a skipped job counts as passed.
+
+Locally, the same checks:
+
+```bash
+dotnet test --solution backend/Echo.slnx --filter "Category=Unit"
+cd frontend && npm run check
+git ls-files 'infra/*.sh' docs/check-links.sh | xargs shellcheck -S warning
+docs/check-links.sh
+```
+
+## Release
+
+Triggered by a tag such as `v0.1.2`. The `check` job fails the run unless the
+tagged commit is on `main`. The `images` job then builds the 12 images in
+parallel, once each, from the repo root as the build context, for
+`linux/amd64`, and pushes them to `ghcr.io/<owner>/echo-<name>:<tag>`. Layers
+are cached in GitHub's cache per image.
+
+See [Release](../how-to/release.md) for the steps and
+[How Echo is put together](../explanation/topology.md) for the image list.
+
+## Deploy
+
+Starts when Release succeeds, or by hand:
+
+```bash
+gh workflow run deploy.yaml -f version=v0.1.1
+```
+
+It runs in the `production` environment, so required reviewers there gate it.
+It checks out the tag, builds a release folder (the two compose files,
+`deploy.sh`, `certs.sh` and a `release.env` holding `IMAGE_REGISTRY` and
+`IMAGE_TAG`), and streams it to the server over SSH with the deploy key. The
+key's forced command, `echo-server-entry.sh`, accepts only `upload <version>`,
+`deploy <version>` and `rollback`. The server then runs the folder's
+`deploy.sh`.
+
+Needed in the `production` environment:
+
+| Kind | Name | Holds |
+|---|---|---|
+| secret | `DEPLOY_SSH_KEY` | the private deploy key |
+| secret | `DEPLOY_KNOWN_HOSTS` | the server's host key line |
+| variable | `DEPLOY_HOST` | the server's address |
+| variable | `DEPLOY_USER` | `deploy` |
+
+## Dependabot
+
+Dependency updates arrive as pull requests and go through the same CI.

@@ -1,10 +1,5 @@
 # Backend Architecture
 
-**Written by:** @clintonbampoe
-**Last updated:** 2026-10-22 by @clintonbampoe
-
----
-
 Echo is a **modular monolith** built on **Clean Architecture** principles with ASP.NET Core 10.
 
 ---

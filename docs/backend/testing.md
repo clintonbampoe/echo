@@ -1,10 +1,5 @@
 # Backend Testing
 
-**Written by:** @clintonbampoe
-**Last updated:** 2026-10-22 by @clintonbampoe
-
----
-
 Conventions for the `backend/tests/*` projects. Runner is **xunit.v3** on the
 **Microsoft.Testing.Platform** (configured in the root `global.json`).
 

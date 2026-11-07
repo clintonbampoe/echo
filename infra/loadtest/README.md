@@ -20,7 +20,7 @@ error (at 25 requests a second and a burst of 50 the 500-user test refused 0.28%
   run, using all of that church's seeded accounts.
 - **Background**: people from the other churches arrive slowly, 20% of them in the first 10% of the run and the rest
   up to `PEAK_VUS` (500, the focus staff included) by 90% of it, then hold. Defaults: 15 minutes.
-- **Every virtual user is one person with a real session.** They sign in with their password (bcrypt), renew with the
+- **Every virtual user is one person with a real session.** They sign in with their password (Argon2id), renew with the
   refresh token a minute before the access token runs out, and start over if a renewal fails. The token lifetime is
   whatever the API is set to (`Jwt:AccessTokenLifetimeMinutes`), read from each response, so a shorter lifetime
   means more renewals.
@@ -47,8 +47,8 @@ The target server has 4 vCPU and 8 GB, with the monitoring stack on the same mac
 
 The thresholds in `main.js` are **500 people signed in, with the app's data requests at p95 under 25 ms and p99 under
 50 ms** (steady phase, so the warm-up minute is left out), no failures, and no sign-in or renewal turned away. They were
-set on the earlier 2 vCPU and 4 GB box: the first runs on this setup are the new baseline, and the bar is raised from
-there. k6 exits non-zero and `run.sh` still writes the SQL report when one is missed. Sign-in (bcrypt, about 200 ms by
+set on the earlier 2 vCPU and 4 GB box. The stepped pattern (`PATTERN=stepped`) is the one that has been measured on the
+4 vCPU setup; its figures are in [Limits](../../docs/explanation/limits.md). k6 exits non-zero and `run.sh` still writes the SQL report when one is missed. Sign-in (Argon2id, about 40 ms by
 design) is judged separately, at p95 under 1 s.
 
 ## Run it

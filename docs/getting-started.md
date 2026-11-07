@@ -1,175 +1,132 @@
-# Getting Started with Echo
+# Getting started
 
-**Written by:** @clintonbampoe
-**Last updated:** 2026-10-21 by @clintonbampoe
+Run Echo on your machine: the database, the API, nginx and the web app, all
+in Docker. Takes about 10 minutes, most of it the first image build.
 
----
+You need:
 
-## Requirements
+- Docker with the `docker compose` plugin, and Git;
+- the .NET 10 SDK, because the key script runs it;
+- a bash shell (on Windows, Git Bash or WSL);
+- Node 24 only if you will work on the frontend outside Docker.
 
-- Docker
-- Git
-
----
-
-## 1. Clone the repo
+## 1. Clone and configure
 
 ```bash
 git clone https://github.com/clintonbampoe/echo.git
+cd echo
+cp .env.example .env
 ```
 
----
+Edit `.env`. The database values in `.env.example` work as they are. Set
+`MailClient__Address` (the sender address) and `Resend__ApiKey`; ask a
+maintainer for both. Without real values, email
+(verification, invitations, password reset) does not send. Every variable is
+in [Environment variables](./reference/environment.md).
 
-## 2. Configure secrets
-
-- Copy the structure in the `.env.example` file into a new `.env` file. Speak to any of the maintainers of the repository for secrets and API keys.
-
-- Fill in the secrets into the `.env` file and add it to the repository root.
-
-- JWT keys are Base64 encoded. This is because normal PEM keys can have escape characters and other sequences that interfere with the `.env` file format. Hence, the reason for the encoding. Rest assured, every module that reads this key knows to decode it before use. The reader should also keep this in mind for any module they might add that would read the JWT keys.
-  **NB:** The encoding is only for the **JWT Keys** due to the quirks of PEM keys. The rest of the secrets are just in their normal form.
-
-- To set up a **JWT Key** pair on your device, navigate to the `/backend/tools/jwt-key-setup` directory in the repository and run:
+Two secrets (`Jwt__PrivateKey`, `Jwt__PublicKey` and `Invitations__CodeKey`) must be generated,
+because they are encoded. The `env` argument tells each script to write into
+`.env` at the repo root; with no argument it stores the key in `dotnet
+user-secrets` instead:
 
 ```bash
-sh SetupJwtKeys.sh env
+bash backend/tools/jwt-key-setup/SetupJwtKeys.sh env
+bash backend/tools/invitation-key-setup/SetupInvitationKey.sh env
 ```
 
-  The script checks the `.env` file at the repo root to see if the public and private keys for JWT have been configured. It then asks permission to override if yes, or continues if the key pair has not been generated yet.
+The first writes an RSA key pair for signing tokens (base64, because PEM keys
+contain characters that break `.env` files). The second writes the key that
+encrypts invitation codes; the API does not start without it. If a key already
+exists in `.env`, the script asks `Overwrite ...? [y/N]`; answer `n` to keep it.
 
-  **NB:** On Windows, unless you've configured a bash interpreter (Git Bash, WSL), the script may not run. In that case, contact the maintainer for a **JWT Key Pair**.
-
-- To set up the **invitation code key** (it encrypts invitation codes so the invitation list can show them again; the API will not start without it), navigate to `/backend/tools/invitation-key-setup` and run:
-
-```bash
-sh SetupInvitationKey.sh env
-```
-
-  It writes `Invitations__CodeKey` to the `.env` file at the repo root and asks before overwriting an existing one. Use `sh SetupInvitationKey.sh` (no argument) to put it in `dotnet user-secrets` for running `Echo.Api` outside Docker. Do not change the key once invitations exist: the codes already stored become unreadable.
-
----
-
-## 3. Building container images
-
-Echo has a stack that consists of multiple containers (database, nginx, api, etc. See [Infrastructure](../infrastructure/index.md) for more details). Some of these containers run on custom images.
-
-For example, the **api** image is a custom image that runs a multistage build process. Hence, in order to run them you would need to build the image first, so that Docker can cache and reuse it for later sessions.
-
-We have two environments in which our containers can run in:
-- **Development**
-- **Production**
-
-**Development** is the default environment and it is the image docker builds when you run the command:
-
-```bash
-docker compose build
-```
-
-This builds our custom docker images for the dev environment.
-
-To build the images for production, you'll need to explicitly pass the production file override `docker-compose.prod.yml` (located at the root of the repository) as a flag during the `compose build`:
-
-```bash
-docker compose -f docker-compose.yml -f docker-compose.prod.yml build
-```
-
-This pulls all the dependencies needed to build our images and prepares your containers for execution.
-
-> **Note:** On first run, the build might take a while (about 5 minutes depending on internet connectivity). Docker pulls all the SDKs and dependencies needed to run the containers. This only happens once; dependencies and images are cached and reused for later builds.
->
-> **THIS IMPLIES THAT YOU'LL NEED INTERNET CONNECTION FOR THE FIRST BUILD**
-
----
-
-## 4. Starting up containers
-
-To start up the app containers and services, you must have docker installed on your system. Navigate to the repository root to run the following commands.
-
-- **For Development**:
+## 2. Start it
 
 ```bash
 docker compose up
 ```
 
-  (no flags)
+This starts the database, the API, nginx and the Vite dev server for the web
+app, using `docker-compose.yml` plus `docker-compose.override.yml`, which
+compose loads by itself in development. It stays in the foreground, so use a
+second terminal for the next step, or add `-d`.
 
-- **For Production**:
+The first run builds the images and downloads the SDKs, about 5 minutes with
+internet access. Later runs reuse them. By default the API migrates the
+database when it starts (`RunMigrationsOnStartup=true`); the separate
+`migrator` service is only for when you set that to `false`.
 
-```bash
-docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
-```
-
-> **Note:** The `-d` flag runs in detached mode. `--build` ensures fresh images on deploy.
-
-- By default, migrations run automatically when the API container starts (`RunMigrationsOnStartup=true` in `.env`).
-
-- To disable automatic migrations and run them manually instead, set that value to `false` in `.env`, then run:
-
-```bash
-docker compose run --rm migrator
-```
-
----
-
-## 5. Local Development Commands
-
-### Backend
-
-```bash
-# Build
-dotnet build backend/Echo.slnx
-
-# Run API (uses .env at repo root)
-dotnet run --project backend/src/Echo.Api
-
-# Run tests
-dotnet test backend/Echo.slnx
-
-# EF Core migrations (project = Data, startup = Api)
-# Note: DesignTimeDbContextFactory reads "Default" connection string; runtime uses "echodb".
-# For reliable migrations, use the migrator container:
-#   docker compose --profile db-tools run --rm migrator
-dotnet ef migrations add "MigrationName" --project backend/src/Echo.Data --startup-project backend/src/Echo.Api
-dotnet ef database update --project backend/src/Echo.Data --startup-project backend/src/Echo.Api
-```
-
-### Frontend
-
-```bash
-cd frontend
-npm install
-cp .env.example .env.local
-npm run dev       # http://localhost:5173
-npm run check     # lint + typecheck + tests + build (run before pushing)
-npm test          # Vitest
-```
-
----
-
-## 6. Verify
-
-Once the containers are up, the web app and the API are reachable at:
-
-- **Dev** the web app at `http://localhost:8080` (through Nginx) or `http://localhost:5173` (Vite directly); the API at `http://localhost:5025` (directly) or `http://localhost:8080/api` (through Nginx)
-- **Prod** `http://localhost:80` (through Nginx only — Nginx serves the web app, and the API isn't exposed directly)
-
-To confirm it's working, test the health endpoint:
+## 3. Check it
 
 ```bash
 curl http://localhost:8080/api/health/ready
 ```
 
-Or open `http://localhost:8080/api/health/ready` in the browser.
+```text
+{"status":"Healthy","totalDurationMs":0.94,"checks":[...]}
+```
 
-`/ready` only returns `200` once the database is reachable **and** fully migrated. If you get a `503` saying `Database has N pending migration(s)`, the stack is fine — you just haven't run the migrations yet, so run the `migrator` container above. See [Health endpoints](../infrastructure/topology.md#health-endpoints).
+Wait about a minute after `up` for the API to become healthy. Until then curl
+says `connection refused` or nginx answers `502`. `ready` returns `200` once
+the database is reachable and migrated. A `503` that says
+`Database has N pending migration(s)` means the stack is fine and you have not
+migrated yet: run `docker compose run --rm migrator`.
 
----
+Then open:
 
-## 7. Related Documentation
+| What | Address |
+|---|---|
+| The web app, through nginx | http://localhost:8080 |
+| The web app, straight from Vite | http://localhost:5173 |
+| The API | http://localhost:5025, or http://localhost:8080/api through nginx |
 
-- [Infrastructure](../infrastructure/index.md)
-- [Backend Architecture](../backend/architecture.md)
-- [Echo API](../api/api-usage.md)
-- [Front-end](../frontend/README.md)
-- [Performance Plan](../performance/plan.md)
-- [Performance Log](../performance/log.md)
+Create your first church and admin at http://localhost:8080/signup/church:
+the church's name, phone, email and address, then your own name, email and a
+password of at least 8 characters. You are signed in straight away. A
+verification email is sent, but you can use the app before verifying. There is
+no seeded admin unless you run the seeder.
+
+The API reference (Scalar) is at http://localhost:8080/scalar.
+
+## Day to day
+
+Backend, from the repo root. The API outside Docker needs the database
+(`docker compose up db`) and `Host=localhost` in `ConnectionStrings__echodb`,
+since `db` only resolves inside the compose network:
+
+```bash
+dotnet build backend/Echo.slnx
+dotnet run --project backend/src/Echo.Api      # reads .env at the repo root
+dotnet test --solution backend/Echo.slnx --filter "Category=Unit"
+```
+
+The unit tests need no Docker. The integration tests (Testcontainers) do; see
+[Backend testing](./backend/testing.md).
+
+Frontend:
+
+```bash
+cd frontend
+npm install
+cp .env.example .env.local
+npm run dev        # http://localhost:5173
+npm run check      # lint, typecheck, tests, build: run before pushing
+```
+
+`npm run dev` and the compose `client` container both use port 5173; run
+`docker compose stop client` before starting Vite yourself. Vite at `:5173`
+calls the API at the `VITE_API_URL` in `frontend/.env.local`; if you open the
+app through nginx at `:8080` instead, add `http://localhost:8080` to
+`Cors__AllowedOrigins` in the root `.env`, or set `VITE_API_URL=/api`.
+
+Add a migration: [Migrations](./how-to/migrations.md). Fake data for a
+realistic database: `backend/src/Echo.Seeder/Seed.md`.
+
+## Next
+
+- [How Echo is put together](./explanation/topology.md)
+- [The API](./api/getting-started.md)
+- [Backend architecture](./backend/architecture.md) and [frontend](./frontend/README.md)
+- Running it like production on your machine: `infra/nginx/local-certs.sh`
+  installs a trusted certificate for `echo.localhost` (it needs `mkcert`); then
+  start the stack with both compose files and `APP_DOMAIN=echo.localhost`.
+  [Services](./reference/services.md) explains the files.
