@@ -1,8 +1,5 @@
 # Getting Started with Echo API
 
-**Written by:** @clintonbampoe
-**Last updated:** 2026-09-12 by @clintonbampoe
-
 This is your entry point if you are setting up Echo locally for the first time. The main [API Usage](./api-usage.md) guide assumes you already have a valid JWT token. 
 
 Echo is a multi-tenant system. This means that every user (including Admins) must belong to a Congregation. This guide walks you through the mandatory two-step process to create your first valid credentials.
@@ -20,7 +17,7 @@ There are two ways of creating an account in **Echo**:
 
 ### Registering as a new congregation admin
 
-**Endpoint:** `POST /api/auth/v1/register/congregation`
+**Endpoint:** `POST /api/v1/auth/registrations/congregation`
 _This is a public endpoint. No authentication required_
 
 **Payload**
@@ -60,7 +57,7 @@ _This is a public endpoint. No authentication required_
 
 ### Signing up with an invitation token
 
-**Endpoint**: `POST /api/auth/v1/register/member`
+**Endpoint**: `POST /api/v1/auth/registrations/member`
 
 **Payload**
 ```json
@@ -82,7 +79,7 @@ _This is a public endpoint. No authentication required_
 
 Verifying your email is not needed to log in. The app reminds you until you do (it asks `GET /api/v1/auth/verifications/status`, which is only for signed-in users and says `verified: true` or `false`). 
 
-**Endpoint**: `POST /api/auth/v1/verify/account`
+**Endpoint**: `POST /api/v1/auth/verifications/account`
 
 **Payload**
 ```json
@@ -104,7 +101,7 @@ The verification token is only sent by email (Resend); the response never contai
 ### Completing Verification
 Take the token from the email and pass it to the verify-email endpoint.
 
-**Endpoint**: `GET /api/auth/v1/verifications/verify-email?token=####`
+**Endpoint**: `GET /api/v1/auth/verifications/verify-email?token=####`
 (Replace `####` with your token)
 
 **Response (200 OK)**

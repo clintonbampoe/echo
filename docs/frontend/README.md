@@ -1,8 +1,5 @@
 # Echo Web Client
 
-**Written by:** @clintonbampoe
-**Last updated:** 2026-10-14 by @clintonbampoe
-
 React 19 + TypeScript + Vite. How it is organised and the rules it follows: [Architecture](./architecture.md).
 
 ## Run it
@@ -18,12 +15,12 @@ npm run dev                  # http://localhost:5173
 
 ## In Docker
 
-One nginx serves the whole app (see [Infrastructure](../infrastructure/web-app.md)).
+One nginx serves the whole app (see [nginx](../reference/nginx.md)).
 
-| | Dev | Prod |
+| | Dev | Production |
 |---|---|---|
-| Command | `docker compose up` | `docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build` |
-| Web app | `http://localhost:8080` through nginx, or `:5173` straight from Vite | `http://localhost` |
+| Command | `docker compose up` | a [release](../how-to/release.md); to try it locally, [Services](../reference/services.md) |
+| Web app | `http://localhost:8080` through nginx, or `:5173` straight from Vite | `https://<domain>` |
 | Served by | Vite (hot reload), passed through by nginx | the built files, inside the nginx image |
 
 In dev, the app calls the API at the `VITE_API_URL` in `.env.local`. If you use `:8080`, add

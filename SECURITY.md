@@ -2,7 +2,7 @@
 
 ## Reporting a vulnerability
 
-**Do not** file a public GitHub issue for critical security vulnerabilities. This puts all users at risk—even if the project isn't deployed yet, we still take security seriously.
+**Do not** file a public GitHub issue for critical security vulnerabilities. This puts all users at risk. Echo holds church members' personal data and is running in production, so we take reports seriously.
 
 Instead, use one of these private reporting channels:
 

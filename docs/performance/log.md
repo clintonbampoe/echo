@@ -1,5 +1,9 @@
 # Echo — Performance Log
 
+> **Measured on the earlier 2 vCPU, 4 GB setup.** The server is now 4 vCPU and 8 GB, and the
+> load test has been rerun on it: see [Limits](../explanation/limits.md) for current figures.
+> The method below still applies; the numbers do not.
+
 > The ritual. One entry per move, five lines each. This file is simultaneously the
 > engineering log, the content pipeline, and the guard against repeating a mistake.
 >

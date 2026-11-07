@@ -9,12 +9,14 @@
 | Task | Command |
 |---|---|
 | Backend build | `dotnet build backend/Echo.slnx` |
-| Backend test | `dotnet test backend/Echo.slnx` |
+| Backend test | `dotnet test --solution backend/Echo.slnx --filter "Category=Unit"` |
 | Backend run | `dotnet run --project backend/src/Echo.Api` |
 | Frontend check | `cd frontend && npm run check` (lint + typecheck + test + build) |
 | Frontend dev | `cd frontend && npm run dev` |
 | Docker dev | `docker compose up` |
-| Docker prod | `docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build` |
+| Docker prod (local) | `docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build` |
+| Release | `gh release create vX.Y.Z --target main --generate-notes` (tag on `main` builds and deploys) |
+| Docs links | `docs/check-links.sh` |
 | Migrations | `dotnet ef migrations add "Name" --project backend/src/Echo.Data --startup-project backend/src/Echo.Api` |
 | DB update | `dotnet ef database update --project backend/src/Echo.Data --startup-project backend/src/Echo.Api` |
 
@@ -25,7 +27,8 @@
 - Branches: `prefix/scope-identifier-number-description` (e.g., `feat/backend-clnt-11-login-page`)
 - Open **Draft PR** from first commit. Checkboxes for technical plan. `Closes #N` at bottom.
 - Check off boxes as you go. **Ready for Review** only after tests pass.
-- Update docs **immediately** when structure changes (queries, indexes, schema, stack topology).
+- Update docs **in the same PR** when structure changes (queries, indexes, schema, stack topology, deploys).
+- Releases are version tags on `main`, never a merge: see `docs/how-to/release.md`.
 
 ---
 
@@ -34,7 +37,10 @@
 | Area | Read |
 |---|---|
 | Backend architecture, entities, patterns | `docs/backend/architecture.md` |
-| Docker, nginx, Postgres, env vars | `docs/infrastructure/` |
+| Services, ports, volumes, env vars, nginx | `docs/reference/` |
+| Releases, server setup, backups, migrations | `docs/how-to/` |
+| Why it is built this way, limits, observability | `docs/explanation/` |
+| An error you have not seen | `docs/troubleshooting.md` |
 | API usage, auth, pagination | `docs/api/` |
 | Frontend layering rules | `docs/frontend/architecture.md` |
 | Performance plan & measurements | `docs/performance/plan.md`, `docs/performance/log.md` |
@@ -88,4 +94,4 @@ npx skills add DreambigOu/ELI5 --skill eli5 -g --yes
 ## References
 
 - `@.agents/README.md`
-- `@docs/index.md`
+- `@docs/README.md`

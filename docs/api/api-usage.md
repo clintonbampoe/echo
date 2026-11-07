@@ -1,9 +1,4 @@
-# Api Usage
-
-**Written by:** @clintonbampoe
-**Last updated**: 2026-09-12 by @clintonbampoe
-
----
+# Using the API
 
 This is the official guide to using the Echo API.
 >**New Developer?** Start with [Getting Started](./getting-started.md) to create your first admin and obtain a JWT Token.
@@ -29,10 +24,10 @@ Live endpoints can be accessed when the api is running in **development**:
 
 All API endpoints are served under the `/api` path and are versioned.
 
-- **Base route:** `/api/v{version}/[controllerName]`
+- **Base route:** `/api/v{version}/<resource>` (for example `/api/v1/events`); sign-in, registration and the like are under `/api/v{version}/auth/`
 - **Current version:** `v1`
 
-The version is part of the URL path (e.g. `/api/v1/events`). This is configured in the `CoreBaseController`, which all core controllers inherit from.
+The version is part of the URL path. The `v1` group is created once in `Echo.Api/Program.cs`, and every feature's `Map*Endpoints` method adds its routes to it.
 
 ---
 
@@ -43,7 +38,7 @@ The Echo API uses JWT (JSON Web Token) authentication.
 ### Obtaining a JWT Token
 Send a valid login request to the `Sessions` endpoint with your valid credentials. If you don't have any valid credentials, see [Creating a User Account](../api/getting-started.md#creating-a-new-user-account)
 
-**Endpoint:** `POST /api/auth/v1/sessions/login`
+**Endpoint:** `POST /api/v1/auth/sessions/login`
 
 **Payload**
 ```json
@@ -70,7 +65,7 @@ Include the `accessToken` in the `Authorization` header of subsequent requests a
 Authorization: Bearer <your-jwt-token>
 ```
 
-> Access Tokens are short-lived (about 15 minutes). Use the `refreshToken` endpoint (`POST /api/auth/v1/sessions/refresh`) to acquire a new pair. Every refresh rotates the refresh token. Presenting a rotated token again signs the user out of **every** session (assumed theft), except within 10 seconds of the rotation, where the call just fails (`400`, "refreshed elsewhere, try again") so a second browser tab that shares the stored tokens can re-read them and retry.
+> Access Tokens are short-lived (10 minutes in production). Use the `refreshToken` endpoint (`POST /api/v1/auth/sessions/refresh`) to acquire a new pair. Every refresh rotates the refresh token. Presenting a rotated token again signs the user out of **every** session (assumed theft), except within 10 seconds of the rotation, where the call just fails (`400`, "refreshed elsewhere, try again") so a second browser tab that shares the stored tokens can re-read them and retry.
 
 ### Tenant Isolation & Security
 Echo is a multi-tenant platform. The `CongregationId` is encrypted within the JWT.
@@ -150,9 +145,9 @@ This applies to every endpoint, including the `/auth` ones.
 
 ## Common Endpoints
 
-The API is organised by domain. Each domain has a dedicated controller. Below is an example with the `Events` domain. The same pattern applies to `Members`, `Assets`, `Attendance`, etc.
+The API is organised by domain. Each domain has its own endpoint group. Below is an example with the `Events` domain. The same pattern applies to `Members`, `Assets`, `Attendance`, etc.
 
-**Events Controller**
+**Events**
 **Base route:** `/api/v1/events`
 
 | Method   | Endpoint                 | Description                                                |
@@ -178,7 +173,7 @@ This endpoint is public and is available without authentication. It returns
 `200` only when the database is reachable and every migration has been applied;
 otherwise it returns `503` with the failing check. Use `/api/health/live` if you
 only want to know whether the process is up. See
-[Health endpoints](../infrastructure/topology.md#health-endpoints).
+[Health endpoints](../explanation/topology.md#health-endpoints).
 curl -H "Authorization: Bearer <your-token>" \
      "http://localhost:8080/api/v1/events?cursor=eyJpZ...&pageSize=20"
 ```
@@ -323,5 +318,5 @@ curl http://localhost:8080/health/ready
 ## Related Documentation
 
 - [Getting Started](getting-started.md): Local development setup
-- [Infrastructure](../infrastructure/index.md): Docker, containers, reverse proxy and environment variables
+- [Services](../reference/services.md) and [environment variables](../reference/environment.md)
 - [Front-end](../frontend/README.md): Front-end documentation

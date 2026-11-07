@@ -113,6 +113,8 @@ openssl genrsa -out "$t/k" 2048 2>/dev/null
 priv=$(base64 -w0 "$t/k")
 pub=$(openssl rsa -in "$t/k" -pubout 2>/dev/null | base64 -w0)
 db=$(hex 16)
+dumps=$(dirname "$OUT")/data/dumps
+mkdir -p "$dumps"
 umask 077
 cat >"$OUT" <<ENV
 DB_HOST=db
@@ -141,6 +143,7 @@ OTEL_SERVICE_NAME=Echo.Api
 GF_ADMIN_PASSWORD=$(hex 16)
 MONITOR_PASSWORD=$(hex 24)
 STATUS_HEARTBEAT_TOKEN=$(hex 24)
+BACKUP_DIR=$dumps
 ENV
 echo "Wrote $OUT (fresh secrets, mode 600, CERTBOT_STAGING=1)."
 echo "Next: create the DNS records for $DOMAIN and status.$DOMAIN."
