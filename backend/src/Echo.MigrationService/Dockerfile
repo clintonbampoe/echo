@@ -1,7 +1,4 @@
-# Build stages run on the builder's own architecture. The published output
-# is portable (no runtime identifier). So the build runs on amd64 and arm64
-
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0 AS restore
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS restore
 WORKDIR /app
 
 COPY backend/Echo.slnx .

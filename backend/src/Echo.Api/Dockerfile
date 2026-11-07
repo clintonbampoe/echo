@@ -1,17 +1,10 @@
 
-# The build stages run on the machine doing the build ($BUILDPLATFORM) and
-# cross-compile for the machine the image will run on ($TARGETARCH); only the
-# small runtime stage below is for the target itself. That keeps an arm64 image
-# built on an amd64 runner fast, with no emulation of the compiler.
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0 AS restore
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS restore
 WORKDIR /build
 
 # ReadyToRun compiles the app to native code ahead of time, so a fresh
 # container does not spend its first minute compiling the code that serves
-# requests. The runtime identifier is the one of the machine the image is for.
-ARG TARGETARCH
-RUN if [ "$TARGETARCH" = "arm64" ]; then echo linux-arm64; \
-  else echo linux-x64; fi > /rid
+# requests.
 
 COPY backend/Echo.slnx .
 COPY ./global.json .
@@ -26,14 +19,14 @@ COPY backend/src/Echo.ServiceDefaults/Echo.ServiceDefaults.csproj ./src/Echo.Ser
 COPY "backend/.config/dotnet-tools.json" "/backend/.config/"
 
 RUN dotnet restore src/Echo.Api/Echo.Api.csproj \
-    -r "$(cat /rid)" \
+    -r linux-x64 \
     -p:PublishReadyToRun=true
 
 FROM restore AS publish
 COPY backend/ /build
 RUN dotnet publish src/Echo.Api/Echo.Api.csproj \
     -c Release \
-    -r "$(cat /rid)" \
+    -r linux-x64 \
     --self-contained false \
     -p:PublishReadyToRun=true \
     --no-restore \
