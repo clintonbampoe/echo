@@ -50,7 +50,7 @@ services:
     container_name: database
     environment:
       POSTGRES_DB: ${DB_NAME}
-      POSTGRES_USERNAME: ${DB_USERNAME}
+      POSTGRES_USER: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       MONITOR_PASSWORD: ${MONITOR_PASSWORD:?}
     volumes: [postgres-data:/var/lib/postgresql]

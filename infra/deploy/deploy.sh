@@ -67,6 +67,7 @@ rollback() {
 
 exec 9>"$ROOT/.deploy.lock"
 flock -n 9 || die "another deploy is running"
+[[ -r $ROOT/.env ]] || die "cannot read $ROOT/.env: it must belong to the deploy user"
 [[ ${1:-} == rollback ]] && {
   rollback
   exit
