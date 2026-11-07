@@ -9,7 +9,10 @@ read -r action sha extra <<< "${SSH_ORIGINAL_COMMAND:-}"
 
 case "$action" in
   upload | deploy)
-    [[ ${sha:-} =~ ^[0-9a-f]{7,40}$ ]] || { echo "a release is named by its commit" >&2; exit 2; }
+    [[ ${sha:-} =~ ^[0-9a-f]{7,40}$ ]] || {
+      echo "a release is named by its commit" >&2
+      exit 2
+    }
     dir="$ROOT/releases/$sha"
     ;;
   rollback) ;;

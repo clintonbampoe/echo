@@ -132,7 +132,7 @@ loki.process "logs" {
 
 loki.write "obs" {
   endpoint {
-    url = coalesce(sys.env("LOKI_URL"), string.format("http://%s:3100", coalesce(sys.env("OBS_HOST"), "loki"))) + "/loki/api/v1/push"
+    url = "http://loki:3100/loki/api/v1/push"
   }
 }
 
@@ -325,7 +325,7 @@ otelcol.processor.batch "traces" {
 
 otelcol.exporter.otlp "tempo" {
   client {
-    endpoint = coalesce(sys.env("TEMPO_OTLP_ENDPOINT"), string.format("%s:4317", coalesce(sys.env("OBS_HOST"), "tempo")))
+    endpoint = "tempo:4317"
     tls {
       insecure = true
     }
@@ -334,19 +334,19 @@ otelcol.exporter.otlp "tempo" {
 
 otelcol.exporter.otlphttp "loki" {
   client {
-    endpoint = coalesce(sys.env("LOKI_URL"), string.format("http://%s:3100", coalesce(sys.env("OBS_HOST"), "loki"))) + "/otlp"
+    endpoint = "http://loki:3100/otlp"
   }
 }
 
 otelcol.exporter.otlphttp "prometheus" {
   client {
-    endpoint = coalesce(sys.env("PROMETHEUS_URL"), string.format("http://%s:9090", coalesce(sys.env("OBS_HOST"), "prometheus"))) + "/api/v1/otlp"
+    endpoint = "http://prometheus:9090/api/v1/otlp"
   }
 }
 
 prometheus.remote_write "obs" {
   endpoint {
-    url = coalesce(sys.env("PROMETHEUS_URL"), string.format("http://%s:9090", coalesce(sys.env("OBS_HOST"), "prometheus"))) + "/api/v1/write"
+    url = "http://prometheus:9090/api/v1/write"
   }
 }
 

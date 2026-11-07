@@ -1,4 +1,9 @@
 
+map $http_upgrade $connection_upgrade {
+    default upgrade;
+    ""      close;
+}
+
 server {
     listen 80;
     server_name ${APP_DOMAIN};
@@ -25,6 +30,7 @@ server {
     index index.html;
 
     include /etc/nginx/api-locations.conf;
+    include /etc/nginx/grafana-locations.conf;
 
     location /assets/ {
         include /etc/nginx/spa-headers.conf;

@@ -5,6 +5,8 @@ set -euo pipefail
 
 NEW=$(cd "$(dirname "$0")" && pwd -P)
 ROOT=$(dirname "$(dirname "$NEW")")
+core=(db api nginx backup certbot)
+monitoring=(alloy loki prometheus tempo grafana)
 
 log() { echo "[$(date +%T)] $*"; }
 die() {
@@ -18,31 +20,32 @@ app() {
   docker compose -p echo --env-file "$ROOT/.env" --env-file "$dir/release.env" \
     -f "$dir/docker-compose.yml" -f "$dir/docker-compose.prod.yml" "$@"
 }
-alloy() {
-  local dir=$1
-  shift
-  docker compose -p alloy --env-file "$ROOT/alloy.env" --env-file "$dir/release.env" -f "$dir/alloy.yaml" "$@"
-}
 
 env_value() { grep -E "^$1=" "$ROOT/.env" | tail -n 1 | cut -d= -f2- | tr -d '"'; }
 release_of() { [[ -L $ROOT/$1 ]] && basename "$(readlink "$ROOT/$1")" || true; }
-point() { ln -sfn "$ROOT/releases/$2" "$ROOT/$1.tmp" && mv -T "$ROOT/$1.tmp" "$ROOT/$1"; }
+point() {
+  ln -sfn "$ROOT/releases/$2" "$ROOT/$1.tmp" && mv -T "$ROOT/$1.tmp" "$ROOT/$1"
+}
 
 activate() {
   local dir=$1 tag domain
   tag=$(grep -E '^IMAGE_TAG=' "$dir/release.env" | cut -d= -f2-)
   domain=$(env_value APP_DOMAIN)
 
-  app "$dir" up -d --no-build --wait --wait-timeout 180 --remove-orphans db api nginx backup certbot || return 1
-  alloy "$dir" up -d --no-build --wait --wait-timeout 180 || return 1
+  app "$dir" up -d --no-build --wait --wait-timeout 180 --remove-orphans \
+    "${core[@]}" || return 1
+  app "$dir" up -d --no-build "${monitoring[@]}" ||
+    log "the monitoring services did not start"
   [[ $(docker inspect api --format '{{.Config.Image}}') == *":$tag" ]] || {
     log "api is not on $tag"
     return 1
   }
 
+  local url="https://$domain"
+  local probe=(curl -fsSk --max-time 5 -o /dev/null
+    --resolve "$domain:443:127.0.0.1")
   for _ in $(seq 10); do
-    curl -fsSk --max-time 5 -o /dev/null --resolve "$domain:443:127.0.0.1" "https://$domain/api/health/ready" &&
-      curl -fsSk --max-time 5 -o /dev/null --resolve "$domain:443:127.0.0.1" "https://$domain/" && return 0
+    "${probe[@]}" "$url/api/health/ready" && "${probe[@]}" "$url/" && return 0
     sleep 3
   done
   log "$domain did not answer"
@@ -58,7 +61,8 @@ rollback() {
   point current "$to"
   point previous "$from"
   activate "$ROOT/releases/$to" || die "$to did not come up either"
-  log "Back on $to. The database is not rolled back: migrations must keep the previous release working."
+  log "Back on $to. The database is not rolled back, so migrations must" \
+    "keep the previous release working."
 }
 
 exec 9>"$ROOT/.deploy.lock"
@@ -68,38 +72,50 @@ flock -n 9 || die "another deploy is running"
   exit
 }
 
-[[ $(env_value RunMigrationsOnStartup) == false ]] || die "set RunMigrationsOnStartup=false in $ROOT/.env"
+[[ $(env_value RunMigrationsOnStartup) == false ]] ||
+  die "set RunMigrationsOnStartup=false in $ROOT/.env"
 prior=$(release_of current)
 before=$(release_of previous)
 name=$(basename "$NEW")
 [[ $prior != "$name" ]] || die "$name is already running"
 
 log "Deploying $name (was ${prior:-nothing})"
-app "$NEW" pull db api nginx migrator backup certbot || die "could not pull the images for $name; nothing was changed"
-alloy "$NEW" pull || die "could not pull the Alloy image for $name; nothing was changed"
+app "$NEW" pull "${core[@]}" migrator "${monitoring[@]}" ||
+  die "could not pull the images for $name; nothing was changed"
 
 app "$NEW" up -d --no-build --wait --wait-timeout 180 db
 rc=0
 app "$NEW" run --rm -T migrator --check=true || rc=$?
 if ((rc == 10)); then # the migrator exits 10 when migrations are pending
   log "Migrations are pending: backing up first"
-  app "$NEW" run --rm -T --no-deps --entrypoint /app/backup.sh backup || die "the backup failed; nothing was changed"
-  app "$NEW" run --rm -T migrator || die "the migration failed; the old release is still running"
+  app "$NEW" run --rm -T --no-deps --entrypoint /app/backup.sh backup ||
+    die "the backup failed; nothing was changed"
+  app "$NEW" run --rm -T migrator ||
+    die "the migration failed; the old release is still running"
 elif ((rc != 0)); then
   die "the migration check failed (exit $rc)"
 fi
 
-"$NEW/certs.sh" placeholder echo nginx APP_DOMAIN || die "could not create the placeholder certificate"
+"$NEW/certs.sh" placeholder echo nginx APP_DOMAIN ||
+  die "could not create the placeholder certificate"
 [[ -n $prior ]] && point previous "$prior"
 point current "$name"
 if ! activate "$NEW"; then
-  [[ -n $prior ]] || { rm -f "$ROOT/current"; die "$name is not healthy and there is nothing to go back to"; }
+  [[ -n $prior ]] || {
+    rm -f "$ROOT/current"
+    die "$name is not healthy and there is nothing to go back to"
+  }
   rollback
-  if [[ -n $before ]]; then point previous "$before"; else rm -f "$ROOT/previous"; fi # not the failed release
+  if [[ -n $before ]]; then
+    point previous "$before"
+  else
+    rm -f "$ROOT/previous"
+  fi
   die "$name failed and was rolled back"
 fi
 
-find "$ROOT/releases" -mindepth 1 -maxdepth 1 -printf '%T@ %f\n' | sort -rn | tail -n +6 | cut -d' ' -f2 | while read -r old; do
+find "$ROOT/releases" -mindepth 1 -maxdepth 1 -printf '%T@ %f\n' |
+  sort -rn | tail -n +6 | cut -d' ' -f2 | while read -r old; do
   [[ $old == "$name" || $old == "$prior" ]] || rm -rf "${ROOT:?}/releases/$old"
 done
 docker image prune -f >/dev/null

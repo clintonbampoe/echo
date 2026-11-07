@@ -1,8 +1,0 @@
-services:
-  alloy:
-    networks: [obs, app]
-
-networks:
-  obs:
-    external: true
-    name: obs_default

@@ -1,16 +1,21 @@
 ---
-name: Release observability
+name: Release
 on:
   push:
     branches: [main]
     paths:
+      - backend/**
+      - frontend/**
+      - global.json
+      - infra/nginx/**
+      - infra/alloy/**
       - infra/observability/**
-      - infra/nginx/tls.conf
+      - infra/postgres/**
       - infra/certbot/**
-      - infra/nginx/reload-on-renewal.sh
-      - .github/workflows/release-obs.yaml
+      - docker-compose*.yml
+      - .github/workflows/release.yaml
   workflow_dispatch:
-concurrency: release-obs
+concurrency: release
 permissions:
   contents: read
   packages: write
@@ -21,12 +26,17 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - {name: echo-loki, context: infra/observability/loki, dockerfile: infra/observability/loki/Dockerfile}
-          - {name: echo-prometheus, context: infra/observability/prometheus, dockerfile: infra/observability/prometheus/Dockerfile}
-          - {name: echo-tempo, context: infra/observability/tempo, dockerfile: infra/observability/tempo/Dockerfile}
-          - {name: echo-grafana, context: infra/observability/grafana, dockerfile: infra/observability/grafana/Dockerfile}
-          - {name: echo-certbot, context: ., dockerfile: infra/certbot/Dockerfile}
-          - {name: echo-obs-proxy, context: ., dockerfile: infra/observability/proxy/Dockerfile}
+          - {name: echo-api, dockerfile: backend/src/Echo.Api/Dockerfile}
+          - {name: echo-migrator, dockerfile: backend/src/Echo.MigrationService/Dockerfile}
+          - {name: echo-nginx, dockerfile: infra/nginx/Dockerfile}
+          - {name: echo-alloy, dockerfile: infra/alloy/Dockerfile}
+          - {name: echo-loki, dockerfile: infra/observability/loki/Dockerfile}
+          - {name: echo-prometheus, dockerfile: infra/observability/prometheus/Dockerfile}
+          - {name: echo-tempo, dockerfile: infra/observability/tempo/Dockerfile}
+          - {name: echo-grafana, dockerfile: infra/observability/grafana/Dockerfile}
+          - {name: echo-postgres, dockerfile: infra/postgres/Dockerfile}
+          - {name: echo-certbot, dockerfile: infra/certbot/Dockerfile}
+          - {name: echo-backup, dockerfile: infra/postgres/backup/Dockerfile}
     steps:
       - uses: actions/checkout@v4
       - name: Image name
@@ -44,7 +54,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - uses: docker/build-push-action@v6
         with:
-          context: ${{ matrix.context }}
+          context: .
           file: ${{ matrix.dockerfile }}
           platforms: linux/amd64,linux/arm64
           push: true

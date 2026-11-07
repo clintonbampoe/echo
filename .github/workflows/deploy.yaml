@@ -1,8 +1,8 @@
 ---
-name: Deploy observability
+name: Deploy
 on:
   workflow_run:
-    workflows: [Release observability]
+    workflows: [Release]
     types: [completed]
     branches: [main]
   workflow_dispatch:
@@ -13,7 +13,7 @@ on:
         description: Go back one release instead
         type: boolean
         default: false
-concurrency: deploy-obs
+concurrency: deploy
 permissions:
   contents: read
 jobs:
@@ -21,7 +21,7 @@ jobs:
     if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion
       == 'success'
     runs-on: ubuntu-latest
-    environment: observability
+    environment: production
     env:
       SHA: ${{ github.event.workflow_run.head_sha || inputs.sha || github.sha }}
     steps:
@@ -38,18 +38,26 @@ jobs:
           install -m 700 -d ~/.ssh
           echo "$KEY" > ~/.ssh/id_deploy && chmod 600 ~/.ssh/id_deploy
           echo "$KNOWN_HOSTS" > ~/.ssh/known_hosts
-          printf 'Host obs\n  HostName %s\n  User %s\n  IdentityFile ~/.ssh/id_deploy\n  StrictHostKeyChecking yes\n  ServerAliveInterval 30\n' "$HOST" "$USER_NAME" > ~/.ssh/config
+          cat > ~/.ssh/config <<EOF
+          Host app
+            HostName $HOST
+            User $USER_NAME
+            IdentityFile ~/.ssh/id_deploy
+            StrictHostKeyChecking yes
+            ServerAliveInterval 30
+          EOF
       - name: Roll back
         if: inputs.rollback
-        run: ssh -n obs rollback
+        run: ssh -n app rollback
       - name: Deploy
         if: ${{ !inputs.rollback }}
         run: |-
           tag=${SHA::7}
           mkdir release
-          cp infra/observability/docker-compose.yml infra/observability/docker-compose.prod.yml release/
-          cp infra/deploy/deploy-obs.sh release/deploy.sh
+          cp docker-compose.yml docker-compose.prod.yml release/
+          cp infra/deploy/deploy.sh release/deploy.sh
           cp infra/nginx/certs.sh release/certs.sh
-          printf 'IMAGE_REGISTRY=ghcr.io/%s\nIMAGE_TAG=%s\n' "${GITHUB_REPOSITORY_OWNER,,}" "$tag" > release/release.env
-          tar -C release -c . | ssh obs "upload $tag"
-          ssh -n obs "deploy $tag"
+          echo "IMAGE_REGISTRY=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}" > release/release.env
+          echo "IMAGE_TAG=$tag" >> release/release.env
+          tar -C release -c . | ssh app "upload $tag"
+          ssh -n app "deploy $tag"

@@ -24,5 +24,6 @@ COPY infra/nginx/site.dev.conf /etc/nginx/site.conf
 FROM base AS web
 ENV NGINX_ENVSUBST_OUTPUT_DIR=/etc/nginx
 COPY --chmod=755 infra/nginx/reload-on-renewal.sh /docker-entrypoint.d/90-reload-on-renewal.sh
+COPY infra/nginx/grafana-locations.conf /etc/nginx/grafana-locations.conf
 COPY infra/nginx/site.conf.template /etc/nginx/templates/site.conf.template
 COPY --from=web-build /app/dist /usr/share/nginx/html
