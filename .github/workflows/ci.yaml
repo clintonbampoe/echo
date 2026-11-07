@@ -10,7 +10,39 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      api: ${{ steps.scope.outputs.api }}
+      frontend: ${{ steps.scope.outputs.frontend }}
+      infra: ${{ steps.scope.outputs.infra }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - name: Work out what the pull request touches
+        id: scope
+        env:
+          EVENT: ${{ github.event_name }}
+        run: |
+          files=
+          [[ $EVENT != pull_request ]] || files=$(git diff --name-only HEAD^1 HEAD)
+          out() {
+            if [[ $EVENT != pull_request ]] || grep -qE "$2" <<< "$files"; then
+              echo "$1=true"
+            else
+              echo "$1=false"
+            fi
+          }
+          {
+            out api '^(backend/|global\.json$|\.github/workflows/ci\.yaml$)'
+            out frontend '^(frontend/|\.github/workflows/ci\.yaml$)'
+            out infra '^(infra/|docs/|\.github/|docker-compose[^/]*\.yml$|.*\.md$)'
+          } >> "$GITHUB_OUTPUT"
   api:
+    needs: changes
+    if: needs.changes.outputs.api == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -34,6 +66,8 @@ jobs:
         run: dotnet test --solution backend/Echo.slnx --filter "Category=Unit" --no-restore
           --no-build -c Release
   frontend:
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     defaults:
@@ -59,6 +93,8 @@ jobs:
       - name: Build
         run: npm run build
   infra:
+    needs: changes
+    if: needs.changes.outputs.infra == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
@@ -82,3 +118,17 @@ jobs:
         run: infra/deploy/test-server-entry.sh
       - name: Docs links
         run: docs/check-links.sh
+  ci:
+    if: always()
+    needs: [changes, api, frontend, infra]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Every job passed or was skipped
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+          CHANGES: ${{ needs.changes.result }}
+        run: |
+          [[ $CHANGES == success ]]
+          for result in $RESULTS; do
+            [[ $result == success || $result == skipped ]]
+          done

@@ -64,8 +64,9 @@ Cause: CI only ran when files under `backend/` or `frontend/` changed, but
 branch protection required both checks. A pull request that touched neither
 waited forever.
 
-Fix: CI now runs on every pull request and every push to `main`. If a new
-required check is added, make sure its workflow has no path filter.
+Fix: Echo CI now always starts. A `changes` job decides which jobs run, the
+others skip themselves, and a skipped job counts as passing. Never put a
+`paths:` filter on a workflow that provides a required check.
 
 ## Certificates and DNS
 
