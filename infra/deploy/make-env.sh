@@ -20,18 +20,45 @@ USAGE
 DOMAIN='' EMAIL='' MAIL_FROM='' RESEND_KEY='' OUT=/srv/echo/.env YES=''
 while (($#)); do
   case $1 in
-    --domain) DOMAIN=${2:?--domain needs a value}; shift 2 ;;
-    --email) EMAIL=${2:?--email needs a value}; shift 2 ;;
-    --mail-from) MAIL_FROM=${2:?--mail-from needs a value}; shift 2 ;;
-    --resend-key) RESEND_KEY=${2:?--resend-key needs a value}; shift 2 ;;
-    --out) OUT=${2:?--out needs a value}; shift 2 ;;
-    --yes | -y) YES=1; shift ;;
-    --help | -h) usage; exit 0 ;;
-    *) usage >&2; exit 2 ;;
+    --domain)
+      DOMAIN=${2:?--domain needs a value}
+      shift 2
+      ;;
+    --email)
+      EMAIL=${2:?--email needs a value}
+      shift 2
+      ;;
+    --mail-from)
+      MAIL_FROM=${2:?--mail-from needs a value}
+      shift 2
+      ;;
+    --resend-key)
+      RESEND_KEY=${2:?--resend-key needs a value}
+      shift 2
+      ;;
+    --out)
+      OUT=${2:?--out needs a value}
+      shift 2
+      ;;
+    --yes | -y)
+      YES=1
+      shift
+      ;;
+    --help | -h)
+      usage
+      exit 0
+      ;;
+    *)
+      usage >&2
+      exit 2
+      ;;
   esac
 done
 
-[[ ! -e $OUT ]] || { echo "$OUT already exists; remove it first." >&2; exit 1; }
+[[ ! -e $OUT ]] || {
+  echo "$OUT already exists; remove it first." >&2
+  exit 1
+}
 
 domain_re='^([a-z0-9-]+\.)+[a-z]{2,}$'
 email_re='^[^@ ]+@[^@ ]+\.[^@ ]+$'
@@ -41,10 +68,18 @@ asked=''
 ask() {
   local var=$1 label=$2 re=$3 secret=${4:-} reply
   while [[ ! ${!var} =~ $re ]]; do
-    if [[ -n ${!var} ]]; then echo "  not valid: $label" >&2; printf -v "$var" ''; fi
-    [[ -t 0 ]] || { echo "missing or invalid: $label (see --help)" >&2; exit 2; }
+    if [[ -n ${!var} ]]; then
+      echo "  not valid: $label" >&2
+      printf -v "$var" ''
+    fi
+    [[ -t 0 ]] || {
+      echo "missing or invalid: $label (see --help)" >&2
+      exit 2
+    }
     asked=1
-    if [[ -n $secret ]]; then read -rsp "$label: " reply; echo
+    if [[ -n $secret ]]; then
+      read -rsp "$label: " reply
+      echo
     else read -rp "$label: " reply; fi
     printf -v "$var" '%s' "$reply"
   done
@@ -65,7 +100,10 @@ if [[ -n $asked && -z $YES ]]; then
   writes      $OUT
 SUMMARY
   read -rp "Write it? [y/N] " go
-  [[ $go == [yY]* ]] || { echo "Nothing written."; exit 1; }
+  [[ $go == [yY]* ]] || {
+    echo "Nothing written."
+    exit 1
+  }
 fi
 
 hex() { openssl rand -hex "$1"; }
@@ -76,7 +114,7 @@ priv=$(base64 -w0 "$t/k")
 pub=$(openssl rsa -in "$t/k" -pubout 2>/dev/null | base64 -w0)
 db=$(hex 16)
 umask 077
-cat > "$OUT" <<ENV
+cat >"$OUT" <<ENV
 DB_HOST=db
 DB_PORT=5432
 DB_NAME=echo_db
