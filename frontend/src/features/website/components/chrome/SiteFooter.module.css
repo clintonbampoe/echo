@@ -9,52 +9,38 @@
 }
 .top {
   display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 80px;
-  padding: 56px 0 44px;
+  gap: 20px 40px;
+  padding: 32px 0 28px;
   border-top: 1px solid var(--line);
 }
-.about {
+.links {
   display: flex;
-  flex-direction: column;
-  gap: 14px;
-  max-width: 300px;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 12px 28px;
 }
-.brand {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.name {
-  font-size: 18px;
-  font-weight: 600;
-}
-.line {
-  margin: 0;
+.more {
   font-size: 14.5px;
-  line-height: 1.55;
+}
+.summary {
+  cursor: pointer;
   color: var(--text-2);
+  list-style: none;
 }
-.made {
-  margin: 0;
-  font-size: 13px;
-  color: var(--text-3);
+.summary::-webkit-details-marker {
+  display: none;
 }
-.columns {
-  display: grid;
-  flex: 1;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 36px 60px;
-  max-width: 760px;
+.more[open] .summary {
+  color: var(--text);
 }
-.column {
+.moreList {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-}
-.heading {
-  font-size: 13px;
-  font-weight: 600;
+  gap: 10px;
+  margin-top: 12px;
 }
 .link {
   font-size: 14.5px;
@@ -91,13 +77,6 @@
   .footer {
     padding: 72px 40px 0;
   }
-  .top {
-    flex-direction: column;
-    gap: 40px;
-  }
-  .columns {
-    max-width: none;
-  }
   .ghost {
     height: 140px;
     font-size: 220px;
@@ -106,10 +85,6 @@
 @media (max-width: 599px) {
   .footer {
     padding: 56px 20px 0;
-  }
-  .columns {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 32px 24px;
   }
   .ghost {
     height: 80px;

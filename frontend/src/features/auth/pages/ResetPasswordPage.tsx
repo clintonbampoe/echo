@@ -75,7 +75,7 @@ export function ResetPasswordPage() {
       <form
         onSubmit={handleSubmit(onSubmit)}
         noValidate
-        className={styles.form}
+        className={`${styles.form} stagger`}
       >
         <PasswordField
           label="New password"

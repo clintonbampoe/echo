@@ -1,52 +1,42 @@
 import { Link } from "react-router-dom";
-import { Logo } from "@/ui";
-import { FOOTER } from "../../content/site";
+import { PulseLine } from "@/ui";
+import { FOOTER_MAIN, FOOTER_MORE } from "../../content/site";
 import styles from "./SiteFooter.module.css";
 
+type Item = { label: string; to: string; external?: boolean };
+
+function FooterLink({ item }: { item: Item }) {
+  return item.external ? (
+    <a href={item.to} className={styles.link} target="_blank" rel="noreferrer">
+      {item.label}
+    </a>
+  ) : (
+    <Link to={item.to} className={styles.link}>
+      {item.label}
+    </Link>
+  );
+}
+
+// One line: the promise, and the three pages people look for. The rest sit behind "More".
 export function SiteFooter() {
   return (
     <footer className={styles.footer}>
       <div className={styles.inner}>
         <div className={styles.top}>
-          <div className={styles.about}>
-            <div className={styles.brand}>
-              <Logo size={24} />
-              <span className={styles.name}>Echo</span>
-            </div>
-            <p className={styles.line}>
-              Church management that gives the answers back. Free and open
-              source.
-            </p>
-            <p className={styles.made}>Made in Accra, Ghana</p>
-          </div>
-          <div className={styles.columns}>
-            {FOOTER.map((column) => (
-              <nav
-                key={column.title}
-                aria-label={column.title}
-                className={styles.column}
-              >
-                <span className={styles.heading}>{column.title}</span>
-                {column.links.map((link) =>
-                  link.external ? (
-                    <a
-                      key={link.label}
-                      href={link.to}
-                      className={styles.link}
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      {link.label}
-                    </a>
-                  ) : (
-                    <Link key={link.label} to={link.to} className={styles.link}>
-                      {link.label}
-                    </Link>
-                  ),
-                )}
-              </nav>
+          <PulseLine />
+          <nav aria-label="Footer" className={styles.links}>
+            {FOOTER_MAIN.map((item) => (
+              <FooterLink key={item.label} item={item} />
             ))}
-          </div>
+            <details className={styles.more}>
+              <summary className={styles.summary}>More</summary>
+              <div className={styles.moreList}>
+                {FOOTER_MORE.map((item) => (
+                  <FooterLink key={item.label} item={item} />
+                ))}
+              </div>
+            </details>
+          </nav>
         </div>
         <div className={styles.ghost} aria-hidden="true">
           Echo

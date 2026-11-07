@@ -8,6 +8,9 @@ type FieldProps = Shared &
   ComponentProps<"input"> & {
     // A short mark shown inside the left edge, e.g. a currency like "GH₵".
     unit?: string;
+    // A pale completion shown after what has been typed (`typed` is only measured, never seen).
+    // The page decides what to suggest and what Tab does with it.
+    ghost?: { typed: string; rest: string };
   };
 
 export function Field({
@@ -17,6 +20,7 @@ export function Field({
   aside,
   optional,
   unit,
+  ghost,
   ...input
 }: FieldProps) {
   const id = useId();
@@ -39,7 +43,16 @@ export function Field({
       aside={aside}
       optional={optional}
     >
-      {unit ? (
+      {ghost ? (
+        <div className={styles.ghostWrap}>
+          {control}
+          <span className={styles.ghost} aria-hidden="true">
+            <span className={styles.ghostTyped}>{ghost.typed}</span>
+            {ghost.rest}
+            <kbd className={styles.ghostKey}>Tab</kbd>
+          </span>
+        </div>
+      ) : unit ? (
         <div className={styles.unitWrap}>
           <span className={styles.unit} aria-hidden="true">
             {unit}

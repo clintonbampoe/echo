@@ -604,7 +604,7 @@ describe("links on auth screens", () => {
   it("offers a way back to the landing page", async () => {
     renderAt("/signin");
     expect(
-      await screen.findByRole("link", { name: "Back to home" }),
+      await screen.findByRole("link", { name: "Back to site" }),
     ).toHaveAttribute("href", "/");
   });
 

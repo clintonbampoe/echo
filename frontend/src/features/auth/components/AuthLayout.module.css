@@ -18,6 +18,35 @@
   padding: 88px 16px 56px;
 }
 
+.slot {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+.foot {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  padding: 0 16px 28px;
+}
+
+/* Wide: the form on the left, a glass pane on the right. The pulse sits under the form. */
+.split .main {
+  padding: 16px;
+}
+.split .slot {
+  height: calc(100dvh - 32px);
+  min-height: 640px;
+}
+.split .foot {
+  position: absolute;
+  bottom: 26px;
+  left: 32px;
+  z-index: 2;
+  padding: 0;
+}
+
 .home {
   position: absolute;
   top: 26px;

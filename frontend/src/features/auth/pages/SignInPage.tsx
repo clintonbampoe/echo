@@ -9,6 +9,7 @@ import { AuthScreen } from "../components/AuthScreen";
 import { AuthLinks } from "../components/AuthLinks";
 import { SignInAlert } from "../components/SignInAlert";
 import { useSignIn } from "../hooks/mutations";
+import { greetingFor } from "../model/greeting";
 import { safePath } from "../model/origin";
 import { signInSchema, type SignInValues } from "../forms/schema";
 import styles from "./form.module.css";
@@ -26,6 +27,7 @@ export function SignInPage() {
   const [problem, setProblem] = useState<ApiError | null>(null);
   const {
     register,
+    getValues,
     handleSubmit,
     setError,
     formState: { errors },
@@ -50,10 +52,12 @@ export function SignInPage() {
 
   return (
     <AuthScreen
+      kicker={greetingFor(new Date().getHours())}
       title="Sign in to Echo"
       text="Welcome back. Pick up where you left off."
       links={
         <AuthLinks
+          heading="New to Echo?"
           items={[
             { to: "/signup", label: "Create a church account" },
             { to: "/join", label: "Join with an invitation code" },
@@ -65,7 +69,7 @@ export function SignInPage() {
       <form
         onSubmit={handleSubmit(onSubmit)}
         noValidate
-        className={styles.form}
+        className={`${styles.form} stagger`}
       >
         <Field
           label="Email address"
@@ -81,7 +85,11 @@ export function SignInPage() {
           placeholder="Enter your password"
           error={errors.password?.message}
           aside={
-            <Link to="/forgot" className={styles.aside}>
+            <Link
+              to="/forgot"
+              state={{ email: getValues("email") }}
+              className={styles.aside}
+            >
               Forgot password?
             </Link>
           }

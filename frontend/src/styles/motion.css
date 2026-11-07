@@ -504,3 +504,52 @@ html[data-reduce-motion="true"] a[data-press]:active {
 html[data-reduce-motion="true"] .av:hover {
   transform: none;
 }
+
+/* Words that arrive one after another (features/auth WordReveal). */
+@keyframes wordIn {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 0.35em, 0);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+.word-reveal {
+  display: inline-block;
+  white-space: pre;
+  animation: wordIn 520ms var(--ease) both;
+  animation-delay: calc(80ms + var(--i, 0) * 70ms);
+}
+
+/* Fields that settle in one after another. Put on a form; its direct children rise in turn. */
+.stagger > * {
+  animation: rise 520ms var(--ease) both;
+}
+.stagger > :nth-child(1) {
+  animation-delay: 220ms;
+}
+.stagger > :nth-child(2) {
+  animation-delay: 280ms;
+}
+.stagger > :nth-child(3) {
+  animation-delay: 340ms;
+}
+.stagger > :nth-child(4) {
+  animation-delay: 400ms;
+}
+.stagger > :nth-child(n + 5) {
+  animation-delay: 460ms;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

@@ -204,3 +204,31 @@
     opacity: 0;
   }
 }
+
+/* A pale completion after the typed text, with a Tab hint at the right edge. */
+.ghostWrap {
+  position: relative;
+}
+.ghost {
+  position: absolute;
+  inset: var(--control-gap, 8px) 0 0;
+  display: flex;
+  align-items: center;
+  padding: 0 var(--s-16);
+  font-size: var(--control-font, var(--type-callout));
+  line-height: 1;
+  color: var(--text-4, var(--text-3));
+  pointer-events: none;
+  white-space: pre;
+}
+.ghostTyped {
+  visibility: hidden;
+}
+.ghostKey {
+  margin-left: auto;
+  padding: 3px 7px;
+  border: 1px solid var(--line-2);
+  border-radius: 6px;
+  font: inherit;
+  font-size: var(--type-caption);
+}

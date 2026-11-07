@@ -12,38 +12,16 @@ export const NAV = [
 
 type FooterLink = { label: string; to: string; external?: boolean };
 
-export const FOOTER: { title: string; links: FooterLink[] }[] = [
-  {
-    title: "Product",
-    links: [
-      { label: "Features", to: "/features" },
-      { label: "Docs", to: "/docs" },
-      { label: "Roadmap", to: "/roadmap" },
-      { label: "Changelog", to: "/changelog" },
-    ],
-  },
-  {
-    title: "Community",
-    links: [
-      { label: "GitHub", to: GITHUB_URL, external: true },
-      { label: "Contribute", to: `${GITHUB_URL}/issues`, external: true },
-      { label: "Support Echo", to: "/community#support" },
-      { label: "Private deployment", to: "/community#private" },
-    ],
-  },
-  {
-    title: "Company",
-    links: [
-      { label: "About", to: "/about" },
-      { label: "Contact", to: "/contact" },
-      { label: "Security", to: "/security" },
-    ],
-  },
-  {
-    title: "Legal",
-    links: [
-      { label: "Privacy", to: "/privacy" },
-      { label: "Terms", to: "/terms" },
-    ],
-  },
+// The footer shows three links; everything else lives behind "More", so no page is orphaned.
+export const FOOTER_MAIN: FooterLink[] = [
+  { label: "Security", to: "/security" },
+  { label: "Terms", to: "/terms" },
+  { label: "Support Echo", to: "/community#support" },
+];
+export const FOOTER_MORE: FooterLink[] = [
+  { label: "About", to: "/about" },
+  { label: "Contact", to: "/contact" },
+  { label: "Changelog", to: "/changelog" },
+  { label: "Privacy", to: "/privacy" },
+  { label: "GitHub", to: GITHUB_URL, external: true },
 ];

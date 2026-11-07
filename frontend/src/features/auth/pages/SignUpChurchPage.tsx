@@ -5,7 +5,7 @@ import { Navigate, useNavigate } from "react-router-dom";
 import type { ApiError } from "@/lib/api";
 import { handleSubmitError } from "@/lib/forms";
 import { Alert, Button } from "@/ui";
-import { BackLink } from "../components/AuthLinks";
+import { AuthLinks } from "../components/AuthLinks";
 import { AuthScreen } from "../components/AuthScreen";
 import {
   useRegisterCongregation,
@@ -84,7 +84,15 @@ function ChurchForm({ account }: { account: AccountValues }) {
     <AuthScreen
       title="Tell us about your church"
       text="Step 2 of 2. You can change all of this later."
-      links={<BackLink to="/signup">Back</BackLink>}
+      links={
+        <AuthLinks
+          heading="Need to step back?"
+          items={[
+            { to: "/signup", label: "Back" },
+            { to: "/signin", label: "Sign in" },
+          ]}
+        />
+      }
     >
       {problem && (
         <Alert title="We could not create your account">
@@ -94,7 +102,7 @@ function ChurchForm({ account }: { account: AccountValues }) {
       <form
         onSubmit={form.handleSubmit(onSubmit)}
         noValidate
-        className={styles.form}
+        className={`${styles.form} stagger`}
       >
         <ChurchFields form={form} />
         <Button

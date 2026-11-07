@@ -1,6 +1,6 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/ui";
-import { BackLink } from "../components/AuthLinks";
+import { AuthLinks } from "../components/AuthLinks";
 import { AuthScreen } from "../components/AuthScreen";
 import { InvitationCard } from "../components/InvitationCard";
 import { InvitationGate } from "../components/InvitationGate";
@@ -17,7 +17,15 @@ export function ConfirmChurchPage() {
         <AuthScreen
           title="Is this your church?"
           text="We found this church from your invitation. Check that it is the right one before you join."
-          links={<BackLink to="/join">Use a different code</BackLink>}
+          links={
+            <AuthLinks
+              heading="Not the right church?"
+              items={[
+                { to: "/join", label: "Use a different code" },
+                { to: "/signin", label: "Back to sign in" },
+              ]}
+            />
+          }
         >
           <InvitationCard invitation={invitation} />
           <Button

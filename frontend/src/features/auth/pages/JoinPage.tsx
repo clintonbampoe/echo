@@ -80,13 +80,21 @@ function JoinForm({
           ? `${invitation.invitedBy} invited you to join ${invitation.congregationName} on Echo.`
           : `You were invited to join ${invitation.congregationName} on Echo.`
       }
-      links={<AuthLinks items={[{ to: "/signin", label: "Sign in" }]} />}
+      links={
+        <AuthLinks
+          heading="Already have an account?"
+          items={[
+            { to: "/signin", label: "Sign in" },
+            { to: "/join", label: "Use a different code" },
+          ]}
+        />
+      }
     >
       {problem && <JoinProblem problem={problem} />}
       <form
         onSubmit={form.handleSubmit(onSubmit)}
         noValidate
-        className={styles.form}
+        className={`${styles.form} stagger`}
       >
         <Field
           label="First name"

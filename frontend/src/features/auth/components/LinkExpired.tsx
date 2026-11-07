@@ -39,7 +39,7 @@ export function LinkExpired({ title, text, links }: Props) {
       <form
         onSubmit={handleSubmit(onSubmit)}
         noValidate
-        className={styles.form}
+        className={`${styles.form} stagger`}
       >
         <Field
           label="Email address"
