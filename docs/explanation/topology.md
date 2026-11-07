@@ -24,7 +24,8 @@ flowchart LR
 - **nginx** is the single front door. It serves the built web app and proxies
   `/api`, `/grafana/` and `status.<domain>`. Details in [nginx](../reference/nginx.md).
 - **api** is ASP.NET Core. Nginx sends it traffic once its health check passes.
-- **db** is Postgres 18. Only the API, backup, migrator and Alloy reach it.
+- **db** is Postgres 18. It publishes no port in production; the API, backup,
+  migrator, Alloy and the status page reach it over the compose network.
 - **backup** dumps the database every night. **certbot** renews the
   certificate. Both report each run to the status page.
 - **alloy, loki, prometheus, tempo, grafana** are [observability](./observability.md).

@@ -14,8 +14,9 @@ Startup fails if `Jwt__PublicKey` does not match `Jwt__PrivateKey`, or if
 
 ## Rotate with a grace period
 
-Use this for routine rotation. Access tokens last 15 minutes, so a grace period
-of a few hours is plenty. On the server, as the deploy user:
+Use this for routine rotation. Access tokens last 10 minutes
+(`Jwt:AccessTokenLifetimeMinutes` in `appsettings.json`), so a grace period of a
+few hours is plenty. On the server, as the deploy user:
 
 ```bash
 cd /srv/echo
@@ -40,7 +41,7 @@ echo "Jwt__PreviousPublicKey=$old_pub" >> .env
    ```
 
    New sign-ins get the new key. Tokens signed with the old key still work.
-2. **Wait** longer than the token lifetime (15 minutes). No valid old token is
+2. **Wait** longer than the token lifetime (10 minutes). No valid old token is
    left after that.
 3. **Remove the previous key** and restart the API again:
 

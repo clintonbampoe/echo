@@ -27,7 +27,7 @@ Memory is a hard limit with no swap: a container over its limit restarts
 instead of slowing the server. CPU is a weight, not pinned cores: it only
 matters when the CPUs are busy, and then the higher weight wins.
 
-| Service | Profile | Memory | CPU weight | What it is |
+| Service | Group | Memory | CPU weight | What it is |
 |---|---|---|---|---|
 | `nginx` | core | 128 MB | 2048 | the only public entry: `/`, `/api`, `/grafana/`; HTTPS; `status.<domain>` |
 | `api` | core | 1 GB | 1024 (default) | ASP.NET Core API |
@@ -43,9 +43,10 @@ matters when the CPUs are busy, and then the higher weight wins.
 | `migrator` | db-tools | 512 MB | – | runs EF migrations; one-shot |
 | `seeder` | db-tools | – | – | loads fake data; development only |
 
-`core` services are started by the deploy and must be healthy. The deploy
-starts the `obs` services separately, so a monitoring failure does not roll a
-release back.
+The group is the deploy's, not a compose profile: `core` is the list
+`deploy.sh` starts and waits for, and `backup` is in it even though compose puts
+it under the `db-tools` profile. The deploy starts the `obs` services
+separately, so a monitoring failure does not roll a release back.
 
 The sizes add up to about 7.4 GB if every container reached its limit at once.
 That does not happen; the box has 8 GB. Re-check the caps after a load test

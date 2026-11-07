@@ -12,20 +12,22 @@ server's capacity; [Limits](./docs/explanation/limits.md) says what that means.
 
 ## Quick start
 
-You need Docker, Git and a bash shell.
+You need Docker with the `docker compose` plugin, Git, the .NET 10 SDK (the
+key script runs it) and a bash shell (on Windows, Git Bash or WSL).
 
 ```bash
 git clone https://github.com/clintonbampoe/echo.git && cd echo
 cp .env.example .env
+# edit .env: MailClient__Address and Resend__ApiKey (ask a maintainer)
 bash backend/tools/jwt-key-setup/SetupJwtKeys.sh env
 bash backend/tools/invitation-key-setup/SetupInvitationKey.sh env
 docker compose up
 ```
 
-Ask a maintainer for the Resend values in `.env`. Then open
-http://localhost:8080 and create a church at `/signup/church`. The API's
-reference is at http://localhost:8080/scalar. The full walk-through, with the
-expected output of each step, is [Getting started](./docs/getting-started.md).
+The two scripts write generated keys into `.env`. Without real Resend values,
+email (verification, invitations, password reset) does not send. Open http://localhost:8080 and create a church at `/signup/church`; the
+API reference is at http://localhost:8080/scalar. The full walk-through, with
+the output of each step, is [Getting started](./docs/getting-started.md).
 
 ## What is in it
 

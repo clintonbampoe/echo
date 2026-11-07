@@ -21,8 +21,12 @@ One run per setting, so treat differences of a few milliseconds as noise.
 | 52 | about 1,080 | 1,000 ms and over | 3,000 ms and over | collapses |
 
 A visit is one person opening 4 to 7 screens: about 45 seconds and 25
-requests. The limits are p95 under 25 ms and p99 under 50 ms for data
-requests.
+requests. In people: visits a second times 45 seconds is how many are using
+the app at the same moment, so 34 visits a second is about 1,500 people at
+once. The limits are p95 under 25 ms and p99 under 50 ms for data requests
+(p95 means 95% of requests were faster than that, p99 means 99%). The real
+production server has not been load tested; these figures are for the
+laptop stand-in.
 
 In words:
 
@@ -54,8 +58,9 @@ before and after run before acting on one.
 ## What it cannot do
 
 - **No failover.** One server. If it is down, Echo is down until it is
-  rebuilt from a backup and a release. That recovery has not been rehearsed
-  or timed.
+  rebuilt: [set up a new server](../how-to/set-up-a-server.md), deploy a
+  release and [restore the latest dump](../how-to/restore-a-backup.md). That
+  recovery has not been rehearsed or timed.
 - **Backups stay on the server.** The nightly dump is on the same disk as the
   database. A lost server loses both. Copying dumps elsewhere is not set up.
 - **Every deploy restarts everything.** Expect a short outage while the

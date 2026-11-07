@@ -47,8 +47,8 @@ They are usually the same address but do different jobs.
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `OTEL_EXPORTER_OTLP_ENDPOINT` | `http://alloy:4317` | where the API sends traces, metrics and logs |
-| `OTEL_SERVICE_NAME` | `Echo.Api` | service name in telemetry |
+| `OTEL_EXPORTER_OTLP_ENDPOINT` | required; `http://alloy:4317` | where the API sends traces, metrics and logs |
+| `OTEL_SERVICE_NAME` | required; `Echo.Api` | service name in telemetry |
 | `OTEL_METRIC_EXPORT_INTERVAL` | `15000` | metric export interval, ms |
 | `API_LOG_LEVEL` | `Warning` | API log level; `Information` logs every request |
 | `GF_ADMIN_PASSWORD` | – | Grafana's admin password, **used only when Grafana first creates its database**. Change it in Grafana afterwards. |
@@ -75,8 +75,8 @@ The limiter counts a signed-in person on their own (600 requests a minute,
 search included) and anyone else by address (100 a minute). Endpoints reached
 without a token are counted by address, with room for a whole church behind
 one connection: sign-in 30 a minute, renewing or revoking a session 120, and
-5 for sign-up, password mail, verification, invitation codes and signing out
-everywhere.
+5 for sign-up, password mail, verification, invitation codes and signing
+out.
 
 `ForwardedHeaders__TrustedNetworks__0` sets which proxies may set
 `X-Forwarded-For`. The default is loopback and private ranges, which covers
