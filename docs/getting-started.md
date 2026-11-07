@@ -128,5 +128,7 @@ realistic database: `backend/src/Echo.Seeder/Seed.md`.
 - [Backend architecture](./backend/architecture.md) and [frontend](./frontend/README.md)
 - Running it like production on your machine: `infra/nginx/local-certs.sh`
   installs a trusted certificate for `echo.localhost` (it needs `mkcert`); then
-  start the stack with both compose files and `APP_DOMAIN=echo.localhost`.
+  start the stack with both compose files, `APP_DOMAIN=echo.localhost` and a
+  `BACKUP_DIR` (production compose requires one; `infra/loadtest/up.sh` sets it
+  for you).
   [Services](./reference/services.md) explains the files.

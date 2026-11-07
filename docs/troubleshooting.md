@@ -26,6 +26,26 @@ chown deploy:deploy /srv/echo/.env
 Then run the deploy again for the same version (see
 [Release](./how-to/release.md)).
 
+### `BACKUP_DIR in /srv/echo/.env must be an absolute path outside the releases`
+
+Cause: `BACKUP_DIR` in the server's `.env` is relative or points inside the
+releases folder. The deploy deletes release folders beyond the newest five, so
+dumps kept there would go with them.
+
+Fix: remove the line (the deploy then uses `/srv/echo/data/dumps`) or set an
+absolute path outside `/srv/echo/releases`, then run the deploy again.
+
+### `required variable BACKUP_DIR is missing a value`
+
+Seen when running `docker compose` by hand with the production files.
+
+Cause: production compose requires `BACKUP_DIR`. The deploy writes it into the
+release's `release.env`; a release that has never been deployed with a current
+`deploy.sh` does not have it.
+
+Fix: use the `dc` helper from [Back up and restore](./how-to/restore-a-backup.md)
+after a deploy, or `export BACKUP_DIR=/srv/echo/data/dumps` first.
+
 ### `password authentication failed for user "echo"`
 
 In the Postgres log: `FATAL:  role "echo" does not exist`, and

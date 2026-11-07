@@ -30,6 +30,7 @@ services:
     cpu_shares: 128
     mem_limit: 512m
     memswap_limit: 512m
+    volumes: ['${BACKUP_DIR:?}:/app/dumps']
   migrator:
     mem_limit: 512m
     memswap_limit: 512m

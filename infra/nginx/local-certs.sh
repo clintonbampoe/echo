@@ -14,7 +14,8 @@ mkcert -install # adds mkcert's own certificate authority to this machine's trus
 mkcert -cert-file "$certs/fullchain.pem" -key-file "$certs/privkey.pem" "$app" "status.$app"
 
 cd "$repo"
-APP_DOMAIN=$app docker compose -f docker-compose.yml -f docker-compose.prod.yml \
+APP_DOMAIN=$app BACKUP_DIR=${BACKUP_DIR:-$repo/infra/postgres/backup/dumps} \
+  docker compose -f docker-compose.yml -f docker-compose.prod.yml \
   run --rm --no-deps -v "$certs:/src:ro,z" --entrypoint sh certbot -c \
   "mkdir -p /etc/letsencrypt/live/$app && cp /src/*.pem /etc/letsencrypt/live/$app/"
 echo "Installed the certificate for $app."
