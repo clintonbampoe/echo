@@ -8,6 +8,8 @@ using Echo.Data;
 using Echo.Domain.Auth;
 using Echo.Domain.Users;
 using Echo.Shared.HttpResults;
+using Echo.Shared.Models;
+using Echo.Shared.Services.Email;
 using Echo.Shared.Services.Generators;
 using Echo.Shared.Services.Hashing;
 using Microsoft.EntityFrameworkCore;
@@ -20,6 +22,8 @@ public class RegistrationService(
     CongregationRepository congregationRepository,
     UserRepository userRepository,
     EmailVerificationService emailVerificationService,
+    IEmailQueue emailQueue,
+    LinkBuilder linkBuilder,
     SessionService sessionService,
     InvitationService invitationService,
     CongregationProvisioningService provisioningService,
@@ -78,10 +82,11 @@ public class RegistrationService(
         try
         {
             // The mapper copies the plain password into PasswordHash, so hash it before saving.
-            user.PasswordHash = await passwordHashService.HashAsync(userDto.Password);
+            user.PasswordHash = await passwordHashService.HashAsync(userDto.Password, ct);
             user.PasswordChangedAt = timeProvider.GetUtcNow().UtcDateTime;
 
             TokenPairResponseDtos session;
+            string? verificationToken = null;
             using (
                 var activity = instrumentation.ActivitySource.StartActivity(
                     "svc.registration.persist.setup"
@@ -100,11 +105,15 @@ public class RegistrationService(
                 session = await sessionService.StartSession(user, ct, prune: false);
                 activity?.AddEvent(new ActivityEvent("session.start"));
 
+                // Saved in the same commit as the user, so it costs no extra round trip.
+                verificationToken = emailVerificationService.StageFirstToken(user);
+
                 await unitOfWork.CommitAsync(ct);
                 activity?.AddEvent(new ActivityEvent("db.commit"));
             }
 
-            await emailVerificationService.SendVerificationLink(user, ct);
+            emailVerificationService.QueueVerificationEmail(user, verificationToken!);
+            QueueSetUpChurchEmail(user, congregation.Name);
 
             RecordCongregationRegistration(span, "success");
             RegistrationLog.CongregationRegistrationSucceeded(logger, congregation.Id, user.Id);
@@ -177,7 +186,7 @@ public class RegistrationService(
                 )
             )
             {
-                passwordHash = await passwordHashService.HashAsync(request.UserInfo.Password);
+                passwordHash = await passwordHashService.HashAsync(request.UserInfo.Password, ct);
             }
 
             var user = new User
@@ -200,6 +209,7 @@ public class RegistrationService(
             // signup that fails gives the use back.
             var claimed = false;
             TokenPairResponseDtos? session = null;
+            string? verificationToken = null;
             try
             {
                 using (
@@ -215,6 +225,7 @@ public class RegistrationService(
 
                             userRepository.Create(user);
                             session = await sessionService.StartSession(user, token, prune: false);
+                            verificationToken = emailVerificationService.StageFirstToken(user);
                             await unitOfWork.CommitAsync(token);
                         },
                         ct
@@ -242,8 +253,10 @@ public class RegistrationService(
                 )
             )
             {
-                await emailVerificationService.SendVerificationLink(user, ct);
+                emailVerificationService.QueueVerificationEmail(user, verificationToken!);
             }
+
+            QueueWelcomeEmail(user, invitation.Congregation.Name);
 
             RecordUserRegistration(span, "success", invitation.CongregationId.ToString());
             RegistrationLog.UserRegistrationSucceeded(logger, user.Id, invitation.CongregationId);
@@ -255,6 +268,53 @@ public class RegistrationService(
             span?.SetStatus(ActivityStatusCode.Error, ex.Message);
             RegistrationLog.UserRegistrationFailed(logger, ex, invitation.CongregationId);
             throw;
+        }
+    }
+
+    // The two emails below follow the verification email. The account already exists by now, so
+    // a failure is logged and never fails the sign-up.
+    private void QueueSetUpChurchEmail(User admin, string congregationName)
+    {
+        try
+        {
+            var content = new SetUpChurchEmailBody(
+                admin.FirstName,
+                congregationName,
+                linkBuilder.BuildDashboardLink()
+            );
+            emailQueue.TryEnqueue(
+                new EmailMessage(
+                    admin.EmailAddress,
+                    content,
+                    "set_up_church",
+                    admin.Id,
+                    admin.CongregationId
+                )
+            );
+        }
+        catch (Exception ex)
+        {
+            RegistrationLog.SetUpChurchEmailFailed(logger, ex, admin.Id, admin.CongregationId);
+        }
+    }
+
+    private void QueueWelcomeEmail(User user, string congregationName)
+    {
+        try
+        {
+            var content = new WelcomeEmailBody(
+                user.FirstName,
+                congregationName,
+                user.Role,
+                linkBuilder.BuildDashboardLink()
+            );
+            emailQueue.TryEnqueue(
+                new EmailMessage(user.EmailAddress, content, "welcome", user.Id, user.CongregationId)
+            );
+        }
+        catch (Exception ex)
+        {
+            RegistrationLog.WelcomeEmailFailed(logger, ex, user.Id, user.CongregationId);
         }
     }
 

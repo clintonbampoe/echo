@@ -67,27 +67,12 @@ public static partial class SessionLog
     public static partial void TokenRevocationFailed(ILogger logger, Exception ex);
 
     // --- Logout all ---
-    [LoggerMessage(Level = LogLevel.Warning, Message = "Logout all failed: user not found")]
-    public static partial void LogoutOfAllSessionsFailed(ILogger logger);
-
     [LoggerMessage(
         Level = LogLevel.Information,
-        Message = "Logout all succeeded: all sessions for user {UserId} in congregation {CongregationId} terminated"
+        Message = "Logout all completed: {RevokedCount} active sessions terminated"
     )]
-    public static partial void LogoutOfAllSessionsSucceeded(
-        ILogger logger,
-        Guid userId,
-        Guid congregationId
-    );
+    public static partial void LogoutOfAllSessionsCompleted(ILogger logger, int revokedCount);
 
-    [LoggerMessage(
-        Level = LogLevel.Error,
-        Message = "Logout all error: unexpected failure for user {UserId} in congregation {CongregationId}"
-    )]
-    public static partial void LogoutAllFailed(
-        ILogger logger,
-        Exception ex,
-        Guid userId,
-        Guid congregationId
-    );
+    [LoggerMessage(Level = LogLevel.Error, Message = "Logout all error: unexpected failure")]
+    public static partial void LogoutAllFailed(ILogger logger, Exception ex);
 }

@@ -3,9 +3,8 @@
 # Postgres panels in Grafana) and to k6's own live dashboard at http://localhost:5665.
 #
 #   ./run.sh <label>          label names the run: before-gc, after-gc, ...
-#   PEAK_VUS=200 RAMP_MINUTES=10 ./run.sh quick-look
-#   SMOKE=1 ./run.sh smoke    three minutes, 5 + 10 people: checks the scripts work
-#   STRESS=1 ./run.sh stress  people barely pause between screens: finds where latency bends
+#   PATTERN=stepped STEP_RATES=8,12,16 ./run.sh quick-look   how the load changes: patterns/, then its own variables
+#   SMOKE=1 ./run.sh smoke    four minutes, two small steps: checks the scripts work
 set -euo pipefail
 cd "$(dirname "$0")"
 
@@ -19,17 +18,13 @@ if [ "${REPEAT:-1}" -gt 1 ]; then
   for i in $(seq 1 "$REPEAT"); do REPEAT=1 "$0" "${label}-r${i}" || true; done
   printf '\n%-34s %10s %10s %10s\n' run "data p95" "data p99" failed
   for i in $(seq 1 "$REPEAT"); do
-    jq -r --arg id "${label}-r${i}-${sha}" '.metrics | "\($id | .[0:34] | . + (" " * (34 - length))) \(.["http_req_duration{kind:data,phase:steady}"]["p(95)"] | floor | tostring + " ms" | (" " * (10 - length)) + .) \(.["http_req_duration{kind:data,phase:steady}"]["p(99)"] | floor | tostring + " ms" | (" " * (10 - length)) + .) \((.http_req_failed.value * 100 * 100 | floor) / 100 | tostring + " %" | (" " * (10 - length)) + .)"' "results/${label}-r${i}-${sha}.json" 2>/dev/null || echo "${label}-r${i}: no summary"
+    jq -r --arg id "${label}-r${i}-${sha}" '.metrics | "\($id | .[0:34] | . + (" " * (34 - length))) \(.["http_req_duration{kind:data,phase:hold}"]["p(95)"] | floor | tostring + " ms" | (" " * (10 - length)) + .) \(.["http_req_duration{kind:data,phase:hold}"]["p(99)"] | floor | tostring + " ms" | (" " * (10 - length)) + .) \((.http_req_failed.value * 100 * 100 | floor) / 100 | tostring + " %" | (" " * (10 - length)) + .)"' "results/${label}-r${i}-${sha}.json" 2>/dev/null || echo "${label}-r${i}: no summary"
   done
   exit 0
 fi
 
 if [ "${SMOKE:-}" = 1 ]; then
-  export FOCUS_VUS=5 PEAK_VUS=15 RAMP_MINUTES=3 FOCUS_ARRIVAL_MINUTES=1 THINK_MIN=1 THINK_MAX=2
-fi
-
-if [ "${STRESS:-}" = 1 ]; then
-  export THINK_MIN=0.5 THINK_MAX=2
+  export FOCUS_VUS=5 STEP_RATES=1,2 STEP_RAMP_SECONDS=60 STEP_HOLD_SECONDS=60 FOCUS_ARRIVAL_MINUTES=1 THINK_MIN=1 THINK_MAX=2
 fi
 
 mkdir -p results
@@ -67,6 +62,29 @@ if [ -n "$K6_CPUS" ]; then
 fi
 echo "app on cpus $APP_CPUS, k6 and monitoring on cpus ${K6_CPUS:-all (no spare cores)}"
 
+# The machine's power settings change what a run measures (a hash takes 160 ms in one and 200 ms in another), so every run
+# records them and refuses to start in any profile but the expected one (balanced). A run compared with the one before it
+# says if anything differs. POWER_PROFILE_OK=1 skips the refusal; EXPECTED_PROFILE=<name> changes the expected profile.
+cpu=/sys/devices/system/cpu
+val() { cat "$1" 2>/dev/null | head -1 || true; }
+profile=$(val /sys/firmware/acpi/platform_profile)
+env_lines="power profile (platform): ${profile:-n/a}
+power profile (tuned): $(tuned-adm active 2>/dev/null | sed 's/.*: //' || true)
+governor / energy preference: $(val $cpu/cpu0/cpufreq/scaling_governor) / $(val $cpu/cpu0/cpufreq/energy_performance_preference)
+turbo: $([ "$(val $cpu/intel_pstate/no_turbo)" = 1 ] && echo off || echo on)
+clock limit: $(val $cpu/cpu0/cpufreq/scaling_max_freq | awk '{ printf "%d MHz", $1 / 1000 }')"
+mkdir -p results
+echo "$env_lines" | tee "results/${TESTID}-env.txt"
+if [ -f results/.last-env ] && ! diff -q results/.last-env "results/${TESTID}-env.txt" >/dev/null; then
+  echo "WARNING: the machine's power settings are not the same as in the previous run:" >&2
+  diff results/.last-env "results/${TESTID}-env.txt" >&2 || true
+fi
+cp "results/${TESTID}-env.txt" results/.last-env
+if [ -n "$profile" ] && [ "$profile" != "${EXPECTED_PROFILE:-balanced}" ] && [ "${POWER_PROFILE_OK:-}" != 1 ]; then
+  echo "The power profile is '$profile', not '${EXPECTED_PROFILE:-balanced}'. Switch it (or set POWER_PROFILE_OK=1) and run again." >&2
+  exit 1
+fi
+
 # Postgres keeps per-statement totals since they were last reset; start from zero so the run is all it shows.
 sql() { docker exec database psql -U postgres -d echo_db -c "$1" 2>/dev/null; }
 sql "SELECT pg_stat_statements_reset()" > /dev/null || echo "(could not reset pg_stat_statements; SQL report skipped)"
@@ -83,22 +101,56 @@ status=0
 started=$(date +%s)
 "${pin_k6[@]}" k6 run -o experimental-prometheus-rw --summary-export "results/${TESTID}.json" main.js || status=$?
 
-# The run queue: the average number of tasks waiting for each app core, the highest it reached during the run. It must stay
-# under 1 on both cores: past that, requests wait for a core and latency spikes whatever else is healthy. Needs the
-# pressure collectors in Alloy (set_collectors) and Prometheus on localhost:9090.
-queue=$(curl -sS -m 20 -G "${PROMETHEUS_URL:-http://localhost:9090}/api/v1/query" \
-  --data-urlencode "query=max by (cpu) (max_over_time(rate(node_schedstat_waiting_seconds_total{cpu=~\"${APP_CPUS//,/|}\"}[30s])[$(( $(date +%s) - started + 30 ))s:15s]))" 2>/dev/null \
-  | jq -r '[.data.result[] | "core\(.metric.cpu)=\((.value[1] | tonumber * 100 | floor) / 100)"] | join(" ")' 2>/dev/null) || queue=""
-queue_over=$(echo "$queue" | awk '{ for (i = 1; i <= NF; i++) { split($i, kv, "="); if (kv[2] + 0 >= 1) over = 1 } } END { print over + 0 }')
-echo "run queue (tasks waiting per app core, highest; under 1): ${queue:-unavailable}$([ "$queue_over" = 1 ] && echo '   <-- OVER')"
-[ "$queue_over" = 1 ] && status=1
+# Did the CPU throttle during the run? A two-hour run on a laptop can, and it would look like the API getting slower.
+# The kernel counts every time a core or the package was throttled; any increase is worth knowing about.
+throttles=$(curl -sS -m 20 -G "${PROMETHEUS_URL:-http://localhost:9090}/api/v1/query" \
+  --data-urlencode "query=sum(increase(node_cpu_core_throttles_total[$(( $(date +%s) - started + 30 ))s])) + sum(increase(node_cpu_package_throttles_total[$(( $(date +%s) - started + 30 ))s]))" \
+  2>/dev/null | jq -r '.data.result[0].value[1] // "unavailable" | if . == "unavailable" then . else (tonumber | floor | tostring) end' 2>/dev/null) || throttles=unavailable
+echo "CPU throttle events during the run: ${throttles:-unavailable}$([ "${throttles:-0}" != 0 ] && [ "${throttles:-}" != unavailable ] && echo '   <-- the clock was reduced')" | tee -a "results/${TESTID}-env.txt"
 
-# The verdict, against the targets: data p95 10 ms (15 ms at the very most), sign-in p95 under 500 ms, renewals under 50 ms.
+# The verdict, step by step: each step is judged on its hold, against the limits in lib/config.js (k6 says which
+# thresholds each step missed). The API carries the highest step before the first one
+# that fails. The run queue is the average number of tasks waiting for each app core, the highest it reached during
+# the step's hold: past 1 on both cores, requests wait for a core, which is what CPU-bound looks like. Needs the pressure
+# collectors in Alloy (set_collectors) and Prometheus on localhost:9090.
 if [ -f "results/${TESTID}.json" ]; then
-  phase=steady; [ "${HOLD_MINUTES:-7}" -gt 0 ] && phase=hold
-  jq -r --arg phase "$phase" '.metrics as $m |
-    def ms(k; q): ($m[k][q] // null) | if . == null then "-" else (. * 10 | floor / 10 | tostring) end;
-    "\nverdict (\($phase) phase)\n  data p95     \(ms("http_req_duration{kind:data,phase:" + $phase + "}"; "p(95)")) ms   (target 10, at most 15)\n  data p99     \(ms("http_req_duration{kind:data,phase:" + $phase + "}"; "p(99)")) ms\n  sign-in p95  \(ms("http_req_duration{name:POST /auth/sessions/login}"; "p(95)")) ms   (under 500)\n  renewal p95  \(ms("http_req_duration{name:POST /auth/sessions/refresh}"; "p(95)")) ms   (under 50)\n  failed       \((($m.http_req_failed.value // 0) * 10000 | floor) / 100) %"' "results/${TESTID}.json"
+  prom=${PROMETHEUS_URL:-http://localhost:9090}
+  elapsed=$(( $(date +%s) - started + 30 ))
+  queue_for() {
+    curl -sS -m 20 -G "$prom/api/v1/query" --data-urlencode "query=max(max_over_time((rate(node_schedstat_waiting_seconds_total{cpu=~\"${APP_CPUS//,/|}\"}[30s]) and on() (sum(changes(k6_http_reqs_total{testid=\"$TESTID\",phase=\"hold\",step=\"$1\"}[30s])) > 0))[${elapsed}s:15s]))" \
+      2>/dev/null | jq -r '.data.result[0].value[1] // empty | tonumber * 100 | floor / 100' 2>/dev/null || true
+  }
+  queues=$(for step in $(jq -r '.metrics | keys[] | select(startswith("http_req_duration{kind:data,phase:hold,step:")) | ltrimstr("http_req_duration{kind:data,phase:hold,step:") | rtrimstr("}")' "results/${TESTID}.json"); do
+    printf '%s=%s\n' "$step" "$(queue_for "$step")"
+  done | jq -R -s 'split("\n") | map(select(length > 0) | split("=") | {(.[0]): (.[1] | tonumber? // null)}) | add // {}')
+  queues=${queues:-"{}"}
+  jq -r --argjson queues "$queues" '
+    .metrics as $m
+    | def num(x): (x // null) | if . == null then "-" else (. * 10 | floor / 10 | tostring) end;
+      def pad(n): tostring | (" " * (n - length)) + .;
+      def get(k; q): ($m[k] // {}) | if .max == 0 then null else .[q] end; # no requests of that kind in the step
+      [$m | keys[] | select(startswith("http_req_duration{kind:data,phase:hold,step:")) | ltrimstr("http_req_duration{kind:data,phase:hold,step:") | rtrimstr("}")] | sort_by(tonumber) as $steps
+    | ($steps | map(. as $s
+        | { step: $s,
+            p95: get("http_req_duration{kind:data,phase:hold,step:\($s)}"; "p(95)"),
+            p99: get("http_req_duration{kind:data,phase:hold,step:\($s)}"; "p(99)"),
+            login: get("http_req_duration{name:POST /auth/sessions/login,phase:hold,step:\($s)}"; "p(95)"),
+            refresh: get("http_req_duration{name:POST /auth/sessions/refresh,phase:hold,step:\($s)}"; "p(95)"),
+            failed: get("http_req_failed{phase:hold,step:\($s)}"; "value"),
+            queue: $queues[$s] }
+        | .ok = ([ "http_req_duration{kind:data,phase:hold,step:\($s)}",
+                  "http_req_duration{name:POST /auth/sessions/login,phase:hold,step:\($s)}",
+                  "http_req_duration{name:POST /auth/sessions/refresh,phase:hold,step:\($s)}",
+                  "http_req_failed{phase:hold,step:\($s)}" ] | map(($m[.].thresholds // {}) | to_entries[].value) | any | not))) as $rows
+    | "\nverdict (each step judged on its hold, against the limits in lib/config.js)",
+      "  visits/s  data p95  data p99  sign-in p95  renewal p95  failed %  run queue",
+      ($rows[] | "  \(.step | pad(8))  \(num(.p95) | pad(8))  \(num(.p99) | pad(8))  \(num(.login) | pad(11))  \(num(.refresh) | pad(11))  \((((.failed // 0) * 10000 | floor) / 100) | pad(8))  \(num(.queue) | pad(9))  \(if .ok then "ok" else "FAILED" end)"),
+      ( ($rows | map(.ok) | index(false)) as $first
+        | if $first == null then "  every step held: the API carries the top step, \($rows[-1].step) visits/s"
+          elif $first == 0 then "  the first step already failed: nothing to report as capacity"
+          else "  carries \($rows[$first - 1].step) visits/s; first step to fail: \($rows[$first].step)" end ),
+      "  rate limited (429): \($m.rate_limited.count // 0)  \(if ($m.rate_limited.count // 0) > 0 then "<-- the run is not valid" else "" end)",
+      "  dropped visits (no free person): \($m.dropped_iterations.count // 0)"' "results/${TESTID}.json"
 fi
 
 # The statements that took the most time during the run.

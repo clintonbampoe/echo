@@ -37,8 +37,29 @@ public class InvitationEmailTests
     [Fact]
     public void TheEmail_SaysSoWhenItNeverExpires()
     {
-        var body = new InvitationEmailBody("Grace", UserRole.Member, "C", "https://x/join/C", null);
+        var body = new InvitationEmailBody(
+            "Grace",
+            UserRole.Member,
+            "C",
+            "https://x/join/C",
+            null
+        );
 
         Assert.Contains("does not expire", body.HtmlBody);
+    }
+
+    [Fact]
+    public void TheEmail_SaysItCanBeUsedOnce_AndNamesTheRole()
+    {
+        var body = new InvitationEmailBody(
+            "Grace",
+            UserRole.Accountant,
+            "C",
+            "https://x/join/C",
+            null
+        );
+
+        Assert.Contains("It can be used once.", body.HtmlBody);
+        Assert.Contains(">Accountant<", body.HtmlBody);
     }
 }

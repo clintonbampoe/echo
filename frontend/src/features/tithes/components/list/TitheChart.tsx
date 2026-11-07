@@ -1,5 +1,5 @@
 import { formatMoney, formatNumber } from "@/lib/format";
-import { MonthBars } from "@/ui";
+import { MonthBars, useMonthRange } from "@/ui";
 import { methodOf, type ListFilters } from "../../model/filters";
 import { useTitheMonths } from "../../hooks/queries";
 import { chartBars, chartSummary } from "../../model/display";
@@ -14,12 +14,13 @@ type Props = {
 // "Collected per month": the last twelve months, by the month each tithe is for. It follows the search and the
 // method, but not the dates (it is the long view). Clicking a bar picks that month for the list below.
 export function TitheChart({ filters, today, onPick }: Props) {
+  const { range } = useMonthRange("12");
   const months = useTitheMonths(
     {
       memberName: filters.name.trim() || undefined,
       paymentMethod: methodOf(filters.method),
     },
-    12,
+    Number(range),
     today,
   );
   const bars = chartBars(months.data ?? []);
@@ -36,7 +37,7 @@ export function TitheChart({ filters, today, onPick }: Props) {
     >
       <header className={styles.head}>
         <h2 className={styles.title}>Collected</h2>
-        <span className={styles.range}>12 months</span>
+        <span className={styles.range}>{range} months</span>
       </header>
       {months.isError && (
         <p className={styles.line}>

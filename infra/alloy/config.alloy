@@ -185,7 +185,8 @@ otelcol.processor.filter "warnings" {
 }
 
 // ASP.NET and EF attach a dozen bookkeeping attributes to every log record (connection id, parent span, SDK
-// version...). They bury the two that matter (trace_id for the trace link, RequestPath), so leave them out.
+// version...). They bury the two that matter (trace_id for the trace link, RequestPath), so leave them out. Logs from
+// the Echo.Auth classes (sign-in, renewal, passwords...) get category="auth", so the auth dashboard can show them.
 otelcol.processor.transform "tidy_logs" {
   error_mode = "ignore"
 
@@ -197,6 +198,7 @@ otelcol.processor.transform "tidy_logs" {
       `delete_key(attributes, "SpanId")`,
       `delete_key(attributes, "TraceId")`,
       `delete_key(attributes, "{OriginalFormat}")`,
+      `set(attributes["category"], "auth") where IsMatch(instrumentation_scope.name, "^Echo[.]Auth[.]")`,
     ]
   }
 
@@ -246,6 +248,26 @@ otelcol.processor.tail_sampling "traces" {
     }
   }
 
+  // A sign-in refused because the password-check line was full (503, auth.result = busy). ASP.NET marks every 5xx as an
+  // error, so without this each refused person would keep a whole trace, and in a burst there are hundreds a second. They
+  // are counted by the auth dashboard (sign-ins turned away) instead. A drop policy wins over every policy that matches.
+  policy {
+    name = "refused-sign-ins"
+    type = "drop"
+
+    drop {
+      drop_sub_policy {
+        name = "busy"
+        type = "string_attribute"
+
+        string_attribute {
+          key    = "auth.result"
+          values = ["busy"]
+        }
+      }
+    }
+  }
+
   policy {
     name = "slow"
     type = "latency"
@@ -271,7 +293,10 @@ otelcol.processor.tail_sampling "traces" {
 
 // A log line for every slow request, built from the API's own spans, so its duration is what the API measured and its
 // trace id is the real one. Only server spans (one per request) of 100 ms or more are kept, and 500 ms or more for the
-// /auth routes, where a sign-in takes about 175 ms by design (bcrypt) and 100 ms would log every one; the traces that reach here are
+// /auth routes, where a sign-in takes about 175 ms by design (bcrypt) and 100 ms would log every one. Time a sign-in spent
+// waiting in line for a password check (the API tags it auth.hash.wait_ms) is left out: the line is meant to hold people
+// for up to 10 s in a burst, and that is not slowness. It is counted by the auth dashboard instead; a sign-in is logged only
+// when the rest of its time, the work, is 500 ms or more. The traces that reach here are
 // the ones tail sampling kept, and every slow one is. When most requests are slow, as in an overload, this logs most of
 // them.
 otelcol.processor.filter "slow_requests" {
@@ -281,7 +306,8 @@ otelcol.processor.filter "slow_requests" {
     span = [
       `kind != SPAN_KIND_SERVER`,
       `not IsMatch(attributes["http.route"], ".*/auth/.*") and (end_time_unix_nano - start_time_unix_nano) < 100000000`,
-      `IsMatch(attributes["http.route"], ".*/auth/.*") and (end_time_unix_nano - start_time_unix_nano) < 500000000`,
+      `IsMatch(attributes["http.route"], ".*/auth/.*") and attributes["auth.hash.wait_ms"] == nil and (end_time_unix_nano - start_time_unix_nano) < 500000000`,
+      `IsMatch(attributes["http.route"], ".*/auth/.*") and attributes["auth.hash.wait_ms"] != nil and (end_time_unix_nano - start_time_unix_nano - attributes["auth.hash.wait_ms"] * 1000000) < 500000000`,
     ]
   }
 
@@ -292,7 +318,7 @@ otelcol.processor.filter "slow_requests" {
 
 otelcol.connector.spanlogs "slow_requests" {
   spans           = true
-  span_attributes = ["http.request.method", "http.route", "http.response.status_code", "url.path"]
+  span_attributes = ["http.request.method", "http.route", "http.response.status_code", "url.path", "auth.hash.wait_ms"]
 
   output {
     logs = [otelcol.processor.transform.slow_request_logs.input]
@@ -301,7 +327,8 @@ otelcol.connector.spanlogs "slow_requests" {
 
 // The connector writes everything inside one line (tid=..., dur=208347000ns). Loki and the dashboards expect the trace id
 // as the trace_id field, as on the API's own logs, which is what the "View trace" link reads, and a person wants
-// "POST /api/v1/auth/sessions/login · 200 · 208 ms". The route template and duration stay as fields for queries.
+// "slow request: POST /api/v1/auth/sessions/login · 200 · 208 ms". The route template and duration stay as fields for
+// queries, and requests under /auth get category="auth", the same as the API's own logs from the Echo.Auth classes.
 otelcol.processor.transform "slow_request_logs" {
   error_mode = "ignore"
 
@@ -314,8 +341,10 @@ otelcol.processor.transform "slow_request_logs" {
       `set(attributes["http.route"], ExtractPatterns(body, "http.route=(?P<v>[^ ]+)")["v"])`,
       `set(attributes["http.response.status_code"], ExtractPatterns(body, "http.response.status_code=(?P<v>[0-9]+)")["v"])`,
       `set(attributes["url.path"], ExtractPatterns(body, "url.path=(?P<v>[^ ]+)")["v"])`,
+      `set(attributes["queue_wait_ms"], Int(ExtractPatterns(body, "auth.hash.wait_ms=(?P<v>[0-9]+)")["v"]))`,
       `set(attributes["slow_request"], true)`,
-      `set(body, Concat([attributes["http.request.method"], attributes["url.path"], "·", attributes["http.response.status_code"], "·", Concat([attributes["duration_ms"], "ms"], " ")], " "))`,
+      `set(attributes["category"], "auth") where IsMatch(attributes["http.route"], ".*/auth/.*")`,
+      `set(body, Concat(["slow request:", attributes["http.request.method"], attributes["url.path"], "·", attributes["http.response.status_code"], "·", Concat([attributes["duration_ms"], "ms"], " ")], " "))`,
       `set(severity_number, SEVERITY_NUMBER_INFO)`,
       `set(severity_text, "INFO")`,
     ]

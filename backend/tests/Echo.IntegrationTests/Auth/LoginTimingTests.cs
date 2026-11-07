@@ -18,9 +18,10 @@ public class LoginTimingTests(PostgresFixture db)
     {
         public int Verifications { get; private set; }
 
-        public Task<string> HashAsync(string password) => Task.FromResult("hash");
+        public Task<string> HashAsync(string password, CancellationToken ct = default) =>
+            Task.FromResult("hash");
 
-        public Task<bool> VerifyAsync(string password, string hash)
+        public Task<bool> VerifyAsync(string password, string hash, CancellationToken ct = default)
         {
             Verifications++;
             return Task.FromResult(false);

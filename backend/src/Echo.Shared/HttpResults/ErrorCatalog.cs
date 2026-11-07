@@ -12,6 +12,7 @@ public static class ErrorCatalog
         new("404", "FOREIGN_KEY_NOT_FOUND", "Referenced entity does not exist"),
         new("409", "CONFLICT", "Duplicate or state collision"),
         new("500", "INTERNAL_SERVER_ERROR", "Unhandled server exception"),
+        new("503", "SERVICE_BUSY", "Too many password checks are waiting — retry after the `Retry-After` seconds"),
     ];
 
     public static string ToMarkdownTable()

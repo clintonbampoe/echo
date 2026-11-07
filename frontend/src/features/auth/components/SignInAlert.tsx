@@ -18,5 +18,9 @@ export function SignInAlert({ problem }: Props) {
       <Alert title="Too many attempts">Wait a minute, then try again.</Alert>
     );
   }
+  if (problem.errorCode === "SERVICE_BUSY") {
+    // Many people are signing in at once. The message already says how many seconds to wait.
+    return <Alert title="We are busy right now">{problem.message}</Alert>;
+  }
   return <Alert title="We could not sign you in">{problem.message}</Alert>;
 }

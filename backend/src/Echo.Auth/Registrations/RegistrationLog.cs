@@ -82,4 +82,27 @@ public static partial class RegistrationLog
         Exception ex,
         Guid congregationId
     );
+
+    // --- Welcome emails ---
+    [LoggerMessage(
+        Level = LogLevel.Warning,
+        Message = "Welcome email could not be queued for user {UserId} in congregation {CongregationId}"
+    )]
+    public static partial void WelcomeEmailFailed(
+        ILogger logger,
+        Exception ex,
+        Guid userId,
+        Guid congregationId
+    );
+
+    [LoggerMessage(
+        Level = LogLevel.Warning,
+        Message = "Set up email could not be queued for user {UserId} in congregation {CongregationId}"
+    )]
+    public static partial void SetUpChurchEmailFailed(
+        ILogger logger,
+        Exception ex,
+        Guid userId,
+        Guid congregationId
+    );
 }

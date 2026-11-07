@@ -115,27 +115,70 @@
   color: var(--text-3);
 }
 
+/* The wrapper owns the gap above the control, so the toggle can line up with the control itself and
+   not with the margin the control would otherwise push out of the wrapper. */
 .withButton {
   position: relative;
+  margin-top: var(--control-gap, 8px);
+}
+.withButton .control {
+  margin-top: 0;
 }
 .toggle {
   position: absolute;
-  top: 12px;
-  right: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  top: 0;
+  right: 6px;
+  display: grid;
+  place-items: center;
   width: 40px;
-  height: 40px;
+  height: var(--control-height, 48px);
+  padding: 0;
   border: 0;
   border-radius: var(--radius-sm);
   background: transparent;
   color: var(--text-3);
-  transition: color var(--fast) ease;
+  cursor: pointer;
+  transition:
+    color var(--t-fast) var(--ease-soft),
+    background var(--t-fast) var(--ease-soft),
+    scale var(--t-fast) var(--ease-soft);
 }
-.toggle:hover,
-.toggle[aria-pressed="true"] {
+@media (hover: hover) {
+  .toggle:hover {
+    color: var(--text);
+    background: var(--hover-row);
+  }
+}
+.toggle:active {
+  scale: var(--press);
+}
+.toggle:focus-visible {
+  outline: none;
   color: var(--text);
+  box-shadow: var(--focus-ring);
+}
+/* While the password is shown the button stays strong, so it reads as switched on. */
+.toggle[data-shown="true"] {
+  color: var(--text);
+}
+/* Both icons sit in the same spot; the one that does not apply fades and shrinks away. */
+.glyph {
+  grid-area: 1 / 1;
+  display: flex;
+  transition:
+    opacity var(--t-fast) var(--ease-soft),
+    scale var(--t-base) var(--ease-out);
+}
+.toggle[data-shown="true"] .glyphOpen,
+.toggle[data-shown="false"] .glyphCrossed {
+  opacity: 0;
+  scale: 0.7;
+}
+@media (prefers-reduced-motion: reduce) {
+  .glyph,
+  .toggle {
+    transition: none;
+  }
 }
 
 .message {

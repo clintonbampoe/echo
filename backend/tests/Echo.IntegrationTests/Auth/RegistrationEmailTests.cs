@@ -3,9 +3,12 @@ using Echo.Application.Users;
 using Echo.Auth.Invitations;
 using Echo.Auth.Registrations;
 using Echo.Data;
+using Echo.Domain.Auth;
 using Echo.Domain.Users;
 using Echo.IntegrationTests.Support;
 using Echo.Shared.Services.Hashing;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Echo.IntegrationTests.Auth;
 
@@ -46,7 +49,7 @@ public class RegistrationEmailTests(PostgresFixture db)
     }
 
     [Fact]
-    public async Task RegisterUser_QueuesOneVerificationEmail_WithoutExtraUserLookup()
+    public async Task RegisterUser_QueuesTheVerificationAndWelcomeEmails_WithoutExtraUserLookup()
     {
         var (host, queue, code) = await Arrange();
         await using var _ = host;
@@ -56,10 +59,21 @@ public class RegistrationEmailTests(PostgresFixture db)
             .RegisterUser(new RegisterMemberRequest { Token = code, UserInfo = NewMember() }, Ct)
             .WaitAsync(Patience, Ct);
 
-        var message = Assert.Single(queue.Messages);
-        Assert.Equal("kofi@echo.test", message.To);
-        Assert.Equal("email_verification", message.Kind);
-        Assert.Equal(7, host.Commands.Count); // 7 -> 6 when the user stopped being re-fetched, +1 for pruning old verification tokens
+        Assert.Equal(2, queue.Messages.Count);
+        Assert.All(queue.Messages, m => Assert.Equal("kofi@echo.test", m.To));
+        Assert.Equal("email_verification", queue.Messages[0].Kind);
+        var welcome = queue.Messages[1];
+        Assert.Equal("welcome", welcome.Kind);
+        Assert.StartsWith("Welcome to Grace Chapel ", welcome.Content.Subject);
+        Assert.Contains("Hi Kofi,", welcome.Content.HtmlBody);
+        // The invitation (with its church), the email check, the claim, and one save that holds the
+        // user, the session and the verification token.
+        Assert.Equal(4, host.Commands.Count);
+        using var scope = host.NewScope();
+        Assert.Equal(
+            1,
+            await scope.ServiceProvider.GetRequiredService<AppDbContext>().Set<EmailVerificationToken>().CountAsync(Ct)
+        );
     }
 
     [Fact]
@@ -76,21 +90,43 @@ public class RegistrationEmailTests(PostgresFixture db)
     }
 
     [Fact]
-    public async Task RegisterCongregation_QueuesAVerificationEmailForTheAdmin()
+    public async Task RegisterCongregation_QueuesTheVerificationAndSetUpEmailsForTheAdmin()
     {
         var queue = new RecordingEmailQueue();
         await using var host = await AuthTestHost.CreateAsync(
             db,
             TestHostExtensions.WithRecordedEmail(queue)
         );
+        host.Commands.Reset();
 
         await host.Get<RegistrationService>()
             .RegisterCongregation(NewCongregation(), NewMember("admin@echo.test"), Ct)
             .WaitAsync(Patience, Ct);
 
-        var message = Assert.Single(queue.Messages);
-        Assert.Equal("admin@echo.test", message.To);
-        Assert.Equal("email_verification", message.Kind);
+        Assert.Equal(2, queue.Messages.Count);
+        Assert.Equal(2, host.Commands.Count); // the email check, then one save for everything
+        Assert.All(queue.Messages, m => Assert.Equal("admin@echo.test", m.To));
+        Assert.Equal("email_verification", queue.Messages[0].Kind);
+        var setUp = queue.Messages[1];
+        Assert.Equal("set_up_church", setUp.Kind);
+        Assert.Equal("Set up Grace Chapel on Echo", setUp.Content.Subject);
+        Assert.Contains("Add your members", setUp.Content.HtmlBody);
+    }
+
+    [Fact]
+    public async Task RegisterCongregation_WhenTheQueueRefuses_StillCreatesTheAccount()
+    {
+        var queue = new RecordingEmailQueue { Accepting = false };
+        await using var host = await AuthTestHost.CreateAsync(
+            db,
+            TestHostExtensions.WithRecordedEmail(queue)
+        );
+
+        await host.Get<RegistrationService>()
+            .RegisterCongregation(NewCongregation(), NewMember("admin@echo.test"), Ct);
+
+        Assert.Empty(queue.Messages);
+        Assert.NotNull(await host.Get<UserRepository>().GetByEmail("admin@echo.test", Ct));
     }
 
     [Fact]
