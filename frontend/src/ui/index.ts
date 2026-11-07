@@ -85,6 +85,7 @@ export { useCooldown } from "./hooks/useCooldown";
 export { StatusTile } from "./layout/StatusTile";
 export { useHeld } from "./hooks/useHeld";
 export { useMedia } from "./hooks/useMedia";
+export { useMonthRange, type MonthRange } from "./hooks/useMonthRange";
 export { usePresence } from "./overlays/usePresence";
 export { useNarrowProfile } from "./hooks/useNarrowProfile";
 export { usePublicSurface } from "./hooks/useSurface";

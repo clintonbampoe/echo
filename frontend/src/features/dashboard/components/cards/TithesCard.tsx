@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { formatMoney, formatNumber } from "@/lib/format";
-import { DashCard, Figure, MonthBars } from "@/ui";
+import { DashCard, Figure, MonthBars, useMonthRange } from "@/ui";
 import { growthBuckets } from "../../model/growth";
 import { useTitheSeries } from "../../hooks/series";
-import { monthRanges, type MonthRange } from "../../model/ranges";
 import { CardFailed } from "./CardFailed";
 import { RangeTabs } from "../controls/RangeTabs";
 
@@ -12,7 +11,7 @@ const NONE = "–";
 // Tithes month by month. The month picked (the latest to begin with) gives the figure, how many people gave
 // and what the average gift was.
 export function TithesCard({ today }: { today: string }) {
-  const [range, setRange] = useState<MonthRange>("6");
+  const { range, setRange, options } = useMonthRange();
   const [picked, setPicked] = useState<string | null>(null);
   const buckets = growthBuckets(today, Number(range));
   const series = useTitheSeries(buckets);
@@ -27,7 +26,7 @@ export function TithesCard({ today }: { today: string }) {
       control={
         <RangeTabs
           label="Range"
-          options={monthRanges}
+          options={options}
           value={range}
           onChange={(r) => {
             setRange(r);
