@@ -47,7 +47,9 @@ internal static class Libsodium
             );
     }
 
-    /// <param name="hash">The encoded hash, zero terminated, in a buffer of <see cref="HashBytes"/>.</param>
+    /// <param name="hash">
+    /// The encoded hash, zero terminated, in a buffer of <see cref="HashBytes"/>.
+    /// </param>
     public static bool Verify(byte[] hash, byte[] password) =>
         crypto_pwhash_str_verify(hash, password, (ulong)password.Length) == 0;
 }
