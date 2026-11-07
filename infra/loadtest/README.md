@@ -54,6 +54,7 @@ design) is judged separately, at p95 under 1 s.
 ## Run it
 
 ```bash
+ACCOUNTS_PER_CHURCH=110 ./add-accounts.sh   # once: the peak needs about 2,350 people at once, one account each
 ./prepare.sh                 # once, and after re-seeding: writes the seeded accounts to .accounts.json
 SMOKE=1 ./run.sh smoke       # 3 minutes, 5 + 15 people: do the scripts work?
 ./run.sh before-gc           # the real run: 15 minutes, up to 500 people
@@ -73,6 +74,8 @@ the host panel, and treat the first big run as a way to find out whether the mac
 | `FOCUS_VUS` / `FOCUS_ARRIVAL_MINUTES` | 20 / 1 | staff in the focus tenant, and how long they take to arrive |
 | `THINK_MIN` / `THINK_MAX` | 3 / 10 | seconds between screens |
 | `RENEW_BEFORE_SECONDS` | 60 | how long before expiry a session is renewed |
+| `STEP_RATES` | 16,22,28,34,40,46,52 | visits a second at each step of the stepped pattern (`patterns/stepped.js`) |
+| `API_GC_SERVER` | 0 | set to 1 when starting the stack (`up.sh`) to run the API with Server GC; the run's `-env.txt` records which |
 | `REF_DATE` | 2026-10-20 | the seeder's "today" |
 
 ## Watching it

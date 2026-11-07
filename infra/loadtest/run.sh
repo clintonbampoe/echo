@@ -66,11 +66,12 @@ env_lines="power profile (platform): ${profile:-n/a}
 power profile (tuned): $(tuned-adm active 2>/dev/null | sed 's/.*: //' || true)
 governor / energy preference: $(val $cpu/cpu0/cpufreq/scaling_governor) / $(val $cpu/cpu0/cpufreq/energy_performance_preference)
 turbo: $([ "$(val $cpu/intel_pstate/no_turbo)" = 1 ] && echo off || echo on)
-clock limit: $(val $cpu/cpu0/cpufreq/scaling_max_freq | awk '{ printf "%d MHz", $1 / 1000 }')"
+clock limit: $(val $cpu/cpu0/cpufreq/scaling_max_freq | awk '{ printf "%d MHz", $1 / 1000 }')
+api garbage collector: $([ "$(docker exec api printenv DOTNET_gcServer 2>/dev/null)" = 1 ] && echo server || echo workstation)"
 mkdir -p results
 echo "$env_lines" | tee "results/${TESTID}-env.txt"
 if [ -f results/.last-env ] && ! diff -q results/.last-env "results/${TESTID}-env.txt" >/dev/null; then
-  echo "WARNING: the machine's power settings are not the same as in the previous run:" >&2
+  echo "WARNING: the machine's or the API's settings are not the same as in the previous run:" >&2
   diff results/.last-env "results/${TESTID}-env.txt" >&2 || true
 fi
 cp "results/${TESTID}-env.txt" results/.last-env

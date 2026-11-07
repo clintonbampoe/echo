@@ -8,6 +8,8 @@ x-cpus: &cpus "${APP_CPUS:-0,1,4,5}"
 services:
   api:
     cpuset: *cpus
+    environment:
+      DOTNET_gcServer: ${API_GC_SERVER:-0}
   db:
     cpuset: *cpus
   nginx:
