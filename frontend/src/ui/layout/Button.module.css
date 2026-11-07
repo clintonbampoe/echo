@@ -121,8 +121,8 @@
   flex: none;
 }
 
-/* On a phone even the small button is as tall as every other control. */
-@media (max-width: 900px) {
+/* On a phone, or any touch screen, even the small button is as tall as every other control. */
+@media (max-width: 900px), (pointer: coarse) {
   .sm {
     height: var(--control);
   }
