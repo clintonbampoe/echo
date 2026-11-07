@@ -17,8 +17,8 @@ You need Docker, Git and a bash shell.
 ```bash
 git clone https://github.com/clintonbampoe/echo.git && cd echo
 cp .env.example .env
-sh backend/tools/jwt-key-setup/SetupJwtKeys.sh env
-sh backend/tools/invitation-key-setup/SetupInvitationKey.sh env
+bash backend/tools/jwt-key-setup/SetupJwtKeys.sh env
+bash backend/tools/invitation-key-setup/SetupInvitationKey.sh env
 docker compose up
 ```
 

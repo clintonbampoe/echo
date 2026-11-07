@@ -21,8 +21,8 @@ variable is [Environment variables](./reference/environment.md).
 Two secrets need generating, because they must be encoded:
 
 ```bash
-sh backend/tools/jwt-key-setup/SetupJwtKeys.sh env
-sh backend/tools/invitation-key-setup/SetupInvitationKey.sh env
+bash backend/tools/jwt-key-setup/SetupJwtKeys.sh env
+bash backend/tools/invitation-key-setup/SetupInvitationKey.sh env
 ```
 
 The first writes an RSA key pair for signing tokens (base64, because PEM keys

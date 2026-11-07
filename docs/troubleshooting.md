@@ -13,7 +13,9 @@ Also seen, before the message was clearer:
 `ERROR: set RunMigrationsOnStartup=false in /srv/echo/.env`.
 
 Cause: the file belongs to root because `make-env.sh` ran as root. The deploy
-runs as `deploy` and cannot read it.
+runs as `deploy` and cannot read it. Running the script as `deploy` from `/root`
+fails because that user cannot read `/root`, which is what tempts people to run
+it as root; copy the script to `/tmp` first.
 
 Fix, on the server:
 
