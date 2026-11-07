@@ -6,6 +6,7 @@
 | `deploy.sh` | on the server, from each release folder | pulls, migrates, starts the release, rolls back if it is not healthy |
 | `make-env.sh` | on the server, once | writes `/srv/echo/.env` with fresh secrets and the dump folder |
 | `test-server-entry.sh` | in CI | checks `server-entry.sh` only lets `vX.Y.Z` releases through |
+| `test-deploy.sh` | in CI | runs `deploy.sh` against a fake docker and checks how it handles `BACKUP_DIR` |
 
 How they fit together, and the order to set a server up, is in
 [Set up a server](../../docs/how-to/set-up-a-server.md). Releasing and rolling

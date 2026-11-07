@@ -19,7 +19,7 @@ job runs.
 |---|---|---|
 | `api` | `backend/`, `global.json` or `ci.yaml` | restore, build (Release) and the unit tests (`Category=Unit`) of `backend/Echo.slnx`. The Testcontainers integration tests are not run in CI; see [Backend testing](../backend/testing.md) |
 | `frontend` | `frontend/` or `ci.yaml` | `npm ci`, lint, typecheck, tests and build |
-| `infra` | `infra/`, `docs/`, `.github/`, a compose file or any `.md` file | `shellcheck` on `infra/**/*.sh` and `docs/check-links.sh`, `actionlint` on the workflows, both compose stacks rendered with an env from `make-env.sh`, `infra/deploy/test-server-entry.sh`, and `docs/check-links.sh` (every relative link must resolve and every page in `docs/` must be linked from somewhere) |
+| `infra` | `infra/`, `docs/`, `.github/`, a compose file or any `.md` file | `shellcheck` on `infra/**/*.sh` and `docs/check-links.sh`, `actionlint` on the workflows, both compose stacks rendered with an env from `make-env.sh`, `infra/deploy/test-server-entry.sh` and `test-deploy.sh`, and `docs/check-links.sh` (every relative link must resolve and every page in `docs/` must be linked from somewhere) |
 | `ci` | always | passes when every job passed or was skipped, and fails when one failed, was cancelled, or `changes` itself failed |
 
 A workflow-level `paths:` filter would stop the workflow from starting at all,

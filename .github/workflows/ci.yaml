@@ -127,6 +127,8 @@ jobs:
             jq -e --arg dir "$dir" '.services.backup.volumes[] | select(.target == "/app/dumps") | .source == $dir'
       - name: Deploy entry script
         run: infra/deploy/test-server-entry.sh
+      - name: Deploy script
+        run: infra/deploy/test-deploy.sh
       - name: Docs links
         run: docs/check-links.sh
   ci:
