@@ -618,3 +618,58 @@ describe("links on auth screens", () => {
     ).toHaveAttribute("href", "/join");
   });
 });
+
+describe("the layout follows the screen", () => {
+  afterEach(() => vi.unstubAllGlobals());
+  const narrow = () =>
+    vi.stubGlobal("matchMedia", () => ({
+      matches: false,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    }));
+
+  it("shows every other way in, as rows, on a wide screen", async () => {
+    renderAt("/signin");
+    expect(
+      await screen.findByRole("heading", { name: "New to Echo?" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "Join with an invitation code" }),
+    ).toBeInTheDocument();
+  });
+
+  it("shows only the main link on a tablet or phone", async () => {
+    narrow();
+    renderAt("/signin");
+    expect(
+      await screen.findByRole("link", { name: "Create a church account" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: "Join with an invitation code" }),
+    ).not.toBeInTheDocument();
+  });
+});
+
+describe("small kindnesses", () => {
+  it("finishes a mail domain on Tab", async () => {
+    renderAt("/signup");
+    const email = await screen.findByLabelText("Email address");
+    await userEvent.type(email, "abena@gm");
+    await userEvent.tab();
+    expect(email).toHaveValue("abena@gmail.com");
+  });
+
+  it("carries the typed email from sign in to forgot password", async () => {
+    renderAt("/signin");
+    await userEvent.type(
+      await screen.findByLabelText("Email address"),
+      "ama@example.com",
+    );
+    await userEvent.click(
+      screen.getByRole("link", { name: "Forgot password?" }),
+    );
+    expect(await screen.findByLabelText("Email address")).toHaveValue(
+      "ama@example.com",
+    );
+  });
+});

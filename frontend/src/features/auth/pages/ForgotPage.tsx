@@ -12,6 +12,18 @@ import { useForgotPassword } from "../hooks/mutations";
 import { emailOnlySchema, type EmailOnlyValues } from "../forms/schema";
 import styles from "./form.module.css";
 
+function ForgotLinks() {
+  return (
+    <AuthLinks
+      heading="Remembered it?"
+      items={[
+        { to: "/signin", label: "Back to sign in" },
+        { to: "/signup", label: "Create a church account" },
+      ]}
+    />
+  );
+}
+
 export function ForgotPage() {
   const forgot = useForgotPassword();
   // Someone who came from the sign-in page has already typed their address; do not make them do it twice.
@@ -50,15 +62,7 @@ export function ForgotPage() {
             on its way. It expires in 1 hour.
           </>
         }
-        links={
-          <AuthLinks
-            heading="Remembered it?"
-            items={[
-              { to: "/signin", label: "Back to sign in" },
-              { to: "/signup", label: "Create a church account" },
-            ]}
-          />
-        }
+        links={<ForgotLinks />}
       >
         <ResendButton send={() => forgotPassword(sentTo)} />
         <p className={styles.note}>

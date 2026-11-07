@@ -35,10 +35,6 @@
 .split .main {
   padding: 16px;
 }
-.split .slot {
-  height: calc(100dvh - 32px);
-  min-height: 640px;
-}
 .split .foot {
   position: absolute;
   bottom: 26px;

@@ -35,6 +35,18 @@ export function JoinPage() {
   );
 }
 
+function JoinLinks() {
+  return (
+    <AuthLinks
+      heading="Already have an account?"
+      items={[
+        { to: "/signin", label: "Sign in" },
+        { to: "/join", label: "Use a different code" },
+      ]}
+    />
+  );
+}
+
 function JoinForm({
   code,
   invitation,
@@ -80,15 +92,7 @@ function JoinForm({
           ? `${invitation.invitedBy} invited you to join ${invitation.congregationName} on Echo.`
           : `You were invited to join ${invitation.congregationName} on Echo.`
       }
-      links={
-        <AuthLinks
-          heading="Already have an account?"
-          items={[
-            { to: "/signin", label: "Sign in" },
-            { to: "/join", label: "Use a different code" },
-          ]}
-        />
-      }
+      links={<JoinLinks />}
     >
       {problem && <JoinProblem problem={problem} />}
       <form

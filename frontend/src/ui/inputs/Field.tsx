@@ -9,7 +9,8 @@ type FieldProps = Shared &
     // A short mark shown inside the left edge, e.g. a currency like "GH₵".
     unit?: string;
     // A pale completion shown after what has been typed (`typed` is only measured, never seen).
-    // The page decides what to suggest and what Tab does with it.
+    // The page decides what to suggest and what Tab does with it. Pass it on every render (with an
+    // empty `rest` when there is nothing to suggest) so the input is never rebuilt while someone types.
     ghost?: { typed: string; rest: string };
   };
 
@@ -46,11 +47,15 @@ export function Field({
       {ghost ? (
         <div className={styles.ghostWrap}>
           {control}
-          <span className={styles.ghost} aria-hidden="true">
-            <span className={styles.ghostTyped}>{ghost.typed}</span>
-            {ghost.rest}
-            <kbd className={styles.ghostKey}>Tab</kbd>
-          </span>
+          {ghost.rest && (
+            <span className={styles.ghost} aria-hidden="true">
+              <span>
+                <span className={styles.ghostTyped}>{ghost.typed}</span>
+                {ghost.rest}
+              </span>
+              <kbd className={styles.ghostKey}>Tab</kbd>
+            </span>
+          )}
         </div>
       ) : unit ? (
         <div className={styles.unitWrap}>

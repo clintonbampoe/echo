@@ -214,9 +214,8 @@
   inset: var(--control-gap, 8px) 0 0;
   display: flex;
   align-items: center;
-  padding: 0 var(--s-16);
+  padding: 0 var(--s-16) 3px calc(var(--s-16) + 1px);
   font-size: var(--control-font, var(--type-callout));
-  line-height: 1;
   color: var(--text-4, var(--text-3));
   pointer-events: none;
   white-space: pre;

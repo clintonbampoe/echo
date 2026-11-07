@@ -73,7 +73,7 @@ export function SignUpAccountPage() {
           placeholder="you@yourchurch.org"
           hint="We will send a verification link here."
           error={errors.email?.message}
-          ghost={rest ? { typed: email, rest } : undefined}
+          ghost={{ typed: email, rest }}
           {...register("email")}
           onKeyDown={(e) => {
             if (e.key !== "Tab" || e.shiftKey || !rest) return;
