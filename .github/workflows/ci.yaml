@@ -3,7 +3,6 @@ name: Echo CI
 on:
   push:
     branches: [main]
-    paths: [backend/**, frontend/**]
   pull_request:
     branches: [main]
 
