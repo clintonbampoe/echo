@@ -13,7 +13,7 @@ export function useUrlFlag(name: string): [boolean, (on: boolean) => void] {
         else next.delete(name);
         return next;
       },
-      { replace: true },
+      { replace: true, preventScrollReset: true },
     );
   return [on, set];
 }

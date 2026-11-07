@@ -14,7 +14,8 @@
   right: 0;
   left: 0;
   z-index: 20;
-  max-height: 320px;
+  /* Never taller than half of what is visible (--vv-height is set on a sheet while the keyboard is up). */
+  max-height: min(320px, calc(var(--vv-height, 100vh) * 0.5));
   padding: var(--s-6);
   overflow-y: auto;
   border-radius: var(--radius-pop);

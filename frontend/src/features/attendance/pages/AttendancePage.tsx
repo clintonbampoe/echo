@@ -33,7 +33,10 @@ export function AttendancePage() {
   const labels = useSessionLabels();
   const summary = useAttendanceSummary({ from: day, to: day });
   const pick = (next: string) =>
-    setParams(next === today ? {} : { day: next }, { replace: true });
+    setParams(next === today ? {} : { day: next }, {
+      replace: true,
+      preventScrollReset: true,
+    });
   const here = (sessions.data ?? []).filter((s) => s.date === day);
   // The strip may still be showing the last window while the next loads, so a day is only "empty" once its own answer is in.
   const ready = Boolean(sessions.data) && !sessions.isPlaceholderData;

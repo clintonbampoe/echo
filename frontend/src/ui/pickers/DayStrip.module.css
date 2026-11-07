@@ -192,8 +192,8 @@
   }
 }
 
-/* On a phone the arrows are as large as every other control. */
-@media (max-width: 900px) {
+/* On a phone, or any touch screen, the arrows are as large as every other control. */
+@media (max-width: 900px), (pointer: coarse) {
   .arrow {
     width: var(--control);
     height: var(--control);

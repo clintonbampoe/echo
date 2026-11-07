@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Outlet } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { Outlet, ScrollRestoration } from "react-router-dom";
 import { MenuPage } from "./MenuPage";
 import { PullToRefresh } from "./PullToRefresh";
 import { Sidebar } from "./Sidebar";
@@ -13,6 +13,16 @@ import styles from "./AppShell.module.css";
 export function AppShell() {
   const [menuOpen, setMenuOpen] = useState(false);
   useLongPressMenu();
+
+  // The site eases anchor links into view; here a new page should simply start at the top.
+  useEffect(() => {
+    const root = document.documentElement;
+    const before = root.style.scrollBehavior;
+    root.style.scrollBehavior = "auto";
+    return () => {
+      root.style.scrollBehavior = before;
+    };
+  }, []);
   return (
     <div className={styles.app}>
       <Sidebar />
@@ -23,6 +33,7 @@ export function AppShell() {
           <Outlet />
         </main>
       </div>
+      <ScrollRestoration />
       <PullToRefresh />
       <MenuPage open={menuOpen} onClose={() => setMenuOpen(false)} />
     </div>

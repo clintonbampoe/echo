@@ -4,6 +4,8 @@ import { Icon } from "../layout/Icon";
 import { useLeaving } from "./presenceContext";
 import { useDragDismiss } from "../motion/useDragDismiss";
 import { usePresence } from "./usePresence";
+import { useScrollLock } from "./useScrollLock";
+import { useVisibleArea } from "./useVisibleArea";
 import styles from "./Sheet.module.css";
 
 type Props = {
@@ -39,16 +41,15 @@ export function Sheet({
   const drag = useDragDismiss(onClose);
   const closing = presence.closing || leaving;
 
+  useScrollLock(open);
+  const root = useVisibleArea(mounted);
   useEffect(() => {
     if (!open) return;
     const before = document.activeElement;
-    const scroll = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
     // A field inside may already have asked for focus; only take it if nobody has.
     if (!panel.current?.contains(document.activeElement))
       panel.current?.focus();
     return () => {
-      document.body.style.overflow = scroll;
       if (before instanceof HTMLElement) before.focus();
     };
   }, [open]);
@@ -57,7 +58,7 @@ export function Sheet({
   // Rendered on <body>, not where it is used: a page that animates (and so has a transform)
   // would otherwise become the "screen" the fixed panel is measured against.
   return createPortal(
-    <div className={styles.root}>
+    <div ref={root} className={styles.root}>
       <div
         className={`${styles.scrim} glass-scrim`}
         data-closing={closing}

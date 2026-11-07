@@ -50,6 +50,13 @@
   color: var(--text-2);
   order: 1;
 }
+/* With the keyboard up (set on the sheet around this), the buttons give back some height. */
+[data-keyboard="true"] .actions > button.primary {
+  height: 44px;
+}
+[data-keyboard="true"] .actions > button.another {
+  height: 36px;
+}
 @media (hover: hover) {
   .actions > button.another:hover:not(:disabled) {
     background: var(--hover);

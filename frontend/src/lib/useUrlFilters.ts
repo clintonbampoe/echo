@@ -20,7 +20,7 @@ export function useUrlFilters<T extends FilterValues>(def: UrlFilters<T>) {
         for (const [key, value] of Object.entries(also)) next.set(key, value);
         return next;
       },
-      { replace: true },
+      { replace: true, preventScrollReset: true },
     );
   // The address changes a moment after `clear` runs. The search box is emptied by being rebuilt, and a box
   // rebuilt too early would start from the old search again. So the key changes only once the address has

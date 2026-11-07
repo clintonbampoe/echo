@@ -15,7 +15,7 @@ export function LinkedTithe({ today }: { today: string }) {
         p.delete("tithe");
         return p;
       },
-      { replace: true },
+      { replace: true, preventScrollReset: true },
     );
   };
   return id ? <OpenTithe id={id} today={today} onClose={close} /> : null;
