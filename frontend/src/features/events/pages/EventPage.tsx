@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { isApiError } from "@/lib/api";
 import { todayText } from "@/lib/dates";
 import { paths } from "@/lib/paths";
+import { useUrlTab } from "@/lib/useUrlTab";
 import { Alert, BackLink, Button, StatStrip, Tabs } from "@/ui";
 import type { EventItem } from "../api/events";
 import { useEvent, useEventRoster } from "../hooks/queries";
@@ -70,9 +71,15 @@ function TabBody({ tab, event, phase }: BodyProps) {
   );
 }
 
+const tabs = [
+  { id: "details", label: "Details" },
+  { id: "registrations", label: "Registrations" },
+  { id: "check-ins", label: "Check-ins" },
+];
+
 function Detail({ event: e }: { event: EventItem }) {
   const navigate = useNavigate();
-  const [tab, setTab] = useState("details");
+  const [tab, setTab] = useUrlTab(tabs);
   const [editing, setEditing] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [recording, setRecording] = useState<Mode | null>(null);
@@ -82,12 +89,6 @@ function Detail({ event: e }: { event: EventItem }) {
   const stats = roster.data
     ? rosterStats({ event: e, roster: roster.data, phase })
     : waitingStats(e, roster.isError);
-  const tabs = [
-    { id: "details", label: "Details" },
-    { id: "registrations", label: "Registrations" },
-    { id: "check-ins", label: "Check-ins" },
-  ];
-
   return (
     <div className="anim-rise">
       <BackLink to={paths.events}>Events</BackLink>

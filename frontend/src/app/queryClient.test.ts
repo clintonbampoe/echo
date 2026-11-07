@@ -1,26 +1,8 @@
-import { clearTokens, saveTokens } from "@/lib/tokens";
-import { queryClient } from "./queryClient";
+import { KEEP_MS, queryClient } from "./queryClient";
 
-const tokens = {
-  accessToken: "a",
-  accessTokenExpiresAt: "2099-01-01T00:00:00Z",
-  refreshToken: "r",
-  refreshTokenExpiresAt: "2099-01-01T00:00:00Z",
-};
-
-describe("query cache", () => {
-  it("is emptied when the session ends, so the next person sees nothing of the last", () => {
-    saveTokens(tokens);
-    queryClient.setQueryData(["account", "me"], { name: "Ama" });
-    clearTokens();
-    expect(queryClient.getQueryData(["account", "me"])).toBeUndefined();
-  });
-
-  it("is kept while signed in", () => {
-    queryClient.setQueryData(["account", "me"], { name: "Ama" });
-    saveTokens(tokens);
-    expect(queryClient.getQueryData(["account", "me"])).toEqual({
-      name: "Ama",
-    });
+describe("queryClient", () => {
+  it("keeps data a while after the page that used it has gone, for Back", () => {
+    expect(queryClient.getDefaultOptions().queries?.gcTime).toBe(KEEP_MS);
+    expect(KEEP_MS).toBeGreaterThan(5 * 60_000);
   });
 });

@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { isApiError } from "@/lib/api";
 import { todayText } from "@/lib/dates";
 import { paths } from "@/lib/paths";
+import { useUrlTab } from "@/lib/useUrlTab";
 import { useUrlFilters } from "@/lib/useUrlFilters";
 import { Alert, BackLink, Button, StatStrip, Tabs } from "@/ui";
 import type { Contribution } from "../api/contributions";
@@ -75,7 +76,7 @@ const tabs = [
 ];
 
 function Detail({ project: p }: { project: Project }) {
-  const [tab, setTab] = useState("details");
+  const [tab, setTab] = useUrlTab(tabs);
   const navigate = useNavigate();
   const [editing, setEditing] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -124,8 +125,7 @@ function Detail({ project: p }: { project: Project }) {
           <ProjectSummary
             project={p}
             onPickMethod={(method) => {
-              update({ method, window: "all" });
-              setTab("contributions");
+              update({ method, window: "all" }, { tab: "contributions" });
             }}
           />
         )}

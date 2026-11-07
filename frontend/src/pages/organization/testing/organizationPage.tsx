@@ -96,6 +96,7 @@ export function signedIn() {
 
 export function show(
   handler: (url: string, init?: RequestInit) => Promise<Response>,
+  address = "/organizations/o1",
 ) {
   const fetchMock = vi.fn(handler);
   vi.stubGlobal("fetch", fetchMock);
@@ -105,7 +106,7 @@ export function show(
         new QueryClient({ defaultOptions: { queries: { retry: false } } })
       }
     >
-      <MemoryRouter initialEntries={["/organizations/o1"]}>
+      <MemoryRouter initialEntries={[address]}>
         <Routes>
           <Route path="/organizations/:id" element={<OrganizationPage />} />
           <Route path="/organizations" element={<p>The list</p>} />

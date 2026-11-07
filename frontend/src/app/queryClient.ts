@@ -9,10 +9,15 @@ function shouldRetry(failureCount: number, error: unknown): boolean {
   return failureCount < 2;
 }
 
+// How long a page's data stays in memory once nothing on screen uses it. Going Back to a list within this time
+// finds its rows (every page the person had loaded) waiting, instead of an empty list to load again.
+export const KEEP_MS = 30 * 60_000;
+
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: shouldRetry,
+      gcTime: KEEP_MS,
       staleTime: 30_000,
       refetchOnWindowFocus: false,
     },

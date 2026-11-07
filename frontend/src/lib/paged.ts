@@ -12,6 +12,11 @@ import { getPreferences } from "./preferences";
 // How many rows a request asks for: the "Rows per page" the person chose in Settings (50 until they choose).
 export const pageSize = () => getPreferences().pageSize;
 
+// How long a loaded list counts as fresh. Coming Back to it inside this time shows the rows as they were with no
+// request at all; after it the rows show at once and are refreshed in the background. A list is read page by page
+// and a refresh asks for every page again, so it is kept longer than a single record.
+export const LIST_FRESH_MS = 2 * 60_000;
+
 // What a list on screen needs: the rows so far, and the state around them.
 export type Paged<T> = {
   rows: T[];
@@ -51,6 +56,7 @@ export function usePagedList<T>(
       queryFn: ({ pageParam, signal }) => load(pageParam, signal),
       initialPageParam: undefined as string | undefined,
       getNextPageParam: nextCursor,
+      staleTime: LIST_FRESH_MS,
     }),
   );
 }
