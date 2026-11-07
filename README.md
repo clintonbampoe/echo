@@ -8,7 +8,7 @@ is a tenant whose data other tenants cannot see.
 Echo is built for a small self-hosted deployment. It has no failover and one
 server's capacity; [Limits](./docs/explanation/limits.md) says what that means.
 
-![Dashboard Screenshot](./docs/diagrams/DashboardScreenshot.png)
+![The Echo dashboard: member, attendance, tithe and income figures, attendance and visitor cards](./docs/diagrams/DashboardScreenshot.png)
 
 ## Quick start
 
