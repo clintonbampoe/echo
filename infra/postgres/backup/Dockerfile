@@ -15,6 +15,6 @@ RUN wget -qO /usr/local/bin/supercronic \
   && chmod +x /usr/local/bin/supercronic
 
 COPY infra/postgres/backup/crontab /app/crontab
-COPY --chmod=755 infra/postgres/backup/backup.sh infra/postgres/backup/restore.sh /app/
+COPY --chmod=755 infra/postgres/backup/backup.sh infra/postgres/backup/restore.sh infra/status/heartbeat.sh /app/
 
 CMD ["supercronic", "/app/crontab"]

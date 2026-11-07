@@ -9,6 +9,7 @@ RUN wget -qO /usr/local/bin/supercronic \
   && chmod +x /usr/local/bin/supercronic
 
 COPY infra/certbot/crontab /etc/crontab
+COPY --chmod=755 infra/status/heartbeat.sh /app/heartbeat.sh
 
 ENTRYPOINT ["supercronic"]
 CMD ["/etc/crontab"]
