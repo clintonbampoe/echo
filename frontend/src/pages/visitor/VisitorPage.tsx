@@ -128,7 +128,9 @@ function Profile({ visitor: v }: { visitor: Visitor }) {
           { id: "visits", label: "Visits" },
         ]}
         value={tab}
-        onChange={(t) => setParams({ tab: t }, { replace: true })}
+        onChange={(t) =>
+          setParams({ tab: t }, { replace: true, preventScrollReset: true })
+        }
         idPrefix="visitor"
       />
       <div
