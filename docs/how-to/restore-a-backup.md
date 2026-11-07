@@ -12,8 +12,9 @@ takes a dump before applying any pending migration.
   that cannot be read fails the job. A readable dump is not proof the data is
   right; restore one on a scratch machine now and then.
 - **Where:** `BACKUP_DIR` on the host, `/srv/echo/data/dumps` in production, as
-  `echo_<timestamp>.dump`. The run's output is appended to `backup.log` in the
-  same folder.
+  `echo_<timestamp>.dump`. The backup container sees that folder as
+  `/app/dumps`. The run's output is appended to `backup.log` in the same
+  folder.
 - **Kept:** dumps older than 30 days are deleted.
 - **Not off the server.** The dumps live on the same disk as the database. A
   lost server loses both. Copying them elsewhere is not set up yet; see
@@ -34,7 +35,9 @@ defined [below](#run-compose-on-the-server)).
 ## Run compose on the server
 
 The commands below use a small helper that runs compose against the current
-release, as the deploy user. Paste it into your shell on the server:
+release, as the deploy user. Paste it into a root shell on the server (it is
+gone when you log out). `release.env` is in `current/`, written by the deploy;
+it holds the image names:
 
 ```bash
 dc() {
@@ -50,6 +53,9 @@ dc() {
 dc exec backup /app/backup.sh
 ```
 
+This runs the script directly, so it does not report to the status page; only
+the nightly run does.
+
 ```text
 [2026-11-07T15-20-01] Starting backup of echo_db
 [2026-11-07T15-20-01] Written: /app/dumps/echo_2026-11-07T15-20-01.dump (3.1M)
@@ -62,8 +68,17 @@ backup /app/backup.sh` writes to `infra/postgres/backup/dumps/`.
 
 ## Restore
 
-Restoring replaces the database's contents with the dump's. Stop the API
-first, so nothing writes while it runs:
+Restoring replaces the database's contents with the dump's, so first take a
+fresh dump of the current state (above) in case you need to undo it. To restore
+a dump from somewhere else, copy it into `BACKUP_DIR` first. List what is
+there:
+
+```bash
+ls -lh /srv/echo/data/dumps
+```
+
+Stop the API so nothing writes while the restore runs. nginx stays up and
+answers `502` for `/api` until the API is back.
 
 ```bash
 dc stop api
@@ -76,8 +91,10 @@ dc start api
 [2026-11-07T15:30:09Z] Restore complete.
 ```
 
-`restore.sh` runs `pg_restore --clean --if-exists`: it drops each object before
-recreating it. Check the app afterwards at `/api/health/ready`.
+`restore.sh` connects as `DB_USERNAME` from the server's `.env` and runs
+`pg_restore --clean --if-exists`: it drops each object before recreating it, so
+the database does not need to be empty. Afterwards check
+`https://<domain>/api/health/ready`: `200` means it is healthy.
 
 Restoring an older dump goes back in time for every church's data. If the
 current release has applied migrations the dump does not have, the API reports

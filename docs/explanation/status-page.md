@@ -44,11 +44,14 @@ the secret `STATUS_HEARTBEAT_TOKEN`. It exits with the command's own exit code.
 A job shows red when:
 
 - it ran and failed (the exit code was not 0), or
-- it did not report within 26 hours. This covers a stopped container, a cron
-  that never fired, and a job that hung or was killed. A missed 02:00 backup
-  shows red around 04:00 the next day.
+- it did not report within 26 hours. The page records
+  `heartbeat: no update received within 26h0m0s`. This covers a stopped
+  container, a cron that never fired, and a job that hung or was killed. A
+  missed 02:00 backup shows red around 04:00 the next day.
 
-A red job stays red until its next successful run.
+A red job stays red until its next successful run. On a new server a job has
+no result until its first report, then turns red only if none arrives within
+26 hours.
 
 What it cannot see:
 

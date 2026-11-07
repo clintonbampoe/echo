@@ -24,5 +24,5 @@ sudo -u deploy bash make-env.sh --domain example.com --email you@example.com \
 
 `--yes` skips the confirmation when some values are still asked for, `--out`
 changes where it writes, `--help` lists the flags. It refuses to overwrite an
-existing file and starts with `CERTBOT_STAGING=1`. Run it as the deploy user, or
-the deploy cannot read the file.
+existing file and starts with `CERTBOT_STAGING=1`. Run it as the deploy user, from a folder
+that user can read (not `/root`), or the deploy cannot read the file.
