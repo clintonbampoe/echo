@@ -6,9 +6,6 @@ on:
     paths: [backend/**, frontend/**]
   pull_request:
     branches: [main]
-    paths:
-      - backend/**
-      - frontend/**
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -62,3 +59,25 @@ jobs:
         run: npm test
       - name: Build
         run: npm run build
+  infra:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      SHELLCHECK_OPTS: -S warning
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Shell scripts
+        run: git ls-files 'infra/*.sh' | xargs shellcheck
+      - name: Workflows
+        run: docker run --rm -e SHELLCHECK_OPTS -v "$PWD:/repo" -w /repo rhysd/actionlint:1.7.12
+      - name: Compose files
+        run: |
+          infra/deploy/make-env.sh --out "$RUNNER_TEMP/ci.env" \
+            --domain example.com --email ops@example.com \
+            --mail-from accounts@example.com --resend-key re_ci
+          docker compose --env-file "$RUNNER_TEMP/ci.env" --profile '*' config -q
+          docker compose --env-file "$RUNNER_TEMP/ci.env" \
+            -f docker-compose.yml -f docker-compose.prod.yml --profile '*' config -q
+      - name: Deploy entry script
+        run: infra/deploy/test-server-entry.sh
