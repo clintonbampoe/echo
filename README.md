@@ -60,15 +60,12 @@ http://localhost:8080 and create a church at `/signup/church`; the API
 reference is at http://localhost:8080/scalar. The full walk-through, with the
 output of each step, is [Getting started](./docs/getting-started.md).
 
-## Run it for real
+## Documentation
 
-A release is a version tag on `main`: `gh release create v0.1.2 --target main
---generate-notes` builds the images and deploys them to the server, and going
-back is deploying an older version. To set up a server and ship the first
-release, follow [Set up a server](./docs/how-to/set-up-a-server.md) and
-[Release](./docs/how-to/release.md). The rest of [`docs/`](./docs/README.md) is
-organised by what you want to do: how-tos, reference, and explanations of why
-it is built this way.
+[`docs/`](./docs/README.md) is organised by what you want to do. How-tos cover
+setting up a server, releasing and restoring a backup; the reference covers
+environment variables, services, nginx and CI; and the explanations say why
+Echo is built the way it is and what its limits are.
 
 ## Contributing
 
