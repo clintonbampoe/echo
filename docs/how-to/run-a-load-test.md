@@ -15,6 +15,8 @@ is the short path to a first result.
   hash costs; `POWER_PROFILE_OK=1` overrides).
 - A trusted local certificate: `infra/nginx/local-certs.sh`.
 - A seeded database (the seeder, see `backend/src/Echo.Seeder/Seed.md`).
+- `DB_USERNAME=postgres` in `.env`: the scripts open `psql` as `postgres` inside
+  the database container.
 - No other load on the machine. Do not start, stop or log in to anything while
   a run is going; it changes the numbers.
 
