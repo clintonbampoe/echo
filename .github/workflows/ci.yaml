@@ -67,7 +67,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Shell scripts
-        run: git ls-files 'infra/*.sh' | xargs shellcheck
+        run: git ls-files 'infra/*.sh' docs/check-links.sh | xargs shellcheck
       - name: Workflows
         run: docker run --rm -e SHELLCHECK_OPTS -v "$PWD:/repo" -w /repo rhysd/actionlint:1.7.12
       - name: Compose files
@@ -80,3 +80,5 @@ jobs:
             -f docker-compose.yml -f docker-compose.prod.yml --profile '*' config -q
       - name: Deploy entry script
         run: infra/deploy/test-server-entry.sh
+      - name: Docs links
+        run: docs/check-links.sh
