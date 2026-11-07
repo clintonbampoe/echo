@@ -95,8 +95,14 @@ Anyone with an account, at `https://<domain>/grafana/`. Create each person in
 dashboards cannot be changed from the UI) and keep **Admin** for yourself.
 Sign-up and anonymous access are off, sessions end after 7 days unused, cookies
 are HTTPS-only, and Grafana locks an account after repeated wrong passwords.
-The admin password in `.env` only seeds the first start; change it in Grafana
-([Troubleshooting](../troubleshooting.md) has the reset command).
+The admin password in `.env` only seeds the first start. Change it in the
+Grafana UI (profile, change password), or from the server if you are locked out:
+
+```bash
+docker exec grafana grafana cli admin reset-admin-password '<new password>'
+```
+
+Neither needs a restart.
 
 ## Gotchas
 
