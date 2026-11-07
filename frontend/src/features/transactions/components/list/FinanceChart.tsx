@@ -1,14 +1,8 @@
-import { useState } from "react";
 import { formatMoney, formatNumber } from "@/lib/format";
-import { DashCard, Figure, FilterSelect, FlowBars } from "@/ui";
+import { DashCard, Figure, FilterSelect, FlowBars, useMonthRange } from "@/ui";
 import { useTransactionMonths } from "../../hooks/queries";
 import { flowBars } from "../../model/display";
 import styles from "./FinanceChart.module.css";
-
-const spans = [
-  { value: "12", label: "12 months" },
-  { value: "6", label: "6 months" },
-] as const;
 
 type Props = {
   today: string;
@@ -20,8 +14,8 @@ type Props = {
 // "Income and expenses": the last twelve (or six) months, whatever days the list below is showing. It is the long view,
 // so it follows neither the period nor the filters. Clicking a month narrows the list to it.
 export function FinanceChart({ today, month, onPick }: Props) {
-  const [span, setSpan] = useState("12");
-  const months = useTransactionMonths(Number(span), today);
+  const { range, setRange, options } = useMonthRange("12");
+  const months = useTransactionMonths(Number(range), today);
   const bars = flowBars(months.data ?? []);
   const chosen = /^\d{4}-\d{2}$/.test(month) ? month : today.slice(0, 7);
   const picked = bars.find((b) => b.key === chosen);
@@ -32,10 +26,10 @@ export function FinanceChart({ today, month, onPick }: Props) {
       control={
         <FilterSelect
           label="Months shown"
-          options={spans}
-          value={span}
+          options={options}
+          value={range}
           quiet
-          onChange={setSpan}
+          onChange={(v) => setRange(v === "12" ? "12" : "6")}
         />
       }
     >

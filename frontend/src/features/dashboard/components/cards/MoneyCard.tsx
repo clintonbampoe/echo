@@ -6,6 +6,8 @@ import {
   DistributionBar,
   Figure,
   MonthBars,
+  type MonthRange,
+  useMonthRange,
   SegmentedField,
 } from "@/ui";
 import { useCategories, useMoneyMonths } from "../../hooks/money";
@@ -17,7 +19,6 @@ import {
   slicesOf,
   type MoneyKind,
 } from "../../model/money";
-import { monthRanges, type MonthRange } from "../../model/ranges";
 import { CardFailed } from "./CardFailed";
 import { RangeTabs } from "../controls/RangeTabs";
 import { SummaryButton } from "./WeeklySummary";
@@ -117,7 +118,7 @@ function WherePart({
 
 // Income or expenses over the last six or twelve months: the months on the left, where it came from on the right.
 export function MoneyCard({ today }: { today: string }) {
-  const [range, setRange] = useState<MonthRange>("6");
+  const { range, setRange, options } = useMonthRange();
   const [kind, setKind] = useState<MoneyKind>("Income");
   const months = Number(range);
   const { from, to } = moneyRange(today, months);
@@ -133,7 +134,7 @@ export function MoneyCard({ today }: { today: string }) {
           <SummaryButton today={today} />
           <RangeTabs
             label="Range"
-            options={monthRanges}
+            options={options}
             value={range}
             onChange={setRange}
           />
