@@ -1,20 +1,19 @@
-using Echo.Shared.Services.Hashing;
 using Echo.Application.Congregations;
 using Echo.Auth.EmailVerifications;
 using Echo.Auth.Invitations;
 using Echo.Auth.Passwords;
+using Echo.Auth.Profile;
 using Echo.Auth.Registrations;
 using Echo.Auth.Sessions;
 using Echo.Shared.Options.Frontend;
 using Echo.Shared.Options.Jwt;
-using Echo.Shared.Services.Email;
+using Echo.Shared.Services.Hashing;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Resend;
-using Echo.Auth.Profile;
 
 namespace Echo.Auth;
 
@@ -79,7 +78,7 @@ public static class Extensions
             .WithMetrics(metrics =>
             {
                 AuthInstrumentation.ConfigureMetrics(metrics);
-                metrics.AddMeter(HashGate.MeterName);
+                metrics.AddMeter(HashingMetrics.MeterName);
             });
         return builder;
     }

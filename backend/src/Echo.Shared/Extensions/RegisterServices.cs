@@ -21,7 +21,9 @@ public static class RegisterServices
     /// Adds shared services to the DI container.
     /// </summary>
     /// <param name="services">The service collection.</param>
-    /// <param name="configuration">Application configuration (required for CacheOptions binding).</param>
+    /// <param name="configuration">
+    /// Application configuration (required for CacheOptions binding).
+    /// </param>
     /// <returns>The service collection for chaining.</returns>
     public static IServiceCollection AddSharedServices(
         this IServiceCollection services,
@@ -32,13 +34,17 @@ public static class RegisterServices
         services.AddSingleton<IIdGenerator, IdGenerator>();
         services.AddSingleton<ITokenGenerator, TokenGenerator>();
         services.AddSingleton<IPasswordHasher, Argon2idHashService>();
+        services.AddSingleton<HashingMetrics>();
         services
             .AddOptions<HashingOptions>()
             .BindConfiguration(HashingOptions.Section)
             .ValidateDataAnnotations()
             .ValidateOnStart();
         services.AddSingleton(sp =>
-            HashGate.From(sp.GetRequiredService<IOptions<HashingOptions>>().Value, Environment.ProcessorCount)
+            HashGate.From(
+                sp.GetRequiredService<IOptions<HashingOptions>>().Value,
+                Environment.ProcessorCount
+            )
         );
         services.AddSingleton<ITokenHasher, Sha256HashService>();
         services.AddSingleton<IEncoder, CursorEncoder>();

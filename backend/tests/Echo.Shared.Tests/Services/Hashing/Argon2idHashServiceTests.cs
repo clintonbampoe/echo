@@ -3,18 +3,22 @@ using Echo.Shared.Services.Hashing;
 namespace Echo.Shared.Tests.Services.Hashing;
 
 [Trait("Category", "Unit")]
-// Same collection: these tests listen to the gate's meter, which every gate in the process shares.
-[Collection("HashGate")]
-public class Argon2idHashServiceTests : IDisposable
+public sealed class Argon2idHashServiceTests : IDisposable
 {
     private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
+    private readonly TestMeterFactory _meters = new();
     private readonly HashGate _gate = new(permits: 2, maxQueued: 10);
     private readonly Argon2idHashService _hasher;
 
-    public Argon2idHashServiceTests() => _hasher = new Argon2idHashService(_gate);
+    public Argon2idHashServiceTests() =>
+        _hasher = new Argon2idHashService(new HashingMetrics(_meters, _gate));
 
-    public void Dispose() => _gate.Dispose();
+    public void Dispose()
+    {
+        _gate.Dispose();
+        _meters.Dispose();
+    }
 
     [Fact]
     public async Task HashThenVerify_RoundTrips()
@@ -98,7 +102,8 @@ public class Argon2idHashServiceTests : IDisposable
     public async Task Verify_WhenEveryPermitIsTakenAndNoOneMayWait_IsRefusedWithoutHashing()
     {
         using var gate = new HashGate(permits: 1, maxQueued: 0);
-        var hasher = new Argon2idHashService(gate);
+        using var meters = new TestMeterFactory();
+        var hasher = new Argon2idHashService(new HashingMetrics(meters, gate));
         var hash = await _hasher.HashAsync("correct horse battery", Ct);
         using var taken = await gate.EnterAsync(Ct);
 
