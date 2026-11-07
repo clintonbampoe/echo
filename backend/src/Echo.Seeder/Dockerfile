@@ -1,13 +1,13 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS restore
 WORKDIR /app
 
-COPY ["backend/Echo.slnx", "."]
-COPY ["backend/Directory.Packages.props", "."]
-COPY ["backend/src/Echo.Seeder/Echo.Seeder.csproj", "./src/Echo.Seeder/"]
-COPY ["backend/src/Echo.Data/Echo.Data.csproj", "./src/Echo.Data/"]
-COPY ["backend/src/Echo.Domain/Echo.Domain.csproj", "./src/Echo.Domain/"]
-COPY ["backend/src/Echo.Shared/Echo.Shared.csproj", "./src/Echo.Shared/"]
-COPY ["backend/src/Echo.ServiceDefaults/Echo.ServiceDefaults.csproj", "./src/Echo.ServiceDefaults/"]
+COPY backend/Echo.slnx .
+COPY backend/Directory.Packages.props .
+COPY backend/src/Echo.Seeder/Echo.Seeder.csproj ./src/Echo.Seeder/
+COPY backend/src/Echo.Data/Echo.Data.csproj ./src/Echo.Data/
+COPY backend/src/Echo.Domain/Echo.Domain.csproj ./src/Echo.Domain/
+COPY backend/src/Echo.Shared/Echo.Shared.csproj ./src/Echo.Shared/
+COPY backend/src/Echo.ServiceDefaults/Echo.ServiceDefaults.csproj ./src/Echo.ServiceDefaults/
 
 RUN dotnet restore src/Echo.Seeder/Echo.Seeder.csproj
 

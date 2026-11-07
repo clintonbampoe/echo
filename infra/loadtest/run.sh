@@ -37,30 +37,24 @@ if ! docker exec nginx test -f /etc/nginx/extra/realip.conf 2>/dev/null; then
   exit 1
 fi
 
-# The production box has 2 vCPUs for everything on it. The app containers are pinned to two cores by the compose file
-# above (api, database, nginx); Alloy runs on that box too, so it is pinned here, and k6 is kept on the other cores so it
-# does not take CPU from them. Change the cores with APP_CPUS and K6_CPUS.
-APP_CPUS=${APP_CPUS:-0,1}
-if [ "$(docker inspect -f '{{.HostConfig.CpusetCpus}}' api 2>/dev/null)" != "$APP_CPUS" ]; then
-  echo "The api is not pinned to cores $APP_CPUS, so it would have the whole machine and not the production box's 2 vCPUs." >&2
-  echo "Start the stack the way the test needs it (infra/loadtest/up.sh), or pin it now:" >&2
-  echo "  docker update --cpuset-cpus $APP_CPUS api database nginx" >&2
+# The production server has 4 vCPUs for everything on it. The compose file above pins the whole stack (api, database,
+# nginx and the monitoring services) to the same 4 CPUs, and cpu_shares in docker-compose.prod.yml decide who wins when
+# they are busy. k6 is kept on the other cores so it does not take CPU from them. Change the stack's CPUs with APP_CPUS
+# when starting it (up.sh), and k6's with K6_CPUS.
+APP_CPUS=$(docker inspect -f '{{.HostConfig.CpusetCpus}}' api 2>/dev/null || true)
+if [ -z "$APP_CPUS" ]; then
+  echo "The api is not pinned to CPUs, so it would have the whole machine and not the production server's 4 vCPUs." >&2
+  echo "Start the stack the way the test needs it: infra/loadtest/up.sh" >&2
   exit 1
 fi
-docker update --cpuset-cpus "$APP_CPUS" alloy >/dev/null 2>&1 || echo "(alloy is not running, so it is not pinned)"
-# k6 and the monitoring stack get every logical CPU that is not on the app's physical cores. A CPU's hyperthread
-# sibling shares the core's execution units, so k6 running on the sibling of an app core would slow the app down.
+# k6 gets every logical CPU that is not on the stack's physical cores. A CPU's hyperthread sibling shares the core's
+# execution units, so k6 running on the sibling of a stack core would slow the stack down.
 topology=$(lscpu -p=CPU,CORE | grep -v '^#')
 app_cores=$(echo "$topology" | awk -F, -v apps=",$APP_CPUS," 'index(apps, "," $1 ",") {print $2}' | tr '\n' ' ')
 K6_CPUS=${K6_CPUS:-$(echo "$topology" | awk -F, -v cores="$app_cores" 'BEGIN { n = split(cores, c, " "); for (i = 1; i <= n; i++) skip[c[i]] = 1 } !($2 in skip) { printf "%s%s", sep, $1; sep = "," }')}
 pin_k6=()
-if [ -n "$K6_CPUS" ]; then
-  pin_k6=(taskset -c "$K6_CPUS")
-  # The monitoring stack is on its own server in production, so it is kept off the app's cores as well. Unpinned,
-  # Grafana, Loki, Prometheus and Tempo can run on them and take CPU from the app.
-  docker update --cpuset-cpus "$K6_CPUS" grafana loki prometheus tempo >/dev/null 2>&1 || true
-fi
-echo "app on cpus $APP_CPUS, k6 and monitoring on cpus ${K6_CPUS:-all (no spare cores)}"
+[ -z "$K6_CPUS" ] || pin_k6=(taskset -c "$K6_CPUS")
+echo "stack on cpus $APP_CPUS, k6 on cpus ${K6_CPUS:-all (no spare cores)}"
 
 # The machine's power settings change what a run measures (a hash takes 160 ms in one and 200 ms in another), so every run
 # records them and refuses to start in any profile but the expected one (balanced). A run compared with the one before it
@@ -72,11 +66,12 @@ env_lines="power profile (platform): ${profile:-n/a}
 power profile (tuned): $(tuned-adm active 2>/dev/null | sed 's/.*: //' || true)
 governor / energy preference: $(val $cpu/cpu0/cpufreq/scaling_governor) / $(val $cpu/cpu0/cpufreq/energy_performance_preference)
 turbo: $([ "$(val $cpu/intel_pstate/no_turbo)" = 1 ] && echo off || echo on)
-clock limit: $(val $cpu/cpu0/cpufreq/scaling_max_freq | awk '{ printf "%d MHz", $1 / 1000 }')"
+clock limit: $(val $cpu/cpu0/cpufreq/scaling_max_freq | awk '{ printf "%d MHz", $1 / 1000 }')
+api garbage collector: $([ "$(docker exec api printenv DOTNET_gcServer 2>/dev/null)" = 1 ] && echo server || echo workstation)"
 mkdir -p results
 echo "$env_lines" | tee "results/${TESTID}-env.txt"
 if [ -f results/.last-env ] && ! diff -q results/.last-env "results/${TESTID}-env.txt" >/dev/null; then
-  echo "WARNING: the machine's power settings are not the same as in the previous run:" >&2
+  echo "WARNING: the machine's or the API's settings are not the same as in the previous run:" >&2
   diff results/.last-env "results/${TESTID}-env.txt" >&2 || true
 fi
 cp "results/${TESTID}-env.txt" results/.last-env

@@ -6,7 +6,7 @@
 //
 // A rate is visits a second: one visit is one person opening 4-7 screens (about 45 s and 25 requests). The old
 // 500-person test was about 7.5 visits a second. At most as many people are in a visit at once as there are accounts.
-const rates = (__ENV.STEP_RATES || '8,11,14,17,20,23,26').split(',').map(Number);
+const rates = (__ENV.STEP_RATES || '16,22,28,34,40,46,52').split(',').map(Number);
 const ramp = Number(__ENV.STEP_RAMP_SECONDS || 120);
 const hold = Number(__ENV.STEP_HOLD_SECONDS || 120);
 const warmup = Number(__ENV.STEP_WARMUP_SECONDS || 0);

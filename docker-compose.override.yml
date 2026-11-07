@@ -43,5 +43,13 @@ services:
       api:
         condition: service_healthy
     networks: [echo-network]
+  alloy:
+    ports: [127.0.0.1:4317:4317, 127.0.0.1:4318:4318, 127.0.0.1:12345:12345]
+  loki:
+    ports: [127.0.0.1:3100:3100]
+  prometheus:
+    ports: [127.0.0.1:9090:9090]
+  grafana:
+    ports: [127.0.0.1:3000:3000]
 volumes:
   nuget-cache:

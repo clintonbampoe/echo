@@ -1,9 +1,3 @@
-# Extra Postgres queries for the exporter in config.alloy.
-#
-# pg_stat_statements metrics carry only a queryid, which says nothing to a person reading a dashboard. This adds the start of
-# each statement's SQL for the busiest ones, so a table can show "SELECT m.person_id ... FROM members" next to the id.
-# pg_stat_statements stores the SQL normalised ($1 in place of every value), so no church data is in it. Only the
-# 40 most expensive and the 40 most called statements are kept, to bound the number of series.
 pg_statement_text:
   query: |
     SELECT queryid::text AS queryid,

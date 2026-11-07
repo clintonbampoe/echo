@@ -26,18 +26,14 @@ schema_config:
         period: 24h
 
 limits_config:
-  retention_period: 672h
-  # By value, not by source. Warnings and errors (nginx 4xx and 5xx, the API, Postgres) are few and are what an
-  # investigation starts from, so they keep 28 days. nginx writes a line for every request it logs, which is the bulk
-  # of the volume, and carries addresses and browser strings: a week is enough to compare with last week.
-  # When a stream matches more than one rule, the higher priority wins, so an nginx error line keeps 28 days.
+  retention_period: ${LOKI_RETENTION:-672h}
   retention_stream:
     - selector: '{level=~"warn|error"}'
       priority: 2
-      period: 672h
+      period: ${LOKI_RETENTION:-672h}
     - selector: '{container="nginx"}'
       priority: 1
-      period: 168h
+      period: ${LOKI_NGINX_RETENTION:-168h}
 
 compactor:
   working_directory: /loki/compactor

@@ -1,0 +1,1 @@
+30 3 * * * /app/heartbeat.sh jobs_certificate-renewal certbot renew --webroot -w /var/www/certbot
