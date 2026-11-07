@@ -16,70 +16,60 @@ endpoint-defaults: &defaults
     insecure: true
 
 endpoints:
-  - name: 1. API
-    group: 1. Core
+  - name: API
+    group: Core
     url: https://nginx/api/health/ready
     <<: *defaults
     conditions: ["[STATUS] == 200"]
-  - name: 2. Website
-    group: 1. Core
+  - name: Website
+    group: Core
     url: https://nginx/
     <<: *defaults
     conditions: ["[STATUS] == 200"]
-  - name: 3. Database
-    group: 1. Core
+  - name: Database
+    group: Core
     url: tcp://db:5432
     <<: *defaults
     conditions: ["[CONNECTED] == true"]
-  - name: 4. Certificate
-    group: 1. Core
+  - name: Certificate
+    group: Core
     url: https://nginx/
     <<: *defaults
     conditions: ["[CERTIFICATE_EXPIRATION] > 336h"]
-  - name: 1. API response time
-    group: 2. Performance
-    url: https://nginx/api/health/ready
-    <<: *defaults
-    conditions: ["[RESPONSE_TIME] < 500"]
-  - name: 2. Website response time
-    group: 2. Performance
-    url: https://nginx/
-    <<: *defaults
-    conditions: ["[RESPONSE_TIME] < 1000"]
-  - name: 1. Grafana
-    group: 3. Observability
+  - name: Grafana
+    group: Observability
     url: https://nginx/grafana/api/health
     <<: *defaults
     conditions: ["[STATUS] == 200"]
-  - name: 2. Prometheus
-    group: 3. Observability
+  - name: Prometheus
+    group: Observability
     url: http://prometheus:9090/-/ready
     <<: *defaults
     conditions: ["[STATUS] == 200"]
-  - name: 3. Loki
-    group: 3. Observability
+  - name: Loki
+    group: Observability
     url: http://loki:3100/ready
     <<: *defaults
     conditions: ["[STATUS] == 200"]
-  - name: 4. Tempo
-    group: 3. Observability
+  - name: Tempo
+    group: Observability
     url: http://tempo:3200/ready
     <<: *defaults
     conditions: ["[STATUS] == 200"]
-  - name: 5. Alloy
-    group: 3. Observability
+  - name: Alloy
+    group: Observability
     url: http://alloy:12345/-/ready
     <<: *defaults
     conditions: ["[STATUS] == 200"]
 
 external-endpoints:
-  - name: Backup
-    group: 4. Jobs
+  - name: Database Backup
+    group: Jobs
     token: ${STATUS_HEARTBEAT_TOKEN}
     heartbeat:
       interval: 26h
   - name: Certificate renewal
-    group: 4. Jobs
+    group: Jobs
     token: ${STATUS_HEARTBEAT_TOKEN}
     heartbeat:
       interval: 26h
