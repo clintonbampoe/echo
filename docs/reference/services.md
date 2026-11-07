@@ -86,8 +86,9 @@ The cloud firewall allows 22, 80 and 443 only.
 | `nuget-cache` | NuGet packages, dev only | Yes |
 
 Backup files go to `BACKUP_DIR` on the host, not into a volume. Production
-requires it: an absolute path outside the release folders, `/srv/echo/data/dumps`
-on the server. Development defaults to `infra/postgres/backup/dumps/`.
+compose requires it. The deploy supplies `/srv/echo/data/dumps` unless the
+server's `.env` sets another absolute path outside the release folders.
+Development defaults to `infra/postgres/backup/dumps/`.
 
 Postgres only creates its user and database when it starts on an empty
 volume. If a start with the wrong settings created the volume, later starts

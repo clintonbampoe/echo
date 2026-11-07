@@ -21,18 +21,15 @@ takes a dump before applying any pending migration.
   [Limits](../explanation/limits.md).
 
 `BACKUP_DIR` must point outside the release folders, or the dumps are deleted
-with the release. `make-env.sh` sets it, and production compose and `deploy.sh`
-both refuse to run without it: the deploy stops with
-`set BACKUP_DIR in /srv/echo/.env to an absolute path outside the releases`.
-On a server whose `.env` predates that:
+with the release. You do not have to set it: unless the server's `.env` sets
+one, each deploy uses `/srv/echo/data/dumps` and records it in the release's
+`release.env`. Set it in `.env` only to keep dumps somewhere else; the deploy
+refuses a relative path or one inside the releases folder.
 
-```bash
-sudo -u deploy sh -c 'mkdir -p /srv/echo/data/dumps && echo BACKUP_DIR=/srv/echo/data/dumps >> /srv/echo/.env'
-```
-
-The running backup container keeps its old mount until the next release, or
-until you recreate it with `dc up -d --force-recreate backup` (the helper is
-defined [below](#run-compose-on-the-server)).
+A server that ran releases before this change keeps writing dumps into its old
+release folder until the next release deploys. Copy anything you want to keep
+from `/srv/echo/releases/<version>/infra/postgres/backup/dumps/` into
+`/srv/echo/data/dumps/` afterwards.
 
 ## Run compose on the server
 

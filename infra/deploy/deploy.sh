@@ -29,6 +29,8 @@ point() {
 
 activate() {
   local dir=$1 tag domain
+  [[ -z $default_backup_dir ]] || grep -q '^BACKUP_DIR=' "$dir/release.env" ||
+    echo "BACKUP_DIR=$BACKUP_DIR" >> "$dir/release.env"
   tag=$(grep -E '^IMAGE_TAG=' "$dir/release.env" | cut -d= -f2-)
   domain=$(env_value APP_DOMAIN)
 
@@ -69,9 +71,12 @@ exec 9>"$ROOT/.deploy.lock"
 flock -n 9 || die "another deploy is running"
 [[ -r $ROOT/.env ]] || die "cannot read $ROOT/.env: it must belong to the deploy user"
 backup_dir=$(env_value BACKUP_DIR || true)
+default_backup_dir=
+[[ -n $backup_dir ]] || backup_dir=$ROOT/data/dumps default_backup_dir=1
 [[ $backup_dir == /* && $backup_dir != "$ROOT/releases" &&
   $backup_dir != "$ROOT/releases/"* ]] ||
-  die "set BACKUP_DIR in $ROOT/.env to an absolute path outside the releases, e.g. $ROOT/data/dumps"
+  die "BACKUP_DIR in $ROOT/.env must be an absolute path outside the releases"
+export BACKUP_DIR=$backup_dir
 [[ ${1:-} == rollback ]] && {
   rollback
   exit

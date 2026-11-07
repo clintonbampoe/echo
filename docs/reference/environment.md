@@ -66,7 +66,7 @@ They are usually the same address but do different jobs.
 |---|---|
 | `IMAGE_REGISTRY` | `ghcr.io/<owner>`. The deploy writes it to `release.env`; unset in development, where images are built locally. |
 | `IMAGE_TAG` | the version being deployed, like `v0.1.2`. Also from `release.env`. |
-| `BACKUP_DIR` | host folder for the nightly dumps. Required in production: an absolute path outside the release folders (`make-env.sh` writes `/srv/echo/data/dumps`). Development defaults to `infra/postgres/backup/dumps/`. |
+| `BACKUP_DIR` | host folder for the nightly dumps. In production the deploy uses `/srv/echo/data/dumps` unless `.env` sets another absolute path outside the release folders. Development defaults to `infra/postgres/backup/dumps/`. |
 
 ## Rate limits
 

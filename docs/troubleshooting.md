@@ -26,21 +26,25 @@ chown deploy:deploy /srv/echo/.env
 Then run the deploy again for the same version (see
 [Release](./how-to/release.md)).
 
-### `set BACKUP_DIR in /srv/echo/.env to an absolute path outside the releases`
+### `BACKUP_DIR in /srv/echo/.env must be an absolute path outside the releases`
 
-Also seen from compose: `required variable BACKUP_DIR is missing a value`.
+Cause: `BACKUP_DIR` in the server's `.env` is relative or points inside the
+releases folder. The deploy deletes release folders beyond the newest five, so
+dumps kept there would go with them.
 
-Cause: the nightly dumps would land in a release folder, and the deploy deletes
-release folders beyond the newest five. `make-env.sh` writes the variable on new
-servers; one set up before that does not have it.
+Fix: remove the line (the deploy then uses `/srv/echo/data/dumps`) or set an
+absolute path outside `/srv/echo/releases`, then run the deploy again.
 
-Fix, on the server:
+### `required variable BACKUP_DIR is missing a value`
 
-```bash
-sudo -u deploy sh -c 'mkdir -p /srv/echo/data/dumps && echo BACKUP_DIR=/srv/echo/data/dumps >> /srv/echo/.env'
-```
+Seen when running `docker compose` by hand with the production files.
 
-Then run the deploy again.
+Cause: production compose requires `BACKUP_DIR`. The deploy writes it into the
+release's `release.env`; a release that has never been deployed with a current
+`deploy.sh` does not have it.
+
+Fix: use the `dc` helper from [Back up and restore](./how-to/restore-a-backup.md)
+after a deploy, or `export BACKUP_DIR=/srv/echo/data/dumps` first.
 
 ### `password authentication failed for user "echo"`
 
