@@ -4,15 +4,11 @@ on:
   workflow_run:
     workflows: [Release]
     types: [completed]
-    branches: [main]
   workflow_dispatch:
     inputs:
-      sha:
-        description: Commit to deploy (default, the latest on the selected branch)
-      rollback:
-        description: Go back one release instead
-        type: boolean
-        default: false
+      version:
+        description: Release to deploy or go back to, e.g. v0.1.9
+        required: true
 concurrency: deploy
 permissions:
   contents: read
@@ -23,11 +19,11 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
     env:
-      SHA: ${{ github.event.workflow_run.head_sha || inputs.sha || github.sha }}
+      VERSION: ${{ github.event.workflow_run.head_branch || inputs.version }}
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ env.SHA }}
+          ref: ${{ env.VERSION }}
       - name: Connect
         env:
           KEY: ${{ secrets.DEPLOY_SSH_KEY }}
@@ -46,18 +42,13 @@ jobs:
             StrictHostKeyChecking yes
             ServerAliveInterval 30
           EOF
-      - name: Roll back
-        if: inputs.rollback
-        run: ssh -n app rollback
       - name: Deploy
-        if: ${{ !inputs.rollback }}
         run: |-
-          tag=${SHA::7}
           mkdir release
           cp docker-compose.yml docker-compose.prod.yml release/
           cp infra/deploy/deploy.sh release/deploy.sh
           cp infra/nginx/certs.sh release/certs.sh
           echo "IMAGE_REGISTRY=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}" > release/release.env
-          echo "IMAGE_TAG=$tag" >> release/release.env
-          tar -C release -c . | ssh app "upload $tag"
-          ssh -n app "deploy $tag"
+          echo "IMAGE_TAG=$VERSION" >> release/release.env
+          tar -C release -c . | ssh app "upload $VERSION"
+          ssh -n app "deploy $VERSION"
