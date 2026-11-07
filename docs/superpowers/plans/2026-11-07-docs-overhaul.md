@@ -152,3 +152,28 @@ Stop and commit after each step; one logical commit each.
 - A new person can go from a fresh Hetzner server to a running release using
   only `how-to/set-up-a-server.md` and `how-to/release.md`.
 - Every relative link resolves, and CI fails when one stops.
+
+## Status
+
+Done in the first hour (15:09 to 16:09 UTC on 2026-11-07):
+
+- Layout: one index, `how-to/`, `reference/`, `explanation/`, one
+  `troubleshooting.md`; `infrastructure/` is gone.
+- New: set up a server, release, restore a backup, migrations, run a load test,
+  limits, status page, CI and workflows, services, nginx.
+- Rewritten for the single server: observability, topology, environment,
+  getting started, root README, backend README, deploy README.
+- Fixed: API paths (`/api/v1/auth/...`), controller wording, `dotnet ef`
+  connection string, CONTRIBUTING commands, AGENTS.md paths.
+- Removed: bylines, the observability plan, both stale diagrams, duplicate
+  indexes.
+- Added `docs/check-links.sh` and a CI step for it.
+
+Not done:
+
+- `frontend/components.md` was not checked against the code; it is a design
+  inventory and may lag.
+- `performance/` carries a banner; its numbers are for the old box.
+- The load test's `main.js` thresholds are unchanged.
+- A cold-reader pass of the two key how-tos found gaps, listed in the
+  commit history of those pages.
