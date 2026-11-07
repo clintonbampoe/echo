@@ -232,7 +232,6 @@ services:
     container_name: status
     restart: unless-stopped
     environment:
-      STATUS_PASSWORD_HASH: ${STATUS_PASSWORD_HASH:?set STATUS_PASSWORD_HASH}
       STATUS_HEARTBEAT_TOKEN: ${STATUS_HEARTBEAT_TOKEN:?set STATUS_HEARTBEAT_TOKEN}
     volumes: [status-data:/data]
     networks: [echo-network]

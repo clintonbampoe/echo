@@ -5,11 +5,6 @@ ui:
   title: Echo status
   header: Echo status
 
-security:
-  basic:
-    username: admin
-    password-bcrypt-base64: ${STATUS_PASSWORD_HASH}
-
 storage:
   type: sqlite
   path: /data/status.db
