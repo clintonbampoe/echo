@@ -6,7 +6,7 @@
 
 Instead, use one of these private reporting channels:
 
-1. **Email**: Send details to **clintbamp+echo@gmail.com**.
+1. **Email**: Send details to **security@mail.theechoapp.net**.
    This goes directly to the core maintainer's inbox. We'll acknowledge receipt within 48 hours.
 
 2. **GitHub Private Security Reporting** (preferred if enabled):
