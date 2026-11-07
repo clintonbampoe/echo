@@ -91,10 +91,7 @@ HSTS is sent by nginx, not the API.
 
 ## `dotnet ef` at design time
 
-`DesignTimeDbContextFactory` reads the connection string `Default` from
-`appsettings.json`, while the runtime reads `ConnectionStrings__echodb`.
-Run migrations through the migrator instead:
-
-```bash
-docker compose --profile db-tools run --rm migrator
-```
+`dotnet ef` uses `DesignTimeDbContextFactory`, which reads the connection
+string named `Default`, while the app reads `ConnectionStrings__echodb`. Set
+`ConnectionStrings__Default` in your shell (or as a user secret) before running
+`dotnet ef`. See [Migrations](../how-to/migrations.md).
