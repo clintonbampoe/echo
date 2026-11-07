@@ -6,9 +6,6 @@ on:
     paths: [backend/**, frontend/**]
   pull_request:
     branches: [main]
-    paths:
-      - backend/**
-      - frontend/**
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
