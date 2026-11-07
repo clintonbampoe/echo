@@ -72,14 +72,10 @@ before and after run before acting on one.
 
 ## Settings you may hit
 
-| Limit | Value | Where |
-|---|---|---|
-| Requests per person | 600 a minute signed in; 100 a minute by address when not | API rate limiter |
-| Sign-in | 30 a minute per address | API rate limiter |
-| nginx on `/api` | 50 a second per address, burst 200 | `nginx.conf`, `api-locations.conf` |
-| Upload size | 5 MB | `nginx.conf` |
-| Database connections | 40 (the API pool uses at most 30) | `tuning.conf` |
-| Memory | 7.4 GB of caps on an 8 GB server | `docker-compose.prod.yml` |
+The API's rate limits are in [Environment variables](../reference/environment.md#rate-limits),
+nginx's request limit and upload cap are in [nginx](../reference/nginx.md#limits-and-logging),
+and the database connection limit and memory caps are in
+[Services](../reference/services.md).
 
 A church's staff share one address. A dashboard load asks for about twenty
 things at once, so a `429` from a big church is a real finding about the limits

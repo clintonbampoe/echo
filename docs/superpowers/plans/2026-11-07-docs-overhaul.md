@@ -155,25 +155,21 @@ Stop and commit after each step; one logical commit each.
 
 ## Status
 
-Done in the first hour (15:09 to 16:09 UTC on 2026-11-07):
+Done (2026-11-07, one working hour plus a review pass):
 
 - Layout: one index, `how-to/`, `reference/`, `explanation/`, one
   `troubleshooting.md`; `infrastructure/` is gone.
 - New: set up a server, release, restore a backup, migrations, run a load test,
   limits, status page, CI and workflows, services, nginx.
 - Rewritten for the single server: observability, topology, environment,
-  getting started, root README, backend README, deploy README.
-- Fixed: API paths (`/api/v1/auth/...`), controller wording, `dotnet ef`
-  connection string, CONTRIBUTING commands, AGENTS.md paths.
-- Removed: bylines, the observability plan, both stale diagrams, duplicate
-  indexes.
+  getting started, root README, backend and deploy READMEs.
+- Fixed wrong facts found by a fact-check agent and two cold readers.
+- Removed: bylines, the observability plan, two stale diagrams, duplicate
+  indexes, the shipped auth-sweep plan and spec, and the duplicated limits table.
+- Checked `frontend/components.md` against the code and fixed four names.
 - Added `docs/check-links.sh` and a CI step for it.
 
-Not done:
+Left alone:
 
-- `frontend/components.md` was not checked against the code; it is a design
-  inventory and may lag.
-- `performance/` carries a banner; its numbers are for the old box.
+- `performance/` carries a banner; its numbers are for the old 2 vCPU box.
 - The load test's `main.js` thresholds are unchanged.
-- A cold-reader pass of the two key how-tos found gaps, listed in the
-  commit history of those pages.
