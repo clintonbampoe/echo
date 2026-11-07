@@ -4,6 +4,7 @@ import { OrganizationEvents, useUpcomingEvents } from "@/features/events";
 import { isApiError } from "@/lib/api";
 import { todayText } from "@/lib/dates";
 import { paths } from "@/lib/paths";
+import { useUrlTab } from "@/lib/useUrlTab";
 import { Alert, BackLink, Button, StatStrip, Tabs } from "@/ui";
 import {
   AddMemberSheet,
@@ -64,9 +65,15 @@ export function OrganizationPage() {
   return <Detail organization={organization.data} />;
 }
 
+const tabs = [
+  { id: "details", label: "Details" },
+  { id: "members", label: "Members" },
+  { id: "events", label: "Events" },
+];
+
 function Detail({ organization: o }: { organization: Organization }) {
   const navigate = useNavigate();
-  const [tab, setTab] = useState("details");
+  const [tab, setTab] = useUrlTab(tabs);
   const [editing, setEditing] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [adding, setAdding] = useState(false);
@@ -89,12 +96,6 @@ function Detail({ organization: o }: { organization: Organization }) {
     ),
     createdStat(o, today),
   ];
-  const tabs = [
-    { id: "details", label: "Details" },
-    { id: "members", label: "Members" },
-    { id: "events", label: "Events" },
-  ];
-
   return (
     <div className="anim-rise">
       <BackLink to={paths.organizations}>Organizations</BackLink>

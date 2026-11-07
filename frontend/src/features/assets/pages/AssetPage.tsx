@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { isApiError } from "@/lib/api";
 import { paths } from "@/lib/paths";
+import { useUrlTab } from "@/lib/useUrlTab";
 import { Alert, BackLink, Button, StatStrip, Tabs } from "@/ui";
 import type { Asset } from "../api/assets";
 import { useAsset } from "../hooks/queries";
@@ -60,7 +61,7 @@ function Detail({ asset: a }: { asset: Asset }) {
   const navigate = useNavigate();
   const [editing, setEditing] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [tab, setTab] = useState("details");
+  const [tab, setTab] = useUrlTab(tabs);
 
   return (
     <div className="anim-rise">

@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useLastSeen, PersonVisits } from "@/features/attendance";
 import { isApiError } from "@/lib/api";
 import { todayText } from "@/lib/dates";
 import { paths } from "@/lib/paths";
+import { useUrlTab } from "@/lib/useUrlTab";
 import {
   ActionMenu,
   Alert,
@@ -69,10 +70,14 @@ export function VisitorPage() {
   return <Profile visitor={visitor.data} />;
 }
 
+const tabs = [
+  { id: "details", label: "Details" },
+  { id: "visits", label: "Visits" },
+];
+
 function Profile({ visitor: v }: { visitor: Visitor }) {
   const navigate = useNavigate();
-  const [params, setParams] = useSearchParams();
-  const tab = params.get("tab") === "visits" ? "visits" : "details";
+  const [tab, setTab] = useUrlTab(tabs);
   const [editing, setEditing] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [converting, setConverting] = useState(false);
@@ -123,12 +128,9 @@ function Profile({ visitor: v }: { visitor: Visitor }) {
       />
       <Tabs
         label="Visitor history"
-        tabs={[
-          { id: "details", label: "Details" },
-          { id: "visits", label: "Visits" },
-        ]}
+        tabs={tabs}
         value={tab}
-        onChange={(t) => setParams({ tab: t }, { replace: true })}
+        onChange={setTab}
         idPrefix="visitor"
       />
       <div

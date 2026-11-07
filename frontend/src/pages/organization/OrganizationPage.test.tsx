@@ -35,6 +35,17 @@ describe("organization page", () => {
     expect(screen.getByText("1 upcoming event")).toBeInTheDocument();
   });
 
+  it("opens on the tab the address names, so Back lands where the person was", async () => {
+    show(server(), "/organizations/o1?tab=events");
+    expect(
+      await screen.findByRole("link", { name: "Christmas Carols" }),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: /Events/ })).toHaveAttribute(
+      "aria-selected",
+      "true",
+    );
+  });
+
   it("deletes the group and goes back to the list", async () => {
     const user = userEvent.setup();
     const fetchMock = show(server());
