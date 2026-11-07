@@ -31,7 +31,7 @@ endpoints:
     url: tcp://db:5432
     <<: *defaults
     conditions: ["[CONNECTED] == true"]
-  - name: Certificate
+  - name: HTTPS Certificate
     group: Core
     url: https://nginx/
     <<: *defaults
@@ -68,7 +68,7 @@ external-endpoints:
     token: ${STATUS_HEARTBEAT_TOKEN}
     heartbeat:
       interval: 26h
-  - name: Certificate renewal
+  - name: Certificate Renewal
     group: Jobs
     token: ${STATUS_HEARTBEAT_TOKEN}
     heartbeat:
