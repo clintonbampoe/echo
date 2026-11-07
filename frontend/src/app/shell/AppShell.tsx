@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, ScrollRestoration } from "react-router-dom";
 import { MenuPage } from "./MenuPage";
 import { PullToRefresh } from "./PullToRefresh";
 import { Sidebar } from "./Sidebar";
@@ -23,6 +23,7 @@ export function AppShell() {
           <Outlet />
         </main>
       </div>
+      <ScrollRestoration />
       <PullToRefresh />
       <MenuPage open={menuOpen} onClose={() => setMenuOpen(false)} />
     </div>

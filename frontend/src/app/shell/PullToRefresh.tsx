@@ -42,10 +42,17 @@ export function PullToRefresh() {
     const onStart = (e: TouchEvent) => {
       const t = e.touches[0];
       const skip = e.target instanceof Element && e.target.closest(SKIP);
+      // A second finger is a pinch, not a pull.
+      if (e.touches.length > 1) return onCancel();
       from.current =
         window.scrollY <= 0 && !skip && t
           ? { x: t.clientX, y: t.clientY }
           : null;
+    };
+    // The browser took the gesture (a call, a swipe from the edge): let go without refreshing.
+    const onCancel = () => {
+      from.current = null;
+      move(0);
     };
     const onMove = (e: TouchEvent) => {
       const s = from.current;
@@ -74,12 +81,12 @@ export function PullToRefresh() {
     document.addEventListener("touchstart", onStart, { passive: true });
     document.addEventListener("touchmove", onMove, { passive: true });
     document.addEventListener("touchend", onEnd);
-    document.addEventListener("touchcancel", onEnd);
+    document.addEventListener("touchcancel", onCancel);
     return () => {
       document.removeEventListener("touchstart", onStart);
       document.removeEventListener("touchmove", onMove);
       document.removeEventListener("touchend", onEnd);
-      document.removeEventListener("touchcancel", onEnd);
+      document.removeEventListener("touchcancel", onCancel);
       window.clearTimeout(timer.current);
     };
   }, [client]);

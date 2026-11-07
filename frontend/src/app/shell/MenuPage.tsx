@@ -1,9 +1,8 @@
-import { useEffect } from "react";
 import { createPortal } from "react-dom";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { roleLabel, useCongregation, useMe } from "@/features/account";
 import { useSignOut } from "@/features/auth";
-import { Avatar, Icon, usePresence, type IconName } from "@/ui";
+import { Avatar, Icon, usePresence, useScrollLock, type IconName } from "@/ui";
 import { BrandMark } from "./BrandMark";
 import { adminNav, mainNav } from "./nav";
 import styles from "./MenuPage.module.css";
@@ -15,14 +14,7 @@ type Props = { open: boolean; onClose: () => void };
 export function MenuPage({ open, onClose }: Props) {
   const { mounted, closing } = usePresence(open, 200);
 
-  useEffect(() => {
-    if (!open) return;
-    const scroll = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = scroll;
-    };
-  }, [open]);
+  useScrollLock(open);
 
   if (!mounted) return null;
   return createPortal(

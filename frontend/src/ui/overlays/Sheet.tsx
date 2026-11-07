@@ -4,6 +4,7 @@ import { Icon } from "../layout/Icon";
 import { useLeaving } from "./presenceContext";
 import { useDragDismiss } from "../motion/useDragDismiss";
 import { usePresence } from "./usePresence";
+import { useScrollLock } from "./useScrollLock";
 import styles from "./Sheet.module.css";
 
 type Props = {
@@ -39,16 +40,14 @@ export function Sheet({
   const drag = useDragDismiss(onClose);
   const closing = presence.closing || leaving;
 
+  useScrollLock(open);
   useEffect(() => {
     if (!open) return;
     const before = document.activeElement;
-    const scroll = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
     // A field inside may already have asked for focus; only take it if nobody has.
     if (!panel.current?.contains(document.activeElement))
       panel.current?.focus();
     return () => {
-      document.body.style.overflow = scroll;
       if (before instanceof HTMLElement) before.focus();
     };
   }, [open]);

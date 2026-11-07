@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { Icon } from "../layout/Icon";
 import { useDragDismiss } from "../motion/useDragDismiss";
 import { usePresence } from "./usePresence";
+import { useScrollLock } from "./useScrollLock";
 import styles from "./CenterPanel.module.css";
 
 type Props = {
@@ -21,6 +22,7 @@ export function CenterPanel({ open, onClose, title, children }: Props) {
   const { mounted, closing } = usePresence(open, 200);
   const drag = useDragDismiss(onClose, "all");
 
+  useScrollLock(open);
   useEffect(() => {
     if (!open) return;
     const before = document.activeElement;
