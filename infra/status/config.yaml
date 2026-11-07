@@ -1,0 +1,75 @@
+web:
+  port: 8080
+
+ui:
+  title: Echo status
+  header: Echo status
+
+storage:
+  type: sqlite
+  path: /data/status.db
+
+endpoint-defaults: &defaults
+  interval: 1m
+  client:
+    timeout: 5s
+    insecure: true
+
+endpoints:
+  - name: API
+    group: Core
+    url: https://nginx/api/health/ready
+    <<: *defaults
+    conditions: ["[STATUS] == 200"]
+  - name: Website
+    group: Core
+    url: https://nginx/
+    <<: *defaults
+    conditions: ["[STATUS] == 200"]
+  - name: Database
+    group: Core
+    url: tcp://db:5432
+    <<: *defaults
+    conditions: ["[CONNECTED] == true"]
+  - name: HTTPS Certificate
+    group: Core
+    url: https://nginx/
+    <<: *defaults
+    conditions: ["[CERTIFICATE_EXPIRATION] > 336h"]
+  - name: Grafana
+    group: Observability
+    url: https://nginx/grafana/api/health
+    <<: *defaults
+    conditions: ["[STATUS] == 200"]
+  - name: Prometheus
+    group: Observability
+    url: http://prometheus:9090/-/ready
+    <<: *defaults
+    conditions: ["[STATUS] == 200"]
+  - name: Loki
+    group: Observability
+    url: http://loki:3100/ready
+    <<: *defaults
+    conditions: ["[STATUS] == 200"]
+  - name: Tempo
+    group: Observability
+    url: http://tempo:3200/ready
+    <<: *defaults
+    conditions: ["[STATUS] == 200"]
+  - name: Alloy
+    group: Observability
+    url: http://alloy:12345/-/ready
+    <<: *defaults
+    conditions: ["[STATUS] == 200"]
+
+external-endpoints:
+  - name: Backup
+    group: Jobs
+    token: ${STATUS_HEARTBEAT_TOKEN}
+    heartbeat:
+      interval: 26h
+  - name: Certificate Renewal
+    group: Jobs
+    token: ${STATUS_HEARTBEAT_TOKEN}
+    heartbeat:
+      interval: 26h

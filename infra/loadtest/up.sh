@@ -1,14 +1,15 @@
 #!/usr/bin/env bash
-# Brings the app up the way the load test needs it: the production setup (HTTPS, memory limits) plus the load test's own
-# file (nginx trusts the addresses k6 sends, the app is pinned to two cores). Then run ./run.sh <label>.
+# Brings the stack up the way the load test needs it: the production setup (HTTPS, memory limits, CPU weights) plus the
+# load test's own file (nginx trusts the addresses k6 sends, the whole stack is pinned to 4 CPUs). Then run
+# ./run.sh <label>.
 #
-# Run from anywhere. It recreates api, database and nginx, so do not run it during a test.
+# Run from anywhere. It recreates the whole stack, so do not run it during a test.
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 
 export APP_DOMAIN=${APP_DOMAIN:-echo.localhost}
 docker compose -f docker-compose.yml -f docker-compose.prod.yml -f infra/loadtest/docker-compose.loadtest.yml \
-  up -d --build api db nginx
+  up -d --build api db nginx alloy loki prometheus tempo grafana
 
 # The dev stack's Vite server, if it was up: idle, but the baseline should have nothing else running.
 docker stop frontend >/dev/null 2>&1 || true

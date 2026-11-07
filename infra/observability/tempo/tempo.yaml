@@ -18,12 +18,9 @@ storage:
     wal:
       path: /var/tempo/wal
 
-# Tempo 3.x replaced the legacy `compactor` module with a backend scheduler + worker.
-# The scheduler starts with defaults in the single binary and the worker connects to
-# it automatically (127.0.0.1:9095). Retention lives on the worker's compactor config.
 backend_worker:
   compaction:
-    block_retention: 168h
+    block_retention: ${TEMPO_RETENTION:-168h}
 
 usage_report:
   reporting_enabled: false

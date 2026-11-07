@@ -1,0 +1,63 @@
+---
+name: Deploy
+on:
+  workflow_run:
+    workflows: [Release]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      sha:
+        description: Commit to deploy (default, the latest on the selected branch)
+      rollback:
+        description: Go back one release instead
+        type: boolean
+        default: false
+concurrency: deploy
+permissions:
+  contents: read
+jobs:
+  deploy:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion
+      == 'success'
+    runs-on: ubuntu-latest
+    environment: production
+    env:
+      SHA: ${{ github.event.workflow_run.head_sha || inputs.sha || github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.SHA }}
+      - name: Connect
+        env:
+          KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+          HOST: ${{ vars.DEPLOY_HOST }}
+          USER_NAME: ${{ vars.DEPLOY_USER }}
+        run: |
+          install -m 700 -d ~/.ssh
+          echo "$KEY" > ~/.ssh/id_deploy && chmod 600 ~/.ssh/id_deploy
+          echo "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          cat > ~/.ssh/config <<EOF
+          Host app
+            HostName $HOST
+            User $USER_NAME
+            IdentityFile ~/.ssh/id_deploy
+            StrictHostKeyChecking yes
+            ServerAliveInterval 30
+          EOF
+      - name: Roll back
+        if: inputs.rollback
+        run: ssh -n app rollback
+      - name: Deploy
+        if: ${{ !inputs.rollback }}
+        run: |-
+          tag=${SHA::7}
+          mkdir release
+          cp docker-compose.yml docker-compose.prod.yml release/
+          cp infra/deploy/deploy.sh release/deploy.sh
+          cp infra/nginx/certs.sh release/certs.sh
+          echo "IMAGE_REGISTRY=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}" > release/release.env
+          echo "IMAGE_TAG=$tag" >> release/release.env
+          tar -C release -c . | ssh app "upload $tag"
+          ssh -n app "deploy $tag"

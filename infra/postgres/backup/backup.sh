@@ -7,14 +7,12 @@ DUMP_FILE="/app/dumps/echo_${TIMESTAMP}.dump"
 BACKUP_START_TIMESTAMP=$TIMESTAMP
 echo "[${BACKUP_START_TIMESTAMP}] Starting backup of ${DB_NAME}"
 
-# -Fc custom format - compressed by default, supports selective restore via pg_restore
-# No separate gzip step needed.
-
 pg_dump -Fc -h db -U "${DB_USERNAME}" "${DB_NAME}" >"${DUMP_FILE}"
+
+pg_restore -l "${DUMP_FILE}" >/dev/null
 
 echo "[${BACKUP_START_TIMESTAMP}] Written: ${DUMP_FILE} ($(du -h "${DUMP_FILE}" | cut -f1))"
 
-# Keep last 30 days of local db_dumps
 find /app/dumps -name "echo_*.dump" -mtime +30 -delete
 echo "[${BACKUP_START_TIMESTAMP}] Pruned dumps older than 30 days"
 

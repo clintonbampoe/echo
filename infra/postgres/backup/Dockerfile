@@ -1,31 +1,20 @@
 FROM alpine:3.20
 
-# Install client tools and dependencies
-# postgresql18-client is the specific package for version 18
+RUN apk add --no-cache bash
+
 RUN apk add --no-cache \
-  ca-certificates \
-  curl \
-  bash
+    --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main \
+    postgresql18-client
 
-# Install Postgres 18 Client from Edge
-RUN apk add --no-cache \
-  --repository=http://dl-cdn.alpinelinux.org/alpine/edge/main \
-  postgresql18-client
+ARG SUPERCRONIC_VERSION=v0.2.49
+ARG SUPERCRONIC_SHA1=e63c11a9726b775a6a11801e81af4f3fb926aa68
 
-# Install Supercronic package
-# Latest releases available at https://github.com/aptible/supercronic/releases
-ENV SUPERCRONIC_URL=https://github.com/aptible/supercronic/releases/download/v0.2.49/supercronic-linux-amd64 \
-  SUPERCRONIC_SHA1SUM=e63c11a9726b775a6a11801e81af4f3fb926aa68 \
-  SUPERCRONIC=supercronic-linux-amd64
+RUN wget -qO /usr/local/bin/supercronic \
+    "https://github.com/aptible/supercronic/releases/download/${SUPERCRONIC_VERSION}/supercronic-linux-amd64" \
+  && echo "${SUPERCRONIC_SHA1}  /usr/local/bin/supercronic" | sha1sum -c - \
+  && chmod +x /usr/local/bin/supercronic
 
-RUN curl -fsSLO "$SUPERCRONIC_URL" \
-  && echo "${SUPERCRONIC_SHA1SUM}  ${SUPERCRONIC}" | sha1sum -c - \
-  && chmod +x "$SUPERCRONIC" \
-  && mv "$SUPERCRONIC" "/usr/local/bin/${SUPERCRONIC}" \
-  && ln -s "/usr/local/bin/${SUPERCRONIC}" /usr/local/bin/supercronic
+COPY infra/postgres/backup/crontab /app/crontab
+COPY --chmod=755 infra/postgres/backup/backup.sh infra/postgres/backup/restore.sh infra/status/heartbeat.sh /app/
 
-# Crontab is copied here
-COPY infra/postgres/backup/crontab app/crontab
-
-# Run Supercronic
 CMD ["supercronic", "/app/crontab"]
