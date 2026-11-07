@@ -63,7 +63,7 @@ endpoints:
     conditions: ["[STATUS] == 200"]
 
 external-endpoints:
-  - name: Database Backup
+  - name: Backup
     group: Jobs
     token: ${STATUS_HEARTBEAT_TOKEN}
     heartbeat:
