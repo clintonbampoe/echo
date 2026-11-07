@@ -1,5 +1,7 @@
 import {
+  useEffect,
   useId,
+  useRef,
   useState,
   type CSSProperties,
   type FocusEvent,
@@ -60,7 +62,19 @@ export function Lookup<T extends LookupItem>({
 }: Props<T>) {
   const [focused, setFocused] = useState(false);
   const id = useId();
+  const wrap = useRef<HTMLDivElement>(null);
   const typed = text.trim();
+
+  // With the keyboard up, the answers open under a box that is already near the bottom of what is visible: bring
+  // the box to the top so they have room. The wait is for the keyboard to finish sliding in.
+  useEffect(() => {
+    if (!focused) return;
+    const timer = window.setTimeout(() => {
+      if (wrap.current?.closest('[data-keyboard="true"]'))
+        wrap.current.scrollIntoView({ block: "start", behavior: "smooth" });
+    }, 350);
+    return () => window.clearTimeout(timer);
+  }, [focused]);
 
   function onBlur(e: FocusEvent<HTMLDivElement>) {
     if (!(
@@ -72,6 +86,7 @@ export function Lookup<T extends LookupItem>({
 
   return (
     <div
+      ref={wrap}
       className={styles.wrap}
       onFocus={() => setFocused(true)}
       onBlur={onBlur}

@@ -151,8 +151,9 @@
   --focus: 2px solid var(--text);
 }
 
-/* On a phone or tablet every pill and filter is 40px tall, and gets the rest of the 44px as hit area. */
-@media (max-width: 900px) {
+/* On a phone or tablet (in either direction: a wide iPad is still touch) every pill and filter is 40px tall, and
+   gets the rest of the 44px as hit area. */
+@media (max-width: 900px), (pointer: coarse) {
   :root {
     --pill-h: 40px;
     --filter-h: 40px;

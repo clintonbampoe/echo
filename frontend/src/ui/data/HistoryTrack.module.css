@@ -145,6 +145,21 @@
     transform: none;
   }
 }
+/* A touch screen has no hover, so holding a node is how its pill is read. */
+@media (hover: none) {
+  .node:not(.bone) {
+    -webkit-touch-callout: none;
+    user-select: none;
+  }
+  .node:not(.bone):active .tip {
+    opacity: 1;
+    transform: translateX(-50%);
+  }
+  .slot:first-child .node:active .tip,
+  .slot:last-child .node:active .tip {
+    transform: none;
+  }
+}
 .node:not(.bone):active {
   transform: scale(0.94);
 }

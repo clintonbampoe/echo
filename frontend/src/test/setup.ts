@@ -7,6 +7,9 @@ import { exitAnimations } from "@/ui/overlays/usePresence";
 // Exit animations only slow the tests down: a closed dialog should be gone at once.
 exitAnimations.enabled = false;
 
+// jsdom has no scrolling; the router's ScrollRestoration calls this on every navigation.
+window.scrollTo = () => {};
+
 // A busy machine can take longer than a second to answer, so queries wait a little longer before giving up.
 configure({ asyncUtilTimeout: 3000 });
 

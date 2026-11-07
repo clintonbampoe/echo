@@ -20,9 +20,15 @@ export function useUrlFilters<T extends FilterValues>(def: UrlFilters<T>) {
     filters,
     resetKey,
     update: (change: Partial<T>) =>
-      setParams(def.write({ ...filters, ...change }), { replace: true }),
+      setParams(def.write({ ...filters, ...change }), {
+        replace: true,
+        preventScrollReset: true,
+      }),
     clear: () => {
-      setParams(def.write(def.empty), { replace: true });
+      setParams(def.write(def.empty), {
+        replace: true,
+        preventScrollReset: true,
+      });
       setClearing(true);
     },
   };

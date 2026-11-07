@@ -1,4 +1,5 @@
 import { useEffect, useRef, type ReactNode } from "react";
+import { useScrollLock } from "./useScrollLock";
 import styles from "./Drawer.module.css";
 
 type Props = {
@@ -14,6 +15,7 @@ type Props = {
 export function Drawer({ open, onClose, label, children }: Props) {
   const panel = useRef<HTMLDivElement>(null);
 
+  useScrollLock(open);
   useEffect(() => {
     if (!open) return;
     const before = document.activeElement;

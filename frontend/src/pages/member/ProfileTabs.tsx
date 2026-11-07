@@ -51,7 +51,9 @@ export function ProfileTabs({
         label="Member history"
         tabs={tabs}
         value={tab}
-        onChange={(t) => setParams({ tab: t }, { replace: true })}
+        onChange={(t) =>
+          setParams({ tab: t }, { replace: true, preventScrollReset: true })
+        }
         idPrefix="member"
       />
       <div

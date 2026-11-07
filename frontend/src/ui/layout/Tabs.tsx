@@ -1,4 +1,4 @@
-import type { KeyboardEvent } from "react";
+import { useEffect, useRef, type KeyboardEvent } from "react";
 import { useFlip } from "../motion/useFlip";
 import { useSlidingThumb } from "../motion/useSlidingThumb";
 import styles from "./Tabs.module.css";
@@ -25,6 +25,21 @@ type Props = {
 export function Tabs({ label, tabs, value, onChange, idPrefix }: Props) {
   const row = useSlidingThumb(value);
   const flip = useFlip(value);
+  const scroller = useRef<HTMLDivElement>(null);
+
+  // On a narrow screen the row slides sideways: bring the picked tab into view. Only the row moves, never the page.
+  useEffect(() => {
+    const box = scroller.current;
+    const tab = box?.querySelector('[aria-selected="true"]');
+    if (!box || !tab) return;
+    const room = box.getBoundingClientRect();
+    const at = tab.getBoundingClientRect();
+    const MARGIN = 12;
+    if (at.left < room.left)
+      box.scrollBy?.({ left: at.left - room.left - MARGIN });
+    else if (at.right > room.right)
+      box.scrollBy?.({ left: at.right - room.right + MARGIN });
+  }, [value]);
 
   function onKeyDown(e: KeyboardEvent) {
     const at = tabs.findIndex((t) => t.id === value);
@@ -43,7 +58,7 @@ export function Tabs({ label, tabs, value, onChange, idPrefix }: Props) {
   }
 
   return (
-    <div className={styles.scroller}>
+    <div ref={scroller} className={styles.scroller}>
       <div
         ref={row}
         role="tablist"

@@ -1,6 +1,10 @@
+/* Sized to what the person can see: with the keyboard up, useVisibleArea narrows it to the part above it. */
 .root {
   position: fixed;
-  inset: 0;
+  top: var(--vv-top, 0);
+  right: 0;
+  left: 0;
+  height: var(--vv-height, 100%);
   z-index: 50;
 }
 
@@ -109,6 +113,22 @@
   .footer {
     padding: var(--s-4) var(--s-20) var(--s-20);
   }
+}
+
+/* The keyboard is up and little room is left: the panel takes all of it, and the heading and buttons slim down
+   so the field being typed in has the space. */
+.root[data-keyboard="true"] .panel {
+  max-height: calc(100% - 16px);
+}
+.root[data-keyboard="true"] .subtitle {
+  display: none;
+}
+.root[data-keyboard="true"] .header {
+  padding-top: var(--s-12);
+  padding-bottom: 0;
+}
+.root[data-keyboard="true"] .footer {
+  padding: var(--s-4) var(--s-16) var(--s-12);
 }
 
 /* "Not yet": two quick 4px shakes (the same as a field with an error). */

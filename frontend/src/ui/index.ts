@@ -87,6 +87,7 @@ export { useHeld } from "./hooks/useHeld";
 export { useMedia } from "./hooks/useMedia";
 export { useMonthRange, type MonthRange } from "./hooks/useMonthRange";
 export { usePresence } from "./overlays/usePresence";
+export { useScrollLock } from "./overlays/useScrollLock";
 export { useNarrowProfile } from "./hooks/useNarrowProfile";
 export { usePublicSurface } from "./hooks/useSurface";
 export { ThemeToggle } from "./inputs/ThemeToggle";
