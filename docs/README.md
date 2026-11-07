@@ -55,4 +55,5 @@ Why it is the way it is.
   misleading.
 - Diagrams are text (Mermaid) so they diff and review like code.
 - File names are kebab-case.
-- Links between pages are relative and checked in CI.
+- Links between pages are relative. CI fails on a broken link and on a page
+  nothing links to, so add a new page to this index.
