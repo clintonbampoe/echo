@@ -1,1 +1,1 @@
-0 2 * * * set -o pipefail; /app/heartbeat.sh jobs_backup /app/backup.sh 2>&1 | tee -a /app/dumps/backup.log
+0 2 * * * set -o pipefail; /app/heartbeat.sh 4--jobs_backup /app/backup.sh 2>&1 | tee -a /app/dumps/backup.log
