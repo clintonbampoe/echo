@@ -7,7 +7,7 @@ measured. k6 gives each church its own address in `X-Forwarded-For`, which nginx
 this folder, so start the stack like this before a run (`run.sh` checks and says so if you forget):
 
 ```bash
-docker compose -f docker-compose.yml -f docker-compose.prod.yml -f infra/loadtest/docker-compose.loadtest.yml up -d nginx
+docker compose -f docker-compose.yml -f docker-compose.prod.yml -f infra/loadtest/docker-compose.loadtest.yml up -d nginx alloy loki prometheus tempo grafana
 ```
 
 nginx limits each address to 50 requests a second (burst 200). A church's staff share one address and a dashboard

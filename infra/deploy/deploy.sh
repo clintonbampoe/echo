@@ -118,5 +118,5 @@ find "$ROOT/releases" -mindepth 1 -maxdepth 1 -printf '%T@ %f\n' |
   sort -rn | tail -n +6 | cut -d' ' -f2 | while read -r old; do
   [[ $old == "$name" || $old == "$prior" ]] || rm -rf "${ROOT:?}/releases/$old"
 done
-docker image prune -f >/dev/null
+docker image prune -af --filter until=720h >/dev/null
 log "Done"

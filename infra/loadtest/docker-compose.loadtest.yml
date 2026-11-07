@@ -1,6 +1,6 @@
 ---
 # What the load test needs from the stack. Use it on top of the usual files:
-#   docker compose -f docker-compose.yml -f docker-compose.prod.yml -f infra/loadtest/docker-compose.loadtest.yml up -d api db nginx
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml -f infra/loadtest/docker-compose.loadtest.yml up -d api db nginx alloy loki prometheus tempo grafana
 #
 # nginx gets the realip file. The app containers are pinned to two cores, because the production box has 2 vCPUs for
 # everything on it (Alloy too, which run.sh pins). run.sh keeps k6 on the other cores so it does not take their CPU.
@@ -13,3 +13,5 @@ services:
     cpuset: "0,1"
     volumes:
       - ./infra/loadtest/nginx-realip.conf:/etc/nginx/extra/realip.conf:ro
+  prometheus:
+    ports: [127.0.0.1:9090:9090]

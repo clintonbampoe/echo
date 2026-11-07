@@ -49,6 +49,5 @@ RUN apt-get update \
 
 COPY --from=publish /app/publish .
 ENV ASPNETCORE_URLS=http://+:5025
-EXPOSE 4317 4318
 
 ENTRYPOINT ["dotnet", "Echo.Api.dll"]

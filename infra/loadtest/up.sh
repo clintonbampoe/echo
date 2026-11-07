@@ -8,7 +8,7 @@ cd "$(dirname "$0")/../.."
 
 export APP_DOMAIN=${APP_DOMAIN:-echo.localhost}
 docker compose -f docker-compose.yml -f docker-compose.prod.yml -f infra/loadtest/docker-compose.loadtest.yml \
-  up -d --build api db nginx
+  up -d --build api db nginx alloy loki prometheus tempo grafana
 
 # The dev stack's Vite server, if it was up: idle, but the baseline should have nothing else running.
 docker stop frontend >/dev/null 2>&1 || true
