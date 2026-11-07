@@ -69,6 +69,33 @@ Alloy reads the host through read-only mounts (`/`, `/proc`, `/sys`,
 `/var/lib/docker`, the containerd socket) and the Docker socket. That is
 root-equivalent access to the machine: keep Alloy's ports on localhost.
 
+## Logging
+
+Only a small share of normal traffic is recorded; everything that went wrong
+always is.
+
+| Source | Normal requests | Warnings and errors |
+|---|---|---|
+| API logs | off (`API_LOG_LEVEL` is `Warning`; set `Information` to see requests) | all |
+| API traces | 1% of the fast successful ones (`TRACES_SAMPLE_PERCENT`) | all, whole: 5xx, the 4xx that matter (400, 403, 409, 429) and anything over 100 ms are always kept (tail sampling in Alloy) |
+| nginx access log | a random 1%, each line marked `"sampled":1` | all 4xx and 5xx |
+
+The nginx sample is uniform, so it can be scaled back up: a request count is
+the lines with `sampled="1"` times 100, and a request-time percentile is taken
+over those lines only (the Edge and Overview dashboards do both). Slow requests
+are not kept on purpose, since that would make the sample look slower than the
+traffic is. Exact request counts and times come from the API's metrics in
+Prometheus.
+
+Every service writes through Docker's `json-file` driver, capped at 10 files
+of 10 MB, 100 MB per container, oldest rotated out. `docker compose logs` shows
+only that window; Loki holds the history. Compose sets the cap once
+(`x-logging: &default-logging`), and every new service must add
+`logging: *default-logging`, or its logs are uncapped.
+
+A container keeps the logging settings it was created with. After changing
+them, recreate it with `docker compose up -d --force-recreate <service>`.
+
 ## Dashboards
 
 JSON files in `infra/observability/grafana/dashboards/`, loaded by

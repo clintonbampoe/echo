@@ -1,29 +1,58 @@
-# Echo Docs
+# Echo docs
 
-**Written by:** @clintonbampoe
-**Last updated:** 2026-10-21 by @clintonbampoe
+Pick by what you want to do.
 
----
+## Start here
 
-## Conventions
+- [Getting started](./getting-started.md): run Echo on your machine.
 
-- **One file per topic**, not one file per code layer. A doc should tell the whole story for something (e.g. "how auth works"), not just describe the controllers or just the entities.
-- **Don't write a doc until the thing it describes is stable.** A doc for a feature that's still actively changing goes stale before it's even useful.
-- **Diagrams over prose wherever a picture explains it faster.** Excalidraw, exported as SVG with the scene embedded — renders in markdown, and can be dragged back into Excalidraw to edit later. All diagrams live in `docs/diagrams/`, named after the concept they show (`compose-stack.svg`, not a date or a version number).
-- **Filenames are kebab-case** (`architecture.md`, `infrastructure.md`) — matches the index and avoids case-sensitivity surprises on Linux/Windows/GitHub.
-- **Diagnose-and-document:** when you fix something that took real time to figure out, add an entry to the relevant doc's troubleshooting section, in the format that section specifies. Direct commits are fine; the goal is never solving the same problem twice, not gating every entry through review.
-- **Every doc starts with a byline**
+## How to
 
-```markdown
-**Written by:** @handle
-**Last updated:** date by @handle
-```
+Steps for one job. Each assumes you know what it is for.
 
-  right under the title, before any content. Whoever edits a doc updates the "Last updated" part in the same change.
-- **Update the table below whenever a doc is added, rewritten, or goes stale.** This index is only useful if it's honest.
+- [Set up a server](./how-to/set-up-a-server.md): from a fresh server to a running release.
+- [Release, watch and roll back](./how-to/release.md)
+- [Back up and restore the database](./how-to/restore-a-backup.md)
+- [Migrations](./how-to/migrations.md)
+- [Rotate the JWT keys](./how-to/rotate-jwt-keys.md)
+- [Run a load test](./how-to/run-a-load-test.md)
+- [Troubleshooting](./troubleshooting.md): errors we have hit, by their text.
 
----
+## Reference
 
-## Everything else
+Look something up.
 
-Every doc that previously existed under `docs/api/` and `docs/database/`, and the setup section of `backend/README.md`, has been removed. All of it was stale and describing a setup/architecture that no longer reflects the real codebase. Rewrites happen incrementally, one topic at a time — check the [Index](./index.md) for what's actually been redone.
+- [Environment variables](./reference/environment.md)
+- [Services, ports and volumes](./reference/services.md)
+- [nginx](./reference/nginx.md)
+- [CI and workflows](./reference/ci-and-workflows.md)
+- [The API](./api/api-usage.md) and [getting started with it](./api/getting-started.md)
+
+## Understand
+
+Why it is the way it is.
+
+- [How Echo is put together](./explanation/topology.md)
+- [Observability](./explanation/observability.md)
+- [The status page](./explanation/status-page.md)
+- [Limits](./explanation/limits.md): what it can carry and what it cannot.
+- [Backend architecture](./backend/architecture.md) and [testing](./backend/testing.md)
+- [Frontend](./frontend/README.md): [architecture](./frontend/architecture.md), [components](./frontend/components.md)
+- [Performance plan](./performance/plan.md) and [log](./performance/log.md): measured on the earlier 2 vCPU setup.
+
+## Writing docs here
+
+- A page does one job: a how-to, a reference, an explanation or a tutorial. If
+  a how-to needs a paragraph of why, link to an explanation page.
+- Start with what the thing is and what it is not. Put commands in bare code
+  blocks with the expected output after them, and say where to run them.
+- Limits are numbers with a date and how they were measured.
+- Troubleshooting headings are the exact error text. Add an entry only after a
+  real incident.
+- No bylines or "last updated" lines: git has the history.
+- Change the docs in the same pull request as the thing they describe. If a
+  page can no longer be trusted, fix it or delete it; do not leave it
+  misleading.
+- Diagrams are text (Mermaid) so they diff and review like code.
+- File names are kebab-case.
+- Links between pages are relative and checked in CI.

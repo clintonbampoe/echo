@@ -54,12 +54,13 @@ before and after run before acting on one.
 ## What it cannot do
 
 - **No failover.** One server. If it is down, Echo is down until it is
-  rebuilt from a backup and a release. Plan for hours, not seconds.
+  rebuilt from a backup and a release. That recovery has not been rehearsed
+  or timed.
 - **Backups stay on the server.** The nightly dump is on the same disk as the
   database. A lost server loses both. Copying dumps elsewhere is not set up.
-- **Every deploy restarts everything.** Expect a short outage, usually under a
-  minute, while the containers come back. The deploy waits for health before it
-  calls the release good.
+- **Every deploy restarts everything.** Expect a short outage while the
+  containers come back; it has not been measured. The deploy waits for health
+  before it calls the release good.
 - **The status page cannot see the server go down.** It runs on the server.
   There are no alerts.
 - **A rollback does not undo migrations.** See [Migrations](../how-to/migrations.md).
