@@ -1,7 +1,10 @@
 /* Above a dialog, so a choice list opened inside one is not hidden by it. */
 .root {
   position: fixed;
-  inset: 0;
+  top: var(--vv-top, 0);
+  right: 0;
+  left: 0;
+  height: var(--vv-height, 100%);
   z-index: 80;
 }
 .scrim {

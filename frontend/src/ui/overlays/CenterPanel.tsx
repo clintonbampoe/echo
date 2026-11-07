@@ -4,6 +4,7 @@ import { Icon } from "../layout/Icon";
 import { useDragDismiss } from "../motion/useDragDismiss";
 import { usePresence } from "./usePresence";
 import { useScrollLock } from "./useScrollLock";
+import { useVisibleArea } from "./useVisibleArea";
 import styles from "./CenterPanel.module.css";
 
 type Props = {
@@ -23,6 +24,7 @@ export function CenterPanel({ open, onClose, title, children }: Props) {
   const drag = useDragDismiss(onClose, "all");
 
   useScrollLock(open);
+  const root = useVisibleArea(mounted);
   useEffect(() => {
     if (!open) return;
     const before = document.activeElement;
@@ -34,7 +36,7 @@ export function CenterPanel({ open, onClose, title, children }: Props) {
 
   if (!mounted) return null;
   return createPortal(
-    <div className={styles.root}>
+    <div ref={root} className={styles.root}>
       <div
         className={`${styles.scrim} glass-scrim`}
         data-closing={closing}
