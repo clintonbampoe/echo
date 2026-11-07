@@ -5,6 +5,7 @@
 | `server-entry.sh` | on the server, as the deploy key's forced command | accepts `upload <version>`, `deploy <version>`, `rollback` and nothing else |
 | `deploy.sh` | on the server, from each release folder | pulls, migrates, starts the release, rolls back if it is not healthy |
 | `make-env.sh` | on the server, once | writes `/srv/echo/.env` with fresh secrets |
+| `test-server-entry.sh` | in CI | checks `server-entry.sh` only lets `vX.Y.Z` releases through |
 
 ## First-time server `.env`
 
