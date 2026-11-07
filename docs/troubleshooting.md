@@ -26,6 +26,22 @@ chown deploy:deploy /srv/echo/.env
 Then run the deploy again for the same version (see
 [Release](./how-to/release.md)).
 
+### `set BACKUP_DIR in /srv/echo/.env to an absolute path outside the releases`
+
+Also seen from compose: `required variable BACKUP_DIR is missing a value`.
+
+Cause: the nightly dumps would land in a release folder, and the deploy deletes
+release folders beyond the newest five. `make-env.sh` writes the variable on new
+servers; one set up before that does not have it.
+
+Fix, on the server:
+
+```bash
+sudo -u deploy sh -c 'mkdir -p /srv/echo/data/dumps && echo BACKUP_DIR=/srv/echo/data/dumps >> /srv/echo/.env'
+```
+
+Then run the deploy again.
+
 ### `password authentication failed for user "echo"`
 
 In the Postgres log: `FATAL:  role "echo" does not exist`, and

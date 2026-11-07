@@ -20,9 +20,11 @@ takes a dump before applying any pending migration.
   lost server loses both. Copying them elsewhere is not set up yet; see
   [Limits](../explanation/limits.md).
 
-`BACKUP_DIR` must point outside the release folder, or the dumps are deleted
-with the release. `make-env.sh` sets it. On a server whose `.env` predates
-that:
+`BACKUP_DIR` must point outside the release folders, or the dumps are deleted
+with the release. `make-env.sh` sets it, and production compose and `deploy.sh`
+both refuse to run without it: the deploy stops with
+`set BACKUP_DIR in /srv/echo/.env to an absolute path outside the releases`.
+On a server whose `.env` predates that:
 
 ```bash
 sudo -u deploy sh -c 'mkdir -p /srv/echo/data/dumps && echo BACKUP_DIR=/srv/echo/data/dumps >> /srv/echo/.env'

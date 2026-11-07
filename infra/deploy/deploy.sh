@@ -68,6 +68,10 @@ rollback() {
 exec 9>"$ROOT/.deploy.lock"
 flock -n 9 || die "another deploy is running"
 [[ -r $ROOT/.env ]] || die "cannot read $ROOT/.env: it must belong to the deploy user"
+backup_dir=$(env_value BACKUP_DIR || true)
+[[ $backup_dir == /* && $backup_dir != "$ROOT/releases" &&
+  $backup_dir != "$ROOT/releases/"* ]] ||
+  die "set BACKUP_DIR in $ROOT/.env to an absolute path outside the releases, e.g. $ROOT/data/dumps"
 [[ ${1:-} == rollback ]] && {
   rollback
   exit

@@ -114,6 +114,17 @@ jobs:
           docker compose --env-file "$RUNNER_TEMP/ci.env" --profile '*' config -q
           docker compose --env-file "$RUNNER_TEMP/ci.env" \
             -f docker-compose.yml -f docker-compose.prod.yml --profile '*' config -q
+      - name: Backups leave the release folder
+        run: |
+          prod=(docker compose -f docker-compose.yml -f docker-compose.prod.yml --profile '*')
+          grep -v '^BACKUP_DIR=' "$RUNNER_TEMP/ci.env" > "$RUNNER_TEMP/no-backup.env"
+          if "${prod[@]}" --env-file "$RUNNER_TEMP/no-backup.env" config -q 2> /dev/null; then
+            echo "production compose renders without BACKUP_DIR" >&2
+            exit 1
+          fi
+          dir=$(grep '^BACKUP_DIR=' "$RUNNER_TEMP/ci.env" | cut -d= -f2-)
+          "${prod[@]}" --env-file "$RUNNER_TEMP/ci.env" config --format json |
+            jq -e --arg dir "$dir" '.services.backup.volumes[] | select(.target == "/app/dumps") | .source == $dir'
       - name: Deploy entry script
         run: infra/deploy/test-server-entry.sh
       - name: Docs links

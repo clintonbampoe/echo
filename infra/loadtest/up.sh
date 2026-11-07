@@ -8,6 +8,7 @@ set -euo pipefail
 cd "$(dirname "$0")/../.."
 
 export APP_DOMAIN=${APP_DOMAIN:-echo.localhost}
+export BACKUP_DIR=${BACKUP_DIR:-$PWD/infra/postgres/backup/dumps}
 docker compose -f docker-compose.yml -f docker-compose.prod.yml -f infra/loadtest/docker-compose.loadtest.yml \
   up -d --build api db nginx alloy loki prometheus tempo grafana
 
