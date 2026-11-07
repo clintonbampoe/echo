@@ -10,7 +10,7 @@ storage:
   path: /data/status.db
 
 endpoint-defaults: &defaults
-  interval: 30s
+  interval: 1m
   client:
     timeout: 5s
     insecure: true
