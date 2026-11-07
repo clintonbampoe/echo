@@ -18,7 +18,7 @@ npm run dev                  # http://localhost:5173
 
 ## In Docker
 
-One nginx serves the whole app (see [Infrastructure](../infrastructure/web-app.md)).
+One nginx serves the whole app (see [Infrastructure](../reference/nginx.md)).
 
 | | Dev | Prod |
 |---|---|---|
