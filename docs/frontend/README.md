@@ -1,8 +1,5 @@
 # Echo Web Client
 
-**Written by:** @clintonbampoe
-**Last updated:** 2026-10-14 by @clintonbampoe
-
 React 19 + TypeScript + Vite. How it is organised and the rules it follows: [Architecture](./architecture.md).
 
 ## Run it

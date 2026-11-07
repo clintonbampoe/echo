@@ -1,10 +1,5 @@
 # JWT Key Rotation
 
-**Written by:** @clintonbampoe
-**Last updated:** 2026-10-21 by @clintonbampoe
-
----
-
 ## How It Works
 
 API signs with one RSA key, validates against **two**: active + previous (grace period).

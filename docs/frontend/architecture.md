@@ -1,8 +1,5 @@
 # Frontend Architecture
 
-**Written by:** @clintonbampoe
-**Last updated:** 2026-10-25 by @clintonbampoe
-
 How the Echo web app is organised. The goal is low cognitive load: open a file and know what it is,
 what it may import, and that it fits on a screen or two.
 

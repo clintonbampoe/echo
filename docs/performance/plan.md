@@ -1,12 +1,16 @@
 # Echo — Performance & Delivery Plan
 
+> **Measured on the earlier 2 vCPU, 4 GB setup.** The server is now 4 vCPU and 8 GB, and the
+> load test has been rerun on it: see [Limits](../explanation/limits.md) for current figures.
+> The method below still applies; the numbers do not.
+
 > **Living plan.** Any agent or human picking this up: read the whole file, then start at
 > **Move 0**. Each move is independently shippable and independently valuable — stop after
 > any of them and the project is better off than before it.
 >
 > Companion files:
 > - `docs/performance/log.md` — the measurement log (the ritual, below)
-> - `docs/infrastructure/index.md` — how the stack fits together
+> - `docs/explanation/topology.md` — how the stack fits together
 > - `docs/frontend/architecture.md` — frontend rules
 >
 > Last updated: 2026-10-21.

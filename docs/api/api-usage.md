@@ -1,9 +1,4 @@
-# Api Usage
-
-**Written by:** @clintonbampoe
-**Last updated**: 2026-09-12 by @clintonbampoe
-
----
+# Using the API
 
 This is the official guide to using the Echo API.
 >**New Developer?** Start with [Getting Started](./getting-started.md) to create your first admin and obtain a JWT Token.

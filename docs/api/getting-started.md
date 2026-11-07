@@ -1,8 +1,5 @@
 # Getting Started with Echo API
 
-**Written by:** @clintonbampoe
-**Last updated:** 2026-09-12 by @clintonbampoe
-
 This is your entry point if you are setting up Echo locally for the first time. The main [API Usage](./api-usage.md) guide assumes you already have a valid JWT token. 
 
 Echo is a multi-tenant system. This means that every user (including Admins) must belong to a Congregation. This guide walks you through the mandatory two-step process to create your first valid credentials.

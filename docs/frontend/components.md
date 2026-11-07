@@ -1,8 +1,5 @@
 # Echo Component Inventory
 
-**Written by:** @clintonbampoe
-**Last updated:** 2026-10-25 by @clintonbampoe
-
 From the 167 desktop design boards. The first table is the design's inventory; "Built in ui/" says what exists in code.
 
 Counts are the number of desktop boards that use each pattern. Class names are the design's own vocabulary (`.btn`, `.chip`...). The mobile and tablet boards reuse the same vocabulary, so this list covers all 485 boards.
