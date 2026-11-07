@@ -25,9 +25,10 @@ docker compose up
 ```
 
 The two scripts write generated keys into `.env`. Without real Resend values,
-email (verification, invitations, password reset) does not send. Open http://localhost:8080 and create a church at `/signup/church`; the
-API reference is at http://localhost:8080/scalar. The full walk-through, with
-the output of each step, is [Getting started](./docs/getting-started.md).
+email (verification, invitations, password reset) does not send. Open
+http://localhost:8080 and create a church at `/signup/church`; the API
+reference is at http://localhost:8080/scalar. The full walk-through, with the
+output of each step, is [Getting started](./docs/getting-started.md).
 
 ## What is in it
 
