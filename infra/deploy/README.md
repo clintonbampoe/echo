@@ -8,18 +8,29 @@
 
 ## First-time server `.env`
 
-Copy the script to the server and run it as the deploy user:
+Copy the script to the server and run it as the deploy user. It asks for the
+domain, an email for certificate notices, the Resend sender address and the
+Resend API key (hidden), shows a summary, and writes `/srv/echo/.env` once you
+confirm:
 
 ```bash
 scp infra/deploy/make-env.sh root@<server>:/root/
-ssh root@<server> 'sudo -u deploy env DOMAIN=example.com EMAIL=you@example.com \
-  RESEND_KEY=<resend api key> MAIL_FROM=<verified sender> bash /root/make-env.sh; rm /root/make-env.sh'
+ssh -t root@<server> 'sudo -u deploy bash /root/make-env.sh; rm /root/make-env.sh'
 ```
 
-It refuses to overwrite an existing `/srv/echo/.env`. It starts with
-`CERTBOT_STAGING=1`; set it to `0` once the staging certificate works.
-Values it does not generate (the Resend key, the domain) come from the four
-variables above; everything else is random.
+To skip the questions, pass the values as flags; with all four it writes
+straight away:
+
+```bash
+ssh root@<server> 'sudo -u deploy bash /root/make-env.sh \
+  --domain example.com --email you@example.com \
+  --mail-from noreply@example.com --resend-key <resend api key>'
+```
+
+`--yes` skips the confirmation when some values are still asked for, `--out`
+changes where it writes, `--help` lists the flags. It refuses to overwrite an
+existing file and starts with `CERTBOT_STAGING=1`; set it to `0` once the
+staging certificate works. Everything except those four values is random.
 
 Install `server-entry.sh` by hand as `/usr/local/bin/echo-server-entry.sh`,
 owned by root, and pin the deploy key to it in `authorized_keys`:
