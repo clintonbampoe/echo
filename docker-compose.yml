@@ -52,6 +52,7 @@ services:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USERNAME: ${DB_USERNAME}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
+      MONITOR_PASSWORD: ${MONITOR_PASSWORD:?}
     volumes: [postgres-data:/var/lib/postgresql]
     healthcheck:
       test: [CMD-SHELL, 'pg_isready -U ${DB_USERNAME} -d ${DB_NAME}']
@@ -126,7 +127,7 @@ services:
     hostname: ${ALLOY_HOST:-echo-app}
     environment:
       GOMEMLIMIT: 200MiB
-      PG_MONITOR_DSN: ${PG_MONITOR_DSN}
+      PG_MONITOR_DSN: postgresql://monitor:${MONITOR_PASSWORD}@db:5432/${DB_NAME}?sslmode=disable
       API_LOG_MIN_SEVERITY: ${API_LOG_MIN_SEVERITY:-13}
       TRACES_SAMPLE_PERCENT: ${TRACES_SAMPLE_PERCENT:-1}
     cgroup: host
