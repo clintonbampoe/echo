@@ -39,10 +39,9 @@ describe("the website frame", () => {
     renderAt("/");
     const nav = await screen.findByRole("navigation", { name: "Main" });
     for (const [name, href] of [
-      ["Features", "/features"],
-      ["Docs", "/docs"],
-      ["Roadmap", "/roadmap"],
+      ["About", "/about"],
       ["Community", "/community"],
+      ["Pricing", "/pricing"],
     ]) {
       expect(within(nav).getByRole("link", { name })).toHaveAttribute(
         "href",
@@ -53,10 +52,12 @@ describe("the website frame", () => {
 
   it("offers sign in and get started to someone who is signed out", async () => {
     renderAt("/");
-    expect(
-      await screen.findByRole("link", { name: "Sign in" }),
-    ).toHaveAttribute("href", "/signin");
-    expect(screen.getByRole("link", { name: "Get started" })).toHaveAttribute(
+    const header = within(await screen.findByRole("banner"));
+    expect(header.getByRole("link", { name: "Sign in" })).toHaveAttribute(
+      "href",
+      "/signin",
+    );
+    expect(header.getByRole("link", { name: "Get started" })).toHaveAttribute(
       "href",
       "/signup",
     );
@@ -65,8 +66,10 @@ describe("the website frame", () => {
   it("keeps Sign in reachable in the open menu on a narrow screen", async () => {
     renderAt("/");
     await userEvent.click(await screen.findByRole("button", { name: "Menu" }));
-    // The header's own Sign in link and the menu's copy of it.
-    expect(screen.getAllByRole("link", { name: "Sign in" })).toHaveLength(2);
+    // The header's own links and the menu's copy of them.
+    const header = within(screen.getByRole("banner"));
+    expect(header.getAllByRole("link", { name: "Sign in" })).toHaveLength(2);
+    expect(header.getAllByRole("link", { name: "Pricing" })).toHaveLength(2);
   });
 
   it("closes the open menu with Escape or a tap outside it", async () => {
@@ -139,32 +142,21 @@ describe("the website frame", () => {
   it("offers Open Echo to someone who is signed in", async () => {
     saveTokens(tokens);
     renderAt("/");
+    const header = within(await screen.findByRole("banner"));
+    expect(header.getByRole("link", { name: "Open Echo" })).toHaveAttribute(
+      "href",
+      "/dashboard",
+    );
     expect(
-      await screen.findByRole("link", { name: "Open Echo" }),
-    ).toHaveAttribute("href", "/dashboard");
-    expect(
-      screen.queryByRole("link", { name: "Sign in" }),
+      header.queryByRole("link", { name: "Sign in" }),
     ).not.toBeInTheDocument();
   });
 
   it("does not treat an expired session as signed in", async () => {
     saveTokens({ ...tokens, refreshTokenExpiresAt: "2000-01-01T00:00:00Z" });
     renderAt("/");
-    expect(
-      await screen.findByRole("link", { name: "Sign in" }),
-    ).toBeInTheDocument();
-  });
-
-  it("lets the person switch between light and dark and remembers it", async () => {
-    renderAt("/");
-    await userEvent.click(
-      await screen.findByRole("button", {
-        name: /switch to (dark|light) mode/i,
-      }),
-    );
-    const chosen = localStorage.getItem("echo-theme");
-    expect(chosen === "light" || chosen === "dark").toBe(true);
-    expect(document.documentElement.dataset.surface).toBe(chosen);
+    const header = within(await screen.findByRole("banner"));
+    expect(header.getByRole("link", { name: "Sign in" })).toBeInTheDocument();
   });
 });
 

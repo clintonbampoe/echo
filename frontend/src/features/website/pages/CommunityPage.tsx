@@ -1,4 +1,4 @@
-import { LinkButton } from "@/ui";
+import { Cta } from "../components/chrome/Cta";
 import { Kicker } from "../components/chrome/Kicker";
 import { LinkRows } from "../components/chrome/LinkRows";
 import { Section } from "../components/chrome/Section";
@@ -24,17 +24,12 @@ export function CommunityPage() {
               Open source, built in the open, shaped by people who run churches.
             </p>
             <div className={styles.actions}>
-              <LinkButton
-                to={GITHUB_URL}
-                size="xl"
-                pill
-                className={styles.primary}
-              >
+              <Cta to={GITHUB_URL} className={styles.primary}>
                 Read the code
-              </LinkButton>
-              <LinkButton to="/contact" size="xl" variant="secondary" pill>
+              </Cta>
+              <Cta to="/contact" variant="secondary">
                 Tell us what you need
-              </LinkButton>
+              </Cta>
             </div>
           </div>
           <div className={styles.art}>

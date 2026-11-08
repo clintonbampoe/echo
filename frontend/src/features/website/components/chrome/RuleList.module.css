@@ -71,6 +71,10 @@
     transform: scale(0);
   }
 }
+/* Without numbers the opened wording lines up with the title. */
+.bare .full {
+  padding-left: 0;
+}
 .plain {
   display: block;
   margin-top: 5px;
@@ -91,6 +95,14 @@
   color: var(--text-2);
 }
 
+@media (max-width: 999px) {
+  .rule {
+    padding: 22px 0;
+  }
+  .summary {
+    font-size: 21px;
+  }
+}
 @media (max-width: 599px) {
   .rule {
     padding: 18px 0;
@@ -100,6 +112,56 @@
   }
   .plain {
     font-size: 15px;
+  }
+}
+.phoneOnly {
+  display: none;
+}
+/* Phone: the rules sit side by side as cards, a little of the next one showing. */
+@media (max-width: 599px) {
+  .swipe {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin: 0 -20px;
+    padding: 2px 20px 6px;
+    overflow-x: auto;
+    border-bottom: 0;
+    scroll-snap-type: x mandatory;
+    scroll-padding-left: 20px;
+    scrollbar-width: none;
+  }
+  .swipe::-webkit-scrollbar {
+    display: none;
+  }
+  .swipe .rule {
+    flex: 0 0 80%;
+    box-sizing: border-box;
+    padding: 18px;
+    border: 1px solid var(--card-line);
+    border-radius: 20px;
+    background: var(--card);
+    scroll-snap-align: start;
+  }
+  .swipe .phoneOnly {
+    display: block;
+  }
+  .swipe .number {
+    display: block;
+    margin-bottom: 6px;
+  }
+  .swipe .name {
+    display: block;
+    font-size: 19px;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+  }
+  .swipe .full p {
+    font-size: 15px;
+    line-height: 1.5;
+  }
+  .swipe .rule[data-read] .number::after {
+    left: 24px;
   }
 }
 @media (prefers-reduced-motion: reduce) {

@@ -13,24 +13,34 @@ function RuleRow({
   rule,
   number,
   open,
+  bare,
+  swipe,
 }: {
   rule: Rule;
   number: number;
   open: boolean;
+  bare: boolean;
+  swipe: boolean;
 }) {
   const [read, setRead] = useState(false);
   return (
     <details
-      className={styles.rule}
+      className={bare ? `${styles.rule} ${styles.bare}` : styles.rule}
       open={open}
       data-read={read || undefined}
       onToggle={(e) => e.currentTarget.open && setRead(true)}
     >
       <summary className={styles.summary}>
         <span>
-          <span className={styles.number}>
-            {String(number).padStart(2, "0")}
-          </span>
+          {(!bare || swipe) && (
+            <span
+              className={
+                bare ? `${styles.number} ${styles.phoneOnly}` : styles.number
+              }
+            >
+              {String(number).padStart(2, "0")}
+            </span>
+          )}
           <span className={styles.name}>{rule.title}</span>
           {rule.summary && <span className={styles.plain}>{rule.summary}</span>}
         </span>
@@ -48,17 +58,28 @@ type Props = {
   rules: readonly Rule[];
   // The first rule starts open.
   openFirst?: boolean;
+  // No numbers: the rows start at the edge.
+  bare?: boolean;
+  // On a phone the rules become cards that swipe sideways, numbered.
+  swipe?: boolean;
 };
 
-export function RuleList({ rules, openFirst = false }: Props) {
+export function RuleList({
+  rules,
+  openFirst = false,
+  bare = false,
+  swipe = false,
+}: Props) {
   return (
-    <div className={styles.rules}>
+    <div className={swipe ? `${styles.rules} ${styles.swipe}` : styles.rules}>
       {rules.map((rule, i) => (
         <RuleRow
           key={rule.title}
           rule={rule}
           number={i + 1}
           open={openFirst && i === 0}
+          bare={bare}
+          swipe={swipe}
         />
       ))}
     </div>

@@ -3,25 +3,18 @@ export const GITHUB_URL = "https://github.com/clintonbampoe/echo";
 // Placeholder address until the real one is set up.
 export const CONTACT_EMAIL = "hello@echo.app";
 
+// The header's three pages. Sign in and Get started follow them.
 export const NAV = [
-  { to: "/features", label: "Features" },
-  { to: "/docs", label: "Docs" },
-  { to: "/roadmap", label: "Roadmap" },
+  { to: "/about", label: "About" },
   { to: "/community", label: "Community" },
+  { to: "/pricing", label: "Pricing" },
 ] as const;
 
-type FooterLink = { label: string; to: string; external?: boolean };
+type FooterLink = { label: string; to: string };
 
-// The footer shows three links; everything else lives behind "More", so no page is orphaned.
-export const FOOTER_MAIN: FooterLink[] = [
+// Three links in the footer; a narrower screen keeps the first two.
+export const FOOTER: FooterLink[] = [
   { label: "Security", to: "/security" },
   { label: "Terms", to: "/terms" },
   { label: "Support Echo", to: "/contact?topic=support" },
-];
-export const FOOTER_MORE: FooterLink[] = [
-  { label: "About", to: "/about" },
-  { label: "Contact", to: "/contact" },
-  { label: "Changelog", to: "/changelog" },
-  { label: "Privacy", to: "/privacy" },
-  { label: "GitHub", to: GITHUB_URL, external: true },
 ];

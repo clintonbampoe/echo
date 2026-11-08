@@ -1,23 +1,20 @@
+/* The header floats over the top of the page, so every band's space above it is counted from the top edge. */
 .header {
-  position: relative;
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
   z-index: 5;
+  height: 84px;
+  padding: 0 64px;
+}
+.bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 22px 64px;
-}
-/* Wide enough for it: the same space on both sides, so the links sit under the middle of the page title. */
-@media (min-width: 1100px) {
-  .header {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-  }
-  .brand {
-    justify-self: start;
-  }
-  .actions {
-    justify-self: end;
-  }
+  max-width: 1200px;
+  height: 100%;
+  margin: 0 auto;
 }
 .brand {
   display: flex;
@@ -31,171 +28,202 @@
   font-weight: 600;
   letter-spacing: -0.02em;
 }
-.nav {
-  position: relative;
-  display: flex;
-  gap: 2px;
-  padding: 4px;
-  border: 1px solid var(--line-2);
-  border-radius: var(--radius-pill);
-  background: color-mix(in srgb, var(--surface) 60%, transparent);
-  backdrop-filter: blur(14px);
+/* The middle ring of the mark swells once when the pointer arrives. */
+@media (hover: hover) {
+  .brand:hover svg circle:nth-child(2) {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: swell 700ms ease-out;
+  }
 }
-.link {
-  padding: 8px 16px;
-  border-radius: var(--radius-pill);
-  font-size: 14.5px;
-  font-weight: 500;
-  color: var(--text-2);
+@keyframes swell {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.22);
+  }
+}
+.right {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
+.link,
+.signin {
+  font-size: 15px;
   text-decoration: none;
+  color: var(--text-2);
+  background: linear-gradient(currentcolor, currentcolor) 0 100% / 0 1px
+    no-repeat;
   transition:
-    background-color var(--fast) ease,
-    color var(--fast) ease;
+    background-size 300ms cubic-bezier(0.2, 0.7, 0.2, 1),
+    color 200ms ease;
 }
 .link:hover,
 .active {
   color: var(--text);
 }
-/* On a wide screen one pill slides between links (useGlide); the links themselves stay plain. */
-.glide {
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 0;
-  border-radius: var(--radius-pill);
-  background: var(--hover);
-  pointer-events: none;
-  transition:
-    transform 380ms var(--ease-spring),
-    width 380ms var(--ease-spring),
-    height 380ms var(--ease-spring),
-    opacity var(--fast) ease;
-}
-.link {
-  position: relative;
-  z-index: 1;
-}
-.link:focus-visible {
-  outline: var(--focus);
-  outline-offset: 2px;
-}
-.actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+@media (hover: hover) {
+  .link:hover {
+    background-size: 100% 1px;
+  }
 }
 .signin {
-  padding: 0 4px;
-  font-size: 14.5px;
-  font-weight: 500;
   color: var(--text);
+  background: none;
   text-decoration: underline;
   text-decoration-color: var(--text-3);
   text-decoration-thickness: 1px;
   text-underline-offset: 4px;
 }
+.link:focus-visible,
+.signin:focus-visible {
+  outline: var(--focus);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
 .cta {
+  height: 40px;
+  padding: 0 18px;
+  font-size: 14px;
   box-shadow: var(--glow);
 }
 .menu {
+  position: relative;
   display: none;
-  height: 38px;
-  padding: 0 16px;
+}
+.menuButton {
+  height: 40px;
+  padding: 0 18px;
   border: 1px solid var(--line-2);
-  border-radius: var(--radius-pill);
-  background: color-mix(in srgb, var(--surface) 60%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--card) 67%, transparent);
   color: var(--text);
+  font: inherit;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
 }
-
-.menuSignin,
-.menuCta {
-  display: none;
+.menuButton:focus-visible {
+  outline: var(--focus);
+  outline-offset: 3px;
 }
-
-/* Behind the open menu: a tap anywhere outside it closes it. Only a narrow screen has a menu. */
+/* The scrim dims and blurs the page behind the open menu; a tap on it closes the menu. */
 .scrim {
-  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  border: 0;
+  background: color-mix(in srgb, var(--line-2) 45%, transparent);
+  backdrop-filter: blur(8px);
+  animation: dim 300ms ease-out both;
 }
-@media (max-width: 999px) {
-  .header {
-    padding: 18px 40px;
-  }
+.panel {
+  position: absolute;
+  top: 50px;
+  right: 0;
+  z-index: 30;
+  box-sizing: border-box;
+  width: 210px;
+  padding: 10px 20px;
+  border: 1px solid var(--line-2);
+  border-radius: 22px;
+  background: var(--card);
+  box-shadow: 0 30px 60px -24px rgb(0 0 0 / 45%);
+  transform-origin: 100% 0;
+  animation: unfold 450ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
-@media (max-width: 819px) {
-  .scrim {
-    position: fixed;
-    inset: 0;
-    z-index: -1;
-    display: block;
-    border: 0;
-    background: color-mix(in srgb, var(--bg) 55%, transparent);
-    backdrop-filter: blur(3px);
-    animation: fade 200ms ease both;
-  }
-  .menu {
-    display: inline-flex;
-    align-items: center;
-  }
-  .signin {
-    display: none;
-  }
-  /* The open menu is a list; each row lights up by itself. */
-  .glide {
-    display: none;
-  }
-  .link:hover,
-  .active {
-    background: var(--hover);
-  }
-  .nav {
-    position: absolute;
-    top: 72px;
-    right: 40px;
-    left: 40px;
-    display: none;
-    flex-direction: column;
-    gap: 2px;
-    padding: 8px;
-    border-radius: 24px;
-    background: var(--surface);
-  }
-  .open {
-    display: flex;
-  }
-  .link {
-    padding: 14px 16px;
-    font-size: 16px;
-  }
-  .menuSignin {
-    display: block;
-  }
+.panel a {
+  display: block;
+  padding: 11px 0;
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  text-decoration: none;
+  opacity: 0;
+  animation: rise 400ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
-@media (max-width: 599px) {
-  .header {
-    padding: 14px 20px;
-  }
-  .nav {
-    right: 20px;
-    left: 20px;
-  }
-  .cta {
-    display: none;
-  }
-  .menuCta {
-    display: inline-flex;
-    margin-top: 6px;
+.panel a:nth-child(1) {
+  animation-delay: 120ms;
+}
+.panel a:nth-child(2) {
+  animation-delay: 180ms;
+}
+.panel a:nth-child(3) {
+  animation-delay: 240ms;
+}
+.panel a:nth-child(4) {
+  animation-delay: 300ms;
+}
+.panel a:focus-visible {
+  outline: var(--focus);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+@keyframes unfold {
+  from {
+    opacity: 0;
+    transform: scale(0.3, 0.2);
   }
 }
-@keyframes fade {
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes dim {
   from {
     opacity: 0;
   }
 }
+@media (max-width: 999px) {
+  .header {
+    padding: 0 40px;
+  }
+  .right,
+  .nav {
+    gap: 24px;
+  }
+}
+@media (max-width: 699px) {
+  .header {
+    height: auto;
+    padding: 34px 20px 0;
+  }
+  .bar {
+    height: auto;
+  }
+  .right {
+    gap: 18px;
+  }
+  .nav,
+  .cta {
+    display: none;
+  }
+  .menu {
+    display: block;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
-  .scrim {
+  .scrim,
+  .panel,
+  .panel a {
+    animation: none;
+    opacity: 1;
+  }
+  .brand:hover svg circle:nth-child(2) {
     animation: none;
   }
 }
