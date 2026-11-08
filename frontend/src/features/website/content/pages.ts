@@ -1,39 +1,38 @@
+import { GITHUB_URL } from "./site";
+
 export const ABOUT = {
-  lead: "Echo began as a way to stop losing track of people. It became a way to see a whole congregation clearly, and to hear it back in plain numbers.",
-  values: [
+  title: "Built so your church can spend its time on people",
+  lead: "Echo is free, open source, and made in the open for churches everywhere.",
+  promises: [
     {
-      title: "Data you can use",
-      text: "Storing records is the start. Getting answers back easily is the point.",
+      title: "Free",
+      summary:
+        "No plans, no per-member fees, no lock-in. The free part stays free.",
+      body: [
+        "Gifts and Echo Sanctuary churches keep Echo going. Nothing a church needs day to day sits behind a paywall.",
+      ],
     },
     {
-      title: "Calm by design",
-      text: "Fewer things on screen, each one useful and pleasant to look at.",
+      title: "Open",
+      summary:
+        "The code is public, and we are plain about how your data is handled.",
+      body: [
+        "Anyone can read the code, check how your data is handled and suggest a fix. Developers are welcome to help build it.",
+      ],
     },
     {
-      title: "Built with churches",
-      text: "Every screen starts from how a congregation actually works.",
+      title: "Yours",
+      summary: "Export it any time, or run it on your own servers.",
+      body: [
+        "Everything you put in comes back out in files you can open anywhere. Or take Echo to your own servers with Echo Sanctuary.",
+      ],
     },
   ],
+  why: [
+    "Most of what keeps a church going is volunteers, time and care. The software meant to help often costs more than a church can spare, and asks it to hand over its members’ data.",
+    "Echo is our answer: the same tools, free, open, and yours. It is built in Accra, and shaped by the churches that use it. Every idea on the roadmap began with someone who runs a church.",
+  ],
 } as const;
-
-export const SECURITY = [
-  {
-    title: "Your data stays yours",
-    text: "Each congregation is a private space. Choose a private deployment and nothing leaves your server.",
-  },
-  {
-    title: "Roles you control",
-    text: "Choose who can see giving, who can edit members and who can only view.",
-  },
-  {
-    title: "Protected by default",
-    text: "Data is encrypted in transit and backed up automatically.",
-  },
-  {
-    title: "Open to inspection",
-    text: "The code is public. Anyone can audit it, and security reports are welcome.",
-  },
-] as const;
 
 export const ROADMAP = [
   {
@@ -111,61 +110,78 @@ export const DOCS = {
 } as const;
 
 export const COMMUNITY = {
-  ways: [
+  // How a change gets from someone's idea to every church, one step at a time.
+  steps: [
     {
-      title: "Read the code",
-      text: "Everything is public. See how Echo works and what it does with your data.",
+      title: "Find a bug or an idea.",
+      text: "Spot something broken, think of a feature churches need, or read the code to see how Echo works.",
     },
     {
-      title: "Suggest a feature",
-      text: "Tell us what your church needs. Ideas are voted on and land on the roadmap.",
+      title: "Make your own copy.",
+      text: "Fork Echo on GitHub. The copy is yours to change, and nothing you do there can break the real one.",
     },
     {
-      title: "Send a fix",
-      text: "Found a bug or want to improve a screen? Open a pull request.",
-    },
-  ],
-  private: [
-    {
-      title: "Your server, your rules",
-      text: "Echo runs on infrastructure you control.",
+      title: "Fix it or build it.",
+      text: "Change the code in your copy. Fix the bug, or add the feature.",
     },
     {
-      title: "Your own domain",
-      text: "Use your church's address, such as app.gracechapel.org.",
+      title: "Send it for review.",
+      text: "Open a pull request. That is how you offer your change back to Echo.",
     },
     {
-      title: "Everything included",
-      text: "Setup, backups and updates, with a named person to call.",
+      title: "We check it, then merge it.",
+      text: "A maintainer reads your change, asks questions if there are any, and merges it into Echo.",
     },
-    { title: "Priority support", text: "Help in hours, not days." },
+    {
+      title: "Every church gets it.",
+      text: "Your change ships to everyone using Echo. You helped shape what comes next.",
+    },
   ],
 } as const;
 
-const PLACEHOLDER =
-  "Placeholder text for design purposes. The final wording will be reviewed before launch.";
-
-export const LEGAL = {
-  privacy: {
-    title: "Privacy policy",
-    sections: [
-      "What we collect",
-      "How we use it",
-      "Who can see it",
-      "Your choices",
-      "Contact",
-    ],
-  },
-  terms: {
-    title: "Terms of service",
-    sections: [
-      "Using Echo",
-      "Your content",
-      "Open source licence",
-      "Ending your account",
-      "Changes",
-    ],
-  },
-  updated: "Updated 24 October 2026",
-  placeholder: PLACEHOLDER,
+export const CONTACT = {
+  lead: "Tell us about your church and what you need. A real person on the team replies, and nothing is sent until you press the button.",
+  steps: [
+    {
+      title: "We talk",
+      summary: "A short conversation about your church.",
+      body: [
+        "No forms to fill in first. Tell us about your church and what you need, and we listen.",
+      ],
+    },
+    {
+      title: "We plan it",
+      summary: "Servers, data and people, agreed together.",
+      body: [
+        "We agree where it runs, what moves across and who needs training, with no surprises.",
+      ],
+    },
+    {
+      title: "We set it up",
+      summary: "And look after it afterwards.",
+      body: [
+        "We install, move your data and train your team, then stay on for updates and backups.",
+      ],
+    },
+  ],
 } as const;
+
+// Where the community page sends people.
+export const COMMUNITY_ROWS = [
+  {
+    title: "Help build it",
+    text: "Open source. Fix a bug, shape what comes next.",
+    to: GITHUB_URL,
+    external: true,
+  },
+  {
+    title: "Support Echo",
+    text: "Gifts go into the servers and the time behind each improvement.",
+    to: "/contact?topic=support",
+  },
+  {
+    title: "Tell us what you need",
+    text: "The roadmap starts with what churches ask for.",
+    to: "/contact",
+  },
+] as const;

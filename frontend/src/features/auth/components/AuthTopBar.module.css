@@ -1,0 +1,177 @@
+.bar {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  height: 84px;
+  padding: 0 40px;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  text-decoration: none;
+}
+.name {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.cta {
+  box-shadow: var(--glow);
+}
+.panel,
+.scrim {
+  display: none;
+}
+.brand:focus-visible,
+.menu:focus-visible {
+  outline: var(--focus);
+  outline-offset: 3px;
+  border-radius: 6px;
+}
+
+.menu {
+  display: inline-flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 18px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  display: block;
+  border: 0;
+  background: color-mix(in srgb, var(--bg) 55%, transparent);
+  backdrop-filter: blur(3px);
+  animation: fade 200ms ease both;
+}
+.panel {
+  position: absolute;
+  top: 68px;
+  right: 40px;
+  display: flex;
+  flex-direction: column;
+  min-width: 210px;
+  padding: 8px 20px;
+  border: 1px solid var(--card-line);
+  border-radius: 22px;
+  background: var(--surface);
+  box-shadow: var(--card-shadow);
+  transform-origin: 100% 0;
+  animation: open 380ms var(--ease-out) both;
+}
+.panelLink {
+  padding: 11px 0;
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  text-decoration: none;
+  opacity: 0;
+  animation: rise 400ms var(--ease-out) both;
+  animation-delay: calc(120ms + var(--i) * 55ms);
+}
+/* Get started sits in the card only where the bar has no button of its own (a phone), as a button. */
+.panelCta {
+  display: none;
+}
+.panelLink:focus-visible {
+  outline: var(--focus);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* A phone: Get started steps into the menu card. */
+@media (max-width: 699px) {
+  .panelCta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 44px;
+    margin: 8px 0 6px;
+    padding: 0;
+    border-radius: 999px;
+    background: var(--text);
+    font-size: 15px;
+    color: var(--bg);
+  }
+  .bar {
+    height: 78px;
+    padding: 0 20px;
+  }
+  .cta {
+    display: none;
+  }
+  .actions {
+    gap: 12px;
+  }
+  .panel {
+    right: 20px;
+  }
+}
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes open {
+  from {
+    opacity: 0;
+    transform: scale(0.3, 0.2);
+  }
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scrim,
+  .panel,
+  .panelLink {
+    animation: none;
+    opacity: 1;
+  }
+}
+html[data-reduce-motion="true"] .scrim,
+html[data-reduce-motion="true"] .panel,
+html[data-reduce-motion="true"] .panelLink {
+  animation: none;
+  opacity: 1;
+}
+
+/* A finger needs more room than the line of text: the touch area grows, the look does not. */
+@media (pointer: coarse) {
+  .brand {
+    position: relative;
+  }
+  .brand::before {
+    content: "";
+    position: absolute;
+    inset: -12px -8px;
+  }
+}

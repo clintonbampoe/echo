@@ -1,10 +1,20 @@
+/* The header floats over the top of the page, so every band's space above it is counted from the top edge. */
 .header {
-  position: relative;
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
   z-index: 5;
+  height: 84px;
+  padding: 0 64px;
+}
+.bar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 22px 64px;
+  max-width: 1200px;
+  height: 100%;
+  margin: 0 auto;
 }
 .brand {
   display: flex;
@@ -18,108 +28,208 @@
   font-weight: 600;
   letter-spacing: -0.02em;
 }
+/* The middle ring of the mark swells once when the pointer arrives. */
+@media (hover: hover) {
+  .brand:hover svg circle:nth-child(2) {
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: swell 700ms ease-out;
+  }
+}
+@keyframes swell {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  40% {
+    transform: scale(1.22);
+  }
+}
+.right {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+}
 .nav {
   display: flex;
-  gap: 2px;
-  padding: 4px;
-  border: 1px solid var(--line-2);
-  border-radius: var(--radius-pill);
-  background: color-mix(in srgb, var(--surface) 60%, transparent);
-  backdrop-filter: blur(14px);
+  align-items: center;
+  gap: 26px;
 }
 .link {
-  padding: 8px 16px;
-  border-radius: var(--radius-pill);
-  font-size: 14.5px;
-  font-weight: 500;
-  color: var(--text-2);
+  font-size: 15px;
   text-decoration: none;
+  color: var(--text-2);
+  background: linear-gradient(currentcolor, currentcolor) 0 100% / 0 1px
+    no-repeat;
   transition:
-    background-color var(--fast) ease,
-    color var(--fast) ease;
+    background-size 300ms cubic-bezier(0.2, 0.7, 0.2, 1),
+    color 200ms ease;
 }
 .link:hover,
 .active {
   color: var(--text);
-  background: var(--hover);
+}
+@media (hover: hover) {
+  .link:hover {
+    background-size: 100% 1px;
+  }
 }
 .link:focus-visible {
   outline: var(--focus);
-  outline-offset: 2px;
-}
-.actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.signin {
-  padding: 0 4px;
-  font-size: 14.5px;
-  font-weight: 500;
-  color: var(--text);
-  text-decoration: underline;
-  text-decoration-color: var(--text-3);
-  text-decoration-thickness: 1px;
-  text-underline-offset: 4px;
+  outline-offset: 4px;
+  border-radius: 4px;
 }
 .cta {
+  height: 40px;
+  padding: 0 18px;
+  font-size: 14px;
   box-shadow: var(--glow);
 }
 .menu {
+  position: relative;
   display: none;
-  height: 38px;
-  padding: 0 16px;
+}
+.menuButton {
+  height: 40px;
+  padding: 0 18px;
   border: 1px solid var(--line-2);
-  border-radius: var(--radius-pill);
-  background: color-mix(in srgb, var(--surface) 60%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--card) 67%, transparent);
   color: var(--text);
+  font: inherit;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
 }
-
-@media (max-width: 999px) {
-  .header {
-    padding: 18px 40px;
+.menuButton:focus-visible {
+  outline: var(--focus);
+  outline-offset: 3px;
+}
+/* The scrim dims and blurs the page behind the open menu; a tap on it closes the menu. */
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  border: 0;
+  background: color-mix(in srgb, var(--line-2) 45%, transparent);
+  backdrop-filter: blur(8px);
+  animation: dim 300ms ease-out both;
+}
+.panel {
+  position: absolute;
+  top: 50px;
+  right: 0;
+  z-index: 30;
+  box-sizing: border-box;
+  width: 210px;
+  padding: 10px 20px;
+  border: 1px solid var(--line-2);
+  border-radius: 22px;
+  background: var(--card);
+  box-shadow: 0 30px 60px -24px rgb(0 0 0 / 45%);
+  transform-origin: 100% 0;
+  animation: unfold 450ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.panel a {
+  display: block;
+  padding: 11px 0;
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  text-decoration: none;
+  opacity: 0;
+  animation: rise 400ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation-delay: calc(120ms + var(--i) * 55ms);
+}
+/* Get started sits in the card only where the header has no button of its own (a phone), as a button. */
+.panel .panelCta {
+  display: none;
+}
+.panel a:focus-visible {
+  outline: var(--focus);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+@keyframes unfold {
+  from {
+    opacity: 0;
+    transform: scale(0.3, 0.2);
   }
 }
-@media (max-width: 819px) {
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes dim {
+  from {
+    opacity: 0;
+  }
+}
+/* Six pages and two buttons no longer fit side by side: the pages fold into Menu, Get started stays. */
+@media (max-width: 1099px) {
+  .header {
+    padding: 0 40px;
+  }
+  .nav {
+    display: none;
+  }
   .menu {
-    display: inline-flex;
-    align-items: center;
-  }
-  .signin {
-    display: none;
-  }
-  .nav {
-    position: absolute;
-    top: 72px;
-    right: 40px;
-    left: 40px;
-    display: none;
-    flex-direction: column;
-    gap: 2px;
-    padding: 8px;
-    border-radius: 24px;
-    background: var(--surface);
-  }
-  .open {
-    display: flex;
-  }
-  .link {
-    padding: 14px 16px;
-    font-size: 16px;
+    display: block;
   }
 }
-@media (max-width: 599px) {
-  .header {
-    padding: 14px 20px;
+@media (max-width: 699px) {
+  .panel .panelCta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 44px;
+    margin: 8px 0 6px;
+    padding: 0;
+    border-radius: 999px;
+    background: var(--text);
+    font-size: 15px;
+    color: var(--bg);
   }
-  .nav {
-    right: 20px;
-    left: 20px;
+  .header {
+    height: auto;
+    padding: 34px 20px 0;
+  }
+  .bar {
+    height: auto;
+  }
+  .right {
+    gap: 14px;
   }
   .cta {
     display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scrim,
+  .panel,
+  .panel a {
+    animation: none;
+    opacity: 1;
+  }
+  .brand:hover svg circle:nth-child(2) {
+    animation: none;
+  }
+}
+
+/* A finger needs more room than the line of text: the touch area grows, the look does not. */
+@media (pointer: coarse) {
+  .brand {
+    position: relative;
+  }
+  .brand::before {
+    content: "";
+    position: absolute;
+    inset: -12px -8px;
   }
 }

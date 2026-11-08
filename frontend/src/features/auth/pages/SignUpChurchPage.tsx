@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { Navigate, useNavigate } from "react-router-dom";
 import type { ApiError } from "@/lib/api";
 import { handleSubmitError } from "@/lib/forms";
-import { Alert, Button } from "@/ui";
-import { BackLink } from "../components/AuthLinks";
+import { Alert } from "@/ui";
+import { AuthLinks } from "../components/AuthLinks";
 import { AuthScreen } from "../components/AuthScreen";
 import {
   useRegisterCongregation,
@@ -17,6 +17,11 @@ import {
   type ChurchValues,
 } from "../forms/schema";
 import { ChurchFields } from "./ChurchFields";
+import { churchRequest } from "../forms/churchRequest";
+import { ChurchBorn } from "../components/ChurchBorn";
+import { ChurchButtons } from "../components/ChurchButtons";
+import { useChurchParts } from "../hooks/useChurchParts";
+import { CHURCH_PARTS } from "../model/churchParts";
 import { useSignUp } from "../hooks/signUp";
 import styles from "./form.module.css";
 
@@ -44,70 +49,94 @@ function ChurchForm({ account }: { account: AccountValues }) {
   const register = useRegisterCongregation();
   const signInAfterRegister = useSignInAfterRegister();
   const [problem, setProblem] = useState<ApiError | null>(null);
+  const [born, setBorn] = useState("");
   const form = useForm<ChurchValues>({
     resolver: zodResolver(churchSchema),
     defaultValues: { orgType: "Church", region: "GreaterAccra" },
   });
 
+  // The small line over the title becomes the church's name as it is typed.
+  const churchName = useWatch({ control: form.control, name: "name" }) ?? "";
+  const { phone, part, setPart, partial, next, showFirstError } =
+    useChurchParts(form);
+
   async function onSubmit(v: ChurchValues) {
     setProblem(null);
     try {
-      await register.mutateAsync({
-        congregationDto: {
-          name: v.name,
-          orgType: v.orgType,
-          phoneNumber: v.phoneNumber,
-          emailAddress: v.churchEmail,
-          region: v.region,
-          city: v.city,
-          town: v.town,
-          gpsAddress: v.gpsAddress,
-        },
-        userDto: {
-          firstName: account.firstName,
-          lastName: account.lastName,
-          emailAddress: account.email,
-          password: account.password,
-        },
-      });
+      await register.mutateAsync(churchRequest(v, account));
       const signedIn = await signInAfterRegister(
         account.email,
         account.password,
       );
+      // Let the church have its moment before moving on.
+      setBorn(v.name);
+      await new Promise((done) => window.setTimeout(done, 900));
       navigate("/verify", { state: { email: account.email, signedIn } });
     } catch (e) {
       handleSubmitError(e, form.setError, FIELD_MAP, setProblem);
+      showFirstError();
     }
   }
 
   return (
     <AuthScreen
+      kicker={churchName.trim() || "Your church"}
       title="Tell us about your church"
-      text="Step 2 of 2. You can change all of this later."
-      links={<BackLink to="/signup">Back</BackLink>}
+      text={
+        phone
+          ? `Step 2 of 2, part ${part + 1} of ${CHURCH_PARTS.length}. You can change all of this later.`
+          : "Step 2 of 2. You can change all of this later."
+      }
+      links={
+        <AuthLinks
+          heading="Need to step back?"
+          items={[
+            {
+              to: "/signup",
+              label: phone ? "Back to step 1" : "Back",
+              hint: "Your details are kept.",
+            },
+            {
+              to: "/signin",
+              label: "Sign in",
+              hint: "Already have an account? Sign in.",
+            },
+          ]}
+        />
+      }
     >
-      {problem && (
-        <Alert title="We could not create your account">
-          {problem.message}
-        </Alert>
+      {born ? (
+        <ChurchBorn name={born} />
+      ) : (
+        <>
+          {problem && (
+            <Alert title="We could not create your account">
+              {problem.message}
+            </Alert>
+          )}
+          <form
+            onSubmit={
+              partial
+                ? (e) => {
+                    e.preventDefault();
+                    void next();
+                  }
+                : form.handleSubmit(onSubmit)
+            }
+            noValidate
+            className={`${styles.form} stagger`}
+          >
+            <ChurchFields form={form} part={phone ? part : undefined} />
+            <ChurchButtons
+              part={part}
+              partial={partial}
+              phone={phone}
+              loading={register.isPending}
+              onBack={() => setPart(part - 1)}
+            />
+          </form>
+        </>
       )}
-      <form
-        onSubmit={form.handleSubmit(onSubmit)}
-        noValidate
-        className={styles.form}
-      >
-        <ChurchFields form={form} />
-        <Button
-          type="submit"
-          size="lg"
-          pill
-          block
-          loading={register.isPending}
-          className={styles.submit}
-        >
-          Create church
-        </Button>
-      </form>
     </AuthScreen>
   );
 }

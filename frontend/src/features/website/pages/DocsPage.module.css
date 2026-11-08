@@ -108,7 +108,13 @@
   }
 }
 @media (max-width: 599px) {
+  /* One column, with less air in each card so six topics do not fill three screens. */
   .topics {
     grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .topic {
+    padding: 18px 20px;
+    border-radius: 20px;
   }
 }

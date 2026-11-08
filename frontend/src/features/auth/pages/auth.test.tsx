@@ -156,6 +156,44 @@ describe("sign up", () => {
     expect(router.state.location.pathname).toBe("/signup/church");
   });
 
+  it("on a phone, asks for the church in three short parts", async () => {
+    vi.stubGlobal("matchMedia", (q: string) => ({
+      matches: q.includes("599"),
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    }));
+    renderAt("/signup");
+    const password = makePassword();
+    await userEvent.type(await screen.findByLabelText("First name"), "Ama");
+    await userEvent.type(screen.getByLabelText("Last name"), "Mensah");
+    await userEvent.type(
+      screen.getByLabelText("Email address"),
+      "ama@example.com",
+    );
+    await userEvent.type(screen.getByLabelText("Password"), password);
+    await userEvent.type(screen.getByLabelText("Confirm password"), password);
+    await userEvent.click(screen.getByRole("button", { name: "Continue" }));
+
+    // Part 1: the name. It cannot be skipped, and nothing from the other parts is on screen.
+    await screen.findByLabelText("Church name");
+    expect(screen.queryByLabelText("Phone")).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Continue" }));
+    expect(
+      await screen.findByText("Enter your church name."),
+    ).toBeInTheDocument();
+
+    await userEvent.type(screen.getByLabelText("Church name"), "Grace Chapel");
+    await userEvent.click(screen.getByRole("button", { name: "Continue" }));
+    expect(await screen.findByLabelText("Phone")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Church name")).not.toBeInTheDocument();
+
+    // Back keeps what was typed.
+    await userEvent.click(screen.getByRole("button", { name: "Back" }));
+    expect(await screen.findByLabelText("Church name")).toHaveValue(
+      "Grace Chapel",
+    );
+  });
+
   it("does not leave step 1 when the two passwords differ", async () => {
     const router = renderAt("/signup");
     const password = makePassword();
@@ -604,7 +642,7 @@ describe("links on auth screens", () => {
   it("offers a way back to the landing page", async () => {
     renderAt("/signin");
     expect(
-      await screen.findByRole("link", { name: "Back to home" }),
+      await screen.findByRole("link", { name: "Back to site" }),
     ).toHaveAttribute("href", "/");
   });
 
@@ -616,5 +654,74 @@ describe("links on auth screens", () => {
     expect(
       screen.getByRole("link", { name: "Join with an invitation code" }),
     ).toHaveAttribute("href", "/join");
+  });
+});
+
+describe("the layout follows the screen", () => {
+  afterEach(() => vi.unstubAllGlobals());
+  const narrow = () =>
+    vi.stubGlobal("matchMedia", () => ({
+      matches: false,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    }));
+
+  it("shows every other way in, as rows, on a wide screen", async () => {
+    renderAt("/signin");
+    expect(
+      await screen.findByRole("heading", { name: "New to Echo?" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("link", { name: "Join with an invitation code" }),
+    ).toBeInTheDocument();
+  });
+
+  it("shows only the main link on a tablet or phone", async () => {
+    narrow();
+    renderAt("/signin");
+    expect(
+      await screen.findByRole("link", { name: "Create a church account" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: "Join with an invitation code" }),
+    ).not.toBeInTheDocument();
+  });
+});
+
+describe("small kindnesses", () => {
+  it("finishes a mail domain on Tab", async () => {
+    renderAt("/signup");
+    const email = await screen.findByLabelText("Email address");
+    await userEvent.type(email, "abena@gm");
+    await userEvent.tab();
+    expect(email).toHaveValue("abena@gmail.com");
+  });
+
+  it("carries the typed email from sign in to forgot password", async () => {
+    renderAt("/signin");
+    await userEvent.type(
+      await screen.findByLabelText("Email address"),
+      "ama@example.com",
+    );
+    await userEvent.click(
+      screen.getByRole("link", { name: "Forgot password?" }),
+    );
+    // The sign-in page has the same label, so wait for the forgot page's own button first.
+    const change = await screen.findByRole("button", { name: "Change" });
+    const email = screen.getByLabelText("Email address");
+    expect(email).toHaveValue("ama@example.com");
+    // It is shown, not asked for again: locked until the person chooses to change it.
+    expect(email).toHaveAttribute("readonly");
+    await userEvent.click(change);
+    expect(screen.getByLabelText("Email address")).not.toHaveAttribute(
+      "readonly",
+    );
+  });
+
+  it("asks for the email on forgot password when none was carried", async () => {
+    renderAt("/forgot");
+    const email = await screen.findByLabelText("Email address");
+    expect(email).not.toHaveAttribute("readonly");
+    expect(screen.queryByRole("button", { name: "Change" })).toBeNull();
   });
 });

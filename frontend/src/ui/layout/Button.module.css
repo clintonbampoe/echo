@@ -127,3 +127,16 @@
     height: var(--control);
   }
 }
+
+/* Keyboard focus: the outline stays, and a ring spreads out from the button, like an echo. */
+.button:focus-visible {
+  animation: focusEcho 1.2s var(--ease-out) 2;
+}
+@keyframes focusEcho {
+  from {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 45%, transparent);
+  }
+  to {
+    box-shadow: 0 0 0 14px transparent;
+  }
+}

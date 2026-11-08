@@ -1,0 +1,64 @@
+/* The label, the dots and the result share one cell, so the button never changes width. */
+.submit {
+  height: 52px;
+  box-shadow: var(--glow);
+}
+.stack {
+  display: grid;
+  place-items: center;
+}
+.stack > * {
+  grid-area: 1 / 1;
+  transition:
+    opacity var(--t-base) var(--ease-soft),
+    transform var(--t-base) var(--ease-out);
+}
+.dots {
+  display: flex;
+  gap: 5px;
+  opacity: 0;
+}
+.dots i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  animation: dot 900ms ease-in-out infinite;
+}
+.dots i:nth-child(2) {
+  animation-delay: 150ms;
+}
+.dots i:nth-child(3) {
+  animation-delay: 300ms;
+}
+@keyframes dot {
+  0%,
+  80%,
+  100% {
+    opacity: 0.3;
+    transform: scale(0.7);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.stack[data-state="wait"] .label,
+.stack[data-state="done"] .label {
+  opacity: 0;
+}
+.stack[data-state="wait"] .label {
+  transform: translateY(-6px);
+}
+.stack[data-state="wait"] .dots {
+  opacity: 1;
+}
+.result {
+  animation: resultIn var(--t-base) var(--ease-out) backwards;
+}
+@keyframes resultIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}

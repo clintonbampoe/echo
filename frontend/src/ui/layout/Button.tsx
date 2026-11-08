@@ -1,11 +1,15 @@
-import type { ComponentProps } from "react";
+import type { ComponentProps, ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { Icon } from "./Icon";
 import { buttonClass, type ButtonStyle } from "./buttonClass";
 import styles from "./Button.module.css";
 
 type ButtonProps = ComponentProps<"button"> &
-  ButtonStyle & { loading?: boolean };
+  ButtonStyle & {
+    loading?: boolean;
+    // What shows while loading, in place of the spinner. `false` for none: the caller draws its own wait.
+    indicator?: ReactNode;
+  };
 
 export function Button({
   variant,
@@ -13,6 +17,7 @@ export function Button({
   pill,
   block,
   loading,
+  indicator,
   children,
   className,
   disabled,
@@ -28,7 +33,10 @@ export function Button({
         .filter(Boolean)
         .join(" ")}
     >
-      {loading && <Icon name="spinner" size={18} className={styles.spinner} />}
+      {loading &&
+        (indicator ?? (
+          <Icon name="spinner" size={18} className={styles.spinner} />
+        ))}
       {children}
     </button>
   );

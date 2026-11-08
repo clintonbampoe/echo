@@ -29,9 +29,46 @@
   color: var(--text-2);
 }
 
+/* A phone's tap-to-open row. */
+.fold {
+  border-top: 1px solid var(--line);
+}
+.summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 0;
+  cursor: pointer;
+  list-style: none;
+}
+.summary::-webkit-details-marker {
+  display: none;
+}
+.summary::after {
+  content: "+";
+  font-size: 20px;
+  color: var(--text-3);
+}
+.fold details[open] .summary::after {
+  content: "–";
+}
+.fold .text {
+  padding-bottom: 20px;
+}
+.summary:focus-visible {
+  outline: var(--focus);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
 @media (max-width: 999px) {
   .columns {
     grid-template-columns: 1fr;
     gap: 28px;
+  }
+}
+@media (max-width: 599px) {
+  .columns {
+    gap: 0;
   }
 }

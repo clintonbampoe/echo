@@ -1,0 +1,93 @@
+.card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 48px;
+  box-sizing: border-box;
+  padding: 48px;
+  border: 1px solid var(--card-line);
+  border-radius: 24px;
+  background: var(--card);
+  box-shadow: var(--card-shadow);
+}
+.words {
+  max-width: 520px;
+}
+.title {
+  margin: 0;
+  font-size: 44px;
+  font-weight: 600;
+  line-height: 1.02;
+  letter-spacing: -0.045em;
+}
+.text {
+  margin: 14px 0 0;
+  font-size: 17px;
+  line-height: 1.5;
+  color: var(--text-2);
+}
+.give {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+.switch {
+  display: flex;
+  box-sizing: border-box;
+  min-width: 260px;
+  padding: 4px;
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  font-size: 15px;
+}
+.option {
+  flex: 1;
+  padding: 10px 20px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-2);
+  font: inherit;
+  cursor: pointer;
+  transition:
+    background-color 300ms var(--ease-out),
+    color 300ms var(--ease-out);
+}
+.option[aria-checked="true"] {
+  background: var(--text);
+  color: var(--card);
+}
+.option:focus-visible {
+  outline: var(--focus);
+  outline-offset: 2px;
+}
+.action {
+  margin-top: 12px;
+}
+@media (max-width: 999px) {
+  .card {
+    gap: 48px;
+    padding: 36px;
+  }
+  .title {
+    font-size: 36px;
+  }
+  .switch {
+    min-width: 230px;
+  }
+}
+@media (max-width: 599px) {
+  .card {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 26px;
+    padding: 22px;
+  }
+  .title {
+    font-size: 28px;
+  }
+  .switch {
+    min-width: 0;
+  }
+}

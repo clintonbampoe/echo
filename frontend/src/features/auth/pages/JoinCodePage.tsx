@@ -3,8 +3,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { isApiError } from "@/lib/api";
-import { Alert, Button, Field } from "@/ui";
-import { BackLink } from "../components/AuthLinks";
+import { Alert, Field } from "@/ui";
+import { AuthLinks } from "../components/AuthLinks";
+import { SubmitButton } from "../components/SubmitButton";
 import { AuthScreen } from "../components/AuthScreen";
 import { useCheckInvitation } from "../hooks/mutations";
 import { codeSchema, type CodeValues } from "../forms/schema";
@@ -35,7 +36,23 @@ export function JoinCodePage() {
     <AuthScreen
       title="Enter your invitation code"
       text="Your church leader sent you a link or a code."
-      links={<BackLink />}
+      links={
+        <AuthLinks
+          heading="No code yet?"
+          items={[
+            {
+              to: "/signin",
+              label: "Back to sign in",
+              hint: "Already have an account? Sign in.",
+            },
+            {
+              to: "/signup",
+              label: "Create a church account",
+              hint: "Start a new church on Echo.",
+            },
+          ]}
+        />
+      }
     >
       {problem === "missing" && (
         <Alert title="We could not find that invitation">
@@ -51,7 +68,7 @@ export function JoinCodePage() {
       <form
         onSubmit={handleSubmit(onSubmit)}
         noValidate
-        className={styles.form}
+        className={`${styles.form} ${styles.code} stagger`}
       >
         <Field
           label="Invitation code"
@@ -61,16 +78,9 @@ export function JoinCodePage() {
           error={errors.code?.message}
           {...register("code")}
         />
-        <Button
-          type="submit"
-          size="lg"
-          pill
-          block
-          loading={isSubmitting}
-          className={styles.submit}
-        >
+        <SubmitButton loading={isSubmitting} className={styles.submit}>
           Continue
-        </Button>
+        </SubmitButton>
       </form>
     </AuthScreen>
   );

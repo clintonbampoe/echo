@@ -1,0 +1,274 @@
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* The line over the steps: a dot per step, and a stroke that fills towards the one you are on. */
+.track {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+/* The grey line under everything, from the first dot to the last. */
+.track::before {
+  content: "";
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: calc(100% * 5 / 6);
+  height: 2px;
+  background: var(--line-2);
+}
+.node {
+  position: relative;
+  padding-top: 26px;
+  color: var(--text-3);
+  transition: color var(--t-base) var(--ease-soft);
+}
+/* The dark line over the grey one, drawn as far as you have got (--p, smoothly, not step by step). */
+.track::after {
+  content: "";
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  width: calc(100% * 5 / 6);
+  height: 2px;
+  background: var(--text);
+  transform: scaleX(calc(var(--p, 0) / 5));
+  transform-origin: left;
+}
+/* The dot: an empty ring, filled once its step has been reached. */
+.node::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  box-sizing: border-box;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--line-2);
+  border-radius: 50%;
+  background: var(--bg);
+  transition:
+    background var(--t-base) var(--ease-soft),
+    border-color var(--t-base) var(--ease-soft);
+}
+.node[data-reached] {
+  color: var(--text);
+}
+.node[data-reached]::before {
+  border-color: var(--text);
+  background: var(--text);
+}
+/* The step you are on rings out, like the mark. */
+.node::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  box-sizing: border-box;
+  width: 14px;
+  height: 14px;
+  border: 1.5px solid var(--text);
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+}
+.node[data-current]::after {
+  animation: ping 2.8s ease-out 300ms infinite;
+}
+@keyframes ping {
+  0% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.8);
+  }
+}
+
+.window {
+  scrollbar-width: none;
+  outline: 0;
+}
+.window::-webkit-scrollbar {
+  display: none;
+}
+.window:focus-visible {
+  outline: var(--focus);
+  outline-offset: 8px;
+  border-radius: 4px;
+}
+.step {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 28px;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  /* A step fades as it leaves or arrives, in step with the scroll (--a: 0 in view, 1 a step away). Only
+     what is inside moves: the step itself must stay put, it is the snap stop. */
+  opacity: calc(1 - var(--a, 0) * 0.74);
+}
+.step > * {
+  transform: translate3d(0, calc(var(--d, 0) * -16px), 0);
+}
+.step > svg {
+  transform: translate3d(0, calc(var(--d, 0) * -26px), 0)
+    scale(calc(1 - var(--a, 0) * 0.2)) rotate(calc(var(--d, 0) * 8deg));
+}
+.count {
+  font-size: 13px;
+  color: var(--text-3);
+}
+.title {
+  margin: 8px 0 0;
+  font-weight: 600;
+  letter-spacing: -0.045em;
+  line-height: 1.02;
+}
+.text {
+  max-width: 560px;
+  margin: 10px 0 0;
+  line-height: 1.45;
+  color: var(--text-2);
+}
+.icon {
+  flex: none;
+  overflow: visible;
+  color: var(--text);
+}
+.rip {
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0;
+}
+.step[data-current] .rip {
+  animation: ripple 3.2s ease-out 400ms infinite;
+}
+@keyframes ripple {
+  0% {
+    opacity: 0.7;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(8);
+  }
+}
+.hint {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-3);
+  transition: opacity var(--t-base) ease;
+}
+.hint[data-gone] {
+  opacity: 0;
+}
+
+/* A wide screen: a window as tall as one step, scrolled up and down. */
+@media (min-width: 1000px) {
+  .track {
+    font-size: 15px;
+  }
+  .window {
+    height: 250px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    scroll-snap-type: y mandatory;
+  }
+  .step {
+    height: 250px;
+  }
+  .title {
+    font-size: 44px;
+  }
+  .text {
+    font-size: 20px;
+  }
+  .icon {
+    width: 96px;
+    height: 96px;
+  }
+}
+/* Tablet and phone: the steps sit side by side and are swiped. */
+@media (max-width: 999px) {
+  .window {
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+  }
+  .step {
+    flex: 0 0 100%;
+  }
+  .title {
+    font-size: 34px;
+  }
+  .text {
+    font-size: 17px;
+  }
+  .icon {
+    width: 64px;
+    height: 64px;
+  }
+}
+@media (max-width: 599px) {
+  .track {
+    font-size: 11.5px;
+  }
+  .title {
+    font-size: 26px;
+  }
+  .text {
+    font-size: 15px;
+  }
+  .icon {
+    width: 48px;
+    height: 48px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .node::after,
+  .step,
+  .hint {
+    transition: none;
+  }
+  .step[data-current] .rip {
+    animation: none;
+  }
+}
+html[data-reduce-motion="true"] .node::after,
+html[data-reduce-motion="true"] .step,
+html[data-reduce-motion="true"] .hint {
+  transition: none;
+}
+html[data-reduce-motion="true"] .step[data-current] .rip {
+  animation: none;
+}
+@media (max-width: 599px) {
+  .track {
+    font-size: 11.5px;
+  }
+  .title {
+    font-size: 26px;
+  }
+  .text {
+    font-size: 15px;
+  }
+  .icon {
+    width: 48px;
+    height: 48px;
+  }
+}

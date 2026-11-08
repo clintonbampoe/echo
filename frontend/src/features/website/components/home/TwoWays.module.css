@@ -1,0 +1,185 @@
+.head {
+  max-width: 640px;
+}
+.title {
+  max-width: 760px;
+  margin: 18px 0 0;
+  font-size: 56px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.05em;
+}
+.lead {
+  max-width: 480px;
+  margin: 18px 0 0;
+  font-size: 19px;
+  line-height: 1.45;
+  color: var(--text-2);
+}
+.cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 50px;
+}
+.card {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  padding: 32px;
+  border: 1px solid var(--card-line);
+  border-radius: 24px;
+  background: var(--card);
+  box-shadow: var(--card-shadow);
+}
+/* The open part fills what the summary leaves, so the two buttons sit on one line (browsers without
+   ::details-content simply let them follow their lists). */
+.card::details-content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+.summary {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  list-style: none;
+}
+.summary::-webkit-details-marker {
+  display: none;
+}
+.name {
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+}
+.tag {
+  font-size: 15px;
+  color: var(--text-2);
+}
+.points {
+  flex: 1;
+  margin: 20px 0 26px;
+  padding: 0;
+  list-style: none;
+}
+.points li {
+  display: flex;
+  gap: 12px;
+  padding: 12px 0;
+  border-top: 1px solid var(--card-line);
+  font-size: 16px;
+  color: var(--text-2);
+}
+.points span {
+  flex: none;
+  min-width: 22px;
+  padding-top: 3px;
+  font-size: 13px;
+  color: var(--text-3);
+}
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 28px;
+  margin-top: 22px;
+}
+/* Two narrow cards side by side: the name keeps its line and the tag sits under it, never beside it. */
+@media (min-width: 600px) and (max-width: 1099px) {
+  .summary {
+    display: block;
+  }
+  .name {
+    display: block;
+    white-space: nowrap;
+  }
+  .tag {
+    display: block;
+    margin-top: 4px;
+  }
+}
+@media (max-width: 999px) {
+  .title {
+    font-size: 44px;
+  }
+  .lead {
+    font-size: 19px;
+  }
+  .cards {
+    margin-top: 44px;
+  }
+}
+@media (min-width: 600px) and (max-width: 999px) {
+  .card {
+    padding: 30px;
+  }
+  .name {
+    font-size: 28px;
+  }
+}
+@media (max-width: 599px) {
+  .title {
+    font-size: 30px;
+  }
+  .lead {
+    font-size: 16px;
+  }
+  .cards {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+    margin-top: 30px;
+  }
+  .card {
+    padding: 22px;
+  }
+  .summary {
+    display: block;
+    position: relative;
+    cursor: pointer;
+  }
+  .name {
+    display: block;
+    font-size: 24px;
+  }
+  .tag {
+    display: block;
+    margin-top: 4px;
+  }
+  /* A plus that turns into a minus as the card opens. */
+  .summary::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: 0;
+    box-sizing: border-box;
+    width: 28px;
+    height: 28px;
+    margin-top: -14px;
+    border: 1px solid var(--line-2);
+    border-radius: 50%;
+    color: var(--text);
+    background:
+      linear-gradient(currentcolor, currentcolor) center / 10px 1.5px no-repeat,
+      linear-gradient(currentcolor, currentcolor) center / 1.5px 10px no-repeat;
+    transition:
+      transform 350ms var(--ease-out),
+      background-size 350ms var(--ease-out);
+  }
+  .card[open] .summary::after {
+    transform: rotate(180deg);
+    background-size:
+      10px 1.5px,
+      1.5px 0;
+  }
+  .points {
+    margin: 16px 0 20px;
+  }
+}
+@media (hover: hover) {
+  @media (min-width: 600px) {
+    .summary {
+      cursor: default;
+    }
+  }
+}

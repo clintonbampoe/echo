@@ -1,14 +1,28 @@
+import type { MouseEvent } from "react";
+import { flushSync } from "react-dom";
 import { useTheme } from "../hooks/theme";
 import styles from "./ThemeToggle.module.css";
 
 // A round moon/sun button. Shows what you will switch to.
 export function ThemeToggle({ className }: { className?: string }) {
   const { theme, toggle } = useTheme();
+  // The new theme spreads out from the button, where the finger or pointer was.
+  function spread(e: MouseEvent<HTMLButtonElement>) {
+    const root = document.documentElement;
+    const still =
+      typeof matchMedia !== "function" ||
+      matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (still || !document.startViewTransition) return toggle();
+    root.style.setProperty("--vt-x", `${e.clientX}px`);
+    root.style.setProperty("--vt-y", `${e.clientY}px`);
+    // Rendering is paused while the update runs, so the change has to land at once (no waiting for a frame).
+    document.startViewTransition(() => flushSync(toggle));
+  }
   const toDark = theme === "light";
   return (
     <button
       type="button"
-      onClick={toggle}
+      onClick={spread}
       className={[styles.toggle, className].filter(Boolean).join(" ")}
       aria-label={toDark ? "Switch to dark mode" : "Switch to light mode"}
     >

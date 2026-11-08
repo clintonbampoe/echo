@@ -1,7 +1,5 @@
 import { isRouteErrorResponse } from "react-router-dom";
 import { isApiError } from "@/lib/api";
-import type { IconName } from "@/ui";
-
 export type ErrorKind =
   "notFound" | "forbidden" | "offline" | "server" | "stale" | "crash";
 
@@ -25,7 +23,8 @@ export function classify(error: unknown): ErrorKind {
 }
 
 export type ErrorView = {
-  icon: IconName;
+  // The small line over the title.
+  kicker: string;
   broken: boolean;
   title: string;
   text: string;
@@ -36,15 +35,15 @@ export type ErrorView = {
 
 export const errorViews: Record<ErrorKind, ErrorView> = {
   notFound: {
-    icon: "search",
+    kicker: "Wrong turn",
     broken: false,
-    title: "We could not find that page",
-    text: "The link may be old, or the address may have a typo.",
+    title: "404 page not found",
+    text: "The link may be old, or the address has a typo. Nothing is lost.",
     fix: "leave",
     reload: "",
   },
   forbidden: {
-    icon: "shield",
+    kicker: "No access",
     broken: false,
     title: "You do not have access to this",
     text: "Your role cannot open this page. Ask an admin of your church if you need it.",
@@ -52,7 +51,7 @@ export const errorViews: Record<ErrorKind, ErrorView> = {
     reload: "",
   },
   offline: {
-    icon: "link",
+    kicker: "Offline",
     broken: true,
     title: "You seem to be offline",
     text: "Check your connection, then try again. Nothing you have saved is lost.",
@@ -60,7 +59,7 @@ export const errorViews: Record<ErrorKind, ErrorView> = {
     reload: "Try again",
   },
   server: {
-    icon: "alert",
+    kicker: "Error 500",
     broken: true,
     title: "Something went wrong on our side",
     text: "It is not you. Give it a moment and try again.",
@@ -68,7 +67,7 @@ export const errorViews: Record<ErrorKind, ErrorView> = {
     reload: "Try again",
   },
   stale: {
-    icon: "clock",
+    kicker: "New version",
     broken: false,
     title: "Echo has been updated",
     text: "Reload to get the latest version. It takes a second.",
@@ -76,7 +75,7 @@ export const errorViews: Record<ErrorKind, ErrorView> = {
     reload: "Reload",
   },
   crash: {
-    icon: "alert",
+    kicker: "Something broke",
     broken: true,
     title: "This page hit a problem",
     text: "Your data is safe. Try again, and if it keeps happening, tell your church admin.",

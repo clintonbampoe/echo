@@ -4,8 +4,9 @@ import { useForm, useWatch } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import type { ApiError } from "@/lib/api";
 import { handleSubmitError } from "@/lib/forms";
-import { Alert, Button, Field } from "@/ui";
+import { Alert, Field } from "@/ui";
 import { AuthLinks } from "../components/AuthLinks";
+import { SubmitButton } from "../components/SubmitButton";
 import { AuthScreen } from "../components/AuthScreen";
 import { NewPasswordFields } from "../components/NewPasswordFields";
 import {
@@ -32,6 +33,26 @@ export function JoinPage() {
     <InvitationGate code={code}>
       {(invitation) => <JoinForm code={code} invitation={invitation} />}
     </InvitationGate>
+  );
+}
+
+function JoinLinks() {
+  return (
+    <AuthLinks
+      heading="Already have an account?"
+      items={[
+        {
+          to: "/signin",
+          label: "Sign in",
+          hint: "Welcome back. Pick up where you left off.",
+        },
+        {
+          to: "/join",
+          label: "Use a different code",
+          hint: "Check the code and try again.",
+        },
+      ]}
+    />
   );
 }
 
@@ -80,26 +101,28 @@ function JoinForm({
           ? `${invitation.invitedBy} invited you to join ${invitation.congregationName} on Echo.`
           : `You were invited to join ${invitation.congregationName} on Echo.`
       }
-      links={<AuthLinks items={[{ to: "/signin", label: "Sign in" }]} />}
+      links={<JoinLinks />}
     >
       {problem && <JoinProblem problem={problem} />}
       <form
         onSubmit={form.handleSubmit(onSubmit)}
         noValidate
-        className={styles.form}
+        className={`${styles.form} stagger`}
       >
-        <Field
-          label="First name"
-          autoComplete="given-name"
-          error={errors.firstName?.message}
-          {...form.register("firstName")}
-        />
-        <Field
-          label="Last name"
-          autoComplete="family-name"
-          error={errors.lastName?.message}
-          {...form.register("lastName")}
-        />
+        <div className={styles.row}>
+          <Field
+            label="First name"
+            autoComplete="given-name"
+            error={errors.firstName?.message}
+            {...form.register("firstName")}
+          />
+          <Field
+            label="Last name"
+            autoComplete="family-name"
+            error={errors.lastName?.message}
+            {...form.register("lastName")}
+          />
+        </div>
         <Field
           label="Other names (optional)"
           autoComplete="additional-name"
@@ -121,16 +144,9 @@ function JoinForm({
           value={password ?? ""}
           errors={errors}
         />
-        <Button
-          type="submit"
-          size="lg"
-          pill
-          block
-          loading={register.isPending}
-          className={styles.submit}
-        >
+        <SubmitButton loading={register.isPending} className={styles.submit}>
           Join {invitation.congregationName}
-        </Button>
+        </SubmitButton>
       </form>
     </AuthScreen>
   );

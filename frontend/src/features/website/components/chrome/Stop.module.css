@@ -1,0 +1,35 @@
+.stop {
+  position: relative;
+  display: inline-block;
+}
+.stop::after {
+  content: "";
+  position: absolute;
+  bottom: 0.14em;
+  left: 50%;
+  width: 0.16em;
+  height: 0.16em;
+  border: 2px solid currentcolor;
+  border-radius: 50%;
+  opacity: 0;
+  animation: stopRing 5s var(--ease-out) 1.4s infinite;
+}
+@keyframes stopRing {
+  0% {
+    opacity: 0.7;
+    transform: translate(-50%, 50%) scale(1);
+  }
+  60%,
+  100% {
+    opacity: 0;
+    transform: translate(-50%, 50%) scale(6);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .stop::after {
+    animation: none;
+  }
+}
+html[data-reduce-motion="true"] .stop::after {
+  animation: none;
+}

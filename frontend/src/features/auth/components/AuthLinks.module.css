@@ -1,16 +1,8 @@
-.links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 10px;
-  margin-top: 12px;
+.single {
+  margin: 4px 0 0;
   font-size: 13.5px;
-  color: var(--text-3);
+  text-align: center;
 }
-.back {
-  margin: 12px 0 0;
-  font-size: 13.5px;
-}
-
 .link {
   font-weight: 500;
   color: var(--text);
@@ -30,8 +22,120 @@
   border-radius: 4px;
 }
 
-@media (max-width: 999px) {
-  .links {
-    justify-content: center;
+/* The side pane: a short heading over numbered rows. */
+.pane {
+  width: 100%;
+  max-width: 440px;
+}
+.heading {
+  margin: 0;
+  font-size: 44px;
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.05em;
+}
+.rows {
+  margin: 28px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.rows li {
+  border-top: 1px solid var(--line);
+}
+.rows li:last-child {
+  border-bottom: 1px solid var(--line);
+}
+.row {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 22px 0;
+  color: var(--text);
+  text-decoration: none;
+}
+.number {
+  width: 22px;
+  font-size: 14px;
+  color: var(--text-3);
+}
+.label {
+  flex: 1;
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+.arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--line-2);
+  border-radius: 50%;
+  transition:
+    background var(--fast) var(--ease-soft),
+    color var(--fast) var(--ease-soft),
+    transform var(--t-spring) var(--ease-spring);
+}
+.row:focus-visible {
+  outline: var(--focus);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+.row:active .arrow {
+  transform: scale(0.94);
+}
+@media (hover: hover) {
+  .row:hover .arrow,
+  .row:focus-visible .arrow {
+    background: var(--text);
+    color: var(--bg);
+    border-color: var(--text);
+  }
+}
+
+/* Where the link leads, shown over the row on hover or keyboard focus. It never moves the rows. */
+.item {
+  position: relative;
+}
+.preview {
+  position: absolute;
+  bottom: calc(100% - 4px);
+  left: 40px;
+  z-index: 2;
+  max-width: 280px;
+  padding: 10px 14px;
+  border: 1px solid var(--line-2);
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: var(--card-shadow);
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--text-2);
+  opacity: 0;
+  transform: translateY(8px) scale(0.97);
+  transform-origin: 20% 100%;
+  pointer-events: none;
+  transition:
+    opacity var(--fast) var(--ease-soft),
+    transform var(--t-spring) var(--ease-spring);
+}
+@media (hover: hover) {
+  .item:hover .preview,
+  .item:focus-within .preview {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* A finger needs more room than the line of text: the touch area grows, the look does not. */
+@media (pointer: coarse) {
+  .link {
+    position: relative;
+  }
+  .link::before {
+    content: "";
+    position: absolute;
+    inset: -12px -8px;
   }
 }

@@ -2,6 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useWatch } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { Button, Field } from "@/ui";
+import { domainRest } from "../model/domainGhost";
 import { AuthLinks } from "../components/AuthLinks";
 import { AuthScreen } from "../components/AuthScreen";
 import { NewPasswordFields } from "../components/NewPasswordFields";
@@ -16,6 +17,7 @@ export function SignUpAccountPage() {
     register,
     handleSubmit,
     control,
+    setValue,
     formState: { errors },
   } = useForm<AccountValues>({
     resolver: zodResolver(accountSchema),
@@ -23,6 +25,8 @@ export function SignUpAccountPage() {
   });
 
   const password = useWatch({ control, name: "password" });
+  const email = useWatch({ control, name: "email" }) ?? "";
+  const rest = domainRest(email);
 
   function onSubmit(values: AccountValues) {
     setAccount(values);
@@ -33,12 +37,28 @@ export function SignUpAccountPage() {
     <AuthScreen
       title="Create your account"
       text="Step 1 of 2. You become your church's first administrator."
-      links={<AuthLinks items={[{ to: "/signin", label: "Sign in" }]} />}
+      links={
+        <AuthLinks
+          heading="Already with us?"
+          items={[
+            {
+              to: "/signin",
+              label: "Sign in",
+              hint: "Welcome back. Pick up where you left off.",
+            },
+            {
+              to: "/join",
+              label: "Join with an invitation code",
+              hint: "Join a church that is already on Echo.",
+            },
+          ]}
+        />
+      }
     >
       <form
         onSubmit={handleSubmit(onSubmit)}
         noValidate
-        className={styles.form}
+        className={`${styles.form} stagger`}
       >
         <div className={styles.row}>
           <Field
@@ -61,7 +81,13 @@ export function SignUpAccountPage() {
           placeholder="you@yourchurch.org"
           hint="We will send a verification link here."
           error={errors.email?.message}
+          ghost={{ typed: email, rest }}
           {...register("email")}
+          onKeyDown={(e) => {
+            if (e.key !== "Tab" || e.shiftKey || !rest) return;
+            e.preventDefault();
+            setValue("email", email + rest, { shouldValidate: true });
+          }}
         />
         <NewPasswordFields
           password={register("password")}

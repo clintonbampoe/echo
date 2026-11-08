@@ -80,3 +80,12 @@
     font-size: 16.5px;
   }
 }
+
+/* Wide: a tool's name and headline stay in view while its points scroll past. */
+@media (min-width: 1000px) {
+  .feature > div:first-child {
+    position: sticky;
+    top: 40px;
+    align-self: start;
+  }
+}

@@ -1,25 +1,84 @@
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { useLocation } from "react-router-dom";
 import { isApiError } from "@/lib/api";
-import { Button, Field } from "@/ui";
+import { Field } from "@/ui";
 import { forgotPassword } from "../api/auth";
-import { BackLink } from "../components/AuthLinks";
+import { AuthLinks } from "../components/AuthLinks";
+import { SubmitButton } from "../components/SubmitButton";
 import { AuthScreen } from "../components/AuthScreen";
 import { ResendButton } from "../components/ResendButton";
 import { useForgotPassword } from "../hooks/mutations";
 import { emailOnlySchema, type EmailOnlyValues } from "../forms/schema";
 import styles from "./form.module.css";
 
+function ForgotLinks() {
+  return (
+    <AuthLinks
+      heading="Remembered it?"
+      items={[
+        {
+          to: "/signin",
+          label: "Back to sign in",
+          hint: "Your password is still the same.",
+        },
+        {
+          to: "/signup",
+          label: "Create a church account",
+          hint: "Start a new church on Echo.",
+        },
+      ]}
+    />
+  );
+}
+
+function ForgotSent({
+  sentTo,
+  onChange,
+}: {
+  sentTo: string;
+  onChange: () => void;
+}) {
+  return (
+    <AuthScreen
+      title="Check your inbox"
+      text={
+        <>
+          If an account exists for <strong>{sentTo}</strong>, a reset link is on
+          its way. It expires in 1 hour.
+        </>
+      }
+      links={<ForgotLinks />}
+    >
+      <ResendButton send={() => forgotPassword(sentTo)} />
+      <p className={styles.note}>
+        Nothing in your inbox? Check spam, or{" "}
+        <button type="button" className={styles.inline} onClick={onChange}>
+          try a different email
+        </button>
+        .
+      </p>
+    </AuthScreen>
+  );
+}
+
 export function ForgotPage() {
   const forgot = useForgotPassword();
+  // Someone who came from the sign-in page has already typed their address; do not make them do it twice.
+  const carried = (useLocation().state as { email?: unknown } | null)?.email;
+  const email = typeof carried === "string" ? carried : "";
   const [sentTo, setSentTo] = useState("");
+  const [locked, setLocked] = useState(email !== "");
   const {
     register,
     handleSubmit,
     setError,
     formState: { errors },
-  } = useForm<EmailOnlyValues>({ resolver: zodResolver(emailOnlySchema) });
+  } = useForm<EmailOnlyValues>({
+    resolver: zodResolver(emailOnlySchema),
+    defaultValues: { email },
+  });
 
   async function onSubmit({ email }: EmailOnlyValues) {
     try {
@@ -33,63 +92,56 @@ export function ForgotPage() {
   }
 
   // The API answers the same whether or not the address has an account, so we do too.
-  if (sentTo) {
-    return (
-      <AuthScreen
-        title="Check your inbox"
-        text={
-          <>
-            If an account exists for <strong>{sentTo}</strong>, a reset link is
-            on its way. It expires in 1 hour.
-          </>
-        }
-        links={<BackLink />}
-      >
-        <ResendButton send={() => forgotPassword(sentTo)} />
-        <p className={styles.note}>
-          Nothing in your inbox? Check spam, or{" "}
-          <button
-            type="button"
-            className={styles.inline}
-            onClick={() => setSentTo("")}
-          >
-            try a different email
-          </button>
-          .
-        </p>
-      </AuthScreen>
-    );
-  }
+  if (sentTo)
+    return <ForgotSent sentTo={sentTo} onChange={() => setSentTo("")} />;
 
   return (
     <AuthScreen
       title="Forgot your password?"
       text="Enter your email and we will send a link to reset it."
-      links={<BackLink />}
+      links={
+        <AuthLinks
+          heading="Remembered it?"
+          items={[
+            { to: "/signin", label: "Back to sign in" },
+            { to: "/signup", label: "Create a church account" },
+          ]}
+        />
+      }
     >
       <form
         onSubmit={handleSubmit(onSubmit)}
         noValidate
-        className={styles.form}
+        className={`${styles.form} stagger`}
       >
         <Field
           label="Email address"
           type="email"
           autoComplete="email"
           placeholder="you@yourchurch.org"
+          readOnly={locked}
+          hint={locked ? "From the sign-in page" : undefined}
+          aside={
+            locked ? (
+              <button
+                type="button"
+                className={styles.aside}
+                onClick={() => setLocked(false)}
+              >
+                Change
+              </button>
+            ) : undefined
+          }
           error={errors.email?.message}
           {...register("email")}
         />
-        <Button
-          type="submit"
-          size="lg"
-          pill
-          block
+        <SubmitButton
           loading={forgot.isPending}
+          done={forgot.isSuccess ? "Link sent" : undefined}
           className={styles.submit}
         >
           Send reset link
-        </Button>
+        </SubmitButton>
       </form>
     </AuthScreen>
   );

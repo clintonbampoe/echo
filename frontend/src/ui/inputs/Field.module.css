@@ -36,10 +36,75 @@
   color: var(--text-4, var(--text-3));
 }
 @media (hover: hover) {
-  .control:hover:not(:disabled) {
+  .control:hover:not(:disabled, :read-only) {
     border-color: var(--line-field-hover);
   }
 }
+/* Read-only: a value that is shown and cannot be typed over (the address carried to the reset page). */
+.control:read-only {
+  background: transparent;
+  color: var(--text-2);
+  cursor: default;
+}
+/* The lock at the right edge of a value that cannot be changed. */
+.lock {
+  position: absolute;
+  top: 50%;
+  right: 16px;
+  translate: 0 -50%;
+  color: var(--text-3);
+  pointer-events: none;
+}
+.control:read-only {
+  padding-right: 40px;
+  caret-color: transparent;
+}
+/* A finished email address: a ring draws in at the right edge and a tick follows. It plays as the
+   address becomes valid, with no waiting for the field to lose focus. Needs a placeholder to tell empty
+   from typed. */
+.tick {
+  position: absolute;
+  top: 50%;
+  right: 16px;
+  display: none;
+  width: 20px;
+  height: 20px;
+  margin-top: -10px;
+  box-sizing: border-box;
+  border: 1.4px solid var(--text);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: tickRing 450ms var(--ease-out) both;
+}
+.tick::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 6px;
+  width: 4px;
+  height: 8px;
+  box-sizing: border-box;
+  border: solid var(--text);
+  border-width: 0 1.8px 1.8px 0;
+  transform: rotate(40deg);
+  animation: tickMark 400ms 150ms var(--ease-out) both;
+}
+.control:valid:not(:placeholder-shown, [aria-invalid="true"]) ~ .tick {
+  display: block;
+}
+@keyframes tickRing {
+  from {
+    opacity: 0;
+    scale: 0.5;
+  }
+}
+@keyframes tickMark {
+  from {
+    opacity: 0;
+    transform: rotate(40deg) scale(0.4);
+  }
+}
+
 /* Focus: the border turns strong and a soft 4px ring grows around it. The label stays still. */
 .control:focus-visible {
   outline: none;
@@ -203,4 +268,76 @@
   from {
     opacity: 0;
   }
+}
+
+/* A pale completion after the typed text, with a Tab hint at the right edge. */
+.ghostWrap {
+  position: relative;
+}
+.ghost {
+  position: absolute;
+  inset: var(--control-gap, 8px) 0 0;
+  display: flex;
+  align-items: center;
+  padding: 0 var(--s-16) 3px calc(var(--s-16) + 1px);
+  font-size: var(--control-font, var(--type-callout));
+  color: var(--text-4, var(--text-3));
+  pointer-events: none;
+  white-space: pre;
+}
+.ghostTyped {
+  visibility: hidden;
+}
+.ghostKey {
+  margin-left: auto;
+  padding: 3px 7px;
+  border: 1px solid var(--line-2);
+  border-radius: 6px;
+  font: inherit;
+  font-size: var(--type-caption);
+}
+
+/* A finger cannot press Tab, so a phone gets no suggestion it could not use. */
+@media (pointer: coarse) {
+  .ghost {
+    display: none;
+  }
+}
+
+/* The letters come into focus when a password is shown. */
+.shown {
+  animation: pwShow 380ms var(--ease) both;
+}
+@keyframes pwShow {
+  from {
+    opacity: 0.4;
+    filter: blur(3px);
+    letter-spacing: 0.12em;
+  }
+  to {
+    opacity: 1;
+    filter: none;
+    letter-spacing: normal;
+  }
+}
+
+.caps {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0 0;
+  padding: 4px 12px 4px 10px;
+  border: 1px solid var(--line-2);
+  border-radius: 999px;
+  font-size: 12px;
+  color: var(--text-2);
+  animation: rise 0.25s var(--ease-out) both;
+}
+.caps::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text);
 }

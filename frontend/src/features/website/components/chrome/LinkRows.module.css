@@ -1,0 +1,127 @@
+.rows {
+  border-bottom: 1px solid var(--line);
+}
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 28px 0;
+  border-top: 1px solid var(--line);
+  color: var(--text);
+  text-decoration: none;
+}
+.title {
+  display: block;
+  font-size: 34px;
+  line-height: 1.2;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+}
+.text {
+  display: block;
+  margin-top: 6px;
+  font-size: 16px;
+  line-height: 1.2;
+  color: var(--text-2);
+}
+.arrow {
+  flex: none;
+  font-size: 22px;
+  transition: transform var(--t-spring) var(--ease-spring);
+}
+@media (hover: hover) {
+  .row:hover .arrow {
+    transform: translateX(6px);
+  }
+}
+.row:focus-visible {
+  outline: var(--focus);
+  outline-offset: 4px;
+  border-radius: 6px;
+}
+@media (max-width: 599px) {
+  .row {
+    padding: 22px 0;
+  }
+  .title {
+    font-size: 26px;
+  }
+}
+
+/* The large rows: a 44px title, a quieter arrow. */
+.large .row {
+  padding: 30px 0;
+}
+.large .title {
+  font-size: 44px;
+  letter-spacing: -0.045em;
+}
+.large .text {
+  font-size: 15px;
+}
+.large .arrow {
+  font-size: 28px;
+  color: var(--text-2);
+}
+@media (max-width: 999px) {
+  .large .row {
+    padding: 22px 0;
+  }
+  .large .title {
+    font-size: 36px;
+  }
+  .large .arrow {
+    font-size: 23px;
+  }
+}
+@media (max-width: 599px) {
+  .large .row {
+    padding: 22px 0;
+  }
+  .large .title {
+    font-size: 28px;
+  }
+  .large .arrow {
+    font-size: 22px;
+  }
+}
+
+/* Phone: the rows sit side by side as cards, a little of the next one showing. */
+@media (max-width: 599px) {
+  .swipe {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin: 0 -20px;
+    padding: 2px 20px 6px;
+    overflow-x: auto;
+    border-bottom: 0;
+    scroll-snap-type: x mandatory;
+    scroll-padding-left: 20px;
+    scrollbar-width: none;
+  }
+  .swipe::-webkit-scrollbar {
+    display: none;
+  }
+  .swipe .row {
+    flex: 0 0 78%;
+    box-sizing: border-box;
+    padding: 18px;
+    border: 1px solid var(--card-line);
+    border-radius: 20px;
+    background: var(--card);
+    scroll-snap-align: start;
+  }
+  .swipe .title {
+    font-size: 22px;
+  }
+  .swipe .text {
+    margin-top: 8px;
+    font-size: 15px;
+    line-height: 1.4;
+  }
+  .swipe .arrow {
+    font-size: 20px;
+  }
+}

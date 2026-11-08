@@ -1,0 +1,36 @@
+.closing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.title {
+  max-width: 760px;
+  margin: 0;
+  font-size: 88px;
+  font-weight: 600;
+  line-height: 0.98;
+  letter-spacing: -0.055em;
+}
+.actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 30px;
+}
+@media (max-width: 999px) {
+  .title {
+    font-size: 60px;
+  }
+}
+@media (max-width: 599px) {
+  .title {
+    font-size: 38px;
+  }
+  .actions {
+    width: 100%;
+  }
+  .actions > * {
+    flex: 1;
+  }
+}

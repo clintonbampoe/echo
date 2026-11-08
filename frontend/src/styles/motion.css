@@ -504,3 +504,214 @@ html[data-reduce-motion="true"] a[data-press]:active {
 html[data-reduce-motion="true"] .av:hover {
   transform: none;
 }
+
+/* Words that arrive one after another (features/auth WordReveal). */
+@keyframes wordIn {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 0.35em, 0);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+.word-reveal {
+  display: inline-block;
+  white-space: pre;
+  animation: wordIn 520ms var(--ease) both;
+  animation-delay: calc(80ms + var(--i, 0) * 70ms);
+}
+
+/* Fields that settle in one after another. Put on a form; its direct children rise in turn. */
+.stagger > * {
+  animation: rise 520ms var(--ease) both;
+}
+.stagger > :nth-child(1) {
+  animation-delay: 220ms;
+}
+.stagger > :nth-child(2) {
+  animation-delay: 280ms;
+}
+.stagger > :nth-child(3) {
+  animation-delay: 340ms;
+}
+.stagger > :nth-child(4) {
+  animation-delay: 400ms;
+}
+.stagger > :nth-child(n + 5) {
+  animation-delay: 460ms;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.word-reveal-text {
+  user-select: none;
+}
+
+/* Light and dark swap with the new theme spreading out from the button (ThemeToggle). */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+/* An even in and out, long enough to watch it travel: the expo-out used elsewhere would cover the page in the
+   first fifth of the time and feel like a flash. */
+::view-transition-new(root) {
+  animation: themeSpread 1100ms cubic-bezier(0.6, 0, 0.25, 1) both;
+}
+@keyframes themeSpread {
+  from {
+    clip-path: circle(0 at var(--vt-x, 50%) var(--vt-y, 50%));
+  }
+  to {
+    clip-path: circle(150vmax at var(--vt-x, 50%) var(--vt-y, 50%));
+  }
+}
+
+/* A details element that opens: the height grows, the words settle in from just above, and it plays the same on
+   the way out. Browsers without ::details-content (or interpolate-size) just open at once. */
+details[data-expand] {
+  interpolate-size: allow-keywords;
+}
+details[data-expand]::details-content {
+  block-size: 0;
+  overflow: clip;
+  opacity: 0;
+  transition:
+    block-size 640ms cubic-bezier(0.32, 0.72, 0.18, 1),
+    opacity 240ms var(--ease-soft),
+    content-visibility 640ms allow-discrete;
+}
+/* Opening carries a little overshoot, so the rows below are pushed a touch past and settle back; closing does not. */
+details[data-expand][open]::details-content {
+  block-size: auto;
+  opacity: 1;
+  transition:
+    block-size 700ms cubic-bezier(0.3, 1.18, 0.4, 1),
+    opacity 420ms var(--ease-soft) 110ms,
+    content-visibility 700ms allow-discrete;
+}
+details[data-expand] > :not(summary) {
+  transform: translateY(-8px);
+  transition: transform 300ms var(--ease-soft);
+}
+details[data-expand][open] > :not(summary) {
+  transform: none;
+  transition: transform 560ms var(--ease-out) 60ms;
+}
+/* The words come line by line, each a beat after the one before. */
+details[data-expand] :is(p, li) {
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+    opacity 160ms var(--ease-soft),
+    transform 160ms var(--ease-soft);
+}
+details[data-expand][open] :is(p, li) {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 480ms var(--ease-soft) calc(140ms + var(--n, 0) * 90ms),
+    transform 640ms var(--ease-out) calc(140ms + var(--n, 0) * 90ms);
+}
+details[data-expand] :is(p, li):nth-child(2) {
+  --n: 1;
+}
+details[data-expand] :is(p, li):nth-child(3) {
+  --n: 2;
+}
+details[data-expand] :is(p, li):nth-child(4) {
+  --n: 3;
+}
+details[data-expand] :is(p, li):nth-child(n + 5) {
+  --n: 4;
+}
+@media (prefers-reduced-motion: reduce) {
+  details[data-expand] :is(p, li),
+  details[data-expand]::details-content,
+  details[data-expand] > :not(summary) {
+    transition: none !important;
+  }
+}
+html[data-reduce-motion="true"] details[data-expand] :is(p, li),
+html[data-reduce-motion="true"] details[data-expand]::details-content,
+html[data-reduce-motion="true"] details[data-expand] > :not(summary) {
+  transition: none !important;
+}
+
+/* Between website pages: Material's "fade through". The old page clears quickly, then the new one comes up,
+   so the two never ghost over each other; its sections then arrive one by one (website SiteLayout.module.css). */
+html[data-vt-site]::view-transition-old(root) {
+  animation: pageOut 120ms cubic-bezier(0.3, 0, 0.8, 0.15) both;
+}
+html[data-vt-site]::view-transition-new(root) {
+  animation: pageIn 240ms cubic-bezier(0.05, 0.7, 0.1, 1) 80ms both;
+  clip-path: none;
+}
+@keyframes pageOut {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes pageIn {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Between auth screens the title and the card travel (features/auth useAuthGo). */
+html[data-vt-nav] [data-vt="title"] {
+  view-transition-name: auth-title;
+}
+html[data-vt-nav] [data-vt="card"] {
+  view-transition-name: auth-card;
+}
+html[data-vt-nav]::view-transition-group(*) {
+  animation-duration: 520ms;
+  animation-timing-function: var(--ease);
+}
+/* The swipe: the old screen eases out a little way and the new one slides in from the same side. */
+html[data-vt-nav="forward"] {
+  --vt-shift: 36px;
+}
+html[data-vt-nav="back"] {
+  --vt-shift: -36px;
+}
+html[data-vt-nav]::view-transition-old(auth-title),
+html[data-vt-nav]::view-transition-old(auth-card),
+html[data-vt-nav]::view-transition-new(auth-title),
+html[data-vt-nav]::view-transition-new(auth-card) {
+  mix-blend-mode: normal;
+}
+html[data-vt-nav]::view-transition-old(auth-title),
+html[data-vt-nav]::view-transition-old(auth-card) {
+  animation: vtOut 240ms var(--ease-soft) both;
+}
+html[data-vt-nav]::view-transition-new(auth-title),
+html[data-vt-nav]::view-transition-new(auth-card) {
+  animation: vtIn 560ms var(--ease-out) 90ms both;
+}
+html[data-vt-nav]::view-transition-new(auth-card) {
+  animation-delay: 140ms;
+}
+@keyframes vtOut {
+  to {
+    opacity: 0;
+    transform: translateX(calc(var(--vt-shift) * -0.7));
+  }
+}
+@keyframes vtIn {
+  from {
+    opacity: 0;
+    transform: translateX(var(--vt-shift));
+  }
+}

@@ -1,56 +1,125 @@
 .layout {
   display: grid;
-  grid-template-columns: minmax(0, 560px) 1fr;
-  gap: 96px;
-  justify-content: center;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 100px;
+  align-items: start;
+}
+.title {
+  max-width: 900px;
+  margin: 22px 0 0;
+  font-size: 88px;
+  font-weight: 600;
+  line-height: 0.98;
+  letter-spacing: -0.055em;
+}
+.lead {
+  max-width: 520px;
+  margin: 18px 0 0;
+  font-size: 19px;
+  line-height: 1.45;
+  color: var(--text-2);
+}
+.steps {
+  margin-top: 44px;
 }
 .form {
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  padding: 32px;
+  gap: 16px;
+  padding: 36px;
   border: 1px solid var(--card-line);
-  border-radius: 28px;
+  border-radius: 24px;
   background: var(--card);
   box-shadow: var(--card-shadow);
   backdrop-filter: blur(24px);
 }
+.form textarea {
+  min-height: 120px;
+  resize: none;
+}
 .send {
-  align-self: flex-start;
+  position: relative;
+  height: 48px;
+  margin-top: 6px;
+  overflow: hidden;
   box-shadow: var(--glow);
+}
+/* The paper plane lifts off to the upper right as the message goes. */
+.plane {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 18px;
+  height: 18px;
+  margin: -9px 0 0 -9px;
+  opacity: 0;
+  pointer-events: none;
+}
+.send[data-flying] .plane {
+  animation: fly 700ms cubic-bezier(0.5, 0, 0.2, 1) both;
+}
+@keyframes fly {
+  0% {
+    opacity: 1;
+    transform: none;
+  }
+  70% {
+    opacity: 1;
+    transform: translate(120px, -40px) scale(0.8);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(180px, -70px) scale(0.5);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .send[data-flying] .plane {
+    animation: none;
+  }
+}
+html[data-reduce-motion="true"] .send[data-flying] .plane {
+  animation: none;
 }
 .note {
   margin: 0;
-  font-size: 13px;
+  font-size: 14px;
+  line-height: 1.5;
   color: var(--text-3);
-}
-.facts {
-  display: flex;
-  flex-direction: column;
-  gap: 28px;
-  margin: 0;
-  padding-top: 8px;
-}
-.facts dt {
-  margin-bottom: 4px;
-  font-size: 13px;
-  color: var(--text-3);
-}
-.facts dd {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 500;
+  text-align: center;
 }
 
 @media (max-width: 999px) {
   .layout {
-    grid-template-columns: 1fr;
-    gap: 48px;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 40px;
+  }
+  .title {
+    font-size: 64px;
   }
 }
 @media (max-width: 599px) {
+  .layout {
+    gap: 22px;
+  }
+  .title {
+    font-size: 40px;
+  }
+  .lead {
+    font-size: 16px;
+  }
+  .steps {
+    margin-top: 28px;
+  }
   .form {
+    gap: 12px;
     padding: 22px;
-    border-radius: 24px;
+  }
+  .form input {
+    min-height: 46px;
+    padding: 11px 16px;
+  }
+  .form textarea {
+    min-height: 88px;
+    padding: 11px 16px;
   }
 }

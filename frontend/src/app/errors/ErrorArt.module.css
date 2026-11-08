@@ -1,0 +1,456 @@
+/* Two small stories on an 11 second loop. Reduced motion shows the finished picture and the last line. */
+.art {
+  display: block;
+  width: 100%;
+  max-width: 560px;
+  height: auto;
+}
+.frame {
+  opacity: 0;
+  animation: frame 11s linear infinite;
+}
+.trail {
+  fill: none;
+  stroke: var(--line-2);
+  stroke-width: 2.5;
+  stroke-dasharray: 1 9;
+  stroke-linecap: round;
+}
+.maskPath {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 16;
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation: trail 11s linear infinite;
+}
+.dot {
+  fill: var(--text);
+  filter: drop-shadow(0 0 8px color-mix(in srgb, var(--text) 53%, transparent));
+  animation: walk 11s cubic-bezier(0.45, 0, 0.35, 1) infinite;
+}
+.ringA,
+.ringB,
+.halo,
+.tapA,
+.tapB,
+.tapC {
+  fill: none;
+  stroke: var(--text);
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.ringA {
+  animation: ringA 11s linear infinite;
+}
+.ringB {
+  animation: ringB 11s linear infinite;
+}
+.halo {
+  animation: halo 11s linear infinite;
+}
+.tapA,
+.tapB,
+.tapC {
+  stroke-width: 1.5;
+}
+.tapA {
+  animation: tapA 11s linear infinite;
+}
+.tapB {
+  animation: tapB 11s linear infinite;
+}
+.tapC {
+  animation: tapC 11s linear infinite;
+}
+.hello,
+.wait,
+.found {
+  font-family: inherit;
+  font-size: 14px;
+  text-anchor: middle;
+  fill: var(--text-3);
+  opacity: 0;
+}
+.hello {
+  animation: hello 11s linear infinite;
+}
+.wait {
+  animation: wait 11s linear infinite;
+}
+.found {
+  font-weight: 600;
+  fill: var(--text);
+  animation: found 11s linear infinite;
+}
+.baseline {
+  fill: none;
+  stroke: var(--line-2);
+  stroke-width: 2;
+}
+.beatA,
+.beatB {
+  fill: none;
+  stroke: var(--text);
+  stroke-linejoin: round;
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+}
+.beatA {
+  stroke-width: 2.5;
+  animation: beatA 11s linear infinite;
+}
+.beatB {
+  stroke-width: 3;
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--text) 60%, transparent));
+  animation: beatB 11s linear infinite;
+}
+.checker {
+  fill: var(--text);
+  opacity: 0;
+  animation: checker 11s linear infinite;
+}
+.waitPulse {
+  animation-name: waitPulse;
+}
+.foundPulse {
+  animation-name: foundPulse;
+}
+
+@keyframes frame {
+  0% {
+    opacity: 0;
+  }
+  2%,
+  95% {
+    opacity: 1;
+  }
+  98%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes walk {
+  0%,
+  4% {
+    offset-distance: 0%;
+  }
+  48% {
+    offset-distance: 76%;
+  }
+  56% {
+    offset-distance: 76%;
+  }
+  74%,
+  100% {
+    offset-distance: 100%;
+  }
+}
+@keyframes trail {
+  0%,
+  4% {
+    stroke-dashoffset: 100;
+  }
+  48%,
+  56% {
+    stroke-dashoffset: 24;
+  }
+  74%,
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes ringA {
+  0%,
+  50% {
+    opacity: 0;
+    transform: scale(1);
+  }
+  51% {
+    opacity: 0.8;
+  }
+  66%,
+  100% {
+    opacity: 0;
+    transform: scale(14);
+  }
+}
+@keyframes ringB {
+  0%,
+  55% {
+    opacity: 0;
+    transform: scale(1);
+  }
+  56% {
+    opacity: 0.35;
+  }
+  72%,
+  100% {
+    opacity: 0;
+    transform: scale(18);
+  }
+}
+@keyframes hello {
+  0%,
+  49% {
+    opacity: 0;
+  }
+  51%,
+  62% {
+    opacity: 1;
+  }
+  66%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes wait {
+  0%,
+  3% {
+    opacity: 0;
+  }
+  6%,
+  60% {
+    opacity: 1;
+  }
+  64%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes found {
+  0%,
+  72% {
+    opacity: 0;
+  }
+  78%,
+  95% {
+    opacity: 1;
+  }
+  98%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes halo {
+  0%,
+  73% {
+    opacity: 0;
+    transform: scale(1);
+  }
+  74% {
+    opacity: 0.7;
+  }
+  88%,
+  100% {
+    opacity: 0;
+    transform: scale(4);
+  }
+}
+@keyframes beatA {
+  0%,
+  3% {
+    stroke-dashoffset: 100;
+    opacity: 1;
+  }
+  20% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  26%,
+  60% {
+    stroke-dashoffset: 0;
+    opacity: 0.3;
+  }
+  62%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes beatB {
+  0%,
+  62% {
+    stroke-dashoffset: 100;
+  }
+  80%,
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes checker {
+  0%,
+  28% {
+    opacity: 0;
+    transform: translate(470px, 85px);
+  }
+  30% {
+    opacity: 1;
+    transform: translate(470px, 85px);
+  }
+  34% {
+    transform: translate(390px, 85px);
+  }
+  35% {
+    transform: translate(390px, 62px);
+  }
+  36.5% {
+    transform: translate(390px, 85px);
+  }
+  41% {
+    transform: translate(340px, 85px);
+  }
+  42% {
+    transform: translate(340px, 62px);
+  }
+  43.5% {
+    transform: translate(340px, 85px);
+  }
+  48% {
+    transform: translate(300px, 85px);
+  }
+  49% {
+    transform: translate(300px, 62px);
+  }
+  50.5% {
+    transform: translate(300px, 85px);
+  }
+  56% {
+    opacity: 1;
+    transform: translate(300px, 85px) scale(1);
+  }
+  59%,
+  100% {
+    opacity: 0;
+    transform: translate(300px, 85px) scale(0.2);
+  }
+}
+@keyframes tapA {
+  0%,
+  36.4% {
+    opacity: 0;
+    transform: scale(1);
+  }
+  36.5% {
+    opacity: 0.9;
+  }
+  43.5%,
+  100% {
+    opacity: 0;
+    transform: scale(5);
+  }
+}
+@keyframes tapB {
+  0%,
+  43.4% {
+    opacity: 0;
+    transform: scale(1);
+  }
+  43.5% {
+    opacity: 0.9;
+  }
+  50.5%,
+  100% {
+    opacity: 0;
+    transform: scale(5);
+  }
+}
+@keyframes tapC {
+  0%,
+  50.4% {
+    opacity: 0;
+    transform: scale(1);
+  }
+  50.5% {
+    opacity: 0.9;
+  }
+  57.5%,
+  100% {
+    opacity: 0;
+    transform: scale(5);
+  }
+}
+@keyframes waitPulse {
+  0%,
+  26% {
+    opacity: 0;
+  }
+  30%,
+  58% {
+    opacity: 1;
+  }
+  62%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes foundPulse {
+  0%,
+  78% {
+    opacity: 0;
+  }
+  82%,
+  95% {
+    opacity: 1;
+  }
+  98%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .frame,
+  .maskPath,
+  .dot,
+  .beatA,
+  .beatB,
+  .found {
+    animation: none;
+  }
+  .frame,
+  .found {
+    opacity: 1;
+  }
+  .maskPath,
+  .beatB {
+    stroke-dashoffset: 0;
+  }
+  .dot {
+    offset-distance: 100%;
+  }
+  .wait,
+  .hello {
+    animation: none;
+  }
+  .foundPulse {
+    animation: none;
+    opacity: 1;
+  }
+  .waitPulse {
+    animation: none;
+  }
+}
+html[data-reduce-motion="true"] .frame,
+html[data-reduce-motion="true"] .maskPath,
+html[data-reduce-motion="true"] .dot,
+html[data-reduce-motion="true"] .beatA,
+html[data-reduce-motion="true"] .beatB,
+html[data-reduce-motion="true"] .found,
+html[data-reduce-motion="true"] .wait,
+html[data-reduce-motion="true"] .waitPulse,
+html[data-reduce-motion="true"] .foundPulse,
+html[data-reduce-motion="true"] .hello {
+  animation: none;
+}
+html[data-reduce-motion="true"] .frame,
+html[data-reduce-motion="true"] .found {
+  opacity: 1;
+}
+html[data-reduce-motion="true"] .maskPath,
+html[data-reduce-motion="true"] .beatB {
+  stroke-dashoffset: 0;
+}
+html[data-reduce-motion="true"] .dot {
+  offset-distance: 100%;
+}

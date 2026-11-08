@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Field, PasswordField } from "./Field";
 
@@ -6,6 +6,14 @@ import { Field, PasswordField } from "./Field";
 const good = `Q${"q".repeat(8)}7`;
 
 describe("Field", () => {
+  it("draws a lock on a value that cannot be changed, and not the email tick", () => {
+    const { container } = render(
+      <Field label="Email" type="email" readOnly defaultValue="a@b.org" />,
+    );
+    expect(container.querySelector("svg")).toBeInTheDocument();
+    expect(screen.getByLabelText("Email")).toHaveAttribute("readonly");
+  });
+
   it("connects the label to the input", () => {
     render(<Field label="Email address" />);
     expect(screen.getByLabelText("Email address")).toBeInTheDocument();
@@ -102,5 +110,17 @@ describe("PasswordField", () => {
     expect(screen.getByLabelText("Password")).toHaveAccessibleDescription(
       "Use at least 8 characters. Use at least 8 characters.",
     );
+  });
+});
+
+describe("PasswordField caps lock", () => {
+  it("says so while Caps Lock is on, and stops when the field is left", async () => {
+    render(<PasswordField label="Password" />);
+    const input = screen.getByLabelText("Password");
+    input.focus();
+    fireEvent.keyDown(input, { key: "a", modifierCapsLock: true });
+    expect(screen.getByText("Caps Lock is on")).toBeInTheDocument();
+    fireEvent.blur(input);
+    expect(screen.queryByText("Caps Lock is on")).not.toBeInTheDocument();
   });
 });

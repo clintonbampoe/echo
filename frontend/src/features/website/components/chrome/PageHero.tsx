@@ -10,10 +10,12 @@ type Props = {
   children?: ReactNode;
   // Buttons under the text.
   actions?: ReactNode;
+  // A drawing under the buttons.
+  art?: ReactNode;
 };
 
 // The top of every inner page: label, big title, one sentence.
-export function PageHero({ eyebrow, title, children, actions }: Props) {
+export function PageHero({ eyebrow, title, children, actions, art }: Props) {
   return (
     <div className={styles.hero}>
       <Ripples className={styles.ripples} />
@@ -28,6 +30,7 @@ export function PageHero({ eyebrow, title, children, actions }: Props) {
       </h1>
       {children && <p className={styles.lead}>{children}</p>}
       {actions && <div className={styles.actions}>{actions}</div>}
+      {art && <div className={styles.art}>{art}</div>}
     </div>
   );
 }

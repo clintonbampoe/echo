@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { Navigate, useLocation } from "react-router-dom";
-import { Icon } from "@/ui";
+import { Icon, useTabTitle } from "@/ui";
+import { AuthLinks, BackLink } from "../components/AuthLinks";
 import { AuthScreen } from "../components/AuthScreen";
 import { useIsSignedIn, useVerifyFlow } from "../hooks";
 import { mailProviderFor } from "../model/mailProvider";
@@ -47,6 +48,7 @@ function CheckEmail({ email, autoSend, signedIn, leave, from }: Props) {
   useEffect(() => rememberOrigin(from), [from]);
   const { phase, wait, send } = useVerifyFlow(email, autoSend, signedIn);
   const verified = phase === "verified";
+  useTabTitle(verified ? "✓ Verified · Echo" : "Waiting for your link · Echo");
   return (
     <AuthScreen
       title={verified ? "Account verified" : "Check your email"}
@@ -56,6 +58,29 @@ function CheckEmail({ email, autoSend, signedIn, leave, from }: Props) {
           : phase === "sending"
             ? "We are sending a link to verify your account."
             : "We sent a link to verify your account. Open it on any device and this page updates by itself."
+      }
+      links={
+        signedIn ? (
+          <BackLink to={leave} heading="Not now?">
+            Back to Echo
+          </BackLink>
+        ) : (
+          <AuthLinks
+            heading="Wrong address?"
+            items={[
+              {
+                to: "/signup",
+                label: "Use a different email",
+                hint: "Start again with another address.",
+              },
+              {
+                to: "/signin",
+                label: "Back to sign in",
+                hint: "You can verify later.",
+              },
+            ]}
+          />
+        )
       }
     >
       <VerifyMark phase={phase} />

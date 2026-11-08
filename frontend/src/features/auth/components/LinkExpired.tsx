@@ -3,9 +3,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { isApiError } from "@/lib/api";
-import { Button, Field } from "@/ui";
+import { Field } from "@/ui";
 import { useSendVerification } from "../hooks/mutations";
 import { emailOnlySchema, type EmailOnlyValues } from "../forms/schema";
+import { SubmitButton } from "./SubmitButton";
 import { AuthScreen } from "./AuthScreen";
 import styles from "./LinkExpired.module.css";
 
@@ -39,7 +40,7 @@ export function LinkExpired({ title, text, links }: Props) {
       <form
         onSubmit={handleSubmit(onSubmit)}
         noValidate
-        className={styles.form}
+        className={`${styles.form} stagger`}
       >
         <Field
           label="Email address"
@@ -49,16 +50,9 @@ export function LinkExpired({ title, text, links }: Props) {
           error={errors.email?.message ?? (problem || undefined)}
           {...register("email")}
         />
-        <Button
-          type="submit"
-          size="lg"
-          pill
-          block
-          loading={send.isPending}
-          className={styles.submit}
-        >
+        <SubmitButton loading={send.isPending} className={styles.submit}>
           Send a new link
-        </Button>
+        </SubmitButton>
       </form>
     </AuthScreen>
   );

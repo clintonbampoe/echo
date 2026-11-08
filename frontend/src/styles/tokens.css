@@ -175,6 +175,7 @@
   --accent-hover: #26262b;
   --hover: #eeeef0;
   --card: rgb(255 255 255 / 92%);
+  --card-solid: #ffffff;
   --card-line: #cfcfd5;
   --card-shadow: 0 1px 0 #fff inset, 0 40px 80px -30px rgb(10 10 11 / 22%);
   --glow: 0 10px 30px -10px rgb(10 10 11 / 53%);
@@ -201,6 +202,7 @@
   --warn-bg: #1f1a10;
   --warn-line: #4a3a1a;
   --card: rgb(26 26 31 / 88%);
+  --card-solid: #18181c;
   --card-line: rgb(255 255 255 / 14%);
   --card-shadow:
     0 1px 0 rgb(255 255 255 / 8%) inset, 0 40px 80px -30px rgb(0 0 0 / 80%),

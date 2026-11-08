@@ -1,0 +1,186 @@
+/* Numbered rows that open: the plain line shows, the full wording sits under it. */
+.rules {
+  border-bottom: 1px solid var(--line);
+}
+.rule {
+  padding: 24px 0;
+  border-top: 1px solid var(--line);
+}
+/* The whole row opens it: the summary's own padding stretches over the rule's, so the touch area is the row. */
+.summary {
+  display: flex;
+  margin: -24px 0;
+  padding: 24px 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  cursor: pointer;
+  list-style: none;
+}
+.summary::-webkit-details-marker {
+  display: none;
+}
+.summary:focus-visible {
+  outline: var(--focus);
+  outline-offset: 6px;
+  border-radius: 6px;
+}
+/* A round button with a plus that turns over into a minus as the rule opens. */
+.summary::after {
+  content: "";
+  flex: none;
+  box-sizing: border-box;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--line-2);
+  border-radius: 50%;
+  color: var(--text);
+  background:
+    linear-gradient(currentcolor, currentcolor) center / 10px 1.5px no-repeat,
+    linear-gradient(currentcolor, currentcolor) center / 1.5px 10px no-repeat;
+  transition:
+    transform 350ms var(--ease-out),
+    background-size 350ms var(--ease-out);
+}
+.rule[open] .summary::after {
+  transform: rotate(180deg);
+  background-size:
+    10px 1.5px,
+    1.5px 0;
+}
+.number {
+  position: relative;
+  display: inline-block;
+  min-width: 38px;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-3);
+}
+/* Opened once: a small dot appears in the margin. */
+.rule[data-read] .number::after {
+  content: "";
+  position: absolute;
+  top: 0.5em;
+  left: -18px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text);
+  animation: readDot 400ms cubic-bezier(0.3, 1.6, 0.5, 1) both;
+}
+@keyframes readDot {
+  from {
+    transform: scale(0);
+  }
+}
+/* Without numbers the opened wording lines up with the title. */
+.bare .full {
+  padding-left: 0;
+}
+.plain {
+  display: block;
+  margin-top: 5px;
+  font-size: 16px;
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 1.4;
+  color: var(--text-2);
+}
+.full {
+  padding: 2px 0 0 38px;
+}
+.full p {
+  max-width: 600px;
+  margin: 12px 0 0;
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--text-2);
+}
+
+@media (max-width: 999px) {
+  .rule {
+    padding: 22px 0;
+  }
+  .summary {
+    margin: -22px 0;
+    padding: 22px 0;
+    font-size: 21px;
+  }
+}
+@media (max-width: 599px) {
+  .rule {
+    padding: 18px 0;
+  }
+  .summary {
+    margin: -18px 0;
+    padding: 18px 0;
+    font-size: 18px;
+  }
+  .plain {
+    font-size: 15px;
+  }
+}
+.phoneOnly {
+  display: none;
+}
+/* Phone: the rules sit side by side as cards, a little of the next one showing. */
+@media (max-width: 599px) {
+  .swipe {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin: 0 -20px;
+    padding: 2px 20px 6px;
+    overflow-x: auto;
+    border-bottom: 0;
+    scroll-snap-type: x mandatory;
+    scroll-padding-left: 20px;
+    scrollbar-width: none;
+  }
+  .swipe::-webkit-scrollbar {
+    display: none;
+  }
+  .swipe .rule {
+    flex: 0 0 80%;
+    box-sizing: border-box;
+    padding: 18px;
+    border: 1px solid var(--card-line);
+    border-radius: 20px;
+    background: var(--card);
+    scroll-snap-align: start;
+  }
+  .swipe .phoneOnly {
+    display: block;
+  }
+  .swipe .summary {
+    align-items: flex-start;
+  }
+  .swipe .number {
+    display: block;
+    margin-bottom: 6px;
+  }
+  .swipe .name {
+    display: block;
+    font-size: 19px;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+  }
+  .swipe .full {
+    padding-left: 0;
+  }
+  .swipe .full p {
+    font-size: 15px;
+    line-height: 1.5;
+  }
+  .swipe .rule[data-read] .number::after {
+    left: 24px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rule[data-read] .number::after {
+    animation: none;
+  }
+}

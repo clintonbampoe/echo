@@ -1,9 +1,110 @@
+/* The error screen fills the window: the words and the picture sit in the middle, the footer under them. */
 .page {
-  min-height: 100vh;
-  min-height: 100dvh;
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  box-sizing: border-box;
+  min-height: calc(100dvh - 110px);
+  padding-top: 84px;
+}
+.center {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
   justify-content: center;
-  padding: var(--s-32) var(--s-16);
-  background: var(--bg);
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1328px;
+  margin: 0 auto;
+  padding: 0 64px;
+}
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 80px;
+  align-items: center;
+}
+.art {
+  width: 100%;
+  max-width: 560px;
+}
+.title {
+  max-width: 640px;
+  margin: 22px 0 0;
+  font-size: 76px;
+  font-weight: 600;
+  line-height: 0.98;
+  letter-spacing: -0.055em;
+}
+.lead {
+  max-width: 460px;
+  margin: 20px 0 0;
+  font-size: 20px;
+  line-height: 1.45;
+  color: var(--text-2);
+}
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 30px;
+}
+.pages {
+  display: flex;
+  gap: 22px;
+  margin-top: 34px;
+  font-size: 14px;
+}
+.page_link {
+  color: var(--text-2);
+  text-decoration: none;
+}
+.page_link:hover {
+  color: var(--text);
+}
+@media (max-width: 999px) {
+  .page {
+    min-height: calc(100dvh - 116px);
+  }
+  .center {
+    padding: 0 56px;
+  }
+  .row {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+  }
+  .art {
+    order: -1;
+    max-width: 520px;
+  }
+  .title {
+    font-size: 60px;
+  }
+  .pages {
+    display: none;
+  }
+}
+@media (max-width: 599px) {
+  .page {
+    min-height: calc(100dvh - 110px);
+    padding-top: 96px;
+  }
+  .center {
+    padding: 0 20px;
+  }
+  .row {
+    gap: 14px;
+  }
+  .art {
+    max-width: 390px;
+  }
+  .title {
+    font-size: 36px;
+  }
+  .lead {
+    font-size: 16px;
+  }
+  .actions > * {
+    width: 100%;
+  }
 }

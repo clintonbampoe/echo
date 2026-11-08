@@ -1,28 +1,29 @@
-import { ClosingCta } from "../components/chrome/ClosingCta";
-import { Columns } from "../components/chrome/Columns";
-import { PageHero } from "../components/chrome/PageHero";
+import { DataArt } from "../components/chrome/DataArt";
+import { Kicker } from "../components/chrome/Kicker";
+import { RuleList, type Rule } from "../components/chrome/RuleList";
 import { Section } from "../components/chrome/Section";
-import { TextLink } from "../components/chrome/TextLink";
-import { SECURITY } from "../content/pages";
-import { GITHUB_URL } from "../content/site";
-import styles from "./SecurityPage.module.css";
+import { Stop } from "../components/chrome/Stop";
+import { SECURITY } from "../content/trust";
+import styles from "./LegalPage.module.css";
 
+// The same shape as Terms: the title, one line and a picture on the left, numbered rules on the right.
 export function SecurityPage() {
   return (
-    <>
-      <PageHero eyebrow="Security" title={["Trusted with", "your people."]}>
-        Church records are personal. We treat them that way.
-      </PageHero>
-      <Section top={96}>
-        <Columns items={SECURITY} count={2} />
-        <p className={styles.report}>
-          Found a vulnerability?{" "}
-          <TextLink to={`${GITHUB_URL}/security/advisories/new`} external>
-            Report it privately
-          </TextLink>
-        </p>
-      </Section>
-      <ClosingCta />
-    </>
+    <Section top={150} tablet={130} phone={100}>
+      <div className={styles.layout}>
+        <div>
+          <Kicker>Security and privacy</Kicker>
+          <h1 className={styles.title}>
+            {SECURITY.title}
+            <Stop />
+          </h1>
+          <p className={styles.lead}>{SECURITY.lead}</p>
+          <DataArt />
+        </div>
+        <div>
+          <RuleList rules={SECURITY.rules as readonly Rule[]} openFirst />
+        </div>
+      </div>
+    </Section>
   );
 }

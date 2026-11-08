@@ -91,3 +91,18 @@
     height: 560px;
   }
 }
+
+/* On a phone the buttons use the width they are given, one over the other. */
+@media (max-width: 599px) {
+  .actions {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+  }
+}
+.art {
+  position: relative;
+  margin-top: 16px;
+  display: flex;
+  justify-content: center;
+}
