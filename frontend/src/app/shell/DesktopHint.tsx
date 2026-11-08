@@ -4,7 +4,7 @@ import styles from "./DesktopHint.module.css";
 
 const KEY = "echo.desktopHint.shownAt";
 // A dismissed hint stays away this long, then comes back once. Long enough not to nag, short enough not to be forgotten.
-const QUIET_DAYS = 3;
+const QUIET_DAYS = 1;
 const DAY = 24 * 60 * 60 * 1000;
 
 const quiet = () => {
