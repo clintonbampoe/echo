@@ -451,6 +451,9 @@ describe("verify", () => {
       };
       fetchMock.mockResolvedValue(json(200));
       renderAt("/verify-email?token=t");
+      await userEvent.click(
+        await screen.findByRole("button", { name: "Confirm my email" }),
+      );
       expect(
         await screen.findByText(
           "Your other tab already knows. You can close this one.",
@@ -466,9 +469,21 @@ describe("verify", () => {
       vi.stubGlobal("BroadcastChannel", undefined);
       fetchMock.mockResolvedValue(json(200));
       renderAt("/verify-email?token=t");
+      await userEvent.click(
+        await screen.findByRole("button", { name: "Confirm my email" }),
+      );
       expect(
         await screen.findByRole("link", { name: /Sign in|Back to where/ }),
       ).toHaveAttribute("href", "/members");
+    });
+
+    it("does not spend the link until the person confirms", async () => {
+      fetchMock.mockResolvedValue(json(200));
+      renderAt("/verify-email?token=t");
+      expect(
+        await screen.findByRole("button", { name: "Confirm my email" }),
+      ).toBeInTheDocument();
+      expect(fetchMock).not.toHaveBeenCalled();
     });
   });
 
