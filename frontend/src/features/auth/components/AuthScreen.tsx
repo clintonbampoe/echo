@@ -20,7 +20,7 @@ type Props = {
 };
 
 // The shape of every auth screen. Wide: the words and card on the left, the other places to go
-// in a glass pane on the right. Tablet and phone: one centred column, with one link under it.
+// in a glass pane on the right. Tablet and phone: one column under the top bar, with one link under it.
 export function AuthScreen({
   title,
   kicker,
@@ -31,7 +31,6 @@ export function AuthScreen({
   const split = useSplit();
   const body = (
     <>
-      {!split && <Logo size={46} />}
       {kicker && (
         <p className={styles.kicker}>
           <span className={styles.kickDot} aria-hidden="true" />

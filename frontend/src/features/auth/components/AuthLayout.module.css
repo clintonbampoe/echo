@@ -13,9 +13,9 @@
   z-index: 1;
   display: flex;
   flex: 1;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  padding: 88px 16px 56px;
+  padding: 140px 56px 70px;
 }
 
 .slot {
@@ -33,15 +33,10 @@
 
 /* Wide: the form on the left, a glass pane on the right. */
 .split .main {
+  align-items: center;
   padding: 16px;
 }
 
-.home {
-  position: absolute;
-  top: 26px;
-  left: 32px;
-  z-index: 2;
-}
 .theme {
   position: absolute;
   top: 20px;
@@ -50,10 +45,7 @@
 }
 
 @media (max-width: 599px) {
-  .home {
-    left: 16px;
-  }
-  .theme {
-    right: 16px;
+  .main {
+    padding: 128px 20px 56px;
   }
 }

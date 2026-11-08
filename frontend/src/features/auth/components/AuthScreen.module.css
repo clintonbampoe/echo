@@ -135,26 +135,40 @@
   }
 }
 
-/* Tablet and phone: one centred column. */
+/* Tablet and phone: one column, the words left-aligned, the one other link centred under the card. */
 .single {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   gap: 16px;
   width: 100%;
   max-width: 460px;
-  text-align: center;
 }
 .single .title {
-  font-size: 34px;
+  font-size: 64px;
+  line-height: 0.98;
+  letter-spacing: -0.055em;
+}
+.single .text {
+  max-width: 520px;
+  font-size: 17px;
 }
 .single .card {
-  text-align: left;
+  margin-top: 14px;
+  padding: 36px;
 }
-@media (max-width: 480px) {
+.single > :last-child {
+  align-self: center;
+}
+@media (max-width: 599px) {
+  .single {
+    max-width: none;
+  }
+  .single .title {
+    font-size: 44px;
+  }
   .single .card {
-    padding: 20px;
-    border-radius: 24px;
+    padding: 22px;
   }
 }
 
@@ -175,7 +189,9 @@
 
 /* Wide: the form sits flat on the page, as in the design, and the title is large. */
 .split .title {
-  font-size: 56px;
+  font-size: 60px;
+  line-height: 0.98;
+  letter-spacing: -0.055em;
 }
 .split .card {
   margin-top: 8px;
