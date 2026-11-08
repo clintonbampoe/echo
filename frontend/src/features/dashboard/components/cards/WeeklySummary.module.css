@@ -53,35 +53,92 @@
   border-radius: 50%;
   color: var(--text);
 }
-.message {
-  margin: 22px 0 0;
-  padding-bottom: var(--s-20);
-  border-bottom: 1px solid var(--line);
-  font-size: var(--type-title1);
-  font-weight: 500;
-  line-height: 1.35;
-  letter-spacing: -0.01em;
+.hint {
+  margin: 0;
+  font-size: var(--type-body);
+  font-weight: 400;
+  color: var(--text-3);
 }
-.numbers {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--s-12);
-  margin: 16px 0 20px;
+.hint:empty {
+  display: none;
 }
-.numbers dt {
+.hero {
+  margin-top: var(--s-16);
+  padding: var(--s-20) var(--s-20) var(--s-16);
+  border-radius: 22px;
+  background: var(--fill);
+}
+.heroLabel {
+  margin: 0;
   font-size: var(--type-footnote);
   color: var(--text-3);
 }
-.numbers dd {
+.heroValue {
   margin: 2px 0 0;
-  font-size: var(--type-title3);
+  font-size: 44px;
   font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
   font-variant-numeric: tabular-nums;
+}
+.heroValue small {
+  margin-right: var(--s-8);
+  font-size: var(--type-callout);
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--text-3);
+}
+.group {
+  padding: var(--s-20) var(--s-4) 0;
+}
+.groupHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-bottom: var(--s-4);
+  font-variant-numeric: tabular-nums;
+}
+.groupHead h3 {
+  margin: 0;
+  font-size: var(--type-callout);
+  font-weight: 600;
+}
+.groupHead span {
+  font-size: var(--type-callout);
+  font-weight: 600;
+}
+.lines {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.lines li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-12);
+  min-height: 38px;
+  border-top: 1px solid var(--line);
+  font-size: var(--type-body);
+  font-variant-numeric: tabular-nums;
+}
+.lines li:first-child {
+  border-top: 0;
+}
+.name {
+  color: var(--text-2);
+}
+.name em {
+  margin-left: var(--s-6);
+  font-size: var(--type-caption);
+  font-style: normal;
+  color: var(--text-3);
 }
 .actions {
   display: flex;
   flex-direction: column;
   gap: var(--s-4);
+  margin-top: var(--s-20);
 }
 .actions > button {
   height: 48px;

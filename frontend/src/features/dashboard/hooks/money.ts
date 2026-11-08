@@ -1,19 +1,23 @@
 import { useQuery } from "@tanstack/react-query";
-import { getPresent } from "../api/attendance";
+import { getGifts } from "../api/gifts";
+import { getTitheFigures } from "../api/tithes";
 import { getCategories, getMonths } from "../api/money";
 import { useData } from "./internals";
 
-// What came in, what went out and how many came, over a week.
+// All the money of a week in one place: transactions, tithes and project gifts.
 export function useWeek(from: string, to: string) {
   const categories = useData("categories", from, to, getCategories);
-  const present = useData("present", from, to, getPresent);
+  const tithes = useData("tithe-figures", from, to, getTitheFigures);
+  const gifts = useData("gifts", from, to, getGifts);
   return {
     categories: categories.data,
-    present: present.data?.present,
-    failed: categories.failed || present.failed,
+    tithes: tithes.data,
+    gifts: gifts.data,
+    failed: categories.failed || tithes.failed || gifts.failed,
     retry: () => {
       categories.retry();
-      present.retry();
+      tithes.retry();
+      gifts.retry();
     },
   };
 }
