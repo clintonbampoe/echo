@@ -231,3 +231,10 @@
   font: inherit;
   font-size: var(--type-caption);
 }
+
+/* A finger cannot press Tab, so a phone gets no suggestion it could not use. */
+@media (pointer: coarse) {
+  .ghost {
+    display: none;
+  }
+}

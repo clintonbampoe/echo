@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { Navigate, useNavigate } from "react-router-dom";
 import type { ApiError } from "@/lib/api";
 import { handleSubmitError } from "@/lib/forms";
-import { Alert, Button } from "@/ui";
+import { Alert, useMedia } from "@/ui";
 import { AuthLinks } from "../components/AuthLinks";
 import { AuthScreen } from "../components/AuthScreen";
 import {
@@ -17,6 +17,8 @@ import {
   type ChurchValues,
 } from "../forms/schema";
 import { ChurchFields } from "./ChurchFields";
+import { ChurchButtons } from "../components/ChurchButtons";
+import { CHURCH_PARTS } from "../model/churchParts";
 import { useSignUp } from "../hooks/signUp";
 import styles from "./form.module.css";
 
@@ -49,6 +51,17 @@ function ChurchForm({ account }: { account: AccountValues }) {
     defaultValues: { orgType: "Church", region: "GreaterAccra" },
   });
 
+  // On a phone the form is three short parts, one at a time.
+  const phone = useMedia("(max-width: 599px)");
+  const [part, setPart] = useState(0);
+  const last = CHURCH_PARTS.length - 1;
+  const partial = phone && part < last;
+
+  async function next() {
+    const ok = await form.trigger(CHURCH_PARTS[part]);
+    if (ok) setPart(part + 1);
+  }
+
   async function onSubmit(v: ChurchValues) {
     setProblem(null);
     try {
@@ -77,18 +90,27 @@ function ChurchForm({ account }: { account: AccountValues }) {
       navigate("/verify", { state: { email: account.email, signedIn } });
     } catch (e) {
       handleSubmitError(e, form.setError, FIELD_MAP, setProblem);
+      // If the API objected to something in an earlier part, take them back to it.
+      const bad = CHURCH_PARTS.findIndex((names) =>
+        names.some((n) => form.getFieldState(n).error),
+      );
+      if (bad >= 0) setPart(bad);
     }
   }
 
   return (
     <AuthScreen
       title="Tell us about your church"
-      text="Step 2 of 2. You can change all of this later."
+      text={
+        phone
+          ? `Step 2 of 2, part ${part + 1} of ${CHURCH_PARTS.length}. You can change all of this later.`
+          : "Step 2 of 2. You can change all of this later."
+      }
       links={
         <AuthLinks
           heading="Need to step back?"
           items={[
-            { to: "/signup", label: "Back" },
+            { to: "/signup", label: phone ? "Back to step 1" : "Back" },
             { to: "/signin", label: "Sign in" },
           ]}
         />
@@ -100,21 +122,25 @@ function ChurchForm({ account }: { account: AccountValues }) {
         </Alert>
       )}
       <form
-        onSubmit={form.handleSubmit(onSubmit)}
+        onSubmit={
+          partial
+            ? (e) => {
+                e.preventDefault();
+                void next();
+              }
+            : form.handleSubmit(onSubmit)
+        }
         noValidate
         className={`${styles.form} stagger`}
       >
-        <ChurchFields form={form} />
-        <Button
-          type="submit"
-          size="lg"
-          pill
-          block
+        <ChurchFields form={form} part={phone ? part : undefined} />
+        <ChurchButtons
+          part={part}
+          partial={partial}
+          phone={phone}
           loading={register.isPending}
-          className={styles.submit}
-        >
-          Create church
-        </Button>
+          onBack={() => setPart(part - 1)}
+        />
       </form>
     </AuthScreen>
   );

@@ -75,7 +75,9 @@ export function ProductPreview() {
               <div className={styles.bars}>
                 {SUNDAYS.map((h, i) => (
                   <span key={DATES[i]}>
-                    <b style={{ height: `${h}%` }} />
+                    <i className={styles.track}>
+                      <b style={{ height: `${h}%` }} />
+                    </i>
                     <small>{DATES[i]}</small>
                   </span>
                 ))}

@@ -87,8 +87,15 @@ export function SignInPage() {
           aside={
             <Link
               to="/forgot"
-              state={{ email: getValues("email") }}
               className={styles.aside}
+              // Read what is typed at the moment of the click: the form does not re-render as you type.
+              onClick={(e) => {
+                // Let "open in a new tab" work as usual.
+                if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0)
+                  return;
+                e.preventDefault();
+                navigate("/forgot", { state: { email: getValues("email") } });
+              }}
             >
               Forgot password?
             </Link>

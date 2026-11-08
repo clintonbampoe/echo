@@ -78,6 +78,11 @@
   cursor: pointer;
 }
 
+.menuSignin,
+.menuCta {
+  display: none;
+}
+
 @media (max-width: 999px) {
   .header {
     padding: 18px 40px;
@@ -110,6 +115,9 @@
     padding: 14px 16px;
     font-size: 16px;
   }
+  .menuSignin {
+    display: block;
+  }
 }
 @media (max-width: 599px) {
   .header {
@@ -121,5 +129,9 @@
   }
   .cta {
     display: none;
+  }
+  .menuCta {
+    display: inline-flex;
+    margin-top: 6px;
   }
 }

@@ -129,6 +129,14 @@
   gap: 6px;
   height: 100%;
 }
+/* Every bar stands in its own track, so a date that wraps to two lines never lifts or sinks a bar. */
+.track {
+  display: flex;
+  flex: 1;
+  align-items: flex-end;
+  width: 100%;
+  min-height: 0;
+}
 .bars b {
   width: 100%;
   border-radius: 8px 8px 2px 2px;
@@ -136,7 +144,10 @@
   opacity: 0.85;
 }
 .bars small {
+  height: 2.5em;
   font-size: 10.5px;
+  line-height: 1.25;
+  text-align: center;
   color: var(--text-3);
 }
 .person {

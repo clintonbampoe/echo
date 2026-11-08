@@ -553,3 +553,6 @@ html[data-reduce-motion="true"] .av:hover {
   clip-path: inset(50%);
   white-space: nowrap;
 }
+.word-reveal-text {
+  user-select: none;
+}

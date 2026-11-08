@@ -62,6 +62,13 @@ describe("the website frame", () => {
     );
   });
 
+  it("keeps Sign in reachable in the open menu on a narrow screen", async () => {
+    renderAt("/");
+    await userEvent.click(await screen.findByRole("button", { name: "Menu" }));
+    // The header's own Sign in link and the menu's copy of it.
+    expect(screen.getAllByRole("link", { name: "Sign in" })).toHaveLength(2);
+  });
+
   it("offers Open Echo to someone who is signed in", async () => {
     saveTokens(tokens);
     renderAt("/");

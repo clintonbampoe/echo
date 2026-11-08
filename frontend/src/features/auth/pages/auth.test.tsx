@@ -156,6 +156,44 @@ describe("sign up", () => {
     expect(router.state.location.pathname).toBe("/signup/church");
   });
 
+  it("on a phone, asks for the church in three short parts", async () => {
+    vi.stubGlobal("matchMedia", (q: string) => ({
+      matches: q.includes("599"),
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    }));
+    renderAt("/signup");
+    const password = makePassword();
+    await userEvent.type(await screen.findByLabelText("First name"), "Ama");
+    await userEvent.type(screen.getByLabelText("Last name"), "Mensah");
+    await userEvent.type(
+      screen.getByLabelText("Email address"),
+      "ama@example.com",
+    );
+    await userEvent.type(screen.getByLabelText("Password"), password);
+    await userEvent.type(screen.getByLabelText("Confirm password"), password);
+    await userEvent.click(screen.getByRole("button", { name: "Continue" }));
+
+    // Part 1: the name. It cannot be skipped, and nothing from the other parts is on screen.
+    await screen.findByLabelText("Church name");
+    expect(screen.queryByLabelText("Phone")).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Continue" }));
+    expect(
+      await screen.findByText("Enter your church name."),
+    ).toBeInTheDocument();
+
+    await userEvent.type(screen.getByLabelText("Church name"), "Grace Chapel");
+    await userEvent.click(screen.getByRole("button", { name: "Continue" }));
+    expect(await screen.findByLabelText("Phone")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Church name")).not.toBeInTheDocument();
+
+    // Back keeps what was typed.
+    await userEvent.click(screen.getByRole("button", { name: "Back" }));
+    expect(await screen.findByLabelText("Church name")).toHaveValue(
+      "Grace Chapel",
+    );
+  });
+
   it("does not leave step 1 when the two passwords differ", async () => {
     const router = renderAt("/signup");
     const password = makePassword();

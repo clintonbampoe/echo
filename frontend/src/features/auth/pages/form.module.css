@@ -43,3 +43,10 @@
   text-underline-offset: 3px;
   cursor: pointer;
 }
+
+/* Two fields that read better one over the other on a phone (a phone number and an email address). */
+@media (max-width: 599px) {
+  .stackOnPhone {
+    flex-direction: column;
+  }
+}

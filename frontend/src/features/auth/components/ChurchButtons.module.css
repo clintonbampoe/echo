@@ -1,0 +1,12 @@
+.buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
+}
+.buttons > * {
+  flex: 1;
+}
+.buttons > [type="submit"] {
+  margin-top: 0;
+  box-shadow: var(--glow);
+}

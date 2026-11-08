@@ -30,6 +30,29 @@ export function SiteHeader() {
             {item.label}
           </NavLink>
         ))}
+        {/* The header hides these on a narrow screen, so the open menu carries them. */}
+        {open && (
+          <>
+            {!signedIn && (
+              <Link
+                to="/signin"
+                className={`${styles.link} ${styles.menuSignin}`}
+                onClick={() => setOpen(false)}
+              >
+                Sign in
+              </Link>
+            )}
+            <LinkButton
+              to={signedIn ? "/dashboard" : "/signup"}
+              pill
+              block
+              className={styles.menuCta}
+              onClick={() => setOpen(false)}
+            >
+              {signedIn ? "Open Echo" : "Get started"}
+            </LinkButton>
+          </>
+        )}
       </nav>
       <div className={styles.actions}>
         <ThemeToggle />
