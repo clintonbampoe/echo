@@ -1,6 +1,6 @@
 .split {
   display: grid;
-  grid-template-columns: 0.9fr 1.1fr;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
   gap: var(--gap, 100px);
 }
 .title {
@@ -29,7 +29,7 @@
 }
 @media (max-width: 999px) {
   .split {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: var(--stack-tablet, 40px);
   }
   .title {
