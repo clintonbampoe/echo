@@ -6,6 +6,7 @@ using Echo.Domain.Congregations;
 using Echo.IntegrationTests.Support;
 using Microsoft.AspNetCore.OutputCaching;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Echo.IntegrationTests.Caching;
 
@@ -42,7 +43,7 @@ public class CacheEvictionTests(PostgresFixture db)
         var store = new RecordingStore();
         var options = new DbContextOptionsBuilder<AppDbContext>().UseNpgsql(db.ConnectionString);
         options.ConfigureEchoDatabase();
-        options.AddInterceptors(new CacheEvictionInterceptor(new ReadCacheEvictions(store)));
+        options.AddInterceptors(new CacheEvictionInterceptor(new ReadCacheEvictions(store, NullLogger<ReadCacheEvictions>.Instance)));
         return (new AppDbContext(options.Options), store);
     }
 
@@ -147,7 +148,7 @@ public class CacheEvictionTests(PostgresFixture db)
         await context.SaveChangesAsync(ct);
         store.Evicted.Clear();
 
-        var repository = new AssetCategoryRepository(context, new ReadCacheEvictions(store));
+        var repository = new AssetCategoryRepository(context, new ReadCacheEvictions(store, NullLogger<ReadCacheEvictions>.Instance));
         await repository.Reassign(church.Id, from, to.Id, deleteSource: false, ct);
 
         Assert.Equal([ReadCache.Tag(church.Id)], store.Evicted);

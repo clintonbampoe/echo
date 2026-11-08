@@ -29,7 +29,7 @@ public class AttendanceTotalsRefresherTests
         var scopes = new FailingScopes();
         using var worker = new AttendanceTotalsRefresher(
             scopes,
-            new ReadCacheEvictions(new RecordingCacheStore()),
+            new ReadCacheEvictions(new RecordingCacheStore(), NullLogger<ReadCacheEvictions>.Instance),
             time,
             NullLogger<AttendanceTotalsRefresher>.Instance
         );
@@ -53,7 +53,7 @@ public class AttendanceTotalsRefresherTests
         var scopes = new FailingScopes();
         using var worker = new AttendanceTotalsRefresher(
             scopes,
-            new ReadCacheEvictions(new RecordingCacheStore()),
+            new ReadCacheEvictions(new RecordingCacheStore(), NullLogger<ReadCacheEvictions>.Instance),
             time,
             NullLogger<AttendanceTotalsRefresher>.Instance
         );

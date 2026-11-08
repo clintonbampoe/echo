@@ -86,6 +86,7 @@ internal sealed class ReadPolicy(TimeSpan ttl, string? extraTag = null) : IOutpu
     {
         var http = context.HttpContext;
         // Something was dropped while this was being worked out, so it may hold what was there before.
+        // This cannot close the last instant between this check and the answer being stored.
         var dropped = http.Items[Started] is long started && started != Evictions(http).Drops;
         if (
             dropped

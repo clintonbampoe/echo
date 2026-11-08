@@ -16,7 +16,7 @@ public readonly struct HashScope : IDisposable
     {
         _permit = permit;
         _metrics = metrics;
-        _started = Stopwatch.GetTimestamp();
+        _started = metrics.Timestamp();
     }
 
     public void Dispose()
@@ -35,14 +35,16 @@ public sealed class HashingMetrics
     public const string MeterName = "Echo.Shared.Hashing";
 
     private readonly HashGate _gate;
+    private readonly TimeProvider _time;
     private readonly Histogram<double> _wait;
     private readonly Histogram<double> _duration;
     private readonly Counter<long> _refused;
     private readonly Counter<long> _abandoned;
 
-    public HashingMetrics(IMeterFactory meters, HashGate gate)
+    public HashingMetrics(IMeterFactory meters, HashGate gate, TimeProvider time)
     {
         _gate = gate;
+        _time = time;
         var meter = meters.Create(MeterName);
 
         meter.CreateObservableGauge(
@@ -126,7 +128,7 @@ public sealed class HashingMetrics
 
     public async Task<HashScope> EnterAsync(CancellationToken ct)
     {
-        var started = Stopwatch.GetTimestamp();
+        var started = _time.GetTimestamp();
         HashPermit permit;
         try
         {
@@ -143,7 +145,7 @@ public sealed class HashingMetrics
             throw;
         }
 
-        var waited = Stopwatch.GetElapsedTime(started);
+        var waited = _time.GetElapsedTime(started);
         _wait.Record(waited.TotalSeconds);
         // Time in line is expected under a burst and is not the request being slow.
         // Saying so on the request's own span
@@ -152,8 +154,10 @@ public sealed class HashingMetrics
         return new HashScope(permit, this);
     }
 
+    internal long Timestamp() => _time.GetTimestamp();
+
     internal void RecordDuration(long started) =>
-        _duration.Record(Stopwatch.GetElapsedTime(started).TotalSeconds);
+        _duration.Record(_time.GetElapsedTime(started).TotalSeconds);
 
     // The span of the HTTP request: the hash runs inside child spans, and slow requests
     // are judged on the server span.

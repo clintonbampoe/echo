@@ -19,6 +19,15 @@ public sealed class CacheEvictionInterceptor(ReadCacheEvictions cache)
     // Contexts are pooled and reused, so what waits to be dropped is kept per context, not per request.
     private readonly ConditionalWeakTable<DbContext, HashSet<string>> _pending = [];
 
+    // A synchronous save would skip the drop without a sound, so it fails loudly instead.
+    public InterceptionResult<int> SavingChanges(
+        DbContextEventData eventData,
+        InterceptionResult<int> result
+    ) =>
+        throw new NotSupportedException(
+            "Save with SaveChangesAsync: a synchronous save would not drop the cached answers."
+        );
+
     public ValueTask<InterceptionResult<int>> SavingChangesAsync(
         DbContextEventData eventData,
         InterceptionResult<int> result,
@@ -38,7 +47,7 @@ public sealed class CacheEvictionInterceptor(ReadCacheEvictions cache)
     {
         // Inside our own transaction the write is not visible yet; its commit drops the cache.
         if (eventData.Context is { Database.CurrentTransaction: null } db)
-            await Evict(db, ct);
+            await Evict(db);
         return result;
     }
 
@@ -55,7 +64,7 @@ public sealed class CacheEvictionInterceptor(ReadCacheEvictions cache)
         DbTransaction transaction,
         TransactionEndEventData eventData,
         CancellationToken ct = default
-    ) => eventData.Context is { } db ? Evict(db, ct) : Task.CompletedTask;
+    ) => eventData.Context is { } db ? Evict(db) : Task.CompletedTask;
 
     public Task TransactionRolledBackAsync(
         DbTransaction transaction,
@@ -95,11 +104,11 @@ public sealed class CacheEvictionInterceptor(ReadCacheEvictions cache)
             Pending(db).Clear();
     }
 
-    private async Task Evict(DbContext db, CancellationToken ct)
+    private async Task Evict(DbContext db)
     {
         var tags = Pending(db).ToArray();
         Pending(db).Clear();
         foreach (var tag in tags)
-            await cache.Drop(tag, ct);
+            await cache.Drop(tag);
     }
 }

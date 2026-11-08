@@ -105,7 +105,7 @@ public class ProjectCategoryRepository(AppDbContext context, ReadCacheEvictions 
 
         await tx.CommitAsync(ct);
         // The move is a bulk update the save interceptor never sees.
-        await cache.Drop(congregationId, ct);
+        await cache.Drop(congregationId);
         return moved;
     }
 

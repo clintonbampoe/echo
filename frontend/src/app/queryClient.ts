@@ -13,12 +13,18 @@ function shouldRetry(failureCount: number, error: unknown): boolean {
 // finds its rows (every page the person had loaded) waiting, instead of an empty list to load again.
 export const KEEP_MS = 30 * 60_000;
 
+const LEFT_ALONE = new Set(["auth", "account"]);
+
 export const queryClient: QueryClient = new QueryClient({
   // The server drops everything it kept for the congregation when anything in it is written, so after any
   // successful write every list here is stale too, not just the feature's own. Lists on screen reload now,
-  // the rest the next time they are shown.
+  // the rest the next time they are shown. Sign-in links are spent by one read and the profile is not
+  // congregation data, so those are left to their own updates.
   mutationCache: new MutationCache({
-    onSuccess: () => void queryClient.invalidateQueries(),
+    onSuccess: () =>
+      void queryClient.invalidateQueries({
+        predicate: (q) => !LEFT_ALONE.has(q.queryKey[0] as string),
+      }),
   }),
   defaultOptions: {
     queries: {

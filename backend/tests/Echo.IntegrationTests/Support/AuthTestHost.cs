@@ -99,7 +99,7 @@ public sealed class AuthTestHost : IAsyncDisposable
             .AddApplicationServices()
             .AddAuthServices(configuration)
             .AddDataServices()
-            .AddSharedServices(configuration);
+            .AddSharedServices();
         services.AddSingleton(new JwtKeyRing(configuration.GetSection("Jwt").Get<JwtOptions>()!));
         services.AddSingleton<TimeProvider>(time);
         services.AddDbContext<AppDbContext>(

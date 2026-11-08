@@ -32,4 +32,18 @@ describe("queryClient", () => {
 
     expect(queryClient.getQueryState(["members"])?.isInvalidated).toBe(false);
   });
+
+  // The email link is spent by reading it once, so a second read would wrongly report it expired. The
+  // profile and congregation are not what the server drops on a write, and each has its own update.
+  it("leaves sign-in and account queries alone after a write", async () => {
+    queryClient.setQueryData(["auth", "verify", "abc"], true);
+    queryClient.setQueryData(["account", "me"], { name: "Ama" });
+
+    await new MutationObserver(queryClient, {
+      mutationFn: () => Promise.resolve("saved"),
+    }).mutate();
+
+    expect(queryClient.getQueryState(["auth", "verify", "abc"])?.isInvalidated).toBe(false);
+    expect(queryClient.getQueryState(["account", "me"])?.isInvalidated).toBe(false);
+  });
 });

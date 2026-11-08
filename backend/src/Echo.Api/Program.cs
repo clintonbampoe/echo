@@ -22,7 +22,7 @@ builder
     .AddAuthServices(builder.Configuration)
     .AddDataServices()
     .AddReadCache(builder.Configuration)
-    .AddSharedServices(builder.Configuration);
+    .AddSharedServices();
 
 builder
     .Services.ConfigureApiOptions()

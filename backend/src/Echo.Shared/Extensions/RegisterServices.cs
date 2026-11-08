@@ -20,12 +20,8 @@ public static class RegisterServices
     /// Adds shared services to the DI container.
     /// </summary>
     /// <param name="services">The service collection.</param>
-    /// <param name="configuration">Application configuration.</param>
     /// <returns>The service collection for chaining.</returns>
-    public static IServiceCollection AddSharedServices(
-        this IServiceCollection services,
-        IConfiguration configuration
-    )
+    public static IServiceCollection AddSharedServices(this IServiceCollection services)
     {
         services.AddSingleton(TimeProvider.System);
         services.AddSingleton<IIdGenerator, IdGenerator>();

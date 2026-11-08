@@ -216,7 +216,7 @@ public class AttendanceRepository(AppDbContext context, ReadCacheEvictions cache
 
         // This runs after the save that caused it, which has already dropped the cache.
         foreach (var congregationId in changed.Select(a => a.CongregationId).Distinct())
-            await cache.Drop(congregationId, ct);
+            await cache.Drop(congregationId);
     }
 
     public void SoftDelete(Attendance entity) => entity.DeletedAt = DateTime.UtcNow;
