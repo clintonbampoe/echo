@@ -1,0 +1,197 @@
+.card {
+  --donut: 232px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg, var(--radius));
+  background: var(--surface);
+  overflow: hidden;
+}
+.body {
+  display: flex;
+  align-items: center;
+  gap: var(--s-32);
+  padding: var(--s-8) var(--s-24) var(--s-24);
+}
+.key {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--s-4);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    "dot name share"
+    "dot count share";
+  align-items: center;
+  column-gap: var(--s-12);
+  row-gap: var(--s-2);
+  width: 100%;
+  min-height: 64px;
+  padding: var(--s-12) var(--s-16);
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-option);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background-color var(--t-fast) var(--ease-soft),
+    box-shadow var(--t-base);
+}
+.row[data-on="true"] {
+  background: var(--glass-tile);
+  box-shadow:
+    var(--glass-edge),
+    inset 0 0 0 1px var(--glass-tile-edge);
+}
+.row:active {
+  transform: scale(0.99);
+}
+.row:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: -2px;
+}
+.dot {
+  grid-area: dot;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--dot);
+}
+.name {
+  grid-area: name;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: var(--type-body);
+  font-weight: 500;
+}
+.count {
+  grid-area: count;
+  font-size: var(--type-footnote);
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+}
+.share {
+  grid-area: share;
+  font-size: var(--type-title2);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.centre {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--s-2);
+  max-width: 70%;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  text-align: center;
+}
+button.centre {
+  cursor: pointer;
+  border-radius: var(--radius-option);
+}
+button.centre:focus-visible {
+  outline: 2px solid var(--text);
+  outline-offset: 4px;
+}
+.centreLabel {
+  font-size: var(--type-footnote);
+  font-weight: 500;
+  color: var(--text-2);
+}
+.centreValue {
+  font-size: calc(var(--donut) * 0.27);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+}
+.centreNote {
+  font-size: var(--type-footnote);
+  color: var(--text-3);
+}
+
+.empty {
+  margin: 0;
+  padding: var(--s-8) var(--s-24) var(--s-24);
+  color: var(--text-3);
+}
+.ghostRing {
+  flex: none;
+  width: var(--donut);
+  aspect-ratio: 1;
+  border-radius: 50%;
+}
+.ghostKey {
+  flex: 1;
+  height: 136px;
+  border-radius: var(--radius);
+}
+
+/* A tablet has less room: a smaller ring and the same key. */
+@media (max-width: 900px) {
+  .card {
+    --donut: 188px;
+  }
+  .body {
+    gap: var(--s-24);
+    padding-inline: var(--s-16);
+  }
+}
+/* A phone: a small ring with a compact key, one line per role ("16 · 67%"). */
+@media (max-width: 560px) {
+  .card {
+    --donut: 132px;
+  }
+  .body {
+    gap: var(--s-8);
+    padding: var(--s-4) var(--s-12) var(--s-16);
+  }
+  .key {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+  .row {
+    grid-template-columns: auto minmax(0, 1fr) auto auto;
+    grid-template-areas: "dot name count share";
+    min-height: 44px;
+    padding: 0 var(--s-8);
+    column-gap: var(--s-8);
+  }
+  .name {
+    font-size: var(--type-footnote);
+  }
+  .count {
+    font-weight: 500;
+  }
+  .word {
+    display: none;
+  }
+  .share {
+    font-size: var(--type-footnote);
+    font-weight: 400;
+    letter-spacing: 0;
+    color: var(--text-3);
+  }
+  .share::before {
+    content: "· ";
+  }
+  .centreValue {
+    font-size: 32px;
+  }
+  .centreNote {
+    font-size: var(--type-caption);
+  }
+}

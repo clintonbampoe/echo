@@ -24,10 +24,11 @@ public sealed class EmailPage
     /// <summary>The grey line mail apps show after the subject in the inbox list.</summary>
     public required string Preheader { get; init; }
     public required IReadOnlyList<string> Paragraphs { get; init; }
-    public required EmailButton Button { get; init; }
-
     /// <summary>Why the person got this email, shown in the footer.</summary>
     public required string Reason { get; init; }
+
+    /// <summary>The one action the email offers. Leave it out when there is nothing the person can do.</summary>
+    public EmailButton? Button { get; init; }
 
     public IReadOnlyList<EmailRow> Rows { get; init; } = [];
     public IReadOnlyList<EmailStep> Steps { get; init; } = [];

@@ -9,7 +9,7 @@ import { invitationRoutes } from "@/features/invitations";
 import { memberRoutes } from "@/features/members";
 import { organizationRoutes } from "@/features/organizations";
 import { settingsRoutes } from "@/features/settings";
-import { teamRoutes } from "@/features/team";
+import { staffRoutes } from "@/features/staff";
 import { titheRoutes } from "@/features/tithes";
 import { projectRoutes } from "@/features/projects";
 import { transactionRoutes } from "@/features/transactions";
@@ -52,7 +52,7 @@ const routes: RouteObject[] = [
               ...transactionRoutes,
               ...projectRoutes,
               ...assetRoutes,
-              ...teamRoutes,
+              ...staffRoutes,
               ...invitationRoutes,
               ...settingsRoutes,
               ...accountRoutes,

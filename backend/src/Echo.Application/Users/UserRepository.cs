@@ -1,10 +1,14 @@
 using Echo.Shared.Query;
 using Echo.Data;
 using Echo.Domain.Auth;
+using Echo.Domain.Congregations;
 using Echo.Domain.Users;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Application.Users;
+
+/// <summary>Names an account-change email needs and the person it is about does not have.</summary>
+public sealed record EmailContext(string CongregationName, string ActorName);
 
 public class UserRepository(AppDbContext context)
 {
@@ -23,6 +27,7 @@ public class UserRepository(AppDbContext context)
             .FilterDeleted()
             .Where(u => u.CongregationId == congregationId)
             .Filter(filter)
+            .MatchesQuery(filter.Q)
             .OrderBy(u => u.Name)
             .ThenBy(u => u.Id)
             .Paginate(cursor, pageSize)
@@ -74,6 +79,25 @@ public class UserRepository(AppDbContext context)
             .Set<RefreshToken>()
             .Where(t => t.UserId == userId && t.RevokedAt == null)
             .ExecuteUpdateAsync(s => s.SetProperty(t => t.RevokedAt, now), ct);
+    }
+
+    /// <summary>The church's name and the acting admin's name, for the emails sent about an account change.</summary>
+    public async Task<EmailContext> GetEmailContext(
+        Guid congregationId,
+        Guid actorId,
+        CancellationToken ct
+    )
+    {
+        var church = await context
+            .Set<Congregation>()
+            .Where(c => c.Id == congregationId)
+            .Select(c => c.Name)
+            .FirstOrDefaultAsync(ct);
+        var actor = await _dbSet
+            .Where(u => u.Id == actorId)
+            .Select(u => u.Name)
+            .FirstOrDefaultAsync(ct);
+        return new EmailContext(church ?? "your church", actor ?? "An admin");
     }
 
     public async Task<User?> GetById(Guid congregationId, Guid id, CancellationToken ct = default)
@@ -136,6 +160,23 @@ internal static class UserQueryExtensions
             UserStatus.Unverified => query.Where(u => u.EmailVerifiedAt == null),
             _ => query,
         };
+    }
+
+    /// <summary>
+    /// Keeps people whose name or email contains the text. A term under three characters can only use the
+    /// start of the name or email, because a trigram index cannot look up anything shorter.
+    /// </summary>
+    internal static IQueryable<User> MatchesQuery(this IQueryable<User> query, string? text)
+    {
+        var term = text?.Trim();
+        if (string.IsNullOrEmpty(term))
+            return query;
+
+        var escaped = Echo.Shared.Query.Extensions.EscapeLike(term);
+        var pattern = term.Length >= Echo.Shared.Query.Extensions.MinContainsLength ? $"%{escaped}%" : $"{escaped}%";
+        return query.Where(u =>
+            EF.Functions.ILike(u.Name, pattern) || EF.Functions.ILike(u.EmailAddress, pattern)
+        );
     }
 
     internal static IQueryable<User> Paginate(

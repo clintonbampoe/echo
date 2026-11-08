@@ -84,12 +84,13 @@ public static class EmailLayout
             AppendSteps(html, page.Steps);
         if (page.Callout is not null)
             AppendCallout(html, page.Callout);
-        AppendButton(html, page.Button);
+        if (page.Button is not null)
+            AppendButton(html, page.Button);
         if (page.Code is not null)
             AppendCode(html, page.Code);
         if (page.Note is not null)
             AppendNote(html, page.Note);
-        if (page.ShowLinkFallback)
+        if (page.ShowLinkFallback && page.Button is not null)
             AppendLinkFallback(html, page.Button.Url);
 
         html.Append("</table></td></tr>");

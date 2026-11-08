@@ -108,4 +108,28 @@ describe("ListBody", () => {
       "Showing 2 tithes. Newest first.",
     );
   });
+
+  it("counts what is loaded, not a total, when asked to", () => {
+    render(
+      <ListBody
+        list={list({ rows: ["a", "b"], hasMore: true })}
+        icon="tithes"
+        noun={["person", "people"]}
+        emptyText="None."
+        filtered={false}
+        onClear={vi.fn()}
+        footerInside
+        loaded
+      >
+        {(rows, footer) => (
+          <div>
+            {rows.length}
+            {footer}
+          </div>
+        )}
+      </ListBody>,
+    );
+    expect(screen.getByText("2 loaded")).toBeInTheDocument();
+    expect(screen.queryByText(/Showing/)).toBeNull();
+  });
 });

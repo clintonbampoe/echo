@@ -119,4 +119,23 @@ public class EmailLayoutTests
         Assert.Contains("K7QX-92MD-PW4T", html);
         Assert.Contains("Works for 1 hour.", html);
     }
+
+    [Fact]
+    public void Render_WithoutAButton_LeavesItOut()
+    {
+        var page = new EmailPage
+        {
+            Category = "Account",
+            Heading = "Hello",
+            Preheader = "Short preview",
+            Paragraphs = ["First line."],
+            Reason = "Because.",
+            ShowLinkFallback = true,
+        };
+
+        var html = EmailLayout.Render(page);
+
+        Assert.DoesNotContain("class=\"btn-table\"", html);
+        Assert.DoesNotContain("Button not working?", html);
+    }
 }

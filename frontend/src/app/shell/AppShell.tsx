@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Outlet, ScrollRestoration } from "react-router-dom";
+import { DesktopHint } from "./DesktopHint";
 import { MenuPage } from "./MenuPage";
 import { PullToRefresh } from "./PullToRefresh";
 import { Sidebar } from "./Sidebar";
@@ -29,6 +30,7 @@ export function AppShell() {
       <div className={styles.panel}>
         <TopBar onMenu={() => setMenuOpen(true)} />
         <main className={styles.main}>
+          <DesktopHint />
           <VerifyEmailBanner />
           <Outlet />
         </main>

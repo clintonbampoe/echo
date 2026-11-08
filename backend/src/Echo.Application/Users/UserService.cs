@@ -1,13 +1,18 @@
+using Echo.Application.Users.Emails;
 using Echo.Data;
 using Echo.Domain.Users;
 using Echo.Shared.HttpResults;
+using Echo.Shared.Models;
+using Echo.Shared.Options.Frontend;
 using Echo.Shared.Pagination;
+using Echo.Shared.Services.Email;
 using Echo.Shared.Services.Encoders;
 using Echo.Shared.Services.Generators;
 using Echo.Shared.Services.Hashing;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Echo.Application.Users;
 
@@ -21,6 +26,8 @@ public class UserService(
     TimeProvider timeProvider,
     ApplicationInstrumentation instrumentation,
     LinkGenerator linker,
+    IEmailQueue emailQueue,
+    IOptions<FrontendOptions> frontend,
     ILogger<UserService> logger
 )
 {
@@ -166,7 +173,9 @@ public class UserService(
             return new NotFoundResult(id.ToString());
         }
 
-        if (dto.Role.HasValue && dto.Role != entity.Role)
+        var previousRole = entity.Role;
+        var roleChanged = dto.Role.HasValue && dto.Role != previousRole;
+        if (roleChanged)
         {
             var refusal = await CheckCanLoseAdminPower(congregationId, actorId, entity, ct);
             if (refusal is not null)
@@ -186,6 +195,9 @@ public class UserService(
         }
 
         UserLog.Updated(logger, congregationId, id);
+
+        if (roleChanged)
+            await EmailRoleChange(congregationId, actorId, entity, previousRole, ct);
 
         var res = mapper.ToDto(entity);
         return new SuccessResult<UserResponseDto>(res);
@@ -226,6 +238,7 @@ public class UserService(
         }
 
         UserLog.Deleted(logger, congregationId, id);
+        await EmailAccountChange(congregationId, actorId, entity, "account_removed", ct);
 
         return new NoContentResult();
     }
@@ -258,6 +271,7 @@ public class UserService(
         await repository.RevokeSessions(entity.Id, now, ct);
 
         UserLog.Disabled(logger, congregationId, id, actorId);
+        await EmailAccountChange(congregationId, actorId, entity, "account_disabled", ct);
         return new SuccessResult<UserResponseDto>(mapper.ToDto(entity));
     }
 
@@ -304,6 +318,46 @@ public class UserService(
         activity?.SetTag("user.count", res.Count);
         UserLog.Searched(logger, congregationId, name, res.Count);
         return new SuccessResult<List<UserSearchResultDto>>(res);
+    }
+
+    // The person is told after the change is saved. A failed or full queue never undoes the change.
+    private async Task EmailRoleChange(
+        Guid congregationId,
+        Guid actorId,
+        User user,
+        UserRole previousRole,
+        CancellationToken ct
+    )
+    {
+        var context = await repository.GetEmailContext(congregationId, actorId, ct);
+        var body = new RoleChangedEmailBody(
+            user.FirstName,
+            context.CongregationName,
+            previousRole,
+            user.Role,
+            context.ActorName,
+            timeProvider.GetUtcNow().UtcDateTime,
+            $"{frontend.Value.BaseUrl}/dashboard"
+        );
+        emailQueue.TryEnqueue(
+            new EmailMessage(user.EmailAddress, body, "role_changed", user.Id, congregationId)
+        );
+    }
+
+    private async Task EmailAccountChange(
+        Guid congregationId,
+        Guid actorId,
+        User user,
+        string kind,
+        CancellationToken ct
+    )
+    {
+        var context = await repository.GetEmailContext(congregationId, actorId, ct);
+        var now = timeProvider.GetUtcNow().UtcDateTime;
+        IEmailContent body = kind == "account_disabled"
+            ? new AccountDisabledEmailBody(user.FirstName, context.CongregationName, user.EmailAddress, now)
+            : new AccountRemovedEmailBody(user.FirstName, context.CongregationName, user.EmailAddress, now);
+        emailQueue.TryEnqueue(new EmailMessage(user.EmailAddress, body, kind, user.Id, congregationId));
     }
 
     /// <summary>

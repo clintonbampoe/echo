@@ -103,23 +103,24 @@ describe("app shell", () => {
     );
   });
 
-  it("shows Team and Invitations at the end of the list to an administrator only", async () => {
+  it("shows Staff and Invitations apart, at the bottom of the sidebar, to an administrator only", async () => {
     renderShell();
     const sidebar = screen.getByRole("complementary", { name: "Sidebar" });
-    expect(
-      await within(sidebar).findByRole("link", { name: "Invitations" }),
-    ).toHaveAttribute("href", "/invitations");
-    expect(within(sidebar).getByRole("link", { name: "Team" })).toHaveAttribute(
+    const admin = await within(sidebar).findByRole("navigation", {
+      name: "Admin",
+    });
+    expect(within(admin).getByRole("link", { name: "Staff" })).toHaveAttribute(
       "href",
-      "/team",
+      "/staff",
     );
-    // One list, with no section headings.
-    expect(within(sidebar).queryByText("People")).toBeNull();
     expect(
-      within(sidebar)
-        .getByRole("navigation", { name: "Main" })
-        .querySelectorAll("a"),
-    ).toHaveLength(12);
+      within(admin).getByRole("link", { name: "Invitations" }),
+    ).toHaveAttribute("href", "/invitations");
+    expect(within(sidebar).getByText("Admin")).toBeInTheDocument();
+    // The everyday pages stay in the main list, without the admin ones.
+    const main = within(sidebar).getByRole("navigation", { name: "Main" });
+    expect(main.querySelectorAll("a")).toHaveLength(10);
+    expect(within(main).queryByRole("link", { name: "Staff" })).toBeNull();
   });
 
   it("hides Invitations from anyone else", async () => {

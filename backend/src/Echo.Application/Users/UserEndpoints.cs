@@ -61,7 +61,9 @@ public static class UserEndpoints
                 - `role` — only people with this role (`Admin`, `Accountant`, `Clerk`, `Member`).
                 - `status` — `Active` (can sign in), `Disabled` (an admin turned the account off) or `Unverified` (email not verified yet).
 
-                Both are optional and combine. Leave them out for everyone.
+                - `q` — text to find in the name or email, ignoring case. From three characters it matches anywhere in the name or email; shorter text matches only the start.
+
+                All are optional and combine. Leave them out for everyone.
 
                 ### Ordering
                 Users are ordered by name, then by ID as a tiebreaker. The order is stable across pages.
@@ -225,6 +227,7 @@ public static class UserEndpoints
 
                 ### Side effects
                 - If the password changed, existing sessions are **not** revoked by this endpoint. The user remains signed in on other devices until their access tokens expire and their refresh tokens are next used. If you need to force a sign-out, call `POST /auth/sessions/logout` with the user's email afterward.
+                - If the role changed, the person gets an email saying their role went up or down, who changed it and when. A failure to queue the email never undoes the change.
                 - If the email changed, the account's verified state is **preserved as-is** — this endpoint does not reset verification. If your policy requires re-verification on email change, that must be handled separately.
 
                 ### Path parameters
@@ -276,6 +279,7 @@ public static class UserEndpoints
 
                 ### Side effects
                 - The user is marked as deleted.
+                - The person gets an email saying their account was removed.
                 - **Refresh tokens are revoked**, so the person is signed out of every device. An access token already issued keeps working until it expires (up to ~15 minutes).
                 - Records that reference this user — as an event organizer, project manager, etc. — are not affected. The references remain, though lookups of the underlying user will now return `404`.
 
@@ -361,6 +365,7 @@ public static class UserEndpoints
                 ### Side effects
                 - Every refresh token of the account is revoked, so the person is signed out of every device. An access token already issued keeps working until it expires (up to ~15 minutes).
                 - Signing in with the right password then returns `403 ACCOUNT_DISABLED`.
+                - The person gets an email saying their account was disabled. Disabling an account that is already disabled sends nothing.
 
                 ### Path parameters
                 - `id` — the user's id, as returned by the list and create endpoints.

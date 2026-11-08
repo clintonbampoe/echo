@@ -1,22 +1,24 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { useMe } from "@/features/account";
 import { Icon, useSlidingThumb } from "@/ui";
-import { adminNav, mainNav, type NavItem } from "./nav";
+import type { NavItem } from "./nav";
 import styles from "./NavList.module.css";
 
-// The sidebar's links, in one list. One raised pill glides to whichever page is open. Invitations is added for
-// administrators only.
-export function NavList() {
-  const isAdmin = useMe().data?.role === "Admin";
+type Props = {
+  items: NavItem[];
+  // Names the list for screen readers: "Main", or "Admin" for the pages only administrators can open.
+  label: string;
+};
+
+// A list of the sidebar's links. One raised pill glides to whichever of them is open.
+export function NavList({ items, label }: Props) {
   const { pathname } = useLocation();
   const column = useSlidingThumb(pathname);
-  const items = isAdmin ? [...mainNav, ...adminNav] : mainNav;
   return (
     <div ref={column} className={styles.column}>
       <span className={styles.slot} aria-hidden="true">
         <span className={styles.thumb} />
       </span>
-      <nav aria-label="Main" className={styles.nav}>
+      <nav aria-label={label} className={styles.nav}>
         {items.map((item) => (
           <Item key={item.to} item={item} />
         ))}

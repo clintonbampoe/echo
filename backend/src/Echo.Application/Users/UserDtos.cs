@@ -81,8 +81,11 @@ public enum UserStatus
     Unverified,
 }
 
-/// <summary>Optional filters of the user list; leave one out to not filter by it.</summary>
-public record UserFilter(UserRole? Role = null, UserStatus? Status = null);
+/// <summary>
+/// Optional filters of the user list; leave one out to not filter by it. <paramref name="Q"/> is text to find in
+/// the name or email.
+/// </summary>
+public record UserFilter(UserRole? Role = null, UserStatus? Status = null, string? Q = null);
 
 public record UserRoleCountDto
 {

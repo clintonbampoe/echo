@@ -59,6 +59,11 @@
 
   /* Type scale. Every text size in the app is one of these; nothing is written as a raw number. */
   --type-caption: 12px; /* the smallest anything gets */
+  /* The parts of a ring chart, darkest first. The ring and its key both read these. */
+  --ring-0: #0a0a0b;
+  --ring-1: #3f3f46;
+  --ring-2: #6a6a72;
+  --ring-3: #9a9aa2;
   --type-footnote: 13px;
   --type-body: 14px;
   --type-callout: 15px;
