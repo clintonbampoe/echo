@@ -4,9 +4,11 @@ import { FOOTER } from "../../content/site";
 import styles from "./SiteFooter.module.css";
 
 // Who we are in one line, and the pages people look for. The third link only shows where there is room.
-export function SiteFooter() {
+export function SiteFooter({ flush = false }: { flush?: boolean }) {
   return (
-    <footer className={styles.footer}>
+    <footer
+      className={flush ? `${styles.footer} ${styles.flush}` : styles.footer}
+    >
       <div className={styles.inner}>
         <div className={styles.who}>
           <span className={styles.brand}>

@@ -1,12 +1,31 @@
+/* The error screen fills the window: the words and the picture sit in the middle, the footer under them. */
 .page {
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  min-height: calc(100dvh - 110px);
+  padding-top: 84px;
+}
+.center {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1328px;
+  margin: 0 auto;
+  padding: 0 64px;
+}
+.row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 80px;
   align-items: center;
-  max-width: 1200px;
-  min-height: calc(100dvh - 190px);
-  margin: 0 auto;
-  padding: 84px 64px 0;
+}
+.art {
+  width: 100%;
+  max-width: 560px;
 }
 .title {
   max-width: 640px;
@@ -29,26 +48,61 @@
   gap: 12px;
   margin-top: 30px;
 }
+.pages {
+  display: flex;
+  gap: 22px;
+  margin-top: 34px;
+  font-size: 14px;
+}
+.page_link {
+  color: var(--text-2);
+  text-decoration: none;
+}
+.page_link:hover {
+  color: var(--text);
+}
 @media (max-width: 999px) {
   .page {
-    grid-template-columns: 1fr;
-    gap: 48px;
-    min-height: 0;
-    padding: 72px 40px 24px;
+    min-height: calc(100dvh - 116px);
+  }
+  .center {
+    padding: 0 56px;
+  }
+  .row {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+  }
+  .art {
+    order: -1;
+    max-width: 520px;
   }
   .title {
-    font-size: 56px;
+    font-size: 60px;
+  }
+  .pages {
+    display: none;
   }
 }
 @media (max-width: 599px) {
   .page {
-    padding: 56px 20px 8px;
+    min-height: calc(100dvh - 110px);
+    padding-top: 96px;
+  }
+  .center {
+    padding: 0 20px;
+  }
+  .row {
+    gap: 14px;
+  }
+  .art {
+    max-width: 390px;
   }
   .title {
-    font-size: 40px;
+    font-size: 36px;
   }
   .lead {
-    font-size: 17px;
+    font-size: 16px;
   }
   .actions > * {
     width: 100%;

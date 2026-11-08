@@ -1,10 +1,17 @@
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Kicker, SiteFrame, Stop } from "@/features/website";
 import { useIsSignedIn } from "@/features/auth";
 import { Button, LinkButton } from "@/ui";
 import { PulseArt, WanderArt } from "./ErrorArt";
 import { errorViews, type ErrorKind } from "./errorView";
 import styles from "./ErrorScreen.module.css";
+
+const PAGES = [
+  { label: "About", to: "/about" },
+  { label: "Pricing", to: "/pricing" },
+  { label: "Community", to: "/community" },
+  { label: "Sign in", to: "/signin" },
+] as const;
 
 function Actions({ kind }: { kind: ErrorKind }) {
   const view = errorViews[kind];
@@ -41,20 +48,33 @@ function Actions({ kind }: { kind: ErrorKind }) {
 export function ErrorScreen({ kind }: { kind: ErrorKind }) {
   const view = errorViews[kind];
   return (
-    <SiteFrame>
+    <SiteFrame flush>
       <div className={styles.page}>
-        <div>
-          <Kicker>{view.kicker}</Kicker>
-          <h1 className={styles.title}>
-            {view.title}
-            <Stop />
-          </h1>
-          <p className={styles.lead}>{view.text}</p>
-          <div className={styles.actions}>
-            <Actions kind={kind} />
+        <div className={styles.center}>
+          <div className={styles.row}>
+            <div>
+              <Kicker>{view.kicker}</Kicker>
+              <h1 className={styles.title}>
+                {view.title}
+                <Stop />
+              </h1>
+              <p className={styles.lead}>{view.text}</p>
+              <div className={styles.actions}>
+                <Actions kind={kind} />
+              </div>
+            </div>
+            <div className={styles.art}>
+              {view.broken ? <PulseArt /> : <WanderArt />}
+            </div>
           </div>
+          <nav aria-label="Pages" className={styles.pages}>
+            {PAGES.map((page) => (
+              <Link key={page.label} to={page.to} className={styles.page_link}>
+                {page.label}
+              </Link>
+            ))}
+          </nav>
         </div>
-        {view.broken ? <PulseArt /> : <WanderArt />}
       </div>
     </SiteFrame>
   );

@@ -8,7 +8,14 @@ import styles from "./SiteLayout.module.css";
 
 // The frame around a website page: the light, the header and the footer. Pages sit inside it as children;
 // the error screens use it too, so a wrong turn still looks like the site.
-export function SiteFrame({ children }: { children: ReactNode }) {
+export function SiteFrame({
+  children,
+  flush = false,
+}: {
+  children: ReactNode;
+  // The page fills the window and its footer sits right under it.
+  flush?: boolean;
+}) {
   usePublicSurface();
   // Sections settle into place as the page is scrolled (see SiteLayout.module.css). Only the website does this.
   useEffect(() => {
@@ -23,7 +30,7 @@ export function SiteFrame({ children }: { children: ReactNode }) {
       <Atmosphere />
       <SiteHeader />
       <main className={styles.main}>{children}</main>
-      <SiteFooter />
+      <SiteFooter flush={flush} />
       <BackToTop />
       <ScrollRestoration />
     </div>

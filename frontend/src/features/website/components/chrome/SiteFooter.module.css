@@ -85,3 +85,8 @@
     padding-bottom: 34px;
   }
 }
+
+/* A screen that fills the window (the error screens) has no gap above its footer. */
+.footer.flush {
+  margin-top: 0;
+}
