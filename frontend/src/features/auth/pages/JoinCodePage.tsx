@@ -39,8 +39,16 @@ export function JoinCodePage() {
         <AuthLinks
           heading="No code yet?"
           items={[
-            { to: "/signin", label: "Back to sign in" },
-            { to: "/signup", label: "Create a church account" },
+            {
+              to: "/signin",
+              label: "Back to sign in",
+              hint: "Already have an account? Sign in.",
+            },
+            {
+              to: "/signup",
+              label: "Create a church account",
+              hint: "Start a new church on Echo.",
+            },
           ]}
         />
       }

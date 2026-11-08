@@ -238,3 +238,20 @@
     display: none;
   }
 }
+
+/* The letters come into focus when a password is shown. */
+.shown {
+  animation: pwShow 380ms var(--ease) both;
+}
+@keyframes pwShow {
+  from {
+    opacity: 0.4;
+    filter: blur(3px);
+    letter-spacing: 0.12em;
+  }
+  to {
+    opacity: 1;
+    filter: none;
+    letter-spacing: normal;
+  }
+}

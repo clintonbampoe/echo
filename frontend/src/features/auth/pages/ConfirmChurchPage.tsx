@@ -21,8 +21,16 @@ export function ConfirmChurchPage() {
             <AuthLinks
               heading="Not the right church?"
               items={[
-                { to: "/join", label: "Use a different code" },
-                { to: "/signin", label: "Back to sign in" },
+                {
+                  to: "/join",
+                  label: "Use a different code",
+                  hint: "Go back and enter another code.",
+                },
+                {
+                  to: "/signin",
+                  label: "Back to sign in",
+                  hint: "Already have an account? Sign in.",
+                },
               ]}
             />
           }

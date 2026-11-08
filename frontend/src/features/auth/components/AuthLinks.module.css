@@ -92,3 +92,37 @@
     border-color: var(--text);
   }
 }
+
+/* Where the link leads, shown over the row on hover or keyboard focus. It never moves the rows. */
+.item {
+  position: relative;
+}
+.preview {
+  position: absolute;
+  bottom: calc(100% - 4px);
+  left: 40px;
+  z-index: 2;
+  max-width: 280px;
+  padding: 10px 14px;
+  border: 1px solid var(--line-2);
+  border-radius: 14px;
+  background: var(--surface);
+  box-shadow: var(--card-shadow);
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--text-2);
+  opacity: 0;
+  transform: translateY(8px) scale(0.97);
+  transform-origin: 20% 100%;
+  pointer-events: none;
+  transition:
+    opacity var(--fast) var(--ease-soft),
+    transform var(--t-spring) var(--ease-spring);
+}
+@media (hover: hover) {
+  .item:hover .preview,
+  .item:focus-within .preview {
+    opacity: 1;
+    transform: none;
+  }
+}

@@ -4,7 +4,8 @@ import { Icon } from "@/ui";
 import { useSplit } from "./splitMode";
 import styles from "./AuthLinks.module.css";
 
-type Item = { to: string; label: string };
+// `hint` is the one line shown over the row on hover or focus: where the link leads.
+type Item = { to: string; label: string; hint?: string };
 
 type Props = {
   // The short line over the rows on a wide screen: "New to Echo?".
@@ -33,7 +34,7 @@ export function AuthLinks({ items, heading }: Props) {
       <h2 className={styles.heading}>{heading}</h2>
       <ul className={styles.rows}>
         {items.map((item, i) => (
-          <li key={item.to}>
+          <li key={item.to} className={styles.item}>
             <Link to={item.to} className={styles.row}>
               <span className={styles.number} aria-hidden="true">
                 0{i + 1}
@@ -43,6 +44,11 @@ export function AuthLinks({ items, heading }: Props) {
                 <Icon name="arrow-right" size={16} />
               </span>
             </Link>
+            {item.hint && (
+              <span className={styles.preview} aria-hidden="true">
+                {item.hint}
+              </span>
+            )}
           </li>
         ))}
       </ul>

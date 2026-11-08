@@ -106,7 +106,7 @@ export function PasswordField({
           type={shown ? "text" : "password"}
           aria-invalid={error ? true : undefined}
           aria-describedby={described}
-          className={`${styles.control} ${styles.padRight}`}
+          className={`${styles.control} ${styles.padRight} ${shown ? styles.shown : ""}`}
         />
         {/* The icon shows what the button will do: an open eye while the password is hidden (press to
             show it), a crossed-out eye while it is shown (press to hide it). */}

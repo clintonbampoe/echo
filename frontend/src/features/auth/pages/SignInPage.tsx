@@ -59,8 +59,16 @@ export function SignInPage() {
         <AuthLinks
           heading="New to Echo?"
           items={[
-            { to: "/signup", label: "Create a church account" },
-            { to: "/join", label: "Join with an invitation code" },
+            {
+              to: "/signup",
+              label: "Create a church account",
+              hint: "Set up your church in two short steps.",
+            },
+            {
+              to: "/join",
+              label: "Join with an invitation code",
+              hint: "Use the code someone from your church sent you.",
+            },
           ]}
         />
       }

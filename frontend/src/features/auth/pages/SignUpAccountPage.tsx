@@ -41,8 +41,16 @@ export function SignUpAccountPage() {
         <AuthLinks
           heading="Already with us?"
           items={[
-            { to: "/signin", label: "Sign in" },
-            { to: "/join", label: "Join with an invitation code" },
+            {
+              to: "/signin",
+              label: "Sign in",
+              hint: "Welcome back. Pick up where you left off.",
+            },
+            {
+              to: "/join",
+              label: "Join with an invitation code",
+              hint: "Join a church that is already on Echo.",
+            },
           ]}
         />
       }

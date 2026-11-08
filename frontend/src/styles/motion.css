@@ -556,3 +556,21 @@ html[data-reduce-motion="true"] .av:hover {
 .word-reveal-text {
   user-select: none;
 }
+
+/* Light and dark swap with the new theme spreading out from the button (ThemeToggle). */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+::view-transition-new(root) {
+  animation: themeSpread 650ms var(--ease) both;
+}
+@keyframes themeSpread {
+  from {
+    clip-path: circle(0 at var(--vt-x, 50%) var(--vt-y, 50%));
+  }
+  to {
+    clip-path: circle(150vmax at var(--vt-x, 50%) var(--vt-y, 50%));
+  }
+}

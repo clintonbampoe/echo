@@ -40,8 +40,16 @@ function JoinLinks() {
     <AuthLinks
       heading="Already have an account?"
       items={[
-        { to: "/signin", label: "Sign in" },
-        { to: "/join", label: "Use a different code" },
+        {
+          to: "/signin",
+          label: "Sign in",
+          hint: "Welcome back. Pick up where you left off.",
+        },
+        {
+          to: "/join",
+          label: "Use a different code",
+          hint: "Check the code and try again.",
+        },
       ]}
     />
   );

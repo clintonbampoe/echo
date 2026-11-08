@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { Navigate, useNavigate } from "react-router-dom";
 import type { ApiError } from "@/lib/api";
 import { handleSubmitError } from "@/lib/forms";
-import { Alert, useMedia } from "@/ui";
+import { Alert } from "@/ui";
 import { AuthLinks } from "../components/AuthLinks";
 import { AuthScreen } from "../components/AuthScreen";
 import {
@@ -18,6 +18,7 @@ import {
 } from "../forms/schema";
 import { ChurchFields } from "./ChurchFields";
 import { ChurchButtons } from "../components/ChurchButtons";
+import { useChurchParts } from "../hooks/useChurchParts";
 import { CHURCH_PARTS } from "../model/churchParts";
 import { useSignUp } from "../hooks/signUp";
 import styles from "./form.module.css";
@@ -51,16 +52,10 @@ function ChurchForm({ account }: { account: AccountValues }) {
     defaultValues: { orgType: "Church", region: "GreaterAccra" },
   });
 
-  // On a phone the form is three short parts, one at a time.
-  const phone = useMedia("(max-width: 599px)");
-  const [part, setPart] = useState(0);
-  const last = CHURCH_PARTS.length - 1;
-  const partial = phone && part < last;
-
-  async function next() {
-    const ok = await form.trigger(CHURCH_PARTS[part]);
-    if (ok) setPart(part + 1);
-  }
+  // The small line over the title becomes the church's name as it is typed.
+  const churchName = useWatch({ control: form.control, name: "name" }) ?? "";
+  const { phone, part, setPart, partial, next, showFirstError } =
+    useChurchParts(form);
 
   async function onSubmit(v: ChurchValues) {
     setProblem(null);
@@ -90,16 +85,13 @@ function ChurchForm({ account }: { account: AccountValues }) {
       navigate("/verify", { state: { email: account.email, signedIn } });
     } catch (e) {
       handleSubmitError(e, form.setError, FIELD_MAP, setProblem);
-      // If the API objected to something in an earlier part, take them back to it.
-      const bad = CHURCH_PARTS.findIndex((names) =>
-        names.some((n) => form.getFieldState(n).error),
-      );
-      if (bad >= 0) setPart(bad);
+      showFirstError();
     }
   }
 
   return (
     <AuthScreen
+      kicker={churchName.trim() || "Your church"}
       title="Tell us about your church"
       text={
         phone
@@ -110,8 +102,16 @@ function ChurchForm({ account }: { account: AccountValues }) {
         <AuthLinks
           heading="Need to step back?"
           items={[
-            { to: "/signup", label: phone ? "Back to step 1" : "Back" },
-            { to: "/signin", label: "Sign in" },
+            {
+              to: "/signup",
+              label: phone ? "Back to step 1" : "Back",
+              hint: "Your details are kept.",
+            },
+            {
+              to: "/signin",
+              label: "Sign in",
+              hint: "Already have an account? Sign in.",
+            },
           ]}
         />
       }
