@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
-import { Link } from "react-router-dom";
 import { Icon } from "@/ui";
+import { GoLink } from "./GoLink";
 import { useSplit } from "./splitMode";
 import styles from "./AuthLinks.module.css";
 
@@ -23,9 +23,9 @@ export function AuthLinks({ items, heading }: Props) {
     if (!first) return null;
     return (
       <p className={styles.single}>
-        <Link to={first.to} className={styles.link}>
+        <GoLink to={first.to} className={styles.link}>
           {first.label}
-        </Link>
+        </GoLink>
       </p>
     );
   }
@@ -35,7 +35,7 @@ export function AuthLinks({ items, heading }: Props) {
       <ul className={styles.rows}>
         {items.map((item, i) => (
           <li key={item.to} className={styles.item}>
-            <Link to={item.to} className={styles.row}>
+            <GoLink to={item.to} className={styles.row}>
               <span className={styles.number} aria-hidden="true">
                 0{i + 1}
               </span>
@@ -43,7 +43,7 @@ export function AuthLinks({ items, heading }: Props) {
               <span className={styles.arrow} aria-hidden="true">
                 <Icon name="arrow-right" size={16} />
               </span>
-            </Link>
+            </GoLink>
             {item.hint && (
               <span className={styles.preview} aria-hidden="true">
                 {item.hint}

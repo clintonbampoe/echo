@@ -19,6 +19,7 @@
   letter-spacing: -0.02em;
 }
 .nav {
+  position: relative;
   display: flex;
   gap: 2px;
   padding: 4px;
@@ -41,7 +42,25 @@
 .link:hover,
 .active {
   color: var(--text);
+}
+/* On a wide screen one pill slides between links (useGlide); the links themselves stay plain. */
+.glide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 0;
+  border-radius: var(--radius-pill);
   background: var(--hover);
+  pointer-events: none;
+  transition:
+    transform 380ms var(--ease-spring),
+    width 380ms var(--ease-spring),
+    height 380ms var(--ease-spring),
+    opacity var(--fast) ease;
+}
+.link {
+  position: relative;
+  z-index: 1;
 }
 .link:focus-visible {
   outline: var(--focus);
@@ -95,6 +114,14 @@
   }
   .signin {
     display: none;
+  }
+  /* The open menu is a list; each row lights up by itself. */
+  .glide {
+    display: none;
+  }
+  .link:hover,
+  .active {
+    background: var(--hover);
   }
   .nav {
     position: absolute;

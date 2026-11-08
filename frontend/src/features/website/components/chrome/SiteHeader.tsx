@@ -2,12 +2,14 @@ import { useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { useIsSignedIn } from "@/features/auth";
 import { LinkButton, Logo, ThemeToggle } from "@/ui";
+import { useGlide } from "./useGlide";
 import { NAV } from "../../content/site";
 import styles from "./SiteHeader.module.css";
 
 export function SiteHeader() {
   const signedIn = useIsSignedIn();
   const [open, setOpen] = useState(false);
+  const { navRef, style, onEnter, onLeave } = useGlide();
   return (
     <header className={styles.header}>
       <Link to="/" className={styles.brand} onClick={() => setOpen(false)}>
@@ -15,9 +17,13 @@ export function SiteHeader() {
         <span className={styles.name}>Echo</span>
       </Link>
       <nav
+        ref={navRef}
         aria-label="Main"
         className={`${styles.nav} ${open ? styles.open : ""}`}
+        onMouseLeave={onLeave}
+        onBlur={onLeave}
       >
+        <span className={styles.glide} style={style} aria-hidden="true" />
         {NAV.map((item) => (
           <NavLink
             key={item.to}
@@ -26,6 +32,8 @@ export function SiteHeader() {
               `${styles.link} ${isActive ? styles.active : ""}`
             }
             onClick={() => setOpen(false)}
+            onMouseEnter={onEnter}
+            onFocus={onEnter}
           >
             {item.label}
           </NavLink>

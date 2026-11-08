@@ -574,3 +574,15 @@ html[data-reduce-motion="true"] .av:hover {
     clip-path: circle(150vmax at var(--vt-x, 50%) var(--vt-y, 50%));
   }
 }
+
+/* Between auth screens the title and the card travel (features/auth useAuthGo). */
+html[data-vt-nav] [data-vt="title"] {
+  view-transition-name: auth-title;
+}
+html[data-vt-nav] [data-vt="card"] {
+  view-transition-name: auth-card;
+}
+html[data-vt-nav]::view-transition-group(*) {
+  animation-duration: 450ms;
+  animation-timing-function: var(--ease);
+}

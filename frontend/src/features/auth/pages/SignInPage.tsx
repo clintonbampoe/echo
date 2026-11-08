@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import type { ApiError } from "@/lib/api";
 import { handleSubmitError } from "@/lib/forms";
 import { Button, Field, PasswordField } from "@/ui";
@@ -9,6 +9,7 @@ import { AuthScreen } from "../components/AuthScreen";
 import { AuthLinks } from "../components/AuthLinks";
 import { SignInAlert } from "../components/SignInAlert";
 import { useSignIn } from "../hooks/mutations";
+import { GoLink } from "../components/GoLink";
 import { greetingFor } from "../model/greeting";
 import { safePath } from "../model/origin";
 import { signInSchema, type SignInValues } from "../forms/schema";
@@ -93,20 +94,13 @@ export function SignInPage() {
           placeholder="Enter your password"
           error={errors.password?.message}
           aside={
-            <Link
+            <GoLink
               to="/forgot"
               className={styles.aside}
-              // Read what is typed at the moment of the click: the form does not re-render as you type.
-              onClick={(e) => {
-                // Let "open in a new tab" work as usual.
-                if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0)
-                  return;
-                e.preventDefault();
-                navigate("/forgot", { state: { email: getValues("email") } });
-              }}
+              stateAt={() => ({ email: getValues("email") })}
             >
               Forgot password?
-            </Link>
+            </GoLink>
           }
           {...register("password")}
         />

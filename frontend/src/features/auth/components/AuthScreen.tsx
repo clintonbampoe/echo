@@ -36,11 +36,13 @@ export function AuthScreen({
           {kicker}
         </p>
       )}
-      <h1 className={styles.title}>
+      <h1 className={styles.title} data-vt="title">
         <WordReveal text={title} />
       </h1>
       {text && <p className={styles.text}>{text}</p>}
-      <div className={styles.card}>{children}</div>
+      <div className={styles.card} data-vt="card">
+        {children}
+      </div>
     </>
   );
   if (!split) {
