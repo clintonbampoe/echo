@@ -23,12 +23,21 @@
   margin-top: 50px;
 }
 .card {
+  display: flex;
+  flex-direction: column;
   box-sizing: border-box;
   padding: 32px;
   border: 1px solid var(--card-line);
   border-radius: 24px;
   background: var(--card);
   box-shadow: var(--card-shadow);
+}
+/* The open part fills what the summary leaves, so the two buttons sit on one line (browsers without
+   ::details-content simply let them follow their lists). */
+.card::details-content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
 }
 .summary {
   display: flex;
@@ -50,6 +59,7 @@
   color: var(--text-2);
 }
 .points {
+  flex: 1;
   margin: 20px 0 26px;
   padding: 0;
   list-style: none;
@@ -63,6 +73,8 @@
   color: var(--text-2);
 }
 .points span {
+  flex: none;
+  min-width: 22px;
   padding-top: 3px;
   font-size: 13px;
   color: var(--text-3);
@@ -72,6 +84,20 @@
   flex-wrap: wrap;
   gap: 28px;
   margin-top: 22px;
+}
+/* Two narrow cards side by side: the name keeps its line and the tag sits under it, never beside it. */
+@media (min-width: 600px) and (max-width: 1099px) {
+  .summary {
+    display: block;
+  }
+  .name {
+    display: block;
+    white-space: nowrap;
+  }
+  .tag {
+    display: block;
+    margin-top: 4px;
+  }
 }
 @media (max-width: 999px) {
   .title {
