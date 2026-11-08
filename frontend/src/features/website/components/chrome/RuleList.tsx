@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import styles from "./RuleList.module.css";
+import { ripple } from "./ripple";
 
 export type Rule = {
   title: string;
@@ -23,15 +24,26 @@ function RuleRow({
   swipe: boolean;
 }) {
   const [read, setRead] = useState(false);
+  // Only a row someone opened or closed is felt by its neighbours, not one that starts open.
+  const touched = useRef(false);
   return (
     <details
       className={bare ? `${styles.rule} ${styles.bare}` : styles.rule}
       open={open}
       data-expand
       data-read={read || undefined}
-      onToggle={(e) => e.currentTarget.open && setRead(true)}
+      onToggle={(e) => {
+        if (e.currentTarget.open) setRead(true);
+        if (touched.current && !swipe) ripple(e.currentTarget);
+        touched.current = false;
+      }}
     >
-      <summary className={styles.summary}>
+      <summary
+        className={styles.summary}
+        onClick={() => {
+          touched.current = true;
+        }}
+      >
         <span>
           {(!bare || swipe) && (
             <span

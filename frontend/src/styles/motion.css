@@ -591,13 +591,14 @@ details[data-expand]::details-content {
     opacity 240ms var(--ease-soft),
     content-visibility 640ms allow-discrete;
 }
+/* Opening carries a little overshoot, so the rows below are pushed a touch past and settle back; closing does not. */
 details[data-expand][open]::details-content {
   block-size: auto;
   opacity: 1;
   transition:
-    block-size 640ms cubic-bezier(0.32, 0.72, 0.18, 1),
+    block-size 700ms cubic-bezier(0.3, 1.18, 0.4, 1),
     opacity 420ms var(--ease-soft) 110ms,
-    content-visibility 640ms allow-discrete;
+    content-visibility 700ms allow-discrete;
 }
 details[data-expand] > :not(summary) {
   transform: translateY(-8px);
@@ -607,12 +608,41 @@ details[data-expand][open] > :not(summary) {
   transform: none;
   transition: transform 560ms var(--ease-out) 60ms;
 }
+/* The words come line by line, each a beat after the one before. */
+details[data-expand] :is(p, li) {
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+    opacity 160ms var(--ease-soft),
+    transform 160ms var(--ease-soft);
+}
+details[data-expand][open] :is(p, li) {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 480ms var(--ease-soft) calc(140ms + var(--n, 0) * 90ms),
+    transform 640ms var(--ease-out) calc(140ms + var(--n, 0) * 90ms);
+}
+details[data-expand] :is(p, li):nth-child(2) {
+  --n: 1;
+}
+details[data-expand] :is(p, li):nth-child(3) {
+  --n: 2;
+}
+details[data-expand] :is(p, li):nth-child(4) {
+  --n: 3;
+}
+details[data-expand] :is(p, li):nth-child(n + 5) {
+  --n: 4;
+}
 @media (prefers-reduced-motion: reduce) {
+  details[data-expand] :is(p, li),
   details[data-expand]::details-content,
   details[data-expand] > :not(summary) {
     transition: none !important;
   }
 }
+html[data-reduce-motion="true"] details[data-expand] :is(p, li),
 html[data-reduce-motion="true"] details[data-expand]::details-content,
 html[data-reduce-motion="true"] details[data-expand] > :not(summary) {
   transition: none !important;
