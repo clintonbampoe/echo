@@ -5,11 +5,6 @@
   gap: 100px;
   align-items: start;
 }
-.kicker {
-  margin: 0;
-  font-size: 14px;
-  color: var(--text-2);
-}
 .title {
   max-width: 620px;
   margin: 22px 0 0;
@@ -17,34 +12,6 @@
   font-weight: 600;
   line-height: 0.98;
   letter-spacing: -0.055em;
-}
-/* The full stop gives a slow ring now and then, like a small echo. */
-.stop {
-  position: relative;
-  display: inline-block;
-}
-.stop::after {
-  content: "";
-  position: absolute;
-  bottom: 0.14em;
-  left: 50%;
-  width: 0.16em;
-  height: 0.16em;
-  border: 2px solid currentcolor;
-  border-radius: 50%;
-  opacity: 0;
-  animation: stopRing 5s var(--ease-out) 1.4s infinite;
-}
-@keyframes stopRing {
-  0% {
-    opacity: 0.7;
-    transform: translate(-50%, 50%) scale(1);
-  }
-  60%,
-  100% {
-    opacity: 0;
-    transform: translate(-50%, 50%) scale(6);
-  }
 }
 .lead {
   max-width: 440px;
@@ -57,98 +24,6 @@
   margin: 22px 0 0;
   font-size: 13px;
   color: var(--text-3);
-}
-
-.rules {
-  border-bottom: 1px solid var(--line);
-}
-.rule {
-  padding: 24px 0;
-  border-top: 1px solid var(--line);
-}
-.summary {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  font-size: 22px;
-  font-weight: 500;
-  letter-spacing: -0.02em;
-  cursor: pointer;
-  list-style: none;
-}
-.summary::-webkit-details-marker {
-  display: none;
-}
-.summary:focus-visible {
-  outline: var(--focus);
-  outline-offset: 6px;
-  border-radius: 6px;
-}
-/* A plus that turns over into a minus as the rule opens. */
-.summary::after {
-  content: "";
-  flex: none;
-  width: 14px;
-  height: 14px;
-  margin-top: 0.4em;
-  color: var(--text-3);
-  background:
-    linear-gradient(currentcolor, currentcolor) center / 10px 1.5px no-repeat,
-    linear-gradient(currentcolor, currentcolor) center / 1.5px 10px no-repeat;
-  transition:
-    transform 350ms var(--ease-out),
-    background-size 350ms var(--ease-out);
-}
-.rule[open] .summary::after {
-  transform: rotate(180deg);
-  background-size:
-    10px 1.5px,
-    1.5px 0;
-}
-.number {
-  position: relative;
-  display: inline-block;
-  min-width: 38px;
-  font-size: 13px;
-  font-weight: 400;
-  color: var(--text-3);
-}
-/* Opened once: a small dot appears in the margin. */
-.rule[data-read] .number::after {
-  content: "";
-  position: absolute;
-  top: 0.5em;
-  left: -18px;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--text);
-  animation: readDot 400ms cubic-bezier(0.3, 1.6, 0.5, 1) both;
-}
-@keyframes readDot {
-  from {
-    transform: scale(0);
-  }
-}
-.plain {
-  display: block;
-  margin-top: 5px;
-  font-size: 16px;
-  font-weight: 400;
-  letter-spacing: 0;
-  line-height: 1.4;
-  color: var(--text-2);
-}
-.full {
-  padding: 2px 0 0 38px;
-}
-.full p {
-  max-width: 600px;
-  margin: 12px 0 0;
-  font-size: 16px;
-  line-height: 1.55;
-  color: var(--text-2);
 }
 
 @media (max-width: 999px) {
@@ -166,20 +41,5 @@
   }
   .lead {
     font-size: 16px;
-  }
-  .rule {
-    padding: 18px 0;
-  }
-  .summary {
-    font-size: 18px;
-  }
-  .plain {
-    font-size: 15px;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .stop::after,
-  .rule[data-read] .number::after {
-    animation: none;
   }
 }

@@ -1,18 +1,34 @@
 export const ABOUT = {
-  lead: "Echo began as a way to stop losing track of people. It became a way to see a whole congregation clearly, and to hear it back in plain numbers.",
-  values: [
+  title: "Built so your church can spend its time on people",
+  lead: "Echo is free, open source, and made in the open for churches everywhere.",
+  promises: [
     {
-      title: "Data you can use",
-      text: "Storing records is the start. Getting answers back easily is the point.",
+      title: "Free",
+      summary:
+        "No plans, no per-member fees, no lock-in. The free part stays free.",
+      body: [
+        "Gifts and Echo Sanctuary churches keep Echo going. Nothing a church needs day to day sits behind a paywall.",
+      ],
     },
     {
-      title: "Calm by design",
-      text: "Fewer things on screen, each one useful and pleasant to look at.",
+      title: "Open",
+      summary:
+        "The code is public, and we are plain about how your data is handled.",
+      body: [
+        "Anyone can read the code, check how your data is handled and suggest a fix. Developers are welcome to help build it.",
+      ],
     },
     {
-      title: "Built with churches",
-      text: "Every screen starts from how a congregation actually works.",
+      title: "Yours",
+      summary: "Export it any time, or run it on your own servers.",
+      body: [
+        "Everything you put in comes back out in files you can open anywhere. Or take Echo to your own servers with Echo Sanctuary.",
+      ],
     },
+  ],
+  why: [
+    "Most of what keeps a church going is volunteers, time and care. The software meant to help often costs more than a church can spare, and asks it to hand over its members’ data.",
+    "Echo is our answer: the same tools, free, open, and yours. It is built in Accra, and shaped by the churches that use it. Every idea on the roadmap began with someone who runs a church.",
   ],
 } as const;
 

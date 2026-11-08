@@ -1,0 +1,45 @@
+.kicker {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-size: 14px;
+  color: var(--text-2);
+}
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text);
+  box-shadow: 0 0 12px var(--text);
+}
+/* The dot wakes as it enters the screen: small and pale, a quick swell, then settled. */
+@supports (animation-timeline: view()) {
+  .dot {
+    animation: wake linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 90%;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .dot {
+      animation: none;
+    }
+  }
+  html[data-reduce-motion="true"] .dot {
+    animation: none;
+  }
+}
+@keyframes wake {
+  0% {
+    opacity: 0.2;
+    transform: scale(0.5);
+  }
+  45% {
+    opacity: 1;
+    transform: scale(1.7);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
