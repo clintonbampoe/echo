@@ -36,15 +36,13 @@
   }
 }
 @media (max-width: 599px) {
+  .layout {
+    gap: 22px;
+  }
   .title {
     font-size: 38px;
   }
   .lead {
     font-size: 16px;
   }
-}
-.report {
-  margin: 28px 0 0;
-  font-size: 15px;
-  color: var(--text-2);
 }

@@ -8,7 +8,7 @@
 }
 .summary {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 16px;
   font-size: 22px;
@@ -25,14 +25,16 @@
   outline-offset: 6px;
   border-radius: 6px;
 }
-/* A plus that turns over into a minus as the rule opens. */
+/* A round button with a plus that turns over into a minus as the rule opens. */
 .summary::after {
   content: "";
   flex: none;
-  width: 14px;
-  height: 14px;
-  margin-top: 0.4em;
-  color: var(--text-3);
+  box-sizing: border-box;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--line-2);
+  border-radius: 50%;
+  color: var(--text);
   background:
     linear-gradient(currentcolor, currentcolor) center / 10px 1.5px no-repeat,
     linear-gradient(currentcolor, currentcolor) center / 1.5px 10px no-repeat;
@@ -145,6 +147,9 @@
   }
   .swipe .phoneOnly {
     display: block;
+  }
+  .swipe .summary {
+    align-items: flex-start;
   }
   .swipe .number {
     display: block;

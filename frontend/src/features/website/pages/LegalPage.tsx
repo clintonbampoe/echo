@@ -11,10 +11,10 @@ type Props = { document: "privacy" | "terms" };
 // Privacy and Terms share this shape: a title and one line on the left, numbered rules on the right.
 export function LegalPage({ document }: Props) {
   const { kicker, title, rules } = LEGAL[document];
-  // Wide: the first rule starts open, as on the page design. Tablet and phone: all closed.
-  const wide = useMedia("(min-width: 1000px)");
+  // The first rule starts open on a tablet and wider; on a phone every rule starts closed.
+  const roomy = useMedia("(min-width: 600px)");
   return (
-    <Section top={72}>
+    <Section top={150} tablet={130} phone={100}>
       <div className={styles.layout}>
         <div>
           <Kicker>{kicker}</Kicker>
@@ -25,7 +25,7 @@ export function LegalPage({ document }: Props) {
           <p className={styles.lead}>{LEGAL.lead}</p>
           <p className={styles.updated}>{LEGAL.updated}</p>
         </div>
-        <RuleList rules={rules as readonly Rule[]} openFirst={wide} />
+        <RuleList rules={rules as readonly Rule[]} openFirst={roomy} />
       </div>
     </Section>
   );

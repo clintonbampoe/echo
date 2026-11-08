@@ -3,6 +3,11 @@
   max-width: 520px;
   margin-top: 44px;
 }
+@media (max-width: 599px) {
+  .art {
+    margin-top: 28px;
+  }
+}
 .svg {
   display: block;
   width: 100%;

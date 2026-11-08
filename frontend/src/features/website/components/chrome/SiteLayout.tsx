@@ -1,6 +1,7 @@
 import { useEffect, type ReactNode } from "react";
 import { Outlet, ScrollRestoration } from "react-router-dom";
 import { Atmosphere, usePublicSurface } from "@/ui";
+import { BackToTop } from "./BackToTop";
 import { SiteFooter } from "./SiteFooter";
 import { SiteHeader } from "./SiteHeader";
 import styles from "./SiteLayout.module.css";
@@ -23,6 +24,7 @@ export function SiteFrame({ children }: { children: ReactNode }) {
       <SiteHeader />
       <main className={styles.main}>{children}</main>
       <SiteFooter />
+      <BackToTop />
       <ScrollRestoration />
     </div>
   );

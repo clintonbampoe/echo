@@ -116,11 +116,15 @@
   .summary::after {
     content: "";
     position: absolute;
-    top: 8px;
+    top: 50%;
     right: 0;
-    width: 14px;
-    height: 14px;
-    color: var(--text-3);
+    box-sizing: border-box;
+    width: 28px;
+    height: 28px;
+    margin-top: -14px;
+    border: 1px solid var(--line-2);
+    border-radius: 50%;
+    color: var(--text);
     background:
       linear-gradient(currentcolor, currentcolor) center / 10px 1.5px no-repeat,
       linear-gradient(currentcolor, currentcolor) center / 1.5px 10px no-repeat;
