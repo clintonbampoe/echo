@@ -23,7 +23,6 @@ public class SessionService(
     ApplicationInstrumentation instrumentation,
     LinkGenerator linker,
     DateWindows dateWindows,
-    SummaryCache summaries,
     ILogger<SessionService> logger
 )
 {
@@ -232,19 +231,12 @@ public class SessionService(
         return new NoContentResult();
     }
 
-    public Task<IOperationResult> Summary(
+    public async Task<IOperationResult> Summary(
         Guid congregationId,
         SessionFilters filters,
         CancellationToken ct
     ) =>
-        summaries.Serve(
-            this,
-            "sessions",
-            congregationId,
-            filters,
-            (self, token) => self.ComputeSummary(congregationId, filters, token),
-            ct
-        );
+        SuccessResult.Of(await ComputeSummary(congregationId, filters, ct));
 
     private async Task<SessionSummaryDto> ComputeSummary(
         Guid congregationId,

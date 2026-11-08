@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using Echo.Application.Caching;
 using Echo.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,17 +9,19 @@ using Microsoft.Extensions.Logging;
 namespace Echo.Application.Attendances;
 
 /// <summary>
-/// Brings the <c>attendance_per_session</c> view up to date every few minutes, so the attendance
+/// Brings the <c>attendance_per_session</c> view up to date every minute, so the attendance
 /// and session summaries can add up a few rows per session instead of counting every check-in. A
-/// failed refresh is logged and tried again next time; the summaries keep the last totals.
+/// failed refresh is logged and tried again next time; the summaries keep the last totals. Each refresh
+/// changes figures no write to a congregation announces, so it invalidates the cached answers that read the views.
 /// </summary>
 public sealed class AttendanceTotalsRefresher(
     IServiceScopeFactory scopes,
+    ReadCacheInvalidator cache,
     TimeProvider time,
     ILogger<AttendanceTotalsRefresher> logger
 ) : BackgroundService
 {
-    public static readonly TimeSpan Interval = TimeSpan.FromMinutes(5);
+    public static readonly TimeSpan Interval = TimeSpan.FromMinutes(1);
 
     // Any number, as long as nothing else locks on it. With several API instances, whoever gets it
     // refreshes and the rest skip this round.
@@ -68,6 +71,7 @@ public sealed class AttendanceTotalsRefresher(
                 ct
             );
             await transaction.CommitAsync(ct);
+            await cache.InvalidateViews();
 
             AttendanceLog.TotalsRefreshed(
                 logger,

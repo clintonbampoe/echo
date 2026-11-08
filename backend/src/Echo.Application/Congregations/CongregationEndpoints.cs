@@ -1,7 +1,9 @@
+using Echo.Application.Caching;
 using Echo.Shared.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Echo.Application.Congregations;
 
@@ -12,7 +14,10 @@ public static class CongregationEndpoints
         ApplicationInstrumentation instrumentation
     )
     {
-        var group = app.MapGroup("/congregation").WithTags("Congregation").RequireAuthorization();
+        var group = app.MapGroup("/congregation")
+            .WithTags("Congregation")
+            .RequireAuthorization()
+            .CacheOutput(ReadCache.Policy);
 
         group
             .MapGet(

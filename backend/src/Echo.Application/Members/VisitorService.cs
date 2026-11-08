@@ -24,7 +24,6 @@ public class VisitorService(
     ApplicationInstrumentation instrumentation,
     LinkGenerator linker,
     DateWindows dateWindows,
-    SummaryCache summaries,
     ILogger<VisitorService> logger
 )
 {
@@ -335,21 +334,11 @@ public class VisitorService(
         return new SuccessResult<List<VisitorSearchResultDto>>(res);
     }
 
-    public Task<IOperationResult> Summary(
+    public async Task<IOperationResult> Summary(
         Guid congregationId,
         VisitorFilters filters,
         CancellationToken ct
-    )
-    {
-        return summaries.Serve(
-            this,
-            "visitors",
-            congregationId,
-            filters,
-            (self, token) => self.ComputeSummary(congregationId, filters, token),
-            ct
-        );
-    }
+    ) => SuccessResult.Of(await ComputeSummary(congregationId, filters, ct));
 
     private async Task<VisitorSummaryDto> ComputeSummary(
         Guid congregationId,

@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using Echo.Shared.Services.Hashing;
+using Microsoft.Extensions.Time.Testing;
 
 namespace Echo.Shared.Tests.Services.Hashing;
 
@@ -12,9 +13,10 @@ public sealed class HashingMetricsTests : IDisposable
 
     private readonly TestMeterFactory _meters = new();
     private readonly HashGate _gate = new(permits: 1, maxQueued: 2);
+    private readonly FakeTimeProvider _time = new();
     private readonly HashingMetrics _metrics;
 
-    public HashingMetricsTests() => _metrics = new(_meters, _gate);
+    public HashingMetricsTests() => _metrics = new(_meters, _gate, _time);
 
     public void Dispose()
     {
@@ -55,10 +57,10 @@ public sealed class HashingMetricsTests : IDisposable
         using var duration = new Recorder<double>(_meters, "auth.hash.duration");
 
         var scope = await _metrics.EnterAsync(Ct);
-        await Task.Delay(60, Ct);
+        _time.Advance(TimeSpan.FromMilliseconds(60));
         scope.Dispose();
 
-        Assert.InRange(Assert.Single(duration.Values), 0.05, 1);
+        Assert.Equal(0.06, Assert.Single(duration.Values), precision: 6);
     }
 
     [Fact]
@@ -68,13 +70,14 @@ public sealed class HashingMetricsTests : IDisposable
         var running = await _metrics.EnterAsync(Ct);
 
         var queued = _metrics.EnterAsync(Ct);
-        await Task.Delay(60, Ct);
+        _time.Advance(TimeSpan.FromMilliseconds(60));
         running.Dispose();
         (await queued.WaitAsync(_soon, Ct)).Dispose();
 
-        // the first caller did not wait; the second waited about 60 ms
+        // the first caller did not wait; the second waited 60 ms
         Assert.Equal(2, wait.Values.Count);
-        Assert.InRange(wait.Values.Max(), 0.05, 2);
+        Assert.Equal(0, wait.Values.Min());
+        Assert.Equal(0.06, wait.Values.Max(), precision: 6);
     }
 
     [Fact]
@@ -128,12 +131,12 @@ public sealed class HashingMetricsTests : IDisposable
         // the code that hashes runs in a child span
         using var inner = source.StartActivity("svc.session.login");
         var queued = _metrics.EnterAsync(Ct);
-        await Task.Delay(80, Ct);
+        _time.Advance(TimeSpan.FromMilliseconds(80));
         running.Dispose();
         (await queued.WaitAsync(_soon, Ct)).Dispose();
 
         var waited = Assert.IsType<long>(server!.GetTagItem("auth.hash.wait_ms"));
-        Assert.InRange(waited, 60, 2000);
+        Assert.Equal(80, waited);
     }
 
     [Fact]
@@ -146,7 +149,7 @@ public sealed class HashingMetricsTests : IDisposable
         (await _metrics.EnterAsync(Ct)).Dispose();
 
         var waited = Assert.IsType<long>(server!.GetTagItem("auth.hash.wait_ms"));
-        Assert.InRange(waited, 0, 50);
+        Assert.Equal(0, waited);
     }
 
     private static ActivityListener SampleEverything(string sourceName)

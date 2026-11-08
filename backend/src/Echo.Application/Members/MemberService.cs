@@ -22,7 +22,6 @@ public class MemberService(
     ApplicationInstrumentation instrumentation,
     LinkGenerator linker,
     DateWindows dateWindows,
-    SummaryCache summaries,
     ILogger<MemberService> logger
 )
 {
@@ -214,19 +213,12 @@ public class MemberService(
         return new SuccessResult<List<MemberSearchResultDto>>(res);
     }
 
-    public Task<IOperationResult> Summary(
+    public async Task<IOperationResult> Summary(
         Guid congregationId,
         MemberFilters filters,
         CancellationToken ct
     ) =>
-        summaries.Serve(
-            this,
-            "members",
-            congregationId,
-            filters,
-            (self, token) => self.ComputeSummary(congregationId, filters, token),
-            ct
-        );
+        SuccessResult.Of(await ComputeSummary(congregationId, filters, ct));
 
     private async Task<MemberSummaryDto> ComputeSummary(
         Guid congregationId,
@@ -272,14 +264,7 @@ public class MemberService(
         if (MonthRange.Problem(MonthRange.Or(filters.Months)) is { } problem)
             return new BadRequestResult(problem);
 
-        return await summaries.Serve(
-            this,
-            "members.monthly",
-            congregationId,
-            filters,
-            (self, token) => self.ComputeMonthly(congregationId, filters, token),
-            ct
-        );
+        return SuccessResult.Of(await ComputeMonthly(congregationId, filters, ct));
     }
 
     private async Task<List<MemberMonthlyDto>> ComputeMonthly(

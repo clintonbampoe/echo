@@ -1,3 +1,4 @@
+using Echo.Application.Caching;
 using Echo.Data;
 using Echo.Domain.Attendances;
 using Echo.Domain.Members;
@@ -7,7 +8,7 @@ using Npgsql;
 
 namespace Echo.Application.Attendances;
 
-public class AttendanceRepository(AppDbContext context)
+public class AttendanceRepository(AppDbContext context, ReadCacheInvalidator cache)
 {
     private readonly DbSet<Attendance> _dbSet = context.Set<Attendance>();
 
@@ -212,6 +213,10 @@ public class AttendanceRepository(AppDbContext context)
             WHERE a.id = r.id AND r.current <> r.should_be",
             ct
         );
+
+        // This runs after the save that caused it, which has already invalidated the cache.
+        foreach (var congregationId in changed.Select(a => a.CongregationId).Distinct())
+            await cache.Invalidate(congregationId);
     }
 
     public void SoftDelete(Attendance entity) => entity.DeletedAt = DateTime.UtcNow;

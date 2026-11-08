@@ -29,6 +29,7 @@ public class PipelineOrderTests
             .ConfigureCors(builder.Configuration);
         builder.Services.AddAuthentication();
         builder.Services.AddAuthorization();
+        builder.Services.AddOutputCache();
 
         var app = builder.Build();
 

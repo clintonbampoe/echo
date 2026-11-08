@@ -18,8 +18,8 @@ public sealed class ApplicationInstrumentation : IDisposable
 
     public Counter<long> CongregationRequestVolume { get; }
 
-    /// <summary>Summary requests, by which summary and whether the answer came from the cache.</summary>
-    public Counter<long> SummaryRequests { get; }
+    /// <summary>Cacheable reads, by route and whether the answer came from the cache.</summary>
+    public Counter<long> CacheRequests { get; }
 
     public ApplicationInstrumentation()
     {
@@ -29,10 +29,10 @@ public sealed class ApplicationInstrumentation : IDisposable
             description: "Total requests per congregation"
         );
 
-        SummaryRequests = Meter.CreateCounter<long>(
-            "echo.summary.requests",
+        CacheRequests = Meter.CreateCounter<long>(
+            "echo.cache.requests",
             unit: "{request}",
-            description: "Summary requests, by summary and whether the answer was cached"
+            description: "Cacheable reads, by route and whether the answer was cached"
         );
     }
 

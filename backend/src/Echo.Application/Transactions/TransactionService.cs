@@ -22,7 +22,6 @@ public class TransactionService(
     ApplicationInstrumentation instrumentation,
     LinkGenerator linker,
     DateWindows dateWindows,
-    SummaryCache summaries,
     ILogger<TransactionService> logger
 )
 {
@@ -237,19 +236,12 @@ public class TransactionService(
         return new NoContentResult();
     }
 
-    public Task<IOperationResult> Summary(
+    public async Task<IOperationResult> Summary(
         Guid congregationId,
         TransactionFilters filters,
         CancellationToken ct
     ) =>
-        summaries.Serve(
-            this,
-            "transactions",
-            congregationId,
-            filters,
-            (self, token) => self.ComputeSummary(congregationId, filters, token),
-            ct
-        );
+        SuccessResult.Of(await ComputeSummary(congregationId, filters, ct));
 
     private async Task<TransactionSummaryDto> ComputeSummary(
         Guid congregationId,
@@ -307,14 +299,7 @@ public class TransactionService(
         if (MonthRange.Problem(MonthRange.Or(filters.Months)) is { } problem)
             return new BadRequestResult(problem);
 
-        return await summaries.Serve(
-            this,
-            "transactions.monthly",
-            congregationId,
-            filters,
-            (self, token) => self.ComputeMonthly(congregationId, filters, token),
-            ct
-        );
+        return SuccessResult.Of(await ComputeMonthly(congregationId, filters, ct));
     }
 
     private async Task<List<TransactionMonthlyDto>> ComputeMonthly(
