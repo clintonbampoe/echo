@@ -105,7 +105,9 @@ export function Steps({ items }: { items: readonly Step[] }) {
   useLayoutEffect(() => {
     publish(0);
     const section = box.current?.closest("section");
-    return () => section?.style.removeProperty("--steps-p");
+    return () => {
+      section?.style.removeProperty("--steps-p");
+    };
   }, []);
 
   function onScroll() {

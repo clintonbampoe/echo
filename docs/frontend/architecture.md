@@ -53,7 +53,8 @@ and phone; the error screens in `app/errors` use the same frame with `SiteFrame 
 
 The frame gives the page's sections focus as you scroll (`useSectionFocus`): scrolling is the browser's own, and
 each section's `--f` (1 in place, 0 a little over half a window away) fades it in step (the eye focusing: what is in focus stays, what is around it fades), with no timers.
-A section's content arrives, staggered, the first time the section comes into focus. A link between pages fades
+A section's content arrives, staggered in reading order (`arrival.ts`: outermost pieces, cards whole), the first time
+the section comes into focus; `focusController.ts` holds the measuring and painting, the hook only starts it. A link between pages fades
 through (`useSiteNavigation`, View Transitions). A touch screen also settles on a section with proximity snapping.
 Reduced motion, and browsers that cannot measure (tests), switch all of it off and show the content as it is.
 Every page is linked from `SiteHeader` (the footer has only the brand and the promise).
