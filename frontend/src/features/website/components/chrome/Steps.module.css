@@ -115,7 +115,6 @@
   justify-content: space-between;
   gap: 28px;
   scroll-snap-align: start;
-  scroll-snap-stop: always;
   /* A step fades as it leaves or arrives, in step with the scroll (--a: 0 in view, 1 a step away). Only
      what is inside moves: the step itself must stay put, it is the snap stop. */
   opacity: calc(1 - var(--a, 0) * 0.74);
@@ -185,7 +184,7 @@
     height: 250px;
     overflow-x: hidden;
     overflow-y: auto;
-    scroll-snap-type: y mandatory;
+    scroll-snap-type: y proximity;
   }
   .step {
     height: 250px;
@@ -207,7 +206,7 @@
     display: flex;
     overflow-x: auto;
     overflow-y: hidden;
-    scroll-snap-type: x mandatory;
+    scroll-snap-type: x proximity;
   }
   .step {
     flex: 0 0 100%;

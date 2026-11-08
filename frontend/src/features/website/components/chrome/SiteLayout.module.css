@@ -13,24 +13,12 @@
   z-index: 1;
 }
 
-/* A touch screen settles on a section when a swipe ends near one. Proximity, so a short swipe is never pulled
-   back and a section taller than the screen can be read all the way down. A mouse or trackpad scrolls
-   freely: the browser's snapping would bounce a small wheel turn back to where it started. */
-@media (pointer: coarse) {
-  :global(html[data-snap="sections"]) {
-    scroll-snap-type: y proximity;
-  }
-  .main > * {
-    scroll-snap-align: start;
-  }
-}
-
 /* Focus follows the scroll (useSectionFocus sets --f, 1 in place down to 0 away). It is the eye's way of
    focusing, not a camera's: what is in focus stays as it is and what is around it fades almost to nothing,
    in step with the scroll, with no timer of its own to lag behind it. No blur: nothing here is softened,
    only put out. A section in place has no style at all, so it costs nothing. */
 .main[data-motion] > [data-dim] {
-  opacity: calc(0.1 + 0.9 * var(--f));
+  opacity: calc(0.6 + 0.4 * var(--f));
 }
 @media (prefers-contrast: more) {
   .main[data-motion] > [data-dim] {

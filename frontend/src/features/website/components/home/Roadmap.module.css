@@ -9,7 +9,7 @@
   height: 520px;
   overflow-x: hidden;
   overflow-y: auto;
-  scroll-snap-type: y mandatory;
+  scroll-snap-type: y proximity;
   scroll-padding-top: var(--first);
   mask-image: linear-gradient(
     180deg,

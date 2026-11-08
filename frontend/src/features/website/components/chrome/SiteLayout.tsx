@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
 import { Outlet, ScrollRestoration } from "react-router-dom";
 import { Atmosphere, usePublicSurface } from "@/ui";
 import { BackToTop } from "./BackToTop";
@@ -22,14 +22,6 @@ export function SiteFrame({
   const main = useRef<HTMLElement>(null);
   useSectionFocus(main);
   useSiteNavigation();
-  // Sections settle into place as the page is scrolled (see SiteLayout.module.css). Only the website does this.
-  useEffect(() => {
-    const root = document.documentElement;
-    root.dataset.snap = "sections";
-    return () => {
-      delete root.dataset.snap;
-    };
-  }, []);
   return (
     <div className={styles.site}>
       <Atmosphere />
