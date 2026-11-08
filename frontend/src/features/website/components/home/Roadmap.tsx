@@ -7,11 +7,15 @@ import styles from "./Roadmap.module.css";
 // sit back, smaller and paler. Scrolling settles on one step at a time.
 export function Roadmap() {
   const phone = useMedia("(max-width: 599px)");
+  // On a touch screen the road is simply laid out in full and the page scrolls past it: a box that scrolls on its
+  // own would take the swipe and stop the page under the finger.
+  const touch = useMedia("(pointer: coarse)");
   const step = phone ? 200 : 220;
   const [active, setActive] = useState(0);
   return (
     <div
       className={styles.road}
+      data-touch={touch || undefined}
       role="list"
       aria-label="Roadmap steps"
       tabIndex={0}
@@ -23,7 +27,7 @@ export function Roadmap() {
       <div className={styles.inner}>
         <span className={styles.rail} aria-hidden="true" />
         {ROADMAP.map((item, i) => {
-          const gap = Math.abs(i - active);
+          const gap = touch ? 0 : Math.abs(i - active);
           return (
             <div
               key={item.title}

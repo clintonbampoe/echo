@@ -23,6 +23,12 @@
 .road::-webkit-scrollbar {
   display: none;
 }
+.road[data-touch] {
+  height: auto;
+  overflow: visible;
+  scroll-snap-type: none;
+  mask-image: none;
+}
 .road:focus-visible {
   outline: var(--focus);
   outline-offset: 4px;
