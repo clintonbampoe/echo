@@ -14,6 +14,8 @@ public class UserMapperTests
             .Build<User>()
             .With(u => u.Name, "Jane Doe")
             .With(u => u.EmailAddress, "jane@echo.test")
+            // Build<T> does not use the fixture's customizations; the snapshots describe an enabled account.
+            .Without(u => u.DisabledAt)
             .Create();
 
     private static UserCreateDto CreateDto(Fixture fixture) =>

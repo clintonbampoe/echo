@@ -69,7 +69,7 @@ public static class TestData
         fixture.Register(() => time.AddMinutes(++timeIndex));
 
         // A generated user is an ordinary one who can sign in. Tests of a disabled account set the time themselves.
-        fixture.Customize<User>(c => c.With(u => u.DisabledAt, (DateTime?)null));
+        fixture.Customize<User>(c => c.Without(u => u.DisabledAt));
 
         return fixture;
     }
