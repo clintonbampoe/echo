@@ -45,6 +45,12 @@ lib        plain TypeScript: API client, dates, formatting
 `invitations` and `settings` are small and carry only the folders they need; `website` is the public site and
 keeps its own).
 
+The website is built from the page designs, one page at a time: `components/chrome/` holds the frame and the
+shared pieces (`SiteHeader`, `SiteFooter`, `Section`, `Intro`, `Split`, `RuleList`, `LinkRows`, `Cta`,
+`ArrowLink`, `BackToTop`), `components/home/` and `components/pricing/` hold what only one page uses, and
+`pages/` composes them. Spacing, type sizes and the first-open rules follow the designs at desktop, tablet
+and phone; the error screens in `app/errors` use the same frame with `SiteFrame flush`.
+
 ```text
 features/members/
   index.ts       what other features may use. Nothing else is importable.
