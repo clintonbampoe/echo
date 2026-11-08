@@ -6,8 +6,11 @@
   padding: 24px 0;
   border-top: 1px solid var(--line);
 }
+/* The whole row opens it: the summary's own padding stretches over the rule's, so the touch area is the row. */
 .summary {
   display: flex;
+  margin: -24px 0;
+  padding: 24px 0;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
@@ -102,6 +105,8 @@
     padding: 22px 0;
   }
   .summary {
+    margin: -22px 0;
+    padding: 22px 0;
     font-size: 21px;
   }
 }
@@ -110,6 +115,8 @@
     padding: 18px 0;
   }
   .summary {
+    margin: -18px 0;
+    padding: 18px 0;
     font-size: 18px;
   }
   .plain {
