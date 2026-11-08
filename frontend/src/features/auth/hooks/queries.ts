@@ -3,14 +3,15 @@ import { isApiError } from "@/lib/api";
 import { lookupInvitation, verifyEmail } from "../api/auth";
 import { authKeys } from "./keys";
 
-// Opening the link in the email is what verifies the account, so this runs as a query. A
-// query, unlike an effect, runs once even when React mounts the page twice in development; a
-// second request would find the single-use token already spent and wrongly report it expired.
-export function useVerifyEmailLink(token: string) {
+// The person confirming on the page is what verifies the account, so this runs as a query once `confirmed`.
+// Opening the link alone must not spend the token: mail scanners open links in a real browser. A query,
+// unlike an effect, runs once even when React mounts the page twice in development; a second request would
+// find the single-use token already spent and wrongly report it expired.
+export function useVerifyEmailLink(token: string, confirmed: boolean) {
   return useQuery({
     queryKey: authKeys.verify(token),
     queryFn: () => verifyEmail(token).then(() => true),
-    enabled: token !== "",
+    enabled: token !== "" && confirmed,
     retry: false,
     staleTime: Infinity,
     gcTime: Infinity,

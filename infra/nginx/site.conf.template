@@ -43,6 +43,14 @@ server {
         expires -1;
     }
 
+    # Links that carry a secret in the address are kept out of search results; they still preview as plain Echo.
+    location ~ ^/(reset-password|verify-email)$ {
+        include /etc/nginx/spa-headers.conf;
+        add_header X-Robots-Tag "noindex, nofollow" always;
+        expires -1;
+        try_files /index.html =404;
+    }
+
     location / {
         include /etc/nginx/spa-headers.conf;
         try_files $uri $uri/ /index.html;
