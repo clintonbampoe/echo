@@ -3,9 +3,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useLocation } from "react-router-dom";
 import { isApiError } from "@/lib/api";
-import { Button, Field } from "@/ui";
+import { Field } from "@/ui";
 import { forgotPassword } from "../api/auth";
 import { AuthLinks } from "../components/AuthLinks";
+import { SubmitButton } from "../components/SubmitButton";
 import { AuthScreen } from "../components/AuthScreen";
 import { ResendButton } from "../components/ResendButton";
 import { useForgotPassword } from "../hooks/mutations";
@@ -134,16 +135,13 @@ export function ForgotPage() {
           error={errors.email?.message}
           {...register("email")}
         />
-        <Button
-          type="submit"
-          size="lg"
-          pill
-          block
+        <SubmitButton
           loading={forgot.isPending}
+          done={forgot.isSuccess ? "Link sent" : undefined}
           className={styles.submit}
         >
           Send reset link
-        </Button>
+        </SubmitButton>
       </form>
     </AuthScreen>
   );

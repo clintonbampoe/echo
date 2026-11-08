@@ -202,3 +202,8 @@
   box-shadow: none;
   backdrop-filter: none;
 }
+
+/* Quiet while you type: the glass stops drifting while a field has focus. */
+.split:has(input:focus) .shine {
+  animation-play-state: paused;
+}

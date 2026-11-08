@@ -3,8 +3,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { isApiError } from "@/lib/api";
-import { Alert, Button, Field } from "@/ui";
+import { Alert, Field } from "@/ui";
 import { AuthLinks } from "../components/AuthLinks";
+import { SubmitButton } from "../components/SubmitButton";
 import { AuthScreen } from "../components/AuthScreen";
 import { useCheckInvitation } from "../hooks/mutations";
 import { codeSchema, type CodeValues } from "../forms/schema";
@@ -77,16 +78,9 @@ export function JoinCodePage() {
           error={errors.code?.message}
           {...register("code")}
         />
-        <Button
-          type="submit"
-          size="lg"
-          pill
-          block
-          loading={isSubmitting}
-          className={styles.submit}
-        >
+        <SubmitButton loading={isSubmitting} className={styles.submit}>
           Continue
-        </Button>
+        </SubmitButton>
       </form>
     </AuthScreen>
   );

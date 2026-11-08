@@ -15,6 +15,15 @@ type FieldProps = Shared &
     ghost?: { typed: string; rest: string };
   };
 
+// At the right edge of the field: a lock when the value cannot be changed, a ring and tick once an
+// email address looks finished.
+function edgeMark(readOnly: boolean | undefined, type: string | undefined) {
+  if (readOnly) return <Icon name="lock" size={15} className={styles.lock} />;
+  if (type === "email")
+    return <span className={styles.tick} aria-hidden="true" />;
+  return null;
+}
+
 export function Field({
   label,
   hint,
@@ -27,13 +36,14 @@ export function Field({
 }: FieldProps) {
   const id = useId();
   const described = error || hint ? `${id}-msg` : undefined;
+  const mark = edgeMark(input.readOnly, input.type);
   const control = (
     <input
       {...input}
       id={id}
       aria-invalid={error ? true : undefined}
       aria-describedby={described}
-      className={`${styles.control} ${unit ? styles.withUnit : ""}`}
+      className={`${styles.control} ${unit ? styles.withUnit : ""} ${mark ? styles.padRight : ""}`}
     />
   );
   return (
@@ -64,6 +74,11 @@ export function Field({
             {unit}
           </span>
           {control}
+        </div>
+      ) : mark ? (
+        <div className={styles.unitWrap}>
+          {control}
+          {mark}
         </div>
       ) : (
         control

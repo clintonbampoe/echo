@@ -3,8 +3,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useWatch } from "react-hook-form";
 import { useSearchParams } from "react-router-dom";
 import { isApiError } from "@/lib/api";
-import { Alert, Button, LinkButton, PasswordField } from "@/ui";
+import { Alert, LinkButton, PasswordField } from "@/ui";
 import { BackLink } from "../components/AuthLinks";
+import { SubmitButton } from "../components/SubmitButton";
 import { AuthScreen } from "../components/AuthScreen";
 import { useResetPassword } from "../hooks/mutations";
 import { resetSchema, type ResetValues } from "../forms/schema";
@@ -90,16 +91,13 @@ export function ResetPasswordPage() {
           error={errors.confirm?.message}
           {...register("confirm")}
         />
-        <Button
-          type="submit"
-          size="lg"
-          pill
-          block
+        <SubmitButton
           loading={reset.isPending}
+          done={reset.isSuccess ? "Password saved" : undefined}
           className={styles.submit}
         >
           Save password
-        </Button>
+        </SubmitButton>
       </form>
     </AuthScreen>
   );

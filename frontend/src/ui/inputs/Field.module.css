@@ -46,6 +46,65 @@
   color: var(--text-2);
   cursor: default;
 }
+/* The lock at the right edge of a value that cannot be changed. */
+.lock {
+  position: absolute;
+  top: 50%;
+  right: 16px;
+  translate: 0 -50%;
+  color: var(--text-3);
+  pointer-events: none;
+}
+.control:read-only {
+  padding-right: 40px;
+  caret-color: transparent;
+}
+/* A finished email address: a ring draws in at the right edge and a tick follows. It plays as the
+   address becomes valid, with no waiting for the field to lose focus. Needs a placeholder to tell empty
+   from typed. */
+.tick {
+  position: absolute;
+  top: 50%;
+  right: 16px;
+  display: none;
+  width: 20px;
+  height: 20px;
+  margin-top: -10px;
+  box-sizing: border-box;
+  border: 1.4px solid var(--text);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: tickRing 450ms var(--ease-out) both;
+}
+.tick::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 6px;
+  width: 4px;
+  height: 8px;
+  box-sizing: border-box;
+  border: solid var(--text);
+  border-width: 0 1.8px 1.8px 0;
+  transform: rotate(40deg);
+  animation: tickMark 400ms 150ms var(--ease-out) both;
+}
+.control:valid:not(:placeholder-shown, [aria-invalid="true"]) ~ .tick {
+  display: block;
+}
+@keyframes tickRing {
+  from {
+    opacity: 0;
+    scale: 0.5;
+  }
+}
+@keyframes tickMark {
+  from {
+    opacity: 0;
+    transform: rotate(40deg) scale(0.4);
+  }
+}
+
 /* Focus: the border turns strong and a soft 4px ring grows around it. The label stays still. */
 .control:focus-visible {
   outline: none;

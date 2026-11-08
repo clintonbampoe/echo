@@ -1,4 +1,5 @@
 import { Button } from "@/ui";
+import { SubmitButton } from "./SubmitButton";
 import styles from "./ChurchButtons.module.css";
 
 type Props = {
@@ -32,9 +33,9 @@ export function ChurchButtons({
           Back
         </Button>
       )}
-      <Button type="submit" size="lg" pill block loading={loading}>
+      <SubmitButton loading={loading}>
         {partial ? "Continue" : "Create church"}
-      </Button>
+      </SubmitButton>
     </div>
   );
 }

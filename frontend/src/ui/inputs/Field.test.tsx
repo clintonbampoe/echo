@@ -6,6 +6,14 @@ import { Field, PasswordField } from "./Field";
 const good = `Q${"q".repeat(8)}7`;
 
 describe("Field", () => {
+  it("draws a lock on a value that cannot be changed, and not the email tick", () => {
+    const { container } = render(
+      <Field label="Email" type="email" readOnly defaultValue="a@b.org" />,
+    );
+    expect(container.querySelector("svg")).toBeInTheDocument();
+    expect(screen.getByLabelText("Email")).toHaveAttribute("readonly");
+  });
+
   it("connects the label to the input", () => {
     render(<Field label="Email address" />);
     expect(screen.getByLabelText("Email address")).toBeInTheDocument();

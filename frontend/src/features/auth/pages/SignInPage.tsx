@@ -4,7 +4,8 @@ import { useForm } from "react-hook-form";
 import { useLocation, useNavigate } from "react-router-dom";
 import type { ApiError } from "@/lib/api";
 import { handleSubmitError } from "@/lib/forms";
-import { Button, Field, PasswordField, useCycle } from "@/ui";
+import { Field, PasswordField, useCycle } from "@/ui";
+import { SubmitButton } from "../components/SubmitButton";
 import { AuthScreen } from "../components/AuthScreen";
 import { AuthLinks } from "../components/AuthLinks";
 import { SignInAlert } from "../components/SignInAlert";
@@ -114,16 +115,13 @@ export function SignInPage() {
           }
           {...register("password")}
         />
-        <Button
-          type="submit"
-          size="lg"
-          pill
-          block
+        <SubmitButton
           loading={signIn.isPending}
+          done={signIn.isSuccess ? "Welcome back" : undefined}
           className={styles.submit}
         >
           Sign in
-        </Button>
+        </SubmitButton>
       </form>
     </AuthScreen>
   );

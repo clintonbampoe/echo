@@ -4,8 +4,9 @@ import { useForm, useWatch } from "react-hook-form";
 import { useNavigate, useParams } from "react-router-dom";
 import type { ApiError } from "@/lib/api";
 import { handleSubmitError } from "@/lib/forms";
-import { Alert, Button, Field } from "@/ui";
+import { Alert, Field } from "@/ui";
 import { AuthLinks } from "../components/AuthLinks";
+import { SubmitButton } from "../components/SubmitButton";
 import { AuthScreen } from "../components/AuthScreen";
 import { NewPasswordFields } from "../components/NewPasswordFields";
 import {
@@ -143,16 +144,9 @@ function JoinForm({
           value={password ?? ""}
           errors={errors}
         />
-        <Button
-          type="submit"
-          size="lg"
-          pill
-          block
-          loading={register.isPending}
-          className={styles.submit}
-        >
+        <SubmitButton loading={register.isPending} className={styles.submit}>
           Join {invitation.congregationName}
-        </Button>
+        </SubmitButton>
       </form>
     </AuthScreen>
   );
