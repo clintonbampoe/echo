@@ -55,7 +55,9 @@ export function Donut({ parts, hot, picked, onHot, onPick, children }: Props) {
               }
               data-on={p.key === (hot ?? picked)}
               transform={`rotate(-90 ${SIZE / 2} ${SIZE / 2})`}
-              onPointerEnter={() => onHot(p.key)}
+              onPointerEnter={(e) => {
+                if (e.pointerType === "mouse") onHot(p.key);
+              }}
               onPointerLeave={() => onHot(null)}
               onClick={() => onPick(p.key)}
             />

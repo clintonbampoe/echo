@@ -66,3 +66,14 @@
     transform: scale(0.94);
   }
 }
+
+/* The keyboard is up: use all that is left, and let the whole panel scroll so the search box is never cut off. */
+.root[data-keyboard="true"] .panel {
+  max-height: calc(100% - 16px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scroll-padding-block: var(--s-16);
+}
+.root[data-keyboard="true"] .body {
+  overflow: visible;
+}

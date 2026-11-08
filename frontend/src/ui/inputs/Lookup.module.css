@@ -21,6 +21,14 @@
   border-radius: var(--radius-pop);
   transform-origin: top center;
 }
+/* With the keyboard up, the answers join the page instead of floating over it: a floating list would hang below the
+   part of the panel that can be seen and be cut off. In the flow, the panel simply scrolls to show them. */
+:global([data-keyboard="true"]) .panel {
+  position: static;
+  max-height: none;
+  margin-top: 6px;
+  overflow: visible;
+}
 .heading {
   margin: 0;
   padding: var(--s-8) var(--s-12) var(--s-4);

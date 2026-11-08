@@ -2,6 +2,7 @@
   position: relative;
   min-height: 100vh;
   min-height: 100dvh;
+  min-height: 100dvh;
   /* Clip, not hidden: hidden would make this the scroller and the sections could not snap to the page. */
   overflow: clip;
   background: var(--bg);

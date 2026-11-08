@@ -17,6 +17,14 @@ beforeEach(() => {
           { year: 2026, month: 9, totalIncome: 20000, totalExpenses: 5000 },
           { year: 2026, month: 10, totalIncome: 30000, totalExpenses: 8000 },
         ]);
+      if (path === "/v1/tithes/summary")
+        return json({
+          totalCollected: 11300,
+          uniqueTithers: 214,
+          averagePerMember: 53,
+        });
+      if (path === "/v1/project-contributions/summary")
+        return json({ totalContributed: 4600 });
       return json({
         totalPresent: 196,
         byCategory: [
@@ -99,17 +107,16 @@ describe("money card", () => {
     ).toBeInTheDocument();
   });
 
-  it("opens a weekly summary in words that can be copied", async () => {
+  it("opens a weekly summary with tithes, gifts and the net, in words that can be copied", async () => {
     show();
     await userEvent.click(
       await screen.findByRole("button", { name: /Summary/ }),
     );
     const dialog = await screen.findByRole("dialog");
-    expect(
-      await within(dialog).findByText(
-        /we received GHS 50k and spent 13k. 196 people came/,
-      ),
-    ).toBeInTheDocument();
+    expect(await within(dialog).findByText("+52.9k")).toBeInTheDocument();
+    expect(within(dialog).getByText("Tithes")).toBeInTheDocument();
+    expect(within(dialog).getByText("Project gifts")).toBeInTheDocument();
+    expect(within(dialog).queryByText(/people came/)).toBeNull();
     expect(
       within(dialog).getByRole("button", { name: "Copy message" }),
     ).toBeEnabled();

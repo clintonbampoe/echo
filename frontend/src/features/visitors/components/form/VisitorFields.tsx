@@ -18,12 +18,14 @@ export function VisitorFields({ form }: Props) {
       <FormSection title="Name">
         <Field
           label="First name"
+          autoComplete="given-name"
           maxLength={100}
           error={e.firstName?.message}
           {...register("firstName")}
         />
         <Field
           label="Last name"
+          autoComplete="family-name"
           maxLength={100}
           error={e.lastName?.message}
           {...register("lastName")}
@@ -43,6 +45,7 @@ export function VisitorFields({ form }: Props) {
           optional
           type="tel"
           inputMode="tel"
+          autoComplete="tel"
           maxLength={20}
           placeholder="024 000 0000"
           error={e.phoneNumber?.message}
@@ -52,6 +55,7 @@ export function VisitorFields({ form }: Props) {
           label="Email"
           optional
           type="email"
+          autoComplete="email"
           maxLength={255}
           placeholder="name@example.com"
           error={e.emailAddress?.message}

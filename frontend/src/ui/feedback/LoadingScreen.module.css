@@ -10,9 +10,11 @@
 .wrap[data-fill="window"] {
   min-height: 100vh;
   min-height: 100dvh;
+  min-height: 100dvh;
 }
 .wrap[data-fill="area"] {
   min-height: 50vh;
+  min-height: 50dvh;
 }
 .mark {
   display: flex;

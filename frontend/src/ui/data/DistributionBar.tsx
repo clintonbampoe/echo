@@ -56,7 +56,9 @@ export function DistributionBar({
             data-tip={`${p.label} · ${p.text} · ${share(p)}`}
             data-hot={hot === i}
             data-picked={p.key === selected}
-            onPointerEnter={() => setHot(i)}
+            onPointerEnter={(e) => {
+              if (e.pointerType === "mouse") setHot(i);
+            }}
             onPointerLeave={() => setHot(null)}
             onClick={() => {
               if (p.closed) return;
@@ -82,7 +84,9 @@ export function DistributionBar({
               key={p.key}
               className={styles.lrow}
               data-hot={hot === i}
-              onPointerEnter={() => setHot(i)}
+              onPointerEnter={(e) => {
+                if (e.pointerType === "mouse") setHot(i);
+              }}
               onPointerLeave={() => setHot(null)}
               onFocus={(e) => e.target.matches(":focus-visible") && setHot(i)}
               onBlur={() => setHot(null)}
