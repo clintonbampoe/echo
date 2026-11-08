@@ -1,4 +1,4 @@
-import { render, screen, within } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { createMemoryRouter, RouterProvider } from "react-router-dom";
 import { clearTokens, saveTokens } from "@/lib/tokens";
@@ -185,6 +185,19 @@ describe("every page", () => {
     expect(
       await screen.findByRole("heading", { level: 1, name: title }),
     ).toBeInTheDocument();
+  });
+});
+
+describe("terms", () => {
+  it("lists the rules in order, and marks one as read once it is opened", async () => {
+    renderAt("/terms");
+    const row = (await screen.findByText("Your data")).closest("details");
+    expect(row).not.toBeNull();
+    expect(row).not.toHaveAttribute("data-read");
+    row!.open = true;
+    row!.dispatchEvent(new Event("toggle"));
+    await waitFor(() => expect(row).toHaveAttribute("data-read"));
+    expect(screen.getByText("02")).toBeInTheDocument();
   });
 });
 

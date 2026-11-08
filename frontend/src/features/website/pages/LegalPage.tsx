@@ -1,51 +1,83 @@
+import { useState } from "react";
 import { useMedia } from "@/ui";
-import { ClosingCta } from "../components/chrome/ClosingCta";
 import { Section } from "../components/chrome/Section";
 import { LEGAL } from "../content/pages";
 import styles from "./LegalPage.module.css";
 
 type Props = { document: "privacy" | "terms" };
+type Rule = {
+  title: string;
+  summary?: string;
+  body: readonly string[];
+};
 
-// Privacy and Terms share this shape: a title, a list of sections, and the text of each.
-// The words themselves are placeholders until they have been reviewed.
+// One numbered rule: the plain line shows, the full wording opens under it. A small dot marks a rule
+// once it has been opened. Nothing is remembered or sent anywhere.
+function RuleRow({
+  rule,
+  number,
+  open,
+}: {
+  rule: Rule;
+  number: number;
+  open: boolean;
+}) {
+  const [read, setRead] = useState(false);
+  return (
+    <details
+      className={styles.rule}
+      open={open}
+      data-read={read || undefined}
+      onToggle={(e) => e.currentTarget.open && setRead(true)}
+    >
+      <summary className={styles.summary}>
+        <span>
+          <span className={styles.number}>
+            {String(number).padStart(2, "0")}
+          </span>
+          <span className={styles.name}>{rule.title}</span>
+          {rule.summary && <span className={styles.plain}>{rule.summary}</span>}
+        </span>
+      </summary>
+      <div className={styles.full}>
+        {rule.body.map((text) => (
+          <p key={text}>{text}</p>
+        ))}
+      </div>
+    </details>
+  );
+}
+
+// Privacy and Terms share this shape: a title and one line on the left, numbered rules on the right.
 export function LegalPage({ document }: Props) {
-  const { title, sections } = LEGAL[document];
-  // On a phone each section is a tap-to-open row, so the page reads as a list of headings.
-  const phone = useMedia("(max-width: 599px)");
-  const id = (name: string) => name.toLowerCase().replace(/\s+/g, "-");
+  const { kicker, title, rules } = LEGAL[document];
+  // Wide: the first rule starts open, as on the page design. Tablet and phone: all closed.
+  const wide = useMedia("(min-width: 1000px)");
   return (
     <>
       <Section top={72}>
-        <p className={styles.updated}>{LEGAL.updated}</p>
-        <h1 className={styles.title}>{title}</h1>
         <div className={styles.layout}>
-          <nav aria-label="On this page" className={styles.toc}>
-            {sections.map((name) => (
-              <a key={name} href={`#${id(name)}`} className={styles.tocLink}>
-                {name}
-              </a>
+          <div>
+            <p className={styles.kicker}>{kicker}</p>
+            <h1 className={styles.title}>
+              {title}
+              <span className={styles.stop}>.</span>
+            </h1>
+            <p className={styles.lead}>{LEGAL.lead}</p>
+            <p className={styles.updated}>{LEGAL.updated}</p>
+          </div>
+          <div className={styles.rules}>
+            {(rules as readonly Rule[]).map((rule, i) => (
+              <RuleRow
+                key={rule.title}
+                rule={rule}
+                number={i + 1}
+                open={wide && i === 0}
+              />
             ))}
-          </nav>
-          <div className={styles.body}>
-            {sections.map((name) =>
-              phone ? (
-                <details key={name} id={id(name)} className={styles.fold}>
-                  <summary className={styles.summary}>
-                    <h2>{name}</h2>
-                  </summary>
-                  <p>{LEGAL.placeholder}</p>
-                </details>
-              ) : (
-                <section key={name} id={id(name)} className={styles.section}>
-                  <h2>{name}</h2>
-                  <p>{LEGAL.placeholder}</p>
-                </section>
-              ),
-            )}
           </div>
         </div>
       </Section>
-      <ClosingCta />
     </>
   );
 }
