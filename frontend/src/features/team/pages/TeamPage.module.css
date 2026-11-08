@@ -1,0 +1,20 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-24);
+}
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(440px, 1fr));
+  gap: var(--s-24);
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .page {
+    gap: var(--s-16);
+  }
+  .cards {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--s-16);
+  }
+}

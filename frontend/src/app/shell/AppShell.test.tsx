@@ -103,19 +103,23 @@ describe("app shell", () => {
     );
   });
 
-  it("shows Invitations at the end of the list to an administrator only", async () => {
+  it("shows Team and Invitations at the end of the list to an administrator only", async () => {
     renderShell();
     const sidebar = screen.getByRole("complementary", { name: "Sidebar" });
     expect(
       await within(sidebar).findByRole("link", { name: "Invitations" }),
     ).toHaveAttribute("href", "/invitations");
+    expect(within(sidebar).getByRole("link", { name: "Team" })).toHaveAttribute(
+      "href",
+      "/team",
+    );
     // One list, with no section headings.
     expect(within(sidebar).queryByText("People")).toBeNull();
     expect(
       within(sidebar)
         .getByRole("navigation", { name: "Main" })
         .querySelectorAll("a"),
-    ).toHaveLength(11);
+    ).toHaveLength(12);
   });
 
   it("hides Invitations from anyone else", async () => {

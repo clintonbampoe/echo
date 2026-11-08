@@ -43,7 +43,11 @@ describe("queryClient", () => {
       mutationFn: () => Promise.resolve("saved"),
     }).mutate();
 
-    expect(queryClient.getQueryState(["auth", "verify", "abc"])?.isInvalidated).toBe(false);
-    expect(queryClient.getQueryState(["account", "me"])?.isInvalidated).toBe(false);
+    expect(
+      queryClient.getQueryState(["auth", "verify", "abc"])?.isInvalidated,
+    ).toBe(false);
+    expect(queryClient.getQueryState(["account", "me"])?.isInvalidated).toBe(
+      false,
+    );
   });
 });

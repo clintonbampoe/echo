@@ -1,0 +1,19 @@
+.card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg, var(--radius));
+  background: var(--surface);
+  overflow: hidden;
+}
+.body {
+  padding: var(--s-8) var(--s-24) var(--s-20);
+}
+.skeleton {
+  display: block;
+  height: 88px;
+  border-radius: var(--radius);
+}
+@media (max-width: 900px) {
+  .body {
+    padding: var(--s-8) var(--s-16) var(--s-16);
+  }
+}

@@ -1,0 +1,14 @@
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--s-12);
+  padding: var(--s-4) var(--s-16) var(--s-8) var(--s-24);
+  border-top: 1px solid var(--line);
+  font-size: var(--type-footnote);
+  color: var(--text-3);
+}
+.links {
+  display: flex;
+  gap: var(--s-4);
+}

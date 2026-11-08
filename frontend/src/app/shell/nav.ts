@@ -18,5 +18,6 @@ export const mainNav: NavItem[] = [
 ];
 
 export const adminNav: NavItem[] = [
+  { label: "Team", to: "/team", icon: "team" },
   { label: "Invitations", to: "/invitations", icon: "inbox" },
 ];
