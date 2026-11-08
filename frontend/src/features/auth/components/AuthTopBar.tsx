@@ -1,23 +1,22 @@
-import { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useEffect, useState, type CSSProperties } from "react";
+import { Link } from "react-router-dom";
 import { LinkButton, Logo, ThemeToggle } from "@/ui";
 import styles from "./AuthTopBar.module.css";
 
 // The same pages the website's own header offers.
 const LINKS = [
-  { to: "/features", label: "Features" },
-  { to: "/docs", label: "Docs" },
-  { to: "/roadmap", label: "Roadmap" },
+  { to: "/about", label: "About" },
   { to: "/community", label: "Community" },
+  { to: "/pricing", label: "Pricing" },
+  { to: "/security", label: "Security" },
+  { to: "/terms", label: "Terms" },
+  { to: "/contact?topic=support", label: "Support Echo" },
 ] as const;
 
-// The top of an auth screen on a tablet or phone, where there is no side pane: the logo, the way back
-// to the site and the way in. A tablet lists the site's pages; a phone folds them behind Menu.
+// The top of an auth screen on a tablet or phone, where there is no side pane: the logo, the light/dark
+// button, Get started and Menu, which holds the site's pages. On a phone Get started moves into Menu.
 export function AuthTopBar() {
   const [open, setOpen] = useState(false);
-  const { pathname } = useLocation();
-  // Someone already on the sign-in page does not need a link to it.
-  const onSignIn = pathname === "/signin";
 
   useEffect(() => {
     if (!open) return;
@@ -41,20 +40,8 @@ export function AuthTopBar() {
         <Logo size={26} />
         <span className={styles.name}>Echo</span>
       </Link>
-      <nav className={styles.links} aria-label="Site">
-        {LINKS.map((l) => (
-          <Link key={l.to} to={l.to} className={styles.link}>
-            {l.label}
-          </Link>
-        ))}
-      </nav>
       <div className={styles.actions}>
         <ThemeToggle />
-        {!onSignIn && (
-          <Link to="/signin" className={styles.signin}>
-            Sign in
-          </Link>
-        )}
         <LinkButton to="/signup" pill className={styles.cta}>
           Get started
         </LinkButton>
@@ -69,16 +56,25 @@ export function AuthTopBar() {
       </div>
       {open && (
         <nav className={styles.panel} aria-label="Site menu">
-          {LINKS.map((l) => (
+          {LINKS.map((l, i) => (
             <Link
               key={l.to}
               to={l.to}
               className={styles.panelLink}
+              style={{ "--i": i } as CSSProperties}
               onClick={() => setOpen(false)}
             >
               {l.label}
             </Link>
           ))}
+          <Link
+            to="/signup"
+            className={`${styles.panelLink} ${styles.panelCta}`}
+            style={{ "--i": LINKS.length } as CSSProperties}
+            onClick={() => setOpen(false)}
+          >
+            Get started
+          </Link>
         </nav>
       )}
     </header>

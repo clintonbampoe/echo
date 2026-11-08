@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
+import type { CSSProperties } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { useIsSignedIn } from "@/features/auth";
-import { LinkButton, Logo } from "@/ui";
+import { LinkButton, Logo, ThemeToggle } from "@/ui";
 import { NAV } from "../../content/site";
 import styles from "./SiteHeader.module.css";
 
-// The top of every website page: the mark, three pages, Sign in and Get started. On a phone the three
-// pages fold into a Menu, which opens as a small card under the button.
+// The top of every website page: the mark, every page, the light/dark button and Get started. Where the
+// pages no longer fit they fold into a Menu, which opens as a small card under the button; on a phone
+// Get started moves into that card too.
 export function SiteHeader() {
   const signedIn = useIsSignedIn();
   const [open, setOpen] = useState(false);
@@ -48,11 +50,7 @@ export function SiteHeader() {
               </NavLink>
             ))}
           </nav>
-          {!signedIn && (
-            <Link to="/signin" className={styles.signin} onClick={close}>
-              Sign in
-            </Link>
-          )}
+          <ThemeToggle />
           <LinkButton
             to={signedIn ? "/dashboard" : "/signup"}
             pill
@@ -71,13 +69,23 @@ export function SiteHeader() {
             </button>
             {open && (
               <div className={styles.panel}>
-                {NAV.map((item) => (
-                  <Link key={item.to} to={item.to} onClick={close}>
+                {NAV.map((item, i) => (
+                  <Link
+                    key={item.to}
+                    to={item.to}
+                    onClick={close}
+                    style={{ "--i": i } as CSSProperties}
+                  >
                     {item.label}
                   </Link>
                 ))}
-                <Link to={signedIn ? "/dashboard" : "/signin"} onClick={close}>
-                  {signedIn ? "Open Echo" : "Sign in"}
+                <Link
+                  to={signedIn ? "/dashboard" : "/signup"}
+                  onClick={close}
+                  className={styles.panelCta}
+                  style={{ "--i": NAV.length } as CSSProperties}
+                >
+                  {signedIn ? "Open Echo" : "Get started"}
                 </Link>
               </div>
             )}

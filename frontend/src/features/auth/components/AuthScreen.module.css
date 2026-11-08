@@ -59,6 +59,12 @@
   width: 100%;
   max-width: 400px;
 }
+.railEnd {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  margin-right: -2px;
+}
 .railFoot {
   font-size: 13px;
 }

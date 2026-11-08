@@ -42,6 +42,9 @@ describe("the website frame", () => {
       ["About", "/about"],
       ["Community", "/community"],
       ["Pricing", "/pricing"],
+      ["Security", "/security"],
+      ["Terms", "/terms"],
+      ["Support Echo", "/contact?topic=support"],
     ]) {
       expect(within(nav).getByRole("link", { name })).toHaveAttribute(
         "href",
@@ -50,25 +53,29 @@ describe("the website frame", () => {
     }
   });
 
-  it("offers sign in and get started to someone who is signed out", async () => {
+  it("offers only Get started and the light/dark button to someone who is signed out", async () => {
     renderAt("/");
     const header = within(await screen.findByRole("banner"));
-    expect(header.getByRole("link", { name: "Sign in" })).toHaveAttribute(
-      "href",
-      "/signin",
-    );
+    expect(
+      header.queryByRole("link", { name: "Sign in" }),
+    ).not.toBeInTheDocument();
+    expect(
+      header.getByRole("button", { name: /Switch to dark mode/ }),
+    ).toBeInTheDocument();
     expect(header.getByRole("link", { name: "Get started" })).toHaveAttribute(
       "href",
       "/signup",
     );
   });
 
-  it("keeps Sign in reachable in the open menu on a narrow screen", async () => {
+  it("folds every page and Get started into the open menu", async () => {
     renderAt("/");
     await userEvent.click(await screen.findByRole("button", { name: "Menu" }));
     // The header's own links and the menu's copy of them.
     const header = within(screen.getByRole("banner"));
-    expect(header.getAllByRole("link", { name: "Sign in" })).toHaveLength(2);
+    expect(header.getAllByRole("link", { name: "Get started" })).toHaveLength(
+      2,
+    );
     expect(header.getAllByRole("link", { name: "Pricing" })).toHaveLength(2);
   });
 
@@ -156,7 +163,9 @@ describe("the website frame", () => {
     saveTokens({ ...tokens, refreshTokenExpiresAt: "2000-01-01T00:00:00Z" });
     renderAt("/");
     const header = within(await screen.findByRole("banner"));
-    expect(header.getByRole("link", { name: "Sign in" })).toBeInTheDocument();
+    expect(
+      header.getByRole("link", { name: "Get started" }),
+    ).toBeInTheDocument();
   });
 });
 

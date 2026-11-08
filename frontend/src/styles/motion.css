@@ -583,6 +583,42 @@ html[data-vt-nav] [data-vt="card"] {
   view-transition-name: auth-card;
 }
 html[data-vt-nav]::view-transition-group(*) {
-  animation-duration: 450ms;
+  animation-duration: 520ms;
   animation-timing-function: var(--ease);
+}
+/* The swipe: the old screen eases out a little way and the new one slides in from the same side. */
+html[data-vt-nav="forward"] {
+  --vt-shift: 36px;
+}
+html[data-vt-nav="back"] {
+  --vt-shift: -36px;
+}
+html[data-vt-nav]::view-transition-old(auth-title),
+html[data-vt-nav]::view-transition-old(auth-card),
+html[data-vt-nav]::view-transition-new(auth-title),
+html[data-vt-nav]::view-transition-new(auth-card) {
+  mix-blend-mode: normal;
+}
+html[data-vt-nav]::view-transition-old(auth-title),
+html[data-vt-nav]::view-transition-old(auth-card) {
+  animation: vtOut 240ms var(--ease-soft) both;
+}
+html[data-vt-nav]::view-transition-new(auth-title),
+html[data-vt-nav]::view-transition-new(auth-card) {
+  animation: vtIn 560ms var(--ease-out) 90ms both;
+}
+html[data-vt-nav]::view-transition-new(auth-card) {
+  animation-delay: 140ms;
+}
+@keyframes vtOut {
+  to {
+    opacity: 0;
+    transform: translateX(calc(var(--vt-shift) * -0.7));
+  }
+}
+@keyframes vtIn {
+  from {
+    opacity: 0;
+    transform: translateX(var(--vt-shift));
+  }
 }

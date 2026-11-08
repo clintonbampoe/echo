@@ -23,44 +23,18 @@
   font-weight: 600;
   letter-spacing: -0.02em;
 }
-.links {
-  display: flex;
-  gap: 24px;
-  margin-left: auto;
-}
-.link {
-  font-size: 15px;
-  color: var(--text-2);
-  text-decoration: none;
-}
-@media (hover: hover) {
-  .link:hover {
-    color: var(--text);
-  }
-}
 .actions {
   display: flex;
   align-items: center;
   gap: 16px;
 }
-.signin {
-  font-size: 15px;
-  color: var(--text);
-  text-decoration: underline;
-  text-decoration-color: var(--text-3);
-  text-decoration-thickness: 1px;
-  text-underline-offset: 4px;
-}
 .cta {
   box-shadow: var(--glow);
 }
-.menu,
 .panel,
 .scrim {
   display: none;
 }
-.link:focus-visible,
-.signin:focus-visible,
 .brand:focus-visible,
 .menu:focus-visible {
   outline: var(--focus);
@@ -68,64 +42,81 @@
   border-radius: 6px;
 }
 
-/* A phone: the site's pages fold behind Menu, and Get started steps aside for Sign in. */
-@media (max-width: 819px) {
+.menu {
+  display: inline-flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 18px;
+  border: 1px solid var(--line-2);
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  display: block;
+  border: 0;
+  background: color-mix(in srgb, var(--bg) 55%, transparent);
+  backdrop-filter: blur(3px);
+  animation: fade 200ms ease both;
+}
+.panel {
+  position: absolute;
+  top: 68px;
+  right: 40px;
+  display: flex;
+  flex-direction: column;
+  min-width: 210px;
+  padding: 8px 20px;
+  border: 1px solid var(--card-line);
+  border-radius: 22px;
+  background: var(--surface);
+  box-shadow: var(--card-shadow);
+  transform-origin: 100% 0;
+  animation: open 380ms var(--ease-out) both;
+}
+.panelLink {
+  padding: 11px 0;
+  font-size: 17px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  text-decoration: none;
+  opacity: 0;
+  animation: rise 400ms var(--ease-out) both;
+  animation-delay: calc(120ms + var(--i) * 55ms);
+}
+/* Get started closes the card, set apart by a rule. */
+.panelCta {
+  margin-top: 6px;
+  padding-top: 15px;
+  border-top: 1px solid var(--line);
+}
+.panelLink:focus-visible {
+  outline: var(--focus);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* A phone: Get started steps into the menu card. */
+@media (max-width: 699px) {
   .bar {
     height: 78px;
     padding: 0 20px;
   }
-  .links,
   .cta {
     display: none;
   }
   .actions {
-    gap: 14px;
-  }
-  .menu {
-    display: inline-flex;
-    align-items: center;
-    height: 40px;
-    padding: 0 18px;
-    border: 1px solid var(--line-2);
-    border-radius: var(--radius-pill);
-    background: color-mix(in srgb, var(--surface) 70%, transparent);
-    color: var(--text);
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-  }
-  .scrim {
-    position: fixed;
-    inset: 0;
-    z-index: -1;
-    display: block;
-    border: 0;
-    background: color-mix(in srgb, var(--bg) 55%, transparent);
-    backdrop-filter: blur(3px);
-    animation: fade 200ms ease both;
+    gap: 12px;
   }
   .panel {
-    position: absolute;
-    top: 68px;
     right: 20px;
-    display: flex;
-    flex-direction: column;
-    min-width: 210px;
-    padding: 8px 20px;
-    border: 1px solid var(--card-line);
-    border-radius: 22px;
-    background: var(--surface);
-    box-shadow: var(--card-shadow);
-    transform-origin: 100% 0;
-    animation: open 380ms var(--ease-out) both;
-  }
-  .panelLink {
-    padding: 11px 0;
-    font-size: 17px;
-    font-weight: 500;
-    letter-spacing: -0.02em;
-    color: var(--text);
-    text-decoration: none;
   }
 }
 @keyframes fade {
@@ -139,13 +130,26 @@
     transform: scale(0.3, 0.2);
   }
 }
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   .scrim,
-  .panel {
+  .panel,
+  .panelLink {
     animation: none;
+    opacity: 1;
   }
 }
 html[data-reduce-motion="true"] .scrim,
-html[data-reduce-motion="true"] .panel {
+html[data-reduce-motion="true"] .panel,
+html[data-reduce-motion="true"] .panelLink {
   animation: none;
+  opacity: 1;
 }

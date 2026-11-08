@@ -48,15 +48,14 @@
 .right {
   display: flex;
   align-items: center;
-  gap: 30px;
+  gap: 26px;
 }
 .nav {
   display: flex;
   align-items: center;
-  gap: 30px;
+  gap: 26px;
 }
-.link,
-.signin {
+.link {
   font-size: 15px;
   text-decoration: none;
   color: var(--text-2);
@@ -75,16 +74,7 @@
     background-size: 100% 1px;
   }
 }
-.signin {
-  color: var(--text);
-  background: none;
-  text-decoration: underline;
-  text-decoration-color: var(--text-3);
-  text-decoration-thickness: 1px;
-  text-underline-offset: 4px;
-}
-.link:focus-visible,
-.signin:focus-visible {
+.link:focus-visible {
   outline: var(--focus);
   outline-offset: 4px;
   border-radius: 4px;
@@ -150,18 +140,13 @@
   text-decoration: none;
   opacity: 0;
   animation: rise 400ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  animation-delay: calc(120ms + var(--i) * 55ms);
 }
-.panel a:nth-child(1) {
-  animation-delay: 120ms;
-}
-.panel a:nth-child(2) {
-  animation-delay: 180ms;
-}
-.panel a:nth-child(3) {
-  animation-delay: 240ms;
-}
-.panel a:nth-child(4) {
-  animation-delay: 300ms;
+/* Get started closes the card, set apart by a rule like the footer's. */
+.panel .panelCta {
+  margin-top: 6px;
+  padding-top: 15px;
+  border-top: 1px solid var(--line);
 }
 .panel a:focus-visible {
   outline: var(--focus);
@@ -188,13 +173,16 @@
     opacity: 0;
   }
 }
-@media (max-width: 999px) {
+/* Six pages and two buttons no longer fit side by side: the pages fold into Menu, Get started stays. */
+@media (max-width: 1099px) {
   .header {
     padding: 0 40px;
   }
-  .right,
   .nav {
-    gap: 24px;
+    display: none;
+  }
+  .menu {
+    display: block;
   }
 }
 @media (max-width: 699px) {
@@ -206,14 +194,10 @@
     height: auto;
   }
   .right {
-    gap: 18px;
+    gap: 14px;
   }
-  .nav,
   .cta {
     display: none;
-  }
-  .menu {
-    display: block;
   }
 }
 @media (prefers-reduced-motion: reduce) {

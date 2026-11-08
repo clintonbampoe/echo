@@ -37,13 +37,6 @@
   padding: 16px;
 }
 
-.theme {
-  position: absolute;
-  top: 20px;
-  right: 32px;
-  z-index: 2;
-}
-
 @media (max-width: 599px) {
   .main {
     padding: 128px 20px 56px;

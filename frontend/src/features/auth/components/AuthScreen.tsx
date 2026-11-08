@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Link } from "react-router-dom";
-import { Logo, PulseLine } from "@/ui";
+import { Logo, PulseLine, ThemeToggle } from "@/ui";
 import { BackToSite } from "./BackToSite";
 import { BackLink } from "./AuthLinks";
 import { useSplit } from "./splitMode";
@@ -68,7 +68,10 @@ export function AuthScreen({
             <Logo size={22} />
             Echo
           </span>
-          <BackToSite />
+          <span className={styles.railEnd}>
+            <BackToSite />
+            <ThemeToggle />
+          </span>
         </header>
         <div className={styles.content}>{body}</div>
         <footer className={`${styles.rail} ${styles.railFoot}`}>
