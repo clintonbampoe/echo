@@ -20,7 +20,7 @@ public static class EventEndpoints
         var group = app.MapGroup("/events")
             .WithTags("Events")
             .RequireAuthorization()
-            .CacheOutput(ReadCache.Policy);
+            .CacheOutput(ReadCache.ViewPolicy);
 
         group
             .MapGet(

@@ -18,7 +18,7 @@ public static class AttendanceSessionEndpoints
             var group = app.MapGroup("/attendance/sessions")
                 .WithTags("Attendance Sessions")
                 .RequireAuthorization()
-                .CacheOutput(ReadCache.Policy);
+                .CacheOutput(ReadCache.ViewPolicy);
 
             group
                 .MapGet(

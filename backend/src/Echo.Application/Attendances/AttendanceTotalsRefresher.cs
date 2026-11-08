@@ -12,7 +12,7 @@ namespace Echo.Application.Attendances;
 /// Brings the <c>attendance_per_session</c> view up to date every minute, so the attendance
 /// and session summaries can add up a few rows per session instead of counting every check-in. A
 /// failed refresh is logged and tried again next time; the summaries keep the last totals. Each refresh
-/// changes figures no write to a congregation announces, so it drops every cached answer.
+/// changes figures no write to a congregation announces, so it drops the cached answers that read the views.
 /// </summary>
 public sealed class AttendanceTotalsRefresher(
     IServiceScopeFactory scopes,
@@ -71,7 +71,7 @@ public sealed class AttendanceTotalsRefresher(
                 ct
             );
             await transaction.CommitAsync(ct);
-            await cache.Drop(ReadCache.Everyone, ct);
+            await cache.Drop(ReadCache.Views, ct);
 
             AttendanceLog.TotalsRefreshed(
                 logger,

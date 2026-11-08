@@ -63,6 +63,8 @@ public class ReadCacheTests : IAsyncLifetime
             }
         );
         group.MapPost("/", () => Interlocked.Increment(ref _reads));
+        _app.MapGet("/totals", () => Interlocked.Increment(ref _reads))
+            .CacheOutput(ReadCache.ViewPolicy);
         // A read that is being worked out when a write drops the cache.
         group.MapGet(
             "/overlapped",
@@ -205,16 +207,19 @@ public class ReadCacheTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task DroppingEveryone_MakesEveryCongregationsNextReadFresh()
+    public async Task DroppingTheViews_MakesOnlyThoseReadsFresh()
     {
         var store = _app.Services.GetRequiredService<IOutputCacheStore>();
         await Get("/things", Ann, Alpha);
-        await Get("/things", Ben, Beta);
+        await Get("/totals", Ann, Alpha);
+        await Get("/totals", Ben, Beta);
+        Assert.Equal(3, _reads);
 
-        await store.EvictByTagAsync(ReadCache.Everyone, TestContext.Current.CancellationToken);
+        await store.EvictByTagAsync(ReadCache.Views, TestContext.Current.CancellationToken);
 
         await Get("/things", Ann, Alpha);
-        await Get("/things", Ben, Beta);
-        Assert.Equal(4, _reads);
+        await Get("/totals", Ann, Alpha);
+        await Get("/totals", Ben, Beta);
+        Assert.Equal(5, _reads);
     }
 }

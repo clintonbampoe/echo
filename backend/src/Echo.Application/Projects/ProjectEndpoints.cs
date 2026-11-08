@@ -20,7 +20,7 @@ public static class ProjectEndpoints
         var group = app.MapGroup("/projects")
             .WithTags("Projects")
             .RequireAuthorization()
-            .CacheOutput(ReadCache.Policy);
+            .CacheOutput(ReadCache.ViewPolicy);
 
         group
             .MapGet(
