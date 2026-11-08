@@ -32,9 +32,16 @@ function Row({ row }: { row: LinkRow }) {
 }
 
 // Big rows that each go somewhere: a heading, one line, an arrow.
-export function LinkRows({ rows }: { rows: readonly LinkRow[] }) {
+export function LinkRows({
+  rows,
+  large,
+}: {
+  rows: readonly LinkRow[];
+  // Bigger titles, for a page where the rows are the main thing.
+  large?: boolean;
+}) {
   return (
-    <div className={styles.rows}>
+    <div className={`${styles.rows} ${large ? styles.large : ""}`}>
       {rows.map((row) => (
         <Row key={row.title} row={row} />
       ))}

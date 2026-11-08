@@ -46,3 +46,35 @@
     font-size: 26px;
   }
 }
+
+/* The large rows: a 44px title, a quieter arrow. */
+.large .row {
+  padding: 30px 0;
+}
+.large .title {
+  font-size: 44px;
+  letter-spacing: -0.045em;
+}
+.large .text {
+  font-size: 15px;
+}
+.large .arrow {
+  font-size: 28px;
+  color: var(--text-2);
+}
+@media (max-width: 999px) {
+  .large .title {
+    font-size: 36px;
+  }
+}
+@media (max-width: 599px) {
+  .large .row {
+    padding: 22px 0;
+  }
+  .large .title {
+    font-size: 28px;
+  }
+  .large .arrow {
+    font-size: 22px;
+  }
+}

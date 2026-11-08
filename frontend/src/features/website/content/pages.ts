@@ -1,3 +1,5 @@
+import { GITHUB_URL } from "./site";
+
 export const ABOUT = {
   title: "Built so your church can spend its time on people",
   lead: "Echo is free, open source, and made in the open for churches everywhere.",
@@ -135,21 +137,6 @@ export const COMMUNITY = {
       text: "Your change ships to everyone using Echo. You helped shape what comes next.",
     },
   ],
-  private: [
-    {
-      title: "Your server, your rules",
-      text: "Echo runs on infrastructure you control.",
-    },
-    {
-      title: "Your own domain",
-      text: "Use your church's address, such as app.gracechapel.org.",
-    },
-    {
-      title: "Everything included",
-      text: "Setup, backups and updates, with a named person to call.",
-    },
-    { title: "Priority support", text: "Help in hours, not days." },
-  ],
 } as const;
 
 export const CONTACT = {
@@ -178,3 +165,23 @@ export const CONTACT = {
     },
   ],
 } as const;
+
+// Where the community page sends people.
+export const COMMUNITY_ROWS = [
+  {
+    title: "Help build it",
+    text: "Open source. Fix a bug, shape what comes next.",
+    to: GITHUB_URL,
+    external: true,
+  },
+  {
+    title: "Support Echo",
+    text: "Gifts go into the servers and the time behind each improvement.",
+    to: "/contact?topic=support",
+  },
+  {
+    title: "Tell us what you need",
+    text: "The roadmap starts with what churches ask for.",
+    to: "/contact",
+  },
+] as const;

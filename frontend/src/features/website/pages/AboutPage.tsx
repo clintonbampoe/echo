@@ -17,7 +17,7 @@ const PLACES = [
   {
     title: "Support Echo",
     text: "Gifts go into the servers and the time behind each improvement.",
-    to: "/community#support",
+    to: "/contact?topic=support",
   },
   {
     title: "Echo Sanctuary",

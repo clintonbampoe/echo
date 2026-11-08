@@ -16,7 +16,7 @@ type FooterLink = { label: string; to: string; external?: boolean };
 export const FOOTER_MAIN: FooterLink[] = [
   { label: "Security", to: "/security" },
   { label: "Terms", to: "/terms" },
-  { label: "Support Echo", to: "/community#support" },
+  { label: "Support Echo", to: "/contact?topic=support" },
 ];
 export const FOOTER_MORE: FooterLink[] = [
   { label: "About", to: "/about" },

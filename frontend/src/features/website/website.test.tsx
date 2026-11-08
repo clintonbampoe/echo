@@ -174,7 +174,7 @@ describe("every page", () => {
     ["/docs", /How can we\s*help\?/],
     ["/roadmap", /Where Echo\s*is going\./],
     ["/changelog", /What is new\./],
-    ["/community", /Built in the open,\s*with you\./],
+    ["/community", /Echo belongs to the churches that use it/],
     ["/about", /Built so your church can spend its time on people/],
     ["/contact", /Talk to us/],
     ["/security", /How we handle your data/],
