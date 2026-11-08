@@ -21,7 +21,6 @@ public static class InvitationEndpoints
         var invitations = group
             .MapGroup("/invitations")
             .WithTags("Invitations")
-            .RequireRateLimiting("auth")
             .RequireAuthorization(policy => policy.RequireRole(nameof(UserRole.Admin)))
             .CacheOutput(ReadCache.Policy);
 
@@ -380,7 +379,10 @@ public static class InvitationEndpoints
             .ProducesProblem(StatusCodes.Status404NotFound);
 
         // The join screen reads this before the person has an account, so it is anonymous.
-        var join = group.MapGroup("/invitations").WithTags("Invitations").RequireRateLimiting("auth");
+        var join = group
+            .MapGroup("/invitations")
+            .WithTags("Invitations")
+            .RequireRateLimiting("auth");
 
         join.MapGet(
                 "/{code}",
