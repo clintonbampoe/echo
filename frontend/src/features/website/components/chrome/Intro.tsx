@@ -17,6 +17,7 @@ type Props = {
   columns?: string;
   top?: number;
   tablet?: number;
+  phone?: number;
 };
 
 // The top of a page: a kicker, a very large title, one sentence. Left-aligned.
@@ -29,6 +30,7 @@ export function Intro({
   columns,
   top = 170,
   tablet,
+  phone = 100,
 }: Props) {
   const words = (
     <div>
@@ -42,7 +44,7 @@ export function Intro({
     </div>
   );
   return (
-    <Section top={top} tablet={tablet} phone={100}>
+    <Section top={top} tablet={tablet} phone={phone}>
       {aside ? (
         <div
           className={styles.beside}

@@ -35,13 +35,18 @@ function Row({ row }: { row: LinkRow }) {
 export function LinkRows({
   rows,
   large,
+  swipe,
 }: {
   rows: readonly LinkRow[];
   // Bigger titles, for a page where the rows are the main thing.
   large?: boolean;
+  // On a phone the rows become cards that swipe sideways.
+  swipe?: boolean;
 }) {
   return (
-    <div className={`${styles.rows} ${large ? styles.large : ""}`}>
+    <div
+      className={`${styles.rows} ${large ? styles.large : ""} ${swipe ? styles.swipe : ""}`}
+    >
       {rows.map((row) => (
         <Row key={row.title} row={row} />
       ))}

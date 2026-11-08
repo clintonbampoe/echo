@@ -29,7 +29,7 @@ const PLACES = [
 export function AboutPage() {
   return (
     <>
-      <Intro kicker="About Echo" title={ABOUT.title}>
+      <Intro kicker="About Echo" title={ABOUT.title} tablet={140} phone={110}>
         {ABOUT.lead}
       </Intro>
       <Split kicker="What we promise" title="What you can count on.">
@@ -46,7 +46,7 @@ export function AboutPage() {
         </p>
       </Split>
       <Split kicker="Be part of it" title="There is a place for you.">
-        <LinkRows rows={PLACES} />
+        <LinkRows rows={PLACES} swipe />
       </Split>
     </>
   );

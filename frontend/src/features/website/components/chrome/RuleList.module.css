@@ -156,6 +156,9 @@
     font-weight: 600;
     letter-spacing: -0.03em;
   }
+  .swipe .full {
+    padding-left: 0;
+  }
   .swipe .full p {
     font-size: 15px;
     line-height: 1.5;

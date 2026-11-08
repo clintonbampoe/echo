@@ -78,3 +78,42 @@
     font-size: 22px;
   }
 }
+
+/* Phone: the rows sit side by side as cards, a little of the next one showing. */
+@media (max-width: 599px) {
+  .swipe {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin: 0 -20px;
+    padding: 2px 20px 6px;
+    overflow-x: auto;
+    border-bottom: 0;
+    scroll-snap-type: x mandatory;
+    scroll-padding-left: 20px;
+    scrollbar-width: none;
+  }
+  .swipe::-webkit-scrollbar {
+    display: none;
+  }
+  .swipe .row {
+    flex: 0 0 78%;
+    box-sizing: border-box;
+    padding: 18px;
+    border: 1px solid var(--card-line);
+    border-radius: 20px;
+    background: var(--card);
+    scroll-snap-align: start;
+  }
+  .swipe .title {
+    font-size: 22px;
+  }
+  .swipe .text {
+    margin-top: 8px;
+    font-size: 15px;
+    line-height: 1.4;
+  }
+  .swipe .arrow {
+    font-size: 20px;
+  }
+}

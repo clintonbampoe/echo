@@ -53,7 +53,7 @@
 
 @media (max-width: 999px) {
   .hero {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 40px;
     min-height: 0;
   }

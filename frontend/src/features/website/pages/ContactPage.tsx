@@ -70,7 +70,7 @@ export function ContactPage() {
   }
 
   return (
-    <Section top={72}>
+    <Section top={150} tablet={130} phone={100}>
       <div className={styles.layout}>
         <div>
           <Kicker>Echo Sanctuary</Kicker>
@@ -80,7 +80,7 @@ export function ContactPage() {
           </h1>
           <p className={styles.lead}>{CONTACT.lead}</p>
           <div className={styles.steps}>
-            <RuleList rules={CONTACT.steps as readonly Rule[]} />
+            <RuleList rules={CONTACT.steps as readonly Rule[]} swipe />
           </div>
         </div>
         <form
@@ -98,7 +98,6 @@ export function ContactPage() {
           <Field
             label="Church or organisation"
             autoComplete="organization"
-            optional
             {...register("church")}
           />
           <Field
