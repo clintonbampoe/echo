@@ -5,6 +5,12 @@ namespace Echo.Auth.Sessions;
 public static partial class SessionLog
 {
     // --- Login ---
+    [LoggerMessage(
+        Level = LogLevel.Warning,
+        Message = "Login refused: account {UserId} is disabled"
+    )]
+    public static partial void LoginAccountDisabled(ILogger logger, Guid userId);
+
     [LoggerMessage(Level = LogLevel.Warning, Message = "Login failed: user not found")]
     public static partial void LoginUserNotFound(ILogger logger);
 

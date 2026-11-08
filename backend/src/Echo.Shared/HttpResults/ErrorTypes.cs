@@ -15,6 +15,7 @@ public static class ErrorTypes
     public static string BadRequest => $"{_base}/bad-request";
     public static string InvalidCredentials => $"{_base}/invalid-credentials";
     public static string InvalidToken => $"{_base}/invalid-token";
+    public static string Forbidden => $"{_base}/forbidden";
     public static string NotFound => $"{_base}/not-found";
     public static string ForeignKeyNotFound => $"{_base}/foreign-key-not-found";
     public static string Conflict => $"{_base}/conflict";

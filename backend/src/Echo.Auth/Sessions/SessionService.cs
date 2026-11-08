@@ -80,6 +80,17 @@ public class SessionService(
             }
         }
 
+        // After the password check, so only someone who knows the password learns the account is disabled.
+        if (entity.DisabledAt is not null)
+        {
+            RecordLogin(span, "account_disabled", entity.CongregationId.ToString());
+            SessionLog.LoginAccountDisabled(logger, entity.Id);
+            return new ForbiddenResult(
+                "This account is disabled. Ask an admin at your church to enable it.",
+                "ACCOUNT_DISABLED"
+            );
+        }
+
         try
         {
             using (instrumentation.ActivitySource.StartActivity("svc.session.persist.tokens"))

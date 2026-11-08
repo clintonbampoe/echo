@@ -23,6 +23,7 @@ public partial class UserMapper : IUserMapper
     [MapperIgnoreTarget(nameof(User.PasswordChangedAt))]
     [MapperIgnoreTarget(nameof(User.CreatedAt))]
     [MapperIgnoreTarget(nameof(User.DeletedAt))]
+    [MapperIgnoreTarget(nameof(User.DisabledAt))]
     [MapProperty(nameof(dto.Password), nameof(User.PasswordHash))]
     public partial User ToEntity(UserCreateDto dto);
 
@@ -32,6 +33,7 @@ public partial class UserMapper : IUserMapper
     [MapperIgnoreSource(nameof(entity.PasswordChangedAt))]
     [MapperIgnoreSource(nameof(entity.CreatedAt))]
     [MapperIgnoreSource(nameof(entity.DeletedAt))]
+    [MapperIgnoreSource(nameof(entity.DisabledAt))]
     public partial UserAuthDto ToAuthDto(User entity);
 
     public partial List<UserResponseDto> ToListDto(List<User> entities);

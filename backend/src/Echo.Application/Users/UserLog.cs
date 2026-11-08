@@ -87,4 +87,22 @@ public static partial class UserLog
         Message = "User error: unexpected failure for congregation {CongregationId}"
     )]
     public static partial void Error(ILogger logger, Exception ex, Guid congregationId);
+
+    [LoggerMessage(
+        Level = LogLevel.Information,
+        Message = "User {UserId} in congregation {CongregationId} disabled by {ActorId}"
+    )]
+    public static partial void Disabled(ILogger logger, Guid congregationId, Guid userId, Guid actorId);
+
+    [LoggerMessage(
+        Level = LogLevel.Information,
+        Message = "User {UserId} in congregation {CongregationId} enabled by {ActorId}"
+    )]
+    public static partial void Enabled(ILogger logger, Guid congregationId, Guid userId, Guid actorId);
+
+    [LoggerMessage(
+        Level = LogLevel.Warning,
+        Message = "User change refused ({Reason}): {UserId} in congregation {CongregationId}"
+    )]
+    public static partial void Refused(ILogger logger, string reason, Guid congregationId, Guid userId);
 }

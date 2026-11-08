@@ -76,10 +76,12 @@ The token carries the user's `UserRole` (`Admin`, `Accountant`, `Clerk`, `Member
 
 | Endpoints | Admin | Accountant | Clerk | Member |
 |---|---|---|---|---|
-| Users: every endpoint (list, get, create, update, delete, search) | yes | no | no | no |
+| Users: every endpoint (list, get, create, update, delete, search, summary, disable, enable) | yes | no | no | no |
 | Invitations | yes | no | no | no |
 
 `GET /users/me` and `PUT /users/me` let any signed-in user read and edit their own profile (names and password; never the role or email). `GET /users/me` also returns `passwordChangedAt`. Changing the password (`PUT /users/me` with `currentPassword` and `newPassword`) requires the current one, sets `passwordChangedAt` and ends all the user's sessions: refresh tokens stop working, and the access token in use expires on its own within about 15 minutes.
+
+**Disabling an account.** `POST /users/{id}/disable` stops a person signing in without deleting anything: their refresh tokens are revoked (an access token already issued works until it expires, about 15 minutes) and a correct password then returns `403` with `errorCode: ACCOUNT_DISABLED`. `POST /users/{id}/enable` turns it back on. `GET /users` takes optional `role` and `status` (`Active`, `Disabled`, `Unverified`) filters, and `GET /users/summary` returns the head count per role. You cannot disable, remove or change the role of your own account (`409 CANNOT_MODIFY_SELF`), and the last admin who can sign in cannot be disabled, removed or demoted (`409 LAST_ADMIN`).
 
 All other endpoints currently only require a signed-in user. Finer role-based access (for example for tithes and other finance data) is planned after the first deployment.
 

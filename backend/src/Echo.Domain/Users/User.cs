@@ -13,6 +13,9 @@ public class User : ISearchable, ISoftDeletable
     public DateTime? EmailVerifiedAt { get; set; }
     public DateTime? PasswordChangedAt { get; set; }
 
+    /// <summary>When an admin turned the account off; null while it can sign in. The account and its records stay.</summary>
+    public DateTime? DisabledAt { get; set; }
+
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
     public string? OtherNames { get; set; } = string.Empty;
