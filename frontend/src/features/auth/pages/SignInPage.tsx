@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { useLocation, useNavigate } from "react-router-dom";
 import type { ApiError } from "@/lib/api";
 import { handleSubmitError } from "@/lib/forms";
-import { Button, Field, PasswordField } from "@/ui";
+import { Button, Field, PasswordField, useCycle } from "@/ui";
 import { AuthScreen } from "../components/AuthScreen";
 import { AuthLinks } from "../components/AuthLinks";
 import { SignInAlert } from "../components/SignInAlert";
@@ -21,11 +21,21 @@ function destination(state: unknown): string {
   return safePath((state as { from?: unknown } | null)?.from) ?? "/dashboard";
 }
 
+// Real-looking addresses, so the field shows what an address looks like.
+const EXAMPLES = [
+  "you@yourchurch.org",
+  "pastor@newlife.church",
+  "office@yourchurch.org",
+] as const;
+
 export function SignInPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const signIn = useSignIn();
   const [problem, setProblem] = useState<ApiError | null>(null);
+  const [greeting] = useState(() => greetingFor(new Date().getHours()));
+  const hello = useCycle([greeting, "Akwaaba", "Welcome back"], 3600);
+  const example = useCycle(EXAMPLES, 2800);
   const {
     register,
     getValues,
@@ -53,7 +63,7 @@ export function SignInPage() {
 
   return (
     <AuthScreen
-      kicker={greetingFor(new Date().getHours())}
+      kicker={hello}
       title="Sign in to Echo"
       text="Welcome back. Pick up where you left off."
       links={
@@ -84,7 +94,7 @@ export function SignInPage() {
           label="Email address"
           type="email"
           autoComplete="email"
-          placeholder="you@yourchurch.org"
+          placeholder={example}
           error={errors.email?.message}
           {...register("email")}
         />

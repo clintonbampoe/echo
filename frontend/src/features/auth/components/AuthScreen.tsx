@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
-import { Logo } from "@/ui";
+import { Link } from "react-router-dom";
+import { Logo, PulseLine } from "@/ui";
+import { BackToSite } from "./BackToSite";
 import { BackLink } from "./AuthLinks";
 import { useSplit } from "./splitMode";
 import { WordReveal } from "./WordReveal";
@@ -29,14 +31,20 @@ export function AuthScreen({
   const split = useSplit();
   const body = (
     <>
-      <Logo size={split ? 40 : 46} />
+      {!split && <Logo size={46} />}
       {kicker && (
         <p className={styles.kicker}>
           <span className={styles.kickDot} aria-hidden="true" />
-          {kicker}
+          <span key={kicker} className="anim-rise">
+            {kicker}
+          </span>
         </p>
       )}
-      <h1 className={styles.title} data-vt="title">
+      <h1
+        className={styles.title}
+        data-vt="title"
+        data-end={/[.?!]$/.test(title) ? "punct" : undefined}
+      >
         <WordReveal text={title} />
       </h1>
       {text && <p className={styles.text}>{text}</p>}
@@ -56,7 +64,21 @@ export function AuthScreen({
   return (
     <div className={styles.split}>
       <section className={styles.formCol}>
+        <header className={styles.rail}>
+          <span className={styles.brand}>
+            <Logo size={22} />
+            Echo
+          </span>
+          <BackToSite />
+        </header>
         <div className={styles.content}>{body}</div>
+        <footer className={`${styles.rail} ${styles.railFoot}`}>
+          <PulseLine />
+          <nav className={styles.legal} aria-label="Legal">
+            <Link to="/security">Security</Link>
+            <Link to="/terms">Terms</Link>
+          </nav>
+        </footer>
       </section>
       <aside className={styles.pane}>
         <span className={styles.shine} aria-hidden="true" />

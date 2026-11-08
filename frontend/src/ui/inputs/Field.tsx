@@ -1,6 +1,7 @@
 import { useId, useState, type ComponentProps } from "react";
 import { Icon } from "../layout/Icon";
 import { Shell, type Shared } from "./FieldShell";
+import { useCapsLock } from "./useCapsLock";
 import { PasswordStrength } from "./PasswordStrength";
 import styles from "./Field.module.css";
 
@@ -85,6 +86,7 @@ export function PasswordField({
 }) {
   const id = useId();
   const [shown, setShown] = useState(false);
+  const { caps, handlers } = useCapsLock(input.onBlur);
   const hintId = `${id}-strength`;
   const described =
     [error || hint ? `${id}-msg` : "", strengthOf === undefined ? "" : hintId]
@@ -107,6 +109,7 @@ export function PasswordField({
           aria-invalid={error ? true : undefined}
           aria-describedby={described}
           className={`${styles.control} ${styles.padRight} ${shown ? styles.shown : ""}`}
+          {...handlers}
         />
         {/* The icon shows what the button will do: an open eye while the password is hidden (press to
             show it), a crossed-out eye while it is shown (press to hide it). */}
@@ -125,9 +128,34 @@ export function PasswordField({
           </span>
         </button>
       </div>
+      <PasswordNotes
+        caps={caps && !shown}
+        strengthOf={strengthOf}
+        hintId={hintId}
+      />
+    </Shell>
+  );
+}
+
+function PasswordNotes({
+  caps,
+  strengthOf,
+  hintId,
+}: {
+  caps: boolean;
+  strengthOf: string | undefined;
+  hintId: string;
+}) {
+  return (
+    <>
+      {caps && (
+        <p role="status" className={styles.caps}>
+          Caps Lock is on
+        </p>
+      )}
       {strengthOf !== undefined && (
         <PasswordStrength value={strengthOf} hintId={hintId} />
       )}
-    </Shell>
+    </>
   );
 }

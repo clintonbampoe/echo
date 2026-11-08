@@ -52,6 +52,7 @@ export { ListCard } from "./data/ListCard";
 export { PickerAnchor } from "./pickers/PickerAnchor";
 export { Presence } from "./overlays/Presence";
 export { useTabTitle } from "./hooks/useTabTitle";
+export { useCycle } from "./hooks/useCycle";
 export { PulseLine } from "./layout/PulseLine";
 export { ProgressBar } from "./data/ProgressBar";
 export {

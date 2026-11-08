@@ -1,13 +1,13 @@
 import type { ReactNode } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import {
   Atmosphere,
-  Icon,
   PulseLine,
   ThemeToggle,
   useMedia,
   usePublicSurface,
 } from "@/ui";
+import { BackToSite } from "./BackToSite";
 import { SPLIT_QUERY, SplitContext } from "./splitMode";
 import styles from "./AuthLayout.module.css";
 
@@ -22,10 +22,7 @@ export function AuthLayout({ children }: { children: ReactNode }) {
     <SplitContext.Provider value={split}>
       <div className={`${styles.page} ${split ? styles.split : ""}`}>
         <Atmosphere />
-        <Link to="/" className={styles.home}>
-          <Icon name="arrow-right" size={16} className={styles.flip} />
-          Back to site
-        </Link>
+        {!split && <BackToSite className={styles.home} />}
         <ThemeToggle className={styles.theme} />
         <main className={styles.main}>
           {/* Keyed by path: each new page rises into place while the frame stays put. */}
@@ -33,9 +30,11 @@ export function AuthLayout({ children }: { children: ReactNode }) {
             {children}
           </div>
         </main>
-        <footer className={styles.foot}>
-          <PulseLine />
-        </footer>
+        {!split && (
+          <footer className={styles.foot}>
+            <PulseLine />
+          </footer>
+        )}
       </div>
     </SplitContext.Provider>
   );
