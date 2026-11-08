@@ -47,9 +47,7 @@ const Boom = (error: unknown) => () => {
 describe("error screens", () => {
   it("says a page is not found, with a way home, for someone not signed in", async () => {
     show([{ path: "*", Component: NotFound }], "/nowhere");
-    expect(
-      await screen.findByText("We could not find that page"),
-    ).toBeInTheDocument();
+    expect(await screen.findByText("404 page not found")).toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: "Go to the home page" }),
     ).toHaveAttribute("href", "/");
@@ -64,9 +62,7 @@ describe("error screens", () => {
       refreshTokenExpiresAt: "2099-01-01T00:00:00Z",
     });
     show([{ path: "*", Component: NotFound }], "/nowhere");
-    expect(
-      await screen.findByText("We could not find that page"),
-    ).toBeInTheDocument();
+    expect(await screen.findByText("404 page not found")).toBeInTheDocument();
     expect(screen.queryByRole("complementary", { name: "Sidebar" })).toBeNull();
     expect(
       screen.getByRole("link", { name: "Go to the dashboard" }),

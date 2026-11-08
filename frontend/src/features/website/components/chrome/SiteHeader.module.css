@@ -102,12 +102,26 @@
   display: none;
 }
 
+/* Behind the open menu: a tap anywhere outside it closes it. Only a narrow screen has a menu. */
+.scrim {
+  display: none;
+}
 @media (max-width: 999px) {
   .header {
     padding: 18px 40px;
   }
 }
 @media (max-width: 819px) {
+  .scrim {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    display: block;
+    border: 0;
+    background: color-mix(in srgb, var(--bg) 55%, transparent);
+    backdrop-filter: blur(3px);
+    animation: fade 200ms ease both;
+  }
   .menu {
     display: inline-flex;
     align-items: center;
@@ -160,5 +174,15 @@
   .menuCta {
     display: inline-flex;
     margin-top: 6px;
+  }
+}
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scrim {
+    animation: none;
   }
 }

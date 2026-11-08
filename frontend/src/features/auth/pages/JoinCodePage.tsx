@@ -67,7 +67,7 @@ export function JoinCodePage() {
       <form
         onSubmit={handleSubmit(onSubmit)}
         noValidate
-        className={`${styles.form} stagger`}
+        className={`${styles.form} ${styles.code} stagger`}
       >
         <Field
           label="Invitation code"

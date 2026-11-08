@@ -10,3 +10,20 @@
   position: relative;
   z-index: 1;
 }
+
+/* Sections settle at the top of the screen when a scroll stops near one. Proximity, not mandatory, so a
+   section taller than the screen can still be read all the way down. */
+:global(html[data-snap="sections"]) {
+  scroll-snap-type: y proximity;
+}
+.main > * {
+  scroll-snap-align: start;
+}
+@media (prefers-reduced-motion: reduce) {
+  :global(html[data-snap="sections"]) {
+    scroll-snap-type: none;
+  }
+}
+:global(html[data-reduce-motion="true"][data-snap="sections"]) {
+  scroll-snap-type: none;
+}

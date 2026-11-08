@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { useIsSignedIn } from "@/features/auth";
 import { LinkButton, Logo, ThemeToggle } from "@/ui";
@@ -10,8 +10,24 @@ export function SiteHeader() {
   const signedIn = useIsSignedIn();
   const [open, setOpen] = useState(false);
   const { navRef, style, onEnter, onLeave } = useGlide();
+  // Escape closes the open menu, like tapping outside it does.
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [open]);
   return (
     <header className={styles.header}>
+      {open && (
+        <button
+          type="button"
+          className={styles.scrim}
+          tabIndex={-1}
+          aria-label="Close menu"
+          onClick={() => setOpen(false)}
+        />
+      )}
       <Link to="/" className={styles.brand} onClick={() => setOpen(false)}>
         <Logo size={26} />
         <span className={styles.name}>Echo</span>

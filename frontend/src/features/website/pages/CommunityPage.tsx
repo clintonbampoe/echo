@@ -4,6 +4,8 @@ import { Columns } from "../components/chrome/Columns";
 import { Heading } from "../components/chrome/Heading";
 import { PageHero } from "../components/chrome/PageHero";
 import { Section } from "../components/chrome/Section";
+import { Steps } from "../components/chrome/Steps";
+import { Togetherness } from "../components/chrome/Togetherness";
 import { COMMUNITY } from "../content/pages";
 import { GITHUB_URL } from "../content/site";
 import styles from "./CommunityPage.module.css";
@@ -29,15 +31,16 @@ export function CommunityPage() {
             </LinkButton>
           </>
         }
+        art={<Togetherness />}
       >
         Echo is free and open source. Read it, shape it and help it grow.
       </PageHero>
       <Section top={120}>
         <Heading
           label="Free and open source"
-          title="Free for every church. Open for everyone."
+          title="From your idea to every church."
         />
-        <Columns items={COMMUNITY.ways} />
+        <Steps items={COMMUNITY.steps} />
         <p className={styles.note}>
           Churches, developers and designers shape Echo together. Every idea is
           an issue, every fix is a pull request.

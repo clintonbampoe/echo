@@ -706,8 +706,22 @@ describe("small kindnesses", () => {
     await userEvent.click(
       screen.getByRole("link", { name: "Forgot password?" }),
     );
-    expect(await screen.findByLabelText("Email address")).toHaveValue(
-      "ama@example.com",
+    // The sign-in page has the same label, so wait for the forgot page's own button first.
+    const change = await screen.findByRole("button", { name: "Change" });
+    const email = screen.getByLabelText("Email address");
+    expect(email).toHaveValue("ama@example.com");
+    // It is shown, not asked for again: locked until the person chooses to change it.
+    expect(email).toHaveAttribute("readonly");
+    await userEvent.click(change);
+    expect(screen.getByLabelText("Email address")).not.toHaveAttribute(
+      "readonly",
     );
+  });
+
+  it("asks for the email on forgot password when none was carried", async () => {
+    renderAt("/forgot");
+    const email = await screen.findByLabelText("Email address");
+    expect(email).not.toHaveAttribute("readonly");
+    expect(screen.queryByRole("button", { name: "Change" })).toBeNull();
   });
 });

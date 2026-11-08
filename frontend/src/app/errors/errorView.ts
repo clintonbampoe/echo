@@ -38,7 +38,7 @@ export const errorViews: Record<ErrorKind, ErrorView> = {
   notFound: {
     icon: "search",
     broken: false,
-    title: "We could not find that page",
+    title: "404 page not found",
     text: "The link may be old, or the address may have a typo.",
     fix: "leave",
     reload: "",

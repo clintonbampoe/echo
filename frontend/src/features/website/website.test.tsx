@@ -69,6 +69,61 @@ describe("the website frame", () => {
     expect(screen.getAllByRole("link", { name: "Sign in" })).toHaveLength(2);
   });
 
+  it("closes the open menu with Escape or a tap outside it", async () => {
+    renderAt("/");
+    const menu = await screen.findByRole("button", { name: "Menu" });
+    await userEvent.click(menu);
+    expect(menu).toHaveAttribute("aria-expanded", "true");
+    await userEvent.keyboard("{Escape}");
+    expect(menu).toHaveAttribute("aria-expanded", "false");
+
+    await userEvent.click(menu);
+    await userEvent.click(screen.getByRole("button", { name: "Close menu" }));
+    expect(menu).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryByRole("button", { name: "Close menu" })).toBeNull();
+  });
+
+  it("tells the story from idea to every church in six steps", async () => {
+    renderAt("/community");
+    expect(
+      await screen.findByRole("heading", {
+        level: 2,
+        name: "From your idea to every church.",
+      }),
+    ).toBeInTheDocument();
+    expect(screen.getAllByText(/^Step \d of 6$/)).toHaveLength(6);
+  });
+
+  it("steps through the story with the arrow keys and lets go at the ends", async () => {
+    vi.stubGlobal("matchMedia", () => ({
+      matches: false,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    }));
+    renderAt("/community");
+    const story = await screen.findByRole("group", {
+      name: /How a change reaches every church/,
+    });
+    Element.prototype.scrollTo = vi.fn();
+    story.focus();
+    // At the first step, going back is left to the page.
+    const back = new KeyboardEvent("keydown", {
+      key: "ArrowUp",
+      bubbles: true,
+      cancelable: true,
+    });
+    story.dispatchEvent(back);
+    expect(back.defaultPrevented).toBe(false);
+    // Going forward is taken, so the page does not scroll as well.
+    const forward = new KeyboardEvent("keydown", {
+      key: "ArrowDown",
+      bubbles: true,
+      cancelable: true,
+    });
+    story.dispatchEvent(forward);
+    expect(forward.defaultPrevented).toBe(true);
+  });
+
   it("folds a feature's points into one row on a phone", async () => {
     vi.stubGlobal("matchMedia", (q: string) => ({
       matches: q.includes("599"),
@@ -124,7 +179,7 @@ describe("every page", () => {
     ["/contact", /Talk to a human\./],
     ["/security", /Trusted with\s*your people\./],
     ["/privacy", /Privacy policy/],
-    ["/terms", /Terms of service/],
+    ["/terms", /Terms of use/],
   ])("%s has its title", async (path, title) => {
     renderAt(path);
     expect(

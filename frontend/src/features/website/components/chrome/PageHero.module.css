@@ -100,3 +100,9 @@
     width: 100%;
   }
 }
+.art {
+  position: relative;
+  margin-top: 16px;
+  display: flex;
+  justify-content: center;
+}

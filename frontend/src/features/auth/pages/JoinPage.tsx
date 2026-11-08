@@ -108,18 +108,20 @@ function JoinForm({
         noValidate
         className={`${styles.form} stagger`}
       >
-        <Field
-          label="First name"
-          autoComplete="given-name"
-          error={errors.firstName?.message}
-          {...form.register("firstName")}
-        />
-        <Field
-          label="Last name"
-          autoComplete="family-name"
-          error={errors.lastName?.message}
-          {...form.register("lastName")}
-        />
+        <div className={styles.row}>
+          <Field
+            label="First name"
+            autoComplete="given-name"
+            error={errors.firstName?.message}
+            {...form.register("firstName")}
+          />
+          <Field
+            label="Last name"
+            autoComplete="family-name"
+            error={errors.lastName?.message}
+            {...form.register("lastName")}
+          />
+        </div>
         <Field
           label="Other names (optional)"
           autoComplete="additional-name"

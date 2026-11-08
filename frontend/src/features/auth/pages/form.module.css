@@ -11,6 +11,15 @@
 .row > * {
   flex: 1;
 }
+/* The invitation code: centred. */
+.code input {
+  text-align: center;
+}
+/* Typed or pasted, the code is set in a monospace face; the placeholder keeps the normal one. */
+.code input:not(:placeholder-shown) {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: 0.04em;
+}
 .submit {
   margin-top: 4px;
   box-shadow: var(--glow);

@@ -111,18 +111,31 @@ export const DOCS = {
 } as const;
 
 export const COMMUNITY = {
-  ways: [
+  // How a change gets from someone's idea to every church, one step at a time.
+  steps: [
     {
-      title: "Read the code",
-      text: "Everything is public. See how Echo works and what it does with your data.",
+      title: "Find a bug or an idea.",
+      text: "Spot something broken, think of a feature churches need, or read the code to see how Echo works.",
     },
     {
-      title: "Suggest a feature",
-      text: "Tell us what your church needs. Ideas are voted on and land on the roadmap.",
+      title: "Make your own copy.",
+      text: "Fork Echo on GitHub. The copy is yours to change, and nothing you do there can break the real one.",
     },
     {
-      title: "Send a fix",
-      text: "Found a bug or want to improve a screen? Open a pull request.",
+      title: "Fix it or build it.",
+      text: "Change the code in your copy. Fix the bug, or add the feature.",
+    },
+    {
+      title: "Send it for review.",
+      text: "Open a pull request. That is how you offer your change back to Echo.",
+    },
+    {
+      title: "We check it, then merge it.",
+      text: "A maintainer reads your change, asks questions if there are any, and merges it into Echo.",
+    },
+    {
+      title: "Every church gets it.",
+      text: "Your change ships to everyone using Echo. You helped shape what comes next.",
     },
   ],
   private: [
@@ -157,7 +170,7 @@ export const LEGAL = {
     ],
   },
   terms: {
-    title: "Terms of service",
+    title: "Terms of use",
     sections: [
       "Using Echo",
       "Your content",

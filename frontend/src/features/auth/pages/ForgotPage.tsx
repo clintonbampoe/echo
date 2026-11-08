@@ -32,12 +32,43 @@ function ForgotLinks() {
   );
 }
 
+function ForgotSent({
+  sentTo,
+  onChange,
+}: {
+  sentTo: string;
+  onChange: () => void;
+}) {
+  return (
+    <AuthScreen
+      title="Check your inbox"
+      text={
+        <>
+          If an account exists for <strong>{sentTo}</strong>, a reset link is on
+          its way. It expires in 1 hour.
+        </>
+      }
+      links={<ForgotLinks />}
+    >
+      <ResendButton send={() => forgotPassword(sentTo)} />
+      <p className={styles.note}>
+        Nothing in your inbox? Check spam, or{" "}
+        <button type="button" className={styles.inline} onClick={onChange}>
+          try a different email
+        </button>
+        .
+      </p>
+    </AuthScreen>
+  );
+}
+
 export function ForgotPage() {
   const forgot = useForgotPassword();
   // Someone who came from the sign-in page has already typed their address; do not make them do it twice.
   const carried = (useLocation().state as { email?: unknown } | null)?.email;
   const email = typeof carried === "string" ? carried : "";
   const [sentTo, setSentTo] = useState("");
+  const [locked, setLocked] = useState(email !== "");
   const {
     register,
     handleSubmit,
@@ -60,33 +91,8 @@ export function ForgotPage() {
   }
 
   // The API answers the same whether or not the address has an account, so we do too.
-  if (sentTo) {
-    return (
-      <AuthScreen
-        title="Check your inbox"
-        text={
-          <>
-            If an account exists for <strong>{sentTo}</strong>, a reset link is
-            on its way. It expires in 1 hour.
-          </>
-        }
-        links={<ForgotLinks />}
-      >
-        <ResendButton send={() => forgotPassword(sentTo)} />
-        <p className={styles.note}>
-          Nothing in your inbox? Check spam, or{" "}
-          <button
-            type="button"
-            className={styles.inline}
-            onClick={() => setSentTo("")}
-          >
-            try a different email
-          </button>
-          .
-        </p>
-      </AuthScreen>
-    );
-  }
+  if (sentTo)
+    return <ForgotSent sentTo={sentTo} onChange={() => setSentTo("")} />;
 
   return (
     <AuthScreen
@@ -112,7 +118,19 @@ export function ForgotPage() {
           type="email"
           autoComplete="email"
           placeholder="you@yourchurch.org"
-          hint={email ? "From the sign-in page" : undefined}
+          readOnly={locked}
+          hint={locked ? "From the sign-in page" : undefined}
+          aside={
+            locked ? (
+              <button
+                type="button"
+                className={styles.aside}
+                onClick={() => setLocked(false)}
+              >
+                Change
+              </button>
+            ) : undefined
+          }
           error={errors.email?.message}
           {...register("email")}
         />
