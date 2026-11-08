@@ -5,6 +5,7 @@ import { BackToTop } from "./BackToTop";
 import { SiteFooter } from "./SiteFooter";
 import { SiteHeader } from "./SiteHeader";
 import { useSectionFocus } from "./useSectionFocus";
+import { useSiteNavigation } from "./useSiteNavigation";
 import styles from "./SiteLayout.module.css";
 
 // The frame around a website page: the light, the header and the footer. Its sections take focus one at a time. Pages sit inside it as children;
@@ -20,6 +21,7 @@ export function SiteFrame({
   usePublicSurface();
   const main = useRef<HTMLElement>(null);
   useSectionFocus(main);
+  useSiteNavigation();
   // Sections settle into place as the page is scrolled (see SiteLayout.module.css). Only the website does this.
   useEffect(() => {
     const root = document.documentElement;

@@ -51,10 +51,11 @@ shared pieces (`SiteHeader`, `SiteFooter`, `Section`, `Intro`, `Split`, `RuleLis
 `pages/` composes them. Spacing, type sizes and the first-open rules follow the designs at desktop, tablet
 and phone; the error screens in `app/errors` use the same frame with `SiteFrame flush`.
 
-The frame takes the page's sections one at a time (`useSectionFocus` and `stepSections`): the section in focus
-is sharp and its neighbours dim and blur, a mouse wheel, trackpad or key moves the page a whole section, and a
-section seen for the first time holds the page still briefly while it arrives. A touch screen uses CSS scroll
-snapping instead. Reduced motion, a section taller than the window, and typing in a field all switch it off.
+The frame gives the page's sections focus as you scroll (`useSectionFocus`): scrolling is the browser's own, and
+each section's `--f` (1 in place, 0 a little over half a window away) dims and blurs it in step, with no timers.
+A section's content arrives, staggered, the first time the section comes into focus. A link between pages fades
+through (`useSiteNavigation`, View Transitions). A touch screen also settles on a section with proximity snapping.
+Reduced motion, and browsers that cannot measure (tests), switch all of it off and show the content as it is.
 Every page is linked from `SiteHeader` (the footer has only the brand and the promise).
 
 ```text

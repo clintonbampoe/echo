@@ -575,6 +575,26 @@ html[data-reduce-motion="true"] .av:hover {
   }
 }
 
+/* Between website pages: Material's "fade through". The old page clears quickly, then the new one comes up,
+   so the two never ghost over each other; its sections then arrive one by one (website SiteLayout.module.css). */
+html[data-vt-site]::view-transition-old(root) {
+  animation: pageOut 120ms cubic-bezier(0.3, 0, 0.8, 0.15) both;
+}
+html[data-vt-site]::view-transition-new(root) {
+  animation: pageIn 240ms cubic-bezier(0.05, 0.7, 0.1, 1) 80ms both;
+  clip-path: none;
+}
+@keyframes pageOut {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes pageIn {
+  from {
+    opacity: 0;
+  }
+}
+
 /* Between auth screens the title and the card travel (features/auth useAuthGo). */
 html[data-vt-nav] [data-vt="title"] {
   view-transition-name: auth-title;
