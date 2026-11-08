@@ -17,6 +17,8 @@ import {
   type ChurchValues,
 } from "../forms/schema";
 import { ChurchFields } from "./ChurchFields";
+import { churchRequest } from "../forms/churchRequest";
+import { ChurchBorn } from "../components/ChurchBorn";
 import { ChurchButtons } from "../components/ChurchButtons";
 import { useChurchParts } from "../hooks/useChurchParts";
 import { CHURCH_PARTS } from "../model/churchParts";
@@ -47,6 +49,7 @@ function ChurchForm({ account }: { account: AccountValues }) {
   const register = useRegisterCongregation();
   const signInAfterRegister = useSignInAfterRegister();
   const [problem, setProblem] = useState<ApiError | null>(null);
+  const [born, setBorn] = useState("");
   const form = useForm<ChurchValues>({
     resolver: zodResolver(churchSchema),
     defaultValues: { orgType: "Church", region: "GreaterAccra" },
@@ -60,28 +63,14 @@ function ChurchForm({ account }: { account: AccountValues }) {
   async function onSubmit(v: ChurchValues) {
     setProblem(null);
     try {
-      await register.mutateAsync({
-        congregationDto: {
-          name: v.name,
-          orgType: v.orgType,
-          phoneNumber: v.phoneNumber,
-          emailAddress: v.churchEmail,
-          region: v.region,
-          city: v.city,
-          town: v.town,
-          gpsAddress: v.gpsAddress,
-        },
-        userDto: {
-          firstName: account.firstName,
-          lastName: account.lastName,
-          emailAddress: account.email,
-          password: account.password,
-        },
-      });
+      await register.mutateAsync(churchRequest(v, account));
       const signedIn = await signInAfterRegister(
         account.email,
         account.password,
       );
+      // Let the church have its moment before moving on.
+      setBorn(v.name);
+      await new Promise((done) => window.setTimeout(done, 900));
       navigate("/verify", { state: { email: account.email, signedIn } });
     } catch (e) {
       handleSubmitError(e, form.setError, FIELD_MAP, setProblem);
@@ -116,32 +105,38 @@ function ChurchForm({ account }: { account: AccountValues }) {
         />
       }
     >
-      {problem && (
-        <Alert title="We could not create your account">
-          {problem.message}
-        </Alert>
+      {born ? (
+        <ChurchBorn name={born} />
+      ) : (
+        <>
+          {problem && (
+            <Alert title="We could not create your account">
+              {problem.message}
+            </Alert>
+          )}
+          <form
+            onSubmit={
+              partial
+                ? (e) => {
+                    e.preventDefault();
+                    void next();
+                  }
+                : form.handleSubmit(onSubmit)
+            }
+            noValidate
+            className={`${styles.form} stagger`}
+          >
+            <ChurchFields form={form} part={phone ? part : undefined} />
+            <ChurchButtons
+              part={part}
+              partial={partial}
+              phone={phone}
+              loading={register.isPending}
+              onBack={() => setPart(part - 1)}
+            />
+          </form>
+        </>
       )}
-      <form
-        onSubmit={
-          partial
-            ? (e) => {
-                e.preventDefault();
-                void next();
-              }
-            : form.handleSubmit(onSubmit)
-        }
-        noValidate
-        className={`${styles.form} stagger`}
-      >
-        <ChurchFields form={form} part={phone ? part : undefined} />
-        <ChurchButtons
-          part={part}
-          partial={partial}
-          phone={phone}
-          loading={register.isPending}
-          onBack={() => setPart(part - 1)}
-        />
-      </form>
     </AuthScreen>
   );
 }

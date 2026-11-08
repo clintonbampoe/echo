@@ -32,6 +32,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         createPortal(
           <div className={styles.dock}>
             <div
+              key={toast.id}
               role="status"
               className={styles.toast}
               data-closing={closing}
