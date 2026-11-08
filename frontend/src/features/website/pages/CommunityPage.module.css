@@ -1,9 +1,9 @@
 .hero {
   display: grid;
-  grid-template-columns: 1.1fr 0.9fr;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
   gap: 60px;
   align-items: center;
-  min-height: calc(100dvh - 168px);
+  min-height: calc(max(100dvh, 760px) - 84px);
 }
 .title {
   max-width: 820px;
@@ -26,6 +26,12 @@
   flex-wrap: wrap;
   gap: 12px;
   margin-top: 36px;
+}
+/* This page's buttons are the large size on every screen. */
+.actions a.btn {
+  height: 54px;
+  padding: 0 26px;
+  font-size: 16px;
 }
 .primary {
   box-shadow: var(--glow);
@@ -50,30 +56,70 @@
   line-height: 0.98;
   letter-spacing: -0.055em;
 }
+.steps {
+  margin-bottom: 30px;
+}
+/* The footer sits closer under this page than under the others, as on the board. */
+.more {
+  margin-bottom: -60px;
+}
 
 @media (max-width: 999px) {
   .hero {
-    grid-template-columns: minmax(0, 1fr);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
     gap: 40px;
-    min-height: 0;
+    min-height: 910px;
   }
-  .title,
+  .title {
+    max-width: 640px;
+    font-size: 68px;
+  }
   .big {
     font-size: 64px;
   }
   .art svg {
-    width: min(360px, 100%);
+    width: 420px;
+  }
+  .more {
+    margin-bottom: -68px;
   }
 }
 @media (max-width: 599px) {
-  .title,
-  .big {
+  .hero {
+    gap: 12px;
+    min-height: 604px;
+  }
+  .title {
+    margin-top: 16px;
     font-size: 40px;
   }
   .lead {
-    font-size: 17px;
+    margin-top: 14px;
+    font-size: 16px;
+  }
+  .actions {
+    margin-top: 18px;
   }
   .actions > * {
     width: 100%;
+  }
+  .second {
+    display: none;
+  }
+  .art svg {
+    width: 290px;
+  }
+  .big {
+    margin: 24px 0 20px;
+    font-size: 38px;
+  }
+  .steps {
+    margin-bottom: 18px;
+  }
+  .more {
+    min-height: 642px;
+    margin-bottom: 0;
   }
 }

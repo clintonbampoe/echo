@@ -14,6 +14,7 @@
 .title {
   display: block;
   font-size: 34px;
+  line-height: 1.2;
   font-weight: 600;
   letter-spacing: -0.04em;
 }
@@ -21,6 +22,7 @@
   display: block;
   margin-top: 6px;
   font-size: 16px;
+  line-height: 1.2;
   color: var(--text-2);
 }
 .arrow {
@@ -63,8 +65,14 @@
   color: var(--text-2);
 }
 @media (max-width: 999px) {
+  .large .row {
+    padding: 22px 0;
+  }
   .large .title {
     font-size: 36px;
+  }
+  .large .arrow {
+    font-size: 23px;
   }
 }
 @media (max-width: 599px) {

@@ -1,40 +1,44 @@
 .art {
-  width: min(260px, 70vw);
+  display: block;
+  width: 100%;
   height: auto;
+  max-width: 540px;
   color: var(--text);
-  opacity: 0.8;
 }
 .ring {
   transform-origin: 260px 260px;
   animation: turn 240s linear infinite;
 }
-.pulse {
+/* One quiet ripple from the centre out to the ring. */
+.ripple {
   transform-box: fill-box;
   transform-origin: center;
-  animation: pulse 4s ease-out infinite;
+  opacity: 0;
+  animation: ripple 9s ease-out 1s infinite;
 }
 @keyframes turn {
   to {
     transform: rotate(360deg);
   }
 }
-@keyframes pulse {
+@keyframes ripple {
   0% {
-    opacity: 0.5;
+    opacity: 0.35;
     transform: scale(1);
   }
+  70%,
   100% {
     opacity: 0;
-    transform: scale(14);
+    transform: scale(6.9);
   }
 }
 @media (prefers-reduced-motion: reduce) {
   .ring,
-  .pulse {
+  .ripple {
     animation: none;
   }
 }
 html[data-reduce-motion="true"] .ring,
-html[data-reduce-motion="true"] .pulse {
+html[data-reduce-motion="true"] .ripple {
   animation: none;
 }

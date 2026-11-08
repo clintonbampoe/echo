@@ -9,10 +9,11 @@ import { COMMUNITY, COMMUNITY_ROWS } from "../content/pages";
 import { GITHUB_URL } from "../content/site";
 import styles from "./CommunityPage.module.css";
 
+// Two full-height screens: the welcome with the ring of people, then how a change reaches every church.
 export function CommunityPage() {
   return (
     <>
-      <Section top={84}>
+      <Section top={84} tablet={90} phone={96}>
         <div className={styles.hero}>
           <div>
             <Kicker>Community</Kicker>
@@ -24,10 +25,17 @@ export function CommunityPage() {
               Open source, built in the open, shaped by people who run churches.
             </p>
             <div className={styles.actions}>
-              <Cta to={GITHUB_URL} className={styles.primary}>
+              <Cta
+                to={GITHUB_URL}
+                className={`${styles.btn} ${styles.primary}`}
+              >
                 Read the code
               </Cta>
-              <Cta to="/contact" variant="secondary">
+              <Cta
+                to="/contact"
+                variant="secondary"
+                className={`${styles.btn} ${styles.second}`}
+              >
                 Tell us what you need
               </Cta>
             </div>
@@ -37,11 +45,13 @@ export function CommunityPage() {
           </div>
         </div>
       </Section>
-      <Section top={104}>
+      <Section top={104} tablet={104} phone={60} className={styles.more}>
         <p className={styles.label}>Be part of it</p>
         <h2 className={styles.big}>From your idea to every church.</h2>
-        <Steps items={COMMUNITY.steps} />
-        <LinkRows rows={COMMUNITY_ROWS} large />
+        <div className={styles.steps}>
+          <Steps items={COMMUNITY.steps} />
+        </div>
+        <LinkRows rows={COMMUNITY_ROWS} large swipe />
       </Section>
     </>
   );

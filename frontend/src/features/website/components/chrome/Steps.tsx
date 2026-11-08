@@ -143,7 +143,7 @@ export function Steps({ items }: { items: readonly Step[] }) {
         ))}
       </div>
       <p className={styles.hint} data-gone={at > 0 || undefined}>
-        {wide ? "Scroll" : "Swipe"} through. One step at a time.
+        Scroll or swipe. One step at a time.
       </p>
     </div>
   );

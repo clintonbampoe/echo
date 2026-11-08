@@ -157,13 +157,13 @@
     font-size: 15px;
   }
   .window {
-    height: 200px;
+    height: 250px;
     overflow-x: hidden;
     overflow-y: auto;
     scroll-snap-type: y mandatory;
   }
   .step {
-    height: 200px;
+    height: 250px;
   }
   .title {
     font-size: 44px;
@@ -231,4 +231,19 @@ html[data-reduce-motion="true"] .hint {
 }
 html[data-reduce-motion="true"] .step[data-current] .rip {
   animation: none;
+}
+@media (max-width: 599px) {
+  .track {
+    font-size: 11.5px;
+  }
+  .title {
+    font-size: 26px;
+  }
+  .text {
+    font-size: 15px;
+  }
+  .icon {
+    width: 48px;
+    height: 48px;
+  }
 }
