@@ -1,0 +1,275 @@
+.art {
+  width: 100%;
+  max-width: 520px;
+  margin-top: 44px;
+}
+.svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.card {
+  fill: var(--card);
+  stroke: var(--text);
+  stroke-width: 1.5;
+}
+.card rect {
+  fill: var(--card);
+  stroke: var(--text);
+  stroke-width: 1.5;
+}
+.screen {
+  fill: var(--surface-2);
+}
+.guide {
+  fill: none;
+  stroke: var(--line-2);
+  stroke-dasharray: 3 6;
+}
+.led {
+  fill: var(--text);
+}
+.shield {
+  fill: none;
+  stroke: var(--text);
+  stroke-width: 1.5;
+  stroke-opacity: 0.6;
+  stroke-linecap: round;
+  stroke-dasharray: 2 6;
+}
+.pill {
+  fill: var(--text);
+}
+.pillText {
+  font-size: 11px;
+  font-weight: 600;
+  text-anchor: middle;
+  fill: var(--bg);
+  font-family: inherit;
+}
+.tag {
+  fill: var(--card);
+  stroke: var(--line-2);
+}
+.tagText {
+  font-size: 11px;
+  text-anchor: middle;
+  fill: var(--text-3);
+  font-family: inherit;
+}
+.ring {
+  fill: none;
+  stroke: var(--text);
+  stroke-width: 1.5;
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ringOut 9s linear infinite;
+}
+.flash {
+  fill: none;
+  stroke: var(--text);
+  stroke-width: 3;
+  opacity: 0;
+  animation: flash 9s linear infinite;
+}
+.pass {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: pass 9s linear infinite;
+}
+.bounce {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: bounce 9s linear infinite;
+}
+.frame {
+  animation: frame 9s linear infinite;
+  opacity: 0;
+}
+
+.captions {
+  position: relative;
+  height: 24px;
+  margin-top: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-align: center;
+}
+.captions span {
+  position: absolute;
+  right: 0;
+  left: 0;
+  opacity: 0;
+}
+.line1 {
+  animation: line1 9s linear infinite;
+}
+.line2 {
+  animation: line2 9s linear infinite;
+}
+.line3 {
+  animation: line3 9s linear infinite;
+}
+
+@keyframes frame {
+  0% {
+    opacity: 0;
+  }
+  2%,
+  95% {
+    opacity: 1;
+  }
+  98%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes pass {
+  0%,
+  100% {
+    opacity: 0;
+    transform: translateX(0);
+  }
+  2% {
+    opacity: 1;
+  }
+  15% {
+    opacity: 1;
+    transform: translateX(262px);
+  }
+  17% {
+    opacity: 0;
+    transform: translateX(300px) scale(0.3);
+  }
+  18% {
+    opacity: 0;
+  }
+}
+@keyframes bounce {
+  0% {
+    opacity: 0;
+    transform: translate(var(--sx), var(--sy));
+  }
+  4% {
+    opacity: 1;
+  }
+  14% {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+  22% {
+    opacity: 0;
+    transform: translate(var(--bx), var(--by)) rotate(var(--rot));
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes flash {
+  0%,
+  13% {
+    opacity: 0;
+  }
+  14% {
+    opacity: 1;
+  }
+  22%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes ringOut {
+  0%,
+  13% {
+    opacity: 0;
+    transform: scale(1);
+  }
+  14% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  26%,
+  100% {
+    opacity: 0;
+    transform: scale(5);
+  }
+}
+@keyframes line1 {
+  0% {
+    opacity: 0;
+  }
+  3%,
+  34% {
+    opacity: 1;
+  }
+  38%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes line2 {
+  0%,
+  36% {
+    opacity: 0;
+  }
+  40%,
+  66% {
+    opacity: 1;
+  }
+  70%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes line3 {
+  0%,
+  68% {
+    opacity: 0;
+  }
+  72%,
+  94% {
+    opacity: 1;
+  }
+  98%,
+  100% {
+    opacity: 0;
+  }
+}
+
+/* Reduced motion: the picture stands still with its first line. */
+@media (prefers-reduced-motion: reduce) {
+  .frame,
+  .pass,
+  .bounce,
+  .ring,
+  .flash,
+  .line1,
+  .line2,
+  .line3 {
+    animation: none;
+  }
+  .frame {
+    opacity: 1;
+  }
+  .line1 {
+    opacity: 1;
+  }
+}
+html[data-reduce-motion="true"] .frame,
+html[data-reduce-motion="true"] .pass,
+html[data-reduce-motion="true"] .bounce,
+html[data-reduce-motion="true"] .ring,
+html[data-reduce-motion="true"] .flash,
+html[data-reduce-motion="true"] .line1,
+html[data-reduce-motion="true"] .line2,
+html[data-reduce-motion="true"] .line3 {
+  animation: none;
+}
+html[data-reduce-motion="true"] .frame,
+html[data-reduce-motion="true"] .line1 {
+  opacity: 1;
+}

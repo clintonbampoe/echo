@@ -177,7 +177,7 @@ describe("every page", () => {
     ["/community", /Built in the open,\s*with you\./],
     ["/about", /Built so your church can spend its time on people/],
     ["/contact", /Talk to a human\./],
-    ["/security", /Trusted with\s*your people\./],
+    ["/security", /How we handle your data/],
     ["/privacy", /Privacy policy/],
     ["/terms", /Terms of use/],
   ])("%s has its title", async (path, title) => {

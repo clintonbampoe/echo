@@ -3,7 +3,7 @@ import { Kicker } from "../components/chrome/Kicker";
 import { RuleList, type Rule } from "../components/chrome/RuleList";
 import { Section } from "../components/chrome/Section";
 import { Stop } from "../components/chrome/Stop";
-import { LEGAL } from "../content/pages";
+import { LEGAL } from "../content/trust";
 import styles from "./LegalPage.module.css";
 
 type Props = { document: "privacy" | "terms" };
