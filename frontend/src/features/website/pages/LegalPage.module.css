@@ -73,3 +73,42 @@
     font-size: 36px;
   }
 }
+
+/* A phone's tap-to-open row. */
+.fold {
+  border-top: 1px solid var(--line);
+}
+.fold:last-child {
+  border-bottom: 1px solid var(--line);
+}
+.summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 0;
+  cursor: pointer;
+  list-style: none;
+}
+.summary::-webkit-details-marker {
+  display: none;
+}
+.summary h2 {
+  margin: 0;
+  font-size: 18px;
+}
+.summary::after {
+  content: "+";
+  font-size: 20px;
+  color: var(--text-3);
+}
+.fold[open] .summary::after {
+  content: "–";
+}
+.fold p {
+  margin: 0 0 20px;
+}
+.summary:focus-visible {
+  outline: var(--focus);
+  outline-offset: 2px;
+  border-radius: 6px;
+}

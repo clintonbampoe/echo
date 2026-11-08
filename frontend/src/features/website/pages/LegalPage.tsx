@@ -1,3 +1,4 @@
+import { useMedia } from "@/ui";
 import { ClosingCta } from "../components/chrome/ClosingCta";
 import { Section } from "../components/chrome/Section";
 import { LEGAL } from "../content/pages";
@@ -9,6 +10,8 @@ type Props = { document: "privacy" | "terms" };
 // The words themselves are placeholders until they have been reviewed.
 export function LegalPage({ document }: Props) {
   const { title, sections } = LEGAL[document];
+  // On a phone each section is a tap-to-open row, so the page reads as a list of headings.
+  const phone = useMedia("(max-width: 599px)");
   const id = (name: string) => name.toLowerCase().replace(/\s+/g, "-");
   return (
     <>
@@ -24,12 +27,21 @@ export function LegalPage({ document }: Props) {
             ))}
           </nav>
           <div className={styles.body}>
-            {sections.map((name) => (
-              <section key={name} id={id(name)} className={styles.section}>
-                <h2>{name}</h2>
-                <p>{LEGAL.placeholder}</p>
-              </section>
-            ))}
+            {sections.map((name) =>
+              phone ? (
+                <details key={name} id={id(name)} className={styles.fold}>
+                  <summary className={styles.summary}>
+                    <h2>{name}</h2>
+                  </summary>
+                  <p>{LEGAL.placeholder}</p>
+                </details>
+              ) : (
+                <section key={name} id={id(name)} className={styles.section}>
+                  <h2>{name}</h2>
+                  <p>{LEGAL.placeholder}</p>
+                </section>
+              ),
+            )}
           </div>
         </div>
       </Section>
