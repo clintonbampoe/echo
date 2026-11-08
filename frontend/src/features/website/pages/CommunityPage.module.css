@@ -8,3 +8,10 @@
   line-height: 1.6;
   color: var(--text-2);
 }
+
+/* A phone gets buttons as wide as the screen, like everywhere else. */
+@media (max-width: 599px) {
+  .wide {
+    width: 100%;
+  }
+}

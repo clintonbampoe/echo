@@ -41,10 +41,6 @@ export function CommunityPage() {
           title="From your idea to every church."
         />
         <Steps items={COMMUNITY.steps} />
-        <p className={styles.note}>
-          Churches, developers and designers shape Echo together. Every idea is
-          an issue, every fix is a pull request.
-        </p>
       </Section>
       <Section id="support" top={140}>
         <Heading
@@ -59,7 +55,7 @@ export function CommunityPage() {
           to="/contact?topic=support"
           size="xl"
           pill
-          className={styles.primary}
+          className={`${styles.primary} ${styles.wide}`}
         >
           Give to Echo
         </LinkButton>
@@ -83,6 +79,7 @@ export function CommunityPage() {
           size="xl"
           variant="secondary"
           pill
+          className={styles.wide}
         >
           Talk to us
         </LinkButton>

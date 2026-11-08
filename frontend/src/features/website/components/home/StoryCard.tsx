@@ -2,7 +2,7 @@ import styles from "./StoryCard.module.css";
 
 const MONTHS = ["Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct"];
 const INCOME = [48, 62, 55, 70, 64, 78, 72, 86];
-const EXPENSES = [30, 36, 28, 40, 34, 38, 36, 42];
+const EXPENSES = [48, 58, 45, 64, 54, 61, 58, 67];
 
 // The small picture beside each story on the home page.
 export function StoryCard({ number }: { number: string }) {

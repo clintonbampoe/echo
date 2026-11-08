@@ -10,7 +10,7 @@
 .top {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-start;
+  align-items: baseline;
   justify-content: space-between;
   gap: 20px 40px;
   padding: 32px 0 28px;
@@ -19,7 +19,7 @@
 .links {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-start;
+  align-items: baseline;
   gap: 12px 28px;
 }
 .more {

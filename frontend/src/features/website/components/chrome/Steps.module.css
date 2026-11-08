@@ -157,13 +157,13 @@
     font-size: 15px;
   }
   .window {
-    height: 250px;
+    height: 200px;
     overflow-x: hidden;
     overflow-y: auto;
     scroll-snap-type: y mandatory;
   }
   .step {
-    height: 250px;
+    height: 200px;
   }
   .title {
     font-size: 44px;

@@ -6,6 +6,19 @@
   justify-content: space-between;
   padding: 22px 64px;
 }
+/* Wide enough for it: the same space on both sides, so the links sit under the middle of the page title. */
+@media (min-width: 1100px) {
+  .header {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+  }
+  .brand {
+    justify-self: start;
+  }
+  .actions {
+    justify-self: end;
+  }
+}
 .brand {
   display: flex;
   align-items: center;

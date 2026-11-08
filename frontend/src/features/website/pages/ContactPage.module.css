@@ -29,7 +29,8 @@
   flex-direction: column;
   gap: 28px;
   margin: 0;
-  padding-top: 8px;
+  /* Level with the first label in the card beside it. */
+  padding-top: 32px;
 }
 .facts dt {
   margin-bottom: 4px;
@@ -49,6 +50,9 @@
   }
 }
 @media (max-width: 599px) {
+  .send {
+    align-self: stretch;
+  }
   .form {
     padding: 22px;
     border-radius: 24px;

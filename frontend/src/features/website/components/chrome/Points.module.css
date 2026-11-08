@@ -11,8 +11,9 @@
 }
 .points li {
   padding-left: 22px;
+  /* The dot's centre sits on the middle of the first line of text (line height 1.5, so 0.75em down). */
   background: radial-gradient(circle, var(--text) 3px, transparent 3.5px) 0
-    0.55em / 10px 10px no-repeat;
+    calc(0.75em - 5px) / 10px 10px no-repeat;
 }
 
 /* The phone's tap-to-open row: full width, with a plus that turns into a minus. */
