@@ -1,5 +1,7 @@
 /* Layout shared by every auth form page. */
 .form {
+  --control-height: 50px;
+  --radius-field: 16px;
   display: flex;
   flex-direction: column;
   gap: 18px;
@@ -21,6 +23,7 @@
   letter-spacing: 0.04em;
 }
 .submit {
+  height: 52px;
   margin-top: 4px;
   box-shadow: var(--glow);
 }

@@ -14,7 +14,7 @@
 .text {
   margin: 0;
   max-width: 360px;
-  font-size: 16px;
+  font-size: 18px;
   line-height: 1.55;
   color: var(--text-2);
 }
@@ -177,7 +177,7 @@
   align-items: center;
   gap: 8px;
   margin: 0;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-3);
 }
 .kickDot {
