@@ -27,7 +27,6 @@ public class EventService(
     ApplicationInstrumentation instrumentation,
     LinkGenerator linker,
     DateWindows dateWindows,
-    SummaryCache summaries,
     ILogger<EventService> logger
 )
 {
@@ -288,19 +287,12 @@ public class EventService(
         return new SuccessResult<List<EventSearchResultDto>>(res);
     }
 
-    public Task<IOperationResult> Summary(
+    public async Task<IOperationResult> Summary(
         Guid congregationId,
         EventFilters filters,
         CancellationToken ct
     ) =>
-        summaries.Serve(
-            this,
-            "events",
-            congregationId,
-            filters,
-            (self, token) => self.ComputeSummary(congregationId, filters, token),
-            ct
-        );
+        SuccessResult.Of(await ComputeSummary(congregationId, filters, ct));
 
     private async Task<EventSummaryDto> ComputeSummary(
         Guid congregationId,
@@ -330,19 +322,12 @@ public class EventService(
         return res;
     }
 
-    public Task<IOperationResult> SeriesSummary(
+    public async Task<IOperationResult> SeriesSummary(
         Guid congregationId,
         EventSeriesFilters filters,
         CancellationToken ct
     ) =>
-        summaries.Serve(
-            this,
-            "events.by-event",
-            congregationId,
-            filters,
-            (self, token) => self.ComputeSeries(congregationId, filters, token),
-            ct
-        );
+        SuccessResult.Of(await ComputeSeries(congregationId, filters, ct));
 
     private async Task<List<EventSeriesDto>> ComputeSeries(
         Guid congregationId,
@@ -369,14 +354,7 @@ public class EventService(
         if (MonthRange.Problem(MonthRange.Or(filters.Months)) is { } problem)
             return new BadRequestResult(problem);
 
-        return await summaries.Serve(
-            this,
-            "events.monthly",
-            congregationId,
-            filters,
-            (self, token) => self.ComputeMonthly(congregationId, filters, token),
-            ct
-        );
+        return SuccessResult.Of(await ComputeMonthly(congregationId, filters, ct));
     }
 
     private async Task<List<EventMonthlyDto>> ComputeMonthly(

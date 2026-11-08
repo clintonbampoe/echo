@@ -1,9 +1,11 @@
 using System.ComponentModel.DataAnnotations;
+using Echo.Application.Caching;
 using Echo.Shared.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Echo.Application.Transactions;
 
@@ -16,7 +18,8 @@ public static class TransactionCategoryEndpoints
     {
         var group = app.MapGroup("/transaction-categories")
             .WithTags("Transaction Categories")
-            .RequireAuthorization();
+            .RequireAuthorization()
+            .CacheOutput(ReadCache.Policy);
 
         group
             .MapGet(
@@ -259,6 +262,7 @@ public static class TransactionCategoryEndpoints
                 }
             )
             .WithName("SearchTransactionCategories")
+            .CacheOutput(p => p.NoCache())
             .WithSummary("Searches transaction categories by name.")
             .WithDescription(
                 """

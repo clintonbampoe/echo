@@ -1,3 +1,4 @@
+using Echo.Application.Caching;
 using Echo.Data;
 using Echo.Domain.Projects;
 using Echo.Shared.Query;
@@ -5,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Application.Projects;
 
-public class ProjectCategoryRepository(AppDbContext context)
+public class ProjectCategoryRepository(AppDbContext context, ReadCacheEvictions cache)
 {
     private readonly DbSet<ProjectCategory> _dbSet = context.Set<ProjectCategory>();
 
@@ -103,6 +104,8 @@ public class ProjectCategoryRepository(AppDbContext context)
         }
 
         await tx.CommitAsync(ct);
+        // The move is a bulk update the save interceptor never sees.
+        await cache.Drop(congregationId, ct);
         return moved;
     }
 

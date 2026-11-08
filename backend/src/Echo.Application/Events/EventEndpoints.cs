@@ -1,10 +1,12 @@
 using System.ComponentModel.DataAnnotations;
+using Echo.Application.Caching;
 using Echo.Shared.Extensions;
 using Echo.Shared.Pagination;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Echo.Application.Events;
 
@@ -15,7 +17,10 @@ public static class EventEndpoints
         ApplicationInstrumentation instrumentation
     )
     {
-        var group = app.MapGroup("/events").WithTags("Events").RequireAuthorization();
+        var group = app.MapGroup("/events")
+            .WithTags("Events")
+            .RequireAuthorization()
+            .CacheOutput(ReadCache.Policy);
 
         group
             .MapGet(
@@ -340,6 +345,7 @@ public static class EventEndpoints
                 }
             )
             .WithName("SearchEvents")
+            .CacheOutput(p => p.NoCache())
             .WithSummary("Searches events by name.")
             .WithDescription(
                 """

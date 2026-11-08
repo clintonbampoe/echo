@@ -1,9 +1,11 @@
+using Echo.Application.Caching;
 using Echo.Shared.Extensions;
 using Echo.Shared.Pagination;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Echo.Application.Tithes;
 
@@ -14,7 +16,10 @@ public static class TitheEndpoints
         ApplicationInstrumentation instrumentation
     )
     {
-        var group = app.MapGroup("/tithes").WithTags("Tithes").RequireAuthorization();
+        var group = app.MapGroup("/tithes")
+            .WithTags("Tithes")
+            .RequireAuthorization()
+            .CacheOutput(ReadCache.Policy);
 
         group
             .MapGet(

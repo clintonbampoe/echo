@@ -1,3 +1,5 @@
+using Echo.Application.Caching;
+using Echo.Application.Tests.Caching;
 using Echo.Application.Attendances;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -27,6 +29,7 @@ public class AttendanceTotalsRefresherTests
         var scopes = new FailingScopes();
         using var worker = new AttendanceTotalsRefresher(
             scopes,
+            new ReadCacheEvictions(new RecordingCacheStore()),
             time,
             NullLogger<AttendanceTotalsRefresher>.Instance
         );
@@ -50,6 +53,7 @@ public class AttendanceTotalsRefresherTests
         var scopes = new FailingScopes();
         using var worker = new AttendanceTotalsRefresher(
             scopes,
+            new ReadCacheEvictions(new RecordingCacheStore()),
             time,
             NullLogger<AttendanceTotalsRefresher>.Instance
         );

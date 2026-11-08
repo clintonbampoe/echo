@@ -1,10 +1,12 @@
 using System.ComponentModel.DataAnnotations;
+using Echo.Application.Caching;
 using Echo.Shared.Extensions;
 using Echo.Shared.Pagination;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Echo.Application.Projects;
 
@@ -15,7 +17,10 @@ public static class ProjectEndpoints
         ApplicationInstrumentation instrumentation
     )
     {
-        var group = app.MapGroup("/projects").WithTags("Projects").RequireAuthorization();
+        var group = app.MapGroup("/projects")
+            .WithTags("Projects")
+            .RequireAuthorization()
+            .CacheOutput(ReadCache.Policy);
 
         group
             .MapGet(
@@ -303,6 +308,7 @@ public static class ProjectEndpoints
                 }
             )
             .WithName("SearchProjects")
+            .CacheOutput(p => p.NoCache())
             .WithSummary("Searches projects by name.")
             .WithDescription(
                 """

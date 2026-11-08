@@ -27,8 +27,9 @@ public static class Extensions
         // Enforce the DataAnnotations on endpoint parameters and request DTOs
         services.AddValidation();
 
-        // Every summary is cached and logged through this
-        services.AddScoped<SummaryCache>();
+        // The store the totals refresher and the write interceptor drop answers from; AddReadCache adds the rules
+        services.AddOutputCache();
+        services.AddSingleton<ReadCacheEvictions>();
 
         // Keeps the per-session attendance totals the summaries read up to date
         services.AddHostedService<AttendanceTotalsRefresher>();

@@ -1,3 +1,4 @@
+using Echo.Application.Caching;
 using Echo.Domain.Users;
 using Echo.Shared.Extensions;
 using Echo.Shared.Pagination;
@@ -5,6 +6,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Echo.Auth.Invitations;
 
@@ -20,7 +22,8 @@ public static class InvitationEndpoints
             .MapGroup("/invitations")
             .WithTags("Invitations")
             .RequireRateLimiting("auth")
-            .RequireAuthorization(policy => policy.RequireRole(nameof(UserRole.Admin)));
+            .RequireAuthorization(policy => policy.RequireRole(nameof(UserRole.Admin)))
+            .CacheOutput(ReadCache.Policy);
 
         invitations
             .MapPost(

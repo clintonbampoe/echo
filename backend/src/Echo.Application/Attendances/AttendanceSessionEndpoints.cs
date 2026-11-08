@@ -1,9 +1,11 @@
+using Echo.Application.Caching;
 using Echo.Shared.Extensions;
 using Echo.Shared.Pagination;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Echo.Application.Attendances;
 
@@ -15,7 +17,8 @@ public static class AttendanceSessionEndpoints
         {
             var group = app.MapGroup("/attendance/sessions")
                 .WithTags("Attendance Sessions")
-                .RequireAuthorization();
+                .RequireAuthorization()
+                .CacheOutput(ReadCache.Policy);
 
             group
                 .MapGet(

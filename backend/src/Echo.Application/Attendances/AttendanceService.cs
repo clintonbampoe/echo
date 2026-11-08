@@ -27,7 +27,6 @@ public class AttendanceService(
     TimeProvider timeProvider,
     ApplicationInstrumentation instrumentation,
     LinkGenerator linker,
-    SummaryCache summaries,
     ILogger<AttendanceService> logger
 )
 {
@@ -241,20 +240,13 @@ public class AttendanceService(
         return new NoContentResult();
     }
 
-    public Task<IOperationResult> Summary(
+    public async Task<IOperationResult> Summary(
         Guid congregationId,
         AttendanceFilters filters,
         bool includePrevious,
         CancellationToken ct
     ) =>
-        summaries.Serve(
-            this,
-            "attendance",
-            congregationId,
-            new { filters, includePrevious },
-            (self, token) => self.ComputeSummary(congregationId, filters, includePrevious, token),
-            ct
-        );
+        SuccessResult.Of(await ComputeSummary(congregationId, filters, includePrevious, ct));
 
     private async Task<AttendanceSummaryDto> ComputeSummary(
         Guid congregationId,
@@ -324,14 +316,7 @@ public class AttendanceService(
         if (MonthRange.Problem(MonthRange.Or(filters.Months)) is { } problem)
             return new BadRequestResult(problem);
 
-        return await summaries.Serve(
-            this,
-            "attendance.monthly",
-            congregationId,
-            filters,
-            (self, token) => self.ComputeMonthly(congregationId, filters, token),
-            ct
-        );
+        return SuccessResult.Of(await ComputeMonthly(congregationId, filters, ct));
     }
 
     private async Task<List<AttendanceMonthlyDto>> ComputeMonthly(

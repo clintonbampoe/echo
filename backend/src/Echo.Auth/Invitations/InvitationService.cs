@@ -17,7 +17,6 @@ public class InvitationService(
     InvitationRepository invitationTokenRepository,
     CongregationRepository congregationRepository,
     InvitationCodeProtector codeProtector,
-    SummaryCache summaries,
     IEmailQueue emailQueue,
     LinkBuilder linkBuilder,
     IEncoder encoder,
@@ -378,15 +377,8 @@ public class InvitationService(
             ct
         );
 
-    public Task<IOperationResult> GetSummary(Guid congregationId, CancellationToken ct) =>
-        summaries.Serve(
-            this,
-            "invitations",
-            congregationId,
-            new { },
-            (self, token) => self.ComputeSummary(congregationId, token),
-            ct
-        );
+    public async Task<IOperationResult> GetSummary(Guid congregationId, CancellationToken ct) =>
+        SuccessResult.Of(await ComputeSummary(congregationId, ct));
 
     // Counts what is expiring soon from the moment it runs, which for a refresh is not the moment of the request.
     private Task<InvitationSummaryDto> ComputeSummary(Guid congregationId, CancellationToken ct)

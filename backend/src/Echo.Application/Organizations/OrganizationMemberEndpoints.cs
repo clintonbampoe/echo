@@ -1,9 +1,11 @@
+using Echo.Application.Caching;
 using Echo.Shared.Extensions;
 using Echo.Shared.Pagination;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Echo.Application.Organizations;
 
@@ -16,7 +18,8 @@ public static class OrganizationMemberEndpoints
     {
         var group = app.MapGroup("/organization-members")
             .WithTags("Organization Members")
-            .RequireAuthorization();
+            .RequireAuthorization()
+            .CacheOutput(ReadCache.Policy);
 
         group
             .MapGet(

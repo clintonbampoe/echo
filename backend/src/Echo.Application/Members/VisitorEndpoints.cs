@@ -1,10 +1,12 @@
 using System.ComponentModel.DataAnnotations;
+using Echo.Application.Caching;
 using Echo.Shared.Extensions;
 using Echo.Shared.Pagination;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Echo.Application.Members;
 
@@ -15,7 +17,10 @@ public static class VisitorEndpoints
         ApplicationInstrumentation instrumentation
     )
     {
-        var group = app.MapGroup("/visitors").WithTags("Visitors").RequireAuthorization();
+        var group = app.MapGroup("/visitors")
+            .WithTags("Visitors")
+            .RequireAuthorization()
+            .CacheOutput(ReadCache.Policy);
 
         group
             .MapGet(
@@ -305,6 +310,7 @@ public static class VisitorEndpoints
                 }
             )
             .WithName("SearchVisitors")
+            .CacheOutput(p => p.NoCache())
             .WithSummary("Searches visitors by name.")
             .WithDescription(
                 """

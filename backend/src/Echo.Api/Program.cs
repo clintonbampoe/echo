@@ -1,5 +1,6 @@
 using Asp.Versioning;
 using Echo.Api.Extensions;
+using Echo.Application.Caching;
 using Echo.Application;
 using Echo.Auth;
 using Echo.Data;
@@ -20,6 +21,7 @@ builder
     .AddApplicationServices()
     .AddAuthServices(builder.Configuration)
     .AddDataServices()
+    .AddReadCache(builder.Configuration)
     .AddSharedServices(builder.Configuration);
 
 builder

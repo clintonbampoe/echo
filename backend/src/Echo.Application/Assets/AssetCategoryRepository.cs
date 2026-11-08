@@ -1,3 +1,4 @@
+using Echo.Application.Caching;
 using Echo.Data;
 using Echo.Domain.Assets;
 using Echo.Shared.Query;
@@ -5,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Application.Assets;
 
-public class AssetCategoryRepository(AppDbContext context)
+public class AssetCategoryRepository(AppDbContext context, ReadCacheEvictions cache)
 {
     private readonly DbSet<AssetCategory> _dbSet = context.Set<AssetCategory>();
 
@@ -99,6 +100,8 @@ public class AssetCategoryRepository(AppDbContext context)
         }
 
         await tx.CommitAsync(ct);
+        // The move is a bulk update the save interceptor never sees.
+        await cache.Drop(congregationId, ct);
         return moved;
     }
 

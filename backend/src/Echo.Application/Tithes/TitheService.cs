@@ -25,7 +25,6 @@ public class TitheService(
     ApplicationInstrumentation instrumentation,
     LinkGenerator linker,
     DateWindows dateWindows,
-    SummaryCache summaries,
     ILogger<TitheService> logger
 )
 {
@@ -353,20 +352,13 @@ public class TitheService(
         return new NoContentResult();
     }
 
-    public Task<IOperationResult> Summary(
+    public async Task<IOperationResult> Summary(
         Guid congregationId,
         TitheFilters filters,
         bool includePrevious,
         CancellationToken ct
     ) =>
-        summaries.Serve(
-            this,
-            "tithes",
-            congregationId,
-            new { filters, includePrevious },
-            (self, token) => self.ComputeSummary(congregationId, filters, includePrevious, token),
-            ct
-        );
+        SuccessResult.Of(await ComputeSummary(congregationId, filters, includePrevious, ct));
 
     private async Task<TitheSummaryDto> ComputeSummary(
         Guid congregationId,
@@ -442,14 +434,7 @@ public class TitheService(
         if (MonthRange.Problem(MonthRange.Or(filters.Months)) is { } problem)
             return new BadRequestResult(problem);
 
-        return await summaries.Serve(
-            this,
-            "tithes.monthly",
-            congregationId,
-            filters,
-            (self, token) => self.ComputeMonthly(congregationId, filters, token),
-            ct
-        );
+        return SuccessResult.Of(await ComputeMonthly(congregationId, filters, ct));
     }
 
     private async Task<List<TitheMonthlyDto>> ComputeMonthly(

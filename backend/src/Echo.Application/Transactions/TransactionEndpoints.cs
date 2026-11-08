@@ -1,9 +1,11 @@
+using Echo.Application.Caching;
 using Echo.Shared.Extensions;
 using Echo.Shared.Pagination;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Echo.Application.Transactions;
 
@@ -14,7 +16,10 @@ public static class TransactionEndpoints
         ApplicationInstrumentation instrumentation
     )
     {
-        var group = app.MapGroup("/transactions").WithTags("Transactions").RequireAuthorization();
+        var group = app.MapGroup("/transactions")
+            .WithTags("Transactions")
+            .RequireAuthorization()
+            .CacheOutput(ReadCache.Policy);
 
         group
             .MapGet(

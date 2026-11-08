@@ -1,10 +1,12 @@
 using System.ComponentModel.DataAnnotations;
+using Echo.Application.Caching;
 using Echo.Shared.Extensions;
 using Echo.Shared.Pagination;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Echo.Application.Members;
 
@@ -15,7 +17,10 @@ public static class MemberEndpoints
         ApplicationInstrumentation instrumentation
     )
     {
-        var group = app.MapGroup("/members").WithTags("Members").RequireAuthorization();
+        var group = app.MapGroup("/members")
+            .WithTags("Members")
+            .RequireAuthorization()
+            .CacheOutput(ReadCache.Policy);
 
         group
             .MapGet(
@@ -294,6 +299,7 @@ public static class MemberEndpoints
                 }
             )
             .WithName("SearchMembers")
+            .CacheOutput(p => p.NoCache())
             .WithSummary("Searches members by name.")
             .WithDescription(
                 """

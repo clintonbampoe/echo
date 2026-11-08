@@ -1,10 +1,12 @@
 using System.ComponentModel.DataAnnotations;
+using Echo.Application.Caching;
 using Echo.Shared.Extensions;
 using Echo.Shared.Pagination;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Echo.Application.Assets;
 
@@ -15,7 +17,10 @@ public static class AssetEndpoints
         ApplicationInstrumentation instrumentation
     )
     {
-        var group = app.MapGroup("/assets").WithTags("Assets").RequireAuthorization();
+        var group = app.MapGroup("/assets")
+            .WithTags("Assets")
+            .RequireAuthorization()
+            .CacheOutput(ReadCache.Policy);
 
         group
             .MapGet(
@@ -284,6 +289,7 @@ public static class AssetEndpoints
                 }
             )
             .WithName("SearchAssets")
+            .CacheOutput(p => p.NoCache())
             .WithSummary("Searches assets by name.")
             .WithDescription(
                 """

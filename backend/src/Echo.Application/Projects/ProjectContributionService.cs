@@ -22,7 +22,6 @@ public class ProjectContributionService(
     ApplicationInstrumentation instrumentation,
     LinkGenerator linker,
     DateWindows dateWindows,
-    SummaryCache summaries,
     ILogger<ProjectContributionService> logger
 )
 {
@@ -240,19 +239,12 @@ public class ProjectContributionService(
         };
     }
 
-    public Task<IOperationResult> Summary(
+    public async Task<IOperationResult> Summary(
         Guid congregationId,
         ProjectContributionFilters filters,
         CancellationToken ct
     ) =>
-        summaries.Serve(
-            this,
-            "project-contributions",
-            congregationId,
-            filters,
-            (self, token) => self.ComputeSummary(congregationId, filters, token),
-            ct
-        );
+        SuccessResult.Of(await ComputeSummary(congregationId, filters, ct));
 
     private async Task<ProjectContributionSummaryDto> ComputeSummary(
         Guid congregationId,
@@ -293,14 +285,7 @@ public class ProjectContributionService(
         if (MonthRange.Problem(MonthRange.Or(filters.Months)) is { } problem)
             return new BadRequestResult(problem);
 
-        return await summaries.Serve(
-            this,
-            "project-contributions.monthly",
-            congregationId,
-            filters,
-            (self, token) => self.ComputeMonthly(congregationId, filters, token),
-            ct
-        );
+        return SuccessResult.Of(await ComputeMonthly(congregationId, filters, ct));
     }
 
     private async Task<List<ProjectContributionMonthlyDto>> ComputeMonthly(

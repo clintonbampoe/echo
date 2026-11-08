@@ -1,9 +1,11 @@
 using System.ComponentModel.DataAnnotations;
+using Echo.Application.Caching;
 using Echo.Shared.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Echo.Application.Assets;
 
@@ -16,7 +18,8 @@ public static class AssetCategoryEndpoints
     {
         var group = app.MapGroup("/asset-categories")
             .WithTags("Asset Categories")
-            .RequireAuthorization();
+            .RequireAuthorization()
+            .CacheOutput(ReadCache.Policy);
 
         group
             .MapGet(
@@ -251,6 +254,7 @@ public static class AssetCategoryEndpoints
                 }
             )
             .WithName("SearchAssetCategories")
+            .CacheOutput(p => p.NoCache())
             .WithSummary("Searches asset categories by name.")
             .WithDescription(
                 """

@@ -1,3 +1,4 @@
+using Echo.Application.Caching;
 using Echo.Data;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -39,16 +40,20 @@ public static class Database
         var connectionString = WithPoolSize(configuration.GetConnectionString("echodb")!);
 
         // Pooled: the context object is reused between requests instead of built for each one.
-        services.AddDbContextPool<AppDbContext>(options =>
-        {
-            options.UseNpgsql(connectionString).ConfigureEchoDatabase();
-
-            if (environment.IsDevelopment())
+        services.AddSingleton<CacheEvictionInterceptor>();
+        services.AddDbContextPool<AppDbContext>(
+            (provider, options) =>
             {
-                options.EnableDetailedErrors();
-                options.EnableSensitiveDataLogging();
+                options.UseNpgsql(connectionString).ConfigureEchoDatabase();
+                options.AddInterceptors(provider.GetRequiredService<CacheEvictionInterceptor>());
+
+                if (environment.IsDevelopment())
+                {
+                    options.EnableDetailedErrors();
+                    options.EnableSensitiveDataLogging();
+                }
             }
-        });
+        );
 
         services.AddHostedService<StartupWarmup>();
 

@@ -1,4 +1,6 @@
 using Echo.Application.Attendances;
+using Echo.Application.Caching;
+using Echo.Application.Tests.Caching;
 using Echo.Data;
 using Echo.Domain.Members;
 using Microsoft.EntityFrameworkCore;
@@ -22,7 +24,7 @@ public class AttendanceTotalsQueryTests
     private static string SummarySql(AttendanceFilters filters)
     {
         using var db = Context();
-        return new AttendanceRepository(db).SummaryQuery(Guid.NewGuid(), filters).ToQueryString();
+        return new AttendanceRepository(db, new ReadCacheEvictions(new RecordingCacheStore())).SummaryQuery(Guid.NewGuid(), filters).ToQueryString();
     }
 
     [Fact]
@@ -78,7 +80,7 @@ public class AttendanceTotalsQueryTests
     {
         using var db = Context();
 
-        var sql = new AttendanceRepository(db)
+        var sql = new AttendanceRepository(db, new ReadCacheEvictions(new RecordingCacheStore()))
             .MonthlyQuery(Guid.NewGuid(), 2, new DateOnly(2026, 1, 1), new DateOnly(2026, 10, 31))
             .ToQueryString();
 
