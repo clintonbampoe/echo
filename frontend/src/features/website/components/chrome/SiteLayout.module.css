@@ -12,53 +12,50 @@
   z-index: 1;
 }
 
-/* On a touch screen sections stop at the top of the screen, one at a time. Mandatory, so a flick never
-   skips one; a section taller than the screen can still be read all the way down. A mouse or trackpad
-   steps with script instead (useSectionFocus), where the browser's own snapping can bounce a small
-   wheel turn back to where it started. */
+/* A touch screen settles on a section when a swipe ends near one. Proximity, so a short swipe is never pulled
+   back and a section taller than the screen can be read all the way down. A mouse or trackpad scrolls
+   freely: the browser's snapping would bounce a small wheel turn back to where it started. */
 @media (pointer: coarse) {
   :global(html[data-snap="sections"]) {
-    scroll-snap-type: y mandatory;
+    scroll-snap-type: y proximity;
   }
   .main > * {
     scroll-snap-align: start;
-    scroll-snap-stop: always;
-  }
-  /* A new section holds the page still for a moment while it arrives (useSectionFocus). With a mouse the
-     script does it; a touch screen has overlay scrollbars, so locking the scroll shifts nothing. */
-  :global(html[data-snap="sections"][data-hold]) {
-    overflow: hidden;
   }
 }
-.main > * {
-  transition:
-    opacity 650ms var(--ease-soft),
-    filter 650ms var(--ease-soft);
+
+/* Focus follows the scroll (useSectionFocus sets --f, 1 in place down to 0 away). A section in place has no
+   filter at all, so it costs nothing; one that is falling back dims and blurs in step with the scroll, with
+   no timer of its own to lag behind it. */
+.main[data-motion] > [data-dim] {
+  opacity: calc(0.3 + 0.7 * var(--f));
+  filter: blur(calc((1 - var(--f)) * 6px));
+  will-change: opacity, filter;
 }
-/* The section in focus is sharp; the ones around it fall back. */
-.main > [data-focus="off"] {
-  opacity: 0.3;
-  filter: blur(5px);
+
+/* A section's content arrives the first time the section comes into focus: each piece rises and clears in
+   turn. Until then it waits, hidden. Material's "emphasized decelerate" curve, long enough to read as one
+   gesture and short enough never to hold anyone up. */
+.main[data-motion] > * > * > * {
+  opacity: 0;
+  transform: translate3d(0, 28px, 0);
 }
-@media (prefers-reduced-motion: reduce) {
-  :global(html[data-snap="sections"]) {
-    scroll-snap-type: none;
-  }
-  .main > * {
-    transition: none;
-  }
-  .main > [data-focus="off"] {
-    opacity: 1;
-    filter: none;
-  }
-}
-:global(html[data-reduce-motion="true"][data-snap="sections"]) {
-  scroll-snap-type: none;
-}
-:global(html[data-reduce-motion="true"]) .main > * {
-  transition: none;
-}
-:global(html[data-reduce-motion="true"]) .main > [data-focus="off"] {
+.main[data-motion] > [data-seen] > * > * {
   opacity: 1;
-  filter: none;
+  transform: none;
+  transition:
+    opacity 700ms cubic-bezier(0.05, 0.7, 0.1, 1),
+    transform 900ms cubic-bezier(0.05, 0.7, 0.1, 1);
+}
+.main[data-motion] > [data-seen] > * > :nth-child(2) {
+  transition-delay: 90ms;
+}
+.main[data-motion] > [data-seen] > * > :nth-child(3) {
+  transition-delay: 180ms;
+}
+.main[data-motion] > [data-seen] > * > :nth-child(4) {
+  transition-delay: 270ms;
+}
+.main[data-motion] > [data-seen] > * > :nth-child(n + 5) {
+  transition-delay: 360ms;
 }
