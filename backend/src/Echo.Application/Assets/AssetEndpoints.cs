@@ -1,10 +1,12 @@
 using System.ComponentModel.DataAnnotations;
+using Echo.Application.Caching;
 using Echo.Shared.Extensions;
 using Echo.Shared.Pagination;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Echo.Application.Assets;
 
@@ -15,7 +17,10 @@ public static class AssetEndpoints
         ApplicationInstrumentation instrumentation
     )
     {
-        var group = app.MapGroup("/assets").WithTags("Assets").RequireAuthorization();
+        var group = app.MapGroup("/assets")
+            .WithTags("Assets")
+            .RequireAuthorization()
+            .CacheOutput(ReadCache.Policy);
 
         group
             .MapGet(
@@ -284,6 +289,7 @@ public static class AssetEndpoints
                 }
             )
             .WithName("SearchAssets")
+            .CacheOutput(p => p.NoCache())
             .WithSummary("Searches assets by name.")
             .WithDescription(
                 """
@@ -352,7 +358,7 @@ public static class AssetEndpoints
                 - `window` — the dates that were applied.
 
                 ### Caching
-                The answer is cached for 5 minutes per congregation and per set of parameters.
+                The answer is cached for up to 10 minutes per person and per set of parameters, and dropped as soon as anything in the congregation changes.
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
@@ -402,7 +408,7 @@ public static class AssetEndpoints
                 A list of `{ categoryId, categoryName, count, totalPurchaseCost, totalCurrentValue, totalDepreciation }`, the category worth the most first. A category with no matching assets is left out.
 
                 ### Caching
-                The answer is cached for 5 minutes per congregation and per set of parameters.
+                The answer is cached for up to 10 minutes per person and per set of parameters, and dropped as soon as anything in the congregation changes.
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
@@ -454,7 +460,7 @@ public static class AssetEndpoints
                 This is the only monthly endpoint for assets: it serves a dashboard card (`months=6`), a full-year chart, or a donut over the months. The shape is always the same list, so the page decides how to draw it.
 
                 ### Caching
-                The answer is cached for 5 minutes per congregation and per set of parameters, so asking again straight away costs nothing. A change shows up within 5 minutes.
+                The answer is cached for up to 10 minutes per person and per set of parameters, so asking again straight away costs nothing. Any change to the congregation's data drops it, so a change shows up at once.
 
                 ### Failure modes
                 - `400 BAD_REQUEST` — `months` is not between 1 and 12.

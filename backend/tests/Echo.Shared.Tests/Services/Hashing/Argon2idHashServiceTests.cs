@@ -12,7 +12,7 @@ public sealed class Argon2idHashServiceTests : IDisposable
     private readonly Argon2idHashService _hasher;
 
     public Argon2idHashServiceTests() =>
-        _hasher = new Argon2idHashService(new HashingMetrics(_meters, _gate));
+        _hasher = new Argon2idHashService(new HashingMetrics(_meters, _gate, TimeProvider.System));
 
     public void Dispose()
     {
@@ -103,7 +103,7 @@ public sealed class Argon2idHashServiceTests : IDisposable
     {
         using var gate = new HashGate(permits: 1, maxQueued: 0);
         using var meters = new TestMeterFactory();
-        var hasher = new Argon2idHashService(new HashingMetrics(meters, gate));
+        var hasher = new Argon2idHashService(new HashingMetrics(meters, gate, TimeProvider.System));
         var hash = await _hasher.HashAsync("correct horse battery", Ct);
         using var taken = await gate.EnterAsync(Ct);
 

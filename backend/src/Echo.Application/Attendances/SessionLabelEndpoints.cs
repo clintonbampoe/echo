@@ -1,9 +1,11 @@
 using System.ComponentModel.DataAnnotations;
+using Echo.Application.Caching;
 using Echo.Shared.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Echo.Application.Attendances;
 
@@ -16,7 +18,8 @@ public static class SessionLabelEndpoints
     {
         var group = app.MapGroup("/attendance/labels")
             .WithTags("Session Labels")
-            .RequireAuthorization();
+            .RequireAuthorization()
+            .CacheOutput(ReadCache.Policy);
 
         group
             .MapGet(
@@ -264,6 +267,7 @@ public static class SessionLabelEndpoints
                 }
             )
             .WithName("SearchSessionLabels")
+            .CacheOutput(p => p.NoCache())
             .WithSummary("Searches session labels by name.")
             .WithDescription(
                 """

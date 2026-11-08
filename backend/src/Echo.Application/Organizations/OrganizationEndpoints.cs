@@ -1,10 +1,12 @@
 using System.ComponentModel.DataAnnotations;
+using Echo.Application.Caching;
 using Echo.Shared.Extensions;
 using Echo.Shared.Pagination;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Echo.Application.Organizations;
 
@@ -15,7 +17,10 @@ public static class OrganizationEndpoints
         ApplicationInstrumentation instrumentation
     )
     {
-        var group = app.MapGroup("/organizations").WithTags("Organizations").RequireAuthorization();
+        var group = app.MapGroup("/organizations")
+            .WithTags("Organizations")
+            .RequireAuthorization()
+            .CacheOutput(ReadCache.Policy);
 
         group
             .MapGet(
@@ -288,6 +293,7 @@ public static class OrganizationEndpoints
                 }
             )
             .WithName("SearchOrganizations")
+            .CacheOutput(p => p.NoCache())
             .WithSummary("Searches organizations by name.")
             .WithDescription(
                 """

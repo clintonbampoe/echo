@@ -1,9 +1,11 @@
+using Echo.Application.Caching;
 using Echo.Shared.Extensions;
 using Echo.Shared.Pagination;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Echo.Application.Attendances;
 
@@ -14,7 +16,10 @@ public static class AttendanceEndpoints
         ApplicationInstrumentation instrumentation
     )
     {
-        var group = app.MapGroup("/attendance").WithTags("Attendance").RequireAuthorization();
+        var group = app.MapGroup("/attendance")
+            .WithTags("Attendance")
+            .RequireAuthorization()
+            .CacheOutput(ReadCache.ViewPolicy);
 
         group
             .MapGet(
@@ -397,7 +402,7 @@ public static class AttendanceEndpoints
                 A person who has since changed from visitor to member is still counted as a visitor for visits made before that.
 
                 ### Caching
-                The answer is cached for 5 minutes per congregation and per set of parameters.
+                The answer is cached for up to 10 minutes per person and per set of parameters, and dropped as soon as anything in the congregation changes. Attendance totals are refreshed every minute, so a new check-in can take up to a minute to show here.
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
@@ -449,7 +454,7 @@ public static class AttendanceEndpoints
                 This is the only monthly endpoint for attendance: it serves a dashboard card (`months=6`), a full-year chart, or a donut over the months. The shape is always the same list, so the page decides how to draw it.
 
                 ### Caching
-                The answer is cached for 5 minutes per congregation and per set of parameters, so asking again straight away costs nothing. A change shows up within 5 minutes.
+                The answer is cached for up to 10 minutes per person and per set of parameters, so asking again straight away costs nothing. Any change to the congregation's data drops it, so a change shows up at once. Attendance totals are refreshed every minute, so a new check-in can take up to a minute to show here.
 
                 ### Failure modes
                 - `400 BAD_REQUEST` — `months` is not between 1 and 12.

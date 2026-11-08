@@ -1,4 +1,4 @@
-import { QueryClient } from "@tanstack/react-query";
+import { MutationCache, QueryClient } from "@tanstack/react-query";
 import { isApiError } from "@/lib/api";
 import { getTokens, onTokensChange } from "@/lib/tokens";
 
@@ -13,7 +13,19 @@ function shouldRetry(failureCount: number, error: unknown): boolean {
 // finds its rows (every page the person had loaded) waiting, instead of an empty list to load again.
 export const KEEP_MS = 30 * 60_000;
 
-export const queryClient = new QueryClient({
+// Not refetched after a write: sign-in links are spent by one read, and the profile is not congregation data.
+const LEFT_ALONE = new Set(["auth", "account"]);
+
+export const queryClient: QueryClient = new QueryClient({
+  // The server invalidates everything it kept for the congregation when anything in it is written, so after any
+  // successful write every list here is stale too, not just the feature's own. Lists on screen reload now,
+  // the rest the next time they are shown.
+  mutationCache: new MutationCache({
+    onSuccess: () =>
+      void queryClient.invalidateQueries({
+        predicate: (q) => !LEFT_ALONE.has(q.queryKey[0] as string),
+      }),
+  }),
   defaultOptions: {
     queries: {
       retry: shouldRetry,

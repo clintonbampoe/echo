@@ -25,7 +25,6 @@ public class ProjectService(
     ApplicationInstrumentation instrumentation,
     LinkGenerator linker,
     DateWindows dateWindows,
-    SummaryCache summaries,
     ILogger<ProjectService> logger
 )
 {
@@ -288,19 +287,12 @@ public class ProjectService(
         return new SuccessResult<List<ProjectSearchResultDto>>(res);
     }
 
-    public Task<IOperationResult> Summary(
+    public async Task<IOperationResult> Summary(
         Guid congregationId,
         ProjectFilters filters,
         CancellationToken ct
     ) =>
-        summaries.Serve(
-            this,
-            "projects",
-            congregationId,
-            filters,
-            (self, token) => self.ComputeSummary(congregationId, filters, token),
-            ct
-        );
+        SuccessResult.Of(await ComputeSummary(congregationId, filters, ct));
 
     private async Task<ProjectSummaryDto> ComputeSummary(
         Guid congregationId,
@@ -336,19 +328,12 @@ public class ProjectService(
         return res;
     }
 
-    public Task<IOperationResult> CategorySummary(
+    public async Task<IOperationResult> CategorySummary(
         Guid congregationId,
         ProjectFilters filters,
         CancellationToken ct
     ) =>
-        summaries.Serve(
-            this,
-            "projects.by-category",
-            congregationId,
-            filters,
-            (self, token) => self.ComputeCategorySummary(congregationId, filters, token),
-            ct
-        );
+        SuccessResult.Of(await ComputeCategorySummary(congregationId, filters, ct));
 
     private async Task<List<ProjectCategoryTotalDto>> ComputeCategorySummary(
         Guid congregationId,

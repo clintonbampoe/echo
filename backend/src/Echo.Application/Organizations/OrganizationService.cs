@@ -21,7 +21,6 @@ public class OrganizationService(
     ApplicationInstrumentation instrumentation,
     LinkGenerator linker,
     DateWindows dateWindows,
-    SummaryCache summaries,
     ILogger<OrganizationService> logger
 )
 {
@@ -232,19 +231,12 @@ public class OrganizationService(
         return new SuccessResult<List<OrganizationSearchResultDto>>(res);
     }
 
-    public Task<IOperationResult> Summary(
+    public async Task<IOperationResult> Summary(
         Guid congregationId,
         OrganizationFilters filters,
         CancellationToken ct
     ) =>
-        summaries.Serve(
-            this,
-            "organizations",
-            congregationId,
-            filters,
-            (self, token) => self.ComputeSummary(congregationId, filters, token),
-            ct
-        );
+        SuccessResult.Of(await ComputeSummary(congregationId, filters, ct));
 
     private async Task<OrganizationSummaryDto> ComputeSummary(
         Guid congregationId,

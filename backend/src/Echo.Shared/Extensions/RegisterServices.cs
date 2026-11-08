@@ -1,4 +1,3 @@
-using Echo.Shared.Caching.Extensions;
 using Echo.Shared.Options.Frontend;
 using Echo.Shared.Options.Hashing;
 using Echo.Shared.Options.Mail;
@@ -21,14 +20,8 @@ public static class RegisterServices
     /// Adds shared services to the DI container.
     /// </summary>
     /// <param name="services">The service collection.</param>
-    /// <param name="configuration">
-    /// Application configuration (required for CacheOptions binding).
-    /// </param>
     /// <returns>The service collection for chaining.</returns>
-    public static IServiceCollection AddSharedServices(
-        this IServiceCollection services,
-        IConfiguration configuration
-    )
+    public static IServiceCollection AddSharedServices(this IServiceCollection services)
     {
         services.AddSingleton(TimeProvider.System);
         services.AddSingleton<IIdGenerator, IdGenerator>();
@@ -66,8 +59,6 @@ public static class RegisterServices
             .ValidateOnStart();
 
         services.AddSingleton<IValidateOptions<FrontendOptions>, FrontendOptionsValidator>();
-
-        services.AddCaching(configuration);
 
         return services;
     }

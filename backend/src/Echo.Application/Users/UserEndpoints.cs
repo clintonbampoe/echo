@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Echo.Application.Caching;
 using Echo.Domain.Users;
 using Echo.Shared.Extensions;
 using Echo.Shared.Pagination;
@@ -6,6 +7,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Echo.Application.Users;
 
@@ -18,7 +20,8 @@ public static class UserEndpoints
     {
         var group = app.MapGroup("/users")
             .WithTags("Users")
-            .RequireAuthorization(policy => policy.RequireRole(nameof(UserRole.Admin)));
+            .RequireAuthorization(policy => policy.RequireRole(nameof(UserRole.Admin)))
+            .CacheOutput(ReadCache.Policy);
 
         group
             .MapGet(
@@ -295,6 +298,7 @@ public static class UserEndpoints
                 }
             )
             .WithName("SearchUsers")
+            .CacheOutput(p => p.NoCache())
             .WithSummary("Searches users by name.")
             .WithDescription(
                 """

@@ -1,9 +1,11 @@
 using System.ComponentModel.DataAnnotations;
+using Echo.Application.Caching;
 using Echo.Shared.Extensions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Echo.Application.Projects;
 
@@ -16,7 +18,8 @@ public static class ProjectCategoryEndpoints
     {
         var group = app.MapGroup("/project-categories")
             .WithTags("Project Categories")
-            .RequireAuthorization();
+            .RequireAuthorization()
+            .CacheOutput(ReadCache.Policy);
 
         group
             .MapGet(
@@ -252,6 +255,7 @@ public static class ProjectCategoryEndpoints
                 }
             )
             .WithName("SearchProjectCategories")
+            .CacheOutput(p => p.NoCache())
             .WithSummary("Searches project categories by name.")
             .WithDescription(
                 """

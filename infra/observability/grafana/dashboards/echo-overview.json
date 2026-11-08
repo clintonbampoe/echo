@@ -367,8 +367,8 @@
     },
     {
       "type": "stat",
-      "title": "Summary cache hits",
-      "description": "Share of summary requests (the dashboard numbers) answered from the API's cache over the selected range. Higher means less work for the database.",
+      "title": "Cache hits",
+      "description": "Share of cacheable reads (lists, records and the dashboard numbers) answered from the API's cache over the selected range. Higher means less work for the database.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -380,7 +380,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "100 * sum(increase(echo_summary_requests_total{cached=\"true\"}[$__range])) / sum(increase(echo_summary_requests_total[$__range]))",
+          "expr": "100 * sum(increase(echo_cache_requests_total{cached=\"true\"}[$__range])) / sum(increase(echo_cache_requests_total[$__range]))",
           "legendFormat": ""
         }
       ],
