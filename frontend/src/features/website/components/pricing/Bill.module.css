@@ -1,0 +1,74 @@
+.card {
+  box-sizing: border-box;
+  padding: 32px;
+  border: 1px solid var(--card-line);
+  border-radius: 24px;
+  background: var(--card);
+  box-shadow: var(--card-shadow);
+}
+.head {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--text-3);
+}
+.rows {
+  margin: 14px 0 0;
+}
+.row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 0;
+  border-top: 1px solid var(--card-line);
+  font-size: 17px;
+}
+.row dt {
+  color: var(--text-2);
+}
+.row dd {
+  margin: 0;
+  font-weight: 500;
+  text-align: right;
+}
+.total {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-top: 18px;
+  border-top: 1px solid var(--line-2);
+  font-size: 17px;
+  font-weight: 600;
+}
+.sum {
+  font-size: 48px;
+  letter-spacing: -0.05em;
+}
+.action {
+  margin-top: 22px;
+}
+.aside {
+  margin: 12px 0 0;
+  font-size: 14px;
+  text-align: center;
+  color: var(--text-3);
+}
+@media (max-width: 999px) {
+  .card {
+    padding: 30px;
+  }
+  .sum {
+    font-size: 44px;
+  }
+}
+@media (max-width: 599px) {
+  .card {
+    padding: 22px;
+  }
+  .row {
+    padding: 9px 0;
+  }
+  .sum {
+    font-size: 38px;
+  }
+}

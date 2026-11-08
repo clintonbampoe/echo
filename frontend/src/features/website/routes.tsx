@@ -50,6 +50,12 @@ export const websiteRoutes: RouteObject[] = [
         })),
       },
       {
+        path: "pricing",
+        ...page(async () => ({
+          Component: (await import("./pages/PricingPage")).PricingPage,
+        })),
+      },
+      {
         path: "about",
         ...page(async () => ({
           Component: (await import("./pages/AboutPage")).AboutPage,
