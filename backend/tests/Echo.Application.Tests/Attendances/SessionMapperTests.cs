@@ -16,7 +16,7 @@ public class SessionMapperTests
             .Build<SessionLabel>()
             .With(l => l.Name, "Sunday Service")
             .Create();
-        var creator = fixture.Build<User>().With(u => u.Name, "Jane Doe").Create();
+        var creator = fixture.Build<User>().With(u => u.Name, "Jane Doe").Without(u => u.DisabledAt).Create();
 
         return fixture
             .Build<Session>()
