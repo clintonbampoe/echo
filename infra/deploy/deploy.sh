@@ -124,9 +124,14 @@ if ! activate "$NEW"; then
   die "$name failed and was rolled back"
 fi
 
+# Housekeeping after a deploy that worked, so a release that cannot be removed is reported and left, not a failure.
+# Releases from before BACKUP_DIR moved out of them hold dumps written by the backup container, as root.
 find "$ROOT/releases" -mindepth 1 -maxdepth 1 -printf '%T@ %f\n' |
   sort -rn | tail -n +6 | cut -d' ' -f2 | while read -r old; do
-  [[ $old == "$name" || $old == "$prior" ]] || rm -rf "${ROOT:?}/releases/$old"
+  [[ $old == "$name" || $old == "$prior" ]] && continue
+  rm -rf "${ROOT:?}/releases/$old" ||
+    log "could not remove the old release $old: it holds files the deploy user does not own." \
+      "Keep any backups in it, then remove it with sudo."
 done
 docker image prune -af --filter until=720h >/dev/null
 log "Done"
