@@ -60,3 +60,15 @@
     flex-direction: column;
   }
 }
+
+/* A finger needs more room than the line of text: the touch area grows, the look does not. */
+@media (pointer: coarse) {
+  .aside {
+    position: relative;
+  }
+  .aside::before {
+    content: "";
+    position: absolute;
+    inset: -12px -8px;
+  }
+}

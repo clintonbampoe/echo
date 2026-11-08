@@ -213,3 +213,15 @@
 .split:has(input:focus) .shine {
   animation-play-state: paused;
 }
+
+/* A finger needs more room than the line of text: the touch area grows, the look does not. */
+@media (pointer: coarse) {
+  .brand {
+    position: relative;
+  }
+  .brand::before {
+    content: "";
+    position: absolute;
+    inset: -12px -8px;
+  }
+}

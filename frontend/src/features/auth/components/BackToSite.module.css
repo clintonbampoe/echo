@@ -21,3 +21,15 @@
 .flip {
   transform: scaleX(-1);
 }
+
+/* A finger needs more room than the line of text: the touch area grows, the look does not. */
+@media (pointer: coarse) {
+  .link {
+    position: relative;
+  }
+  .link::before {
+    content: "";
+    position: absolute;
+    inset: -12px -8px;
+  }
+}
