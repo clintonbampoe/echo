@@ -1,3 +1,4 @@
+import { Fragment, type CSSProperties } from "react";
 import { Cta } from "../components/chrome/Cta";
 import { Kicker } from "../components/chrome/Kicker";
 import { LinkRows } from "../components/chrome/LinkRows";
@@ -47,7 +48,20 @@ export function CommunityPage() {
       </Section>
       <Section top={104} tablet={104} phone={60} className={styles.more}>
         <p className={styles.label}>Be part of it</p>
-        <h2 className={styles.big}>From your idea to every church.</h2>
+        <h2 className={styles.big}>
+          {/* Six words for six steps: each one comes up to full ink as its step is reached. */}
+          {"From your idea to every church.".split(" ").map((word, i) => (
+            <Fragment key={word}>
+              {i > 0 && " "}
+              <span
+                className={styles.word}
+                style={{ "--w": i } as CSSProperties}
+              >
+                {word}
+              </span>
+            </Fragment>
+          ))}
+        </h2>
         <div className={styles.steps}>
           <Steps items={COMMUNITY.steps} />
         </div>

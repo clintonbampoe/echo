@@ -24,13 +24,17 @@
   }
 }
 
-/* Focus follows the scroll (useSectionFocus sets --f, 1 in place down to 0 away). A section in place has no
-   filter at all, so it costs nothing; one that is falling back dims and blurs in step with the scroll, with
-   no timer of its own to lag behind it. */
+/* Focus follows the scroll (useSectionFocus sets --f, 1 in place down to 0 away). It is the eye's way of
+   focusing, not a camera's: what is in focus stays as it is and what is around it fades almost to nothing,
+   in step with the scroll, with no timer of its own to lag behind it. No blur: nothing here is softened,
+   only put out. A section in place has no style at all, so it costs nothing. */
 .main[data-motion] > [data-dim] {
-  opacity: calc(0.3 + 0.7 * var(--f));
-  filter: blur(calc((1 - var(--f)) * 6px));
-  will-change: opacity, filter;
+  opacity: calc(0.1 + 0.9 * var(--f));
+}
+@media (prefers-contrast: more) {
+  .main[data-motion] > [data-dim] {
+    opacity: calc(0.5 + 0.5 * var(--f));
+  }
 }
 
 /* A section's content arrives the first time the section comes into focus: each piece rises and clears in

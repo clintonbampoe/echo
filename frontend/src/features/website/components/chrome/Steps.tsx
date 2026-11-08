@@ -1,4 +1,10 @@
-import { useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import {
+  useLayoutEffect,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type ReactNode,
+} from "react";
 import { useMedia } from "@/ui";
 import styles from "./Steps.module.css";
 
@@ -67,21 +73,47 @@ const ICONS: ReactNode[] = [
 // From an idea to every church, as steps that can only be taken one at a time. A wide screen scrolls
 // through a window (a mouse wheel or a trackpad), a narrow one swipes sideways. Each step is a snap stop
 // that cannot be skipped, so a hard flick still lands on the next step and no further, and the arrow
-// keys do the same. The line above fills as the steps are reached.
+// keys do the same. Only the window takes the scroll; everything around it listens. How far through the
+// steps you are (`p`, 0 to the last step, moving smoothly) is published as --p on the steps and as
+// --steps-p on the section, so the line above fills with it, each step fades and drifts as it comes and
+// goes, and the page's own headline can follow along (CommunityPage).
 export function Steps({ items }: { items: readonly Step[] }) {
   const wide = useMedia("(min-width: 1000px)");
   const scroller = useRef<HTMLDivElement>(null);
+  const box = useRef<HTMLDivElement>(null);
   const [at, setAt] = useState(0);
   const last = items.length - 1;
 
   const size = (el: HTMLElement) => (wide ? el.clientHeight : el.clientWidth);
   const position = (el: HTMLElement) => (wide ? el.scrollTop : el.scrollLeft);
 
+  // Hands the position to CSS: --p on the steps, --steps-p on the section, and how far each step is from the
+  // one in view (--d, signed) and how far (--a, 0 to 1).
+  function publish(p: number) {
+    box.current?.style.setProperty("--p", p.toFixed(3));
+    box.current
+      ?.closest("section")
+      ?.style.setProperty("--steps-p", p.toFixed(3));
+    Array.from(scroller.current?.children ?? []).forEach((step, i) => {
+      const d = p - i;
+      const style = (step as HTMLElement).style;
+      style.setProperty("--d", d.toFixed(3));
+      style.setProperty("--a", Math.min(1, Math.abs(d)).toFixed(3));
+    });
+  }
+  // The first look, before anything is painted, and tidying up the section when the steps go.
+  useLayoutEffect(() => {
+    publish(0);
+    const section = box.current?.closest("section");
+    return () => section?.style.removeProperty("--steps-p");
+  }, []);
+
   function onScroll() {
     const el = scroller.current;
     if (!el || size(el) === 0) return;
-    const i = Math.round(position(el) / size(el));
-    setAt(Math.max(0, Math.min(last, i)));
+    const p = Math.max(0, Math.min(last, position(el) / size(el)));
+    publish(p);
+    setAt(Math.round(p));
   }
 
   function go(to: number) {
@@ -104,13 +136,14 @@ export function Steps({ items }: { items: readonly Step[] }) {
   }
 
   return (
-    <div className={styles.steps}>
+    <div ref={box} className={styles.steps}>
       <ol className={styles.track} aria-hidden="true">
         {SHORT.map((name, i) => (
           <li
             key={name}
             className={styles.node}
             data-reached={i <= at || undefined}
+            data-current={i === at || undefined}
           >
             {name}
           </li>

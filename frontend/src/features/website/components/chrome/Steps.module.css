@@ -32,21 +32,17 @@
   color: var(--text-3);
   transition: color var(--t-base) var(--ease-soft);
 }
-/* The dark stroke from the step before to this one, drawn when this one is reached. */
-.node::after {
+/* The dark line over the grey one, drawn as far as you have got (--p, smoothly, not step by step). */
+.track::after {
   content: "";
   position: absolute;
   top: 6px;
-  left: calc(-100% + 6px);
-  width: 100%;
+  left: 6px;
+  width: calc(100% * 5 / 6);
   height: 2px;
   background: var(--text);
-  transform: scaleX(0);
+  transform: scaleX(calc(var(--p, 0) / 5));
   transform-origin: left;
-  transition: transform 500ms var(--ease-out);
-}
-.node:first-child::after {
-  display: none;
 }
 /* The dot: an empty ring, filled once its step has been reached. */
 .node::before {
@@ -72,8 +68,32 @@
   border-color: var(--text);
   background: var(--text);
 }
-.node[data-reached]::after {
-  transform: scaleX(1);
+/* The step you are on rings out, like the mark. */
+.node::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  box-sizing: border-box;
+  width: 14px;
+  height: 14px;
+  border: 1.5px solid var(--text);
+  border-radius: 50%;
+  opacity: 0;
+  pointer-events: none;
+}
+.node[data-current]::after {
+  animation: ping 2.8s ease-out 300ms infinite;
+}
+@keyframes ping {
+  0% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.8);
+  }
 }
 
 .window {
@@ -96,11 +116,16 @@
   gap: 28px;
   scroll-snap-align: start;
   scroll-snap-stop: always;
-  opacity: 0.28;
-  transition: opacity 500ms var(--ease-out);
+  /* A step fades as it leaves or arrives, in step with the scroll (--a: 0 in view, 1 a step away). Only
+     what is inside moves: the step itself must stay put, it is the snap stop. */
+  opacity: calc(1 - var(--a, 0) * 0.74);
 }
-.step[data-current] {
-  opacity: 1;
+.step > * {
+  transform: translate3d(0, calc(var(--d, 0) * -16px), 0);
+}
+.step > svg {
+  transform: translate3d(0, calc(var(--d, 0) * -26px), 0)
+    scale(calc(1 - var(--a, 0) * 0.2)) rotate(calc(var(--d, 0) * 8deg));
 }
 .count {
   font-size: 13px;

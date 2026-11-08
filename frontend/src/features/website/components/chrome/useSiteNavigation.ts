@@ -1,6 +1,8 @@
 import { useEffect } from "react";
-import { flushSync } from "react-dom";
 import { useNavigate } from "react-router-dom";
+
+// How long the page-change look (styles/motion.css) stays switched on: past the longest the change can take.
+const LOOK_MS = 700;
 
 const modified = (e: MouseEvent) =>
   e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey;
@@ -23,8 +25,10 @@ function linkOf(e: MouseEvent) {
   return link && toAnotherPage(link) ? link : null;
 }
 
-// A link between pages is a soft change, not a cut: the new page fades in over the old one while its sections
-// arrive (styles/motion.css). Without View Transitions, or with reduced motion, links work as they always did.
+// A link between pages is a soft change, not a cut: the old page clears and the new one comes up, then its
+// sections arrive (styles/motion.css). The router runs the transition itself, once the next page has loaded,
+// so a page that is still being fetched is never captured half-built. Without View Transitions, or with
+// reduced motion, links work as they always did.
 export function useSiteNavigation() {
   const navigate = useNavigate();
   useEffect(() => {
@@ -33,6 +37,7 @@ export function useSiteNavigation() {
       matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (still || !document.startViewTransition) return;
     const root = document.documentElement;
+    let look = 0;
     const onClick = (e: MouseEvent) => {
       const link = linkOf(e);
       if (!link) return;
@@ -41,13 +46,18 @@ export function useSiteNavigation() {
       // and the router sees the click as already handled.
       e.preventDefault();
       root.dataset.vtSite = "";
-      const move = document.startViewTransition(() =>
-        flushSync(() => navigate(url.pathname + url.search + url.hash)),
-      );
-      void move.finished.finally(() => delete root.dataset.vtSite);
+      clearTimeout(look);
+      look = window.setTimeout(() => delete root.dataset.vtSite, LOOK_MS);
+      void navigate(url.pathname + url.search + url.hash, {
+        viewTransition: true,
+      });
     };
     // Captured, so this runs before the router's own handler.
     document.addEventListener("click", onClick, true);
-    return () => document.removeEventListener("click", onClick, true);
+    return () => {
+      clearTimeout(look);
+      delete root.dataset.vtSite;
+      document.removeEventListener("click", onClick, true);
+    };
   }, [navigate]);
 }

@@ -123,3 +123,14 @@
     margin-bottom: 0;
   }
 }
+
+/* A word of the headline is in full ink once its step has been reached, and a little quieter until then
+   (--steps-p comes from the steps below; without it every word is lit). */
+.word {
+  --k: clamp(0, calc(var(--steps-p, 9) - var(--w) + 1), 1);
+  color: color-mix(
+    in srgb,
+    var(--text) calc(var(--k) * 42% + 58%),
+    transparent
+  );
+}
