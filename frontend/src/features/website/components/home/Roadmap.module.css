@@ -1,0 +1,215 @@
+.road {
+  --first: 87px;
+  --step: 220px;
+  --rail: 56px;
+  --mark: 16px;
+  --words: 78px;
+  --tail: 213px;
+  position: relative;
+  height: 520px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scroll-snap-type: y mandatory;
+  scroll-padding-top: var(--first);
+  mask-image: linear-gradient(
+    180deg,
+    transparent 0,
+    #000 10%,
+    #000 74%,
+    transparent 100%
+  );
+  scrollbar-width: none;
+}
+.road::-webkit-scrollbar {
+  display: none;
+}
+.road:focus-visible {
+  outline: var(--focus);
+  outline-offset: 4px;
+  border-radius: 12px;
+}
+.inner {
+  position: relative;
+  height: calc(var(--first) + var(--step) * 5 + var(--tail));
+}
+/* The road: a pale lane with a dashed line down the middle. */
+.rail {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--rail);
+  height: 100%;
+  box-sizing: border-box;
+  border-right: 1.5px solid var(--line-2);
+  border-left: 1.5px solid var(--line-2);
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--text) 5%, transparent),
+    color-mix(in srgb, var(--text) 2%, transparent),
+    color-mix(in srgb, var(--text) 5%, transparent)
+  );
+}
+.rail::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  margin-left: -1px;
+  background: repeating-linear-gradient(
+    180deg,
+    var(--text) 0 14px,
+    transparent 14px 30px
+  );
+  opacity: 0.55;
+}
+.step {
+  position: absolute;
+  top: calc(var(--first) + var(--step) * var(--i));
+  right: 0;
+  left: 0;
+  height: var(--step);
+  scroll-snap-align: start;
+  transform-origin: calc(var(--rail) / 2) 50%;
+  transform: scale(0.94);
+  transition:
+    opacity 800ms ease,
+    transform 800ms cubic-bezier(0.3, 0.9, 0.2, 1);
+}
+.step[data-active] {
+  transform: none;
+}
+.dot,
+.halo {
+  position: absolute;
+  top: calc(var(--step) / 2 - 12px);
+  left: var(--mark);
+  box-sizing: border-box;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+}
+.dot {
+  display: block;
+  border: 1.5px solid var(--text-3);
+  background: var(--bg);
+}
+.dot span {
+  display: none;
+}
+/* Where Echo is now: a solid dot with a ring that keeps spreading from it. */
+.step[data-state="now"] .dot {
+  display: grid;
+  place-items: center;
+  border: 0;
+  background: var(--text);
+  box-shadow:
+    0 0 0 6px color-mix(in srgb, var(--text) 15%, transparent),
+    0 0 30px 6px color-mix(in srgb, var(--text) 40%, transparent);
+}
+.step[data-state="now"] .dot span {
+  display: block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--bg);
+}
+.step[data-state="open"] .dot {
+  border-style: dashed;
+}
+.halo {
+  display: none;
+  border: 1.5px solid var(--text);
+}
+.step[data-state="now"] .halo {
+  display: block;
+  animation: halo 2.4s ease-out infinite;
+}
+@keyframes halo {
+  0% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(2.4);
+  }
+}
+.words {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  left: var(--words);
+  display: block;
+  transform: translateY(-50%);
+}
+.title {
+  display: block;
+  font-size: 32px;
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+}
+.line {
+  display: block;
+  margin-top: 6px;
+  font-size: 17px;
+  line-height: 1.4;
+  color: var(--text-2);
+}
+.text {
+  display: block;
+  max-width: 440px;
+  margin-top: 8px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--text-3);
+  opacity: 0;
+  transition: opacity 700ms ease;
+}
+.step[data-active] .text {
+  opacity: 1;
+}
+@media (max-width: 999px) {
+  .road {
+    --first: 80px;
+    --tail: 200px;
+    height: 500px;
+  }
+  .title {
+    font-size: 30px;
+  }
+}
+@media (max-width: 599px) {
+  .road {
+    --first: 63px;
+    --step: 200px;
+    --rail: 44px;
+    --mark: 10px;
+    --words: 66px;
+    --tail: 167px;
+    height: 430px;
+  }
+  .title {
+    font-size: 24px;
+  }
+  .line {
+    font-size: 15px;
+  }
+  .text {
+    font-size: 14px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .step[data-state="now"] .halo {
+    animation: none;
+  }
+  .step,
+  .text {
+    transition: none;
+  }
+}
+html[data-reduce-motion="true"] .halo {
+  animation: none;
+}

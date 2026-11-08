@@ -1,76 +1,144 @@
+// Words for the home page, as drawn on the boards.
+
+export const HERO_QUESTION = "How many came last Sunday?";
+
+export const HERO_STATS = [
+  { label: "Giving", value: "GHS 10,400" },
+  { label: "New members", value: "6 this month" },
+  { label: "Next event", value: "Sat 14 Dec" },
+] as const;
+
+// What each card in the stack draws beside its figure.
+export type Mark =
+  | { kind: "line" }
+  | { kind: "bar"; percent: number }
+  | { kind: "people" }
+  | { kind: "date"; month: string; day: string };
+
 export const ANSWERS = [
   {
     q: "How many came on Sunday?",
     a: "342",
-    note: "in the room, 12 of them first-timers",
+    note: "in the room, 12 of them first-time visitors",
+    mark: { kind: "line" },
   },
   {
     q: "What did we give this month?",
     a: "GHS 10,400",
     note: "from 132 of 248 members",
+    mark: { kind: "bar", percent: 53 },
   },
   {
-    q: "Which project is closest to its goal?",
+    q: "Which project is closest?",
     a: "The borehole",
-    note: "82% of GHS 40,000 raised",
+    note: "82% of GHS 40,000",
+    mark: { kind: "bar", percent: 82 },
   },
   {
-    q: "Who joined this year?",
-    a: "60 new members",
-    note: "up 30% on last year",
+    q: "Who is new?",
+    a: "6 new",
+    note: "members this month, 248 in total",
+    mark: { kind: "people" },
+  },
+  {
+    q: "What is coming up?",
+    a: "Youth retreat",
+    note: "Sat 14 Dec, 86 going",
+    mark: { kind: "date", month: "DEC", day: "14" },
+  },
+] as const satisfies readonly {
+  q: string;
+  a: string;
+  note: string;
+  mark: Mark;
+}[];
+
+export const FREE = [
+  {
+    title: "No plans",
+    summary: "One Echo, the same for everyone.",
+    body: ["There are no tiers and nothing sits behind a paywall."],
+  },
+  {
+    title: "No per-member fees",
+    summary: "Grow without the bill growing.",
+    body: [
+      "Your church pays the same whether it has fifty members or five thousand.",
+    ],
+  },
+  {
+    title: "No lock-in",
+    summary: "Your data exports whenever you like.",
+    body: ["Exports are files that open in any spreadsheet."],
+  },
+  {
+    title: "Built in the open",
+    summary: "Echo is open source.",
+    body: [
+      "Fix a bug, pick up an idea, shape what comes next. Anyone can read the code.",
+    ],
   },
 ] as const;
 
-export const STORIES = [
-  {
-    number: "01",
-    label: "People and Sundays",
-    title: "Know who is there, and who is new.",
-    text: "Take attendance in a few taps. Members and visitors are counted apart, first-time guests are flagged, and every person has one profile that follows them.",
-    points: [
-      "Search a name or phone, tap, done",
-      "First-time visitors flagged for follow-up",
-      "One profile for contacts, groups and giving",
-    ],
-  },
-  {
-    number: "02",
-    label: "Giving and money",
-    title: "Know where the money comes from and goes.",
-    text: "Record tithes and offerings against the right member, log expenses under your own categories, and read the month on one honest chart.",
-    points: [
-      "Income above the line, expenses below",
-      "Tap a month to open the records behind it",
-      "Mobile money, cash and transfers kept apart",
-    ],
-  },
-  {
-    number: "03",
-    label: "Announcements",
-    title: "Sunday's announcement, written for you.",
-    text: "One tap turns the week's giving into a message you can read from the pulpit or send to the group chat.",
-    points: [
-      "This week, last week or this month",
-      "Copy it or share it straight away",
-      "Every figure ties back to a record",
-    ],
-  },
-] as const;
+export type Step = {
+  title: string;
+  line: string;
+  text: string;
+  state: "now" | "next" | "open";
+};
 
-export const EVERYTHING = [
-  { title: "Events", text: "Plan, register and check people in on the day." },
-  { title: "Projects", text: "Set a target and watch the progress bar fill." },
+export const ROADMAP: readonly Step[] = [
   {
-    title: "Ministries and groups",
-    text: "Choirs, youth, ushers and cell groups, each with its own members.",
+    title: "Today",
+    line: "Members, attendance, giving and events.",
+    text: "Record members and visitors, take attendance, track giving and plan events, with answers you can read at a glance. This is what Echo does now.",
+    state: "now",
   },
   {
-    title: "Visitors",
-    text: "Follow up every first-time guest, then welcome them as members.",
+    title: "Integrated payments",
+    line: "Give by mobile money or card, recorded for you.",
+    text: "Members give from their phone and the gift is recorded against the right person and fund, with no manual entry.",
+    state: "next",
   },
-  { title: "Assets", text: "What the church owns and what it is worth now." },
   {
-    title: "Invitations and roles",
-    text: "Bring leaders in with a reusable link or code.",
+    title: "Native mobile apps",
+    line: "Echo on iPhone and Android, made for the phone.",
+    text: "Apps built for the phone, so taking attendance or checking an answer is quick, even one-handed.",
+    state: "next",
+  },
+  {
+    title: "Offline availability",
+    line: "Keep taking attendance when the network drops.",
+    text: "Attendance is saved on the device and syncs when the network returns.",
+    state: "next",
+  },
+  {
+    title: "What you ask for",
+    line: "Tell us what your church needs.",
+    text: "The roadmap starts with what churches tell us. Write to us and your request joins the list.",
+    state: "open",
+  },
+];
+
+export const WAYS = [
+  {
+    name: "Hosted by us",
+    tag: "Free, ready in minutes",
+    points: [
+      "Ready in minutes, nothing to install",
+      "Open source, so anyone can read the code",
+      "Export or delete your data any time",
+    ],
+    action: { label: "Get started free", to: "/signup" },
+  },
+  {
+    name: "Echo Sanctuary",
+    tag: "On your own servers",
+    points: [
+      "Runs on your infrastructure, nothing leaves it",
+      "We set it up with you",
+      "Direct support from the people who build Echo",
+    ],
+    action: { label: "Talk to us", to: "/contact?topic=private" },
   },
 ] as const;

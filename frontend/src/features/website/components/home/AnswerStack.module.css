@@ -1,0 +1,190 @@
+.stack {
+  position: relative;
+  width: 100%;
+  max-width: 650px;
+  height: 372px;
+  margin-left: auto;
+}
+/* Behind the front card, each one sits a little further up and to the right, tilted and smaller. */
+.card {
+  position: absolute;
+  top: 104px;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
+  width: 520px;
+  max-width: 100%;
+  height: 260px;
+  margin: 0;
+  padding: 30px;
+  border: 1px solid var(--card-line);
+  border-radius: 24px;
+  background: var(--card);
+  box-shadow: 0 30px 70px -36px rgb(0 0 0 / 50%);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transform-origin: 50% 100%;
+  transform: translate(calc(30px * var(--place)), calc(-26px * var(--place)))
+    rotate(calc(2.6deg * var(--place))) scale(calc(1 - 0.05 * var(--place)));
+  transition:
+    transform 850ms cubic-bezier(0.3, 0.9, 0.2, 1),
+    opacity 850ms ease;
+}
+.card:focus-visible {
+  outline: var(--focus);
+  outline-offset: 4px;
+}
+.question {
+  font-size: 18px;
+  color: var(--text-2);
+}
+.foot {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+.figure {
+  display: block;
+  font-size: 68px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.06em;
+}
+.note {
+  display: block;
+  margin-top: 10px;
+  font-size: 16px;
+  line-height: 1.35;
+  color: var(--text-3);
+}
+.picture {
+  flex: none;
+  padding-bottom: 4px;
+}
+.line {
+  display: block;
+  width: 120px;
+  height: 40px;
+}
+.bar {
+  display: block;
+  width: 120px;
+  height: 5px;
+  overflow: hidden;
+  border-radius: 3px;
+  background: var(--line-2);
+}
+.bar span {
+  display: block;
+  height: 100%;
+  background: var(--text);
+}
+.people {
+  display: flex;
+}
+.people span {
+  display: block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--card);
+  border-radius: 50%;
+  background: var(--text);
+}
+.people span + span {
+  margin-left: -6px;
+}
+.date {
+  display: block;
+  padding: 6px 12px;
+  border: 1px solid var(--line-2);
+  border-radius: 12px;
+  line-height: 1.1;
+  text-align: center;
+}
+.date span {
+  display: block;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--text-2);
+}
+.date strong {
+  display: block;
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+@media (max-width: 999px) {
+  .stack {
+    max-width: 582px;
+    height: 348px;
+    margin-left: 0;
+  }
+  .card {
+    top: 96px;
+    width: 460px;
+    height: 244px;
+    padding: 28px;
+  }
+  .question {
+    font-size: 17px;
+  }
+  .figure {
+    font-size: 58px;
+  }
+  .note {
+    font-size: 15px;
+  }
+  .line,
+  .bar {
+    width: 110px;
+  }
+}
+@media (max-width: 599px) {
+  .stack {
+    max-width: 372px;
+    height: 278px;
+  }
+  .card {
+    top: 56px;
+    width: 310px;
+    height: 214px;
+    padding: 22px;
+  }
+  .question {
+    font-size: 15px;
+  }
+  .figure {
+    font-size: 40px;
+  }
+  .note {
+    font-size: 13px;
+  }
+  .line,
+  .bar {
+    width: 64px;
+  }
+  .line {
+    height: 40px;
+  }
+  .people span {
+    width: 14px;
+    height: 14px;
+  }
+  .date strong {
+    font-size: 18px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition: none;
+  }
+}
+html[data-reduce-motion="true"] .card {
+  transition: none;
+}
