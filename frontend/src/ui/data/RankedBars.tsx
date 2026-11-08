@@ -64,7 +64,9 @@ export function RankedBars({ label, rows, selected, onPick }: Props) {
             style={
               { "--d": hot === null ? 0 : Math.abs(i - hot) } as CSSProperties
             }
-            onPointerEnter={() => setHot(i)}
+            onPointerEnter={(e) => {
+              if (e.pointerType === "mouse") setHot(i);
+            }}
             onPointerLeave={() => setHot(null)}
             onFocus={(e) => e.target.matches(":focus-visible") && setHot(i)}
             onBlur={() => setHot(null)}

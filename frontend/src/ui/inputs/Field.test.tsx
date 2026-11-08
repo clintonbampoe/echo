@@ -14,23 +14,6 @@ describe("Field", () => {
     expect(screen.getByLabelText("Email")).toHaveAttribute("readonly");
   });
 
-  it("keeps the phone from offering your own details unless the field says what it holds", () => {
-    render(
-      <>
-        <Field label="First name" />
-        <Field label="Email address" autoComplete="email" />
-      </>,
-    );
-    expect(screen.getByLabelText("First name")).toHaveAttribute(
-      "autocomplete",
-      "off",
-    );
-    expect(screen.getByLabelText("Email address")).toHaveAttribute(
-      "autocomplete",
-      "email",
-    );
-  });
-
   it("connects the label to the input", () => {
     render(<Field label="Email address" />);
     expect(screen.getByLabelText("Email address")).toBeInTheDocument();

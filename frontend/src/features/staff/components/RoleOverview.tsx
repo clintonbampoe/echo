@@ -94,7 +94,9 @@ function Ring({ summary, hot, picked, onHot, onPick, onClear }: RingProps) {
                         : `var(--ring-${colour % 4})`,
                   } as CSSProperties
                 }
-                onPointerEnter={() => onHot(p.key)}
+                onPointerEnter={(e) => {
+                  if (e.pointerType === "mouse") onHot(p.key);
+                }}
                 onPointerLeave={() => onHot(null)}
                 onFocus={(e) =>
                   e.target.matches(":focus-visible") && onHot(p.key)
