@@ -74,7 +74,7 @@ export function AnswerStack() {
             style={
               {
                 "--place": place,
-                opacity: FADE[place],
+                "--dim": FADE[place],
                 zIndex: ANSWERS.length - place,
               } as CSSProperties
             }
