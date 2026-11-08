@@ -2,27 +2,31 @@ import { useState } from "react";
 import { Button, StatusTile, useMedia } from "@/ui";
 import styles from "./DesktopHint.module.css";
 
-const KEY = "echo.desktopHint.dismissed";
+const KEY = "echo.desktopHint.shownAt";
+// A dismissed hint stays away this long, then comes back once. Long enough not to nag, short enough not to be forgotten.
+const QUIET_DAYS = 3;
+const DAY = 24 * 60 * 60 * 1000;
 
-const dismissed = () => {
+const quiet = () => {
   try {
-    return sessionStorage.getItem(KEY) === "1";
+    const at = Number(localStorage.getItem(KEY));
+    return at > 0 && Date.now() - at < QUIET_DAYS * DAY;
   } catch {
     return false;
   }
 };
 
 // Every page is built for a desktop first. Until each role sees only the pages that suit it (and members are linked to
-// their accounts), a tablet or phone shows the same pages with less room, so this says so once per visit. Remove it
-// when role-based access lands.
+// their accounts), a tablet or phone shows the same pages with less room, so this says so every few days until it is
+// dismissed. Remove it when role-based access lands.
 export function DesktopHint() {
   const small = useMedia("(max-width: 900px)");
-  const [hidden, setHidden] = useState(dismissed);
+  const [hidden, setHidden] = useState(quiet);
   if (!small || hidden) return null;
 
   const close = () => {
     try {
-      sessionStorage.setItem(KEY, "1");
+      localStorage.setItem(KEY, String(Date.now()));
     } catch {
       // Without storage the hint simply comes back on the next page load.
     }

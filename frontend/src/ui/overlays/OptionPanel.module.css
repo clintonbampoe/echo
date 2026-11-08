@@ -2,7 +2,7 @@
   margin-bottom: 8px;
 }
 .list {
-  max-height: min(56vh, 416px);
+  max-height: min(calc(var(--vv-height, 100vh) * 0.56), 416px);
   overflow-y: auto;
   overscroll-behavior: contain;
 }
