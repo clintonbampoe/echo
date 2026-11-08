@@ -333,7 +333,7 @@ public static class AttendanceSessionEndpoints
                     - `window` — the dates that were applied.
 
                     ### Caching
-                    The answer is cached for 5 minutes per congregation and per set of parameters.
+                    The answer is cached for up to 10 minutes per person and per set of parameters, and dropped as soon as anything in the congregation changes. Attendance totals are refreshed every minute, so a new check-in can take up to a minute to show here.
 
                     ### Failure modes
                     - `401 UNAUTHORIZED` — missing or invalid bearer token.

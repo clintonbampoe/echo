@@ -166,7 +166,7 @@ public static class InvitationEndpoints
             .WithSummary("Returns the counts shown above the invitation list.")
             .WithDescription(
                 """
-                Returns counts for the whole congregation, not just the page of invitations on screen, so they stay right past the first page. The answer is cached for 5 minutes, so a new invitation can take up to that long to show in the counts.
+                Returns counts for the whole congregation, not just the page of invitations on screen, so they stay right past the first page. The answer is cached for up to 10 minutes and dropped as soon as anything in the congregation changes, so a new invitation shows in the counts at once.
 
                 ### Response fields
                 - `active` — invitations that can be used right now: not revoked, not expired, and with uses left.

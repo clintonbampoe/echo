@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 namespace Echo.Application.Attendances;
 
 /// <summary>
-/// Brings the <c>attendance_per_session</c> view up to date every few minutes, so the attendance
+/// Brings the <c>attendance_per_session</c> view up to date every minute, so the attendance
 /// and session summaries can add up a few rows per session instead of counting every check-in. A
 /// failed refresh is logged and tried again next time; the summaries keep the last totals. Each refresh
 /// changes figures no write to a congregation announces, so it drops every cached answer.
@@ -21,7 +21,7 @@ public sealed class AttendanceTotalsRefresher(
     ILogger<AttendanceTotalsRefresher> logger
 ) : BackgroundService
 {
-    public static readonly TimeSpan Interval = TimeSpan.FromMinutes(5);
+    public static readonly TimeSpan Interval = TimeSpan.FromMinutes(1);
 
     // Any number, as long as nothing else locks on it. With several API instances, whoever gets it
     // refreshes and the rest skip this round.
