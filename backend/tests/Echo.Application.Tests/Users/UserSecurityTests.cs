@@ -62,6 +62,9 @@ public class UserSecurityTests
             "UpdateUser",
             "DeleteUser",
             "SearchUsers",
+            "GetUserSummary",
+            "DisableUser",
+            "EnableUser",
         };
 
         // Handlers take UserService as a parameter; it must be registered so the endpoint

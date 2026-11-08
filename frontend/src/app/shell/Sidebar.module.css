@@ -14,6 +14,25 @@
   border-right: 1px solid var(--line-2);
 }
 
+/* The administrators' pages sit at the bottom, above who is signed in. The label is the only thing that sets them apart. */
+.admin {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s-6);
+  margin-top: auto;
+}
+.adminLabel {
+  padding: 0 var(--s-12);
+  font-size: var(--type-caption);
+  font-weight: 500;
+  color: var(--text-3);
+}
+
+/* With the admin pages above it, the pages take the free space; the signed-in pill just follows them. */
+.admin + .foot {
+  margin-top: 0;
+}
+
 /* Who is signed in, in one raised pill: the person on the left, Settings on the right. */
 .foot {
   display: flex;

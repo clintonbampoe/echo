@@ -73,7 +73,7 @@ public class JwtTokenService(
         if (existing.ExpiresAt <= timeProvider.GetUtcNow().UtcDateTime)
             return Failure(RefreshSessionFailure.Expired);
 
-        if (existing.User.DeletedAt is not null)
+        if (existing.User.DeletedAt is not null || existing.User.DisabledAt is not null)
             return Failure(RefreshSessionFailure.UserInactive);
 
         var (newTokenEntity, newPlainToken) = await IssueToken(existing.UserId, ct);

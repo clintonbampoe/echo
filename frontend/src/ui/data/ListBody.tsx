@@ -31,6 +31,9 @@ type Props<T> = {
   // bottom of its own card, as the Members list does.
   children: (rows: T[], footer: ReactNode) => ReactNode;
   footerInside?: boolean;
+  // Counts what is loaded ("50 loaded") instead of "Showing 50 members", for lists that load a page at a time and
+  // do not claim a total.
+  loaded?: boolean;
 };
 
 // "Showing 50 members", or with a sort order "Showing all 5 tithes. Newest first." ("all" once nothing more is coming).
@@ -59,6 +62,7 @@ export function ListBody<T>({
   skeleton,
   children,
   footerInside,
+  loaded,
 }: Props<T>) {
   const many = noun[1];
   if (list.loading)
@@ -111,6 +115,7 @@ export function ListBody<T>({
       noun={noun}
       order={order}
       inside={Boolean(footerInside)}
+      loaded={loaded}
     />
   );
   return (
@@ -126,10 +131,11 @@ type FooterProps<T> = {
   noun: [string, string];
   order?: string;
   inside: boolean;
+  loaded?: boolean;
 };
 
 // The count and "Load more": under the list, or as the last row of the list's card.
-function ListFooter<T>({ list, noun, order, inside }: FooterProps<T>) {
+function ListFooter<T>({ list, noun, order, inside, loaded }: FooterProps<T>) {
   const more =
     list.hasMore &&
     (inside ? (
@@ -153,7 +159,9 @@ function ListFooter<T>({ list, noun, order, inside }: FooterProps<T>) {
   return (
     <footer className={inside ? styles.inside : styles.footer}>
       <p role="status">
-        {countLine(list.rows.length, list.hasMore, noun, order)}
+        {loaded
+          ? `${formatNumber(list.rows.length)} loaded`
+          : countLine(list.rows.length, list.hasMore, noun, order)}
       </p>
       {more}
     </footer>

@@ -43,6 +43,9 @@ public record UserResponseDto
     public UserRole Role { get; init; }
     public DateTime CreatedAt { get; init; }
 
+    /// <summary>When an admin disabled the account; null while it can sign in.</summary>
+    public DateTime? DisabledAt { get; init; }
+
     /// <summary>When the password was last set or changed; null for accounts older than this field.</summary>
     public DateTime? PasswordChangedAt { get; init; }
 }
@@ -69,4 +72,33 @@ public record UserCursor
 {
     public string Name { get; init; } = string.Empty;
     public Guid Id { get; init; }
+}
+
+public enum UserStatus
+{
+    Active,
+    Disabled,
+    Unverified,
+}
+
+/// <summary>
+/// Optional filters of the user list; leave one out to not filter by it. <paramref name="Q"/> is text to find in
+/// the name or email.
+/// </summary>
+public record UserFilter(UserRole? Role = null, UserStatus? Status = null, string? Q = null);
+
+public record UserRoleCountDto
+{
+    public UserRole Role { get; init; }
+    public int Count { get; init; }
+    public int Disabled { get; init; }
+}
+
+public record UserSummaryDto
+{
+    public int Total { get; init; }
+    public int Disabled { get; init; }
+
+    /// <summary>One entry per role, in role order, including roles nobody has.</summary>
+    public required List<UserRoleCountDto> Roles { get; init; }
 }

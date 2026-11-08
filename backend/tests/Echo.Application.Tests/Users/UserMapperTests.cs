@@ -14,6 +14,8 @@ public class UserMapperTests
             .Build<User>()
             .With(u => u.Name, "Jane Doe")
             .With(u => u.EmailAddress, "jane@echo.test")
+            // Build<T> does not use the fixture's customizations; the snapshots describe an enabled account.
+            .Without(u => u.DisabledAt)
             .Create();
 
     private static UserCreateDto CreateDto(Fixture fixture) =>
@@ -54,6 +56,15 @@ public class UserMapperTests
         var entity = CreateUser(TestData.NewFixture());
 
         return Verify(_mapper.ToDto(entity));
+    }
+
+    [Fact]
+    public void ToDto_ShouldMapDisabledAt_FromEntity()
+    {
+        var entity = CreateUser(TestData.NewFixture());
+        entity.DisabledAt = new DateTime(2026, 11, 8, 9, 0, 0, DateTimeKind.Utc);
+
+        Assert.Equal(entity.DisabledAt, _mapper.ToDto(entity).DisabledAt);
     }
 
     [Fact]

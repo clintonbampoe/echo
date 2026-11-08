@@ -1,9 +1,14 @@
 using Echo.Shared.Query;
 using Echo.Data;
+using Echo.Domain.Auth;
+using Echo.Domain.Congregations;
 using Echo.Domain.Users;
 using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Application.Users;
+
+/// <summary>Names an account-change email needs and the person it is about does not have.</summary>
+public sealed record EmailContext(string CongregationName, string ActorName);
 
 public class UserRepository(AppDbContext context)
 {
@@ -11,6 +16,7 @@ public class UserRepository(AppDbContext context)
 
     public async Task<List<User>> List(
         Guid congregationId,
+        UserFilter filter,
         UserCursor? cursor,
         int pageSize,
         CancellationToken ct
@@ -20,10 +26,78 @@ public class UserRepository(AppDbContext context)
             .AsNoTracking()
             .FilterDeleted()
             .Where(u => u.CongregationId == congregationId)
+            .Filter(filter)
+            .MatchesQuery(filter.Q)
             .OrderBy(u => u.Name)
             .ThenBy(u => u.Id)
             .Paginate(cursor, pageSize)
             .ToListAsync(ct);
+    }
+
+    /// <summary>One GROUP BY: how many people hold each role, and how many of them are disabled.</summary>
+    public async Task<List<UserRoleCountDto>> CountByRole(Guid congregationId, CancellationToken ct)
+    {
+        return await _dbSet
+            .AsNoTracking()
+            .FilterDeleted()
+            .Where(u => u.CongregationId == congregationId)
+            .GroupBy(u => u.Role)
+            .Select(g => new UserRoleCountDto
+            {
+                Role = g.Key,
+                Count = g.Count(),
+                Disabled = g.Count(u => u.DisabledAt != null),
+            })
+            .ToListAsync(ct);
+    }
+
+    /// <summary>Admins who can still sign in, other than <paramref name="exceptId"/>.</summary>
+    public async Task<bool> HasOtherActiveAdmin(
+        Guid congregationId,
+        Guid exceptId,
+        CancellationToken ct
+    )
+    {
+        return await _dbSet
+            .FilterDeleted()
+            .AnyAsync(
+                u =>
+                    u.CongregationId == congregationId
+                    && u.Role == UserRole.Admin
+                    && u.DisabledAt == null
+                    && u.Id != exceptId,
+                ct
+            );
+    }
+
+    /// <summary>
+    /// Signs the user out everywhere in one statement. An access token already issued works until it expires.
+    /// </summary>
+    public async Task RevokeSessions(Guid userId, DateTime now, CancellationToken ct)
+    {
+        await context
+            .Set<RefreshToken>()
+            .Where(t => t.UserId == userId && t.RevokedAt == null)
+            .ExecuteUpdateAsync(s => s.SetProperty(t => t.RevokedAt, now), ct);
+    }
+
+    /// <summary>The church's name and the acting admin's name, for the emails sent about an account change.</summary>
+    public async Task<EmailContext> GetEmailContext(
+        Guid congregationId,
+        Guid actorId,
+        CancellationToken ct
+    )
+    {
+        var church = await context
+            .Set<Congregation>()
+            .Where(c => c.Id == congregationId)
+            .Select(c => c.Name)
+            .FirstOrDefaultAsync(ct);
+        var actor = await _dbSet
+            .Where(u => u.Id == actorId)
+            .Select(u => u.Name)
+            .FirstOrDefaultAsync(ct);
+        return new EmailContext(church ?? "your church", actor ?? "An admin");
     }
 
     public async Task<User?> GetById(Guid congregationId, Guid id, CancellationToken ct = default)
@@ -73,6 +147,37 @@ internal static class UserQueryExtensions
         Guid congregationId,
         Guid id
     ) => query.Where(u => u.Id == id && u.CongregationId == congregationId);
+
+    internal static IQueryable<User> Filter(this IQueryable<User> query, UserFilter filter)
+    {
+        if (filter.Role is { } role)
+            query = query.Where(u => u.Role == role);
+
+        return filter.Status switch
+        {
+            UserStatus.Active => query.Where(u => u.DisabledAt == null),
+            UserStatus.Disabled => query.Where(u => u.DisabledAt != null),
+            UserStatus.Unverified => query.Where(u => u.EmailVerifiedAt == null),
+            _ => query,
+        };
+    }
+
+    /// <summary>
+    /// Keeps people whose name or email contains the text. A term under three characters can only use the
+    /// start of the name or email, because a trigram index cannot look up anything shorter.
+    /// </summary>
+    internal static IQueryable<User> MatchesQuery(this IQueryable<User> query, string? text)
+    {
+        var term = text?.Trim();
+        if (string.IsNullOrEmpty(term))
+            return query;
+
+        var escaped = Echo.Shared.Query.Extensions.EscapeLike(term);
+        var pattern = term.Length >= Echo.Shared.Query.Extensions.MinContainsLength ? $"%{escaped}%" : $"{escaped}%";
+        return query.Where(u =>
+            EF.Functions.ILike(u.Name, pattern) || EF.Functions.ILike(u.EmailAddress, pattern)
+        );
+    }
 
     internal static IQueryable<User> Paginate(
         this IQueryable<User> query,

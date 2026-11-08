@@ -12,6 +12,7 @@ export function SearchField({ label, className, ...input }: Props) {
     <div className={`${styles.wrap} ${className ?? ""}`}>
       <Icon name="search" size={16} className={styles.icon} />
       <input
+        autoComplete="off"
         {...input}
         type="search"
         aria-label={label}

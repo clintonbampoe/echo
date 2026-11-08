@@ -29,14 +29,12 @@ export function Name({ form }: Form) {
     <FormSection title="Name">
       <Field
         label="First name"
-        autoComplete="given-name"
         maxLength={100}
         error={e.firstName?.message}
         {...register("firstName")}
       />
       <Field
         label="Last name"
-        autoComplete="family-name"
         maxLength={100}
         error={e.lastName?.message}
         {...register("lastName")}
@@ -45,7 +43,6 @@ export function Name({ form }: Form) {
         <Field
           label="Other names"
           optional
-          autoComplete="additional-name"
           maxLength={100}
           error={e.otherNames?.message}
           {...register("otherNames")}
@@ -61,7 +58,6 @@ export function PhoneField({ form }: Form) {
       label="Phone"
       type="tel"
       inputMode="tel"
-      autoComplete="tel"
       maxLength={20}
       placeholder="024 000 0000"
       error={form.formState.errors.phoneNumber?.message}
@@ -76,7 +72,6 @@ export function EmailField({ form }: Form) {
       label="Email"
       optional
       type="email"
-      autoComplete="email"
       maxLength={255}
       placeholder="name@example.com"
       error={form.formState.errors.emailAddress?.message}
@@ -143,7 +138,6 @@ export function Address({ form }: Form) {
         <Field
           label="Residential address"
           optional
-          autoComplete="street-address"
           maxLength={255}
           placeholder="House number, street, area"
           error={e.residentialAddress?.message}
@@ -153,7 +147,6 @@ export function Address({ form }: Form) {
       <Field
         label="City"
         optional
-        autoComplete="address-level2"
         maxLength={100}
         error={e.city?.message}
         {...register("city")}

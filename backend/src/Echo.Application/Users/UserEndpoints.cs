@@ -28,6 +28,7 @@ public static class UserEndpoints
                 "/",
                 async (
                     [AsParameters] PaginationRequest pagination,
+                    [AsParameters] UserFilter filter,
                     UserService service,
                     HttpContext context,
                     CancellationToken ct
@@ -41,6 +42,7 @@ public static class UserEndpoints
                     var result = await service.List(
                         context.User.GetCongregationId(),
                         pagination,
+                        filter,
                         ct
                     );
                     return result.ToResult();
@@ -54,6 +56,14 @@ public static class UserEndpoints
 
                 ### What is in the list
                 Each entry is a `UserResponseDto` — the platform account, not the Member record. See the **Users** tag description for the distinction. If you need people records, use `/members` instead.
+
+                ### Filters
+                - `role` — only people with this role (`Admin`, `Accountant`, `Clerk`, `Member`).
+                - `status` — `Active` (can sign in), `Disabled` (an admin turned the account off) or `Unverified` (email not verified yet).
+
+                - `q` — text to find in the name or email, ignoring case. From three characters it matches anywhere in the name or email; shorter text matches only the start.
+
+                All are optional and combine. Leave them out for everyone.
 
                 ### Ordering
                 Users are ordered by name, then by ID as a tiebreaker. The order is stable across pages.
@@ -191,6 +201,7 @@ public static class UserEndpoints
                     );
                     var result = await service.Update(
                         context.User.GetCongregationId(),
+                        context.User.GetUserId(),
                         id,
                         dto,
                         ct
@@ -216,6 +227,8 @@ public static class UserEndpoints
 
                 ### Side effects
                 - If the password changed, existing sessions are **not** revoked by this endpoint. The user remains signed in on other devices until their access tokens expire and their refresh tokens are next used. If you need to force a sign-out, call `POST /auth/sessions/logout` with the user's email afterward.
+                - The role is read from the access token, so a role change shows up when the person's access token is next refreshed (within a few minutes) or when they sign in again.
+                - If the role changed, the person gets an email saying their role went up or down, who changed it and when. A failure to queue the email never undoes the change.
                 - If the email changed, the account's verified state is **preserved as-is** — this endpoint does not reset verification. If your policy requires re-verification on email change, that must be handled separately.
 
                 ### Path parameters
@@ -226,11 +239,14 @@ public static class UserEndpoints
                 - `400 VALIDATION_ERROR` — one or more fields failed validation.
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
                 - `404 NOT_FOUND` — no user exists with the given ID in this congregation, or the account has been soft-deleted.
+                - `409 CANNOT_MODIFY_SELF` — you tried to change your own role. Another admin has to do it.
+                - `409 LAST_ADMIN` — the change would leave the congregation with no admin who can sign in.
                 """
             )
             .Produces<UserResponseDto>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status400BadRequest)
             .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status403Forbidden);
 
@@ -244,7 +260,12 @@ public static class UserEndpoints
                         instrumentation,
                         "endpoint.user.delete"
                     );
-                    var result = await service.Delete(context.User.GetCongregationId(), id, ct);
+                    var result = await service.Delete(
+                        context.User.GetCongregationId(),
+                        context.User.GetUserId(),
+                        id,
+                        ct
+                    );
                     return result.ToResult();
                 }
             )
@@ -259,7 +280,8 @@ public static class UserEndpoints
 
                 ### Side effects
                 - The user is marked as deleted.
-                - **Existing sessions are not revoked by this endpoint.** Any access token already issued continues to work until it expires (up to ~15 minutes). Any refresh token already issued can still be exchanged for a new pair. If you need to force a sign-out, call `POST /auth/sessions/logout` with the user's email **before** deleting.
+                - The person gets an email saying their account was removed.
+                - **Refresh tokens are revoked**, so the person is signed out of every device. An access token already issued keeps working until it expires (up to ~15 minutes).
                 - Records that reference this user — as an event organizer, project manager, etc. — are not affected. The references remain, though lookups of the underlying user will now return `404`.
 
                 ### Reversibility
@@ -271,9 +293,134 @@ public static class UserEndpoints
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
                 - `404 NOT_FOUND` — no user exists with the given ID in this congregation, or the account has already been soft-deleted.
+                - `409 CANNOT_MODIFY_SELF` — you tried to remove your own account.
+                - `409 LAST_ADMIN` — this is the only admin who can sign in.
                 """
             )
             .Produces(StatusCodes.Status204NoContent)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden);
+
+        group
+            .MapGet(
+                "/summary",
+                async (UserService service, HttpContext context, CancellationToken ct) =>
+                {
+                    using var span = EndpointInstrumentation.StartSpan(
+                        context,
+                        instrumentation,
+                        "endpoint.user.summary"
+                    );
+                    var result = await service.Summary(context.User.GetCongregationId(), ct);
+                    return result.ToResult();
+                }
+            )
+            .WithName("GetUserSummary")
+            .WithSummary("Returns how many people hold each role.")
+            .WithDescription(
+                """
+                Returns the head counts the Team page shows: the total, how many accounts are disabled, and one entry per role with its count and how many of those are disabled.
+
+                ### On success
+                Returns `200 OK` with a `UserSummaryDto`. `roles` always has one entry for every role, in role order, even a role nobody holds, so a client can draw a card for each.
+
+                ### Failure modes
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                - `403 FORBIDDEN` — the caller is not an admin.
+                """
+            )
+            .Produces<UserSummaryDto>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden);
+
+        group
+            .MapPost(
+                "/{id:guid}/disable",
+                async (Guid id, UserService service, HttpContext context, CancellationToken ct) =>
+                {
+                    using var span = EndpointInstrumentation.StartSpan(
+                        context,
+                        instrumentation,
+                        "endpoint.user.disable"
+                    );
+                    var result = await service.Disable(
+                        context.User.GetCongregationId(),
+                        context.User.GetUserId(),
+                        id,
+                        ct
+                    );
+                    return result.ToResult();
+                }
+            )
+            .WithName("DisableUser")
+            .WithSummary("Turns an account off without deleting it.")
+            .WithDescription(
+                """
+                Stops the person signing in. Nothing they created is touched, and the account can be turned back on with `POST /users/{id}/enable`.
+
+                ### On success
+                Returns `200 OK` with the `UserResponseDto`; `disabledAt` is set. Disabling an account that is already disabled succeeds and keeps the first time.
+
+                ### Side effects
+                - Every refresh token of the account is revoked, so the person is signed out of every device. An access token already issued keeps working until it expires (up to ~15 minutes).
+                - Signing in with the right password then returns `403 ACCOUNT_DISABLED`.
+                - The person gets an email saying their account was disabled. Disabling an account that is already disabled sends nothing.
+
+                ### Path parameters
+                - `id` — the user's id, as returned by the list and create endpoints.
+
+                ### Failure modes
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                - `404 NOT_FOUND` — no such user in this congregation.
+                - `409 CANNOT_MODIFY_SELF` — you cannot disable your own account.
+                - `409 LAST_ADMIN` — this is the only admin who can sign in.
+                """
+            )
+            .Produces<UserResponseDto>(StatusCodes.Status200OK)
+            .ProducesProblem(StatusCodes.Status404NotFound)
+            .ProducesProblem(StatusCodes.Status409Conflict)
+            .ProducesProblem(StatusCodes.Status401Unauthorized)
+            .ProducesProblem(StatusCodes.Status403Forbidden);
+
+        group
+            .MapPost(
+                "/{id:guid}/enable",
+                async (Guid id, UserService service, HttpContext context, CancellationToken ct) =>
+                {
+                    using var span = EndpointInstrumentation.StartSpan(
+                        context,
+                        instrumentation,
+                        "endpoint.user.enable"
+                    );
+                    var result = await service.Enable(
+                        context.User.GetCongregationId(),
+                        context.User.GetUserId(),
+                        id,
+                        ct
+                    );
+                    return result.ToResult();
+                }
+            )
+            .WithName("EnableUser")
+            .WithSummary("Turns a disabled account back on.")
+            .WithDescription(
+                """
+                Lets a disabled account sign in again. The person signs in with their usual password; the sessions that were ended stay ended.
+
+                ### On success
+                Returns `200 OK` with the `UserResponseDto`; `disabledAt` is null. Enabling an account that is not disabled succeeds and changes nothing.
+
+                ### Path parameters
+                - `id` — the user's id, as returned by the list and create endpoints.
+
+                ### Failure modes
+                - `401 UNAUTHORIZED` — missing or invalid bearer token.
+                - `404 NOT_FOUND` — no such user in this congregation.
+                """
+            )
+            .Produces<UserResponseDto>(StatusCodes.Status200OK)
             .ProducesProblem(StatusCodes.Status404NotFound)
             .ProducesProblem(StatusCodes.Status401Unauthorized)
             .ProducesProblem(StatusCodes.Status403Forbidden);

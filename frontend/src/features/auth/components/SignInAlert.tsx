@@ -13,6 +13,14 @@ export function SignInAlert({ problem }: Props) {
       </Alert>
     );
   }
+  if (problem.errorCode === "ACCOUNT_DISABLED") {
+    return (
+      <Alert title="This account is disabled">
+        An admin at your church turned off this account. Ask them to enable it,
+        then sign in again.
+      </Alert>
+    );
+  }
   if (problem.status === 429) {
     return (
       <Alert title="Too many attempts">Wait a minute, then try again.</Alert>

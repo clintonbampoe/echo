@@ -21,6 +21,7 @@ export { DetailBlock, DetailCard, DetailGroup } from "./layout/DetailCard";
 export { Disclosure } from "./layout/Disclosure";
 export { WithSide } from "./layout/WithSide";
 export { DistributionBar, type Part } from "./data/DistributionBar";
+export { Donut } from "./data/Donut";
 export { RankedBars, type Ranked } from "./data/RankedBars";
 export { Drawer } from "./overlays/Drawer";
 export { useSlidingThumb } from "./motion/useSlidingThumb";

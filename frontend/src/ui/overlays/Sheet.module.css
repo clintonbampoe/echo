@@ -131,6 +131,19 @@
   padding: var(--s-4) var(--s-16) var(--s-12);
 }
 
+/* While the keyboard is up there is no room for a pinned footer beside a scrolling body: the pinned parts would
+   leave the field being typed in a few pixels of its own. So the whole panel scrolls as one, and the footer comes
+   after the fields instead of on top of them. */
+.root[data-keyboard="true"] .panel {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scroll-padding-block: var(--s-16);
+}
+.root[data-keyboard="true"] .body {
+  flex: none;
+  overflow: visible;
+}
+
 /* "Not yet": two quick 4px shakes (the same as a field with an error). */
 .panel[data-shaking="true"] {
   animation: sheetShake 260ms var(--ease-out);

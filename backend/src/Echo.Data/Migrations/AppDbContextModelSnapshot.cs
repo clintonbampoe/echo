@@ -1780,6 +1780,10 @@ namespace Echo.Data.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("deleted_at");
 
+                    b.Property<DateTime?>("DisabledAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("disabled_at");
+
                     b.Property<string>("EmailAddress")
                         .IsRequired()
                         .HasMaxLength(255)

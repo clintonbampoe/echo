@@ -39,6 +39,9 @@ export function Field({
   const mark = edgeMark(input.readOnly, input.type);
   const control = (
     <input
+      // Off unless the caller names what the field holds (sign-in and sign-up do): a form for someone else's
+      // details must not offer the signed-in person's own name, phone or address from the phone's contacts.
+      autoComplete="off"
       {...input}
       id={id}
       aria-invalid={error ? true : undefined}

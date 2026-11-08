@@ -99,6 +99,25 @@ describe("sign in", () => {
     expect(getTokens()).toBeNull();
   });
 
+  it("tells someone whose account an admin disabled, and what to do", async () => {
+    fetchMock.mockResolvedValueOnce(
+      json(403, { errorCode: "ACCOUNT_DISABLED", message: "x" }),
+    );
+    renderAt("/signin");
+
+    await userEvent.type(
+      await screen.findByLabelText("Email address"),
+      "ama@example.com",
+    );
+    await userEvent.type(screen.getByLabelText("Password"), "right-pass");
+    await userEvent.click(screen.getByRole("button", { name: "Sign in" }));
+
+    expect(
+      await screen.findByText("This account is disabled"),
+    ).toBeInTheDocument();
+    expect(getTokens()).toBeNull();
+  });
+
   it("says the server is busy, and for how long, when many people are signing in", async () => {
     fetchMock.mockResolvedValueOnce(
       json(503, {

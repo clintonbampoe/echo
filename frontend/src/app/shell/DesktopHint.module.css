@@ -1,0 +1,30 @@
+.hint {
+  display: flex;
+  align-items: center;
+  gap: var(--s-12);
+  /* A section, not a div: the shell lays its page divs out as columns and this is not one. */
+  margin-bottom: var(--s-16);
+  padding: var(--s-12) var(--s-8) var(--s-12) var(--s-12);
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pop);
+  box-shadow: var(--shadow);
+}
+.words {
+  flex: 1;
+  min-width: 0;
+}
+.title,
+.text {
+  margin: 0;
+}
+.title {
+  font-size: 14.5px;
+  font-weight: 600;
+}
+.text {
+  margin-top: var(--s-2);
+  font-size: var(--type-footnote);
+  line-height: 1.4;
+  color: var(--text-3);
+}
