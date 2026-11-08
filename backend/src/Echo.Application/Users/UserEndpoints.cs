@@ -227,6 +227,7 @@ public static class UserEndpoints
 
                 ### Side effects
                 - If the password changed, existing sessions are **not** revoked by this endpoint. The user remains signed in on other devices until their access tokens expire and their refresh tokens are next used. If you need to force a sign-out, call `POST /auth/sessions/logout` with the user's email afterward.
+                - The role is read from the access token, so a role change shows up when the person's access token is next refreshed (within a few minutes) or when they sign in again.
                 - If the role changed, the person gets an email saying their role went up or down, who changed it and when. A failure to queue the email never undoes the change.
                 - If the email changed, the account's verified state is **preserved as-is** — this endpoint does not reset verification. If your policy requires re-verification on email change, that must be handled separately.
 

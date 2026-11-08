@@ -49,7 +49,7 @@ public class RoleChangedEmailBody(
                     new EmailRow("When", When),
                 ],
                 Button = new EmailButton("Open Echo", dashboardLink),
-                Note = "If your menu does not show the change yet, sign out and sign in again.",
+                Note = "The change reaches your account within a few minutes. To see it right away, sign out and sign in again.",
                 Reason = "We send this email every time your role changes. If this looks wrong, ask an admin at "
                     + congregationName
                     + ".",
