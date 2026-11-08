@@ -1,5 +1,6 @@
 import { LinkButton } from "@/ui";
 import { ClosingCta } from "../components/chrome/ClosingCta";
+import { Points } from "../components/chrome/Points";
 import { PageHero } from "../components/chrome/PageHero";
 import { Section } from "../components/chrome/Section";
 import { DASHBOARD, FEATURES } from "../content/features";
@@ -39,11 +40,7 @@ export function FeaturesPage() {
                 <p className={styles.name}>{feature.name}</p>
                 <h2 className={styles.title}>{feature.title}</h2>
               </div>
-              <ul className={styles.points}>
-                {feature.points.map((point) => (
-                  <li key={point}>{point}</li>
-                ))}
-              </ul>
+              <Points items={feature.points} />
             </li>
           ))}
         </ul>

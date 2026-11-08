@@ -69,6 +69,18 @@ describe("the website frame", () => {
     expect(screen.getAllByRole("link", { name: "Sign in" })).toHaveLength(2);
   });
 
+  it("folds a feature's points into one row on a phone", async () => {
+    vi.stubGlobal("matchMedia", (q: string) => ({
+      matches: q.includes("599"),
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    }));
+    renderAt("/features");
+    expect(
+      (await screen.findAllByText("What it covers")).length,
+    ).toBeGreaterThan(5);
+  });
+
   it("offers Open Echo to someone who is signed in", async () => {
     saveTokens(tokens);
     renderAt("/");

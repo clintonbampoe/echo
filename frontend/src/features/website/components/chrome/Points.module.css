@@ -1,0 +1,53 @@
+.points {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--text-2);
+}
+.points li {
+  padding-left: 22px;
+  background: radial-gradient(circle, var(--text) 3px, transparent 3.5px) 0
+    0.55em / 10px 10px no-repeat;
+}
+
+/* The phone's tap-to-open row: full width, with a plus that turns into a minus. */
+.fold {
+  border-top: 1px solid var(--line);
+}
+.summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 0;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text);
+  cursor: pointer;
+  list-style: none;
+}
+.summary::-webkit-details-marker {
+  display: none;
+}
+.summary::after {
+  content: "+";
+  font-size: 20px;
+  font-weight: 400;
+  color: var(--text-3);
+  transition: transform var(--fast) var(--ease-soft);
+}
+.fold[open] .summary::after {
+  content: "–";
+}
+.fold[open] .points {
+  padding-bottom: 18px;
+}
+.summary:focus-visible {
+  outline: var(--focus);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
