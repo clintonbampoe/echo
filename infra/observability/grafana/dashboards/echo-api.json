@@ -937,7 +937,7 @@
     {
       "type": "row",
       "id": 21,
-      "title": "Summary cache",
+      "title": "Read cache",
       "collapsed": false,
       "gridPos": {
         "h": 1,
@@ -950,7 +950,7 @@
     {
       "type": "stat",
       "title": "Cache hit ratio",
-      "description": "Share of summary requests answered from the 2-minute cache, over the time range.",
+      "description": "Share of cacheable reads answered from the cache, over the time range.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -962,7 +962,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "100 * sum(increase(echo_summary_requests_total{cached=\"true\"}[$__range])) / sum(increase(echo_summary_requests_total[$__range]))",
+          "expr": "100 * sum(increase(echo_cache_requests_total{cached=\"true\"}[$__range])) / sum(increase(echo_cache_requests_total[$__range]))",
           "legendFormat": ""
         }
       ],
@@ -991,7 +991,7 @@
             ]
           },
           "decimals": 0,
-          "noValue": "No summary requests"
+          "noValue": "No cached reads"
         },
         "overrides": []
       },
@@ -1019,7 +1019,7 @@
     },
     {
       "type": "timeseries",
-      "title": "Summary requests",
+      "title": "Cached reads",
       "description": "Computed (cached=false) is the database doing the work.",
       "datasource": {
         "type": "prometheus",
@@ -1032,7 +1032,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sum by (cached) (rate(echo_summary_requests_total[$__rate_interval]))",
+          "expr": "sum by (cached) (rate(echo_cache_requests_total[$__rate_interval]))",
           "legendFormat": "cached={{cached}}"
         }
       ],
@@ -1074,8 +1074,8 @@
     },
     {
       "type": "table",
-      "title": "Summaries by cost",
-      "description": "How often each summary was worked out (a cache miss) in the time range.",
+      "title": "Routes by cost",
+      "description": "How often each route was worked out (a cache miss) in the time range.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -1087,7 +1087,7 @@
             "type": "prometheus",
             "uid": "prometheus"
           },
-          "expr": "sort_desc(sum by (summary) (increase(echo_summary_requests_total{cached=\"false\"}[$__range])))",
+          "expr": "sort_desc(sum by (route) (increase(echo_cache_requests_total{cached=\"false\"}[$__range])))",
           "legendFormat": "",
           "instant": true,
           "range": false,
@@ -1129,7 +1129,7 @@
           "id": "filterFieldsByName",
           "options": {
             "include": {
-              "pattern": "^(summary|Value.*)$"
+              "pattern": "^(route|Value.*)$"
             }
           }
         },
@@ -1137,11 +1137,11 @@
           "id": "organize",
           "options": {
             "indexByName": {
-              "summary": 0,
+              "route": 0,
               "Value": 1
             },
             "renameByName": {
-              "summary": "Summary",
+              "route": "Route",
               "Value": "Computed",
               "Value #A": "Computed"
             }
