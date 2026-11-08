@@ -55,4 +55,25 @@ ln -sfn "$root/releases/v5" "$root/previous"
 LOG=$root/log TAG=v5 PATH=$root/bin:$PATH bash "$root/releases/v6/deploy.sh" rollback > /dev/null 2>&1
 grep -qx "BACKUP_DIR=$root/data/dumps" "$root/releases/v5/release.env" ||
   fail "a rollback target did not get BACKUP_DIR"
+# Removing old releases is housekeeping after a deploy that worked. An old release may hold files the deploy user
+# cannot remove (the backup container wrote its dumps there, as root, before BACKUP_DIR moved out of the releases):
+# that must not fail the deploy. The oldest release is the last one removed, which is where it used to show.
+# A root user can remove anything, so there is nothing to check.
+if ((EUID != 0)); then
+  printf '%s\n' RunMigrationsOnStartup=false APP_DOMAIN=example.com > "$root/.env"
+  rm -f "$root/current" "$root/previous"
+  for n in 10 11 12 13 14 15; do release "v$n"; done
+  mkdir "$root/releases/v10/dumps"
+  : > "$root/releases/v10/dumps/echo.dump"
+  chmod a-w "$root/releases/v10/dumps"
+  for n in 10 11 12 13 14 15; do touch -d "2020-01-$n" "$root/releases/v$n"; done # last: adding files moves the date
+  release v16
+  LOG=$root/log TAG=v16 PATH=$root/bin:$PATH bash "$root/releases/v16/deploy.sh" > "$root/out" 2>&1 ||
+    fail "an old release that cannot be removed should not fail the deploy"
+  grep -q "could not remove the old release v10" "$root/out" || fail "the release left behind was not reported"
+  [[ ! -e $root/releases/v11 ]] || fail "an old release that could be removed was kept"
+  [[ -e $root/releases/v10 ]] || fail "a release was removed that holds files we could not remove"
+  grep -q "Done" "$root/out" || fail "the deploy did not finish"
+  chmod -R u+w "$root/releases/v10"
+fi
 echo "deploy.sh ok"

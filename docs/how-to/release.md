@@ -59,7 +59,8 @@ When it works, the end of the Deploy log says `Done`.
    release by itself. On the very first deploy there is nothing to go back to,
    so it stops and leaves no `current` link.
 6. Keeps the five newest release folders and prunes images older than 30
-   days.
+   days. A folder it cannot remove is reported and left; the deploy still
+   succeeds (see [Troubleshooting](../troubleshooting.md)).
 
 ## Roll back
 

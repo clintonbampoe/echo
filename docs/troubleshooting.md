@@ -35,6 +35,21 @@ dumps kept there would go with them.
 Fix: remove the line (the deploy then uses `/srv/echo/data/dumps`) or set an
 absolute path outside `/srv/echo/releases`, then run the deploy again.
 
+### `could not remove the old release <version>: it holds files the deploy user does not own`
+
+The deploy itself worked; it only could not tidy up.
+
+Cause: a release folder from before the deploy supplied `BACKUP_DIR` outside the
+releases holds database dumps. The `backup` container wrote them as root, so
+the deploy user cannot delete them. The deploy reports the folder and leaves it.
+
+Fix: keep the dumps, then remove the folder (use the version in the message):
+
+```bash
+sudo mv /srv/echo/releases/<version>/infra/postgres/backup/dumps/* /srv/echo/data/dumps/
+sudo rm -rf /srv/echo/releases/<version>
+```
+
 ### `required variable BACKUP_DIR is missing a value`
 
 Seen when running `docker compose` by hand with the production files.
