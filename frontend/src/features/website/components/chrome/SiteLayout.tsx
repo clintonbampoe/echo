@@ -1,12 +1,13 @@
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import { Outlet, ScrollRestoration } from "react-router-dom";
 import { Atmosphere, usePublicSurface } from "@/ui";
 import { BackToTop } from "./BackToTop";
 import { SiteFooter } from "./SiteFooter";
 import { SiteHeader } from "./SiteHeader";
+import { useSectionFocus } from "./useSectionFocus";
 import styles from "./SiteLayout.module.css";
 
-// The frame around a website page: the light, the header and the footer. Pages sit inside it as children;
+// The frame around a website page: the light, the header and the footer. Its sections take focus one at a time. Pages sit inside it as children;
 // the error screens use it too, so a wrong turn still looks like the site.
 export function SiteFrame({
   children,
@@ -17,6 +18,8 @@ export function SiteFrame({
   flush?: boolean;
 }) {
   usePublicSurface();
+  const main = useRef<HTMLElement>(null);
+  useSectionFocus(main);
   // Sections settle into place as the page is scrolled (see SiteLayout.module.css). Only the website does this.
   useEffect(() => {
     const root = document.documentElement;
@@ -29,7 +32,9 @@ export function SiteFrame({
     <div className={styles.site}>
       <Atmosphere />
       <SiteHeader />
-      <main className={styles.main}>{children}</main>
+      <main ref={main} className={styles.main}>
+        {children}
+      </main>
       <SiteFooter flush={flush} />
       <BackToTop />
       <ScrollRestoration />

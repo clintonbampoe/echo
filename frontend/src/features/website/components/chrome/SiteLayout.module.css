@@ -2,7 +2,8 @@
   position: relative;
   min-height: 100vh;
   min-height: 100dvh;
-  overflow: hidden;
+  /* Clip, not hidden: hidden would make this the scroller and the sections could not snap to the page. */
+  overflow: clip;
   background: var(--bg);
   color: var(--text);
 }
@@ -11,19 +12,53 @@
   z-index: 1;
 }
 
-/* Sections settle at the top of the screen when a scroll stops near one. Proximity, not mandatory, so a
-   section taller than the screen can still be read all the way down. */
-:global(html[data-snap="sections"]) {
-  scroll-snap-type: y proximity;
+/* On a touch screen sections stop at the top of the screen, one at a time. Mandatory, so a flick never
+   skips one; a section taller than the screen can still be read all the way down. A mouse or trackpad
+   steps with script instead (useSectionFocus), where the browser's own snapping can bounce a small
+   wheel turn back to where it started. */
+@media (pointer: coarse) {
+  :global(html[data-snap="sections"]) {
+    scroll-snap-type: y mandatory;
+  }
+  .main > * {
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+  }
+  /* A new section holds the page still for a moment while it arrives (useSectionFocus). With a mouse the
+     script does it; a touch screen has overlay scrollbars, so locking the scroll shifts nothing. */
+  :global(html[data-snap="sections"][data-hold]) {
+    overflow: hidden;
+  }
 }
 .main > * {
-  scroll-snap-align: start;
+  transition:
+    opacity 650ms var(--ease-soft),
+    filter 650ms var(--ease-soft);
+}
+/* The section in focus is sharp; the ones around it fall back. */
+.main > [data-focus="off"] {
+  opacity: 0.3;
+  filter: blur(5px);
 }
 @media (prefers-reduced-motion: reduce) {
   :global(html[data-snap="sections"]) {
     scroll-snap-type: none;
   }
+  .main > * {
+    transition: none;
+  }
+  .main > [data-focus="off"] {
+    opacity: 1;
+    filter: none;
+  }
 }
 :global(html[data-reduce-motion="true"][data-snap="sections"]) {
   scroll-snap-type: none;
+}
+:global(html[data-reduce-motion="true"]) .main > * {
+  transition: none;
+}
+:global(html[data-reduce-motion="true"]) .main > [data-focus="off"] {
+  opacity: 1;
+  filter: none;
 }
