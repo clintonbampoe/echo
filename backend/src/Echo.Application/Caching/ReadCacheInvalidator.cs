@@ -5,37 +5,36 @@ using Microsoft.Extensions.Logging;
 namespace Echo.Application.Caching;
 
 /// <summary>
-/// The one way cached answers are dropped.
+/// Makes cached answers stale. Every congregation has a version, and the version is part of the key of each of
+/// its answers. Invalidating raises the version first, so nothing asks for the old answers again, and then
+/// removes them to free the memory.
 /// <br/><br/>
-/// Dropping alone cannot be made safe: a read that began before a write can finish after the drop and store
-/// what it read, which is now old, under the key everyone else reads. So every congregation has a version,
-/// and the version is part of the key. A drop raises the version first and then removes what is stored. A read
-/// that began earlier stores under the old version's key, which nothing asks for again, and every read after
-/// the drop asks for the new one and works its answer out from the data as it is now. The removal only frees
-/// memory sooner; being right does not depend on it.
+/// Removing alone would not be safe: a read that began before a write can finish after the removal and store
+/// what it read, which is now old, under the key everyone else reads. With the version in the key, that read
+/// stores under the old version's key instead, which nothing asks for again.
 /// </summary>
-public sealed partial class ReadCacheEvictions(
+public sealed partial class ReadCacheInvalidator(
     IOutputCacheStore store,
-    ILogger<ReadCacheEvictions> logger
+    ILogger<ReadCacheInvalidator> logger
 )
 {
     private readonly ConcurrentDictionary<Guid, long> _congregations = new();
     private long _views;
 
     /// <summary>
-    /// What goes in the key of an answer for this congregation. Answers that read a materialized view also
-    /// change when the views are refreshed, which no write to a congregation announces.
+    /// The part of an answer's key that changes when the answer goes stale. Answers built from a materialized
+    /// view also go stale when the views are refreshed, which no write to a congregation announces.
     /// </summary>
     public string Version(Guid congregationId, bool readsViews) =>
         $"{_congregations.GetValueOrDefault(congregationId)}.{(readsViews ? Interlocked.Read(ref _views) : 0)}";
 
-    public ValueTask Drop(Guid congregationId)
+    public ValueTask Invalidate(Guid congregationId)
     {
         _congregations.AddOrUpdate(congregationId, 1, (_, version) => version + 1);
         return Remove(ReadCache.Tag(congregationId));
     }
 
-    public ValueTask DropViews()
+    public ValueTask InvalidateViews()
     {
         Interlocked.Increment(ref _views);
         return Remove(ReadCache.Views);

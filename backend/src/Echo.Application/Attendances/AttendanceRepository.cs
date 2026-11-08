@@ -8,7 +8,7 @@ using Npgsql;
 
 namespace Echo.Application.Attendances;
 
-public class AttendanceRepository(AppDbContext context, ReadCacheEvictions cache)
+public class AttendanceRepository(AppDbContext context, ReadCacheInvalidator cache)
 {
     private readonly DbSet<Attendance> _dbSet = context.Set<Attendance>();
 
@@ -214,9 +214,9 @@ public class AttendanceRepository(AppDbContext context, ReadCacheEvictions cache
             ct
         );
 
-        // This runs after the save that caused it, which has already dropped the cache.
+        // This runs after the save that caused it, which has already invalidated the cache.
         foreach (var congregationId in changed.Select(a => a.CongregationId).Distinct())
-            await cache.Drop(congregationId);
+            await cache.Invalidate(congregationId);
     }
 
     public void SoftDelete(Attendance entity) => entity.DeletedAt = DateTime.UtcNow;

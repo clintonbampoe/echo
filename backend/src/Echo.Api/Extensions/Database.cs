@@ -40,12 +40,12 @@ public static class Database
         var connectionString = WithPoolSize(configuration.GetConnectionString("echodb")!);
 
         // Pooled: the context object is reused between requests instead of built for each one.
-        services.AddSingleton<CacheEvictionInterceptor>();
+        services.AddSingleton<CacheInvalidationInterceptor>();
         services.AddDbContextPool<AppDbContext>(
             (provider, options) =>
             {
                 options.UseNpgsql(connectionString).ConfigureEchoDatabase();
-                options.AddInterceptors(provider.GetRequiredService<CacheEvictionInterceptor>());
+                options.AddInterceptors(provider.GetRequiredService<CacheInvalidationInterceptor>());
 
                 if (environment.IsDevelopment())
                 {

@@ -1,18 +1,13 @@
-using Echo.Shared.Extensions;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.OutputCaching;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Net.Http.Headers;
 
 namespace Echo.Application.Caching;
 
 /// <summary>
-/// Every read endpoint that opts in with <c>.CacheOutput(ReadCache.Policy)</c> keeps its answer for
+/// A read endpoint opts in with <c>.CacheOutput(ReadCache.Policy)</c> and its answer is kept for
 /// <c>Cache:DefaultTtl</c> (10 minutes), per person and per request. A write to anything in a congregation
-/// makes that congregation's answers unreachable at once (<see cref="CacheEvictionInterceptor"/>), so the time
-/// is only the longest an answer lives when nothing was written.
+/// makes that congregation's answers stale at once (<see cref="CacheInvalidationInterceptor"/>), so the time
+/// is only the longest an answer lives when nothing was written. See <see cref="ReadPolicy"/> for what is cached.
 /// </summary>
 public static class ReadCache
 {
@@ -20,16 +15,18 @@ public static class ReadCache
 
     /// <summary>
     /// <see cref="Policy"/> for the groups that read a materialized view (the attendance, session, event and
-    /// project lists and summaries). The view changes when it is refreshed, not when something is written, so
-    /// the refresher drops <see cref="Views"/>. A group that starts reading a view must use this policy.
+    /// project lists and summaries). A view changes when it is refreshed, not when something is written, so
+    /// the refresher invalidates these separately. A group that starts reading a view must use this policy.
     /// </summary>
     public const string ViewPolicy = "reads-from-views";
 
+    /// <summary>The tag on the answers that read a view, to remove them from memory.</summary>
     public const string Views = "views";
 
+    /// <summary>The tag on every answer, to remove a congregation's answers from memory.</summary>
     public static string Tag(Guid congregationId) => $"congregation:{congregationId}";
 
-    // shortcut: the store is in this process; with more than one API instance, move to the Redis store.
+    // shortcut: the store and the versions are in this process; with more than one API instance, share both.
     public static IServiceCollection AddReadCache(
         this IServiceCollection services,
         IConfiguration configuration
@@ -41,71 +38,5 @@ public static class ReadCache
             o.AddPolicy(Policy, new ReadPolicy(ttl));
             o.AddPolicy(ViewPolicy, new ReadPolicy(ttl, readsViews: true));
         });
-    }
-}
-
-// Replaces the built-in rules rather than adding to them, because those refuse any request that is
-// signed in. Here a request is only cached when it is a GET by a signed-in person, so anything we
-// cannot pin to one person and one congregation is simply not cached.
-internal sealed class ReadPolicy(TimeSpan ttl, bool readsViews = false) : IOutputCachePolicy
-{
-    private static ReadCacheEvictions Evictions(HttpContext http) =>
-        http.RequestServices.GetRequiredService<ReadCacheEvictions>();
-
-    public ValueTask CacheRequestAsync(OutputCacheContext context, CancellationToken ct)
-    {
-        var http = context.HttpContext;
-        if (!HttpMethods.IsGet(http.Request.Method) || http.User.Identity?.IsAuthenticated != true)
-            return ValueTask.CompletedTask;
-
-        context.EnableOutputCaching = true;
-        context.AllowCacheLookup = true;
-        context.AllowCacheStorage = true;
-        context.AllowLocking = true;
-        context.ResponseExpirationTimeSpan = ttl;
-        context.CacheVaryByRules.QueryKeys = "*";
-        // The CORS headers are kept with the answer, so each origin needs its own.
-        context.CacheVaryByRules.HeaderNames = HeaderNames.Origin;
-        context.CacheVaryByRules.VaryByValues["user"] = http.User.GetUserId().ToString();
-        // A write raises this before it removes anything, so a read that began before the write can only
-        // store under a key that is never asked for again (see ReadCacheEvictions).
-        var congregationId = http.User.GetCongregationId();
-        context.CacheVaryByRules.VaryByValues["version"] = Evictions(http)
-            .Version(congregationId, readsViews);
-        context.Tags.Add(ReadCache.Tag(congregationId));
-        if (readsViews)
-            context.Tags.Add(ReadCache.Views);
-        return ValueTask.CompletedTask;
-    }
-
-    public ValueTask ServeFromCacheAsync(OutputCacheContext context, CancellationToken ct)
-    {
-        Count(context, cached: true);
-        return ValueTask.CompletedTask;
-    }
-
-    public ValueTask ServeResponseAsync(OutputCacheContext context, CancellationToken ct)
-    {
-        var response = context.HttpContext.Response;
-        if (
-            response.StatusCode != StatusCodes.Status200OK
-            || response.Headers.ContainsKey(HeaderNames.SetCookie)
-        )
-            context.AllowCacheStorage = false;
-
-        Count(context, cached: false);
-        return ValueTask.CompletedTask;
-    }
-
-    private static void Count(OutputCacheContext context, bool cached)
-    {
-        var http = context.HttpContext;
-        var route = (http.GetEndpoint() as RouteEndpoint)?.RoutePattern.RawText ?? "unknown";
-        http.RequestServices.GetRequiredService<ApplicationInstrumentation>()
-            .CacheRequests.Add(
-                1,
-                new KeyValuePair<string, object?>("route", route),
-                new KeyValuePair<string, object?>("cached", cached)
-            );
     }
 }

@@ -4,12 +4,13 @@ using Echo.Domain.Auth;
 using Echo.Domain.Congregations;
 using Echo.Domain.Tithes;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Echo.Application.Tests.Caching;
 
 // Works out which congregations a save touches without a database.
 [Trait("Category", "Unit")]
-public class CacheEvictionInterceptorTests
+public class CacheInvalidationInterceptorTests
 {
     private static readonly Guid Alpha = Guid.NewGuid();
     private static readonly Guid Beta = Guid.NewGuid();
@@ -33,7 +34,7 @@ public class CacheEvictionInterceptorTests
         db.Add(Tithe(Alpha));
         db.Add(Tithe(Beta));
 
-        var congregations = CacheEvictionInterceptor
+        var congregations = CacheInvalidationInterceptor
             .CongregationsOf(db.ChangeTracker.Entries())
             .ToList();
 
@@ -48,7 +49,7 @@ public class CacheEvictionInterceptorTests
         using var db = Context();
         db.Attach(Tithe(Alpha));
 
-        Assert.Empty(CacheEvictionInterceptor.CongregationsOf(db.ChangeTracker.Entries()));
+        Assert.Empty(CacheInvalidationInterceptor.CongregationsOf(db.ChangeTracker.Entries()));
     }
 
     [Fact]
@@ -60,20 +61,20 @@ public class CacheEvictionInterceptorTests
 
         Assert.Equal(
             [Alpha],
-            CacheEvictionInterceptor.CongregationsOf(db.ChangeTracker.Entries())
+            CacheInvalidationInterceptor.CongregationsOf(db.ChangeTracker.Entries())
         );
     }
 
     [Fact]
-    public void ALoginToken_BelongsToNoCongregation_SoSigningInDropsNothing()
+    public void ALoginToken_BelongsToNoCongregation_SoSigningInInvalidatesNothing()
     {
         using var db = Context();
         db.Add(new RefreshToken(Guid.NewGuid()));
 
-        Assert.Empty(CacheEvictionInterceptor.CongregationsOf(db.ChangeTracker.Entries()));
+        Assert.Empty(CacheInvalidationInterceptor.CongregationsOf(db.ChangeTracker.Entries()));
     }
 
-    // A row that belongs to no congregation never drops a cached answer. Every kind of row must belong to
+    // A row that belongs to no congregation never invalidates a cached answer. Every kind of row must belong to
     // one, bar the few named here, or what a person writes would stay hidden behind the cache.
     [Fact]
     public void EveryKindOfRow_BelongsToACongregation_OrIsNamedAsOneThatDoesNot()
@@ -95,5 +96,18 @@ public class CacheEvictionInterceptorTests
             .ToList();
 
         Assert.Empty(strays);
+    }
+
+    [Fact]
+    public void ASynchronousSave_FailsLoudly_RatherThanSkippingTheInvalidation()
+    {
+        var interceptor = new CacheInvalidationInterceptor(
+            new ReadCacheInvalidator(
+                new RecordingCacheStore(),
+                NullLogger<ReadCacheInvalidator>.Instance
+            )
+        );
+
+        Assert.Throws<NotSupportedException>(() => interceptor.SavingChanges(null!, default));
     }
 }

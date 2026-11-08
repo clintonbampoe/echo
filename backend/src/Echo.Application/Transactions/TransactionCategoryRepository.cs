@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Application.Transactions;
 
-public class TransactionCategoryRepository(AppDbContext context, ReadCacheEvictions cache)
+public class TransactionCategoryRepository(AppDbContext context, ReadCacheInvalidator cache)
 {
     private readonly DbSet<TransactionCategory> _dbSet = context.Set<TransactionCategory>();
 
@@ -105,7 +105,7 @@ public class TransactionCategoryRepository(AppDbContext context, ReadCacheEvicti
 
         await tx.CommitAsync(ct);
         // The move is a bulk update the save interceptor never sees.
-        await cache.Drop(congregationId);
+        await cache.Invalidate(congregationId);
         return moved;
     }
 

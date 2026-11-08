@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Application.Projects;
 
-public class ProjectCategoryRepository(AppDbContext context, ReadCacheEvictions cache)
+public class ProjectCategoryRepository(AppDbContext context, ReadCacheInvalidator cache)
 {
     private readonly DbSet<ProjectCategory> _dbSet = context.Set<ProjectCategory>();
 
@@ -105,7 +105,7 @@ public class ProjectCategoryRepository(AppDbContext context, ReadCacheEvictions 
 
         await tx.CommitAsync(ct);
         // The move is a bulk update the save interceptor never sees.
-        await cache.Drop(congregationId);
+        await cache.Invalidate(congregationId);
         return moved;
     }
 

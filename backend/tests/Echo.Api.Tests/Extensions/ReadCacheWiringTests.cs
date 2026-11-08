@@ -6,10 +6,7 @@ using Echo.Application.Caching;
 using Echo.Data;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Infrastructure.Internal;
 using Microsoft.Extensions.Configuration;
@@ -20,7 +17,7 @@ using Microsoft.Extensions.Options;
 namespace Echo.Api.Tests.Extensions;
 
 // Pieces that are right on their own and wrong together: a cache placed before sign-in caches nothing, and a
-// context built without the interceptor never drops anything. Neither shows up as an error.
+// context built without the interceptor never invalidates anything. Neither shows up as an error.
 [Trait("Category", "Unit")]
 public class ReadCacheWiringTests
 {
@@ -104,6 +101,6 @@ public class ReadCacheWiringTests
             .FindExtension<CoreOptionsExtension>()!
             .Interceptors;
 
-        Assert.Contains(interceptors!, i => i is CacheEvictionInterceptor);
+        Assert.Contains(interceptors!, i => i is CacheInvalidationInterceptor);
     }
 }

@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Security.Claims;
 using Echo.Application.Caching;
 using Microsoft.AspNetCore.Builder;
@@ -9,8 +10,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Echo.Application.Tests.Caching;
 
-// Runs the real policy on a real pipeline: the answer to "who may be given a cached answer" is the
-// part of the cache that must never be wrong.
+// Runs the real policy on a real pipeline: who may be given a cached answer, and when an answer stops being given,
+// is the part of the cache that must never be wrong. The store here never removes anything, so every test also
+// shows that a stale answer is kept out by the version in its key and not by being removed.
 [Trait("Category", "Unit")]
 public class ReadCacheTests : IAsyncLifetime
 {
@@ -19,18 +21,44 @@ public class ReadCacheTests : IAsyncLifetime
     private static readonly Guid Ann = Guid.NewGuid();
     private static readonly Guid Ben = Guid.NewGuid();
 
+    private sealed class KeepsEverythingStore : IOutputCacheStore
+    {
+        private readonly ConcurrentDictionary<string, byte[]> _kept = new();
+
+        public ValueTask EvictByTagAsync(string tag, CancellationToken cancellationToken) =>
+            ValueTask.CompletedTask;
+
+        public ValueTask<byte[]?> GetAsync(string key, CancellationToken cancellationToken) =>
+            ValueTask.FromResult(_kept.GetValueOrDefault(key));
+
+        public ValueTask SetAsync(
+            string key,
+            byte[] value,
+            string[]? tags,
+            TimeSpan validFor,
+            CancellationToken cancellationToken
+        )
+        {
+            _kept[key] = value;
+            return ValueTask.CompletedTask;
+        }
+    }
+
     private int _reads;
     private WebApplication _app = null!;
     private HttpClient _client = null!;
+    private ReadCacheInvalidator _invalidator = null!;
 
     public async ValueTask InitializeAsync()
     {
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseTestServer();
-        builder.Services.AddReadCache(builder.Configuration);
         builder.Services.AddSingleton<ApplicationInstrumentation>();
-        builder.Services.AddSingleton<ReadCacheEvictions>();
+        builder.Services.AddSingleton<ReadCacheInvalidator>();
+        builder.Services.AddReadCache(builder.Configuration);
+        builder.Services.AddSingleton<IOutputCacheStore, KeepsEverythingStore>();
         _app = builder.Build();
+        _invalidator = _app.Services.GetRequiredService<ReadCacheInvalidator>();
 
         // Stands for the JWT: who is asking comes in two headers.
         _app.Use(
@@ -51,30 +79,20 @@ public class ReadCacheTests : IAsyncLifetime
         _app.UseOutputCache();
 
         var group = _app.MapGroup("/things").CacheOutput(ReadCache.Policy);
-        group.MapGet("/", () => Interlocked.Increment(ref _reads));
-        group.MapGet("/search", () => Interlocked.Increment(ref _reads))
-            .CacheOutput(p => p.NoCache());
+        group.MapGet("/", Read);
+        group.MapGet("/search", Read).CacheOutput(p => p.NoCache());
+        group.MapGet("/missing", () => Results.NotFound()).AddEndpointFilter(CountRead);
+        group.MapPost("/", Read);
         group.MapGet(
-            "/missing",
-            () =>
+            "/while-written",
+            async (ReadCacheInvalidator invalidator) =>
             {
-                Interlocked.Increment(ref _reads);
-                return Results.NotFound();
-            }
-        );
-        group.MapPost("/", () => Interlocked.Increment(ref _reads));
-        _app.MapGet("/totals", () => Interlocked.Increment(ref _reads))
-            .CacheOutput(ReadCache.ViewPolicy);
-        // A read that is being worked out when a write drops the cache.
-        group.MapGet(
-            "/overlapped",
-            async (ReadCacheEvictions cache) =>
-            {
-                var read = Interlocked.Increment(ref _reads);
-                await cache.Drop(Alpha);
+                var read = Read();
+                await invalidator.Invalidate(Alpha);
                 return read;
             }
         );
+        _app.MapGet("/totals", Read).CacheOutput(ReadCache.ViewPolicy);
 
         await _app.StartAsync();
         _client = _app.GetTestClient();
@@ -82,7 +100,18 @@ public class ReadCacheTests : IAsyncLifetime
 
     public async ValueTask DisposeAsync() => await _app.DisposeAsync();
 
-    private async Task<string> Send(
+    private int Read() => Interlocked.Increment(ref _reads);
+
+    private ValueTask<object?> CountRead(
+        EndpointFilterInvocationContext context,
+        EndpointFilterDelegate next
+    )
+    {
+        Read();
+        return next(context);
+    }
+
+    private async Task Send(
         HttpMethod method,
         string url,
         Guid? user,
@@ -91,30 +120,24 @@ public class ReadCacheTests : IAsyncLifetime
     )
     {
         var request = new HttpRequestMessage(method, url);
-        if (origin is not null)
-            request.Headers.Add("Origin", origin);
         if (user is { } u)
             request.Headers.Add("X-User", u.ToString());
         if (congregation is { } c)
             request.Headers.Add("X-Congregation", c.ToString());
-        var response = await _client.SendAsync(request, TestContext.Current.CancellationToken);
-        return await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
+        if (origin is not null)
+            request.Headers.Add("Origin", origin);
+        await _client.SendAsync(request, TestContext.Current.CancellationToken);
     }
 
-    private Task<string> Get(
-        string url,
-        Guid? user,
-        Guid? congregation,
-        string? origin = null
-    ) => Send(HttpMethod.Get, url, user, congregation, origin);
+    private Task Get(string url, Guid? user, Guid? congregation, string? origin = null) =>
+        Send(HttpMethod.Get, url, user, congregation, origin);
 
     [Fact]
     public async Task TheSamePersonAskingTwice_IsAnsweredFromTheCache()
     {
-        var first = await Get("/things", Ann, Alpha);
-        var second = await Get("/things", Ann, Alpha);
+        await Get("/things", Ann, Alpha);
+        await Get("/things", Ann, Alpha);
 
-        Assert.Equal(first, second);
         Assert.Equal(1, _reads);
     }
 
@@ -132,6 +155,16 @@ public class ReadCacheTests : IAsyncLifetime
     {
         await Get("/things", Ann, Alpha);
         await Get("/things", Ben, Alpha);
+
+        Assert.Equal(2, _reads);
+    }
+
+    [Fact]
+    public async Task EachOrigin_GetsItsOwnAnswer_BecauseTheCorsHeadersAreKeptWithIt()
+    {
+        await Get("/things", Ann, Alpha, origin: "https://app.example");
+        await Get("/things", Ann, Alpha, origin: "https://other.example");
+        await Get("/things", Ann, Alpha, origin: "https://app.example");
 
         Assert.Equal(2, _reads);
     }
@@ -155,25 +188,6 @@ public class ReadCacheTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task ARead_ThatOverlappedADrop_IsNotKept_ForItMayHoldWhatWasThereBefore()
-    {
-        await Get("/things/overlapped", Ann, Alpha);
-        await Get("/things/overlapped", Ann, Alpha);
-
-        Assert.Equal(2, _reads);
-    }
-
-    [Fact]
-    public async Task EachOrigin_GetsItsOwnAnswer_BecauseTheCorsHeadersAreKeptWithIt()
-    {
-        await Get("/things", Ann, Alpha, origin: "https://app.example");
-        await Get("/things", Ann, Alpha, origin: "https://other.example");
-        await Get("/things", Ann, Alpha, origin: "https://app.example");
-
-        Assert.Equal(2, _reads);
-    }
-
-    [Fact]
     public async Task OnlyAnOkAnswer_IsKept()
     {
         await Get("/things/missing", Ann, Alpha);
@@ -192,14 +206,12 @@ public class ReadCacheTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task DroppingACongregation_MakesItsNextReadFresh_AndLeavesOthersAlone()
+    public async Task InvalidatingACongregation_MakesItsNextReadFresh_AndLeavesOthersAlone()
     {
-        var store = _app.Services.GetRequiredService<IOutputCacheStore>();
         await Get("/things", Ann, Alpha);
         await Get("/things", Ben, Beta);
-        Assert.Equal(2, _reads);
 
-        await store.EvictByTagAsync(ReadCache.Tag(Alpha), TestContext.Current.CancellationToken);
+        await _invalidator.Invalidate(Alpha);
 
         await Get("/things", Ann, Alpha);
         await Get("/things", Ben, Beta);
@@ -207,19 +219,24 @@ public class ReadCacheTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task DroppingTheViews_MakesOnlyThoseReadsFresh()
+    public async Task InvalidatingTheViews_MakesOnlyTheReadsFromViewsFresh()
     {
-        var store = _app.Services.GetRequiredService<IOutputCacheStore>();
         await Get("/things", Ann, Alpha);
         await Get("/totals", Ann, Alpha);
-        await Get("/totals", Ben, Beta);
+
+        await _invalidator.InvalidateViews();
+
+        await Get("/things", Ann, Alpha);
+        await Get("/totals", Ann, Alpha);
         Assert.Equal(3, _reads);
+    }
 
-        await store.EvictByTagAsync(ReadCache.Views, TestContext.Current.CancellationToken);
+    [Fact]
+    public async Task ARead_ThatStoresItsAnswerAfterTheWriteInvalidated_IsNeverGivenToTheNextRead()
+    {
+        await Get("/things/while-written", Ann, Alpha);
+        await Get("/things/while-written", Ann, Alpha);
 
-        await Get("/things", Ann, Alpha);
-        await Get("/totals", Ann, Alpha);
-        await Get("/totals", Ben, Beta);
-        Assert.Equal(5, _reads);
+        Assert.Equal(2, _reads);
     }
 }

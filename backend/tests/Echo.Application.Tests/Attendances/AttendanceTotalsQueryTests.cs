@@ -25,7 +25,7 @@ public class AttendanceTotalsQueryTests
     private static string SummarySql(AttendanceFilters filters)
     {
         using var db = Context();
-        return new AttendanceRepository(db, new ReadCacheEvictions(new RecordingCacheStore(), NullLogger<ReadCacheEvictions>.Instance)).SummaryQuery(Guid.NewGuid(), filters).ToQueryString();
+        return new AttendanceRepository(db, new ReadCacheInvalidator(new RecordingCacheStore(), NullLogger<ReadCacheInvalidator>.Instance)).SummaryQuery(Guid.NewGuid(), filters).ToQueryString();
     }
 
     [Fact]
@@ -81,7 +81,7 @@ public class AttendanceTotalsQueryTests
     {
         using var db = Context();
 
-        var sql = new AttendanceRepository(db, new ReadCacheEvictions(new RecordingCacheStore(), NullLogger<ReadCacheEvictions>.Instance))
+        var sql = new AttendanceRepository(db, new ReadCacheInvalidator(new RecordingCacheStore(), NullLogger<ReadCacheInvalidator>.Instance))
             .MonthlyQuery(Guid.NewGuid(), 2, new DateOnly(2026, 1, 1), new DateOnly(2026, 10, 31))
             .ToQueryString();
 

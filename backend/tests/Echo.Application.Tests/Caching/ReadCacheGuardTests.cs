@@ -2,71 +2,31 @@ using System.Text.RegularExpressions;
 
 namespace Echo.Application.Tests.Caching;
 
-// The cache is only right while two rules hold, and nothing in the compiler enforces them. These tests read the
-// source so that breaking a rule fails the build instead of showing up as an answer that is quietly out of date.
+// The cache is only right while two rules hold, and the compiler enforces neither. These tests read the source,
+// so that breaking a rule fails the build instead of leaving an answer that is quietly out of date.
 [Trait("Category", "Unit")]
-public partial class ReadCacheGuardTests
+public class ReadCacheGuardTests
 {
-    private static string Source(string project)
+    private static readonly Regex BulkWrite = new(@"ExecuteUpdateAsync|ExecuteDeleteAsync|ExecuteSql");
+
+    private static readonly Regex ViewRead = new(
+        @"Set<(SessionAttendanceTotals|EventCounts|ProjectTotals)>"
+    );
+
+    // A bulk statement changes rows without the save interceptor seeing it, so whoever runs one must invalidate
+    // the cache themselves. A file that runs one without doing so is named here, with the reason.
+    private static readonly Dictionary<string, string> BulkWritesThatNeedNoInvalidation = new()
     {
-        var dir = new DirectoryInfo(AppContext.BaseDirectory);
-        while (dir is not null && !Directory.Exists(Path.Combine(dir.FullName, "backend", "src")))
-            dir = dir.Parent;
-        return Path.Combine(dir!.FullName, "backend", "src", project);
-    }
-
-    private static IEnumerable<string> Files(string project) =>
-        Directory
-            .EnumerateFiles(Source(project), "*.cs", SearchOption.AllDirectories)
-            .Where(f => !f.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}"))
-            .Where(f => !f.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}"));
-
-    private static IEnumerable<string> Where(string pattern, params string[] projects) =>
-        projects
-            .SelectMany(Files)
-            .Where(f => Regex.IsMatch(File.ReadAllText(f), pattern))
-            .Select(Path.GetFileName)
-            .OfType<string>()
-            .Order();
-
-    [GeneratedRegex(@"ExecuteUpdateAsync|ExecuteDeleteAsync|ExecuteSql")]
-    private static partial Regex BulkWrite();
-
-    // A bulk statement changes rows without the save interceptor seeing it, so whoever runs one must drop the
-    // cached answers themselves. A file that runs one without doing so must be named here, with the reason.
-    private static readonly Dictionary<string, string> BulkWritesThatNeedNoDrop = new()
-    {
-        ["EventRegistrationRepository.cs"] = "only locks the event row; the registration is saved with the tracked save",
-        ["InvitationRepository.cs"] = "counts a use inside the registration transaction, whose user insert drops the cache",
+        ["EventRegistrationRepository.cs"] = "only locks the event; the registration is saved by the tracked save",
+        ["InvitationRepository.cs"] = "counts a use inside the registration transaction, whose user insert invalidates",
         ["SessionRepository.cs"] = "login tokens: no read shows them",
         ["PasswordResetRepository.cs"] = "login tokens: no read shows them",
         ["EmailVerificationRepository.cs"] = "login tokens: no read shows them",
     };
 
-    [Fact]
-    public void EveryBulkWrite_DropsTheCache_OrSaysWhyItNeedsNot()
-    {
-        var strays = Where(BulkWrite().ToString(), "Echo.Application", "Echo.Auth")
-            .Where(f => !BulkWritesThatNeedNoDrop.ContainsKey(f))
-            .Where(f =>
-                !Files("Echo.Application")
-                    .Concat(Files("Echo.Auth"))
-                    .Single(p => Path.GetFileName(p) == f)
-                    .Pipe(File.ReadAllText)
-                    .Contains("cache.Drop")
-            )
-            .ToList();
-
-        Assert.True(
-            strays.Count == 0,
-            $"These run a bulk statement without dropping the cached answers: {string.Join(", ", strays)}. "
-                + "Call ReadCacheEvictions.Drop after it commits, or add the file to BulkWritesThatNeedNoDrop with the reason."
-        );
-    }
-
-    // Answers built from a materialized view change when the view is refreshed, not when something is written, so
-    // they have to be in the group that the refresher drops (ReadCache.ViewPolicy).
-    private static readonly string[] ReadersOfViews =
+    // Answers built from a materialized view go stale when the view is refreshed, not when something is written,
+    // so the groups that serve them must use the policy the refresher invalidates.
+    private static readonly string[] RepositoriesThatReadViews =
     [
         "AttendanceRepository.cs",
         "EventRepository.cs",
@@ -74,7 +34,7 @@ public partial class ReadCacheGuardTests
         "SessionRepository.cs",
     ];
 
-    private static readonly string[] GroupsThatReadViews =
+    private static readonly string[] GroupsThatServeViews =
     [
         "AttendanceEndpoints.cs",
         "AttendanceSessionEndpoints.cs",
@@ -82,32 +42,63 @@ public partial class ReadCacheGuardTests
         "ProjectEndpoints.cs",
     ];
 
+    private static List<(string Name, string Text)> Sources(params string[] projects)
+    {
+        var dir = new DirectoryInfo(AppContext.BaseDirectory);
+        while (dir is not null && !Directory.Exists(Path.Combine(dir.FullName, "backend", "src")))
+            dir = dir.Parent;
+
+        var built = $"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}";
+        return projects
+            .SelectMany(p =>
+                Directory.EnumerateFiles(
+                    Path.Combine(dir!.FullName, "backend", "src", p),
+                    "*.cs",
+                    SearchOption.AllDirectories
+                )
+            )
+            .Where(file => !file.Contains(built))
+            .Select(file => (Path.GetFileName(file), File.ReadAllText(file)))
+            .ToList();
+    }
+
+    [Fact]
+    public void EveryBulkWrite_InvalidatesTheCache_OrSaysWhyItNeedsNot()
+    {
+        var strays = Sources("Echo.Application", "Echo.Auth")
+            .Where(f => BulkWrite.IsMatch(f.Text))
+            .Where(f => !BulkWritesThatNeedNoInvalidation.ContainsKey(f.Name))
+            .Where(f => !f.Text.Contains("cache.Invalidate"))
+            .Select(f => f.Name)
+            .ToList();
+
+        Assert.True(
+            strays.Count == 0,
+            $"These run a bulk statement without invalidating the cached answers: {string.Join(", ", strays)}. "
+                + "Call ReadCacheInvalidator.Invalidate after it commits, or add the file to "
+                + "BulkWritesThatNeedNoInvalidation with the reason."
+        );
+    }
+
     [Fact]
     public void OnlyTheKnownRepositories_ReadAMaterializedView()
     {
-        var readers = Where(
-                @"Set<(SessionAttendanceTotals|EventCounts|ProjectTotals)>",
-                "Echo.Application"
-            )
-            .ToList();
+        var readers = Sources("Echo.Application")
+            .Where(f => ViewRead.IsMatch(f.Text))
+            .Select(f => f.Name)
+            .Order();
 
-        Assert.Equal(ReadersOfViews, readers);
+        Assert.Equal(RepositoriesThatReadViews, readers);
     }
 
     [Fact]
-    public void TheGroupsThatReadAView_UseThePolicyTheRefresherDrops()
+    public void TheGroupsThatServeAView_UseThePolicyTheRefresherInvalidates()
     {
-        var wrong = Files("Echo.Application")
-            .Where(f => GroupsThatReadViews.Contains(Path.GetFileName(f)))
-            .Where(f => !File.ReadAllText(f).Contains("CacheOutput(ReadCache.ViewPolicy)"))
-            .Select(Path.GetFileName)
-            .ToList();
+        var wrong = Sources("Echo.Application")
+            .Where(f => GroupsThatServeViews.Contains(f.Name))
+            .Where(f => !f.Text.Contains("CacheOutput(ReadCache.ViewPolicy)"))
+            .Select(f => f.Name);
 
         Assert.Empty(wrong);
     }
-}
-
-internal static class PipeExtension
-{
-    public static TOut Pipe<TIn, TOut>(this TIn value, Func<TIn, TOut> map) => map(value);
 }

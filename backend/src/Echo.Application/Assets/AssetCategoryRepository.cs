@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Echo.Application.Assets;
 
-public class AssetCategoryRepository(AppDbContext context, ReadCacheEvictions cache)
+public class AssetCategoryRepository(AppDbContext context, ReadCacheInvalidator cache)
 {
     private readonly DbSet<AssetCategory> _dbSet = context.Set<AssetCategory>();
 
@@ -101,7 +101,7 @@ public class AssetCategoryRepository(AppDbContext context, ReadCacheEvictions ca
 
         await tx.CommitAsync(ct);
         // The move is a bulk update the save interceptor never sees.
-        await cache.Drop(congregationId);
+        await cache.Invalidate(congregationId);
         return moved;
     }
 

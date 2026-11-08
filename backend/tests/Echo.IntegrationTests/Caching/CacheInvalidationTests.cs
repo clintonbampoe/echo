@@ -10,10 +10,10 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Echo.IntegrationTests.Caching;
 
-// The cache must be dropped after a write is committed, not before it and not when it never happens.
+// The cache must be invalidated after a write is committed, not before it and not when it never happens.
 [Trait("Category", "Integration")]
 [Collection(PostgresCollection.Name)]
-public class CacheEvictionTests(PostgresFixture db)
+public class CacheInvalidationTests(PostgresFixture db)
 {
     private sealed class RecordingStore : IOutputCacheStore
     {
@@ -43,7 +43,7 @@ public class CacheEvictionTests(PostgresFixture db)
         var store = new RecordingStore();
         var options = new DbContextOptionsBuilder<AppDbContext>().UseNpgsql(db.ConnectionString);
         options.ConfigureEchoDatabase();
-        options.AddInterceptors(new CacheEvictionInterceptor(new ReadCacheEvictions(store, NullLogger<ReadCacheEvictions>.Instance)));
+        options.AddInterceptors(new CacheInvalidationInterceptor(new ReadCacheInvalidator(store, NullLogger<ReadCacheInvalidator>.Instance)));
         return (new AppDbContext(options.Options), store);
     }
 
@@ -60,7 +60,7 @@ public class CacheEvictionTests(PostgresFixture db)
         };
 
     [Fact]
-    public async Task ASavedWrite_DropsItsCongregation()
+    public async Task ASavedWrite_InvalidatesItsCongregation()
     {
         var (context, store) = await Start();
         await using var _ = context;
@@ -73,7 +73,7 @@ public class CacheEvictionTests(PostgresFixture db)
     }
 
     [Fact]
-    public async Task AWriteInsideATransaction_DropsOnlyOnceTheTransactionCommits()
+    public async Task AWriteInsideATransaction_InvalidatesOnlyOnceTheTransactionCommits()
     {
         var (context, store) = await Start();
         await using var _ = context;
@@ -91,7 +91,7 @@ public class CacheEvictionTests(PostgresFixture db)
     }
 
     [Fact]
-    public async Task AWriteThatIsRolledBack_DropsNothing()
+    public async Task AWriteThatIsRolledBack_InvalidatesNothing()
     {
         var (context, store) = await Start();
         await using var _ = context;
@@ -108,7 +108,7 @@ public class CacheEvictionTests(PostgresFixture db)
     }
 
     [Fact]
-    public async Task AWriteThatFails_DropsNothing_AndItsTagsDoNotLeakIntoTheNextSave()
+    public async Task AWriteThatFails_InvalidatesNothing_AndItsCongregationsDoNotLeakIntoTheNextSave()
     {
         var (context, store) = await Start();
         await using var _ = context;
@@ -133,10 +133,10 @@ public class CacheEvictionTests(PostgresFixture db)
         Assert.Equal([ReadCache.Tag(second.Id)], store.Evicted);
     }
 
-    // A bulk update is invisible to the save interceptor, so the repository drops the cache itself,
+    // A bulk update is invisible to the save interceptor, so the repository invalidates the cache itself,
     // also when the source category is kept and nothing else is saved.
     [Fact]
-    public async Task MovingAssetsToAnotherCategory_DropsTheCongregation_EvenWhenNothingIsDeleted()
+    public async Task MovingAssetsToAnotherCategory_InvalidatesTheCongregation_EvenWhenNothingIsDeleted()
     {
         var (context, store) = await Start();
         await using var _ = context;
@@ -148,7 +148,7 @@ public class CacheEvictionTests(PostgresFixture db)
         await context.SaveChangesAsync(ct);
         store.Evicted.Clear();
 
-        var repository = new AssetCategoryRepository(context, new ReadCacheEvictions(store, NullLogger<ReadCacheEvictions>.Instance));
+        var repository = new AssetCategoryRepository(context, new ReadCacheInvalidator(store, NullLogger<ReadCacheInvalidator>.Instance));
         await repository.Reassign(church.Id, from, to.Id, deleteSource: false, ct);
 
         Assert.Equal([ReadCache.Tag(church.Id)], store.Evicted);
