@@ -49,7 +49,7 @@ export async function weekImage(
   f: WeekFigures,
 ): Promise<Blob | null> {
   const rows = f.cameRows.length + f.spentRows.length;
-  const height = 760 + rows * 88 + 2 * 130;
+  const height = 934 + rows * 88;
   const canvas = document.createElement("canvas");
   canvas.width = W;
   canvas.height = height;
@@ -67,11 +67,14 @@ export async function weekImage(
   c.roundRect(PAD - 24, 270, W - PAD * 2 + 48, 270, 48);
   c.fill();
   text(c, "Net", PAD + 16, 350, 34, 400, SOFT);
-  text(c, `GH₵ ${signed(f.net)}`, PAD + 16, 470, 120, 600, INK);
+  text(c, "GH₵", PAD + 16, 470, 44, 500, SOFT);
+  c.font = `500 44px ${FONT}`;
+  const unit = c.measureText("GH₵").width;
+  text(c, signed(f.net), PAD + 16 + unit + 20, 470, 130, 600, INK);
 
   let y = group(c, "Came in", f.came, f.cameRows, 650);
-  y = group(c, "Went out", f.spent, f.spentRows, y + 70);
-  text(c, "Echo", W - PAD, y + 70, 30, 500, SOFT, "right");
+  y = group(c, "Went out", f.spent, f.spentRows, y + 90);
+  text(c, "Echo", W - PAD, y + 90, 30, 500, SOFT, "right");
 
   return new Promise((done) => canvas.toBlob(done, "image/png"));
 }
