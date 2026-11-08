@@ -151,3 +151,30 @@ export const COMMUNITY = {
     { title: "Priority support", text: "Help in hours, not days." },
   ],
 } as const;
+
+export const CONTACT = {
+  lead: "Tell us about your church and what you need. A real person on the team replies, and nothing is sent until you press the button.",
+  steps: [
+    {
+      title: "We talk",
+      summary: "A short conversation about your church.",
+      body: [
+        "No forms to fill in first. Tell us about your church and what you need, and we listen.",
+      ],
+    },
+    {
+      title: "We plan it",
+      summary: "Servers, data and people, agreed together.",
+      body: [
+        "We agree where it runs, what moves across and who needs training, with no surprises.",
+      ],
+    },
+    {
+      title: "We set it up",
+      summary: "And look after it afterwards.",
+      body: [
+        "We install, move your data and train your team, then stay on for updates and backups.",
+      ],
+    },
+  ],
+} as const;

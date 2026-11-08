@@ -176,7 +176,7 @@ describe("every page", () => {
     ["/changelog", /What is new\./],
     ["/community", /Built in the open,\s*with you\./],
     ["/about", /Built so your church can spend its time on people/],
-    ["/contact", /Talk to a human\./],
+    ["/contact", /Talk to us/],
     ["/security", /How we handle your data/],
     ["/privacy", /Privacy policy/],
     ["/terms", /Terms of use/],
