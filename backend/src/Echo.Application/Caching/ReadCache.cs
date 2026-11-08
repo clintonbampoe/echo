@@ -11,8 +11,8 @@ namespace Echo.Application.Caching;
 /// <summary>
 /// Every read endpoint that opts in with <c>.CacheOutput(ReadCache.Policy)</c> keeps its answer for
 /// <c>Cache:DefaultTtl</c> (10 minutes), per person and per request. A write to anything in a congregation
-/// drops that congregation's answers at once (<see cref="CacheEvictionInterceptor"/>), so the time is only
-/// the longest an answer lives when nothing was written.
+/// makes that congregation's answers unreachable at once (<see cref="CacheEvictionInterceptor"/>), so the time
+/// is only the longest an answer lives when nothing was written.
 /// </summary>
 public static class ReadCache
 {
@@ -39,7 +39,7 @@ public static class ReadCache
         return services.AddOutputCache(o =>
         {
             o.AddPolicy(Policy, new ReadPolicy(ttl));
-            o.AddPolicy(ViewPolicy, new ReadPolicy(ttl, Views));
+            o.AddPolicy(ViewPolicy, new ReadPolicy(ttl, readsViews: true));
         });
     }
 }
@@ -47,10 +47,8 @@ public static class ReadCache
 // Replaces the built-in rules rather than adding to them, because those refuse any request that is
 // signed in. Here a request is only cached when it is a GET by a signed-in person, so anything we
 // cannot pin to one person and one congregation is simply not cached.
-internal sealed class ReadPolicy(TimeSpan ttl, string? extraTag = null) : IOutputCachePolicy
+internal sealed class ReadPolicy(TimeSpan ttl, bool readsViews = false) : IOutputCachePolicy
 {
-    private static readonly object Started = new();
-
     private static ReadCacheEvictions Evictions(HttpContext http) =>
         http.RequestServices.GetRequiredService<ReadCacheEvictions>();
 
@@ -69,10 +67,14 @@ internal sealed class ReadPolicy(TimeSpan ttl, string? extraTag = null) : IOutpu
         // The CORS headers are kept with the answer, so each origin needs its own.
         context.CacheVaryByRules.HeaderNames = HeaderNames.Origin;
         context.CacheVaryByRules.VaryByValues["user"] = http.User.GetUserId().ToString();
-        context.Tags.Add(ReadCache.Tag(http.User.GetCongregationId()));
-        if (extraTag is not null)
-            context.Tags.Add(extraTag);
-        http.Items[Started] = Evictions(http).Drops;
+        // A write raises this before it removes anything, so a read that began before the write can only
+        // store under a key that is never asked for again (see ReadCacheEvictions).
+        var congregationId = http.User.GetCongregationId();
+        context.CacheVaryByRules.VaryByValues["version"] = Evictions(http)
+            .Version(congregationId, readsViews);
+        context.Tags.Add(ReadCache.Tag(congregationId));
+        if (readsViews)
+            context.Tags.Add(ReadCache.Views);
         return ValueTask.CompletedTask;
     }
 
@@ -84,14 +86,10 @@ internal sealed class ReadPolicy(TimeSpan ttl, string? extraTag = null) : IOutpu
 
     public ValueTask ServeResponseAsync(OutputCacheContext context, CancellationToken ct)
     {
-        var http = context.HttpContext;
-        // Something was dropped while this was being worked out, so it may hold what was there before.
-        // This cannot close the last instant between this check and the answer being stored.
-        var dropped = http.Items[Started] is long started && started != Evictions(http).Drops;
+        var response = context.HttpContext.Response;
         if (
-            dropped
-            || http.Response.StatusCode != StatusCodes.Status200OK
-            || http.Response.Headers.ContainsKey(HeaderNames.SetCookie)
+            response.StatusCode != StatusCodes.Status200OK
+            || response.Headers.ContainsKey(HeaderNames.SetCookie)
         )
             context.AllowCacheStorage = false;
 

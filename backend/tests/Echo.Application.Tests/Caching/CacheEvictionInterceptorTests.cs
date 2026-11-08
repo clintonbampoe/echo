@@ -33,11 +33,13 @@ public class CacheEvictionInterceptorTests
         db.Add(Tithe(Alpha));
         db.Add(Tithe(Beta));
 
-        var tags = CacheEvictionInterceptor.TagsOf(db.ChangeTracker.Entries()).ToList();
+        var congregations = CacheEvictionInterceptor
+            .CongregationsOf(db.ChangeTracker.Entries())
+            .ToList();
 
-        Assert.Equal(2, tags.Count);
-        Assert.Contains(ReadCache.Tag(Alpha), tags);
-        Assert.Contains(ReadCache.Tag(Beta), tags);
+        Assert.Equal(2, congregations.Count);
+        Assert.Contains(Alpha, congregations);
+        Assert.Contains(Beta, congregations);
     }
 
     [Fact]
@@ -46,7 +48,7 @@ public class CacheEvictionInterceptorTests
         using var db = Context();
         db.Attach(Tithe(Alpha));
 
-        Assert.Empty(CacheEvictionInterceptor.TagsOf(db.ChangeTracker.Entries()));
+        Assert.Empty(CacheEvictionInterceptor.CongregationsOf(db.ChangeTracker.Entries()));
     }
 
     [Fact]
@@ -57,8 +59,8 @@ public class CacheEvictionInterceptorTests
         db.Add(church);
 
         Assert.Equal(
-            [ReadCache.Tag(Alpha)],
-            CacheEvictionInterceptor.TagsOf(db.ChangeTracker.Entries())
+            [Alpha],
+            CacheEvictionInterceptor.CongregationsOf(db.ChangeTracker.Entries())
         );
     }
 
@@ -68,7 +70,7 @@ public class CacheEvictionInterceptorTests
         using var db = Context();
         db.Add(new RefreshToken(Guid.NewGuid()));
 
-        Assert.Empty(CacheEvictionInterceptor.TagsOf(db.ChangeTracker.Entries()));
+        Assert.Empty(CacheEvictionInterceptor.CongregationsOf(db.ChangeTracker.Entries()));
     }
 
     // A row that belongs to no congregation never drops a cached answer. Every kind of row must belong to

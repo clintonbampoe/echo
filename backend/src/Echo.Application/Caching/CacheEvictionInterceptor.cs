@@ -17,7 +17,7 @@ public sealed class CacheEvictionInterceptor(ReadCacheEvictions cache)
         IDbTransactionInterceptor
 {
     // Contexts are pooled and reused, so what waits to be dropped is kept per context, not per request.
-    private readonly ConditionalWeakTable<DbContext, HashSet<string>> _pending = [];
+    private readonly ConditionalWeakTable<DbContext, HashSet<Guid>> _pending = [];
 
     // A synchronous save would skip the drop without a sound, so it fails loudly instead.
     public InterceptionResult<int> SavingChanges(
@@ -35,7 +35,7 @@ public sealed class CacheEvictionInterceptor(ReadCacheEvictions cache)
     )
     {
         if (eventData.Context is { } db)
-            Pending(db).UnionWith(TagsOf(db.ChangeTracker.Entries()));
+            Pending(db).UnionWith(CongregationsOf(db.ChangeTracker.Entries()));
         return ValueTask.FromResult(result);
     }
 
@@ -77,17 +77,16 @@ public sealed class CacheEvictionInterceptor(ReadCacheEvictions cache)
     }
 
     /// <summary>
-    /// The cache tags of what a save changes: the congregation each changed row belongs to. The login and
+    /// The congregations a save changes: the one each changed row belongs to. The login and
     /// reset tokens belong to none and no read shows them. A new kind of row that belongs to none must be
     /// named here, which a test enforces, or its changes would never drop a cached answer.
     /// </summary>
-    public static IEnumerable<string> TagsOf(IEnumerable<EntityEntry> entries) =>
+    public static IEnumerable<Guid> CongregationsOf(IEnumerable<EntityEntry> entries) =>
         entries
             .Where(e => e.State is EntityState.Added or EntityState.Modified or EntityState.Deleted)
             .Select(CongregationOf)
             .OfType<Guid>()
-            .Distinct()
-            .Select(ReadCache.Tag);
+            .Distinct();
 
     private static Guid? CongregationOf(EntityEntry entry) =>
         entry.Entity is Congregation congregation
@@ -96,7 +95,7 @@ public sealed class CacheEvictionInterceptor(ReadCacheEvictions cache)
                 ? null
                 : entry.Property("CongregationId").CurrentValue as Guid?;
 
-    private HashSet<string> Pending(DbContext db) => _pending.GetOrCreateValue(db);
+    private HashSet<Guid> Pending(DbContext db) => _pending.GetOrCreateValue(db);
 
     private void Forget(DbContext? db)
     {
@@ -106,9 +105,9 @@ public sealed class CacheEvictionInterceptor(ReadCacheEvictions cache)
 
     private async Task Evict(DbContext db)
     {
-        var tags = Pending(db).ToArray();
+        var congregations = Pending(db).ToArray();
         Pending(db).Clear();
-        foreach (var tag in tags)
-            await cache.Drop(tag);
+        foreach (var congregation in congregations)
+            await cache.Drop(congregation);
     }
 }

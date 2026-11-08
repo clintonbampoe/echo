@@ -71,7 +71,7 @@ public class ReadCacheTests : IAsyncLifetime
             async (ReadCacheEvictions cache) =>
             {
                 var read = Interlocked.Increment(ref _reads);
-                await cache.Drop(ReadCache.Tag(Alpha));
+                await cache.Drop(Alpha);
                 return read;
             }
         );

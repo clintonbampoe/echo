@@ -71,7 +71,7 @@ public sealed class AttendanceTotalsRefresher(
                 ct
             );
             await transaction.CommitAsync(ct);
-            await cache.Drop(ReadCache.Views);
+            await cache.DropViews();
 
             AttendanceLog.TotalsRefreshed(
                 logger,

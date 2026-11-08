@@ -53,7 +53,7 @@ public partial class ReadCacheGuardTests
                     .Concat(Files("Echo.Auth"))
                     .Single(p => Path.GetFileName(p) == f)
                     .Pipe(File.ReadAllText)
-                    .Contains("cache.Drop(")
+                    .Contains("cache.Drop")
             )
             .ToList();
 
