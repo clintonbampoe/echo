@@ -23,6 +23,7 @@ export function TwoWays() {
           <details
             key={way.name}
             className={styles.card}
+            data-expand
             open={!phone || i === 0}
           >
             <summary

@@ -27,6 +27,7 @@ function RuleRow({
     <details
       className={bare ? `${styles.rule} ${styles.bare}` : styles.rule}
       open={open}
+      data-expand
       data-read={read || undefined}
       onToggle={(e) => e.currentTarget.open && setRead(true)}
     >

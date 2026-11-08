@@ -14,7 +14,7 @@ export function Points({ items }: { items: readonly string[] }) {
   );
   if (!phone) return list;
   return (
-    <details className={styles.fold}>
+    <details className={styles.fold} data-expand>
       <summary className={styles.summary}>What it covers</summary>
       {list}
     </details>

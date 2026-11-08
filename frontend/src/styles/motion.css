@@ -563,8 +563,10 @@ html[data-reduce-motion="true"] .av:hover {
   animation: none;
   mix-blend-mode: normal;
 }
+/* An even in and out, long enough to watch it travel: the expo-out used elsewhere would cover the page in the
+   first fifth of the time and feel like a flash. */
 ::view-transition-new(root) {
-  animation: themeSpread 650ms var(--ease) both;
+  animation: themeSpread 1100ms cubic-bezier(0.6, 0, 0.25, 1) both;
 }
 @keyframes themeSpread {
   from {
@@ -573,6 +575,47 @@ html[data-reduce-motion="true"] .av:hover {
   to {
     clip-path: circle(150vmax at var(--vt-x, 50%) var(--vt-y, 50%));
   }
+}
+
+/* A details element that opens: the height grows, the words settle in from just above, and it plays the same on
+   the way out. Browsers without ::details-content (or interpolate-size) just open at once. */
+details[data-expand] {
+  interpolate-size: allow-keywords;
+}
+details[data-expand]::details-content {
+  block-size: 0;
+  overflow: clip;
+  opacity: 0;
+  transition:
+    block-size 640ms cubic-bezier(0.32, 0.72, 0.18, 1),
+    opacity 240ms var(--ease-soft),
+    content-visibility 640ms allow-discrete;
+}
+details[data-expand][open]::details-content {
+  block-size: auto;
+  opacity: 1;
+  transition:
+    block-size 640ms cubic-bezier(0.32, 0.72, 0.18, 1),
+    opacity 420ms var(--ease-soft) 110ms,
+    content-visibility 640ms allow-discrete;
+}
+details[data-expand] > :not(summary) {
+  transform: translateY(-8px);
+  transition: transform 300ms var(--ease-soft);
+}
+details[data-expand][open] > :not(summary) {
+  transform: none;
+  transition: transform 560ms var(--ease-out) 60ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  details[data-expand]::details-content,
+  details[data-expand] > :not(summary) {
+    transition: none !important;
+  }
+}
+html[data-reduce-motion="true"] details[data-expand]::details-content,
+html[data-reduce-motion="true"] details[data-expand] > :not(summary) {
+  transition: none !important;
 }
 
 /* Between website pages: Material's "fade through". The old page clears quickly, then the new one comes up,

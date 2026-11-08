@@ -18,7 +18,7 @@ export function Columns({
       {items.map((item) =>
         phone ? (
           <li key={item.title} className={styles.fold}>
-            <details>
+            <details data-expand>
               <summary className={styles.summary}>
                 <h3 className={styles.title}>{item.title}</h3>
               </summary>
