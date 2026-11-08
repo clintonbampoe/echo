@@ -22,6 +22,7 @@ public class ReadCacheGuardTests
         ["SessionRepository.cs"] = "login tokens: no read shows them",
         ["PasswordResetRepository.cs"] = "login tokens: no read shows them",
         ["EmailVerificationRepository.cs"] = "login tokens: no read shows them",
+        ["UserRepository.cs"] = "revokes login tokens: no read shows them; the account change is a tracked save",
     };
 
     // Answers built from a materialized view go stale when the view is refreshed, not when something is written,

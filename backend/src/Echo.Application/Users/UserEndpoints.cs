@@ -362,6 +362,9 @@ public static class UserEndpoints
                 - Every refresh token of the account is revoked, so the person is signed out of every device. An access token already issued keeps working until it expires (up to ~15 minutes).
                 - Signing in with the right password then returns `403 ACCOUNT_DISABLED`.
 
+                ### Path parameters
+                - `id` — the user's id, as returned by the list and create endpoints.
+
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.
                 - `404 NOT_FOUND` — no such user in this congregation.
@@ -402,6 +405,9 @@ public static class UserEndpoints
 
                 ### On success
                 Returns `200 OK` with the `UserResponseDto`; `disabledAt` is null. Enabling an account that is not disabled succeeds and changes nothing.
+
+                ### Path parameters
+                - `id` — the user's id, as returned by the list and create endpoints.
 
                 ### Failure modes
                 - `401 UNAUTHORIZED` — missing or invalid bearer token.

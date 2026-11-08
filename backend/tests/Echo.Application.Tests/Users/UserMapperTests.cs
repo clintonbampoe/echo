@@ -14,8 +14,6 @@ public class UserMapperTests
             .Build<User>()
             .With(u => u.Name, "Jane Doe")
             .With(u => u.EmailAddress, "jane@echo.test")
-            // Null by default: the snapshots below describe an ordinary, enabled account.
-            .With(u => u.DisabledAt, (DateTime?)null)
             .Create();
 
     private static UserCreateDto CreateDto(Fixture fixture) =>
