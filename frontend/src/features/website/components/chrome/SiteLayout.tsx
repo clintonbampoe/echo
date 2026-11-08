@@ -1,13 +1,13 @@
-import { useEffect } from "react";
+import { useEffect, type ReactNode } from "react";
 import { Outlet, ScrollRestoration } from "react-router-dom";
 import { Atmosphere, usePublicSurface } from "@/ui";
 import { SiteFooter } from "./SiteFooter";
 import { SiteHeader } from "./SiteHeader";
 import styles from "./SiteLayout.module.css";
 
-// The frame around every website page. It stays mounted while someone moves between pages,
-// so the light in the background does not restart.
-export function SiteLayout() {
+// The frame around a website page: the light, the header and the footer. Pages sit inside it as children;
+// the error screens use it too, so a wrong turn still looks like the site.
+export function SiteFrame({ children }: { children: ReactNode }) {
   usePublicSurface();
   // Sections settle into place as the page is scrolled (see SiteLayout.module.css). Only the website does this.
   useEffect(() => {
@@ -21,11 +21,19 @@ export function SiteLayout() {
     <div className={styles.site}>
       <Atmosphere />
       <SiteHeader />
-      <main className={styles.main}>
-        <Outlet />
-      </main>
+      <main className={styles.main}>{children}</main>
       <SiteFooter />
       <ScrollRestoration />
     </div>
+  );
+}
+
+// The frame around every website page. It stays mounted while someone moves between pages,
+// so the light in the background does not restart.
+export function SiteLayout() {
+  return (
+    <SiteFrame>
+      <Outlet />
+    </SiteFrame>
   );
 }
