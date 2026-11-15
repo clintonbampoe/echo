@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Echo.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20261115090750_FixUniqueIndexOnPersonName")]
-    partial class FixUniqueIndexOnPersonName
+    [Migration("20261115091223_CleanupFixOnPersonNameUniqueIndex")]
+    partial class CleanupFixOnPersonNameUniqueIndex
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
