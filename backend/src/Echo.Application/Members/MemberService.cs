@@ -1,4 +1,3 @@
-using Echo.Application.Caching;
 using Echo.Data;
 using Echo.Domain.Members;
 using Echo.Shared.HttpResults;
@@ -8,6 +7,7 @@ using Echo.Shared.Services.Generators;
 using Echo.Shared.Utilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Echo.Application.Members;
@@ -113,7 +113,19 @@ public class MemberService(
         {
             personRepository.Create(person);
             repository.Create(member);
-            await unitOfWork.CommitAsync(ct);
+
+            try
+            {
+                await unitOfWork.CommitAsync(ct);
+            }
+            catch (DbUpdateException ex)
+            {
+                MemberLog.CreateNameTaken(logger, ex, congregationId);
+                return new ConflictResult(
+                    detail: "A member with this name already exists in congregation.",
+                    errorCode: "MEMBER_NAME_TAKEN"
+                );
+            }
         }
 
         activity?.SetTag("member.id", member.PersonId);
@@ -184,7 +196,19 @@ public class MemberService(
         {
             personRepository.SoftDelete(entity.Person);
             repository.SoftDelete(entity);
-            await unitOfWork.CommitAsync(ct);
+
+            try
+            {
+                await unitOfWork.CommitAsync(ct);
+            }
+            catch (DbUpdateException ex)
+            {
+                MemberLog.UpdateNameTaken(logger, ex, congregationId);
+                return new ConflictResult(
+                    detail: "A member with this name already exists in congregation.",
+                    errorCode: "MEMBER_NAME_TAKEN"
+                );
+            }
         }
 
         MemberLog.Deleted(logger, congregationId, id);
@@ -217,8 +241,7 @@ public class MemberService(
         Guid congregationId,
         MemberFilters filters,
         CancellationToken ct
-    ) =>
-        SuccessResult.Of(await ComputeSummary(congregationId, filters, ct));
+    ) => SuccessResult.Of(await ComputeSummary(congregationId, filters, ct));
 
     private async Task<MemberSummaryDto> ComputeSummary(
         Guid congregationId,
