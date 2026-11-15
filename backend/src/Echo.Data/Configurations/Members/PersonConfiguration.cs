@@ -32,7 +32,7 @@ public class PersonConfiguration : IEntityTypeConfiguration<Person>
             )
             .ValueGeneratedOnAddOrUpdate();
 
-        builder.HasIndex(p => p.Name).HasMethod("GIN").HasOperators("gin_trgm_ops");
+        builder.HasIndex(p => p.Name).IsUnique().HasMethod("GIN").HasOperators("gin_trgm_ops");
 
         // The member and visitor lists page through a congregation's people in name order.
         builder.HasIndex(p => new
