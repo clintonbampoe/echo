@@ -1158,7 +1158,6 @@ namespace Echo.Data.Migrations
                         .HasName("pk_people");
 
                     b.HasIndex("Name")
-                        .IsUnique()
                         .HasDatabaseName("ix_people_name");
 
                     NpgsqlIndexBuilderExtensions.HasMethod(b.HasIndex("Name"), "GIN");
@@ -1166,6 +1165,10 @@ namespace Echo.Data.Migrations
 
                     b.HasIndex("CongregationId", "Kind")
                         .HasDatabaseName("ix_people_congregation_id_kind");
+
+                    b.HasIndex("CongregationId", "Name")
+                        .IsUnique()
+                        .HasDatabaseName("ix_people_congregation_id_name");
 
                     b.HasIndex("CongregationId", "Name", "Id")
                         .HasDatabaseName("ix_people_congregation_id_name_id");
