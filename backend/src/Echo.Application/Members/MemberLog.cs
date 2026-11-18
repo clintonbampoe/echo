@@ -43,7 +43,19 @@ public static partial class MemberLog
     )]
     public static partial void CreateEmailTaken(ILogger logger, Guid congregationId);
 
+    [LoggerMessage(
+        Level = LogLevel.Warning,
+        Message = "Member create failed: name already taken in congregation {CongregationId}"
+    )]
+    public static partial void CreateNameTaken(ILogger logger, Exception ex, Guid congregationId);
+
     // --- Update dependencies ---
+    [LoggerMessage(
+        Level = LogLevel.Warning,
+        Message = "Member update failed: name already taken in congregation {CongregationId}"
+    )]
+    public static partial void UpdateNameTaken(ILogger logger, Exception ex, Guid congregationId);
+
     [LoggerMessage(
         Level = LogLevel.Warning,
         Message = "Member update failed: email already taken in congregation {CongregationId}"

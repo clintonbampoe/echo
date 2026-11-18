@@ -1,4 +1,3 @@
-using Echo.Application.Caching;
 using Echo.Data;
 using Echo.Domain.Members;
 using Echo.Shared.HttpResults;
@@ -8,6 +7,7 @@ using Echo.Shared.Services.Generators;
 using Echo.Shared.Utilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace Echo.Application.Members;
@@ -92,7 +92,9 @@ public class VisitorService(
                 WithVisitStats(
                     mapper.ToDto(x) with
                     {
-                        InvitedByName = x.InvitedByMemberId is { } id ? inviters.GetValueOrDefault(id) : null,
+                        InvitedByName = x.InvitedByMemberId is { } id
+                            ? inviters.GetValueOrDefault(id)
+                            : null,
                     },
                     x.PersonId,
                     stats
@@ -162,7 +164,19 @@ public class VisitorService(
         {
             personRepository.Create(person);
             repository.Create(visitor);
-            await unitOfWork.CommitAsync(ct);
+
+            try
+            {
+                await unitOfWork.CommitAsync(ct);
+            }
+            catch (DbUpdateException ex)
+            {
+                VisitorLog.CreateNameTaken(logger, ex, congregationId);
+                return new ConflictResult(
+                    detail: "A visitor with this name already exists in congregation.",
+                    errorCode: "VISITOR_NAME_TAKEN"
+                );
+            }
         }
 
         activity?.SetTag("visitor.id", visitor.PersonId);
@@ -274,7 +288,19 @@ public class VisitorService(
         {
             mapper.Patch(dto, entity.Person, entity);
             entity.Source = source;
-            await unitOfWork.CommitAsync(ct);
+
+            try
+            {
+                await unitOfWork.CommitAsync(ct);
+            }
+            catch (DbUpdateException ex)
+            {
+                VisitorLog.UpdateNameTaken(logger, ex, congregationId);
+                return new ConflictResult(
+                    detail: "A visitor with this name already exists in congregation.",
+                    errorCode: "VISITOR_NAME_TAKEN"
+                );
+            }
         }
 
         VisitorLog.Updated(logger, congregationId, id);

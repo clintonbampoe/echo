@@ -44,6 +44,18 @@ public static partial class VisitorLog
     public static partial void Created(ILogger logger, Guid congregationId, Guid visitorId);
 
     [LoggerMessage(
+        Level = LogLevel.Warning,
+        Message = "Visitor create failed: name already taken in congregation {CongregationId}"
+    )]
+    public static partial void CreateNameTaken(ILogger logger, Exception ex, Guid congregationId);
+
+    [LoggerMessage(
+        Level = LogLevel.Warning,
+        Message = "Visitor update failed: name already taken in congregation {CongregationId}"
+    )]
+    public static partial void UpdateNameTaken(ILogger logger, Exception ex, Guid congregationId);
+
+    [LoggerMessage(
         Level = LogLevel.Information,
         Message = "Visitor updated: {VisitorId} in congregation {CongregationId}"
     )]

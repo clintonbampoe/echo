@@ -1169,6 +1169,10 @@ namespace Echo.Data.Migrations
                     b.HasIndex("CongregationId", "Name", "Id")
                         .HasDatabaseName("ix_people_congregation_id_name_id");
 
+                    b.HasIndex("CongregationId", "Name", "PhoneNumber")
+                        .IsUnique()
+                        .HasDatabaseName("ix_people_congregation_id_name_phone_number");
+
                     b.ToTable("people", (string)null);
                 });
 
