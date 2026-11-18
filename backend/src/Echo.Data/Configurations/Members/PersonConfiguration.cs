@@ -34,6 +34,15 @@ public class PersonConfiguration : IEntityTypeConfiguration<Person>
 
         builder.HasIndex(p => p.Name).HasMethod("GIN").HasOperators("gin_trgm_ops");
 
+        builder
+            .HasIndex(p => new
+            {
+                p.CongregationId,
+                p.Name,
+                p.PhoneNumber,
+            })
+            .IsUnique();
+
         // The member and visitor lists page through a congregation's people in name order.
         builder.HasIndex(p => new
         {
