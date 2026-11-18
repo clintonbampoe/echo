@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Echo.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20261115091223_CleanupFixOnPersonNameUniqueIndex")]
-    partial class CleanupFixOnPersonNameUniqueIndex
+    [Migration("20261118102717_AddPersonNameAndPhoneNumberUniqueIndex")]
+    partial class AddPersonNameAndPhoneNumberUniqueIndex
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -1169,12 +1169,12 @@ namespace Echo.Data.Migrations
                     b.HasIndex("CongregationId", "Kind")
                         .HasDatabaseName("ix_people_congregation_id_kind");
 
-                    b.HasIndex("CongregationId", "Name")
-                        .IsUnique()
-                        .HasDatabaseName("ix_people_congregation_id_name");
-
                     b.HasIndex("CongregationId", "Name", "Id")
                         .HasDatabaseName("ix_people_congregation_id_name_id");
+
+                    b.HasIndex("CongregationId", "Name", "PhoneNumber")
+                        .IsUnique()
+                        .HasDatabaseName("ix_people_congregation_id_name_phone_number");
 
                     b.ToTable("people", (string)null);
                 });
