@@ -5,7 +5,7 @@
 namespace Echo.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class CleanupFixOnPersonNameUniqueIndex : Migration
+    public partial class AddPersonNameAndPhoneNumberUniqueIndex : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
