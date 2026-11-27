@@ -1,15 +1,8 @@
-/*
- * Liquid Glass (claude/ui-decisions-round9.md, round10.md). Quiet at rest, alive on touch: the hovered thing is a
- * lens that grows a little and catches light, squashes and settles on a spring, and floating surfaces are glass.
- * The boards' vocabulary lives here once; components compose these classes and tokens, they do not copy them.
- * Hover is inside @media (hover: hover). Reduce motion is handled by reset.css (every duration becomes 1ms) and by the
- * transform opt-outs at the bottom.
- */
 :root {
   --glass-pop-bg: rgb(255 255 255 / 82%);
   --glass-panel-bg: rgb(255 255 255 / 80%);
   --glass-rim: rgb(255 255 255 / 75%);
-  --glass-edge: inset 0 1px 0 rgb(255 255 255 / 95%); /* the lit top edge */
+  --glass-edge: inset 0 1px 0 rgb(255 255 255 / 95%);
   --glass-ring: 0 0 0 1px rgb(128 128 140 / 16%);
   --glass-shadow-pop:
     var(--glass-edge), var(--glass-ring), 0 28px 60px -22px rgb(10 10 11 / 40%);
@@ -146,7 +139,6 @@
   }
 }
 
-/* A floating surface: popovers and menus (blur 26) and panels (blur 30). */
 .glass-pop {
   background: var(--glass-pop-bg);
   -webkit-backdrop-filter: var(--glass-blur-pop);
@@ -166,12 +158,10 @@
   -webkit-backdrop-filter: blur(5px);
   backdrop-filter: blur(5px);
 }
-/* Behind an anchored menu: it catches the outside click and dims nothing. */
 .glass-scrim-lite {
   background: transparent;
 }
 
-/* Entrances. A popover grows out of its trigger (set --origin); a menu grows from its corner. */
 .glass-in-pop {
   transform-origin: var(--origin, top left);
   animation: ePopIn var(--t-enter) var(--ease-settle) both;
@@ -188,13 +178,10 @@
   transform-origin: center;
   animation: eCenter var(--t-enter) var(--ease-settle) both;
 }
-/* A panel that is also centred by translateY(-50%) (the phone panel). */
 .glass-in-centre-y {
   transform-origin: center;
   animation: eMat var(--t-enter) var(--ease-settle) both;
 }
-/* The side panel: it comes in from the right, and out the same way. On a phone it is a centred glass panel
-   (translateY(-50%) puts it in the middle), so it materialises in place and leaves the same way. */
 .glass-in-sheet {
   transform-origin: top right;
   animation: ePanelIn var(--t-enter) var(--ease-settle) both;
@@ -217,13 +204,11 @@
     transform: translateY(-50%) scale(0.94);
   }
 }
-/* The ⋯ button squashes like a drop when the pointer reaches it. */
 @media (hover: hover) {
   .liquid-dots:hover {
     animation: eBlob var(--t-enter) var(--ease-settle);
   }
 }
-/* Options inside a popover come in one after another. Set --i on each. */
 .glass-opt {
   animation: eOpt var(--t-enter) var(--ease-settle) both;
   animation-delay: calc(var(--i, 0) * 25ms);
@@ -233,7 +218,6 @@
   animation: echoFadeOut var(--t-exit) ease both;
 }
 
-/* The dots that say "looking": <span class="liquid-load"><i></i><i></i><i></i></span> */
 .liquid-load i {
   display: inline-block;
   width: 6px;
@@ -250,16 +234,6 @@
   animation-delay: 0.3s;
 }
 
-/*
- * A row: the whole row is one soft, very round glass tile that swells in behind it, ⋯ cell included, and the row's
- * own content is the lens: text, avatar and ⋯ all magnify together with it. The avatar and date tile do not become
- * separate objects on hover; they take the tile's own tone, so the whole row reads as one piece of liquid.
- * Put .liquid-row on the row, .liquid-av on an avatar or icon tile, .liquid-date on a date tile, .liquid-dots on ⋯.
- * The tile is concentric with what is in it: the gap from the tile's edge to the avatar (left) and to the ⋯ circle
- * (right) is the same as the gap above and below the avatar, about 12px, so the row reads as one capsule. Rows whose
- * padding differs set --tile-l / --tile-e (how far the tile starts from the row's left and right edge) and --tile-y.
- * Only `scale` is used (never `transform`, which entrance animations own), and it never changes layout.
- */
 .liquid-row {
   position: relative;
   isolation: isolate;
@@ -312,7 +286,6 @@
   }
 }
 
-/* Anything that grows on hover grows from its centre, on both sides. */
 .liquid-lens {
   transform-origin: center center;
   transition:
@@ -322,7 +295,6 @@
     opacity var(--t-base);
 }
 
-/* The swell is off when motion is reduced; colour and shadow changes stay. */
 @media (prefers-reduced-motion: reduce) {
   .liquid-row:hover {
     scale: 1;
@@ -332,10 +304,6 @@ html[data-reduce-motion="true"] .liquid-row:hover {
   scale: 1;
 }
 
-/*
- * Data doors. A chart mark (a bar, a segment, a node) is a button that opens its own records. On hover or focus it
- * lifts from its centre, the others step back, and a dark glass pill names the value.
- */
 .glass-tip {
   padding: var(--s-6) var(--s-12);
   background: rgb(10 10 11 / 86%);
@@ -361,7 +329,71 @@ html[data-reduce-motion="true"] .liquid-row:hover {
     opacity var(--t-base);
 }
 
-/* A row gives a little under the finger. */
 .liquid-row:active {
   scale: 0.994;
+}
+
+/* -------------------------------------------------------------------------- */
+/* DARK MODE SUPPORT */
+/* -------------------------------------------------------------------------- */
+
+.dark,
+[data-theme="dark"],
+.dark-mode,
+.theme-dark {
+  --glass-pop-bg: rgb(30 30 35 / 82%);
+  --glass-panel-bg: rgb(30 30 35 / 80%);
+  --glass-rim: rgb(255 255 255 / 12%);
+  --glass-edge: inset 0 1px 0 rgb(255 255 255 / 10%);
+  --glass-ring: 0 0 0 1px rgb(255 255 255 / 8%);
+  --glass-shadow-pop:
+    var(--glass-edge), var(--glass-ring), 0 28px 60px -22px rgb(0 0 0 / 60%);
+  --glass-shadow-panel:
+    var(--glass-edge), inset 0 0 0 1px rgb(255 255 255 / 8%),
+    0 40px 90px -28px rgb(0 0 0 / 70%);
+  --glass-tile: rgb(45 45 50 / 92%);
+  --glass-tile-edge: rgb(255 255 255 / 10%);
+  --glass-white: rgb(45 45 50 / 92%);
+}
+
+.dark .active,
+[data-theme="dark"] .active,
+.dark-mode .active,
+.theme-dark .active {
+  background: rgb(255 255 255 / 10%);
+}
+
+/* Forces hardcoded white hovers inside dropdowns to turn dark */
+.dark [role="option"]:hover,
+[data-theme="dark"] [role="option"]:hover,
+.dark-mode [role="option"]:hover,
+.theme-dark [role="option"]:hover {
+  background: rgb(255 255 255 / 10%) !important;
+  box-shadow: none !important;
+}
+
+.dark .liquid-row::before,
+[data-theme="dark"] .liquid-row::before,
+.dark-mode .liquid-row::before,
+.theme-dark .liquid-row::before {
+  background: linear-gradient(180deg, rgb(45 45 50 / 96%), rgb(35 35 40 / 92%));
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 10%),
+    0 10px 24px -16px rgb(0 0 0 / 50%);
+}
+
+.dark .liquid-row:hover .liquid-av,
+.dark .liquid-row:hover .av,
+.dark .liquid-row:hover .liquid-date,
+[data-theme="dark"] .liquid-row:hover .liquid-av,
+[data-theme="dark"] .liquid-row:hover .av,
+[data-theme="dark"] .liquid-row:hover .liquid-date,
+.dark-mode .liquid-row:hover .liquid-av,
+.dark-mode .liquid-row:hover .av,
+.dark-mode .liquid-row:hover .liquid-date,
+.theme-dark .liquid-row:hover .liquid-av,
+.theme-dark .liquid-row:hover .av,
+.theme-dark .liquid-row:hover .liquid-date {
+  background: rgb(255 255 255 / 12%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 15%);
 }
