@@ -44,9 +44,9 @@
   cursor: pointer;
   transition: background-color var(--t-fast) var(--ease-soft);
 }
-/* The option under the pointer or the keyboard fills softly. Nothing moves. */
+
 .active {
-  background: rgb(128 128 140 / 14%);
+  background: var(--hover, rgb(128 128 140 / 14%));
 }
 .selected {
   font-weight: 500;

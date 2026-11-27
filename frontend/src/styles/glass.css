@@ -1,8 +1,13 @@
 :root {
-  --glass-pop-bg: rgb(255 255 255 / 82%);
-  --glass-panel-bg: rgb(255 255 255 / 80%);
-  --glass-rim: rgb(255 255 255 / 75%);
-  --glass-edge: inset 0 1px 0 rgb(255 255 255 / 95%);
+  /* Auto-adapts to your app's theme (white in light, dark in dark) */
+  --glass-pop-bg: color-mix(in srgb, var(--surface, #ffffff) 82%, transparent);
+  --glass-panel-bg: color-mix(
+    in srgb,
+    var(--surface, #ffffff) 80%,
+    transparent
+  );
+  --glass-rim: color-mix(in srgb, var(--line-2, #80808c) 50%, transparent);
+  --glass-edge: inset 0 1px 0 rgb(255 255 255 / 10%);
   --glass-ring: 0 0 0 1px rgb(128 128 140 / 16%);
   --glass-shadow-pop:
     var(--glass-edge), var(--glass-ring), 0 28px 60px -22px rgb(10 10 11 / 40%);
@@ -12,9 +17,9 @@
   --glass-blur-pop: blur(26px) saturate(1.8);
   --glass-blur-panel: blur(30px) saturate(1.8);
   --glass-scrim: rgb(10 10 11 / 22%);
-  --glass-tile: rgb(241 241 245 / 92%);
+  --glass-tile: color-mix(in srgb, var(--surface, #ffffff) 92%, transparent);
   --glass-tile-edge: rgb(128 128 140 / 16%);
-  --glass-white: #ffffff;
+  --glass-white: var(--surface, #ffffff);
 }
 
 @keyframes eLiquid {
@@ -251,11 +256,11 @@
   opacity: 0;
   background: linear-gradient(
     180deg,
-    rgb(246 246 249 / 96%),
-    rgb(238 238 243 / 92%)
+    var(--surface, #ffffff),
+    var(--surface-2, #f4f4f5)
   );
   box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 90%),
+    inset 0 1px 0 rgb(255 255 255 / 10%),
     0 10px 24px -16px rgb(10 10 11 / 22%);
   transition: opacity var(--t-base);
 }
@@ -278,8 +283,8 @@
   .liquid-row:hover .liquid-av,
   .liquid-row:hover .av,
   .liquid-row:hover .liquid-date {
-    background: rgb(255 255 255 / 78%);
-    box-shadow: inset 0 1px 0 rgb(255 255 255 / 95%);
+    background: var(--surface-2, #f4f4f5);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 10%);
   }
   .liquid-row:hover .liquid-dots {
     color: var(--text);
@@ -331,69 +336,4 @@ html[data-reduce-motion="true"] .liquid-row:hover {
 
 .liquid-row:active {
   scale: 0.994;
-}
-
-/* -------------------------------------------------------------------------- */
-/* DARK MODE SUPPORT */
-/* -------------------------------------------------------------------------- */
-
-.dark,
-[data-theme="dark"],
-.dark-mode,
-.theme-dark {
-  --glass-pop-bg: rgb(30 30 35 / 82%);
-  --glass-panel-bg: rgb(30 30 35 / 80%);
-  --glass-rim: rgb(255 255 255 / 12%);
-  --glass-edge: inset 0 1px 0 rgb(255 255 255 / 10%);
-  --glass-ring: 0 0 0 1px rgb(255 255 255 / 8%);
-  --glass-shadow-pop:
-    var(--glass-edge), var(--glass-ring), 0 28px 60px -22px rgb(0 0 0 / 60%);
-  --glass-shadow-panel:
-    var(--glass-edge), inset 0 0 0 1px rgb(255 255 255 / 8%),
-    0 40px 90px -28px rgb(0 0 0 / 70%);
-  --glass-tile: rgb(45 45 50 / 92%);
-  --glass-tile-edge: rgb(255 255 255 / 10%);
-  --glass-white: rgb(45 45 50 / 92%);
-}
-
-.dark .active,
-[data-theme="dark"] .active,
-.dark-mode .active,
-.theme-dark .active {
-  background: rgb(255 255 255 / 10%);
-}
-
-/* Forces hardcoded white hovers inside dropdowns to turn dark */
-.dark [role="option"]:hover,
-[data-theme="dark"] [role="option"]:hover,
-.dark-mode [role="option"]:hover,
-.theme-dark [role="option"]:hover {
-  background: rgb(255 255 255 / 10%) !important;
-  box-shadow: none !important;
-}
-
-.dark .liquid-row::before,
-[data-theme="dark"] .liquid-row::before,
-.dark-mode .liquid-row::before,
-.theme-dark .liquid-row::before {
-  background: linear-gradient(180deg, rgb(45 45 50 / 96%), rgb(35 35 40 / 92%));
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 10%),
-    0 10px 24px -16px rgb(0 0 0 / 50%);
-}
-
-.dark .liquid-row:hover .liquid-av,
-.dark .liquid-row:hover .av,
-.dark .liquid-row:hover .liquid-date,
-[data-theme="dark"] .liquid-row:hover .liquid-av,
-[data-theme="dark"] .liquid-row:hover .av,
-[data-theme="dark"] .liquid-row:hover .liquid-date,
-.dark-mode .liquid-row:hover .liquid-av,
-.dark-mode .liquid-row:hover .av,
-.dark-mode .liquid-row:hover .liquid-date,
-.theme-dark .liquid-row:hover .liquid-av,
-.theme-dark .liquid-row:hover .av,
-.theme-dark .liquid-row:hover .liquid-date {
-  background: rgb(255 255 255 / 12%);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 15%);
 }
