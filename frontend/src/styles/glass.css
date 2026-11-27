@@ -1,15 +1,13 @@
-/*
- * Liquid Glass (claude/ui-decisions-round9.md, round10.md). Quiet at rest, alive on touch: the hovered thing is a
- * lens that grows a little and catches light, squashes and settles on a spring, and floating surfaces are glass.
- * The boards' vocabulary lives here once; components compose these classes and tokens, they do not copy them.
- * Hover is inside @media (hover: hover). Reduce motion is handled by reset.css (every duration becomes 1ms) and by the
- * transform opt-outs at the bottom.
- */
 :root {
-  --glass-pop-bg: rgb(255 255 255 / 82%);
-  --glass-panel-bg: rgb(255 255 255 / 80%);
-  --glass-rim: rgb(255 255 255 / 75%);
-  --glass-edge: inset 0 1px 0 rgb(255 255 255 / 95%); /* the lit top edge */
+  /* Auto-adapts to your app's theme (white in light, dark in dark) */
+  --glass-pop-bg: color-mix(in srgb, var(--surface, #ffffff) 82%, transparent);
+  --glass-panel-bg: color-mix(
+    in srgb,
+    var(--surface, #ffffff) 80%,
+    transparent
+  );
+  --glass-rim: color-mix(in srgb, var(--line-2, #80808c) 50%, transparent);
+  --glass-edge: inset 0 1px 0 rgb(255 255 255 / 10%);
   --glass-ring: 0 0 0 1px rgb(128 128 140 / 16%);
   --glass-shadow-pop:
     var(--glass-edge), var(--glass-ring), 0 28px 60px -22px rgb(10 10 11 / 40%);
@@ -19,9 +17,9 @@
   --glass-blur-pop: blur(26px) saturate(1.8);
   --glass-blur-panel: blur(30px) saturate(1.8);
   --glass-scrim: rgb(10 10 11 / 22%);
-  --glass-tile: rgb(241 241 245 / 92%);
+  --glass-tile: color-mix(in srgb, var(--surface, #ffffff) 92%, transparent);
   --glass-tile-edge: rgb(128 128 140 / 16%);
-  --glass-white: #ffffff;
+  --glass-white: var(--surface, #ffffff);
 }
 
 @keyframes eLiquid {
@@ -146,7 +144,6 @@
   }
 }
 
-/* A floating surface: popovers and menus (blur 26) and panels (blur 30). */
 .glass-pop {
   background: var(--glass-pop-bg);
   -webkit-backdrop-filter: var(--glass-blur-pop);
@@ -166,12 +163,10 @@
   -webkit-backdrop-filter: blur(5px);
   backdrop-filter: blur(5px);
 }
-/* Behind an anchored menu: it catches the outside click and dims nothing. */
 .glass-scrim-lite {
   background: transparent;
 }
 
-/* Entrances. A popover grows out of its trigger (set --origin); a menu grows from its corner. */
 .glass-in-pop {
   transform-origin: var(--origin, top left);
   animation: ePopIn var(--t-enter) var(--ease-settle) both;
@@ -188,13 +183,10 @@
   transform-origin: center;
   animation: eCenter var(--t-enter) var(--ease-settle) both;
 }
-/* A panel that is also centred by translateY(-50%) (the phone panel). */
 .glass-in-centre-y {
   transform-origin: center;
   animation: eMat var(--t-enter) var(--ease-settle) both;
 }
-/* The side panel: it comes in from the right, and out the same way. On a phone it is a centred glass panel
-   (translateY(-50%) puts it in the middle), so it materialises in place and leaves the same way. */
 .glass-in-sheet {
   transform-origin: top right;
   animation: ePanelIn var(--t-enter) var(--ease-settle) both;
@@ -217,13 +209,11 @@
     transform: translateY(-50%) scale(0.94);
   }
 }
-/* The ⋯ button squashes like a drop when the pointer reaches it. */
 @media (hover: hover) {
   .liquid-dots:hover {
     animation: eBlob var(--t-enter) var(--ease-settle);
   }
 }
-/* Options inside a popover come in one after another. Set --i on each. */
 .glass-opt {
   animation: eOpt var(--t-enter) var(--ease-settle) both;
   animation-delay: calc(var(--i, 0) * 25ms);
@@ -233,7 +223,6 @@
   animation: echoFadeOut var(--t-exit) ease both;
 }
 
-/* The dots that say "looking": <span class="liquid-load"><i></i><i></i><i></i></span> */
 .liquid-load i {
   display: inline-block;
   width: 6px;
@@ -250,16 +239,6 @@
   animation-delay: 0.3s;
 }
 
-/*
- * A row: the whole row is one soft, very round glass tile that swells in behind it, ⋯ cell included, and the row's
- * own content is the lens: text, avatar and ⋯ all magnify together with it. The avatar and date tile do not become
- * separate objects on hover; they take the tile's own tone, so the whole row reads as one piece of liquid.
- * Put .liquid-row on the row, .liquid-av on an avatar or icon tile, .liquid-date on a date tile, .liquid-dots on ⋯.
- * The tile is concentric with what is in it: the gap from the tile's edge to the avatar (left) and to the ⋯ circle
- * (right) is the same as the gap above and below the avatar, about 12px, so the row reads as one capsule. Rows whose
- * padding differs set --tile-l / --tile-e (how far the tile starts from the row's left and right edge) and --tile-y.
- * Only `scale` is used (never `transform`, which entrance animations own), and it never changes layout.
- */
 .liquid-row {
   position: relative;
   isolation: isolate;
@@ -277,11 +256,11 @@
   opacity: 0;
   background: linear-gradient(
     180deg,
-    rgb(246 246 249 / 96%),
-    rgb(238 238 243 / 92%)
+    var(--surface, #ffffff),
+    var(--surface-2, #f4f4f5)
   );
   box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 90%),
+    inset 0 1px 0 rgb(255 255 255 / 10%),
     0 10px 24px -16px rgb(10 10 11 / 22%);
   transition: opacity var(--t-base);
 }
@@ -304,15 +283,14 @@
   .liquid-row:hover .liquid-av,
   .liquid-row:hover .av,
   .liquid-row:hover .liquid-date {
-    background: rgb(255 255 255 / 78%);
-    box-shadow: inset 0 1px 0 rgb(255 255 255 / 95%);
+    background: var(--surface-2, #f4f4f5);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 10%);
   }
   .liquid-row:hover .liquid-dots {
     color: var(--text);
   }
 }
 
-/* Anything that grows on hover grows from its centre, on both sides. */
 .liquid-lens {
   transform-origin: center center;
   transition:
@@ -322,7 +300,6 @@
     opacity var(--t-base);
 }
 
-/* The swell is off when motion is reduced; colour and shadow changes stay. */
 @media (prefers-reduced-motion: reduce) {
   .liquid-row:hover {
     scale: 1;
@@ -332,10 +309,6 @@ html[data-reduce-motion="true"] .liquid-row:hover {
   scale: 1;
 }
 
-/*
- * Data doors. A chart mark (a bar, a segment, a node) is a button that opens its own records. On hover or focus it
- * lifts from its centre, the others step back, and a dark glass pill names the value.
- */
 .glass-tip {
   padding: var(--s-6) var(--s-12);
   background: rgb(10 10 11 / 86%);
@@ -361,7 +334,6 @@ html[data-reduce-motion="true"] .liquid-row:hover {
     opacity var(--t-base);
 }
 
-/* A row gives a little under the finger. */
 .liquid-row:active {
   scale: 0.994;
 }

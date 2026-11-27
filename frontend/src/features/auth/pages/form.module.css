@@ -9,14 +9,21 @@
 .row {
   display: flex;
   gap: 12px;
+  position: relative;
 }
 .row > * {
   flex: 1;
 }
+
+.row:has([aria-expanded="true"]) {
+  z-index: 10;
+}
+
 /* The invitation code: centred. */
 .code input {
   text-align: center;
 }
+
 /* Typed or pasted, the code is set in a monospace face; the placeholder keeps the normal one. */
 .code input:not(:placeholder-shown) {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
